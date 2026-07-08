@@ -384,8 +384,7 @@
         <div class="modal-body">
           <div class="import-tabs">
             <button :class="['tab-btn', {active: importModal.tab==='paste'}]" @click="importModal.tab='paste'">粘贴导入</button>
-            <button :class="['tab-btn', {active: importModal.tab==='gelonghui'}]" @click="importModal.tab='gelonghui'">格隆汇抓取</button>
-            <button :class="['tab-btn', {active: importModal.tab==='tonghuashun'}]" @click="importModal.tab='tonghuashun'">同花顺抓取</button>
+            <button :class="['tab-btn', {active: importModal.tab==='gelonghui'}]" @click="importModal.tab='gelonghui'">一键抓取快讯</button>
           </div>
 
           <div class="form-row" v-show="importModal.tab==='paste'">
@@ -403,22 +402,20 @@
               <label>抓取日期</label>
               <input type="date" v-model="importModal.date">
             </div>
-            <div class="info-box">
-              <p><b>格隆汇新闻抓取说明：</b></p>
-              <p>将尝试从格隆汇获取所选日期的新闻快讯。由于浏览器跨域限制，可能需要通过代理获取。</p>
-              <p>若自动抓取失败，请前往 <a href="https://www.gelonghui.com/news" target="_blank">格隆汇新闻页</a> 复制当日新闻，切换到「粘贴导入」粘贴。</p>
+            <div class="info-box" v-if="!(D.settings.proxyUrl || '').trim()">
+              <p><b>⚠ 尚未配置免费新闻代理，一键抓取不可用。</b></p>
+              <p><b>免费开通步骤（约2分钟，完全免费）：</b></p>
+              <p>1. 打开 <a href="https://dash.cloudflare.com" target="_blank">Cloudflare 控制台</a>（免费注册，无需银行卡）</p>
+              <p>2. 左侧 <b>Workers & Pages</b> → <b>Create</b> → <b>Create Worker</b> → 名字填 <code>news-proxy</code> → <b>Deploy</b></p>
+              <p>3. 点 <b>Edit code</b> → 把仓库里 <code>worker/news-proxy.js</code> 全部内容粘贴进去 → <b>Save and deploy</b></p>
+              <p>4. 复制地址栏的网址（形如 <code>https://news-proxy.xxx.workers.dev</code>）</p>
+              <p>5. 回到本应用 → 右上角 ⚙️ 设置 → 填入「新闻代理地址」→ 保存</p>
+              <p style="margin-top:6px">配置完成后即可一键抓取当天财经快讯（数据源：东方财富7×24快讯，免费）。每天免费 10 万次，个人足够用。</p>
             </div>
-          </div>
-
-          <div v-show="importModal.tab==='tonghuashun'" class="import-source-info">
-            <div class="form-row">
-              <label>抓取日期</label>
-              <input type="date" v-model="importModal.date">
-            </div>
-            <div class="info-box">
-              <p><b>同花顺新闻抓取说明：</b></p>
-              <p>将尝试从同花顺获取所选日期的新闻。由于浏览器跨域限制，可能需要通过代理获取。</p>
-              <p>若自动抓取失败，请前往 <a href="https://news.10jqka.com.cn/" target="_blank">同花顺新闻页</a> 复制当日新闻，切换到「粘贴导入」粘贴。</p>
+            <div class="info-box" v-else>
+              <p><b>一键抓取财经快讯</b></p>
+              <p>将抓取所选日期的财经快讯（东方财富7×24）并自动导入。代理地址：<code>{{ D.settings.proxyUrl }}</code></p>
+              <p>如需更换日期的快讯，修改上方日期后重新抓取即可。也支持从格隆汇/同花顺复制后用「粘贴导入」。</p>
             </div>
           </div>
         </div>
@@ -521,6 +518,13 @@
           </div>
           <div class="info-box">
             <p>默认分类：主线实体、个股实体、主线概念、个股概念、利空概念。可自由增删改。</p>
+          </div>
+          <div class="form-row">
+            <label>新闻代理地址（用于一键抓取财经快讯，免费 Cloudflare Worker 地址，留空则不能用一键抓取）</label>
+            <input v-model="proxyUrl" placeholder="https://news-proxy.你的子域.workers.dev">
+          </div>
+          <div class="info-box">
+            <p><b>免费开通一键抓取：</b>部署一个 Cloudflare Worker 即可（免费10万次/天）。代码在仓库 <code>worker/news-proxy.js</code>。详见导入页面的步骤说明。</p>
           </div>
           <div class="form-row">
             <label>数据存储</label>

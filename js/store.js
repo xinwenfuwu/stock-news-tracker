@@ -15,7 +15,8 @@ const Store = {
       hotBoards: [],          // 缓存最近一次热门板块
       hotStocks: [],          // 缓存最近一次热门股票
       settings: {
-        categories: [...this.DEFAULT_CATEGORIES]
+        categories: [...this.DEFAULT_CATEGORIES],
+        proxyUrl: ''             // Cloudflare Worker 代理地址，用于一键抓取新闻
       }
     };
   },
@@ -35,8 +36,9 @@ const Store = {
     // 合并已存数据与默认结构
     this.data = Vue.reactive(Object.assign(defaults, saved || {}));
     if (!this.data.settings || !this.data.settings.categories) {
-      this.data.settings = { categories: [...this.DEFAULT_CATEGORIES] };
+      this.data.settings = { categories: [...this.DEFAULT_CATEGORIES], proxyUrl: '' };
     }
+    if (!this.data.settings.proxyUrl) this.data.settings.proxyUrl = '';
     if (!this.data.dailyData) this.data.dailyData = {};
     if (!this.data.stockPools) this.data.stockPools = [];
     if (!this.data.news) this.data.news = [];

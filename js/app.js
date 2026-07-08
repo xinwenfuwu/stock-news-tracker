@@ -440,58 +440,64 @@ const app = createApp({
       });
     }
 
-    // 抓取导入（格隆汇/同花顺 - 通过代理 best-effort）
+    // 一键抓取财经快讯（通过 Cloudflare Worker 代理，免费）
     async function doScrapeImport() {
-      showToast('开始抓取，请稍候...', 'info');
       const date = importModal.date;
-      const proxy = 'https://api.allorigins.win/raw?url=';
-      let targetUrl = '';
-      if (importModal.tab === 'gelonghui') {
-        // 格隆汇快讯 API（best-effort）
-        const ts = new Date(date).getTime();
-        targetUrl = encodeURIComponent(`https://www.gelonghui.com/api/v2/news/live?ts=${ts}&count=50`);
-      } else if (importModal.tab === 'tonghuashun') {
-        targetUrl = encodeURIComponent(`https://news.10jqka.com.cn/realtimenews.html`);
+      const base = (D.settings.proxyUrl || '').trim().replace(/\/+$/, '');
+      if (!base) {
+        showToast('请先在「设置」里填写新闻代理地址（免费Cloudflare Worker）', 'error');
+        return;
       }
+      showToast('正在通过代理抓取财经快讯...', 'info');
       try {
-        const resp = await fetch(proxy + targetUrl);
-        const text = await resp.text();
-        const news = parseScrapedNews(text, importModal.tab, date);
+        // 抓取多页以确保覆盖所选日期
+        const allItems = [];
+        for (let page = 1; page <= 3; page++) {
+          const resp = await fetch(`${base}/news?page=${page}&size=50`);
+          if (!resp.ok) throw new Error('代理返回错误 ' + resp.status);
+          const json = await resp.json();
+          const list = (json.data && json.data.list) || [];
+          if (!list.length) break;
+          allItems.push(...list);
+          // 如果最早一条已经早于所选日期，停止翻页
+          const oldest = list[list.length - 1];
+          if (oldest && oldest.showTime && oldest.showTime.slice(0, 10) < date) break;
+        }
+        // 按日期过滤
+        const dateStr = date || Store.today();
+        const filtered = allItems.filter(it => {
+          const t = it.showTime || '';
+          return t.slice(0, 10) === dateStr;
+        });
+        const news = (filtered.length ? filtered : allItems.slice(0, 50)).map(it => {
+          const title = (it.title || '').trim();
+          const summary = (it.summary || '').trim();
+          const content = title && summary ? `${title}：${summary}` : (title || summary);
+          return makeNewsItem(dateStr, content);
+        }).filter(n => n.content);
         if (!news.length) {
-          showToast('未能解析到新闻，请改用「粘贴导入」', 'error');
+          showToast('所选日期暂无快讯，可尝试换一天或用「粘贴导入」', 'error');
           return;
         }
         for (const n of news) Store.addNews(n);
-        showToast(`抓取并导入 ${news.length} 条新闻`, 'success');
+        showToast(`抓取并导入 ${news.length} 条财经快讯`, 'success');
         importModal.show = false;
         setTimeout(() => refreshAllPrices(), 300);
       } catch (e) {
-        showToast('抓取失败（跨域/网络限制），请改用「粘贴导入」手动粘贴', 'error');
+        showToast('抓取失败：' + e.message + '。请检查代理地址是否正确', 'error');
       }
     }
 
     function parseScrapedNews(text, source, date) {
       const result = [];
       try {
-        if (source === 'gelonghui') {
-          // 尝试 JSON 解析
-          const json = JSON.parse(text);
-          const list = json.result || json.data || json.list || [];
-          for (const item of (Array.isArray(list) ? list : [])) {
-            const content = item.title || item.content || item.summary || '';
-            if (content) result.push(makeNewsItem(date, content));
-          }
-        } else {
-          // HTML 文本提取标题（简单匹配）
-          const reg = /<a[^>]*>([^<]{6,})<\/a>/g;
-          let m;
-          while ((m = reg.exec(text)) !== null) {
-            const c = m[1].trim();
-            if (c.length > 5) result.push(makeNewsItem(date, c));
-          }
+        const json = JSON.parse(text);
+        const list = json.result || json.data || json.list || (json.data && json.data.list) || [];
+        for (const item of (Array.isArray(list) ? list : [])) {
+          const content = item.title || item.content || item.summary || '';
+          if (content) result.push(makeNewsItem(date, content));
         }
       } catch (e) {
-        // 纯文本按行
         text.split(/\n+/).forEach(line => {
           line = line.trim();
           if (line.length > 5 && line.length < 200) result.push(makeNewsItem(date, line));
@@ -821,8 +827,12 @@ const app = createApp({
     // ============================================================
     const showSettings = ref(false);
     const settingsText = ref('');
+    const proxyUrl = ref('');
     watch(showSettings, v => {
-      if (v) settingsText.value = (D.settings.categories || []).join('\n');
+      if (v) {
+        settingsText.value = (D.settings.categories || []).join('\n');
+        proxyUrl.value = D.settings.proxyUrl || '';
+      }
     });
     const dataStats = computed(() => ({
       news: D.news.length,
@@ -835,6 +845,8 @@ const app = createApp({
         return;
       }
       Store.setCategories(cats);
+      // 保存代理地址（去除末尾斜杠）
+      D.settings.proxyUrl = (proxyUrl.value || '').trim().replace(/\/+$/, '');
       showToast('设置已保存', 'success');
       showSettings.value = false;
     }
@@ -877,7 +889,7 @@ const app = createApp({
       D, currentPage, tabs, goPage,
       toast, showToast,
       allCategories, fmt, fmtPct, numClass, pctClass, parseStocks, stocksText, pureCode,
-      showSettings, settingsText, saveSettings, clearAllData, dataStats,
+      showSettings, settingsText, proxyUrl, saveSettings, clearAllData, dataStats,
       exportData, importData,
       // 页面1
       newsFilter, selectedNewsIds, sortedNews, filteredNews,
