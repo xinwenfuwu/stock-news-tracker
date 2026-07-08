@@ -189,8 +189,24 @@ const app = createApp({
       // 计算距今
       d.daysSince = Store.daysSince(d.date);
       if (newsModal.isEdit) {
+        const original = D.news.find(n => n.id === d.id);
+        const oldStocks = original ? (original.relatedStocks || '') : '';
+        // 若关联股票变化，清空旧股价，避免刷新时仍显示旧股票的价位
+        if (original && oldStocks !== d.relatedStocks) {
+          d.newsDayPrice = null;
+          d.price924 = null;
+          d.todayPrice = null;
+          d.todayChange = null;
+          d.changeSinceNews = null;
+          d.changeSince924 = null;
+        }
         Store.updateNews(d.id, d);
         showToast('已更新', 'success');
+        // 关联股票变化后自动补全新股价
+        if (oldStocks !== d.relatedStocks) {
+          const updated = D.news.find(n => n.id === d.id);
+          if (updated) fillPriceForNews(updated, true);
+        }
       } else {
         delete d.id;
         const item = Store.addNews(d);
@@ -255,46 +271,49 @@ const app = createApp({
       }
       priceLoading.value = true;
       showToast(`正在刷新 ${list.length} 条新闻的股价...`, 'info');
-      // 收集所有唯一代码
-      const codeMap = {};
+      // 按股票代码分组，避免同一只股票重复请求历史数据
+      const stockGroups = {};
       for (const n of list) {
         const s = parseStocks(n.relatedStocks)[0];
-        if (s.code) codeMap[s.code] = n;
+        if (!s.code) continue;
+        if (!stockGroups[s.code]) stockGroups[s.code] = [];
+        stockGroups[s.code].push(n);
       }
-      const codes = Object.keys(codeMap);
+      const codes = Object.keys(stockGroups);
       try {
-        // 实时行情批量
+        // 实时行情批量获取
         const quotes = await StockAPI.getQuotes(codes);
-        // 历史价格逐个（避免请求过多）
-        let count = 0;
-        for (const n of list) {
-          const s = parseStocks(n.relatedStocks)[0];
-          if (!s.code) continue;
-          const q = quotes[s.code];
-          if (q) {
-            n.todayPrice = q.price;
-            n.todayChange = q.changePercent;
+        let stockCount = 0;
+        for (const [code, newsItems] of Object.entries(stockGroups)) {
+          stockCount++;
+          showToast(`正在获取 ${code} 的历史价格... (${stockCount}/${codes.length})`, 'info');
+          // 924 股价：每只代码只请求一次
+          const p924 = await StockAPI.get924Price(code);
+          // 新闻日股价：按日期去重，每个日期只请求一次
+          const dates = [...new Set(newsItems.map(n => n.date).filter(Boolean))];
+          const newsDayPrices = {};
+          for (const date of dates) {
+            newsDayPrices[date] = await StockAPI.getHistoryClose(code, date);
           }
-          // 924 和 新闻日价格（带缓存避免重复）
-          if (n.price924 == null) {
-            const p924 = await StockAPI.get924Price(s.code);
+          const q = quotes[code];
+          for (const n of newsItems) {
+            if (q) {
+              n.todayPrice = q.price;
+              n.todayChange = q.changePercent;
+            }
             if (p924 != null) n.price924 = p924;
-          }
-          if (n.newsDayPrice == null && n.date) {
-            const nd = await StockAPI.getHistoryClose(s.code, n.date);
+            const nd = newsDayPrices[n.date];
             if (nd != null) n.newsDayPrice = nd;
+            n.daysSince = Store.daysSince(n.date);
+            if (n.newsDayPrice && n.todayPrice) {
+              n.changeSinceNews = +(((n.todayPrice - n.newsDayPrice) / n.newsDayPrice) * 100).toFixed(2);
+            }
+            if (n.price924 && n.todayPrice) {
+              n.changeSince924 = +(((n.todayPrice - n.price924) / n.price924) * 100).toFixed(2);
+            }
           }
-          n.daysSince = Store.daysSince(n.date);
-          if (n.newsDayPrice && n.todayPrice) {
-            n.changeSinceNews = +(((n.todayPrice - n.newsDayPrice) / n.newsDayPrice) * 100).toFixed(2);
-          }
-          if (n.price924 && n.todayPrice) {
-            n.changeSince924 = +(((n.todayPrice - n.price924) / n.price924) * 100).toFixed(2);
-          }
-          count++;
-          if (count % 10 === 0) showToast(`进度 ${count}/${list.length}...`, 'info');
         }
-        showToast(`已刷新 ${count} 条新闻股价`, 'success');
+        showToast(`已刷新 ${list.length} 条新闻股价`, 'success');
       } catch (e) {
         showToast('刷新失败：' + e.message, 'error');
       } finally {
