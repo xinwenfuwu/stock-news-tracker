@@ -61,6 +61,59 @@ const StockAPI = {
     return results;
   },
 
+  // ============ 股票搜索联想 ============
+
+  _searchSeq: 0,
+
+  /**
+   * 搜索股票（腾讯 smartbox 接口，通过 script 标签加载，绕过 CORS）
+   * 输入名称或代码，返回联想结果
+   * @returns {Array<{market, code, pureCode, name, pinyin}>}
+   */
+  searchStocks(keyword) {
+    const kw = (keyword || '').trim();
+    if (!kw) return Promise.resolve([]);
+    const mySeq = ++this._searchSeq;
+    return new Promise((resolve) => {
+      const script = document.createElement('script');
+      script.charset = 'utf-8';
+      script.src = `https://smartbox.gtimg.cn/s3/?t=all&q=${encodeURIComponent(kw)}`;
+      const cleanup = () => {
+        if (script.parentNode) script.parentNode.removeChild(script);
+        try { delete window.v_hint; } catch (e) { window.v_hint = undefined; }
+      };
+      script.onload = () => {
+        // 只处理最新一次请求，避免快速输入时旧结果覆盖新结果
+        if (mySeq !== this._searchSeq) { cleanup(); resolve([]); return; }
+        const raw = window.v_hint;
+        cleanup();
+        resolve(this._parseHints(raw));
+      };
+      script.onerror = () => { cleanup(); resolve([]); };
+      document.body.appendChild(script);
+    });
+  },
+
+  _parseHints(raw) {
+    if (!raw) return [];
+    const items = raw.split('^');
+    const results = [];
+    for (const item of items) {
+      const parts = item.split('~');
+      if (parts.length >= 3 && parts[0] && parts[1] && parts[2]) {
+        results.push({
+          market: parts[0],
+          code: parts[0] + parts[1],
+          pureCode: parts[1],
+          name: parts[2],
+          pinyin: parts[3] || '',
+          type: parts[4] || ''
+        });
+      }
+    }
+    return results;
+  },
+
   /** 从 code 提取纯数字 */
   pureCode(code) {
     return String(code || '').replace(/^(sh|sz|bj)/i, '');

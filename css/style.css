@@ -295,6 +295,72 @@ body {
 .muted { color: var(--text-placeholder); }
 .small { font-size: 12px; }
 
+/* ===== 股票联想选择器 ===== */
+.stock-picker { position: relative; }
+.stock-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 6px 8px;
+  background: var(--surface-alt);
+  border: 1px solid var(--border);
+  border-radius: 6px 6px 0 0;
+  border-bottom: none;
+  min-height: 8px;
+}
+.stock-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: var(--primary-light);
+  color: var(--primary);
+  padding: 3px 8px;
+  border-radius: 12px;
+  font-size: 12.5px;
+  white-space: nowrap;
+}
+.chip-remove {
+  background: none;
+  border: none;
+  color: var(--primary);
+  cursor: pointer;
+  font-size: 15px;
+  line-height: 1;
+  padding: 0 0 0 2px;
+  opacity: 0.6;
+}
+.chip-remove:hover { opacity: 1; color: var(--danger); }
+.stock-picker input {
+  border-radius: 0 0 6px 6px !important;
+}
+.stock-picker:has(.stock-chips) input { border-top-left-radius: 0; }
+.stock-suggestions {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-top: none;
+  border-radius: 0 0 6px 6px;
+  box-shadow: var(--shadow-lg);
+  z-index: 50;
+  max-height: 240px;
+  overflow-y: auto;
+}
+.suggestion-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 12px;
+  cursor: pointer;
+  font-size: 13px;
+  transition: background 0.1s;
+}
+.suggestion-item:hover { background: var(--primary-light); }
+.sug-name { font-weight: 500; }
+.sug-code { color: var(--text-placeholder); font-size: 12px; font-family: monospace; }
+
 /* ===== 股票池卡片 ===== */
 .pool-grid {
   display: grid;

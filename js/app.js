@@ -9,6 +9,15 @@ const app = createApp({
     Store.init(Vue);
     const D = Store.data;
 
+    // ===== 数据迁移：relatedStocks 字符串 → 数组 =====
+    D.news.forEach(n => {
+      if (typeof n.relatedStocks === 'string') {
+        n.relatedStocks = StockAPI.parseStockInput(n.relatedStocks);
+      } else if (!Array.isArray(n.relatedStocks)) {
+        n.relatedStocks = [];
+      }
+    });
+
     // ===== 路由 =====
     const currentPage = ref('news');
     const tabs = [
@@ -58,14 +67,26 @@ const app = createApp({
       return 'flat';
     }
 
-    function parseStocks(text) {
-      return StockAPI.parseStockInput(text);
+    function parseStocks(val) {
+      if (Array.isArray(val)) return val;
+      if (typeof val === 'string') return StockAPI.parseStockInput(val);
+      return [];
+    }
+
+    /** 从 stock 对象列表生成可读字符串 */
+    function stocksText(val) {
+      return parseStocks(val).map(s => s.name ? `${s.name}(${StockAPI.pureCode(s.code)})` : StockAPI.pureCode(s.code)).join(', ');
+    }
+
+    /** 取纯代码 */
+    function pureCode(code) {
+      return StockAPI.pureCode(code);
     }
 
     // ============================================================
     //  页面1：新闻追踪
     // ============================================================
-    const newsFilter = reactive({ date: '', keyword: '', category: '' });
+    const newsFilter = reactive({ date: '', keyword: '', category: '', customTag: '' });
     const selectedNewsIds = ref([]);
     const sortKey = ref('daysSince');
     const sortDir = ref('desc');
@@ -75,13 +96,18 @@ const app = createApp({
       let list = D.news;
       if (newsFilter.date) list = list.filter(n => n.date === newsFilter.date);
       if (newsFilter.category) list = list.filter(n => n.category === newsFilter.category);
+      if (newsFilter.customTag) {
+        const kw = newsFilter.customTag.toLowerCase();
+        list = list.filter(n => (n.customTag || '').toLowerCase().includes(kw));
+      }
       if (newsFilter.keyword) {
         const kw = newsFilter.keyword.toLowerCase();
         list = list.filter(n =>
           (n.content || '').toLowerCase().includes(kw) ||
-          (n.relatedStocks || '').toLowerCase().includes(kw) ||
+          stocksText(n.relatedStocks).toLowerCase().includes(kw) ||
           (n.conceptCategory || '').toLowerCase().includes(kw) ||
-          (n.industryCategory || '').toLowerCase().includes(kw)
+          (n.industryCategory || '').toLowerCase().includes(kw) ||
+          (n.customTag || '').toLowerCase().includes(kw)
         );
       }
       return list;
@@ -153,7 +179,10 @@ const app = createApp({
     const newsModal = reactive({
       show: false,
       isEdit: false,
-      data: {}
+      data: {},
+      stockSearch: '',
+      suggestions: [],
+      _searchTimer: null
     });
     function openAddNews() {
       newsModal.isEdit = false;
@@ -163,19 +192,57 @@ const app = createApp({
         conceptCategory: '',
         industryCategory: '',
         customTag: '',
-        relatedStocks: '',
+        relatedStocks: [],
         category: '',
         newsDayPrice: null,
         price924: null,
         todayPrice: null
       };
+      newsModal.stockSearch = '';
+      newsModal.suggestions = [];
       newsModal.show = true;
     }
     function editNews(item) {
       newsModal.isEdit = true;
       newsModal.data = JSON.parse(JSON.stringify(item));
+      // 确保 relatedStocks 是数组
+      if (!Array.isArray(newsModal.data.relatedStocks)) {
+        newsModal.data.relatedStocks = parseStocks(newsModal.data.relatedStocks);
+      }
+      newsModal.stockSearch = '';
+      newsModal.suggestions = [];
       newsModal.show = true;
     }
+
+    // 股票联想搜索（防抖）
+    function onStockSearchInput() {
+      clearTimeout(newsModal._searchTimer);
+      const kw = newsModal.stockSearch.trim();
+      if (!kw) { newsModal.suggestions = []; return; }
+      newsModal._searchTimer = setTimeout(async () => {
+        const results = await StockAPI.searchStocks(kw);
+        // 过滤已添加的
+        const exist = new Set((newsModal.data.relatedStocks || []).map(s => s.code));
+        newsModal.suggestions = results.filter(r => r.type === 'GP-A' || r.type === 'GP-S' || !r.type).filter(r => !exist.has(r.code)).slice(0, 8);
+      }, 300);
+    }
+    function addStock(s) {
+      if (!Array.isArray(newsModal.data.relatedStocks)) newsModal.data.relatedStocks = [];
+      if (!newsModal.data.relatedStocks.find(x => x.code === s.code)) {
+        newsModal.data.relatedStocks.push({ name: s.name, code: s.code });
+      }
+      newsModal.stockSearch = '';
+      newsModal.suggestions = [];
+    }
+    function removeStock(idx) {
+      if (Array.isArray(newsModal.data.relatedStocks)) {
+        newsModal.data.relatedStocks.splice(idx, 1);
+      }
+    }
+    function closeStockSuggestions() {
+      setTimeout(() => { newsModal.suggestions = []; }, 200);
+    }
+
     function saveNews() {
       if (!newsModal.data.content || !newsModal.data.content.trim()) {
         showToast('请输入新闻内容', 'error');
@@ -186,13 +253,16 @@ const app = createApp({
         return;
       }
       const d = newsModal.data;
+      // 确保 relatedStocks 是数组
+      if (!Array.isArray(d.relatedStocks)) d.relatedStocks = parseStocks(d.relatedStocks);
       // 计算距今
       d.daysSince = Store.daysSince(d.date);
       if (newsModal.isEdit) {
         const original = D.news.find(n => n.id === d.id);
-        const oldStocks = original ? (original.relatedStocks || '') : '';
+        const oldStockStr = original ? stocksText(original.relatedStocks) : '';
+        const newStockStr = stocksText(d.relatedStocks);
         // 若关联股票变化，清空旧股价，避免刷新时仍显示旧股票的价位
-        if (original && oldStocks !== d.relatedStocks) {
+        if (original && oldStockStr !== newStockStr) {
           d.newsDayPrice = null;
           d.price924 = null;
           d.todayPrice = null;
@@ -203,7 +273,7 @@ const app = createApp({
         Store.updateNews(d.id, d);
         showToast('已更新', 'success');
         // 关联股票变化后自动补全新股价
-        if (oldStocks !== d.relatedStocks) {
+        if (oldStockStr !== newStockStr) {
           const updated = D.news.find(n => n.id === d.id);
           if (updated) fillPriceForNews(updated, true);
         }
@@ -352,7 +422,7 @@ const app = createApp({
           conceptCategory: '',
           industryCategory: '',
           customTag: '',
-          relatedStocks: '',
+          relatedStocks: [],
           category: '',
           newsDayPrice: null,
           price924: null,
@@ -434,7 +504,7 @@ const app = createApp({
         date: date || Store.today(),
         content,
         conceptCategory: '', industryCategory: '', customTag: '',
-        relatedStocks: '', category: '',
+        relatedStocks: [], category: '',
         newsDayPrice: null, price924: null, todayPrice: null,
         daysSince: Store.daysSince(date)
       };
@@ -806,7 +876,7 @@ const app = createApp({
       // 全局
       D, currentPage, tabs, goPage,
       toast, showToast,
-      allCategories, fmt, fmtPct, numClass, pctClass, parseStocks,
+      allCategories, fmt, fmtPct, numClass, pctClass, parseStocks, stocksText, pureCode,
       showSettings, settingsText, saveSettings, clearAllData, dataStats,
       exportData, importData,
       // 页面1
@@ -814,6 +884,7 @@ const app = createApp({
       sortKey, sortDir, sortBy, sortIcon,
       allNewsSelected, toggleSelectAll, invertSelection, selectAllNews, clearSelection, deleteSelectedNews,
       newsModal, openAddNews, editNews, saveNews, deleteNews,
+      onStockSearchInput, addStock, removeStock, closeStockSuggestions,
       fillPriceForNews, refreshAllPrices, priceLoading,
       importModal, openImportDialog, previewImportCount, doPasteImport, doScrapeImport,
       // 页面2

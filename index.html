@@ -51,6 +51,7 @@
               <option value="">全部分类</option>
               <option v-for="c in allCategories" :key="c" :value="c">{{ c }}</option>
             </select>
+            <input class="search-input" v-model="newsFilter.customTag" placeholder="搜索自定义标记...">
           </div>
           <div class="toolbar-right">
             <button class="btn btn-primary" @click="openImportDialog">📥 导入新闻</button>
@@ -80,7 +81,8 @@
                 <th>概念分类</th>
                 <th>行业分类</th>
                 <th>自定义标记</th>
-                <th class="col-stock">关联股票</th>
+                <th class="col-stock">股票代码</th>
+                <th class="col-stock">股票名称</th>
                 <th>新闻当天股价</th>
                 <th>924股价</th>
                 <th>今日股价</th>
@@ -120,9 +122,15 @@
                 <td class="cell-stock">
                   <span class="stock-badge" v-for="(s, i) in parseStocks(item.relatedStocks)" :key="i"
                         @click="fillPriceForNews(item)" :title="'点击刷新该新闻股价'">
-                    {{ s.name }}
+                    {{ pureCode(s.code) || '—' }}
                   </span>
                   <span v-if="!parseStocks(item.relatedStocks).length" class="muted">未关联</span>
+                </td>
+                <td class="cell-stock">
+                  <span class="stock-badge" v-for="(s, i) in parseStocks(item.relatedStocks)" :key="'n'+i"
+                        @click="fillPriceForNews(item)" :title="'点击刷新该新闻股价'">
+                    {{ s.name || '—' }}
+                  </span>
                 </td>
                 <td :class="numClass(item.newsDayPrice)">{{ fmt(item.newsDayPrice) }}</td>
                 <td :class="numClass(item.price924)">{{ fmt(item.price924) }}</td>
@@ -143,7 +151,7 @@
                 </td>
               </tr>
               <tr v-if="sortedNews.length === 0">
-                <td colspan="16" class="empty-row">
+                <td colspan="17" class="empty-row">
                   暂无新闻数据，点击「导入新闻」或「手动添加」开始
                 </td>
               </tr>
@@ -323,8 +331,25 @@
             <div><label>自定义标记</label><input v-model="newsModal.data.customTag"></div>
           </div>
           <div class="form-row">
-            <label>关联股票（格式：贵州茅台(600519),宁德时代(300750)，或直接输入代码 sh600519）</label>
-            <input v-model="newsModal.data.relatedStocks" placeholder="可填多个，逗号分隔">
+            <label>股票名称/代码（输入名称自动联想代码，可添加多只）</label>
+            <div class="stock-picker">
+              <div class="stock-chips" v-if="parseStocks(newsModal.data.relatedStocks).length">
+                <span class="stock-chip" v-for="(s, i) in parseStocks(newsModal.data.relatedStocks)" :key="i">
+                  {{ s.name || pureCode(s.code) }}（{{ pureCode(s.code) }}）
+                  <button type="button" class="chip-remove" @click="removeStock(i)">×</button>
+                </span>
+              </div>
+              <input v-model="newsModal.stockSearch" @input="onStockSearchInput"
+                     @blur="closeStockSuggestions"
+                     placeholder="输入股票名称或代码，如 贵州茅台 或 600519">
+              <div class="stock-suggestions" v-if="newsModal.suggestions.length">
+                <div class="suggestion-item" v-for="s in newsModal.suggestions" :key="s.code"
+                     @mousedown.prevent="addStock(s)">
+                  <span class="sug-name">{{ s.name }}</span>
+                  <span class="sug-code">{{ s.pureCode }}</span>
+                </div>
+              </div>
+            </div>
           </div>
           <div class="form-row">
             <label>分类标签</label>
