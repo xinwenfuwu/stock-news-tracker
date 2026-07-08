@@ -85,7 +85,7 @@
                 <th>概念分类</th>
                 <th>行业分类</th>
                 <th>自定义标记</th>
-                <th class="col-stock">股票代码</th>
+                <th class="col-stock">股票名称</th>
                 <th>新闻当天股价</th>
                 <th>924股价</th>
                 <th>今日股价</th>
@@ -125,7 +125,7 @@
                 <td class="cell-stock">
                   <span class="stock-badge" v-for="(s, i) in parseStocks(item.relatedStocks)" :key="i"
                         @click="fillPriceForNews(item)" :title="'点击刷新该新闻股价'">
-                    {{ pureCode(s.code) || '—' }}
+                    {{ s.name || pureCode(s.code) || '—' }}
                   </span>
                   <span v-if="!parseStocks(item.relatedStocks).length" class="muted">未关联</span>
                 </td>
