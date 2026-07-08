@@ -86,7 +86,6 @@
                 <th>行业分类</th>
                 <th>自定义标记</th>
                 <th class="col-stock">股票代码</th>
-                <th class="col-stock">股票名称</th>
                 <th>新闻当天股价</th>
                 <th>924股价</th>
                 <th>今日股价</th>
@@ -130,12 +129,6 @@
                   </span>
                   <span v-if="!parseStocks(item.relatedStocks).length" class="muted">未关联</span>
                 </td>
-                <td class="cell-stock">
-                  <span class="stock-badge" v-for="(s, i) in parseStocks(item.relatedStocks)" :key="'n'+i"
-                        @click="fillPriceForNews(item)" :title="'点击刷新该新闻股价'">
-                    {{ s.name || '—' }}
-                  </span>
-                </td>
                 <td :class="numClass(item.newsDayPrice)">{{ fmt(item.newsDayPrice) }}</td>
                 <td :class="numClass(item.price924)">{{ fmt(item.price924) }}</td>
                 <td :class="numClass(item.todayPrice)">{{ fmt(item.todayPrice) }}</td>
@@ -155,7 +148,7 @@
                 </td>
               </tr>
               <tr v-if="sortedNews.length === 0">
-                <td colspan="17" class="empty-row">
+                <td colspan="16" class="empty-row">
                   暂无新闻数据，点击「导入新闻」或「手动添加」开始
                 </td>
               </tr>
