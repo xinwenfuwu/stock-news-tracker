@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>股市新闻追踪分析系统</title>
+  <link rel="stylesheet" href="css/style.css">
+  <!-- Vue 3 全局构建版（CDN，无需构建步骤） -->
+  <script src="https://unpkg.com/vue@3.4.21/dist/vue.global.prod.js"></script>
+</head>
+<body>
+  <div id="app">
+    <!-- 顶部导航 -->
+    <header class="app-header">
+      <div class="header-inner">
+        <div class="brand">
+          <span class="brand-icon">📈</span>
+          <span class="brand-title">股市新闻追踪分析系统</span>
+        </div>
+        <nav class="main-nav">
+          <a v-for="tab in tabs" :key="tab.key"
+             :class="['nav-item', { active: currentPage === tab.key }]"
+             @click="goPage(tab.key)">
+            <span class="nav-icon">{{ tab.icon }}</span>
+            <span>{{ tab.label }}</span>
+          </a>
+        </nav>
+        <div class="header-actions">
+          <button class="btn-icon" @click="showSettings = true" title="设置">⚙️</button>
+          <button class="btn-icon" @click="exportData" title="导出数据">⬇️</button>
+          <label class="btn-icon" title="导入数据">
+            ⬆️<input type="file" accept=".json" @change="importData" hidden>
+          </label>
+        </div>
+      </div>
+    </header>
+
+    <!-- 页面内容 -->
+    <main class="app-main">
+      <!-- ===== 页面1：新闻追踪 ===== -->
+      <section v-show="currentPage === 'news'" class="page">
+        <div class="page-toolbar">
+          <div class="toolbar-left">
+            <div class="date-picker">
+              <label>选择日期</label>
+              <input type="date" v-model="newsFilter.date">
+              <button class="btn btn-sm" @click="newsFilter.date = ''">全部</button>
+            </div>
+            <input class="search-input" v-model="newsFilter.keyword" placeholder="搜索新闻内容/股票...">
+            <select class="select" v-model="newsFilter.category">
+              <option value="">全部分类</option>
+              <option v-for="c in allCategories" :key="c" :value="c">{{ c }}</option>
+            </select>
+          </div>
+          <div class="toolbar-right">
+            <button class="btn btn-primary" @click="openImportDialog">📥 导入新闻</button>
+            <button class="btn btn-primary" @click="openAddNews">➕ 手动添加</button>
+            <button class="btn" @click="refreshAllPrices" :disabled="priceLoading">
+              <span v-if="priceLoading">⏳ 刷新中...</span>
+              <span v-else>🔄 刷新股价</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="batch-bar" v-if="selectedNewsIds.length > 0">
+          <span>已选 {{ selectedNewsIds.length }} 条</span>
+          <button class="btn btn-sm" @click="invertSelection">⇄ 反选</button>
+          <button class="btn btn-sm" @click="selectAllNews">全选</button>
+          <button class="btn btn-sm btn-danger" @click="deleteSelectedNews">🗑 删除选中</button>
+          <button class="btn btn-sm" @click="clearSelection">取消选择</button>
+        </div>
+
+        <div class="table-wrap">
+          <table class="data-table news-table">
+            <thead>
+              <tr>
+                <th class="col-check"><input type="checkbox" :checked="allNewsSelected" @change="toggleSelectAll"></th>
+                <th class="col-date">日期</th>
+                <th class="col-news">新闻</th>
+                <th>概念分类</th>
+                <th>行业分类</th>
+                <th>自定义标记</th>
+                <th class="col-stock">关联股票</th>
+                <th>新闻当天股价</th>
+                <th>924股价</th>
+                <th>今日股价</th>
+                <th class="sortable" @click="sortBy('todayChange')">
+                  今日涨跌幅 <span class="sort-arrow" v-html="sortIcon('todayChange')"></span>
+                </th>
+                <th class="sortable" @click="sortBy('daysSince')">
+                  距今(天) <span class="sort-arrow" v-html="sortIcon('daysSince')"></span>
+                </th>
+                <th class="sortable" @click="sortBy('changeSinceNews')">
+                  距今幅度 <span class="sort-arrow" v-html="sortIcon('changeSinceNews')"></span>
+                </th>
+                <th class="sortable" @click="sortBy('changeSince924')">
+                  924距今 <span class="sort-arrow" v-html="sortIcon('changeSince924')"></span>
+                </th>
+                <th>分类标签</th>
+                <th class="col-actions">操作</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="item in sortedNews" :key="item.id"
+                  :class="{ selected: selectedNewsIds.includes(item.id) }">
+                <td><input type="checkbox" :value="item.id" v-model="selectedNewsIds"></td>
+                <td>{{ item.date }}</td>
+                <td class="cell-news" :title="item.content">
+                  <div class="news-text">{{ item.content }}</div>
+                </td>
+                <td>
+                  <input class="cell-input" v-model="item.conceptCategory" placeholder="—">
+                </td>
+                <td>
+                  <input class="cell-input" v-model="item.industryCategory" placeholder="—">
+                </td>
+                <td>
+                  <input class="cell-input" v-model="item.customTag" placeholder="—">
+                </td>
+                <td class="cell-stock">
+                  <span class="stock-badge" v-for="(s, i) in parseStocks(item.relatedStocks)" :key="i"
+                        @click="fillPriceForNews(item)" :title="'点击刷新该新闻股价'">
+                    {{ s.name }}
+                  </span>
+                  <span v-if="!parseStocks(item.relatedStocks).length" class="muted">未关联</span>
+                </td>
+                <td :class="numClass(item.newsDayPrice)">{{ fmt(item.newsDayPrice) }}</td>
+                <td :class="numClass(item.price924)">{{ fmt(item.price924) }}</td>
+                <td :class="numClass(item.todayPrice)">{{ fmt(item.todayPrice) }}</td>
+                <td :class="pctClass(item.todayChange)">{{ fmtPct(item.todayChange) }}</td>
+                <td>{{ item.daysSince }}</td>
+                <td :class="pctClass(item.changeSinceNews)">{{ fmtPct(item.changeSinceNews) }}</td>
+                <td :class="pctClass(item.changeSince924)">{{ fmtPct(item.changeSince924) }}</td>
+                <td>
+                  <select class="cell-select" v-model="item.category">
+                    <option value="">—</option>
+                    <option v-for="c in allCategories" :key="c" :value="c">{{ c }}</option>
+                  </select>
+                </td>
+                <td class="col-actions">
+                  <button class="btn-icon-sm" @click="editNews(item)" title="编辑">✏️</button>
+                  <button class="btn-icon-sm" @click="deleteNews(item.id)" title="删除">🗑</button>
+                </td>
+              </tr>
+              <tr v-if="sortedNews.length === 0">
+                <td colspan="16" class="empty-row">
+                  暂无新闻数据，点击「导入新闻」或「手动添加」开始
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="page-footer">共 {{ filteredNews.length }} 条新闻</div>
+      </section>
+
+      <!-- ===== 页面2：股票池 ===== -->
+      <section v-show="currentPage === 'pools'" class="page">
+        <div class="page-toolbar">
+          <div class="toolbar-left">
+            <h2 class="page-title">📅 按日期股票池管理</h2>
+          </div>
+          <div class="toolbar-right">
+            <button class="btn btn-primary" @click="openAddPool">➕ 新建股票池</button>
+            <button class="btn" @click="refreshPoolPrices" :disabled="poolLoading">
+              <span v-if="poolLoading">⏳ 刷新中...</span>
+              <span v-else>🔄 刷新涨跌幅</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="pool-grid" v-if="pools.length">
+          <div class="pool-card" v-for="pool in sortedPools" :key="pool.id"
+               @click="openPoolDetail(pool)">
+            <div class="pool-card-header">
+              <span class="pool-date">{{ pool.date }}</span>
+              <span class="pool-count">{{ pool.stocks.length }} 只</span>
+            </div>
+            <div class="pool-avg" :class="pctClass(pool.avgChange)">
+              平均涨跌幅 {{ fmtPct(pool.avgChange) }}
+            </div>
+            <div class="pool-stocks-preview">
+              <span v-for="(s, i) in pool.stocks.slice(0, 5)" :key="i" class="stock-chip">
+                {{ s.name || s.code }}
+              </span>
+              <span v-if="pool.stocks.length > 5" class="stock-chip more">+{{ pool.stocks.length - 5 }}</span>
+            </div>
+            <div class="pool-actions" @click.stop>
+              <button class="btn-icon-sm" @click="openEditPool(pool)" title="编辑">✏️</button>
+              <button class="btn-icon-sm" @click="deletePool(pool.id)" title="删除">🗑</button>
+            </div>
+          </div>
+        </div>
+        <div class="empty-state" v-else>
+          <p>📦 暂无股票池</p>
+          <p class="muted">点击「新建股票池」按日期创建股票池并计算平均涨跌幅</p>
+        </div>
+      </section>
+
+      <!-- ===== 页面3：热门板块 ===== -->
+      <section v-show="currentPage === 'hot'" class="page">
+        <div class="page-toolbar">
+          <div class="toolbar-left">
+            <div class="date-picker">
+              <label>选择日期</label>
+              <input type="date" v-model="hotDate">
+            </div>
+            <button class="btn btn-sm" @click="loadHotData" :disabled="hotLoading">
+              <span v-if="hotLoading">⏳ 加载中...</span>
+              <span v-else>🔍 加载当日数据</span>
+            </button>
+          </div>
+          <div class="toolbar-right">
+            <button class="btn" @click="fetchHotBoards" :disabled="hotLoading">📊 获取热门板块</button>
+            <button class="btn" @click="refreshHotStocks" :disabled="hotLoading">🔄 刷新股票行情</button>
+          </div>
+        </div>
+
+        <div class="hot-layout">
+          <!-- 热门板块 -->
+          <div class="hot-panel">
+            <h3 class="panel-title">🔥 当日热门板块</h3>
+            <div class="hot-list" v-if="hotBoards.length">
+              <div class="hot-item" v-for="(b, i) in hotBoards" :key="i">
+                <span class="hot-rank">{{ i + 1 }}</span>
+                <span class="hot-name">{{ b.name }}</span>
+                <span class="hot-val" :class="pctClass(b.change)">{{ fmtPct(b.change) }}</span>
+              </div>
+            </div>
+            <div class="muted small" v-else>点击「获取热门板块」加载</div>
+          </div>
+
+          <!-- 热门股票 -->
+          <div class="hot-panel">
+            <h3 class="panel-title">⭐ 当日热门股票</h3>
+            <div class="hot-list" v-if="hotStocks.length">
+              <div class="hot-item" v-for="(s, i) in hotStocks" :key="i">
+                <span class="hot-rank">{{ i + 1 }}</span>
+                <span class="hot-name">{{ s.name }}</span>
+                <span class="hot-val" :class="pctClass(s.change)">{{ fmtPct(s.change) }}</span>
+              </div>
+            </div>
+            <div class="muted small" v-else>点击「获取热门板块」加载</div>
+          </div>
+
+          <!-- 新闻概念频次 -->
+          <div class="hot-panel">
+            <h3 class="panel-title">📰 当日新闻概念分布（多→少）</h3>
+            <div class="concept-list" v-if="conceptFreq.length">
+              <div class="concept-bar" v-for="c in conceptFreq" :key="c.name">
+                <span class="concept-name">{{ c.name }}</span>
+                <div class="concept-bar-bg">
+                  <div class="concept-bar-fill" :style="{ width: c.width + '%' }"></div>
+                </div>
+                <span class="concept-count">{{ c.count }}</span>
+              </div>
+            </div>
+            <div class="muted small" v-else>所选日期暂无新闻概念数据</div>
+          </div>
+        </div>
+
+        <!-- 当日股票表 -->
+        <h3 class="section-title">📋 当日股票明细</h3>
+        <div class="table-wrap">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>股票代码</th>
+                <th>股票名称</th>
+                <th class="sortable" @click="sortHotBy('amplitude')">
+                  振幅 <span class="sort-arrow" v-html="hotSortIcon('amplitude')"></span>
+                </th>
+                <th class="sortable" @click="sortHotBy('dailyChange')">
+                  当日涨跌幅 <span class="sort-arrow" v-html="hotSortIcon('dailyChange')"></span>
+                </th>
+                <th class="col-news">当日新闻</th>
+                <th>分类标签</th>
+                <th>操作</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="s in sortedHotStocks" :key="s.code">
+                <td>{{ s.code }}</td>
+                <td>{{ s.name }}</td>
+                <td :class="numClass(s.amplitude)">{{ fmt(s.amplitude) }}%</td>
+                <td :class="pctClass(s.dailyChange)">{{ fmtPct(s.dailyChange) }}</td>
+                <td class="cell-news"><div class="news-text">{{ s.news || '—' }}</div></td>
+                <td>
+                  <select class="cell-select" v-model="s.category">
+                    <option value="">—</option>
+                    <option v-for="c in allCategories" :key="c" :value="c">{{ c }}</option>
+                  </select>
+                </td>
+                <td><button class="btn-icon-sm" @click="removeHotStock(s.code)">🗑</button></td>
+              </tr>
+              <tr v-if="sortedHotStocks.length === 0">
+                <td colspan="7" class="empty-row">选择日期并加载后展示当日股票</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </main>
+
+    <!-- ===== 通用模态框：添加/编辑新闻 ===== -->
+    <div class="modal-overlay" v-if="newsModal.show" @click.self="newsModal.show = false">
+      <div class="modal">
+        <div class="modal-header">
+          <h3>{{ newsModal.isEdit ? '编辑新闻' : '添加新闻' }}</h3>
+          <button class="btn-icon" @click="newsModal.show = false">✕</button>
+        </div>
+        <div class="modal-body">
+          <div class="form-row">
+            <label>日期</label>
+            <input type="date" v-model="newsModal.data.date">
+          </div>
+          <div class="form-row">
+            <label>新闻内容</label>
+            <textarea v-model="newsModal.data.content" rows="4" placeholder="输入或粘贴新闻内容"></textarea>
+          </div>
+          <div class="form-row-3">
+            <div><label>概念分类</label><input v-model="newsModal.data.conceptCategory"></div>
+            <div><label>行业分类</label><input v-model="newsModal.data.industryCategory"></div>
+            <div><label>自定义标记</label><input v-model="newsModal.data.customTag"></div>
+          </div>
+          <div class="form-row">
+            <label>关联股票（格式：贵州茅台(600519),宁德时代(300750)，或直接输入代码 sh600519）</label>
+            <input v-model="newsModal.data.relatedStocks" placeholder="可填多个，逗号分隔">
+          </div>
+          <div class="form-row">
+            <label>分类标签</label>
+            <select v-model="newsModal.data.category" class="select">
+              <option value="">—</option>
+              <option v-for="c in allCategories" :key="c" :value="c">{{ c }}</option>
+            </select>
+          </div>
+          <div class="form-row" v-if="newsModal.isEdit">
+            <label>手动填价（可选，留空则自动获取）</label>
+            <div class="form-row-3">
+              <div><label>新闻当天股价</label><input type="number" step="0.01" v-model.number="newsModal.data.newsDayPrice"></div>
+              <div><label>924股价</label><input type="number" step="0.01" v-model.number="newsModal.data.price924"></div>
+              <div><label>今日股价</label><input type="number" step="0.01" v-model.number="newsModal.data.todayPrice"></div>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn" @click="newsModal.show = false">取消</button>
+          <button class="btn btn-primary" @click="saveNews">保存</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== 导入新闻模态框 ===== -->
+    <div class="modal-overlay" v-if="importModal.show" @click.self="importModal.show = false">
+      <div class="modal modal-lg">
+        <div class="modal-header">
+          <h3>📥 导入新闻</h3>
+          <button class="btn-icon" @click="importModal.show = false">✕</button>
+        </div>
+        <div class="modal-body">
+          <div class="import-tabs">
+            <button :class="['tab-btn', {active: importModal.tab==='paste'}]" @click="importModal.tab='paste'">粘贴导入</button>
+            <button :class="['tab-btn', {active: importModal.tab==='gelonghui'}]" @click="importModal.tab='gelonghui'">格隆汇抓取</button>
+            <button :class="['tab-btn', {active: importModal.tab==='tonghuashun'}]" @click="importModal.tab='tonghuashun'">同花顺抓取</button>
+          </div>
+
+          <div class="form-row" v-show="importModal.tab==='paste'">
+            <label>导入日期</label>
+            <input type="date" v-model="importModal.date">
+          </div>
+          <div class="form-row" v-show="importModal.tab==='paste'">
+            <label>粘贴新闻（每行一条，或用空行分隔多条）</label>
+            <textarea v-model="importModal.text" rows="10"
+              placeholder="每行一条新闻，支持直接粘贴格隆汇/同花顺等新闻列表&#10;例如：&#10;央行宣布降准0.5个百分点&#10;贵州茅台发布三季报净利润同比增长15%"></textarea>
+          </div>
+
+          <div v-show="importModal.tab==='gelonghui'" class="import-source-info">
+            <div class="form-row">
+              <label>抓取日期</label>
+              <input type="date" v-model="importModal.date">
+            </div>
+            <div class="info-box">
+              <p><b>格隆汇新闻抓取说明：</b></p>
+              <p>将尝试从格隆汇获取所选日期的新闻快讯。由于浏览器跨域限制，可能需要通过代理获取。</p>
+              <p>若自动抓取失败，请前往 <a href="https://www.gelonghui.com/news" target="_blank">格隆汇新闻页</a> 复制当日新闻，切换到「粘贴导入」粘贴。</p>
+            </div>
+          </div>
+
+          <div v-show="importModal.tab==='tonghuashun'" class="import-source-info">
+            <div class="form-row">
+              <label>抓取日期</label>
+              <input type="date" v-model="importModal.date">
+            </div>
+            <div class="info-box">
+              <p><b>同花顺新闻抓取说明：</b></p>
+              <p>将尝试从同花顺获取所选日期的新闻。由于浏览器跨域限制，可能需要通过代理获取。</p>
+              <p>若自动抓取失败，请前往 <a href="https://news.10jqka.com.cn/" target="_blank">同花顺新闻页</a> 复制当日新闻，切换到「粘贴导入」粘贴。</p>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn" @click="importModal.show = false">取消</button>
+          <button class="btn btn-primary" v-if="importModal.tab==='paste'" @click="doPasteImport">导入 ({{ previewImportCount }} 条)</button>
+          <button class="btn btn-primary" v-else @click="doScrapeImport">开始抓取</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== 股票池添加/编辑模态框 ===== -->
+    <div class="modal-overlay" v-if="poolModal.show" @click.self="poolModal.show = false">
+      <div class="modal modal-lg">
+        <div class="modal-header">
+          <h3>{{ poolModal.isEdit ? '编辑股票池' : '新建股票池' }}</h3>
+          <button class="btn-icon" @click="poolModal.show = false">✕</button>
+        </div>
+        <div class="modal-body">
+          <div class="form-row">
+            <label>日期</label>
+            <input type="date" v-model="poolModal.data.date">
+          </div>
+          <div class="form-row">
+            <label>股票列表（每行一个，格式：代码 或 名称(代码)，如 600519 或 贵州茅台(600519)）</label>
+            <textarea v-model="poolModal.data.stockText" rows="8"
+              placeholder="600519&#10;000001&#10;宁德时代(300750)"></textarea>
+          </div>
+          <div class="info-box" v-if="poolModal.isEdit">
+            <p>编辑后将重新解析股票列表。已有股票的手动数据（资金流、财务等）如代码匹配会保留。</p>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn" @click="poolModal.show = false">取消</button>
+          <button class="btn btn-primary" @click="savePool">保存</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== 股票池详情模态框 ===== -->
+    <div class="modal-overlay" v-if="poolDetail.show" @click.self="poolDetail.show = false">
+      <div class="modal modal-xl">
+        <div class="modal-header">
+          <h3>📊 {{ poolDetail.data.date }} 股票池明细（{{ poolDetail.data.stocks.length }} 只）</h3>
+          <button class="btn-icon" @click="poolDetail.show = false">✕</button>
+        </div>
+        <div class="modal-body">
+          <div class="pool-detail-summary">
+            <span>平均涨跌幅：<b :class="pctClass(poolDetail.data.avgChange)">{{ fmtPct(poolDetail.data.avgChange) }}</b></span>
+            <button class="btn btn-sm" @click="refreshPoolDetail(poolDetail.data)">🔄 刷新行情</button>
+          </div>
+          <div class="table-wrap">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>代码</th>
+                  <th>名称</th>
+                  <th class="sortable" @click="sortPoolDetailBy('amplitude')">振幅</th>
+                  <th class="sortable" @click="sortPoolDetailBy('dailyChange')">当日涨跌幅</th>
+                  <th>资金流入</th>
+                  <th>散户人数</th>
+                  <th>净利润同比</th>
+                  <th>营收同比</th>
+                  <th>换手率</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="s in sortedPoolDetailStocks" :key="s.code">
+                  <td>{{ s.code }}</td>
+                  <td>{{ s.name }}</td>
+                  <td :class="numClass(s.amplitude)">{{ s.amplitude != null ? s.amplitude + '%' : '—' }}</td>
+                  <td :class="pctClass(s.dailyChange)">{{ fmtPct(s.dailyChange) }}</td>
+                  <td :class="numClass(s.capitalFlow)">{{ s.capitalFlow != null ? (s.capitalFlow > 0 ? '+' : '') + (s.capitalFlow/1e4).toFixed(2) + '万' : '—' }}</td>
+                  <td>{{ s.shareholderCount || '—' }}</td>
+                  <td :class="pctClass(s.profitYoY)">{{ s.profitYoY != null ? fmtPct(s.profitYoY) : '—' }}</td>
+                  <td :class="pctClass(s.revenueYoY)">{{ s.revenueYoY != null ? fmtPct(s.revenueYoY) : '—' }}</td>
+                  <td>{{ s.turnover != null ? s.turnover + '%' : '—' }}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="info-box small">
+            <p>💡 说明：振幅、涨跌幅、换手率通过腾讯接口实时获取；资金流入/散户人数/财务数据如自动获取失败，可点击「刷新行情」重试。东方财富接口在部分网络环境可能受限。</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== 设置模态框 ===== -->
+    <div class="modal-overlay" v-if="showSettings" @click.self="showSettings = false">
+      <div class="modal">
+        <div class="modal-header">
+          <h3>⚙️ 设置</h3>
+          <button class="btn-icon" @click="showSettings = false">✕</button>
+        </div>
+        <div class="modal-body">
+          <div class="form-row">
+            <label>分类标签管理（每行一个，默认5项可增删）</label>
+            <textarea v-model="settingsText" rows="7"></textarea>
+          </div>
+          <div class="info-box">
+            <p>默认分类：主线实体、个股实体、主线概念、个股概念、利空概念。可自由增删改。</p>
+          </div>
+          <div class="form-row">
+            <label>数据存储</label>
+            <div class="storage-info">
+              <span>当前数据量：{{ dataStats.news }} 条新闻，{{ dataStats.pools }} 个股票池</span>
+              <button class="btn btn-sm btn-danger" @click="clearAllData">🗑 清空全部数据</button>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn" @click="showSettings = false">取消</button>
+          <button class="btn btn-primary" @click="saveSettings">保存设置</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== Toast 提示 ===== -->
+    <transition name="toast">
+      <div class="toast" v-if="toast.show" :class="toast.type">{{ toast.msg }}</div>
+    </transition>
+  </div>
+
+  <script src="js/store.js"></script>
+  <script src="js/stock-api.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
