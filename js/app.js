@@ -883,6 +883,159 @@ const app = createApp({
       e.target.value = '';
     }
 
+    // ============================================================
+    //  云端登录与数据同步（GitHub Gist）
+    // ============================================================
+    const cloud = reactive({
+      loggedIn: false,
+      user: '',
+      token: '',
+      gistId: '',
+      autoSync: false,
+      lastSync: '',
+      syncing: false
+    });
+    const cloudModal = reactive({ show: false, token: '' });
+    let _autoSyncTimer = null;
+    let _autoSyncUnwatch = null;
+
+    // 初始化：恢复登录状态
+    (function initCloud() {
+      const creds = CloudSync.getCreds();
+      if (creds && creds.token) {
+        cloud.token = creds.token;
+        cloud.gistId = creds.gistId || '';
+        cloud.autoSync = creds.autoSync || false;
+        // 后台验证 token 是否仍然有效
+        CloudSync.verifyToken(creds.token).then(u => {
+          cloud.loggedIn = true;
+          cloud.user = u.name || u.login;
+          cloud.lastSync = creds.lastSync || '';
+          if (cloud.autoSync) setupAutoSync();
+        }).catch(() => {
+          // token 失效，清除
+          CloudSync.clearCreds();
+        });
+      }
+    })();
+
+    function openCloudModal() {
+      cloudModal.token = cloud.token || '';
+      cloudModal.show = true;
+    }
+
+    async function cloudLogin() {
+      const token = (cloudModal.token || '').trim();
+      if (!token) { showToast('请输入 GitHub Token', 'error'); return; }
+      cloud.syncing = true;
+      try {
+        const result = await CloudSync.loginAndLoad(token);
+        cloud.token = token;
+        cloud.user = result.user.name || result.user.login;
+        cloud.gistId = result.gistId || '';
+        cloud.loggedIn = true;
+        CloudSync.setCreds({ token, gistId: cloud.gistId, autoSync: cloud.autoSync, lastSync: cloud.lastSync });
+        // 如果云端有数据，提示加载
+        if (result.cloudData) {
+          if (confirm('云端已有数据，是否加载到本地？（会覆盖当前本地数据）')) {
+            loadCloudData(result.cloudData);
+            cloud.lastSync = new Date().toLocaleString('zh-CN');
+            CloudSync.setCreds({ token, gistId: cloud.gistId, autoSync: cloud.autoSync, lastSync: cloud.lastSync });
+            showToast('已从云端加载数据', 'success');
+          }
+        } else {
+          showToast('登录成功！可点「保存到云端」备份当前数据', 'success');
+        }
+        cloudModal.show = false;
+      } catch (e) {
+        showToast('登录失败：' + e.message, 'error');
+      } finally {
+        cloud.syncing = false;
+      }
+    }
+
+    async function syncToCloud() {
+      if (!cloud.token) { showToast('请先登录', 'error'); return; }
+      cloud.syncing = true;
+      try {
+        const newId = await CloudSync.save(cloud.token, cloud.gistId, Store.exportJSON() ? JSON.parse(Store.exportJSON()) : D);
+        cloud.gistId = newId;
+        cloud.lastSync = new Date().toLocaleString('zh-CN');
+        CloudSync.setCreds({ token: cloud.token, gistId: cloud.gistId, autoSync: cloud.autoSync, lastSync: cloud.lastSync });
+        showToast('已保存到云端 ✓', 'success');
+      } catch (e) {
+        showToast('保存失败：' + e.message, 'error');
+      } finally {
+        cloud.syncing = false;
+      }
+    }
+
+    async function syncFromCloud() {
+      if (!cloud.token || !cloud.gistId) { showToast('云端暂无数据，请先保存', 'error'); return; }
+      if (!confirm('从云端加载会覆盖当前本地数据，是否继续？')) return;
+      cloud.syncing = true;
+      try {
+        const data = await CloudSync.loadGist(cloud.token, cloud.gistId);
+        loadCloudData(data);
+        cloud.lastSync = new Date().toLocaleString('zh-CN');
+        CloudSync.setCreds({ token: cloud.token, gistId: cloud.gistId, autoSync: cloud.autoSync, lastSync: cloud.lastSync });
+        showToast('已从云端加载 ✓', 'success');
+      } catch (e) {
+        showToast('加载失败：' + e.message, 'error');
+      } finally {
+        cloud.syncing = false;
+      }
+    }
+
+    function loadCloudData(data) {
+      // 用云端数据覆盖本地
+      if (data.news) { D.news.splice(0, D.news.length, ...data.news); }
+      if (data.stockPools) { D.stockPools.splice(0, D.stockPools.length, ...data.stockPools); }
+      if (data.dailyData) { Object.keys(D.dailyData).forEach(k => delete D.dailyData[k]); Object.assign(D.dailyData, data.dailyData); }
+      if (data.settings) { Object.assign(D.settings, data.settings); }
+      if (data.hotBoards) D.hotBoards = data.hotBoards;
+      if (data.hotStocks) D.hotStocks = data.hotStocks;
+      // 迁移 relatedStocks
+      D.news.forEach(n => {
+        if (typeof n.relatedStocks === 'string') n.relatedStocks = StockAPI.parseStockInput(n.relatedStocks);
+        else if (!Array.isArray(n.relatedStocks)) n.relatedStocks = [];
+      });
+    }
+
+    function cloudLogout() {
+      CloudSync.clearCreds();
+      stopAutoSync();
+      cloud.loggedIn = false;
+      cloud.user = '';
+      cloud.token = '';
+      cloud.gistId = '';
+      cloud.autoSync = false;
+      showToast('已退出云端登录', 'info');
+    }
+
+    function toggleAutoSync() {
+      CloudSync.setCreds({ token: cloud.token, gistId: cloud.gistId, autoSync: cloud.autoSync, lastSync: cloud.lastSync });
+      if (cloud.autoSync) { setupAutoSync(); showToast('已开启自动同步', 'success'); }
+      else { stopAutoSync(); showToast('已关闭自动同步', 'info'); }
+    }
+
+    function setupAutoSync() {
+      if (_autoSyncUnwatch) { _autoSyncUnwatch(); _autoSyncUnwatch = null; }
+      if (_autoSyncTimer) clearTimeout(_autoSyncTimer);
+      _autoSyncUnwatch = Vue.watch(() => JSON.stringify(D), () => {
+        if (!cloud.loggedIn || !cloud.autoSync) return;
+        clearTimeout(_autoSyncTimer);
+        _autoSyncTimer = setTimeout(() => {
+          syncToCloud();
+        }, 10000); // 数据变化后 10 秒自动同步
+      }, { deep: true });
+    }
+
+    function stopAutoSync() {
+      if (_autoSyncUnwatch) { _autoSyncUnwatch(); _autoSyncUnwatch = null; }
+      if (_autoSyncTimer) { clearTimeout(_autoSyncTimer); _autoSyncTimer = null; }
+    }
+
     // 暴露到模板
     return {
       // 全局
@@ -891,6 +1044,8 @@ const app = createApp({
       allCategories, fmt, fmtPct, numClass, pctClass, parseStocks, stocksText, pureCode,
       showSettings, settingsText, proxyUrl, saveSettings, clearAllData, dataStats,
       exportData, importData,
+      // 云端同步
+      cloud, cloudModal, openCloudModal, cloudLogin, syncToCloud, syncFromCloud, cloudLogout, toggleAutoSync,
       // 页面1
       newsFilter, selectedNewsIds, sortedNews, filteredNews,
       sortKey, sortDir, sortBy, sortIcon,

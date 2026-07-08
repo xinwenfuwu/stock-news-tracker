@@ -26,6 +26,10 @@
           </a>
         </nav>
         <div class="header-actions">
+          <button class="btn-icon cloud-btn" @click="openCloudModal" :title="cloud.loggedIn ? '云端已登录：'+cloud.user : '云端登录同步'" :class="{active: cloud.loggedIn}">
+            <span v-if="cloud.loggedIn">☁️✓</span>
+            <span v-else>☁️</span>
+          </button>
           <button class="btn-icon" @click="showSettings = true" title="设置">⚙️</button>
           <button class="btn-icon" @click="exportData" title="导出数据">⬇️</button>
           <label class="btn-icon" title="导入数据">
@@ -541,6 +545,69 @@
       </div>
     </div>
 
+    <!-- ===== 云端登录/同步模态框 ===== -->
+    <div class="modal-overlay" v-if="cloudModal.show" @click.self="cloudModal.show = false">
+      <div class="modal">
+        <div class="modal-header">
+          <h3>☁️ 云端登录与数据同步</h3>
+          <button class="btn-icon" @click="cloudModal.show = false">✕</button>
+        </div>
+        <div class="modal-body">
+          <!-- 未登录：显示登录表单 -->
+          <div v-if="!cloud.loggedIn">
+            <div class="info-box">
+              <p>用 <b>GitHub 账号</b>登录后，数据自动同步到云端（免费私有 Gist），换浏览器/换电脑登录同一账号即可恢复全部数据，永久保存。</p>
+            </div>
+            <div class="form-row">
+              <label>GitHub 个人访问令牌（Token）</label>
+              <input type="password" v-model="cloudModal.token" placeholder="ghp_... 或 github_pat_...">
+            </div>
+            <div class="info-box small">
+              <p>Token 获取：打开 <a href="https://github.com/settings/tokens/new?scopes=gist" target="_blank">github.com/settings/tokens</a> → 勾选 <code>gist</code> → 生成 → 复制。仅需要 gist 权限即可。</p>
+            </div>
+          </div>
+          <!-- 已登录：显示同步操作 -->
+          <div v-else>
+            <div class="cloud-status">
+              <p>✅ 已登录：<b>{{ cloud.user }}</b></p>
+              <p class="muted small" v-if="cloud.lastSync">上次同步：{{ cloud.lastSync }}</p>
+              <p class="muted small" v-else>尚未同步过</p>
+            </div>
+            <div class="cloud-actions">
+              <button class="btn btn-primary" @click="syncToCloud" :disabled="cloud.syncing">
+                <span v-if="cloud.syncing">⏳ 同步中...</span>
+                <span v-else>⬆️ 保存到云端</span>
+              </button>
+              <button class="btn" @click="syncFromCloud" :disabled="cloud.syncing">
+                <span v-if="cloud.syncing">⏳ 加载中...</span>
+                <span v-else>⬇️ 从云端加载</span>
+              </button>
+            </div>
+            <div class="form-row" style="margin-top:14px">
+              <label>
+                <input type="checkbox" v-model="cloud.autoSync" @change="toggleAutoSync"> 
+                自动同步（每次修改后自动保存到云端）
+              </label>
+            </div>
+            <div class="info-box small">
+              <p>💡 「保存到云端」= 把当前数据上传；「从云端加载」= 用云端数据覆盖本地。建议定期点「保存到云端」备份。</p>
+            </div>
+            <button class="btn btn-sm btn-danger" @click="cloudLogout" style="margin-top:10px">退出登录</button>
+          </div>
+        </div>
+        <div class="modal-footer" v-if="!cloud.loggedIn">
+          <button class="btn" @click="cloudModal.show = false">取消</button>
+          <button class="btn btn-primary" @click="cloudLogin" :disabled="cloud.syncing">
+            <span v-if="cloud.syncing">⏳ 登录中...</span>
+            <span v-else>登录并加载云端数据</span>
+          </button>
+        </div>
+        <div class="modal-footer" v-else>
+          <button class="btn" @click="cloudModal.show = false">关闭</button>
+        </div>
+      </div>
+    </div>
+
     <!-- ===== Toast 提示 ===== -->
     <transition name="toast">
       <div class="toast" v-if="toast.show" :class="toast.type">{{ toast.msg }}</div>
@@ -548,6 +615,7 @@
   </div>
 
   <script src="js/store.js"></script>
+  <script src="js/cloud-sync.js"></script>
   <script src="js/stock-api.js"></script>
   <script src="js/app.js"></script>
 </body>
