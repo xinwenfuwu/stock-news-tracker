@@ -204,7 +204,21 @@ body {
 }
 /* 宽表强制横向滚动 */
 .table-scroll-x { overflow-x: auto; overflow-y: auto; }
-.pool-detail-table { min-width: 1600px; white-space: nowrap; }
+.pool-detail-table { min-width: 2200px; white-space: nowrap; }
+/* 冻结列 */
+.pool-detail-table th.col-sticky,
+.pool-detail-table td.col-sticky {
+  position: sticky;
+  z-index: 20;
+  background: var(--surface);
+}
+.pool-detail-table th.col-sticky { z-index: 30; background: #f5f7fa; }
+.pool-detail-table td.col-sticky { background: var(--surface); }
+.pool-detail-table tbody tr:hover td.col-sticky { background: #f8faff; }
+/* 各冻结列的 left 偏移 */
+.col-sticky-0 { left: 0; }
+.col-sticky-1 { left: 60px; }
+.col-sticky-2 { left: 140px; }
 .data-table {
   width: 100%;
   border-collapse: collapse;
@@ -539,7 +553,20 @@ body {
   animation: slideUp 0.2s;
 }
 .modal-lg { width: 680px; }
-.modal-xl { width: 900px; }
+.modal-xl { width: 900px; resize: both; overflow: auto; }
+.modal-xl .modal-body { overflow: auto; }
+/* 弹窗 resize 手柄 */
+.modal-xl::after {
+  content: '';
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  width: 16px;
+  height: 16px;
+  cursor: se-resize;
+  background: linear-gradient(135deg, transparent 50%, rgba(0,0,0,0.15) 50%);
+  border-bottom-right-radius: 12px;
+}
 @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
 .modal-header {
   display: flex;

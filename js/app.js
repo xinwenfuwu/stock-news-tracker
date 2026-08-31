@@ -98,20 +98,28 @@ const app = createApp({
      * 市扣比 = 总市值 ÷ 扣非净利润 ÷ 10
      * 市同比 = 总市值 ÷ 同比增长率
      * 市环比 = 总市值 ÷ 环比增长率
+     * 市营比 = 总市值 ÷ 营业收入
+     * 市营同比 = 总市值 ÷ 营收同比增长率
      */
     function sRatio(s) {
       const cap = s.totalMarketCap;
       const net = yiVal(s.netProfit);     // 净利润(亿)
       const kcf = yiVal(s.kcfjcxjlr);     // 扣非净利润(亿)
+      const rev = yiVal(s.revenue);       // 营业收入(亿)
       const p = ratio(cap, net);           // 总市值/净利润
       const k = ratio(cap, kcf);           // 总市值/扣非净利润
+      const pr = ratio(cap, rev);          // 总市值/营业收入
       const pRatio = p != null ? +(p / 10).toFixed(2) : null;   // 市净比
       const kRatio = k != null ? +(k / 10).toFixed(2) : null;   // 市扣比
       // 市同比 = 总市值 ÷ 同比增长率(营收同比)
       const py = s.revenueYoY != null && +s.revenueYoY !== 0 ? +(+cap / +s.revenueYoY).toFixed(2) : null;
       // 市环比 = 总市值 ÷ 环比增长率(净利润环比)
       const ph = s.hbGrowth != null && +s.hbGrowth !== 0 ? +(+cap / +s.hbGrowth).toFixed(2) : null;
-      return { pbRatio: pRatio, pkRatio: kRatio, pyRatio: py, phRatio: ph };
+      // 市营比 = 总市值 ÷ 营业收入
+      const prRatio = pr != null ? +pr.toFixed(2) : null;
+      // 市营同比 = 总市值 ÷ 营收同比增长率
+      const prrRatio = s.revenueYoY != null && +s.revenueYoY !== 0 ? +(+cap / +s.revenueYoY).toFixed(2) : null;
+      return { pbRatio: pRatio, pkRatio: kRatio, pyRatio: py, phRatio: ph, prRatio, prrRatio };
     }
 
     function parseStocks(val) {
@@ -875,7 +883,7 @@ const app = createApp({
 
     /** 取股票池详情某列的排序值（含计算字段 市净比/市扣比/市同比/市环比） */
     function poolVal(s, key) {
-      if (key === 'pbRatio' || key === 'pkRatio' || key === 'pyRatio' || key === 'phRatio') {
+      if (key === 'pbRatio' || key === 'pkRatio' || key === 'pyRatio' || key === 'phRatio' || key === 'prRatio' || key === 'prrRatio') {
         const r = sRatio(s);
         return r[key];
       }
