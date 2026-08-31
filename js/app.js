@@ -568,7 +568,7 @@ const app = createApp({
     // ============================================================
     const poolLoading = ref(false);
     const poolModal = reactive({ show: false, isEdit: false, data: {} });
-    const poolDetail = reactive({ show: false, data: { stocks: [] } });
+    const poolDetail = reactive({ show: false, data: { stocks: [] }, nameEdit: false, nameDraft: '' });
     const poolDetailSort = reactive({ key: 'dailyChange', dir: 'desc' });
 
     const sortedPools = computed(() => {
@@ -719,7 +719,18 @@ const app = createApp({
 
     function openPoolDetail(pool) {
       poolDetail.data = pool;
+      poolDetail.nameEdit = false;
+      poolDetail.nameDraft = pool.name || '';
       poolDetail.show = true;
+    }
+    function startEditPoolName() {
+      poolDetail.nameDraft = poolDetail.data.name || '';
+      poolDetail.nameEdit = true;
+    }
+    function savePoolName() {
+      poolDetail.data.name = (poolDetail.nameDraft || '').trim();
+      poolDetail.nameEdit = false;
+      showToast('股票池名称已更新', 'success');
     }
 
     async function refreshPoolDetail(pool) {
@@ -776,12 +787,21 @@ const app = createApp({
       showToast('数据刷新完成', 'success');
     }
 
+    /** 取股票池详情某列的排序值（含计算字段 市净比/市扣比/市同比/市环比） */
+    function poolVal(s, key) {
+      if (key === 'pbRatio' || key === 'pkRatio' || key === 'pyRatio' || key === 'phRatio') {
+        const r = sRatio(s);
+        return r[key];
+      }
+      return s[key];
+    }
+
     const sortedPoolDetailStocks = computed(() => {
       const list = [...(poolDetail.data.stocks || [])];
       const k = poolDetailSort.key;
       const dir = poolDetailSort.dir === 'asc' ? 1 : -1;
       list.sort((a, b) => {
-        const va = parseFloat(a[k]); const vb = parseFloat(b[k]);
+        const va = parseFloat(poolVal(a, k)); const vb = parseFloat(poolVal(b, k));
         if (isNaN(va) && isNaN(vb)) return 0;
         if (isNaN(va)) return 1;
         if (isNaN(vb)) return -1;
@@ -796,6 +816,10 @@ const app = createApp({
         poolDetailSort.key = key;
         poolDetailSort.dir = 'desc';
       }
+    }
+    function poolSortIcon(key) {
+      if (poolDetailSort.key !== key) return '⇅';
+      return poolDetailSort.dir === 'asc' ? '↑' : '↓';
     }
 
     // ============================================================
@@ -1161,8 +1185,8 @@ const app = createApp({
       // 页面2
       pools: D.stockPools, sortedPools, poolLoading,
       poolModal, openAddPool, openEditPool, savePool, deletePool, pickDailyStocks,
-      poolDetail, openPoolDetail, refreshPoolPrices, refreshPoolDetail,
-      sortedPoolDetailStocks, sortPoolDetailBy,
+      poolDetail, openPoolDetail, startEditPoolName, savePoolName, refreshPoolPrices, refreshPoolDetail,
+      sortedPoolDetailStocks, sortPoolDetailBy, poolSortIcon,
       // 页面3
       hotDate, hotLoading, hotBoards, hotStocks, conceptFreq,
       sortedHotStocks, sortHotBy, hotSortIcon, removeHotStock,

@@ -468,7 +468,18 @@
     <div class="modal-overlay" v-if="poolDetail.show" @click.self="poolDetail.show = false">
       <div class="modal modal-xl">
         <div class="modal-header">
-          <h3>📊 {{ poolDetail.data.name || ('股票池 ' + fmtDateCN(poolDetail.data.date)) }}（{{ fmtDateCN(poolDetail.data.date) }} · {{ poolDetail.data.stocks.length }} 只）</h3>
+          <h3 style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+            <template v-if="poolDetail.nameEdit">
+              <input v-model="poolDetail.nameDraft" placeholder="输入股票池名称" style="width:220px;padding:6px 10px;border:1px solid #d8e0f0;border-radius:6px">
+              <button class="btn btn-sm" @click="savePoolName">✅ 保存名称</button>
+              <button class="btn btn-sm" @click="poolDetail.nameEdit=false">✕</button>
+            </template>
+            <template v-else>
+              📊 {{ poolDetail.data.name || ('股票池 ' + fmtDateCN(poolDetail.data.date)) }}
+              <button class="btn-icon-sm" @click="startEditPoolName" title="编辑股票池名称">✏️</button>
+            </template>
+            <span class="muted small">（{{ fmtDateCN(poolDetail.data.date) }} · {{ poolDetail.data.stocks.length }} 只）</span>
+          </h3>
           <button class="btn-icon" @click="poolDetail.show = false">✕</button>
         </div>
         <div class="modal-body">
@@ -482,23 +493,23 @@
                 <tr>
                   <th>代码</th>
                   <th>股票名称</th>
-                  <th>总市值(亿)</th>
-                  <th>扣非净利润</th>
-                  <th>净利润</th>
-                  <th>营业收入</th>
-                  <th class="sortable" @click="sortPoolDetailBy('hbGrowth')">环比增长率</th>
-                  <th class="sortable" @click="sortPoolDetailBy('profitYoY')">利润同比增长率</th>
-                  <th class="sortable" @click="sortPoolDetailBy('revenueYoY')">同比增长率</th>
-                  <th class="sortable" @click="sortPoolDetailBy('amplitude')">振幅</th>
-                  <th class="sortable" @click="sortPoolDetailBy('dailyChange')">当日涨跌幅</th>
-                  <th>市净比</th>
-                  <th>市扣比</th>
-                  <th>市同比</th>
-                  <th>市环比</th>
-                  <th>散户数量</th>
-                  <th>上期散户数量</th>
-                  <th>换手率</th>
-                  <th>资金流入</th>
+                  <th class="sortable" @click="sortPoolDetailBy('totalMarketCap')">总市值(亿) <span class="sort-arrow" v-html="poolSortIcon('totalMarketCap')"></span></th>
+                  <th class="sortable" @click="sortPoolDetailBy('kcfjcxjlr')">扣非净利润 <span class="sort-arrow" v-html="poolSortIcon('kcfjcxjlr')"></span></th>
+                  <th class="sortable" @click="sortPoolDetailBy('netProfit')">净利润 <span class="sort-arrow" v-html="poolSortIcon('netProfit')"></span></th>
+                  <th class="sortable" @click="sortPoolDetailBy('revenue')">营业收入 <span class="sort-arrow" v-html="poolSortIcon('revenue')"></span></th>
+                  <th class="sortable" @click="sortPoolDetailBy('hbGrowth')">环比增长率 <span class="sort-arrow" v-html="poolSortIcon('hbGrowth')"></span></th>
+                  <th class="sortable" @click="sortPoolDetailBy('profitYoY')">利润同比增长率 <span class="sort-arrow" v-html="poolSortIcon('profitYoY')"></span></th>
+                  <th class="sortable" @click="sortPoolDetailBy('revenueYoY')">同比增长率 <span class="sort-arrow" v-html="poolSortIcon('revenueYoY')"></span></th>
+                  <th class="sortable" @click="sortPoolDetailBy('amplitude')">振幅 <span class="sort-arrow" v-html="poolSortIcon('amplitude')"></span></th>
+                  <th class="sortable" @click="sortPoolDetailBy('dailyChange')">当日涨跌幅 <span class="sort-arrow" v-html="poolSortIcon('dailyChange')"></span></th>
+                  <th class="sortable" @click="sortPoolDetailBy('pbRatio')">市净比 <span class="sort-arrow" v-html="poolSortIcon('pbRatio')"></span></th>
+                  <th class="sortable" @click="sortPoolDetailBy('pkRatio')">市扣比 <span class="sort-arrow" v-html="poolSortIcon('pkRatio')"></span></th>
+                  <th class="sortable" @click="sortPoolDetailBy('pyRatio')">市同比 <span class="sort-arrow" v-html="poolSortIcon('pyRatio')"></span></th>
+                  <th class="sortable" @click="sortPoolDetailBy('phRatio')">市环比 <span class="sort-arrow" v-html="poolSortIcon('phRatio')"></span></th>
+                  <th class="sortable" @click="sortPoolDetailBy('shareholderCount')">散户数量 <span class="sort-arrow" v-html="poolSortIcon('shareholderCount')"></span></th>
+                  <th class="sortable" @click="sortPoolDetailBy('prevShareholderCount')">上期散户数量 <span class="sort-arrow" v-html="poolSortIcon('prevShareholderCount')"></span></th>
+                  <th class="sortable" @click="sortPoolDetailBy('turnover')">换手率 <span class="sort-arrow" v-html="poolSortIcon('turnover')"></span></th>
+                  <th class="sortable" @click="sortPoolDetailBy('capitalFlow')">资金流入 <span class="sort-arrow" v-html="poolSortIcon('capitalFlow')"></span></th>
                 </tr>
               </thead>
               <tbody>
