@@ -55,6 +55,13 @@ const app = createApp({
       const n = +v;
       return (n > 0 ? '+' : '') + n.toFixed(2) + '%';
     }
+    /** 日期 YYYY-MM-DD → YYYY年MM月DD日 */
+    function fmtDateCN(dateStr) {
+      if (!dateStr) return '';
+      const m = String(dateStr).match(/^(\d{4})-(\d{2})-(\d{2})/);
+      if (m) return `${m[1]}年${m[2]}月${m[3]}日`;
+      return dateStr;
+    }
     function numClass(v) {
       if (v == null || v === '' || isNaN(v)) return 'muted';
       return '';
@@ -534,7 +541,7 @@ const app = createApp({
 
     function openAddPool() {
       poolModal.isEdit = false;
-      poolModal.data = { date: Store.today(), stockText: '' };
+      poolModal.data = { date: Store.today(), name: '', stockText: '' };
       poolModal.show = true;
     }
     function openEditPool(pool) {
@@ -542,6 +549,7 @@ const app = createApp({
       poolModal.data = {
         id: pool.id,
         date: pool.date,
+        name: pool.name || '',
         stockText: pool.stocks.map(s => s.name ? `${s.name}(${StockAPI.pureCode(s.code)})` : StockAPI.pureCode(s.code)).join('\n')
       };
       poolModal.show = true;
@@ -578,10 +586,10 @@ const app = createApp({
             }
           });
         }
-        Store.updatePool(poolModal.data.id, { date: poolModal.data.date, stocks: stockList, avgChange: null });
+        Store.updatePool(poolModal.data.id, { name: (poolModal.data.name || '').trim(), date: poolModal.data.date, stocks: stockList, avgChange: null });
         showToast('股票池已更新', 'success');
       } else {
-        Store.addPool({ date: poolModal.data.date, stocks: stockList, avgChange: null });
+        Store.addPool({ name: (poolModal.data.name || '').trim(), date: poolModal.data.date, stocks: stockList, avgChange: null });
         showToast('股票池已创建', 'success');
       }
       poolModal.show = false;
@@ -592,6 +600,32 @@ const app = createApp({
       if (!confirm('确认删除该股票池？')) return;
       Store.deletePool(id);
       showToast('已删除', 'success');
+    }
+
+    /** 一键选择当日股票明细：从当日新闻关联股票生成，预填到股票列表 */
+    function pickDailyStocks() {
+      const date = poolModal.data.date;
+      if (!date) {
+        showToast('请先选择日期', 'error');
+        return;
+      }
+      const dayNews = D.news.filter(n => n.date === date);
+      const stockMap = {};
+      for (const n of dayNews) {
+        const stocks = parseStocks(n.relatedStocks);
+        for (const s of stocks) {
+          if (s.code && !stockMap[s.code]) stockMap[s.code] = s;
+        }
+      }
+      const list = Object.values(stockMap);
+      if (!list.length) {
+        showToast(`所选日期（${date}）的新闻中暂无关联股票`, 'error');
+        return;
+      }
+      poolModal.data.stockText = list.map(s =>
+        s.name ? `${s.name}(${StockAPI.pureCode(s.code)})` : StockAPI.pureCode(s.code)
+      ).join('\n');
+      showToast(`已填入 ${list.length} 只当日股票，可再手动增删`, 'success');
     }
 
     // 刷新所有股票池涨跌幅
@@ -637,7 +671,13 @@ const app = createApp({
     async function refreshPoolDetail(pool) {
       showToast('正在刷新行情与财务数据...', 'info');
       const codes = pool.stocks.map(s => s.code).filter(Boolean);
-      const quotes = await StockAPI.getQuotes(codes);
+      // 1) 实时行情（腾讯，稳定）—— 无 codes 也能返回空对象
+      let quotes = {};
+      try {
+        quotes = await StockAPI.getQuotes(codes);
+      } catch (e) {
+        console.warn('实时行情刷新失败', e);
+      }
       for (const s of pool.stocks) {
         const q = quotes[s.code];
         if (q) {
@@ -654,21 +694,24 @@ const app = createApp({
       });
       pool.avgChange = cnt > 0 ? +(sum / cnt).toFixed(2) : null;
       showToast('行情已刷新，正在获取资金流/财务数据...', 'info');
-      // 并发获取资金流和财务（限制并发）
-      const tasks = pool.stocks.map(async s => {
-        if (!s.code) return;
-        const [flow, fin] = await Promise.all([
-          StockAPI.getCapitalFlow(s.code),
-          StockAPI.getFinance(s.code)
-        ]);
-        if (flow != null) s.capitalFlow = flow;
-        if (fin.profitYoY != null) s.profitYoY = fin.profitYoY;
-        if (fin.revenueYoY != null) s.revenueYoY = fin.revenueYoY;
-        if (fin.shareholderCount != null) s.shareholderCount = fin.shareholderCount;
-      });
-      // 分批，每5个一批
-      for (let i = 0; i < tasks.length; i += 5) {
-        await Promise.all(tasks.slice(i, i + 5));
+      // 2) 补充数据（东方财富，best-effort）：逐只 try/catch，避免单只失败中断整体
+      const works = pool.stocks.filter(s => s.code);
+      for (let i = 0; i < works.length; i++) {
+        const s = works[i];
+        try {
+          const [flow, fin] = await Promise.all([
+            StockAPI.getCapitalFlow(s.code),
+            StockAPI.getFinance(s.code)
+          ]);
+          if (flow != null) s.capitalFlow = flow;
+          if (fin.profitYoY != null) s.profitYoY = fin.profitYoY;
+          if (fin.revenueYoY != null) s.revenueYoY = fin.revenueYoY;
+          if (fin.shareholderCount != null) s.shareholderCount = fin.shareholderCount;
+        } catch (e) {
+          console.warn('补充数据获取失败', s.code, e);
+        }
+        // 每 5 只让出一次事件循环，避免卡顿
+        if ((i + 1) % 5 === 0) await new Promise(r => setTimeout(r, 0));
       }
       showToast('数据刷新完成', 'success');
     }
@@ -1041,7 +1084,7 @@ const app = createApp({
       // 全局
       D, currentPage, tabs, goPage,
       toast, showToast,
-      allCategories, fmt, fmtPct, numClass, pctClass, parseStocks, stocksText, pureCode,
+      allCategories, fmt, fmtPct, fmtDateCN, numClass, pctClass, parseStocks, stocksText, pureCode,
       showSettings, settingsText, proxyUrl, saveSettings, clearAllData, dataStats,
       exportData, importData,
       // 云端同步
@@ -1056,7 +1099,7 @@ const app = createApp({
       importModal, openImportDialog, previewImportCount, doPasteImport, doScrapeImport,
       // 页面2
       pools: D.stockPools, sortedPools, poolLoading,
-      poolModal, openAddPool, openEditPool, savePool, deletePool,
+      poolModal, openAddPool, openEditPool, savePool, deletePool, pickDailyStocks,
       poolDetail, openPoolDetail, refreshPoolPrices, refreshPoolDetail,
       sortedPoolDetailStocks, sortPoolDetailBy,
       // 页面3

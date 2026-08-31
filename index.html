@@ -177,9 +177,10 @@
           <div class="pool-card" v-for="pool in sortedPools" :key="pool.id"
                @click="openPoolDetail(pool)">
             <div class="pool-card-header">
-              <span class="pool-date">{{ pool.date }}</span>
+              <span class="pool-date">{{ fmtDateCN(pool.date) }}</span>
               <span class="pool-count">{{ pool.stocks.length }} 只</span>
             </div>
+            <div class="pool-name">{{ pool.name || ('股票池 ' + fmtDateCN(pool.date)) }}</div>
             <div class="pool-avg" :class="pctClass(pool.avgChange)">
               平均涨跌幅 {{ fmtPct(pool.avgChange) }}
             </div>
@@ -437,9 +438,20 @@
             <input type="date" v-model="poolModal.data.date">
           </div>
           <div class="form-row">
+            <label>股票池名称（自定义，留空则默认「股票池 + 日期」）</label>
+            <input v-model="poolModal.data.name" placeholder="如：924主线池 / 算力方向" style="width:100%">
+          </div>
+          <div class="form-row">
             <label>股票列表（每行一个，格式：代码 或 名称(代码)，如 600519 或 贵州茅台(600519)）</label>
             <textarea v-model="poolModal.data.stockText" rows="8"
               placeholder="600519&#10;000001&#10;宁德时代(300750)"></textarea>
+          </div>
+          <div class="form-row" style="align-items:flex-start">
+            <span style="padding-top:8px"></span>
+            <div>
+              <button type="button" class="btn btn-sm" @click="pickDailyStocks">⚡ 一键选择当日股票明细</button>
+              <span class="muted small" style="margin-left:8px">从所选日期新闻中已关联的股票自动填入</span>
+            </div>
           </div>
           <div class="info-box" v-if="poolModal.isEdit">
             <p>编辑后将重新解析股票列表。已有股票的手动数据（资金流、财务等）如代码匹配会保留。</p>
@@ -456,7 +468,7 @@
     <div class="modal-overlay" v-if="poolDetail.show" @click.self="poolDetail.show = false">
       <div class="modal modal-xl">
         <div class="modal-header">
-          <h3>📊 {{ poolDetail.data.date }} 股票池明细（{{ poolDetail.data.stocks.length }} 只）</h3>
+          <h3>📊 {{ poolDetail.data.name || ('股票池 ' + fmtDateCN(poolDetail.data.date)) }}（{{ fmtDateCN(poolDetail.data.date) }} · {{ poolDetail.data.stocks.length }} 只）</h3>
           <button class="btn-icon" @click="poolDetail.show = false">✕</button>
         </div>
         <div class="modal-body">

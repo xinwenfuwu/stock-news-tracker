@@ -403,6 +403,12 @@ body {
   font-size: 12px;
   color: var(--text-secondary);
 }
+.pool-name {
+  font-size: 16px;
+  font-weight: 700;
+  margin-bottom: 6px;
+  color: var(--primary);
+}
 .pool-avg { font-size: 22px; font-weight: 700; margin-bottom: 10px; }
 .pool-stocks-preview { display: flex; flex-wrap: wrap; gap: 4px; }
 .stock-chip {
