@@ -493,19 +493,22 @@
                 <tr>
                   <th>代码</th>
                   <th>股票名称</th>
-                  <th class="sortable" @click="sortPoolDetailBy('totalMarketCap')">总市值(亿) <span class="sort-arrow" v-html="poolSortIcon('totalMarketCap')"></span></th>
-                  <th class="sortable" @click="sortPoolDetailBy('kcfjcxjlr')">扣非净利润 <span class="sort-arrow" v-html="poolSortIcon('kcfjcxjlr')"></span></th>
-                  <th class="sortable" @click="sortPoolDetailBy('netProfit')">净利润 <span class="sort-arrow" v-html="poolSortIcon('netProfit')"></span></th>
-                  <th class="sortable" @click="sortPoolDetailBy('revenue')">营业收入 <span class="sort-arrow" v-html="poolSortIcon('revenue')"></span></th>
-                  <th class="sortable" @click="sortPoolDetailBy('hbGrowth')">环比增长率 <span class="sort-arrow" v-html="poolSortIcon('hbGrowth')"></span></th>
-                  <th class="sortable" @click="sortPoolDetailBy('profitYoY')">利润同比增长率 <span class="sort-arrow" v-html="poolSortIcon('profitYoY')"></span></th>
-                  <th class="sortable" @click="sortPoolDetailBy('revenueYoY')">同比增长率 <span class="sort-arrow" v-html="poolSortIcon('revenueYoY')"></span></th>
-                  <th class="sortable" @click="sortPoolDetailBy('amplitude')">振幅 <span class="sort-arrow" v-html="poolSortIcon('amplitude')"></span></th>
-                  <th class="sortable" @click="sortPoolDetailBy('dailyChange')">当日涨跌幅 <span class="sort-arrow" v-html="poolSortIcon('dailyChange')"></span></th>
                   <th class="sortable" @click="sortPoolDetailBy('pbRatio')">市净比 <span class="sort-arrow" v-html="poolSortIcon('pbRatio')"></span></th>
                   <th class="sortable" @click="sortPoolDetailBy('pkRatio')">市扣比 <span class="sort-arrow" v-html="poolSortIcon('pkRatio')"></span></th>
                   <th class="sortable" @click="sortPoolDetailBy('pyRatio')">市同比 <span class="sort-arrow" v-html="poolSortIcon('pyRatio')"></span></th>
                   <th class="sortable" @click="sortPoolDetailBy('phRatio')">市环比 <span class="sort-arrow" v-html="poolSortIcon('phRatio')"></span></th>
+                  <th class="sortable" @click="sortPoolDetailBy('totalMarketCap')">总市值(亿) <span class="sort-arrow" v-html="poolSortIcon('totalMarketCap')"></span></th>
+                  <th class="sortable" @click="sortPoolDetailBy('kcfjcxjlr')">扣非净利润 <span class="sort-arrow" v-html="poolSortIcon('kcfjcxjlr')"></span></th>
+                  <th class="sortable" @click="sortPoolDetailBy('netProfit')">净利润 <span class="sort-arrow" v-html="poolSortIcon('netProfit')"></span></th>
+                  <th class="sortable" @click="sortPoolDetailBy('revenue')">营业收入 <span class="sort-arrow" v-html="poolSortIcon('revenue')"></span></th>
+                  <th class="sortable" @click="sortPoolDetailBy('contractLiab')">合同负债 <span class="sort-arrow" v-html="poolSortIcon('contractLiab')"></span></th>
+                  <th class="sortable" @click="sortPoolDetailBy('hbGrowth')">环比增长率 <span class="sort-arrow" v-html="poolSortIcon('hbGrowth')"></span></th>
+                  <th class="sortable" @click="sortPoolDetailBy('profitYoY')">利润同比增长率 <span class="sort-arrow" v-html="poolSortIcon('profitYoY')"></span></th>
+                  <th class="sortable" @click="sortPoolDetailBy('revenueYoY')">同比增长率 <span class="sort-arrow" v-html="poolSortIcon('revenueYoY')"></span></th>
+                  <th class="sortable" @click="sortPoolDetailBy('yearChange')">年初涨跌幅 <span class="sort-arrow" v-html="poolSortIcon('yearChange')"></span></th>
+                  <th class="sortable" @click="sortPoolDetailBy('change924')">924涨跌幅 <span class="sort-arrow" v-html="poolSortIcon('change924')"></span></th>
+                  <th class="sortable" @click="sortPoolDetailBy('amplitude')">振幅 <span class="sort-arrow" v-html="poolSortIcon('amplitude')"></span></th>
+                  <th class="sortable" @click="sortPoolDetailBy('dailyChange')">当日涨跌幅 <span class="sort-arrow" v-html="poolSortIcon('dailyChange')"></span></th>
                   <th class="sortable" @click="sortPoolDetailBy('shareholderCount')">散户数量 <span class="sort-arrow" v-html="poolSortIcon('shareholderCount')"></span></th>
                   <th class="sortable" @click="sortPoolDetailBy('prevShareholderCount')">上期散户数量 <span class="sort-arrow" v-html="poolSortIcon('prevShareholderCount')"></span></th>
                   <th class="sortable" @click="sortPoolDetailBy('turnover')">换手率 <span class="sort-arrow" v-html="poolSortIcon('turnover')"></span></th>
@@ -516,19 +519,22 @@
                 <tr v-for="s in sortedPoolDetailStocks" :key="s.code">
                   <td>{{ s.code }}</td>
                   <td>{{ s.name }}</td>
-                  <td>{{ s.totalMarketCap != null ? fmt(s.totalMarketCap) : '—' }}</td>
-                  <td>{{ fmtYi(s.kcfjcxjlr) }}</td>
-                  <td>{{ fmtYi(s.netProfit) }}</td>
-                  <td>{{ fmtYi(s.revenue) }}</td>
-                  <td :class="pctClass(s.hbGrowth)">{{ s.hbGrowth != null ? fmtPct(s.hbGrowth) : '—' }}</td>
-                  <td :class="pctClass(s.profitYoY)">{{ s.profitYoY != null ? fmtPct(s.profitYoY) : '—' }}</td>
-                  <td :class="pctClass(s.revenueYoY)">{{ s.revenueYoY != null ? fmtPct(s.revenueYoY) : '—' }}</td>
-                  <td :class="numClass(s.amplitude)">{{ s.amplitude != null ? s.amplitude + '%' : '—' }}</td>
-                  <td :class="pctClass(s.dailyChange)">{{ fmtPct(s.dailyChange) }}</td>
                   <td :class="numClass(sRatio(s).pbRatio)">{{ sRatio(s).pbRatio != null ? fmt(sRatio(s).pbRatio) : '—' }}</td>
                   <td :class="numClass(sRatio(s).pkRatio)">{{ sRatio(s).pkRatio != null ? fmt(sRatio(s).pkRatio) : '—' }}</td>
                   <td :class="numClass(sRatio(s).pyRatio)">{{ sRatio(s).pyRatio != null ? fmt(sRatio(s).pyRatio) : '—' }}</td>
                   <td :class="numClass(sRatio(s).phRatio)">{{ sRatio(s).phRatio != null ? fmt(sRatio(s).phRatio) : '—' }}</td>
+                  <td>{{ s.totalMarketCap != null ? fmt(s.totalMarketCap) : '—' }}</td>
+                  <td>{{ fmtYi(s.kcfjcxjlr) }}</td>
+                  <td>{{ fmtYi(s.netProfit) }}</td>
+                  <td>{{ fmtYi(s.revenue) }}</td>
+                  <td>{{ fmtYi(s.contractLiab) }}</td>
+                  <td :class="pctClass(s.hbGrowth)">{{ s.hbGrowth != null ? fmtPct(s.hbGrowth) : '—' }}</td>
+                  <td :class="pctClass(s.profitYoY)">{{ s.profitYoY != null ? fmtPct(s.profitYoY) : '—' }}</td>
+                  <td :class="pctClass(s.revenueYoY)">{{ s.revenueYoY != null ? fmtPct(s.revenueYoY) : '—' }}</td>
+                  <td :class="pctClass(s.yearChange)">{{ s.yearChange != null ? fmtPct(s.yearChange) : '—' }}</td>
+                  <td :class="pctClass(s.change924)">{{ s.change924 != null ? fmtPct(s.change924) : '—' }}</td>
+                  <td :class="numClass(s.amplitude)">{{ s.amplitude != null ? s.amplitude + '%' : '—' }}</td>
+                  <td :class="pctClass(s.dailyChange)">{{ fmtPct(s.dailyChange) }}</td>
                   <td>{{ s.shareholderCount || '—' }}</td>
                   <td>{{ s.prevShareholderCount || '—' }}</td>
                   <td>{{ s.turnover != null ? s.turnover + '%' : '—' }}</td>
@@ -538,7 +544,7 @@
             </table>
           </div>
           <div class="info-box small">
-            <p>💡 说明：总市值/振幅/涨跌幅/换手率通过腾讯接口实时获取；净利润/扣非/营收/各类增长率/股东人数通过东方财富获取。市净比=总市值÷净利润÷10；市扣比=总市值÷扣非净利润÷10；市同比=总市值÷同比增长率；市环比=总市值÷环比增长率（金额统一按亿元计算）。若部分数据获取失败可点击「刷新行情」重试，东方财富接口在部分网络环境可能受限。</p>
+            <p>💡 说明：总市值/振幅/涨跌幅/换手率通过腾讯接口实时获取；净利润/扣非/营收/合同负债/各类增长率/股东人数通过东方财富获取。市净比=总市值÷净利润÷10；市扣比=总市值÷扣非净利润÷10；市同比=总市值÷同比增长率；市环比=总市值÷环比增长率（金额统一按亿元计算）。年初涨跌幅=当日价相对当年首个交易日涨跌幅；924涨跌幅=当日价相对2024-09-24收盘价涨跌幅（不复权）。若部分数据获取失败可点击「刷新行情」重试，东方财富接口在部分网络环境可能受限。</p>
           </div>
         </div>
       </div>
@@ -553,11 +559,11 @@
         </div>
         <div class="modal-body">
           <div class="form-row">
-            <label>分类标签管理（每行一个，默认5项可增删）</label>
+            <label>分类标签管理（每行一个，默认15项可增删）</label>
             <textarea v-model="settingsText" rows="7"></textarea>
           </div>
           <div class="info-box">
-            <p>默认分类：主线实体、个股实体、主线概念、个股概念、利空概念。可自由增删改。</p>
+            <p>默认分类：主线实体、个股实体、主线概念、个股概念、利空概念、行业动态、政策利好、政策利空、业绩预告、业绩快报、重组并购、增持回购、减持解禁、监管处罚、海外市场。可自由增删改。</p>
           </div>
           <div class="form-row">
             <label>新闻代理地址（用于一键抓取财经快讯，免费 Cloudflare Worker 地址，留空则不能用一键抓取）</label>

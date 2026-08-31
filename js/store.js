@@ -4,7 +4,11 @@
  */
 const Store = {
   STORAGE_KEY: 'stock-news-tracker-v1',
-  DEFAULT_CATEGORIES: ['主线实体', '个股实体', '主线概念', '个股概念', '利空概念'],
+  DEFAULT_CATEGORIES: [
+    '主线实体', '个股实体', '主线概念', '个股概念', '利空概念',
+    '行业动态', '政策利好', '政策利空', '业绩预告', '业绩快报',
+    '重组并购', '增持回购', '减持解禁', '监管处罚', '海外市场'
+  ],
 
   // 默认数据结构
   _default() {
@@ -39,6 +43,14 @@ const Store = {
       this.data.settings = { categories: [...this.DEFAULT_CATEGORIES], proxyUrl: '' };
     }
     if (!this.data.settings.proxyUrl) this.data.settings.proxyUrl = '';
+    // 兼容迁移：老用户若仍是旧的5项默认分类，自动升级为新的15项默认分类
+    const OLD_DEFAULTS = ['主线实体', '个股实体', '主线概念', '个股概念', '利空概念'];
+    const cur = this.data.settings.categories || [];
+    if (cur.length === OLD_DEFAULTS.length &&
+        OLD_DEFAULTS.every(c => cur.includes(c)) &&
+        cur.every(c => OLD_DEFAULTS.includes(c))) {
+      this.data.settings.categories = [...this.DEFAULT_CATEGORIES];
+    }
     if (!this.data.dailyData) this.data.dailyData = {};
     if (!this.data.stockPools) this.data.stockPools = [];
     if (!this.data.news) this.data.news = [];

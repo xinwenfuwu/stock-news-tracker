@@ -615,6 +615,12 @@ const app = createApp({
         kcfjcxjlr: null,       // 扣非净利润(元)
         revenue: null,         // 营业收入(元)
         totalMarketCap: null,  // 总市值(亿)
+        contractLiab: null,    // 最新合同负债(元)
+        todayPrice: null,      // 当日收盘价
+        yearStartPrice: null,  // 年初第1个交易日收盘价
+        price924: null,        // 2024-09-24 收盘价
+        yearChange: null,      // 年初涨跌幅(%)
+        change924: null,       // 924涨跌幅(%)
         turnover: null
       }));
       if (poolModal.isEdit) {
@@ -636,6 +642,12 @@ const app = createApp({
               s.kcfjcxjlr = o.kcfjcxjlr;
               s.revenue = o.revenue;
               s.totalMarketCap = o.totalMarketCap;
+              s.contractLiab = o.contractLiab;
+              s.todayPrice = o.todayPrice;
+              s.yearStartPrice = o.yearStartPrice;
+              s.price924 = o.price924;
+              s.yearChange = o.yearChange;
+              s.change924 = o.change924;
             }
           });
         }
@@ -750,6 +762,7 @@ const app = createApp({
           s.dailyChange = q.changePercent;
           s.amplitude = q.amplitude;
           s.turnover = q.turnover;
+          s.todayPrice = q.price || s.todayPrice;                 // 当日价
           if (q.totalMarketCap) s.totalMarketCap = q.totalMarketCap;   // 总市值(亿)
         }
       }
@@ -776,10 +789,29 @@ const app = createApp({
           if (fin.netProfit != null) s.netProfit = fin.netProfit;
           if (fin.kcfjcxjlr != null) s.kcfjcxjlr = fin.kcfjcxjlr;
           if (fin.revenue != null) s.revenue = fin.revenue;
+          if (fin.contractLiab != null) s.contractLiab = fin.contractLiab;
           if (fin.shareholderCount != null) s.shareholderCount = fin.shareholderCount;
           if (fin.prevShareholderCount != null) s.prevShareholderCount = fin.prevShareholderCount;
         } catch (e) {
           console.warn('补充数据获取失败', s.code, e);
+        }
+        // 年初价 + 924价（不复权历史收盘），每只容错
+        try {
+          const yp = await StockAPI.getYearStartPrice(s.code);
+          if (yp != null) s.yearStartPrice = yp;
+          if (s.price924 == null) {
+            const p924 = await StockAPI.get924Price(s.code);
+            if (p924 != null) s.price924 = p924;
+          }
+        } catch (e) {
+          console.warn('历史价获取失败', s.code, e);
+        }
+        // 重新计算年初涨跌幅、924涨跌幅
+        if (s.todayPrice && s.yearStartPrice) {
+          s.yearChange = +(((s.todayPrice - s.yearStartPrice) / s.yearStartPrice) * 100).toFixed(2);
+        }
+        if (s.todayPrice && s.price924) {
+          s.change924 = +(((s.todayPrice - s.price924) / s.price924) * 100).toFixed(2);
         }
         // 每 5 只让出一次事件循环，避免卡顿
         if ((i + 1) % 5 === 0) await new Promise(r => setTimeout(r, 0));

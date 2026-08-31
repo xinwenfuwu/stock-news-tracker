@@ -241,7 +241,13 @@ const StockAPI = {
     // 末尾参数留空 = 不复权（真实价格）
     const url = `https://web.ifzq.gtimg.cn/appstock/app/fqkline/get?param=${code},day,${startDate},${endDate},640,`;
     try {
-      const resp = await fetch(url, { cache: 'no-store' });
+      const resp = await fetch(url, {
+        cache: 'no-store',
+        headers: {
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+          'Referer': 'https://gu.qq.com/'
+        }
+      });
       const json = await resp.json();
       const block = json.data && json.data[code];
       if (!block) return [];
@@ -295,6 +301,7 @@ const StockAPI = {
    *   profitYoY,        // 利润同比增长率(%)
    *   revenueYoY,       // 同比增长率(营收同比 %)
    *   hbGrowth,         // 环比增长率(净利润环比 %)
+   *   contractLiab,     // 最新合同负债(元)
    *   shareholderCount, // 散户数量(本期股东人数)
    *   prevShareholderCount // 上期散户数量
    * }}
@@ -304,6 +311,7 @@ const StockAPI = {
     const result = {
       netProfit: null, kcfjcxjlr: null, revenue: null,
       profitYoY: null, revenueYoY: null, hbGrowth: null,
+      contractLiab: null,
       shareholderCount: null, prevShareholderCount: null
     };
     // 财务摘要（净利润/扣非/营收/各类增长率）
@@ -323,6 +331,18 @@ const StockAPI = {
     } catch (e) {
       console.debug('财务摘要获取失败', code);
     }
+    // 资产负债表（最新合同负债）
+    try {
+      const bsUrl = `https://datacenter-web.eastmoney.com/api/data/v1/get?reportName=RPT_F10_FINANCE_GBALANCE&columns=ALL&filter=(SECUCODE%3D%22${secucode}%22)&pageNumber=1&pageSize=1&sortColumns=REPORT_DATE&sortTypes=-1`;
+      const bsResp = await fetch(bsUrl, { cache: 'no-store' });
+      const bsJson = await bsResp.json();
+      const bsRow = bsJson.result && bsJson.result.data && bsJson.result.data[0];
+      if (bsRow && bsRow.CONTRACT_LIAB != null) {
+        result.contractLiab = parseFloat(bsRow.CONTRACT_LIAB);   // 合同负债(元)
+      }
+    } catch (e) {
+      console.debug('资产负债表获取失败', code);
+    }
     // 股东人数（本期 + 上期）
     try {
       const holderUrl = `https://datacenter-web.eastmoney.com/api/data/v1/get?reportName=RPT_F10_EH_HOLDERNUM&columns=ALL&filter=(SECUCODE%3D%22${secucode}%22)&pageNumber=1&pageSize=2&sortColumns=END_DATE&sortTypes=-1`;
@@ -339,6 +359,26 @@ const StockAPI = {
       console.debug('股东人数获取失败', code);
     }
     return result;
+  },
+
+  /**
+   * 获取当年年初第一个交易日的收盘价
+   * （向上取本年第一个交易日，而非回退到上一年最后一个交易日）
+   * @param {string} code sh600519
+   * @param {string} year 年份，如 2026；缺省为当前年份
+   * @returns {number|null}
+   */
+  async getYearStartPrice(code, year) {
+    const y = year || new Date().getFullYear();
+    const yearStart = new Date(`${y}-01-01`);
+    const start = this._addDays(yearStart, -10);
+    const end = this._addDays(yearStart, 30);
+    const data = await this.getKline(code, this.fmtDate(start), this.fmtDate(end));
+    if (!data || !data.length) return null;
+    // 取本年(>= y-01-01)第一个交易日，K线按日期升序返回
+    const prefix = `${y}-`;
+    const first = data.find(k => k.date.startsWith(prefix));
+    return first ? first.close : null;
   },
 
   /** 转换 SECUCODE：sh600519 → 600519.SH，sz000001 → 000001.SZ，bj → .BJ */
