@@ -640,6 +640,18 @@ body {
 }
 .pool-detail-summary b { font-size: 18px; }
 
+/* 股票池详情-添加股票 */
+.pool-detail-add {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+  padding: 10px 14px;
+  background: var(--surface-alt);
+  border: 1px dashed var(--border);
+  border-radius: 6px;
+}
+
 /* ===== Toast ===== */
 .toast {
   position: fixed;

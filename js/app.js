@@ -568,7 +568,7 @@ const app = createApp({
     // ============================================================
     const poolLoading = ref(false);
     const poolModal = reactive({ show: false, isEdit: false, data: {} });
-    const poolDetail = reactive({ show: false, data: { stocks: [] }, nameEdit: false, nameDraft: '' });
+    const poolDetail = reactive({ show: false, data: { stocks: [] }, nameEdit: false, nameDraft: '', addText: '' });
     const poolDetailSort = reactive({ key: 'dailyChange', dir: 'desc' });
 
     const sortedPools = computed(() => {
@@ -594,13 +594,9 @@ const app = createApp({
       };
       poolModal.show = true;
     }
-    function savePool() {
-      const stocks = StockAPI.parseStockInput(poolModal.data.stockText);
-      if (!stocks.length) {
-        showToast('请输入至少一只股票', 'error');
-        return;
-      }
-      const stockList = stocks.map(s => ({
+    /** 创建一个标准的股票池股票对象（初始化所有字段为 null） */
+    function _newStock(s) {
+      return {
         code: s.code,
         name: s.name || '',
         dailyChange: null,
@@ -622,7 +618,16 @@ const app = createApp({
         yearChange: null,      // 年初涨跌幅(%)
         change924: null,       // 924涨跌幅(%)
         turnover: null
-      }));
+      };
+    }
+
+    function savePool() {
+      const stocks = StockAPI.parseStockInput(poolModal.data.stockText);
+      if (!stocks.length) {
+        showToast('请输入至少一只股票', 'error');
+        return;
+      }
+      const stockList = stocks.map(s => _newStock(s));
       if (poolModal.isEdit) {
         const existing = D.stockPools.find(p => p.id === poolModal.data.id);
         // 保留已有的手动数据
@@ -733,8 +738,61 @@ const app = createApp({
       poolDetail.data = pool;
       poolDetail.nameEdit = false;
       poolDetail.nameDraft = pool.name || '';
+      poolDetail.addText = '';
       poolDetail.show = true;
     }
+
+    /** 在详情弹窗中向当前股票池添加股票（支持多只，用逗号/换行/分号分隔） */
+    async function addPoolStocks() {
+      const txt = (poolDetail.addText || '').trim();
+      if (!txt) { showToast('请输入要添加的股票代码或名称', 'error'); return; }
+      const pool = poolDetail.data;
+      const parsed = StockAPI.parseStockInput(txt);
+      if (!parsed.length) { showToast('未识别到有效股票', 'error'); return; }
+      const existing = new Set((pool.stocks || []).map(s => s.code));
+      let added = 0;
+      const newStocks = [];
+      for (const p of parsed) {
+        if (existing.has(p.code)) continue;
+        const ns = _newStock(p);
+        newStocks.push(ns);
+        existing.add(p.code);
+        added++;
+      }
+      if (!added) { showToast('这些股票已在该股票池中', 'info'); return; }
+      // 补充名称
+      try {
+        const quotes = await StockAPI.getQuotes(newStocks.map(s => s.code));
+        newStocks.forEach(s => { const q = quotes[s.code]; if (q) s.name = s.name || q.name; });
+      } catch (e) { console.warn('补充名称失败', e); }
+      pool.stocks.push(...newStocks);
+      // 同步更新平均涨跌幅
+      recomputePoolAvg(pool);
+      poolDetail.addText = '';
+      showToast(`已添加 ${added} 只股票`, 'success');
+    }
+
+    /** 从当前股票池删除一只股票 */
+    function removePoolStock(code) {
+      const pool = poolDetail.data;
+      const idx = (pool.stocks || []).findIndex(s => s.code === code);
+      if (idx === -1) return;
+      const name = pool.stocks[idx].name || code;
+      if (!confirm(`确认从股票池中删除「${name}」？`)) return;
+      pool.stocks.splice(idx, 1);
+      recomputePoolAvg(pool);
+      showToast('已删除', 'success');
+    }
+
+    /** 重新计算股票池平均涨跌幅（增删股票后调用） */
+    function recomputePoolAvg(pool) {
+      let sum = 0, cnt = 0;
+      (pool.stocks || []).forEach(s => {
+        if (s.dailyChange != null && !isNaN(s.dailyChange)) { sum += s.dailyChange; cnt++; }
+      });
+      pool.avgChange = cnt > 0 ? +(sum / cnt).toFixed(2) : null;
+    }
+
     function startEditPoolName() {
       poolDetail.nameDraft = poolDetail.data.name || '';
       poolDetail.nameEdit = true;
@@ -767,11 +825,7 @@ const app = createApp({
         }
       }
       // 重新计算平均
-      let sum = 0, cnt = 0;
-      pool.stocks.forEach(s => {
-        if (s.dailyChange != null && !isNaN(s.dailyChange)) { sum += s.dailyChange; cnt++; }
-      });
-      pool.avgChange = cnt > 0 ? +(sum / cnt).toFixed(2) : null;
+      recomputePoolAvg(pool);
       showToast('行情已刷新，正在获取财务/股东数据...', 'info');
       // 2) 补充数据（东方财富，best-effort）：逐只 try/catch，避免单只失败中断整体
       const works = pool.stocks.filter(s => s.code);
@@ -1218,7 +1272,7 @@ const app = createApp({
       pools: D.stockPools, sortedPools, poolLoading,
       poolModal, openAddPool, openEditPool, savePool, deletePool, pickDailyStocks,
       poolDetail, openPoolDetail, startEditPoolName, savePoolName, refreshPoolPrices, refreshPoolDetail,
-      sortedPoolDetailStocks, sortPoolDetailBy, poolSortIcon,
+      addPoolStocks, removePoolStock, sortedPoolDetailStocks, sortPoolDetailBy, poolSortIcon,
       // 页面3
       hotDate, hotLoading, hotBoards, hotStocks, conceptFreq,
       sortedHotStocks, sortHotBy, hotSortIcon, removeHotStock,

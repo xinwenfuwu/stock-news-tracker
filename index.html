@@ -487,6 +487,13 @@
             <span>平均涨跌幅：<b :class="pctClass(poolDetail.data.avgChange)">{{ fmtPct(poolDetail.data.avgChange) }}</b></span>
             <button class="btn btn-sm" @click="refreshPoolDetail(poolDetail.data)">🔄 刷新行情</button>
           </div>
+          <div class="pool-detail-add">
+            <input v-model="poolDetail.addText" placeholder="输入股票代码或名称添加（支持多只，用逗号/分号/换行分隔）"
+              style="flex:1;min-width:200px;padding:7px 10px;border:1px solid #d8e0f0;border-radius:6px"
+              @keyup.enter="addPoolStocks">
+            <button class="btn btn-sm" @click="addPoolStocks">➕ 添加</button>
+            <span class="muted small">共 {{ poolDetail.data.stocks.length }} 只</span>
+          </div>
           <div class="table-wrap table-scroll-x">
             <table class="data-table pool-detail-table">
               <thead>
@@ -513,6 +520,7 @@
                   <th class="sortable" @click="sortPoolDetailBy('prevShareholderCount')">上期散户数量 <span class="sort-arrow" v-html="poolSortIcon('prevShareholderCount')"></span></th>
                   <th class="sortable" @click="sortPoolDetailBy('turnover')">换手率 <span class="sort-arrow" v-html="poolSortIcon('turnover')"></span></th>
                   <th class="sortable" @click="sortPoolDetailBy('capitalFlow')">资金流入 <span class="sort-arrow" v-html="poolSortIcon('capitalFlow')"></span></th>
+                  <th>操作</th>
                 </tr>
               </thead>
               <tbody>
@@ -539,6 +547,7 @@
                   <td>{{ s.prevShareholderCount || '—' }}</td>
                   <td>{{ s.turnover != null ? s.turnover + '%' : '—' }}</td>
                   <td :class="numClass(s.capitalFlow)">{{ s.capitalFlow != null ? (s.capitalFlow > 0 ? '+' : '') + (s.capitalFlow/1e4).toFixed(2) + '万' : '—' }}</td>
+                  <td><button class="btn btn-sm btn-danger" @click="removePoolStock(s.code)">🗑 删除</button></td>
                 </tr>
               </tbody>
             </table>
