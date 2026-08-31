@@ -74,6 +74,46 @@ const app = createApp({
       return 'flat';
     }
 
+    // ===== 股票池财务字段格式化与计算 =====
+
+    /** 金额(元) → 亿字符串，如 44516880421 → 445.17亿 */
+    function fmtYi(v) {
+      if (v == null || isNaN(v)) return '—';
+      return (+v / 1e8).toFixed(2) + '亿';
+    }
+    /** 亿元数字 */
+    function yiVal(v) {
+      return v == null || isNaN(v) ? null : +(v / 1e8);
+    }
+    /** 数值相除工具（安全） */
+    function ratio(a, b) {
+      if (a == null || b == null || isNaN(a) || isNaN(b)) return null;
+      if (+b === 0) return null;
+      return +(+a / +b);
+    }
+    /**
+     * 市值类比值计算。
+     * 统一用「亿元」：总市值=totalMarketCap(亿)，净利润/扣非/营收=元→转亿。
+     * 市净比 = 总市值 ÷ 净利润 ÷ 10
+     * 市扣比 = 总市值 ÷ 扣非净利润 ÷ 10
+     * 市同比 = 总市值 ÷ 同比增长率
+     * 市环比 = 总市值 ÷ 环比增长率
+     */
+    function sRatio(s) {
+      const cap = s.totalMarketCap;
+      const net = yiVal(s.netProfit);     // 净利润(亿)
+      const kcf = yiVal(s.kcfjcxjlr);     // 扣非净利润(亿)
+      const p = ratio(cap, net);           // 总市值/净利润
+      const k = ratio(cap, kcf);           // 总市值/扣非净利润
+      const pRatio = p != null ? +(p / 10).toFixed(2) : null;   // 市净比
+      const kRatio = k != null ? +(k / 10).toFixed(2) : null;   // 市扣比
+      // 市同比 = 总市值 ÷ 同比增长率(营收同比)
+      const py = s.revenueYoY != null && +s.revenueYoY !== 0 ? +(+cap / +s.revenueYoY).toFixed(2) : null;
+      // 市环比 = 总市值 ÷ 环比增长率(净利润环比)
+      const ph = s.hbGrowth != null && +s.hbGrowth !== 0 ? +(+cap / +s.hbGrowth).toFixed(2) : null;
+      return { pbRatio: pRatio, pkRatio: kRatio, pyRatio: py, phRatio: ph };
+    }
+
     function parseStocks(val) {
       if (Array.isArray(val)) return val;
       if (typeof val === 'string') return StockAPI.parseStockInput(val);
@@ -567,8 +607,14 @@ const app = createApp({
         amplitude: null,
         capitalFlow: null,
         shareholderCount: null,
+        prevShareholderCount: null,
         profitYoY: null,
         revenueYoY: null,
+        hbGrowth: null,
+        netProfit: null,       // 净利润(元)
+        kcfjcxjlr: null,       // 扣非净利润(元)
+        revenue: null,         // 营业收入(元)
+        totalMarketCap: null,  // 总市值(亿)
         turnover: null
       }));
       if (poolModal.isEdit) {
@@ -579,10 +625,17 @@ const app = createApp({
           existing.stocks.forEach(s => { map[s.code] = s; });
           stockList.forEach(s => {
             if (map[s.code]) {
-              s.capitalFlow = map[s.code].capitalFlow;
-              s.shareholderCount = map[s.code].shareholderCount;
-              s.profitYoY = map[s.code].profitYoY;
-              s.revenueYoY = map[s.code].revenueYoY;
+              const o = map[s.code];
+              s.capitalFlow = o.capitalFlow;
+              s.shareholderCount = o.shareholderCount;
+              s.prevShareholderCount = o.prevShareholderCount;
+              s.profitYoY = o.profitYoY;
+              s.revenueYoY = o.revenueYoY;
+              s.hbGrowth = o.hbGrowth;
+              s.netProfit = o.netProfit;
+              s.kcfjcxjlr = o.kcfjcxjlr;
+              s.revenue = o.revenue;
+              s.totalMarketCap = o.totalMarketCap;
             }
           });
         }
@@ -650,6 +703,7 @@ const app = createApp({
               s.dailyChange = q.changePercent;
               s.amplitude = q.amplitude;
               s.turnover = q.turnover;
+              if (q.totalMarketCap) s.totalMarketCap = q.totalMarketCap;   // 总市值(亿)
               if (!isNaN(q.changePercent)) { sum += q.changePercent; cnt++; }
             }
           }
@@ -685,6 +739,7 @@ const app = createApp({
           s.dailyChange = q.changePercent;
           s.amplitude = q.amplitude;
           s.turnover = q.turnover;
+          if (q.totalMarketCap) s.totalMarketCap = q.totalMarketCap;   // 总市值(亿)
         }
       }
       // 重新计算平均
@@ -693,7 +748,7 @@ const app = createApp({
         if (s.dailyChange != null && !isNaN(s.dailyChange)) { sum += s.dailyChange; cnt++; }
       });
       pool.avgChange = cnt > 0 ? +(sum / cnt).toFixed(2) : null;
-      showToast('行情已刷新，正在获取资金流/财务数据...', 'info');
+      showToast('行情已刷新，正在获取财务/股东数据...', 'info');
       // 2) 补充数据（东方财富，best-effort）：逐只 try/catch，避免单只失败中断整体
       const works = pool.stocks.filter(s => s.code);
       for (let i = 0; i < works.length; i++) {
@@ -706,7 +761,12 @@ const app = createApp({
           if (flow != null) s.capitalFlow = flow;
           if (fin.profitYoY != null) s.profitYoY = fin.profitYoY;
           if (fin.revenueYoY != null) s.revenueYoY = fin.revenueYoY;
+          if (fin.hbGrowth != null) s.hbGrowth = fin.hbGrowth;
+          if (fin.netProfit != null) s.netProfit = fin.netProfit;
+          if (fin.kcfjcxjlr != null) s.kcfjcxjlr = fin.kcfjcxjlr;
+          if (fin.revenue != null) s.revenue = fin.revenue;
           if (fin.shareholderCount != null) s.shareholderCount = fin.shareholderCount;
+          if (fin.prevShareholderCount != null) s.prevShareholderCount = fin.prevShareholderCount;
         } catch (e) {
           console.warn('补充数据获取失败', s.code, e);
         }
@@ -1085,6 +1145,7 @@ const app = createApp({
       D, currentPage, tabs, goPage,
       toast, showToast,
       allCategories, fmt, fmtPct, fmtDateCN, numClass, pctClass, parseStocks, stocksText, pureCode,
+      fmtYi, sRatio,
       showSettings, settingsText, proxyUrl, saveSettings, clearAllData, dataStats,
       exportData, importData,
       // 云端同步

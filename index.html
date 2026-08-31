@@ -476,38 +476,58 @@
             <span>平均涨跌幅：<b :class="pctClass(poolDetail.data.avgChange)">{{ fmtPct(poolDetail.data.avgChange) }}</b></span>
             <button class="btn btn-sm" @click="refreshPoolDetail(poolDetail.data)">🔄 刷新行情</button>
           </div>
-          <div class="table-wrap">
-            <table class="data-table">
+          <div class="table-wrap table-scroll-x">
+            <table class="data-table pool-detail-table">
               <thead>
                 <tr>
                   <th>代码</th>
-                  <th>名称</th>
+                  <th>股票名称</th>
+                  <th>总市值(亿)</th>
+                  <th>扣非净利润</th>
+                  <th>净利润</th>
+                  <th>营业收入</th>
+                  <th class="sortable" @click="sortPoolDetailBy('hbGrowth')">环比增长率</th>
+                  <th class="sortable" @click="sortPoolDetailBy('profitYoY')">利润同比增长率</th>
+                  <th class="sortable" @click="sortPoolDetailBy('revenueYoY')">同比增长率</th>
                   <th class="sortable" @click="sortPoolDetailBy('amplitude')">振幅</th>
                   <th class="sortable" @click="sortPoolDetailBy('dailyChange')">当日涨跌幅</th>
-                  <th>资金流入</th>
-                  <th>散户人数</th>
-                  <th>净利润同比</th>
-                  <th>营收同比</th>
+                  <th>市净比</th>
+                  <th>市扣比</th>
+                  <th>市同比</th>
+                  <th>市环比</th>
+                  <th>散户数量</th>
+                  <th>上期散户数量</th>
                   <th>换手率</th>
+                  <th>资金流入</th>
                 </tr>
               </thead>
               <tbody>
                 <tr v-for="s in sortedPoolDetailStocks" :key="s.code">
                   <td>{{ s.code }}</td>
                   <td>{{ s.name }}</td>
-                  <td :class="numClass(s.amplitude)">{{ s.amplitude != null ? s.amplitude + '%' : '—' }}</td>
-                  <td :class="pctClass(s.dailyChange)">{{ fmtPct(s.dailyChange) }}</td>
-                  <td :class="numClass(s.capitalFlow)">{{ s.capitalFlow != null ? (s.capitalFlow > 0 ? '+' : '') + (s.capitalFlow/1e4).toFixed(2) + '万' : '—' }}</td>
-                  <td>{{ s.shareholderCount || '—' }}</td>
+                  <td>{{ s.totalMarketCap != null ? fmt(s.totalMarketCap) : '—' }}</td>
+                  <td>{{ fmtYi(s.kcfjcxjlr) }}</td>
+                  <td>{{ fmtYi(s.netProfit) }}</td>
+                  <td>{{ fmtYi(s.revenue) }}</td>
+                  <td :class="pctClass(s.hbGrowth)">{{ s.hbGrowth != null ? fmtPct(s.hbGrowth) : '—' }}</td>
                   <td :class="pctClass(s.profitYoY)">{{ s.profitYoY != null ? fmtPct(s.profitYoY) : '—' }}</td>
                   <td :class="pctClass(s.revenueYoY)">{{ s.revenueYoY != null ? fmtPct(s.revenueYoY) : '—' }}</td>
+                  <td :class="numClass(s.amplitude)">{{ s.amplitude != null ? s.amplitude + '%' : '—' }}</td>
+                  <td :class="pctClass(s.dailyChange)">{{ fmtPct(s.dailyChange) }}</td>
+                  <td :class="numClass(sRatio(s).pbRatio)">{{ sRatio(s).pbRatio != null ? fmt(sRatio(s).pbRatio) : '—' }}</td>
+                  <td :class="numClass(sRatio(s).pkRatio)">{{ sRatio(s).pkRatio != null ? fmt(sRatio(s).pkRatio) : '—' }}</td>
+                  <td :class="numClass(sRatio(s).pyRatio)">{{ sRatio(s).pyRatio != null ? fmt(sRatio(s).pyRatio) : '—' }}</td>
+                  <td :class="numClass(sRatio(s).phRatio)">{{ sRatio(s).phRatio != null ? fmt(sRatio(s).phRatio) : '—' }}</td>
+                  <td>{{ s.shareholderCount || '—' }}</td>
+                  <td>{{ s.prevShareholderCount || '—' }}</td>
                   <td>{{ s.turnover != null ? s.turnover + '%' : '—' }}</td>
+                  <td :class="numClass(s.capitalFlow)">{{ s.capitalFlow != null ? (s.capitalFlow > 0 ? '+' : '') + (s.capitalFlow/1e4).toFixed(2) + '万' : '—' }}</td>
                 </tr>
               </tbody>
             </table>
           </div>
           <div class="info-box small">
-            <p>💡 说明：振幅、涨跌幅、换手率通过腾讯接口实时获取；资金流入/散户人数/财务数据如自动获取失败，可点击「刷新行情」重试。东方财富接口在部分网络环境可能受限。</p>
+            <p>💡 说明：总市值/振幅/涨跌幅/换手率通过腾讯接口实时获取；净利润/扣非/营收/各类增长率/股东人数通过东方财富获取。市净比=总市值÷净利润÷10；市扣比=总市值÷扣非净利润÷10；市同比=总市值÷同比增长率；市环比=总市值÷环比增长率（金额统一按亿元计算）。若部分数据获取失败可点击「刷新行情」重试，东方财富接口在部分网络环境可能受限。</p>
           </div>
         </div>
       </div>

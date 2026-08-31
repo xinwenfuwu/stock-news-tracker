@@ -287,39 +287,67 @@ const StockAPI = {
   },
 
   /**
-   * 获取财务指标（净利润同比、营收同比）
-   * 东财 F10 财务摘要接口
-   * @returns {{profitYoY, revenueYoY, shareholderCount}}
+   * 获取财务指标（东财 F10 财务摘要）
+   * @returns {{
+   *   netProfit,        // 净利润(归母，元)
+   *   kcfjcxjlr,        // 扣非净利润(元)
+   *   revenue,          // 营业收入(元)
+   *   profitYoY,        // 利润同比增长率(%)
+   *   revenueYoY,       // 同比增长率(营收同比 %)
+   *   hbGrowth,         // 环比增长率(净利润环比 %)
+   *   shareholderCount, // 散户数量(本期股东人数)
+   *   prevShareholderCount // 上期散户数量
+   * }}
    */
   async getFinance(code) {
-    const secid = this.toEastSecid(code);
-    const pure = this.pureCode(code);
-    const result = { profitYoY: null, revenueYoY: null, shareholderCount: null };
+    const secucode = this.toSecucode(code);
+    const result = {
+      netProfit: null, kcfjcxjlr: null, revenue: null,
+      profitYoY: null, revenueYoY: null, hbGrowth: null,
+      shareholderCount: null, prevShareholderCount: null
+    };
+    // 财务摘要（净利润/扣非/营收/各类增长率）
     try {
-      // 财务指标
-      const url = `https://push2.eastmoney.com/api/qt/stock/get?secid=${secid}&fields=f57,f58,f162,f163,f173,f183`;
+      const url = `https://datacenter-web.eastmoney.com/api/data/v1/get?reportName=RPT_F10_FINANCE_MAINFINADATA&columns=ALL&filter=(SECUCODE%3D%22${secucode}%22)&pageNumber=1&pageSize=1&sortColumns=REPORT_DATE&sortTypes=-1`;
       const resp = await fetch(url, { cache: 'no-store' });
       const json = await resp.json();
-      const d = json.data;
-      if (d) {
-        result.profitYoY = d.f163 != null ? parseFloat(d.f163) : null;   // 净利润同比(%)
-        result.revenueYoY = d.f162 != null ? parseFloat(d.f162) : null;  // 营收同比(%)
+      const row = json.result && json.result.data && json.result.data[0];
+      if (row) {
+        result.netProfit = row.PARENTNETPROFIT != null ? parseFloat(row.PARENTNETPROFIT) : null;       // 净利润(元)
+        result.kcfjcxjlr = row.KCFJCXSYJLR != null ? parseFloat(row.KCFJCXSYJLR) : null;               // 扣非净利润(元)
+        result.revenue = row.TOTALOPERATEREVE != null ? parseFloat(row.TOTALOPERATEREVE) : null;       // 营业收入(元)
+        result.profitYoY = row.PARENTNETPROFITTZ != null ? parseFloat(row.PARENTNETPROFITTZ) : null;   // 利润同比增长(%)
+        result.revenueYoY = row.TOTALOPERATEREVETZ != null ? parseFloat(row.TOTALOPERATEREVETZ) : null;// 营收同比增长(%)
+        result.hbGrowth = row.NETPROFITRPHBZC != null ? parseFloat(row.NETPROFITRPHBZC) : null;        // 净利润环比(%)
       }
     } catch (e) {
-      console.debug('财务数据获取失败', code);
+      console.debug('财务摘要获取失败', code);
     }
-    // 股东人数（东财 F10，best-effort）
+    // 股东人数（本期 + 上期）
     try {
-      const holderUrl = `https://datacenter-web.eastmoney.com/api/data/v1/get?reportName=RPT_F10_EH_HOLDERNUM&columns=ALL&filter=(SECUCODE%3D%22${pure}%22)&pageNumber=1&pageSize=1&sortColumns=END_DATE&sortTypes=-1`;
+      const holderUrl = `https://datacenter-web.eastmoney.com/api/data/v1/get?reportName=RPT_F10_EH_HOLDERNUM&columns=ALL&filter=(SECUCODE%3D%22${secucode}%22)&pageNumber=1&pageSize=2&sortColumns=END_DATE&sortTypes=-1`;
       const hResp = await fetch(holderUrl, { cache: 'no-store' });
       const hJson = await hResp.json();
-      if (hJson.result && hJson.result.data && hJson.result.data.length) {
-        result.shareholderCount = hJson.result.data[0].HOLDER_NUM || null;
+      const rows = hJson.result && hJson.result.data;
+      if (rows && rows.length) {
+        result.shareholderCount = rows[0].HOLDER_TOTAL_NUM != null ? rows[0].HOLDER_TOTAL_NUM : (rows[0].HOLDER_NUM || null);
+        if (rows.length > 1) {
+          result.prevShareholderCount = rows[1].HOLDER_TOTAL_NUM != null ? rows[1].HOLDER_TOTAL_NUM : (rows[1].HOLDER_NUM || null);
+        }
       }
     } catch (e) {
       console.debug('股东人数获取失败', code);
     }
     return result;
+  },
+
+  /** 转换 SECUCODE：sh600519 → 600519.SH，sz000001 → 000001.SZ，bj → .BJ */
+  toSecucode(code) {
+    const pure = this.pureCode(code);
+    const c = String(code);
+    if (/^sh/i.test(c)) return `${pure}.SH`;
+    if (/^bj/i.test(c)) return `${pure}.BJ`;
+    return `${pure}.SZ`;
   },
 
   // ============ 热门板块/股票 ============

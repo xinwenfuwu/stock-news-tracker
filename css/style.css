@@ -202,6 +202,9 @@ body {
   overflow: auto;
   max-height: calc(100vh - 220px);
 }
+/* 宽表强制横向滚动 */
+.table-scroll-x { overflow-x: auto; overflow-y: auto; }
+.pool-detail-table { min-width: 1600px; white-space: nowrap; }
 .data-table {
   width: 100%;
   border-collapse: collapse;
