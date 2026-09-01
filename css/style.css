@@ -228,15 +228,22 @@ body {
   position: sticky;
   z-index: 20;
   background: var(--surface);
+  white-space: nowrap;
+  overflow: hidden;
 }
 .pool-detail-table th.col-sticky { z-index: 30; background: #f5f7fa; }
 .pool-detail-table td.col-sticky { background: var(--surface); }
 .pool-detail-table tbody tr:hover td.col-sticky { background: #dbe7ff; }
-/* 各冻结列的 left 偏移 */
+/* 冻结列固定宽度（保证 sticky 偏移与列宽精确衔接，避免重叠/掩盖） */
+.pool-detail-table .col-sticky-0 { min-width: 36px; text-align: center; }
+.pool-detail-table .col-sticky-1 { min-width: 78px; }
+.pool-detail-table .col-sticky-2 { min-width: 100px; }
+.pool-detail-table .col-sticky-3 { min-width: 44px; text-align: center; }
+/* 各冻结列的 left 偏移（与上方固定宽度累加一致） */
 .col-sticky-0 { left: 0; }
-.col-sticky-1 { left: 60px; }
-.col-sticky-2 { left: 140px; }
-.col-sticky-3 { left: 205px; }
+.col-sticky-1 { left: 36px; }
+.col-sticky-2 { left: 114px; }
+.col-sticky-3 { left: 214px; }
 .data-table {
   width: 100%;
   border-collapse: collapse;

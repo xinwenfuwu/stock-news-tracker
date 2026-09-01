@@ -514,6 +514,12 @@
           <div class="toolbar-left">
             <h2 class="page-title" style="margin:0">🎯 筛选板块</h2>
           </div>
+          <div class="toolbar-right">
+            <button class="btn btn-sm" @click="refreshFilterStocks" :disabled="filterRefreshing">
+              <span v-if="filterRefreshing">⏳ 刷新中...</span>
+              <span v-else>🔄 刷新行情</span>
+            </button>
+          </div>
         </div>
 
         <div class="filter-bar">
@@ -568,7 +574,7 @@
                 <th class="col-sticky col-sticky-0">序号</th>
                 <th class="col-sticky col-sticky-1">代码</th>
                 <th class="col-sticky col-sticky-2">股票名称</th>
-                <th>收藏</th>
+                <th class="col-sticky col-sticky-3">收藏</th>
                 <th class="sortable" @click="sortFilterBy('contractLiab')">合同负债 <span class="sort-arrow" v-html="filterSortIcon('contractLiab')"></span></th>
                 <th class="sortable" @click="sortFilterBy('dailyChange')">今涨跌 <span class="sort-arrow" v-html="filterSortIcon('dailyChange')"></span></th>
                 <th class="sortable" @click="sortFilterBy('yearChange')">年涨跌 <span class="sort-arrow" v-html="filterSortIcon('yearChange')"></span></th>
@@ -601,7 +607,7 @@
                 <td class="col-sticky col-sticky-0">{{ idx + 1 }}</td>
                 <td class="col-sticky col-sticky-1">{{ s.code }}</td>
                 <td class="col-sticky col-sticky-2">{{ s.name }}</td>
-                <td>
+                <td class="col-sticky col-sticky-3">
                   <button class="btn-icon-sm" @click="toggleFavorite(s)" :title="isFav(s.code) ? '取消收藏' : '收藏'">
                     <span :class="isFav(s.code) ? 'fav-active' : ''">{{ isFav(s.code) ? '★' : '☆' }}</span>
                   </button>
@@ -843,7 +849,7 @@
                   <th class="col-sticky col-sticky-0">序号</th>
                   <th class="col-sticky col-sticky-1">代码</th>
                   <th class="col-sticky col-sticky-2">股票名称</th>
-                  <th>收藏</th>
+                  <th class="col-sticky col-sticky-3">收藏</th>
                   <th class="sortable" @click="sortPoolDetailBy('contractLiab')">合同负债 <span class="sort-arrow" v-html="poolSortIcon('contractLiab')"></span></th>
                   <th class="sortable" @click="sortPoolDetailBy('dailyChange')">今涨跌 <span class="sort-arrow" v-html="poolSortIcon('dailyChange')"></span></th>
                   <th class="sortable" @click="sortPoolDetailBy('yearChange')">年涨跌 <span class="sort-arrow" v-html="poolSortIcon('yearChange')"></span></th>
@@ -877,7 +883,7 @@
                   <td class="col-sticky col-sticky-0">{{ idx + 1 }}</td>
                   <td class="col-sticky col-sticky-1">{{ s.code }}</td>
                   <td class="col-sticky col-sticky-2">{{ s.name }}</td>
-                  <td>
+                  <td class="col-sticky col-sticky-3">
                     <button class="btn-icon-sm" @click="toggleFavorite(s)" :title="isFav(s.code) ? '取消收藏' : '收藏'">
                       <span :class="isFav(s.code) ? 'fav-active' : ''">{{ isFav(s.code) ? '★' : '☆' }}</span>
                     </button>
@@ -959,7 +965,7 @@
                   <th class="col-sticky col-sticky-0">序号</th>
                   <th class="col-sticky col-sticky-1">代码</th>
                   <th class="col-sticky col-sticky-2">股票名称</th>
-                  <th>收藏</th>
+                  <th class="col-sticky col-sticky-3">收藏</th>
                   <th class="sortable" @click="sortSectorDetailBy('contractLiab')">合同负债 <span class="sort-arrow" v-html="sectorSortIcon('contractLiab')"></span></th>
                   <th class="sortable" @click="sortSectorDetailBy('dailyChange')">今涨跌 <span class="sort-arrow" v-html="sectorSortIcon('dailyChange')"></span></th>
                   <th class="sortable" @click="sortSectorDetailBy('yearChange')">年涨跌 <span class="sort-arrow" v-html="sectorSortIcon('yearChange')"></span></th>
@@ -993,7 +999,7 @@
                   <td class="col-sticky col-sticky-0">{{ idx + 1 }}</td>
                   <td class="col-sticky col-sticky-1">{{ s.code }}</td>
                   <td class="col-sticky col-sticky-2">{{ s.name }}</td>
-                  <td>
+                  <td class="col-sticky col-sticky-3">
                     <button class="btn-icon-sm" @click="toggleFavorite(s)" :title="isFav(s.code) ? '取消收藏' : '收藏'">
                       <span :class="isFav(s.code) ? 'fav-active' : ''">{{ isFav(s.code) ? '★' : '☆' }}</span>
                     </button>

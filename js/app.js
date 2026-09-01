@@ -1677,6 +1677,90 @@ const app = createApp({
       return filterSort.dir === 'asc' ? '↑' : '↓';
     }
 
+    // 刷新筛选板块下所有股票的行情/财务数据
+    const filterRefreshing = ref(false);
+    async function refreshFilterStocks() {
+      const list = filterPoolStocks.value;
+      if (!list || !list.length) {
+        showToast('请先选择板块', 'error');
+        return;
+      }
+      if (filterRefreshing.value) return;
+      filterRefreshing.value = true;
+      showToast(`正在刷新 ${list.length} 只股票...`, 'info');
+      try {
+        // 1) 实时行情（腾讯）
+        const codes = list.map(s => s.code).filter(Boolean);
+        let quotes = {};
+        try { quotes = await StockAPI.getQuotes(codes); } catch (e) { console.warn('实时行情刷新失败', e); }
+        for (const s of list) {
+          const q = quotes[s.code];
+          if (q) {
+            s.name = s.name || q.name;
+            s.dailyChange = q.changePercent;
+            s.amplitude = q.amplitude;
+            s.turnover = q.turnover;
+            s.todayPrice = q.price || s.todayPrice;
+            if (q.totalMarketCap) s.totalMarketCap = q.totalMarketCap;
+          }
+        }
+        // 2) 补充财务/股东数据（东方财富，best-effort）
+        const works = list.filter(s => s.code);
+        for (let i = 0; i < works.length; i++) {
+          const s = works[i];
+          try {
+            const [flow, fin] = await Promise.all([
+              StockAPI.getCapitalFlow(s.code),
+              StockAPI.getFinance(s.code)
+            ]);
+            if (flow != null) s.capitalFlow = flow;
+            if (fin.profitYoY != null) s.profitYoY = fin.profitYoY;
+            if (fin.revenueYoY != null) s.revenueYoY = fin.revenueYoY;
+            if (fin.hbGrowth != null) s.hbGrowth = fin.hbGrowth;
+            if (fin.kcfYoY != null) s.kcfYoY = fin.kcfYoY;
+            if (fin.revHb != null) s.revHb = fin.revHb;
+            if (fin.kcfHb != null) s.kcfHb = fin.kcfHb;
+            if (fin.netProfit != null) s.netProfit = fin.netProfit;
+            if (fin.kcfjcxjlr != null) s.kcfjcxjlr = fin.kcfjcxjlr;
+            if (fin.revenue != null) s.revenue = fin.revenue;
+            if (fin.contractLiab != null) s.contractLiab = fin.contractLiab;
+            if (fin.shareholderCount != null) s.shareholderCount = fin.shareholderCount;
+            if (fin.prevShareholderCount != null) s.prevShareholderCount = fin.prevShareholderCount;
+          } catch (e) {
+            console.warn('财务数据获取失败', s.code, e);
+          }
+          // 24营比 / 24扣比（季报对比2024同期）
+          try {
+            const q24 = await StockAPI.getQuarterlyFinance(s.code);
+            if (q24.q24Rev != null) s.q24Rev = q24.q24Rev;
+            if (q24.q24Kcf != null) s.q24Kcf = q24.q24Kcf;
+          } catch (e) {
+            console.warn('季报对比获取失败', s.code, e);
+          }
+          // 年初价 + 924价
+          try {
+            const yp = await StockAPI.getYearStartPrice(s.code);
+            if (yp != null) s.yearStartPrice = yp;
+            if (s.price924 == null) {
+              const p924 = await StockAPI.get924Price(s.code);
+              if (p924 != null) s.price924 = p924;
+            }
+          } catch (e) {
+            console.warn('历史价获取失败', s.code, e);
+          }
+          if (s.todayPrice && s.yearStartPrice) {
+            s.yearChange = +(((s.todayPrice - s.yearStartPrice) / s.yearStartPrice) * 100).toFixed(2);
+          }
+          if (s.todayPrice && s.price924) {
+            s.change924 = +(((s.todayPrice - s.price924) / s.price924) * 100).toFixed(2);
+          }
+        }
+        showToast('刷新完成', 'success');
+      } finally {
+        filterRefreshing.value = false;
+      }
+    }
+
     // ============================================================
     //  设置 / 导入导出
     // ============================================================
@@ -1933,6 +2017,7 @@ const app = createApp({
       // 筛选板块
       filterPanel, openFilterPanel, resetFilter, applyFilterPool,
       filteredFilterStocks, sortedFilterStocks, sortFilterBy, filterSortIcon,
+      filterRefreshing, refreshFilterStocks,
       sortedSectorPools, sortedPools,
       // 通用：收藏
       favorites, sortedFavorites, isFav, toggleFavorite, removeFavorite,
