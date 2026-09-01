@@ -928,6 +928,9 @@ const app = createApp({
     const sectorDetailSort = reactive({ key: 'dailyChange', dir: 'desc' });
     // 勾选弹窗状态：选择板块成分股时使用
     const sectorPick = reactive({ show: false, loading: false, name: '', bk: '', type: '', stocks: [], selected: {} });
+    // 板块列表加载失败标志（用于显示重试/加载全部）
+    const sectorLoadError = ref(false);
+    const sectorLoadingAll = ref(false);
 
     // 已保存板块按创建时间倒序
     const sortedSectorPools = computed(() => [...D.sectorPools].slice().reverse());
@@ -937,20 +940,51 @@ const app = createApp({
       const kw = sectorSearch.value.trim();
       if (!kw) { sectorResults.value = []; return; }
       sectorSearching.value = true;
+      sectorLoadError.value = false;
       try {
-        const all = await StockAPI.getAllSectors();
+        const all = await StockAPI.getAllSectors(false);
         if (!all.length) {
           sectorResults.value = [];
-          showToast('板块数据加载失败，请稍后重试', 'error');
+          sectorLoadError.value = true;
+          showToast('板块数据加载失败，请检查网络后重试', 'error');
         } else {
           sectorResults.value = await StockAPI.searchSectors(kw);
+          if (!sectorResults.value.length) {
+            showToast(`未找到「${kw}」相关板块，可尝试「加载全部板块」`, 'info');
+          }
         }
       } catch (e) {
         sectorResults.value = [];
-        showToast('板块搜索失败，请重试', 'error');
+        sectorLoadError.value = true;
+        showToast('板块加载失败，请重试', 'error');
         console.warn('板块搜索失败', e);
       } finally {
         sectorSearching.value = false;
+      }
+    }
+
+    // 强制重新加载板块列表（清除缓存）
+    async function reloadSectors() {
+      StockAPI._sectorCache = null;
+      StockAPI._sectorCacheAt = 0;
+      await searchSector();
+    }
+
+    // 加载全部板块（分页更多，用于搜索冷门概念）
+    async function loadAllSectors() {
+      sectorLoadingAll.value = true;
+      sectorLoadError.value = false;
+      showToast('正在加载全部板块（约1000个），可能需要几秒...', 'info');
+      try {
+        await StockAPI.getAllSectors(true);
+        showToast('已加载全部板块', 'success');
+        await searchSector();
+      } catch (e) {
+        sectorLoadError.value = true;
+        showToast('全部板块加载失败，请重试', 'error');
+        console.warn('加载全部板块失败', e);
+      } finally {
+        sectorLoadingAll.value = false;
       }
     }
 
@@ -1488,6 +1522,7 @@ const app = createApp({
       addPoolStocks, removePoolStock, sortedPoolDetailStocks, sortPoolDetailBy, poolSortIcon,
       // 页面2.5：概念行业选股
       sectorSearch, sectorResults, sectorSearching, sectorLoading,
+      sectorLoadError, sectorLoadingAll, reloadSectors, loadAllSectors,
       sectorDetail, sortedSectorPools, searchSector, addSectorFromSearch,
       sectorPick, sectorPickCount, toggleSelectAllSector, confirmSectorPick,
       loadSectorStocks, refreshSectorDetail, openSectorDetail, startEditSectorName,

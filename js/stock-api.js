@@ -458,19 +458,24 @@ const StockAPI = {
 
   /**
    * 分页拉取某类板块列表（概念 m:90+t:3 / 行业 m:90+t:2）
-   * 东财单页上限 100 条，故需分页。单页失败自动重试，全部失败则返回已获取部分。
+   * 东财单页上限 100 条。为避免触发东财限流：
+   *  - 默认只取前 2 页（按涨幅排序的热门板块，覆盖绝大多数常见概念）
+   *  - 每页间隔 1200ms
+   * @param {string} fs 板块筛选条件
+   * @param {number} maxPages 最多加载几页，默认 2
    * @returns {Array<{bk, name, change}>}
    */
-  async _loadSectors(fs) {
+  async _loadSectors(fs, maxPages = 2) {
     const all = [];
-    for (let pn = 1; pn <= 8; pn++) {
+    for (let pn = 1; pn <= maxPages; pn++) {
       const url = `https://push2.eastmoney.com/api/qt/clist/get?pn=${pn}&pz=100&po=1&np=1&fltt=2&invt=2&fid=f3&fs=${encodeURIComponent(fs)}&fields=f12,f14,f3`;
       const json = await this._eastFetch(url);
       const diff = (json && json.data && json.data.diff) || [];
       all.push(...diff);
       const total = json && json.data && json.data.total;
       if (!diff.length || all.length >= total) break;
-      await new Promise(r => setTimeout(r, 500));
+      // 页间等待，降低连续请求被限流概率
+      await new Promise(r => setTimeout(r, 1200));
     }
     return all.map(b => ({ bk: b.f12, name: b.f14, change: b.f3 != null ? parseFloat(b.f3) : null }));
   },
@@ -481,25 +486,29 @@ const StockAPI = {
   _sectorCacheAt: 0,
 
   /**
-   * 获取全部板块（概念+行业，去重）
-   * 缓存 10 分钟，避免频繁请求触发限流。
-   * @returns {Promise<Array<{bk, name, type}>>} type: '概念'|'行业'
+   * 获取板块列表（概念+行业，去重）。
+   * 默认只加载热门板块（各 2 页，共约 400 个），覆盖绝大多数常见概念，
+   * 避免因分页过多触发东财限流。
+   * @param {boolean} loadAll 是否加载全部板块（分页更多，可能较慢/被限流）
+   * @returns {Promise<Array<{bk, name, type, change}>>} type: '概念'|'行业'
    */
-  async getAllSectors() {
+  async getAllSectors(loadAll = false) {
     const now = Date.now();
-    if (this._sectorCache && now - this._sectorCacheAt < 10 * 60 * 1000) {
-      return this._sectorCache;
+    const cacheTtl = loadAll ? 30 * 60 * 1000 : 30 * 60 * 1000;
+    if (this._sectorCache && this._sectorCache._full >= (loadAll ? 1 : 0) && now - this._sectorCacheAt < cacheTtl) {
+      return this._sectorCache.data;
     }
+    const maxPg = loadAll ? 8 : 2;
     // 概念与行业分开请求，各自失败不互相影响
     let concepts = [], industries = [];
-    try { concepts = await this._loadSectors('m:90+t:3'); } catch (e) { console.debug('概念板块加载失败', e); }
-    try { industries = await this._loadSectors('m:90+t:2'); } catch (e) { console.debug('行业板块加载失败', e); }
+    try { concepts = await this._loadSectors('m:90+t:3', maxPg); } catch (e) { console.debug('概念板块加载失败', e); }
+    try { industries = await this._loadSectors('m:90+t:2', maxPg); } catch (e) { console.debug('行业板块加载失败', e); }
     const seen = new Set();
     const all = [];
     concepts.forEach(s => { if (!seen.has(s.bk)) { seen.add(s.bk); all.push({ ...s, type: '概念' }); } });
     industries.forEach(s => { if (!seen.has(s.bk)) { seen.add(s.bk); all.push({ ...s, type: '行业' }); } });
-    // 即便部分失败也缓存 2 分钟，避免频繁重试
-    this._sectorCache = all;
+    // 缓存（保留是否完整加载的标记）
+    this._sectorCache = { data: all, _full: loadAll ? 1 : 0 };
     this._sectorCacheAt = now;
     return all;
   },

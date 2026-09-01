@@ -240,6 +240,17 @@
         <div class="sector-results" v-else-if="sectorSearching">
           <p class="muted">正在搜索板块...</p>
         </div>
+        <!-- 加载失败提示 -->
+        <div class="sector-load-error" v-else-if="sectorLoadError">
+          <p>⚠️ 板块数据加载失败（可能是网络或行情源限流）</p>
+          <div class="sector-error-actions">
+            <button class="btn btn-sm" @click="reloadSectors" :disabled="sectorSearching">🔄 重新加载</button>
+            <button class="btn btn-sm" @click="loadAllSectors" :disabled="sectorLoadingAll">
+              <span v-if="sectorLoadingAll">⏳ 加载全部中...</span>
+              <span v-else>📚 加载全部板块</span>
+            </button>
+          </div>
+        </div>
 
         <!-- 已保存板块 -->
         <div class="section-title" v-if="sortedSectorPools.length">

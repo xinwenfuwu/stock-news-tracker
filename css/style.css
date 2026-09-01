@@ -567,6 +567,18 @@ body {
 }
 .sector-result-change { font-size: 13px; }
 
+/* 板块加载失败提示 */
+.sector-load-error {
+  padding: 16px;
+  margin-bottom: 8px;
+  background: #fff7e6;
+  border: 1px solid #ffe7a3;
+  border-radius: 8px;
+  color: #ad6800;
+}
+.sector-load-error p { margin: 0 0 10px; }
+.sector-error-actions { display: flex; gap: 8px; }
+
 /* ===== 概念选股勾选弹窗 ===== */
 .sector-pick-toolbar {
   display: flex;
