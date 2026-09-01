@@ -233,9 +233,10 @@
               <span class="sector-result-type">{{ item.type }}</span>
               <span class="sector-result-change" v-if="item.change != null">{{ fmtPct(item.change) }}</span>
               <button class="btn btn-sm btn-primary">➕ 添加</button>
+              <button class="btn btn-sm" @click.stop="addSubSector(item)">次选</button>
             </div>
           </div>
-          <p class="muted small">点击板块即可添加并自动拉取全部成分股</p>
+          <p class="muted small">点击板块设为主选并添加；点「次选」加入次选概念列表</p>
         </div>
         <div class="sector-results" v-else-if="sectorSearching">
           <p class="muted">正在搜索板块...</p>
@@ -250,6 +251,32 @@
               <span v-else>📚 加载全部板块</span>
             </button>
           </div>
+        </div>
+
+        <!-- 已选概念（主选 + 次选）交集筛选 -->
+        <div class="sector-sel" v-if="sectorSel.main || sectorSel.subs.length">
+          <div class="sector-sel-header">
+            <span class="sector-sel-title">🎯 已选概念</span>
+            <span class="muted small" v-if="sectorSel.subs.length">将筛选出<b>同时属于</b>以下所有概念的股票（交集）</span>
+          </div>
+          <div class="sector-sel-tags">
+            <span class="sector-sel-tag main" v-if="sectorSel.main" @click="openSectorSelPick(sectorSel.main)">
+              主选：{{ sectorSel.main.name }}
+              <button class="sector-sel-del" @click.stop="sectorSel.main = null" title="移除">✕</button>
+            </span>
+            <span class="sector-sel-tag sub" v-for="(sub, i) in sectorSel.subs" :key="sub.bk" @click="openSectorSelPick(sub)">
+              次选{{ i + 1 }}：{{ sub.name }}
+              <button class="sector-sel-del" @click.stop="removeSubSector(sub.bk)" title="移除">✕</button>
+            </span>
+          </div>
+          <div class="sector-sel-actions">
+            <button class="btn btn-primary" @click="startIntersectFilter" :disabled="sectorSelIntersecting">
+              <span v-if="sectorSelIntersecting">⏳ 交集筛选中...</span>
+              <span v-else>🔍 开始交集筛选（{{ sectorSelCount }}）</span>
+            </button>
+            <button class="btn btn-sm" @click="clearSectorSel">🗑 清空</button>
+          </div>
+          <p class="muted small" v-if="sectorSelError">⚠️ {{ sectorSelError }}</p>
         </div>
 
         <!-- 已保存板块 -->

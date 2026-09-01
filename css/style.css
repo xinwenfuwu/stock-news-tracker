@@ -622,6 +622,49 @@ body {
 .sector-load-error p { margin: 0 0 10px; }
 .sector-error-actions { display: flex; gap: 8px; }
 
+/* ===== 已选概念（主选 + 次选）交集筛选 ===== */
+.sector-sel {
+  padding: 14px;
+  margin: 10px 0;
+  background: #f0f7ff;
+  border: 1px solid #c7defc;
+  border-radius: 8px;
+}
+.sector-sel-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+.sector-sel-title { font-weight: 700; font-size: 14px; color: var(--primary); }
+.sector-sel-tags { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
+.sector-sel-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  border-radius: 16px;
+  font-size: 13px;
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition: background-color 0.15s;
+}
+.sector-sel-tag.main { background: #dbeafe; color: #1d4ed8; border-color: #93c5fd; }
+.sector-sel-tag.sub { background: #e0e7ff; color: #4338ca; border-color: #a5b4fc; }
+.sector-sel-tag:hover { filter: brightness(0.96); }
+.sector-sel-del {
+  background: none;
+  border: none;
+  color: inherit;
+  cursor: pointer;
+  font-size: 12px;
+  line-height: 1;
+  padding: 0 2px;
+  opacity: 0.7;
+}
+.sector-sel-del:hover { opacity: 1; }
+.sector-sel-actions { display: flex; align-items: center; gap: 10px; }
+
 /* ===== 概念选股勾选弹窗 ===== */
 .sector-pick-toolbar {
   display: flex;

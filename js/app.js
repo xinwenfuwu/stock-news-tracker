@@ -1048,27 +1048,121 @@ const app = createApp({
       }
     }
 
-    // 点击搜索结果板块：加载成分股并弹出勾选弹窗，供用户勾选要保存的股票
+    // 已选概念：主选板块 + 次选概念列表（用于交集筛选）
+    const sectorSel = reactive({ main: null, subs: [] });
+    const sectorSelIntersecting = ref(false);
+    const sectorSelError = ref('');
+    // 已选概念总数（主选+次选）
+    const sectorSelCount = computed(() => (sectorSel.main ? 1 : 0) + sectorSel.subs.length);
+
+    // 点击搜索结果板块：设为主选；无次选时直接加载成分股弹出勾选弹窗，有次选时引导交集筛选
     async function addSectorFromSearch(item) {
       // 查重：同名板块已存在则提示
       if (D.sectorPools.some(p => p.bk === item.bk)) {
         showToast('该板块已在列表中', 'info');
         return;
       }
-      // 打开勾选弹窗并加载成分股
+      sectorSel.main = { bk: item.bk, name: item.name, type: item.type || '' };
+      if (!sectorSel.subs.length) {
+        // 无次选：直接打开单板块勾选弹窗
+        await openSectorSelPick(sectorSel.main);
+      } else {
+        showToast(`已设「${item.name}」为主选，点击「开始交集筛选」得到交集`, 'info');
+      }
+    }
+
+    // 把搜索项加入次选概念列表（查重，最多支持多个）
+    function addSubSector(item) {
+      if (sectorSel.subs.some(s => s.bk === item.bk)) {
+        showToast(`「${item.name}」已在次选概念中`, 'info');
+        return;
+      }
+      sectorSel.subs.push({ bk: item.bk, name: item.name, type: item.type || '' });
+      showToast(`已加入次选概念：${item.name}`, 'success');
+    }
+    function removeSubSector(bk) {
+      const i = sectorSel.subs.findIndex(s => s.bk === bk);
+      if (i >= 0) sectorSel.subs.splice(i, 1);
+    }
+    function clearSectorSel() {
+      sectorSel.main = null;
+      sectorSel.subs = [];
+      sectorSelError.value = '';
+    }
+
+    // 把一组板块成分股合并并取交集（同时属于所有板块的股票）
+    async function _loadIntersectPick(blocks) {
       sectorPick.show = true;
       sectorPick.loading = true;
-      sectorPick.sector = item;
-      sectorPick.name = item.name;
-      sectorPick.bk = item.bk;
-      sectorPick.type = item.type || '';
       sectorPick.stocks = [];
       sectorPick.selected = {};
-      showToast(`正在获取「${item.name}」成分股...`, 'info');
+      sectorPick.bk = '';
+      const names = blocks.map(b => b.name).join(' ∩ ');
+      sectorPick.name = names;
+      sectorPick.type = '交集筛选';
       try {
-        const stocks = await StockAPI.getSectorStocks(item.bk);
-        if (!stocks.length) { showToast('未获取到该板块成分股', 'error'); return; }
+        // 并行加载各板块成分股
+        const results = await Promise.all(blocks.map(b => StockAPI.getSectorStocks(b.bk)));
+        if (results.some(r => !r.length)) {
+          showToast('部分板块未获取到成分股', 'error');
+          return;
+        }
+        // 统计每只股票出现的板块数
+        const codeCount = {};
+        results.forEach(list => {
+          list.forEach(s => {
+            const c = String(s.code || '');
+            if (c) codeCount[c] = (codeCount[c] || 0) + 1;
+          });
+        });
+        const blockCount = blocks.length;
+        // 取交集：出现在所有板块中的股票
+        const common = [];
+        const seen = {};
+        results.forEach(list => {
+          list.forEach(s => {
+            const c = String(s.code || '');
+            if (!c || seen[c]) return;
+            seen[c] = true;
+            if (codeCount[c] === blockCount) common.push(s);
+          });
+        });
+        if (!common.length) {
+          showToast(`未找到同时属于以上 ${blockCount} 个概念的股票（交集为空）`, 'error');
+          return;
+        }
         // 转成标准股票对象，默认全部勾选
+        const list = common.map(s => {
+          const ns = _newStock(s);
+          ns.dailyChange = s.changePercent;
+          ns.todayPrice = s.price;
+          return ns;
+        });
+        sectorPick.stocks = list;
+        list.forEach(s => { sectorPick.selected[s.code] = true; });
+        showToast(`交集筛选完成：${list.length} 只股票（同时属于 ${blockCount} 个概念）`, 'success');
+      } catch (e) {
+        console.warn('交集筛选失败', e);
+        showToast('交集筛选失败，请重试', 'error');
+      } finally {
+        sectorPick.loading = false;
+      }
+    }
+
+    // 打开某个已选概念的勾选弹窗（单板块）
+    async function openSectorSelPick(block) {
+      sectorPick.show = true;
+      sectorPick.loading = true;
+      sectorPick.sector = block;
+      sectorPick.name = block.name;
+      sectorPick.bk = block.bk;
+      sectorPick.type = block.type || '';
+      sectorPick.stocks = [];
+      sectorPick.selected = {};
+      showToast(`正在获取「${block.name}」成分股...`, 'info');
+      try {
+        const stocks = await StockAPI.getSectorStocks(block.bk);
+        if (!stocks.length) { showToast('未获取到该板块成分股', 'error'); return; }
         const list = stocks.map(s => {
           const ns = _newStock(s);
           ns.dailyChange = s.changePercent;
@@ -1076,7 +1170,6 @@ const app = createApp({
           return ns;
         });
         sectorPick.stocks = list;
-        // 默认一键全选
         list.forEach(s => { sectorPick.selected[s.code] = true; });
         showToast(`已加载 ${list.length} 只成分股，默认全选`, 'success');
       } catch (e) {
@@ -1084,6 +1177,27 @@ const app = createApp({
         showToast('成分股获取失败，请重试', 'error');
       } finally {
         sectorPick.loading = false;
+      }
+    }
+
+    // 开始交集筛选：主选 + 所有次选概念的成分股取交集
+    async function startIntersectFilter() {
+      const blocks = [];
+      if (sectorSel.main) blocks.push(sectorSel.main);
+      sectorSel.subs.forEach(s => blocks.push(s));
+      if (blocks.length < 2) {
+        showToast('交集筛选需要至少主选 + 1 个次选概念', 'error');
+        return;
+      }
+      sectorSelIntersecting.value = true;
+      sectorSelError.value = '';
+      try {
+        await _loadIntersectPick(blocks);
+      } catch (e) {
+        sectorSelError.value = '交集筛选失败，请稍后重试';
+        console.warn('交集筛选异常', e);
+      } finally {
+        sectorSelIntersecting.value = false;
       }
     }
 
@@ -1118,9 +1232,11 @@ const app = createApp({
     function confirmSectorPick() {
       const selected = visibleSectorPickStocks.value.filter(s => sectorPick.selected[s.code]);
       if (!selected.length) { showToast('请至少勾选一只股票', 'error'); return; }
+      // 交集筛选场景 bk 为空，生成唯一标识，避免详情刷新时误调用真实板块接口
+      const bk = sectorPick.bk || ('INTERSECT_' + Date.now());
       const sector = {
         name: sectorPick.name,
-        bk: sectorPick.bk,
+        bk: bk,
         type: sectorPick.type,
         date: Store.today(),
         stocks: selected
@@ -1602,6 +1718,8 @@ const app = createApp({
       sectorDetail, sortedSectorPools, searchSector, addSectorFromSearch,
       sectorPick, sectorPickCount, toggleSelectAllSector, confirmSectorPick,
       visibleSectorPickStocks, sectorPickFiltered,
+      sectorSel, sectorSelCount, sectorSelIntersecting, sectorSelError,
+      addSubSector, removeSubSector, clearSectorSel, startIntersectFilter, openSectorSelPick,
       loadSectorStocks, refreshSectorDetail, openSectorDetail, startEditSectorName,
       saveSectorName, deleteSectorPool, removeSectorStock,
       sortedSectorDetailStocks, sortSectorDetailBy, sectorSortIcon,
