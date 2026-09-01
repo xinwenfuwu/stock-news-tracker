@@ -1764,11 +1764,11 @@ const app = createApp({
         if (!inRange(positiveCount(s), filterPanel.posMin, filterPanel.posMax)) return false;
         // 行业筛选
         if (filterPanel.industry && (s.industry || '未知') !== filterPanel.industry) return false;
-        // 比值筛选：924涨跌 < 24营比 + 24扣比（三值均须有效）
+        // 比值筛选：924涨跌 < 24营比/2 + 24扣比/2（即 924涨跌 小于二者均值，三值均须有效）
         if (filterPanel.ratioFilter) {
           const c9 = s.change924, rv = s.q24Rev, kc = s.q24Kcf;
           if (c9 == null || isNaN(c9) || rv == null || isNaN(rv) || kc == null || isNaN(kc)) return false;
-          if (!(c9 < rv + kc)) return false;
+          if (!(c9 < rv / 2 + kc / 2)) return false;
         }
         return true;
       });

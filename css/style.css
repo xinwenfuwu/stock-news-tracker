@@ -224,11 +224,15 @@ body {
 .filter-scroll thead th {
   position: sticky;
   top: 0;
-  z-index: 40;
+  z-index: 10;
   background: #f5f7fa;
 }
-.filter-scroll th.col-sticky { z-index: 50; }
-.filter-scroll td.col-sticky { z-index: 30; }
+/* 层级：普通表头(10) < 冻结数据单元格(20) < 冻结表头(30)
+   关键：冻结数据单元格(20) 高于普通表头(10)，横向滚动时表头不会覆盖左侧冻结列 */
+.filter-scroll .pool-detail-table th.col-sticky,
+.filter-scroll th.col-sticky { z-index: 30; }
+.filter-scroll .pool-detail-table td.col-sticky,
+.filter-scroll td.col-sticky { z-index: 20; }
 
 /* 筛选板块筛选栏 */
 .filter-bar {
