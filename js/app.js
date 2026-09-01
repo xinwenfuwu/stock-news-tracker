@@ -1066,8 +1066,26 @@ const app = createApp({
       showToast('数据刷新完成', 'success');
     }
 
-    /** 取股票池详情某列的排序值（含计算字段 市净比/市扣比/市营比/同比/环比系列、散户差额） */
+    /** 正数统计所覆盖的字段区间：从「今涨跌」到「扣非环比」共 20 个字段 */
+    const POSITIVE_KEYS = [
+      'dailyChange', 'yearChange', 'change924', 'q24Rev', 'shareholderDiff',
+      'q24Kcf', 'pbRatio', 'pkRatio', 'prRatio', 'pyRatio',
+      'pk2Ratio', 'prrRatio', 'ph2Ratio', 'pkHbRatio', 'phRatio',
+      'hbGrowth', 'profitYoY', 'revenueYoY', 'kcfYoY', 'kcfHb'
+    ];
+    /** 正数统计：上述字段中数值为正的个数（空值/非数字不计入） */
+    function positiveCount(s) {
+      let n = 0;
+      for (const k of POSITIVE_KEYS) {
+        const v = poolVal(s, k);
+        if (v != null && !isNaN(parseFloat(v)) && parseFloat(v) > 0) n++;
+      }
+      return n;
+    }
+
+    /** 取股票池详情某列的排序值（含计算字段 市净比/市扣比/市营比/同比/环比系列、散户差额、正数统计） */
     function poolVal(s, key) {
+      if (key === 'positiveCount') return positiveCount(s);
       if (key === 'pbRatio' || key === 'pkRatio' || key === 'pyRatio' || key === 'pk2Ratio' || key === 'phRatio' || key === 'prRatio' || key === 'prrRatio' || key === 'ph2Ratio' || key === 'pkHbRatio') {
         const r = sRatio(s);
         return r[key];
@@ -1667,7 +1685,8 @@ const app = createApp({
       pkMin: null, pkMax: null,   // 市扣比区间
       prMin: null, prMax: null,   // 市营比区间
       q24Min: null, q24Max: null,   // 24营比区间
-      q24kMin: null, q24kMax: null  // 24扣比区间
+      q24kMin: null, q24kMax: null, // 24扣比区间
+      posMin: null, posMax: null    // 正数统计区间（今涨跌→扣非环比 中为正的字段个数）
     });
     function openFilterPanel() {
       filterPanel.show = true;
@@ -1692,6 +1711,7 @@ const app = createApp({
       filterPanel.prMin = null; filterPanel.prMax = null;
       filterPanel.q24Min = null; filterPanel.q24Max = null;
       filterPanel.q24kMin = null; filterPanel.q24kMax = null;
+      filterPanel.posMin = null; filterPanel.posMax = null;
     }
     /** 切换板块后重置区间筛选；若已固定则保留区间 */
     function applyFilterPool() {
@@ -1701,6 +1721,7 @@ const app = createApp({
       filterPanel.prMin = null; filterPanel.prMax = null;
       filterPanel.q24Min = null; filterPanel.q24Max = null;
       filterPanel.q24kMin = null; filterPanel.q24kMax = null;
+      filterPanel.posMin = null; filterPanel.posMax = null;
     }
     /** 区间判断工具：v 在 [min,max] 内（含边界），边界均为空则不限（含 null） */
     function inRange(v, min, max) {
@@ -1730,6 +1751,7 @@ const app = createApp({
         if (!inRange(r.prRatio, filterPanel.prMin, filterPanel.prMax)) return false;
         if (!inRange(s.q24Rev, filterPanel.q24Min, filterPanel.q24Max)) return false;
         if (!inRange(s.q24Kcf, filterPanel.q24kMin, filterPanel.q24kMax)) return false;
+        if (!inRange(positiveCount(s), filterPanel.posMin, filterPanel.posMax)) return false;
         return true;
       });
     });
@@ -2106,6 +2128,7 @@ const app = createApp({
       // 筛选板块
       filterPanel, openFilterPanel, resetFilter, applyFilterPool, toggleFilterLock,
       filteredFilterStocks, sortedFilterStocks, sortFilterBy, filterSortIcon,
+      positiveCount, POSITIVE_KEYS,
       filterRefreshing, refreshFilterStocks,
       sortedSectorPools, sortedPools,
       // 通用：收藏

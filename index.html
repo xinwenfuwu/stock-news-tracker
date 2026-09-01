@@ -581,6 +581,15 @@
               <input type="number" step="0.01" v-model.number="filterPanel.q24kMax" placeholder="最大">
             </div>
           </div>
+          <!-- 正数统计区间 -->
+          <div class="filter-field">
+            <label title="今涨跌→扣非环比 共20个字段中，数值为正的个数">正数统计</label>
+            <div class="range">
+              <input type="number" step="1" min="0" :max="POSITIVE_KEYS.length" v-model.number="filterPanel.posMin" placeholder="最小">
+              <span style="color:#909399">—</span>
+              <input type="number" step="1" min="0" :max="POSITIVE_KEYS.length" v-model.number="filterPanel.posMax" placeholder="最大">
+            </div>
+          </div>
           <button class="btn btn-sm" @click="resetFilter" :disabled="filterPanel.locked">🔄 重置</button>
           <button class="btn btn-sm" :class="{ 'btn-locked': filterPanel.locked }" @click="toggleFilterLock">
             <span v-if="filterPanel.locked">🔒 已固定</span>
@@ -596,6 +605,7 @@
                 <th class="col-sticky col-sticky-0">序号</th>
                 <th class="col-sticky col-sticky-1">代码</th>
                 <th class="col-sticky col-sticky-2">股票名称</th>
+                <th class="sortable" @click="sortFilterBy('positiveCount')" title="今涨跌→扣非环比 共20个字段中，数值为正的个数">正数统计 <span class="sort-arrow" v-html="filterSortIcon('positiveCount')"></span></th>
                 <th class="sortable" @click="sortFilterBy('industry')">行业 <span class="sort-arrow" v-html="filterSortIcon('industry')"></span></th>
                 <th>收藏</th>
                 <th class="sortable" @click="sortFilterBy('contractLiab')">合同负债 <span class="sort-arrow" v-html="filterSortIcon('contractLiab')"></span></th>
@@ -630,6 +640,7 @@
                 <td class="col-sticky col-sticky-0">{{ idx + 1 }}</td>
                 <td class="col-sticky col-sticky-1">{{ s.code }}</td>
                 <td class="col-sticky col-sticky-2">{{ s.name }}</td>
+                <td :class="positiveCount(s) > 0 ? 'pos-hit' : ''"><b>{{ positiveCount(s) }}</b><span class="muted small"> / {{ POSITIVE_KEYS.length }}</span></td>
                 <td>{{ s.industry || '—' }}</td>
                 <td>
                   <button class="btn-icon-sm" @click="toggleFavorite(s)" :title="isFav(s.code) ? '取消收藏' : '收藏'">
@@ -670,6 +681,7 @@
         <div class="info-box small">
           <p>💡 <b>字段含义与计算规则</b>：<br>
           · 行业=个股所属一级行业（如食品饮料、银行），来自东方财富公司概况。<br>
+          · <b>正数统计</b>=从「今涨跌」到「扣非环比」共 {{ POSITIVE_KEYS.length }} 个字段中，数值为正的个数（空值不计入），显示为「正数个数 / {{ POSITIVE_KEYS.length }}」，正数越多越强势。顶部「正数统计」框可按该个数区间筛选（如填 15—20 即只保留至少15项为正的个股）。<br>
           · 今涨跌=当日涨跌幅(%)；年涨跌=当日价相对当年首个交易日涨跌幅(%)；924涨跌=当日价相对2024-09-24收盘价涨跌幅(%)（不复权）。<br>
           · 24营比=最新报告期营收 相对 2024年同期营收增长率(%)；24扣比=最新报告期扣非净利润 相对 2024年同期扣非净利润增长率(%)。顶部「24营比/24扣比」框可按该增长率区间筛选。<br>
           · 散户差额=最新散户数量−上期散户数量。<br>
@@ -874,6 +886,7 @@
                   <th class="col-sticky col-sticky-0">序号</th>
                   <th class="col-sticky col-sticky-1">代码</th>
                   <th class="col-sticky col-sticky-2">股票名称</th>
+                  <th class="sortable" @click="sortPoolDetailBy('positiveCount')" title="今涨跌→扣非环比 共20个字段中，数值为正的个数">正数统计 <span class="sort-arrow" v-html="poolSortIcon('positiveCount')"></span></th>
                   <th class="sortable" @click="sortPoolDetailBy('industry')">行业 <span class="sort-arrow" v-html="poolSortIcon('industry')"></span></th>
                   <th>收藏</th>
                   <th class="sortable" @click="sortPoolDetailBy('contractLiab')">合同负债 <span class="sort-arrow" v-html="poolSortIcon('contractLiab')"></span></th>
@@ -909,6 +922,7 @@
                   <td class="col-sticky col-sticky-0">{{ idx + 1 }}</td>
                   <td class="col-sticky col-sticky-1">{{ s.code }}</td>
                   <td class="col-sticky col-sticky-2">{{ s.name }}</td>
+                  <td :class="positiveCount(s) > 0 ? 'pos-hit' : ''"><b>{{ positiveCount(s) }}</b><span class="muted small"> / {{ POSITIVE_KEYS.length }}</span></td>
                   <td>{{ s.industry || '—' }}</td>
                   <td>
                     <button class="btn-icon-sm" @click="toggleFavorite(s)" :title="isFav(s.code) ? '取消收藏' : '收藏'">
@@ -992,6 +1006,7 @@
                   <th class="col-sticky col-sticky-0">序号</th>
                   <th class="col-sticky col-sticky-1">代码</th>
                   <th class="col-sticky col-sticky-2">股票名称</th>
+                  <th class="sortable" @click="sortSectorDetailBy('positiveCount')" title="今涨跌→扣非环比 共20个字段中，数值为正的个数">正数统计 <span class="sort-arrow" v-html="sectorSortIcon('positiveCount')"></span></th>
                   <th class="sortable" @click="sortSectorDetailBy('industry')">行业 <span class="sort-arrow" v-html="sectorSortIcon('industry')"></span></th>
                   <th>收藏</th>
                   <th class="sortable" @click="sortSectorDetailBy('contractLiab')">合同负债 <span class="sort-arrow" v-html="sectorSortIcon('contractLiab')"></span></th>
@@ -1027,6 +1042,7 @@
                   <td class="col-sticky col-sticky-0">{{ idx + 1 }}</td>
                   <td class="col-sticky col-sticky-1">{{ s.code }}</td>
                   <td class="col-sticky col-sticky-2">{{ s.name }}</td>
+                  <td :class="positiveCount(s) > 0 ? 'pos-hit' : ''"><b>{{ positiveCount(s) }}</b><span class="muted small"> / {{ POSITIVE_KEYS.length }}</span></td>
                   <td>{{ s.industry || '—' }}</td>
                   <td>
                     <button class="btn-icon-sm" @click="toggleFavorite(s)" :title="isFav(s.code) ? '取消收藏' : '收藏'">

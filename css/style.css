@@ -169,6 +169,8 @@ body {
 .btn-danger { color: var(--danger); border-color: var(--border); }
 .btn-danger:hover { background: var(--danger); color: #fff; border-color: var(--danger); }
 .btn-sm { padding: 4px 10px; font-size: 12px; }
+/* 正数统计：命中正数时高亮 */
+.pos-hit { color: var(--up, #c0392b); font-weight: 600; }
 .btn-locked {
   background: #f59e0b;
   border-color: #f59e0b;
