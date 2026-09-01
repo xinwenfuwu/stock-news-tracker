@@ -303,6 +303,7 @@ const StockAPI = {
    *   hbGrowth,         // 环比增长率(净利润环比 %)
    *   kcfYoY,           // 扣非净利润同比增长率(%)
    *   revHb,            // 营收环比增长率(%)
+   *   kcfHb,            // 扣非净利润环比增长率(%)
    *   contractLiab,     // 最新合同负债(元)
    *   shareholderCount, // 散户数量(本期股东人数)
    *   prevShareholderCount // 上期散户数量
@@ -313,7 +314,7 @@ const StockAPI = {
     const result = {
       netProfit: null, kcfjcxjlr: null, revenue: null,
       profitYoY: null, revenueYoY: null, hbGrowth: null,
-      kcfYoY: null, revHb: null,
+      kcfYoY: null, revHb: null, kcfHb: null,
       contractLiab: null,
       shareholderCount: null, prevShareholderCount: null
     };
@@ -332,6 +333,7 @@ const StockAPI = {
         result.hbGrowth = row.NETPROFITRPHBZC != null ? parseFloat(row.NETPROFITRPHBZC) : null;        // 净利润环比(%)
         result.kcfYoY = row.KCFJCXSYJLRTZ != null ? parseFloat(row.KCFJCXSYJLRTZ) : null;               // 扣非净利润同比增长(%)
         result.revHb = row.YYZSRGDHBZC != null ? parseFloat(row.YYZSRGDHBZC) : null;                    // 营收环比增长(%)
+        result.kcfHb = row.KFJLRGDHBZC != null ? parseFloat(row.KFJLRGDHBZC) : null;                    // 扣非净利润环比增长(%)
       }
     } catch (e) {
       console.debug('财务摘要获取失败', code);

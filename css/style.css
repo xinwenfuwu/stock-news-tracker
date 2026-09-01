@@ -205,6 +205,23 @@ body {
 /* 宽表强制横向滚动 */
 .table-scroll-x { overflow-x: auto; overflow-y: auto; }
 .pool-detail-table { min-width: 2200px; white-space: nowrap; }
+/* 筛选板块筛选栏 */
+.filter-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 14px;
+  padding: 12px 14px;
+  background: #f7f9fc;
+  border: 1px solid #e3e9f3;
+  border-radius: 8px;
+  margin-bottom: 14px;
+}
+.filter-field { display: flex; flex-direction: column; gap: 4px; }
+.filter-field label { font-size: 12px; color: var(--text-secondary); font-weight: 600; white-space: nowrap; }
+.filter-field select { padding: 6px 10px; border: 1px solid #d8e0f0; border-radius: 6px; background: #fff; font-size: 13px; min-width: 170px; }
+.filter-field .range { display: flex; align-items: center; gap: 4px; }
+.filter-field .range input[type="number"] { padding: 6px 8px; border: 1px solid #d8e0f0; border-radius: 6px; font-size: 13px; width: 80px; }
 /* 冻结列 */
 .pool-detail-table th.col-sticky,
 .pool-detail-table td.col-sticky {

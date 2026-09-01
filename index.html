@@ -328,6 +328,7 @@
           <div class="toolbar-right">
             <button class="btn" @click="fetchHotBoards" :disabled="hotLoading">📊 获取热门板块</button>
             <button class="btn" @click="refreshHotStocks" :disabled="hotLoading">🔄 刷新股票行情</button>
+            <button class="btn btn-primary" @click="openFilterPanel">🎯 筛选板块</button>
           </div>
         </div>
 
@@ -355,28 +356,29 @@
                   <th>收藏日期</th>
                   <th>距今</th>
                   <th>备注</th>
-                  <th>当日涨跌幅</th>
-                  <th>年初涨跌幅</th>
-                  <th>924涨跌幅</th>
+                  <th>合同负债</th>
+                  <th>今涨跌</th>
+                  <th>年涨跌</th>
+                  <th>924涨跌</th>
                   <th>24营比</th>
+                  <th>散户差额</th>
                   <th>24扣比</th>
                   <th>市净比</th>
                   <th>市扣比</th>
+                  <th>市营比</th>
                   <th>市净同比</th>
                   <th>市扣同比</th>
-                  <th>市营环比</th>
-                  <th>市营比</th>
                   <th>市营同比</th>
-                  <th>总市值(亿)</th>
-                  <th>合同负债</th>
-                  <th>扣非净利润</th>
-                  <th>净利润</th>
-                  <th>营业收入</th>
-                  <th>环比增长率</th>
-                  <th>利润同比增长率</th>
-                  <th>同比增长率</th>
+                  <th>市净环比</th>
+                  <th>市扣环比</th>
+                  <th>市营环比</th>
+                  <th>净利润环比</th>
+                  <th>利润同比</th>
+                  <th>营收同比增长率</th>
+                  <th>扣非同比</th>
+                  <th>扣非环比</th>
                   <th>振幅</th>
-                  <th>散户数量</th>
+                  <th>最新散户数量</th>
                   <th>换手率</th>
                   <th>资金流入</th>
                   <th>操作</th>
@@ -392,26 +394,27 @@
                   <td>
                     <input class="fav-note-input" v-model="f.note" :placeholder="'备注'" @change="updateFavNote(f, f.note)">
                   </td>
+                  <td>{{ fmtYi(f.contractLiab) }}</td>
                   <td :class="pctClass(f.dailyChange)">{{ f.dailyChange != null ? fmtPct(f.dailyChange) : '—' }}</td>
                   <td :class="pctClass(f.yearChange)">{{ f.yearChange != null ? fmtPct(f.yearChange) : '—' }}</td>
                   <td :class="pctClass(f.change924)">{{ f.change924 != null ? fmtPct(f.change924) : '—' }}</td>
                   <td :class="pctClass(f.q24Rev)">{{ f.q24Rev != null ? fmtPct(f.q24Rev) : '—' }}</td>
+                  <td :class="numClass((f.shareholderCount != null && f.prevShareholderCount != null) ? (f.shareholderCount - f.prevShareholderCount) : null)">{{ (f.shareholderCount != null && f.prevShareholderCount != null) ? (f.shareholderCount - f.prevShareholderCount) : '—' }}</td>
                   <td :class="pctClass(f.q24Kcf)">{{ f.q24Kcf != null ? fmtPct(f.q24Kcf) : '—' }}</td>
                   <td :class="numClass(sRatio(f).pbRatio)">{{ sRatio(f).pbRatio != null ? fmt(sRatio(f).pbRatio) : '—' }}</td>
                   <td :class="numClass(sRatio(f).pkRatio)">{{ sRatio(f).pkRatio != null ? fmt(sRatio(f).pkRatio) : '—' }}</td>
+                  <td :class="numClass(sRatio(f).prRatio)">{{ sRatio(f).prRatio != null ? fmt(sRatio(f).prRatio) : '—' }}</td>
                   <td :class="numClass(sRatio(f).pyRatio)">{{ sRatio(f).pyRatio != null ? fmt(sRatio(f).pyRatio) : '—' }}</td>
                   <td :class="numClass(sRatio(f).pk2Ratio)">{{ sRatio(f).pk2Ratio != null ? fmt(sRatio(f).pk2Ratio) : '—' }}</td>
-                  <td :class="numClass(sRatio(f).phRatio)">{{ sRatio(f).phRatio != null ? fmt(sRatio(f).phRatio) : '—' }}</td>
-                  <td :class="numClass(sRatio(f).prRatio)">{{ sRatio(f).prRatio != null ? fmt(sRatio(f).prRatio) : '—' }}</td>
                   <td :class="numClass(sRatio(f).prrRatio)">{{ sRatio(f).prrRatio != null ? fmt(sRatio(f).prrRatio) : '—' }}</td>
-                  <td>{{ f.totalMarketCap != null ? fmt(f.totalMarketCap) : '—' }}</td>
-                  <td>{{ fmtYi(f.contractLiab) }}</td>
-                  <td>{{ fmtYi(f.kcfjcxjlr) }}</td>
-                  <td>{{ fmtYi(f.netProfit) }}</td>
-                  <td>{{ fmtYi(f.revenue) }}</td>
+                  <td :class="numClass(sRatio(f).ph2Ratio)">{{ sRatio(f).ph2Ratio != null ? fmt(sRatio(f).ph2Ratio) : '—' }}</td>
+                  <td :class="numClass(sRatio(f).pkHbRatio)">{{ sRatio(f).pkHbRatio != null ? fmt(sRatio(f).pkHbRatio) : '—' }}</td>
+                  <td :class="numClass(sRatio(f).phRatio)">{{ sRatio(f).phRatio != null ? fmt(sRatio(f).phRatio) : '—' }}</td>
                   <td :class="pctClass(f.hbGrowth)">{{ f.hbGrowth != null ? fmtPct(f.hbGrowth) : '—' }}</td>
                   <td :class="pctClass(f.profitYoY)">{{ f.profitYoY != null ? fmtPct(f.profitYoY) : '—' }}</td>
                   <td :class="pctClass(f.revenueYoY)">{{ f.revenueYoY != null ? fmtPct(f.revenueYoY) : '—' }}</td>
+                  <td :class="pctClass(f.kcfYoY)">{{ f.kcfYoY != null ? fmtPct(f.kcfYoY) : '—' }}</td>
+                  <td :class="pctClass(f.kcfHb)">{{ f.kcfHb != null ? fmtPct(f.kcfHb) : '—' }}</td>
                   <td :class="numClass(f.amplitude)">{{ f.amplitude != null ? f.amplitude + '%' : '—' }}</td>
                   <td>{{ f.shareholderCount || '—' }}</td>
                   <td>{{ f.turnover != null ? f.turnover + '%' : '—' }}</td>
@@ -422,6 +425,18 @@
             </table>
           </div>
           <div class="muted small" v-else>暂无收藏。点击股票列表中的 ☆ 即可收藏，或在上方输入代码手动添加。</div>
+          <div class="info-box small">
+            <p>💡 <b>字段含义与计算规则</b>：<br>
+            · 今涨跌=当日涨跌幅(%)；年涨跌=当日价相对当年首个交易日涨跌幅(%)；924涨跌=当日价相对2024-09-24收盘价涨跌幅(%)。<br>
+            · 24营比=最新报告期营收 相对 2024年同期营收的增长率(%)；24扣比=最新报告期扣非净利润 相对 2024年同期扣非净利润的增长率(%)。<br>
+            · 散户差额=最新散户数量−上期散户数量。<br>
+            · 市净比=总市值÷净利润÷10；市扣比=总市值÷扣非净利润÷10；市营比=总市值÷营业收入（金额统一按亿元）。<br>
+            · 市净同比=总市值÷净利润同比增长率；市扣同比=总市值÷扣非净利润同比增长率；市营同比=总市值÷营收同比增长率。<br>
+            · 市净环比=总市值÷净利润环比增长率；市扣环比=总市值÷扣非净利润环比增长率；市营环比=总市值÷营收环比增长率。<br>
+            · 净利润环比=净利润环比增长率(%)；利润同比=净利润同比增长率(%)；营收同比增长率=营业收入同比增长率(%)；扣非同比=扣非净利润同比增长率(%)；扣非环比=扣非净利润环比增长率(%)。<br>
+            · 振幅=当日振幅(%)；最新散户数量=最新一期股东户数；换手率=当日换手率(%)；资金流入=主力净流入额。<br>
+            · 数据来源：行情/振幅/换手/总市值来自腾讯接口；财务/股东/增长率为东方财富接口。</p>
+          </div>
         </div>
 
         <div class="hot-layout hot-layout-2">
@@ -689,30 +704,30 @@
                   <th class="col-sticky col-sticky-0">序号</th>
                   <th class="col-sticky col-sticky-1">代码</th>
                   <th class="col-sticky col-sticky-2">股票名称</th>
-                  <th class="col-sticky col-sticky-3">收藏</th>
+                  <th>收藏</th>
                   <th class="sortable" @click="sortPoolDetailBy('contractLiab')">合同负债 <span class="sort-arrow" v-html="poolSortIcon('contractLiab')"></span></th>
-                  <th class="sortable" @click="sortPoolDetailBy('dailyChange')">当日涨跌幅 <span class="sort-arrow" v-html="poolSortIcon('dailyChange')"></span></th>
-                  <th class="sortable" @click="sortPoolDetailBy('yearChange')">年初涨跌幅 <span class="sort-arrow" v-html="poolSortIcon('yearChange')"></span></th>
-                  <th class="sortable" @click="sortPoolDetailBy('change924')">924涨跌幅 <span class="sort-arrow" v-html="poolSortIcon('change924')"></span></th>
+                  <th class="sortable" @click="sortPoolDetailBy('dailyChange')">今涨跌 <span class="sort-arrow" v-html="poolSortIcon('dailyChange')"></span></th>
+                  <th class="sortable" @click="sortPoolDetailBy('yearChange')">年涨跌 <span class="sort-arrow" v-html="poolSortIcon('yearChange')"></span></th>
+                  <th class="sortable" @click="sortPoolDetailBy('change924')">924涨跌 <span class="sort-arrow" v-html="poolSortIcon('change924')"></span></th>
                   <th class="sortable" @click="sortPoolDetailBy('q24Rev')">24营比 <span class="sort-arrow" v-html="poolSortIcon('q24Rev')"></span></th>
+                  <th class="sortable" @click="sortPoolDetailBy('shareholderDiff')">散户差额 <span class="sort-arrow" v-html="poolSortIcon('shareholderDiff')"></span></th>
                   <th class="sortable" @click="sortPoolDetailBy('q24Kcf')">24扣比 <span class="sort-arrow" v-html="poolSortIcon('q24Kcf')"></span></th>
                   <th class="sortable" @click="sortPoolDetailBy('pbRatio')">市净比 <span class="sort-arrow" v-html="poolSortIcon('pbRatio')"></span></th>
                   <th class="sortable" @click="sortPoolDetailBy('pkRatio')">市扣比 <span class="sort-arrow" v-html="poolSortIcon('pkRatio')"></span></th>
+                  <th class="sortable" @click="sortPoolDetailBy('prRatio')">市营比 <span class="sort-arrow" v-html="poolSortIcon('prRatio')"></span></th>
                   <th class="sortable" @click="sortPoolDetailBy('pyRatio')">市净同比 <span class="sort-arrow" v-html="poolSortIcon('pyRatio')"></span></th>
                   <th class="sortable" @click="sortPoolDetailBy('pk2Ratio')">市扣同比 <span class="sort-arrow" v-html="poolSortIcon('pk2Ratio')"></span></th>
-                  <th class="sortable" @click="sortPoolDetailBy('phRatio')">市营环比 <span class="sort-arrow" v-html="poolSortIcon('phRatio')"></span></th>
-                  <th class="sortable" @click="sortPoolDetailBy('prRatio')">市营比 <span class="sort-arrow" v-html="poolSortIcon('prRatio')"></span></th>
                   <th class="sortable" @click="sortPoolDetailBy('prrRatio')">市营同比 <span class="sort-arrow" v-html="poolSortIcon('prrRatio')"></span></th>
-                  <th class="sortable" @click="sortPoolDetailBy('totalMarketCap')">总市值(亿) <span class="sort-arrow" v-html="poolSortIcon('totalMarketCap')"></span></th>
-                  <th class="sortable" @click="sortPoolDetailBy('kcfjcxjlr')">扣非净利润 <span class="sort-arrow" v-html="poolSortIcon('kcfjcxjlr')"></span></th>
-                  <th class="sortable" @click="sortPoolDetailBy('netProfit')">净利润 <span class="sort-arrow" v-html="poolSortIcon('netProfit')"></span></th>
-                  <th class="sortable" @click="sortPoolDetailBy('revenue')">营业收入 <span class="sort-arrow" v-html="poolSortIcon('revenue')"></span></th>
-                  <th class="sortable" @click="sortPoolDetailBy('hbGrowth')">环比增长率 <span class="sort-arrow" v-html="poolSortIcon('hbGrowth')"></span></th>
-                  <th class="sortable" @click="sortPoolDetailBy('profitYoY')">利润同比增长率 <span class="sort-arrow" v-html="poolSortIcon('profitYoY')"></span></th>
-                  <th class="sortable" @click="sortPoolDetailBy('revenueYoY')">同比增长率 <span class="sort-arrow" v-html="poolSortIcon('revenueYoY')"></span></th>
+                  <th class="sortable" @click="sortPoolDetailBy('ph2Ratio')">市净环比 <span class="sort-arrow" v-html="poolSortIcon('ph2Ratio')"></span></th>
+                  <th class="sortable" @click="sortPoolDetailBy('pkHbRatio')">市扣环比 <span class="sort-arrow" v-html="poolSortIcon('pkHbRatio')"></span></th>
+                  <th class="sortable" @click="sortPoolDetailBy('phRatio')">市营环比 <span class="sort-arrow" v-html="poolSortIcon('phRatio')"></span></th>
+                  <th class="sortable" @click="sortPoolDetailBy('hbGrowth')">净利润环比 <span class="sort-arrow" v-html="poolSortIcon('hbGrowth')"></span></th>
+                  <th class="sortable" @click="sortPoolDetailBy('profitYoY')">利润同比 <span class="sort-arrow" v-html="poolSortIcon('profitYoY')"></span></th>
+                  <th class="sortable" @click="sortPoolDetailBy('revenueYoY')">营收同比增长率 <span class="sort-arrow" v-html="poolSortIcon('revenueYoY')"></span></th>
+                  <th class="sortable" @click="sortPoolDetailBy('kcfYoY')">扣非同比 <span class="sort-arrow" v-html="poolSortIcon('kcfYoY')"></span></th>
+                  <th class="sortable" @click="sortPoolDetailBy('kcfHb')">扣非环比 <span class="sort-arrow" v-html="poolSortIcon('kcfHb')"></span></th>
                   <th class="sortable" @click="sortPoolDetailBy('amplitude')">振幅 <span class="sort-arrow" v-html="poolSortIcon('amplitude')"></span></th>
-                  <th class="sortable" @click="sortPoolDetailBy('shareholderCount')">散户数量 <span class="sort-arrow" v-html="poolSortIcon('shareholderCount')"></span></th>
-                  <th class="sortable" @click="sortPoolDetailBy('prevShareholderCount')">上期散户数量 <span class="sort-arrow" v-html="poolSortIcon('prevShareholderCount')"></span></th>
+                  <th class="sortable" @click="sortPoolDetailBy('shareholderCount')">最新散户数量 <span class="sort-arrow" v-html="poolSortIcon('shareholderCount')"></span></th>
                   <th class="sortable" @click="sortPoolDetailBy('turnover')">换手率 <span class="sort-arrow" v-html="poolSortIcon('turnover')"></span></th>
                   <th class="sortable" @click="sortPoolDetailBy('capitalFlow')">资金流入 <span class="sort-arrow" v-html="poolSortIcon('capitalFlow')"></span></th>
                   <th>操作</th>
@@ -723,7 +738,7 @@
                   <td class="col-sticky col-sticky-0">{{ idx + 1 }}</td>
                   <td class="col-sticky col-sticky-1">{{ s.code }}</td>
                   <td class="col-sticky col-sticky-2">{{ s.name }}</td>
-                  <td class="col-sticky col-sticky-3">
+                  <td>
                     <button class="btn-icon-sm" @click="toggleFavorite(s)" :title="isFav(s.code) ? '取消收藏' : '收藏'">
                       <span :class="isFav(s.code) ? 'fav-active' : ''">{{ isFav(s.code) ? '★' : '☆' }}</span>
                     </button>
@@ -733,24 +748,24 @@
                   <td :class="pctClass(s.yearChange)">{{ s.yearChange != null ? fmtPct(s.yearChange) : '—' }}</td>
                   <td :class="pctClass(s.change924)">{{ s.change924 != null ? fmtPct(s.change924) : '—' }}</td>
                   <td :class="pctClass(s.q24Rev)">{{ s.q24Rev != null ? fmtPct(s.q24Rev) : '—' }}</td>
+                  <td :class="numClass((s.shareholderCount != null && s.prevShareholderCount != null) ? (s.shareholderCount - s.prevShareholderCount) : null)">{{ (s.shareholderCount != null && s.prevShareholderCount != null) ? (s.shareholderCount - s.prevShareholderCount) : '—' }}</td>
                   <td :class="pctClass(s.q24Kcf)">{{ s.q24Kcf != null ? fmtPct(s.q24Kcf) : '—' }}</td>
                   <td :class="numClass(sRatio(s).pbRatio)">{{ sRatio(s).pbRatio != null ? fmt(sRatio(s).pbRatio) : '—' }}</td>
                   <td :class="numClass(sRatio(s).pkRatio)">{{ sRatio(s).pkRatio != null ? fmt(sRatio(s).pkRatio) : '—' }}</td>
+                  <td :class="numClass(sRatio(s).prRatio)">{{ sRatio(s).prRatio != null ? fmt(sRatio(s).prRatio) : '—' }}</td>
                   <td :class="numClass(sRatio(s).pyRatio)">{{ sRatio(s).pyRatio != null ? fmt(sRatio(s).pyRatio) : '—' }}</td>
                   <td :class="numClass(sRatio(s).pk2Ratio)">{{ sRatio(s).pk2Ratio != null ? fmt(sRatio(s).pk2Ratio) : '—' }}</td>
-                  <td :class="numClass(sRatio(s).phRatio)">{{ sRatio(s).phRatio != null ? fmt(sRatio(s).phRatio) : '—' }}</td>
-                  <td :class="numClass(sRatio(s).prRatio)">{{ sRatio(s).prRatio != null ? fmt(sRatio(s).prRatio) : '—' }}</td>
                   <td :class="numClass(sRatio(s).prrRatio)">{{ sRatio(s).prrRatio != null ? fmt(sRatio(s).prrRatio) : '—' }}</td>
-                  <td>{{ s.totalMarketCap != null ? fmt(s.totalMarketCap) : '—' }}</td>
-                  <td>{{ fmtYi(s.kcfjcxjlr) }}</td>
-                  <td>{{ fmtYi(s.netProfit) }}</td>
-                  <td>{{ fmtYi(s.revenue) }}</td>
+                  <td :class="numClass(sRatio(s).ph2Ratio)">{{ sRatio(s).ph2Ratio != null ? fmt(sRatio(s).ph2Ratio) : '—' }}</td>
+                  <td :class="numClass(sRatio(s).pkHbRatio)">{{ sRatio(s).pkHbRatio != null ? fmt(sRatio(s).pkHbRatio) : '—' }}</td>
+                  <td :class="numClass(sRatio(s).phRatio)">{{ sRatio(s).phRatio != null ? fmt(sRatio(s).phRatio) : '—' }}</td>
                   <td :class="pctClass(s.hbGrowth)">{{ s.hbGrowth != null ? fmtPct(s.hbGrowth) : '—' }}</td>
                   <td :class="pctClass(s.profitYoY)">{{ s.profitYoY != null ? fmtPct(s.profitYoY) : '—' }}</td>
                   <td :class="pctClass(s.revenueYoY)">{{ s.revenueYoY != null ? fmtPct(s.revenueYoY) : '—' }}</td>
+                  <td :class="pctClass(s.kcfYoY)">{{ s.kcfYoY != null ? fmtPct(s.kcfYoY) : '—' }}</td>
+                  <td :class="pctClass(s.kcfHb)">{{ s.kcfHb != null ? fmtPct(s.kcfHb) : '—' }}</td>
                   <td :class="numClass(s.amplitude)">{{ s.amplitude != null ? s.amplitude + '%' : '—' }}</td>
                   <td>{{ s.shareholderCount || '—' }}</td>
-                  <td>{{ s.prevShareholderCount || '—' }}</td>
                   <td>{{ s.turnover != null ? s.turnover + '%' : '—' }}</td>
                   <td :class="numClass(s.capitalFlow)">{{ s.capitalFlow != null ? (s.capitalFlow > 0 ? '+' : '') + (s.capitalFlow/1e4).toFixed(2) + '万' : '—' }}</td>
                   <td><button class="btn btn-sm btn-danger" @click="removePoolStock(s.code)">🗑 删除</button></td>
@@ -759,7 +774,14 @@
             </table>
           </div>
           <div class="info-box small">
-            <p>💡 说明：总市值/振幅/涨跌幅/换手率通过腾讯接口实时获取；净利润/扣非/营收/合同负债/各类增长率/股东人数通过东方财富获取。市净比=总市值÷净利润÷10；市扣比=总市值÷扣非净利润÷10；市净同比=总市值÷净利润同比增长率；市扣同比=总市值÷扣非净利润同比增长率；市营环比=总市值÷营收环比增长率；市营比=总市值÷营业收入；市营同比=总市值÷营收同比增长率（金额统一按亿元计算）。24营比=最新报告期营收 vs 2024年同期营收增长率；24扣比=最新报告期扣非净利润 vs 2024年同期扣非净利润增长率。年初涨跌幅=当日价相对当年首个交易日涨跌幅；924涨跌幅=当日价相对2024-09-24收盘价涨跌幅（不复权）。若部分数据获取失败可点击「刷新行情」重试，东方财富接口在部分网络环境可能受限。</p>
+            <p>💡 <b>字段含义与计算规则</b>：<br>
+            · <b>价格类</b>：今涨跌=当日涨跌幅(%)；年涨跌=当日价相对当年首个交易日涨跌幅(%)；924涨跌=当日价相对2024-09-24收盘价涨跌幅(%)（不复权）。<br>
+            · <b>季度对比</b>：24营比=最新报告期营收 相对 2024年同期营收增长率(%)；24扣比=最新报告期扣非净利润 相对 2024年同期扣非净利润增长率(%)。<br>
+            · <b>股东类</b>：最新散户数量=最新一期股东户数；散户差额=最新散户数量−上期散户数量。<br>
+            · <b>市值比（金额统一按亿元）</b>：市净比=总市值÷净利润÷10；市扣比=总市值÷扣非净利润÷10；市营比=总市值÷营业收入；市净同比=总市值÷净利润同比增长率；市扣同比=总市值÷扣非净利润同比增长率；市营同比=总市值÷营收同比增长率；市净环比=总市值÷净利润环比增长率；市扣环比=总市值÷扣非净利润环比增长率；市营环比=总市值÷营收环比增长率。<br>
+            · <b>增长率类</b>：净利润环比=净利润环比增长率(%)；利润同比=净利润同比增长率(%)；营收同比增长率=营业收入同比增长率(%)；扣非同比=扣非净利润同比增长率(%)；扣非环比=扣非净利润环比增长率(%)。<br>
+            · <b>其他</b>：合同负债=最新合同负债额；振幅=当日振幅(%)；换手率=当日换手率(%)；资金流入=主力净流入额。<br>
+            · <b>数据来源</b>：行情/振幅/换手/总市值来自腾讯接口；净利润/扣非/营收/合同负债/增长率/股东户数为东方财富接口。若部分数据获取失败可点击「刷新行情」重试。</p>
           </div>
         </div>
       </div>
@@ -798,30 +820,30 @@
                   <th class="col-sticky col-sticky-0">序号</th>
                   <th class="col-sticky col-sticky-1">代码</th>
                   <th class="col-sticky col-sticky-2">股票名称</th>
-                  <th class="col-sticky col-sticky-3">收藏</th>
+                  <th>收藏</th>
                   <th class="sortable" @click="sortSectorDetailBy('contractLiab')">合同负债 <span class="sort-arrow" v-html="sectorSortIcon('contractLiab')"></span></th>
-                  <th class="sortable" @click="sortSectorDetailBy('dailyChange')">当日涨跌幅 <span class="sort-arrow" v-html="sectorSortIcon('dailyChange')"></span></th>
-                  <th class="sortable" @click="sortSectorDetailBy('yearChange')">年初涨跌幅 <span class="sort-arrow" v-html="sectorSortIcon('yearChange')"></span></th>
-                  <th class="sortable" @click="sortSectorDetailBy('change924')">924涨跌幅 <span class="sort-arrow" v-html="sectorSortIcon('change924')"></span></th>
+                  <th class="sortable" @click="sortSectorDetailBy('dailyChange')">今涨跌 <span class="sort-arrow" v-html="sectorSortIcon('dailyChange')"></span></th>
+                  <th class="sortable" @click="sortSectorDetailBy('yearChange')">年涨跌 <span class="sort-arrow" v-html="sectorSortIcon('yearChange')"></span></th>
+                  <th class="sortable" @click="sortSectorDetailBy('change924')">924涨跌 <span class="sort-arrow" v-html="sectorSortIcon('change924')"></span></th>
                   <th class="sortable" @click="sortSectorDetailBy('q24Rev')">24营比 <span class="sort-arrow" v-html="sectorSortIcon('q24Rev')"></span></th>
+                  <th class="sortable" @click="sortSectorDetailBy('shareholderDiff')">散户差额 <span class="sort-arrow" v-html="sectorSortIcon('shareholderDiff')"></span></th>
                   <th class="sortable" @click="sortSectorDetailBy('q24Kcf')">24扣比 <span class="sort-arrow" v-html="sectorSortIcon('q24Kcf')"></span></th>
                   <th class="sortable" @click="sortSectorDetailBy('pbRatio')">市净比 <span class="sort-arrow" v-html="sectorSortIcon('pbRatio')"></span></th>
                   <th class="sortable" @click="sortSectorDetailBy('pkRatio')">市扣比 <span class="sort-arrow" v-html="sectorSortIcon('pkRatio')"></span></th>
+                  <th class="sortable" @click="sortSectorDetailBy('prRatio')">市营比 <span class="sort-arrow" v-html="sectorSortIcon('prRatio')"></span></th>
                   <th class="sortable" @click="sortSectorDetailBy('pyRatio')">市净同比 <span class="sort-arrow" v-html="sectorSortIcon('pyRatio')"></span></th>
                   <th class="sortable" @click="sortSectorDetailBy('pk2Ratio')">市扣同比 <span class="sort-arrow" v-html="sectorSortIcon('pk2Ratio')"></span></th>
-                  <th class="sortable" @click="sortSectorDetailBy('phRatio')">市营环比 <span class="sort-arrow" v-html="sectorSortIcon('phRatio')"></span></th>
-                  <th class="sortable" @click="sortSectorDetailBy('prRatio')">市营比 <span class="sort-arrow" v-html="sectorSortIcon('prRatio')"></span></th>
                   <th class="sortable" @click="sortSectorDetailBy('prrRatio')">市营同比 <span class="sort-arrow" v-html="sectorSortIcon('prrRatio')"></span></th>
-                  <th class="sortable" @click="sortSectorDetailBy('totalMarketCap')">总市值(亿) <span class="sort-arrow" v-html="sectorSortIcon('totalMarketCap')"></span></th>
-                  <th class="sortable" @click="sortSectorDetailBy('kcfjcxjlr')">扣非净利润 <span class="sort-arrow" v-html="sectorSortIcon('kcfjcxjlr')"></span></th>
-                  <th class="sortable" @click="sortSectorDetailBy('netProfit')">净利润 <span class="sort-arrow" v-html="sectorSortIcon('netProfit')"></span></th>
-                  <th class="sortable" @click="sortSectorDetailBy('revenue')">营业收入 <span class="sort-arrow" v-html="sectorSortIcon('revenue')"></span></th>
-                  <th class="sortable" @click="sortSectorDetailBy('hbGrowth')">环比增长率 <span class="sort-arrow" v-html="sectorSortIcon('hbGrowth')"></span></th>
-                  <th class="sortable" @click="sortSectorDetailBy('profitYoY')">利润同比增长率 <span class="sort-arrow" v-html="sectorSortIcon('profitYoY')"></span></th>
-                  <th class="sortable" @click="sortSectorDetailBy('revenueYoY')">同比增长率 <span class="sort-arrow" v-html="sectorSortIcon('revenueYoY')"></span></th>
+                  <th class="sortable" @click="sortSectorDetailBy('ph2Ratio')">市净环比 <span class="sort-arrow" v-html="sectorSortIcon('ph2Ratio')"></span></th>
+                  <th class="sortable" @click="sortSectorDetailBy('pkHbRatio')">市扣环比 <span class="sort-arrow" v-html="sectorSortIcon('pkHbRatio')"></span></th>
+                  <th class="sortable" @click="sortSectorDetailBy('phRatio')">市营环比 <span class="sort-arrow" v-html="sectorSortIcon('phRatio')"></span></th>
+                  <th class="sortable" @click="sortSectorDetailBy('hbGrowth')">净利润环比 <span class="sort-arrow" v-html="sectorSortIcon('hbGrowth')"></span></th>
+                  <th class="sortable" @click="sortSectorDetailBy('profitYoY')">利润同比 <span class="sort-arrow" v-html="sectorSortIcon('profitYoY')"></span></th>
+                  <th class="sortable" @click="sortSectorDetailBy('revenueYoY')">营收同比增长率 <span class="sort-arrow" v-html="sectorSortIcon('revenueYoY')"></span></th>
+                  <th class="sortable" @click="sortSectorDetailBy('kcfYoY')">扣非同比 <span class="sort-arrow" v-html="sectorSortIcon('kcfYoY')"></span></th>
+                  <th class="sortable" @click="sortSectorDetailBy('kcfHb')">扣非环比 <span class="sort-arrow" v-html="sectorSortIcon('kcfHb')"></span></th>
                   <th class="sortable" @click="sortSectorDetailBy('amplitude')">振幅 <span class="sort-arrow" v-html="sectorSortIcon('amplitude')"></span></th>
-                  <th class="sortable" @click="sortSectorDetailBy('shareholderCount')">散户数量 <span class="sort-arrow" v-html="sectorSortIcon('shareholderCount')"></span></th>
-                  <th class="sortable" @click="sortSectorDetailBy('prevShareholderCount')">上期散户数量 <span class="sort-arrow" v-html="sectorSortIcon('prevShareholderCount')"></span></th>
+                  <th class="sortable" @click="sortSectorDetailBy('shareholderCount')">最新散户数量 <span class="sort-arrow" v-html="sectorSortIcon('shareholderCount')"></span></th>
                   <th class="sortable" @click="sortSectorDetailBy('turnover')">换手率 <span class="sort-arrow" v-html="sectorSortIcon('turnover')"></span></th>
                   <th class="sortable" @click="sortSectorDetailBy('capitalFlow')">资金流入 <span class="sort-arrow" v-html="sectorSortIcon('capitalFlow')"></span></th>
                   <th>操作</th>
@@ -832,7 +854,7 @@
                   <td class="col-sticky col-sticky-0">{{ idx + 1 }}</td>
                   <td class="col-sticky col-sticky-1">{{ s.code }}</td>
                   <td class="col-sticky col-sticky-2">{{ s.name }}</td>
-                  <td class="col-sticky col-sticky-3">
+                  <td>
                     <button class="btn-icon-sm" @click="toggleFavorite(s)" :title="isFav(s.code) ? '取消收藏' : '收藏'">
                       <span :class="isFav(s.code) ? 'fav-active' : ''">{{ isFav(s.code) ? '★' : '☆' }}</span>
                     </button>
@@ -842,24 +864,24 @@
                   <td :class="pctClass(s.yearChange)">{{ s.yearChange != null ? fmtPct(s.yearChange) : '—' }}</td>
                   <td :class="pctClass(s.change924)">{{ s.change924 != null ? fmtPct(s.change924) : '—' }}</td>
                   <td :class="pctClass(s.q24Rev)">{{ s.q24Rev != null ? fmtPct(s.q24Rev) : '—' }}</td>
+                  <td :class="numClass((s.shareholderCount != null && s.prevShareholderCount != null) ? (s.shareholderCount - s.prevShareholderCount) : null)">{{ (s.shareholderCount != null && s.prevShareholderCount != null) ? (s.shareholderCount - s.prevShareholderCount) : '—' }}</td>
                   <td :class="pctClass(s.q24Kcf)">{{ s.q24Kcf != null ? fmtPct(s.q24Kcf) : '—' }}</td>
                   <td :class="numClass(sRatio(s).pbRatio)">{{ sRatio(s).pbRatio != null ? fmt(sRatio(s).pbRatio) : '—' }}</td>
                   <td :class="numClass(sRatio(s).pkRatio)">{{ sRatio(s).pkRatio != null ? fmt(sRatio(s).pkRatio) : '—' }}</td>
+                  <td :class="numClass(sRatio(s).prRatio)">{{ sRatio(s).prRatio != null ? fmt(sRatio(s).prRatio) : '—' }}</td>
                   <td :class="numClass(sRatio(s).pyRatio)">{{ sRatio(s).pyRatio != null ? fmt(sRatio(s).pyRatio) : '—' }}</td>
                   <td :class="numClass(sRatio(s).pk2Ratio)">{{ sRatio(s).pk2Ratio != null ? fmt(sRatio(s).pk2Ratio) : '—' }}</td>
-                  <td :class="numClass(sRatio(s).phRatio)">{{ sRatio(s).phRatio != null ? fmt(sRatio(s).phRatio) : '—' }}</td>
-                  <td :class="numClass(sRatio(s).prRatio)">{{ sRatio(s).prRatio != null ? fmt(sRatio(s).prRatio) : '—' }}</td>
                   <td :class="numClass(sRatio(s).prrRatio)">{{ sRatio(s).prrRatio != null ? fmt(sRatio(s).prrRatio) : '—' }}</td>
-                  <td>{{ s.totalMarketCap != null ? fmt(s.totalMarketCap) : '—' }}</td>
-                  <td>{{ fmtYi(s.kcfjcxjlr) }}</td>
-                  <td>{{ fmtYi(s.netProfit) }}</td>
-                  <td>{{ fmtYi(s.revenue) }}</td>
+                  <td :class="numClass(sRatio(s).ph2Ratio)">{{ sRatio(s).ph2Ratio != null ? fmt(sRatio(s).ph2Ratio) : '—' }}</td>
+                  <td :class="numClass(sRatio(s).pkHbRatio)">{{ sRatio(s).pkHbRatio != null ? fmt(sRatio(s).pkHbRatio) : '—' }}</td>
+                  <td :class="numClass(sRatio(s).phRatio)">{{ sRatio(s).phRatio != null ? fmt(sRatio(s).phRatio) : '—' }}</td>
                   <td :class="pctClass(s.hbGrowth)">{{ s.hbGrowth != null ? fmtPct(s.hbGrowth) : '—' }}</td>
                   <td :class="pctClass(s.profitYoY)">{{ s.profitYoY != null ? fmtPct(s.profitYoY) : '—' }}</td>
                   <td :class="pctClass(s.revenueYoY)">{{ s.revenueYoY != null ? fmtPct(s.revenueYoY) : '—' }}</td>
+                  <td :class="pctClass(s.kcfYoY)">{{ s.kcfYoY != null ? fmtPct(s.kcfYoY) : '—' }}</td>
+                  <td :class="pctClass(s.kcfHb)">{{ s.kcfHb != null ? fmtPct(s.kcfHb) : '—' }}</td>
                   <td :class="numClass(s.amplitude)">{{ s.amplitude != null ? s.amplitude + '%' : '—' }}</td>
                   <td>{{ s.shareholderCount || '—' }}</td>
-                  <td>{{ s.prevShareholderCount || '—' }}</td>
                   <td>{{ s.turnover != null ? s.turnover + '%' : '—' }}</td>
                   <td :class="numClass(s.capitalFlow)">{{ s.capitalFlow != null ? (s.capitalFlow > 0 ? '+' : '') + (s.capitalFlow/1e4).toFixed(2) + '万' : '—' }}</td>
                   <td><button class="btn btn-sm btn-danger" @click="removeSectorStock(s.code)">🗑 删除</button></td>
@@ -868,8 +890,146 @@
             </table>
           </div>
           <div class="info-box small">
-            <p>💡 说明：点击「刷新行情」可拉取全部成分股的实时行情与财务数据（东方财富接口在部分网络环境可能受限）。市营比=总市值÷营业收入；市营同比=总市值÷营收同比增长率；市营环比=总市值÷营收环比增长率；市净同比=总市值÷净利润同比增长率；市扣同比=总市值÷扣非净利润同比增长率；24营比/24扣比=最新报告期分别对比2024年同期营收/扣非净利润的增长率；年初涨跌幅=当日价相对当年首个交易日涨跌幅；924涨跌幅=当日价相对2024-09-24收盘价涨跌幅（不复权）。</p>
+            <p>💡 <b>字段含义与计算规则</b>：<br>
+            · 今涨跌=当日涨跌幅(%)；年涨跌=当日价相对当年首个交易日涨跌幅(%)；924涨跌=当日价相对2024-09-24收盘价涨跌幅(%)（不复权）。<br>
+            · 24营比=最新报告期营收 相对 2024年同期营收增长率(%)；24扣比=最新报告期扣非净利润 相对 2024年同期扣非净利润增长率(%)。<br>
+            · 散户差额=最新散户数量−上期散户数量。<br>
+            · 市净比=总市值÷净利润÷10；市扣比=总市值÷扣非净利润÷10；市营比=总市值÷营业收入；市净同比=总市值÷净利润同比增长率；市扣同比=总市值÷扣非净利润同比增长率；市营同比=总市值÷营收同比增长率；市净环比=总市值÷净利润环比增长率；市扣环比=总市值÷扣非净利润环比增长率；市营环比=总市值÷营收环比增长率（金额统一按亿元）。<br>
+            · 净利润环比=净利润环比增长率(%)；利润同比=净利润同比增长率(%)；营收同比增长率=营业收入同比增长率(%)；扣非同比=扣非净利润同比增长率(%)；扣非环比=扣非净利润环比增长率(%)。<br>
+            · 数据来源：行情/振幅/换手/总市值来自腾讯接口；财务/股东/增长率为东方财富接口（部分网络环境可能受限，可点击「刷新行情」重试）。</p>
           </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== 筛选板块模态框 ===== -->
+    <div class="modal-overlay" v-if="filterPanel.show" @click.self="filterPanel.show = false">
+      <div class="modal modal-xl modal-fullscreen">
+        <div class="modal-header">
+          <h3>🎯 筛选板块</h3>
+          <button class="btn-icon" @click="filterPanel.show = false">✕</button>
+        </div>
+        <div class="modal-body">
+          <div class="filter-bar">
+            <!-- 板块筛选：概念板块 + 股票池 -->
+            <div class="filter-field">
+              <label>板块筛选</label>
+              <select v-model="filterPanel.poolId" @change="applyFilterPool">
+                <option value="">— 请选择板块 —</option>
+                <optgroup label="🧭 概念行业板块">
+                  <option v-for="sp in sortedSectorPools" :key="'s-'+sp.id" :value="'s-'+sp.id">{{ sp.name }}</option>
+                </optgroup>
+                <optgroup label="📅 股票池">
+                  <option v-for="p in sortedPools" :key="'p-'+p.id" :value="'p-'+p.id">{{ p.name }}</option>
+                </optgroup>
+              </select>
+            </div>
+            <!-- 市净比区间 -->
+            <div class="filter-field">
+              <label>市净比</label>
+              <div class="range">
+                <input type="number" step="0.01" v-model.number="filterPanel.pbMin" placeholder="最小">
+                <span style="color:#909399">—</span>
+                <input type="number" step="0.01" v-model.number="filterPanel.pbMax" placeholder="最大">
+              </div>
+            </div>
+            <!-- 市扣比区间 -->
+            <div class="filter-field">
+              <label>市扣比</label>
+              <div class="range">
+                <input type="number" step="0.01" v-model.number="filterPanel.pkMin" placeholder="最小">
+                <span style="color:#909399">—</span>
+                <input type="number" step="0.01" v-model.number="filterPanel.pkMax" placeholder="最大">
+              </div>
+            </div>
+            <!-- 市营比区间 -->
+            <div class="filter-field">
+              <label>市营比</label>
+              <div class="range">
+                <input type="number" step="0.01" v-model.number="filterPanel.prMin" placeholder="最小">
+                <span style="color:#909399">—</span>
+                <input type="number" step="0.01" v-model.number="filterPanel.prMax" placeholder="最大">
+              </div>
+            </div>
+            <button class="btn btn-sm" @click="resetFilter">🔄 重置</button>
+            <span class="muted small" v-if="filteredFilterStocks.length">共 {{ filteredFilterStocks.length }} 只</span>
+          </div>
+
+          <div class="table-wrap table-scroll-x" v-if="filteredFilterStocks.length">
+            <table class="data-table pool-detail-table">
+              <thead>
+                <tr>
+                  <th class="col-sticky col-sticky-0">序号</th>
+                  <th class="col-sticky col-sticky-1">代码</th>
+                  <th class="col-sticky col-sticky-2">股票名称</th>
+                  <th>收藏</th>
+                  <th>合同负债</th>
+                  <th>今涨跌</th>
+                  <th>年涨跌</th>
+                  <th>924涨跌</th>
+                  <th>24营比</th>
+                  <th>散户差额</th>
+                  <th>24扣比</th>
+                  <th>市净比</th>
+                  <th>市扣比</th>
+                  <th>市营比</th>
+                  <th>市净同比</th>
+                  <th>市扣同比</th>
+                  <th>市营同比</th>
+                  <th>市净环比</th>
+                  <th>市扣环比</th>
+                  <th>市营环比</th>
+                  <th>净利润环比</th>
+                  <th>利润同比</th>
+                  <th>营收同比增长率</th>
+                  <th>扣非同比</th>
+                  <th>扣非环比</th>
+                  <th>振幅</th>
+                  <th>最新散户数量</th>
+                  <th>换手率</th>
+                  <th>资金流入</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="(s, idx) in filteredFilterStocks" :key="s.code">
+                  <td class="col-sticky col-sticky-0">{{ idx + 1 }}</td>
+                  <td class="col-sticky col-sticky-1">{{ s.code }}</td>
+                  <td class="col-sticky col-sticky-2">{{ s.name }}</td>
+                  <td>
+                    <button class="btn-icon-sm" @click="toggleFavorite(s)" :title="isFav(s.code) ? '取消收藏' : '收藏'">
+                      <span :class="isFav(s.code) ? 'fav-active' : ''">{{ isFav(s.code) ? '★' : '☆' }}</span>
+                    </button>
+                  </td>
+                  <td>{{ fmtYi(s.contractLiab) }}</td>
+                  <td :class="pctClass(s.dailyChange)">{{ s.dailyChange != null ? fmtPct(s.dailyChange) : '—' }}</td>
+                  <td :class="pctClass(s.yearChange)">{{ s.yearChange != null ? fmtPct(s.yearChange) : '—' }}</td>
+                  <td :class="pctClass(s.change924)">{{ s.change924 != null ? fmtPct(s.change924) : '—' }}</td>
+                  <td :class="pctClass(s.q24Rev)">{{ s.q24Rev != null ? fmtPct(s.q24Rev) : '—' }}</td>
+                  <td :class="numClass((s.shareholderCount != null && s.prevShareholderCount != null) ? (s.shareholderCount - s.prevShareholderCount) : null)">{{ (s.shareholderCount != null && s.prevShareholderCount != null) ? (s.shareholderCount - s.prevShareholderCount) : '—' }}</td>
+                  <td :class="pctClass(s.q24Kcf)">{{ s.q24Kcf != null ? fmtPct(s.q24Kcf) : '—' }}</td>
+                  <td :class="numClass(sRatio(s).pbRatio)">{{ sRatio(s).pbRatio != null ? fmt(sRatio(s).pbRatio) : '—' }}</td>
+                  <td :class="numClass(sRatio(s).pkRatio)">{{ sRatio(s).pkRatio != null ? fmt(sRatio(s).pkRatio) : '—' }}</td>
+                  <td :class="numClass(sRatio(s).prRatio)">{{ sRatio(s).prRatio != null ? fmt(sRatio(s).prRatio) : '—' }}</td>
+                  <td :class="numClass(sRatio(s).pyRatio)">{{ sRatio(s).pyRatio != null ? fmt(sRatio(s).pyRatio) : '—' }}</td>
+                  <td :class="numClass(sRatio(s).pk2Ratio)">{{ sRatio(s).pk2Ratio != null ? fmt(sRatio(s).pk2Ratio) : '—' }}</td>
+                  <td :class="numClass(sRatio(s).prrRatio)">{{ sRatio(s).prrRatio != null ? fmt(sRatio(s).prrRatio) : '—' }}</td>
+                  <td :class="numClass(sRatio(s).ph2Ratio)">{{ sRatio(s).ph2Ratio != null ? fmt(sRatio(s).ph2Ratio) : '—' }}</td>
+                  <td :class="numClass(sRatio(s).pkHbRatio)">{{ sRatio(s).pkHbRatio != null ? fmt(sRatio(s).pkHbRatio) : '—' }}</td>
+                  <td :class="numClass(sRatio(s).phRatio)">{{ sRatio(s).phRatio != null ? fmt(sRatio(s).phRatio) : '—' }}</td>
+                  <td :class="pctClass(s.hbGrowth)">{{ s.hbGrowth != null ? fmtPct(s.hbGrowth) : '—' }}</td>
+                  <td :class="pctClass(s.profitYoY)">{{ s.profitYoY != null ? fmtPct(s.profitYoY) : '—' }}</td>
+                  <td :class="pctClass(s.revenueYoY)">{{ s.revenueYoY != null ? fmtPct(s.revenueYoY) : '—' }}</td>
+                  <td :class="pctClass(s.kcfYoY)">{{ s.kcfYoY != null ? fmtPct(s.kcfYoY) : '—' }}</td>
+                  <td :class="pctClass(s.kcfHb)">{{ s.kcfHb != null ? fmtPct(s.kcfHb) : '—' }}</td>
+                  <td :class="numClass(s.amplitude)">{{ s.amplitude != null ? s.amplitude + '%' : '—' }}</td>
+                  <td>{{ s.shareholderCount || '—' }}</td>
+                  <td>{{ s.turnover != null ? s.turnover + '%' : '—' }}</td>
+                  <td :class="numClass(s.capitalFlow)">{{ s.capitalFlow != null ? (s.capitalFlow > 0 ? '+' : '') + (s.capitalFlow/1e4).toFixed(2) + '万' : '—' }}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <p class="muted small" v-else>请选择上方板块以查看其成分股，或用区间筛选过滤。若无数据显示，可先「刷新行情」拉取财务数据。</p>
         </div>
       </div>
     </div>

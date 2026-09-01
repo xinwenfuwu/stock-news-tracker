@@ -100,11 +100,13 @@ const app = createApp({
      * 统一用「亿元」：总市值=totalMarketCap(亿)，净利润/扣非/营收=元→转亿。
      * 市净比(pbRatio) = 总市值 ÷ 净利润 ÷ 10
      * 市扣比(pkRatio) = 总市值 ÷ 扣非净利润 ÷ 10
+     * 市营比(prRatio) = 总市值 ÷ 营业收入
      * 市净同比(pyRatio) = 总市值 ÷ 净利润同比增长率(profitYoY)
      * 市扣同比(pk2Ratio) = 总市值 ÷ 扣非净利润同比增长率(kcfYoY)
+     * 市营同比(prrRatio) = 总市值 ÷ 营收同比增长率(revenueYoY)
+     * 市净环比(ph2Ratio) = 总市值 ÷ 净利润环比增长率(hbGrowth)
+     * 市扣环比(pkHbRatio) = 总市值 ÷ 扣非净利润环比增长率(kcfHb)
      * 市营环比(phRatio) = 总市值 ÷ 营收环比增长率(revHb)
-     * 市营比(prRatio) = 总市值 ÷ 营业收入
-     * 市营同比(prrRatio) = 总市值 ÷ 营收同比增长率
      */
     function sRatio(s) {
       const cap = s.totalMarketCap;
@@ -116,17 +118,20 @@ const app = createApp({
       const pr = ratio(cap, rev);          // 总市值/营业收入
       const pRatio = p != null ? +(p / 10).toFixed(2) : null;   // 市净比
       const kRatio = k != null ? +(k / 10).toFixed(2) : null;   // 市扣比
+      const prRatio = pr != null ? +pr.toFixed(2) : null;       // 市营比
       // 市净同比 = 总市值 ÷ 净利润同比增长率(profitYoY)
       const py = s.profitYoY != null && +s.profitYoY !== 0 ? +(+cap / +s.profitYoY).toFixed(2) : null;
       // 市扣同比 = 总市值 ÷ 扣非净利润同比增长率(kcfYoY)
       const pk2 = s.kcfYoY != null && +s.kcfYoY !== 0 ? +(+cap / +s.kcfYoY).toFixed(2) : null;
+      // 市营同比 = 总市值 ÷ 营收同比增长率(revenueYoY)
+      const prrRatio = s.revenueYoY != null && +s.revenueYoY !== 0 ? +(+cap / +s.revenueYoY).toFixed(2) : null;
+      // 市净环比 = 总市值 ÷ 净利润环比增长率(hbGrowth)
+      const ph2 = s.hbGrowth != null && +s.hbGrowth !== 0 ? +(+cap / +s.hbGrowth).toFixed(2) : null;
+      // 市扣环比 = 总市值 ÷ 扣非净利润环比增长率(kcfHb)
+      const pkHb = s.kcfHb != null && +s.kcfHb !== 0 ? +(+cap / +s.kcfHb).toFixed(2) : null;
       // 市营环比 = 总市值 ÷ 营收环比增长率(revHb)
       const ph = s.revHb != null && +s.revHb !== 0 ? +(+cap / +s.revHb).toFixed(2) : null;
-      // 市营比 = 总市值 ÷ 营业收入
-      const prRatio = pr != null ? +pr.toFixed(2) : null;
-      // 市营同比 = 总市值 ÷ 营收同比增长率
-      const prrRatio = s.revenueYoY != null && +s.revenueYoY !== 0 ? +(+cap / +s.revenueYoY).toFixed(2) : null;
-      return { pbRatio: pRatio, pkRatio: kRatio, pyRatio: py, pk2Ratio: pk2, phRatio: ph, prRatio, prrRatio };
+      return { pbRatio: pRatio, pkRatio: kRatio, pyRatio: py, pk2Ratio: pk2, phRatio: ph, prRatio, prrRatio, ph2Ratio: ph2, pkHbRatio: pkHb };
     }
 
     function parseStocks(val) {
@@ -165,7 +170,7 @@ const app = createApp({
         fav.note = '';
         // 复制现有数据字段（若来源已带行情/财务数据则一并保存）
         const keys = ['dailyChange','amplitude','capitalFlow','shareholderCount','prevShareholderCount',
-          'profitYoY','revenueYoY','hbGrowth','kcfYoY','revHb','q24Rev','q24Kcf',
+          'profitYoY','revenueYoY','hbGrowth','kcfYoY','revHb','kcfHb','q24Rev','q24Kcf',
           'netProfit','kcfjcxjlr','revenue','totalMarketCap',
           'contractLiab','todayPrice','yearStartPrice','price924','yearChange','change924','turnover'];
         keys.forEach(k => { if (stock[k] != null) fav[k] = stock[k]; });
@@ -247,6 +252,7 @@ const app = createApp({
             if (fin.hbGrowth != null) f.hbGrowth = fin.hbGrowth;
             if (fin.kcfYoY != null) f.kcfYoY = fin.kcfYoY;
             if (fin.revHb != null) f.revHb = fin.revHb;
+            if (fin.kcfHb != null) f.kcfHb = fin.kcfHb;
             if (fin.netProfit != null) f.netProfit = fin.netProfit;
             if (fin.kcfjcxjlr != null) f.kcfjcxjlr = fin.kcfjcxjlr;
             if (fin.revenue != null) f.revenue = fin.revenue;
@@ -763,6 +769,7 @@ const app = createApp({
         hbGrowth: null,
         kcfYoY: null,        // 扣非净利润同比增长率(%)
         revHb: null,         // 营收环比增长率(%)
+        kcfHb: null,         // 扣非净利润环比增长率(%)
         q24Rev: null,        // 24营比：最新营收 vs 2024同期 增长率(%)
         q24Kcf: null,        // 24扣比：最新扣非 vs 2024同期 增长率(%)
         netProfit: null,       // 净利润(元)
@@ -803,6 +810,7 @@ const app = createApp({
               s.hbGrowth = o.hbGrowth;
               s.kcfYoY = o.kcfYoY;
               s.revHb = o.revHb;
+              s.kcfHb = o.kcfHb;
               s.q24Rev = o.q24Rev;
               s.q24Kcf = o.q24Kcf;
               s.netProfit = o.netProfit;
@@ -1004,6 +1012,7 @@ const app = createApp({
           if (fin.hbGrowth != null) s.hbGrowth = fin.hbGrowth;
           if (fin.kcfYoY != null) s.kcfYoY = fin.kcfYoY;
           if (fin.revHb != null) s.revHb = fin.revHb;
+          if (fin.kcfHb != null) s.kcfHb = fin.kcfHb;
           if (fin.netProfit != null) s.netProfit = fin.netProfit;
           if (fin.kcfjcxjlr != null) s.kcfjcxjlr = fin.kcfjcxjlr;
           if (fin.revenue != null) s.revenue = fin.revenue;
@@ -1045,11 +1054,15 @@ const app = createApp({
       showToast('数据刷新完成', 'success');
     }
 
-    /** 取股票池详情某列的排序值（含计算字段 市净比/市扣比/市净同比/市扣同比/市营环比/市营比/市营同比） */
+    /** 取股票池详情某列的排序值（含计算字段 市净比/市扣比/市营比/同比/环比系列、散户差额） */
     function poolVal(s, key) {
-      if (key === 'pbRatio' || key === 'pkRatio' || key === 'pyRatio' || key === 'pk2Ratio' || key === 'phRatio' || key === 'prRatio' || key === 'prrRatio') {
+      if (key === 'pbRatio' || key === 'pkRatio' || key === 'pyRatio' || key === 'pk2Ratio' || key === 'phRatio' || key === 'prRatio' || key === 'prrRatio' || key === 'ph2Ratio' || key === 'pkHbRatio') {
         const r = sRatio(s);
         return r[key];
+      }
+      if (key === 'shareholderDiff') {
+        return (s.shareholderCount != null && s.prevShareholderCount != null)
+          ? +(s.shareholderCount - s.prevShareholderCount) : null;
       }
       return s[key];
     }
@@ -1581,6 +1594,60 @@ const app = createApp({
     if (D.hotStocks && D.hotStocks.length) hotStocks.value = D.hotStocks;
 
     // ============================================================
+    //  筛选板块（热门板块页 · 板块筛选 + 市值比区间筛选）
+    // ============================================================
+    const filterPanel = reactive({
+      show: false,
+      poolId: '',       // 's-板块id' 或 'p-股票池id'
+      pbMin: null, pbMax: null,   // 市净比区间
+      pkMin: null, pkMax: null,   // 市扣比区间
+      prMin: null, prMax: null    // 市营比区间
+    });
+    function openFilterPanel() {
+      filterPanel.show = true;
+    }
+    function resetFilter() {
+      filterPanel.poolId = '';
+      filterPanel.pbMin = null; filterPanel.pbMax = null;
+      filterPanel.pkMin = null; filterPanel.pkMax = null;
+      filterPanel.prMin = null; filterPanel.prMax = null;
+    }
+    /** 切换板块后重置区间筛选，便于查看该板块全部股票 */
+    function applyFilterPool() {
+      filterPanel.pbMin = null; filterPanel.pbMax = null;
+      filterPanel.pkMin = null; filterPanel.pkMax = null;
+      filterPanel.prMin = null; filterPanel.prMax = null;
+    }
+    /** 区间判断工具：v 在 [min,max] 内（含边界），边界为空则不限 */
+    function inRange(v, min, max) {
+      if (v == null || isNaN(v)) return false;
+      if (min != null && v < min) return false;
+      if (max != null && v > max) return false;
+      return true;
+    }
+    /** 所选板块的所有原始股票 */
+    const filterPoolStocks = computed(() => {
+      const id = filterPanel.poolId;
+      if (!id) return [];
+      if (id.startsWith('s-')) {
+        const sp = (D.sectorPools || []).find(p => 's-' + p.id === id);
+        return sp ? (sp.stocks || []) : [];
+      }
+      const pp = (D.stockPools || []).find(p => 'p-' + p.id === id);
+      return pp ? (pp.stocks || []) : [];
+    });
+    /** 按板块 + 市净比/市扣比/市营比区间过滤后的股票 */
+    const filteredFilterStocks = computed(() => {
+      return filterPoolStocks.value.filter(s => {
+        const r = sRatio(s);
+        if (!inRange(r.pbRatio, filterPanel.pbMin, filterPanel.pbMax)) return false;
+        if (!inRange(r.pkRatio, filterPanel.pkMin, filterPanel.pkMax)) return false;
+        if (!inRange(r.prRatio, filterPanel.prMin, filterPanel.prMax)) return false;
+        return true;
+      });
+    });
+
+    // ============================================================
     //  设置 / 导入导出
     // ============================================================
     const showSettings = ref(false);
@@ -1833,6 +1900,9 @@ const app = createApp({
       hotDate, hotLoading, hotBoards, hotStocks, conceptFreq,
       sortedHotStocks, sortHotBy, hotSortIcon, removeHotStock,
       loadHotData, fetchHotBoards, refreshHotStocks,
+      // 筛选板块
+      filterPanel, openFilterPanel, resetFilter, applyFilterPool,
+      filteredFilterStocks, sortedSectorPools, sortedPools,
       // 通用：收藏
       favorites, sortedFavorites, isFav, toggleFavorite, removeFavorite,
       updateFavNote, favDays,
