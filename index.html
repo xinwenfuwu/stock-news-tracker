@@ -563,6 +563,24 @@
               <input type="number" step="0.01" v-model.number="filterPanel.prMax" placeholder="最大">
             </div>
           </div>
+          <!-- 24营比区间 -->
+          <div class="filter-field">
+            <label>24营比</label>
+            <div class="range">
+              <input type="number" step="0.01" v-model.number="filterPanel.q24Min" placeholder="最小">
+              <span style="color:#909399">—</span>
+              <input type="number" step="0.01" v-model.number="filterPanel.q24Max" placeholder="最大">
+            </div>
+          </div>
+          <!-- 24扣比区间 -->
+          <div class="filter-field">
+            <label>24扣比</label>
+            <div class="range">
+              <input type="number" step="0.01" v-model.number="filterPanel.q24kMin" placeholder="最小">
+              <span style="color:#909399">—</span>
+              <input type="number" step="0.01" v-model.number="filterPanel.q24kMax" placeholder="最大">
+            </div>
+          </div>
           <button class="btn btn-sm" @click="resetFilter">🔄 重置</button>
           <span class="muted small" v-if="sortedFilterStocks.length">共 {{ sortedFilterStocks.length }} 只</span>
         </div>
@@ -574,7 +592,8 @@
                 <th class="col-sticky col-sticky-0">序号</th>
                 <th class="col-sticky col-sticky-1">代码</th>
                 <th class="col-sticky col-sticky-2">股票名称</th>
-                <th class="col-sticky col-sticky-3">收藏</th>
+                <th class="sortable" @click="sortFilterBy('industry')">行业 <span class="sort-arrow" v-html="filterSortIcon('industry')"></span></th>
+                <th>收藏</th>
                 <th class="sortable" @click="sortFilterBy('contractLiab')">合同负债 <span class="sort-arrow" v-html="filterSortIcon('contractLiab')"></span></th>
                 <th class="sortable" @click="sortFilterBy('dailyChange')">今涨跌 <span class="sort-arrow" v-html="filterSortIcon('dailyChange')"></span></th>
                 <th class="sortable" @click="sortFilterBy('yearChange')">年涨跌 <span class="sort-arrow" v-html="filterSortIcon('yearChange')"></span></th>
@@ -607,7 +626,8 @@
                 <td class="col-sticky col-sticky-0">{{ idx + 1 }}</td>
                 <td class="col-sticky col-sticky-1">{{ s.code }}</td>
                 <td class="col-sticky col-sticky-2">{{ s.name }}</td>
-                <td class="col-sticky col-sticky-3">
+                <td>{{ s.industry || '—' }}</td>
+                <td>
                   <button class="btn-icon-sm" @click="toggleFavorite(s)" :title="isFav(s.code) ? '取消收藏' : '收藏'">
                     <span :class="isFav(s.code) ? 'fav-active' : ''">{{ isFav(s.code) ? '★' : '☆' }}</span>
                   </button>
@@ -645,8 +665,9 @@
 
         <div class="info-box small">
           <p>💡 <b>字段含义与计算规则</b>：<br>
+          · 行业=个股所属一级行业（如食品饮料、银行），来自东方财富公司概况。<br>
           · 今涨跌=当日涨跌幅(%)；年涨跌=当日价相对当年首个交易日涨跌幅(%)；924涨跌=当日价相对2024-09-24收盘价涨跌幅(%)（不复权）。<br>
-          · 24营比=最新报告期营收 相对 2024年同期营收增长率(%)；24扣比=最新报告期扣非净利润 相对 2024年同期扣非净利润增长率(%)。<br>
+          · 24营比=最新报告期营收 相对 2024年同期营收增长率(%)；24扣比=最新报告期扣非净利润 相对 2024年同期扣非净利润增长率(%)。顶部「24营比/24扣比」框可按该增长率区间筛选。<br>
           · 散户差额=最新散户数量−上期散户数量。<br>
           · 市净比=总市值÷净利润÷10；市扣比=总市值÷扣非净利润÷10；市营比=总市值÷营业收入；市净同比=总市值÷净利润同比增长率；市扣同比=总市值÷扣非净利润同比增长率；市营同比=总市值÷营收同比增长率；市净环比=总市值÷净利润环比增长率；市扣环比=总市值÷扣非净利润环比增长率；市营环比=总市值÷营收环比增长率（金额统一按亿元）。<br>
           · 净利润环比=净利润环比增长率(%)；利润同比=净利润同比增长率(%)；营收同比增长率=营业收入同比增长率(%)；扣非同比=扣非净利润同比增长率(%)；扣非环比=扣非净利润环比增长率(%)。<br>
@@ -849,7 +870,8 @@
                   <th class="col-sticky col-sticky-0">序号</th>
                   <th class="col-sticky col-sticky-1">代码</th>
                   <th class="col-sticky col-sticky-2">股票名称</th>
-                  <th class="col-sticky col-sticky-3">收藏</th>
+                  <th class="sortable" @click="sortPoolDetailBy('industry')">行业 <span class="sort-arrow" v-html="poolSortIcon('industry')"></span></th>
+                  <th>收藏</th>
                   <th class="sortable" @click="sortPoolDetailBy('contractLiab')">合同负债 <span class="sort-arrow" v-html="poolSortIcon('contractLiab')"></span></th>
                   <th class="sortable" @click="sortPoolDetailBy('dailyChange')">今涨跌 <span class="sort-arrow" v-html="poolSortIcon('dailyChange')"></span></th>
                   <th class="sortable" @click="sortPoolDetailBy('yearChange')">年涨跌 <span class="sort-arrow" v-html="poolSortIcon('yearChange')"></span></th>
@@ -883,7 +905,8 @@
                   <td class="col-sticky col-sticky-0">{{ idx + 1 }}</td>
                   <td class="col-sticky col-sticky-1">{{ s.code }}</td>
                   <td class="col-sticky col-sticky-2">{{ s.name }}</td>
-                  <td class="col-sticky col-sticky-3">
+                  <td>{{ s.industry || '—' }}</td>
+                  <td>
                     <button class="btn-icon-sm" @click="toggleFavorite(s)" :title="isFav(s.code) ? '取消收藏' : '收藏'">
                       <span :class="isFav(s.code) ? 'fav-active' : ''">{{ isFav(s.code) ? '★' : '☆' }}</span>
                     </button>
@@ -965,7 +988,8 @@
                   <th class="col-sticky col-sticky-0">序号</th>
                   <th class="col-sticky col-sticky-1">代码</th>
                   <th class="col-sticky col-sticky-2">股票名称</th>
-                  <th class="col-sticky col-sticky-3">收藏</th>
+                  <th class="sortable" @click="sortSectorDetailBy('industry')">行业 <span class="sort-arrow" v-html="sectorSortIcon('industry')"></span></th>
+                  <th>收藏</th>
                   <th class="sortable" @click="sortSectorDetailBy('contractLiab')">合同负债 <span class="sort-arrow" v-html="sectorSortIcon('contractLiab')"></span></th>
                   <th class="sortable" @click="sortSectorDetailBy('dailyChange')">今涨跌 <span class="sort-arrow" v-html="sectorSortIcon('dailyChange')"></span></th>
                   <th class="sortable" @click="sortSectorDetailBy('yearChange')">年涨跌 <span class="sort-arrow" v-html="sectorSortIcon('yearChange')"></span></th>
@@ -999,7 +1023,8 @@
                   <td class="col-sticky col-sticky-0">{{ idx + 1 }}</td>
                   <td class="col-sticky col-sticky-1">{{ s.code }}</td>
                   <td class="col-sticky col-sticky-2">{{ s.name }}</td>
-                  <td class="col-sticky col-sticky-3">
+                  <td>{{ s.industry || '—' }}</td>
+                  <td>
                     <button class="btn-icon-sm" @click="toggleFavorite(s)" :title="isFav(s.code) ? '取消收藏' : '收藏'">
                       <span :class="isFav(s.code) ? 'fav-active' : ''">{{ isFav(s.code) ? '★' : '☆' }}</span>
                     </button>

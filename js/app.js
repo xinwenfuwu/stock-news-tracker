@@ -170,7 +170,7 @@ const app = createApp({
         fav.favDate = Store.today();
         fav.note = '';
         // 复制现有数据字段（若来源已带行情/财务数据则一并保存）
-        const keys = ['dailyChange','amplitude','capitalFlow','shareholderCount','prevShareholderCount',
+        const keys = ['industry','dailyChange','amplitude','capitalFlow','shareholderCount','prevShareholderCount',
           'profitYoY','revenueYoY','hbGrowth','kcfYoY','revHb','kcfHb','q24Rev','q24Kcf',
           'netProfit','kcfjcxjlr','revenue','totalMarketCap',
           'contractLiab','todayPrice','yearStartPrice','price924','yearChange','change924','turnover'];
@@ -760,6 +760,7 @@ const app = createApp({
       return {
         code: s.code,
         name: s.name || '',
+        industry: s.industry || null,   // 所属一级行业
         dailyChange: null,
         amplitude: null,
         capitalFlow: null,
@@ -819,6 +820,7 @@ const app = createApp({
               s.revenue = o.revenue;
               s.totalMarketCap = o.totalMarketCap;
               s.contractLiab = o.contractLiab;
+              s.industry = o.industry;
               s.todayPrice = o.todayPrice;
               s.yearStartPrice = o.yearStartPrice;
               s.price924 = o.price924;
@@ -1023,6 +1025,15 @@ const app = createApp({
         } catch (e) {
           console.warn('补充数据获取失败', s.code, e);
         }
+        // 所属行业（best-effort）
+        try {
+          if (!s.industry) {
+            const ind = await StockAPI.getIndustry(s.code);
+            if (ind) s.industry = ind;
+          }
+        } catch (e) {
+          console.warn('行业获取失败', s.code, e);
+        }
         // 24营比 / 24扣比（季报营收/扣非对比2024同期）
         try {
           const q24 = await StockAPI.getQuarterlyFinance(s.code);
@@ -1068,17 +1079,30 @@ const app = createApp({
       return s[key];
     }
 
+    /**
+     * 通用排序比较：字符串按 localeCompare，数值按 parseFloat，
+     * 空值（null/undefined/NaN/空串）始终排最后。
+     * @returns 负数/0/正数（未乘方向，调用方需乘 dir）
+     */
+    function compareForSort(a, b, key) {
+      const va = poolVal(a, key);
+      const vb = poolVal(b, key);
+      const na = va == null || va === '' || isNaN(parseFloat(va));
+      const nb = vb == null || vb === '' || isNaN(parseFloat(vb));
+      if (na && nb) return 0;
+      if (na) return 1;
+      if (nb) return -1;
+      if (typeof va === 'string' || typeof vb === 'string') {
+        return String(va).localeCompare(String(vb), 'zh-Hans-CN');
+      }
+      return parseFloat(va) - parseFloat(vb);
+    }
+
     const sortedPoolDetailStocks = computed(() => {
       const list = [...(poolDetail.data.stocks || [])];
       const k = poolDetailSort.key;
       const dir = poolDetailSort.dir === 'asc' ? 1 : -1;
-      list.sort((a, b) => {
-        const va = parseFloat(poolVal(a, k)); const vb = parseFloat(poolVal(b, k));
-        if (isNaN(va) && isNaN(vb)) return 0;
-        if (isNaN(va)) return 1;
-        if (isNaN(vb)) return -1;
-        return (va - vb) * dir;
-      });
+      list.sort((a, b) => compareForSort(a, b, k) * dir);
       return list;
     });
     function sortPoolDetailBy(key) {
@@ -1434,13 +1458,7 @@ const app = createApp({
       const list = [...(sectorDetail.data.stocks || [])];
       const k = sectorDetailSort.key;
       const dir = sectorDetailSort.dir === 'asc' ? 1 : -1;
-      list.sort((a, b) => {
-        const va = parseFloat(sectorVal(a, k)); const vb = parseFloat(sectorVal(b, k));
-        if (isNaN(va) && isNaN(vb)) return 0;
-        if (isNaN(va)) return 1;
-        if (isNaN(vb)) return -1;
-        return (va - vb) * dir;
-      });
+      list.sort((a, b) => compareForSort(a, b, k) * dir);
       return list;
     });
     function sortSectorDetailBy(key) {
@@ -1602,7 +1620,9 @@ const app = createApp({
       poolId: '',       // 's-板块id' 或 'p-股票池id'
       pbMin: null, pbMax: null,   // 市净比区间
       pkMin: null, pkMax: null,   // 市扣比区间
-      prMin: null, prMax: null    // 市营比区间
+      prMin: null, prMax: null,   // 市营比区间
+      q24Min: null, q24Max: null,   // 24营比区间
+      q24kMin: null, q24kMax: null  // 24扣比区间
     });
     function openFilterPanel() {
       filterPanel.show = true;
@@ -1612,12 +1632,16 @@ const app = createApp({
       filterPanel.pbMin = null; filterPanel.pbMax = null;
       filterPanel.pkMin = null; filterPanel.pkMax = null;
       filterPanel.prMin = null; filterPanel.prMax = null;
+      filterPanel.q24Min = null; filterPanel.q24Max = null;
+      filterPanel.q24kMin = null; filterPanel.q24kMax = null;
     }
     /** 切换板块后重置区间筛选，便于查看该板块全部股票 */
     function applyFilterPool() {
       filterPanel.pbMin = null; filterPanel.pbMax = null;
       filterPanel.pkMin = null; filterPanel.pkMax = null;
       filterPanel.prMin = null; filterPanel.prMax = null;
+      filterPanel.q24Min = null; filterPanel.q24Max = null;
+      filterPanel.q24kMin = null; filterPanel.q24kMax = null;
     }
     /** 区间判断工具：v 在 [min,max] 内（含边界），边界为空则不限 */
     function inRange(v, min, max) {
@@ -1637,13 +1661,15 @@ const app = createApp({
       const pp = (D.stockPools || []).find(p => 'p-' + p.id === id);
       return pp ? (pp.stocks || []) : [];
     });
-    /** 按板块 + 市净比/市扣比/市营比区间过滤后的股票 */
+    /** 按板块 + 市净比/市扣比/市营比/24营比/24扣比区间过滤后的股票 */
     const filteredFilterStocks = computed(() => {
       return filterPoolStocks.value.filter(s => {
         const r = sRatio(s);
         if (!inRange(r.pbRatio, filterPanel.pbMin, filterPanel.pbMax)) return false;
         if (!inRange(r.pkRatio, filterPanel.pkMin, filterPanel.pkMax)) return false;
         if (!inRange(r.prRatio, filterPanel.prMin, filterPanel.prMax)) return false;
+        if (!inRange(s.q24Rev, filterPanel.q24Min, filterPanel.q24Max)) return false;
+        if (!inRange(s.q24Kcf, filterPanel.q24kMin, filterPanel.q24kMax)) return false;
         return true;
       });
     });
@@ -1654,14 +1680,7 @@ const app = createApp({
       const list = [...filteredFilterStocks.value];
       const k = filterSort.key;
       const dir = filterSort.dir === 'asc' ? 1 : -1;
-      list.sort((a, b) => {
-        const va = parseFloat(poolVal(a, k));
-        const vb = parseFloat(poolVal(b, k));
-        if (isNaN(va) && isNaN(vb)) return 0;
-        if (isNaN(va)) return 1;
-        if (isNaN(vb)) return -1;
-        return (va - vb) * dir;
-      });
+      list.sort((a, b) => compareForSort(a, b, k) * dir);
       return list;
     });
     function sortFilterBy(key) {
@@ -1728,6 +1747,15 @@ const app = createApp({
             if (fin.prevShareholderCount != null) s.prevShareholderCount = fin.prevShareholderCount;
           } catch (e) {
             console.warn('财务数据获取失败', s.code, e);
+          }
+          // 所属行业（best-effort）
+          try {
+            if (!s.industry) {
+              const ind = await StockAPI.getIndustry(s.code);
+              if (ind) s.industry = ind;
+            }
+          } catch (e) {
+            console.warn('行业获取失败', s.code, e);
           }
           // 24营比 / 24扣比（季报对比2024同期）
           try {

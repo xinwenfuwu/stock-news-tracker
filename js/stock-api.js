@@ -369,6 +369,33 @@ const StockAPI = {
   },
 
   /**
+   * 获取个股所属一级行业（东财 F10 公司概况，best-effort）。
+   * @param {string} code sh600519
+   * @returns {Promise<string|null>} 如「食品饮料」「银行」
+   */
+  async getIndustry(code) {
+    const secucode = this.toSecucode(code);
+    try {
+      const url = `https://datacenter-web.eastmoney.com/api/data/v1/get?reportName=RPT_F10_ORG_BASICINFO&columns=ALL&filter=(SECUCODE%3D%22${secucode}%22)&pageNumber=1&pageSize=1`;
+      const resp = await fetch(url, { cache: 'no-store' });
+      const json = await resp.json();
+      const row = json.result && json.result.data && json.result.data[0];
+      if (row) {
+        if (row.BOARD_NAME_1LEVEL) return row.BOARD_NAME_1LEVEL;
+        if (row.SWINDUSTRY_NAME2) return row.SWINDUSTRY_NAME2;
+        if (row.CSRC_INDUSTRY_NAME) {
+          // CSRC 形如「制造业-酒、饮料和精制茶制造业」，取最后一个「-」之后的部分
+          const parts = String(row.CSRC_INDUSTRY_NAME).split('-');
+          return parts[parts.length - 1];
+        }
+      }
+    } catch (e) {
+      console.debug('获取行业失败', code);
+    }
+    return null;
+  },
+
+  /**
    * 获取季报营收/扣非累计值序列，计算「今年最新报告期 vs 2024年同期」的增长率。
    * 用于「24营比」和「24扣比」字段。
    * @param {string} code sh600519
@@ -448,6 +475,9 @@ const StockAPI = {
     const c = String(code);
     if (/^sh/i.test(c)) return `${pure}.SH`;
     if (/^bj/i.test(c)) return `${pure}.BJ`;
+    // 纯数字/未知前缀时按代码段判断市场：6/9 沪市，4/8 北交所，其余(0/3等)深市
+    if (/^[69]/.test(pure)) return `${pure}.SH`;
+    if (/^[48]/.test(pure)) return `${pure}.BJ`;
     return `${pure}.SZ`;
   },
 
