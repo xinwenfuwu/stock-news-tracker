@@ -1034,6 +1034,15 @@ const app = createApp({
         } catch (e) {
           console.warn('行业获取失败', s.code, e);
         }
+        // 主营构成（公司主业 + 占比，best-effort）
+        try {
+          if (!s.mainBusiness) {
+            const mb = await StockAPI.getMainBusiness(s.code);
+            if (mb) s.mainBusiness = mb;
+          }
+        } catch (e) {
+          console.warn('主营构成获取失败', s.code, e);
+        }
         // 24营比 / 24扣比（季报营收/扣非对比2024同期）
         try {
           const q24 = await StockAPI.getQuarterlyFinance(s.code);
@@ -1081,6 +1090,18 @@ const app = createApp({
         if (v != null && !isNaN(parseFloat(v)) && parseFloat(v) > 0) n++;
       }
       return n;
+    }
+
+    /**
+     * 公司主业展示文本：取主营构成中占比最高的前 2 项，格式「名称 占比%」。
+     * 仅展示，不参与排序/筛选。
+     */
+    function mainBusinessText(s) {
+      const arr = s && s.mainBusiness;
+      if (!arr || !arr.length) return '';
+      return arr.slice(0, 2)
+        .map(it => `${it.name} ${it.ratio != null ? (it.ratio * 100).toFixed(1) + '%' : ''}`)
+        .join(' · ');
     }
 
     /** 取股票池详情某列的排序值（含计算字段 市净比/市扣比/市营比/同比/环比系列、散户差额、正数统计） */
@@ -1417,6 +1438,12 @@ const app = createApp({
             try {
               const ind = await StockAPI.getIndustry(s.code);
               if (ind) s.industry = ind;
+            } catch (e) { /* 单只失败忽略 */ }
+            try {
+              if (!s.mainBusiness) {
+                const mb = await StockAPI.getMainBusiness(s.code);
+                if (mb) s.mainBusiness = mb;
+              }
             } catch (e) { /* 单只失败忽略 */ }
           }));
         }
@@ -1857,6 +1884,15 @@ const app = createApp({
           } catch (e) {
             console.warn('行业获取失败', s.code, e);
           }
+          // 主营构成（公司主业 + 占比，best-effort）
+          try {
+            if (!s.mainBusiness) {
+              const mb = await StockAPI.getMainBusiness(s.code);
+              if (mb) s.mainBusiness = mb;
+            }
+          } catch (e) {
+            console.warn('主营构成获取失败', s.code, e);
+          }
           // 24营比 / 24扣比（季报对比2024同期）
           try {
             const q24 = await StockAPI.getQuarterlyFinance(s.code);
@@ -2147,6 +2183,7 @@ const app = createApp({
       filterPanel, openFilterPanel, resetFilter, applyFilterPool, toggleFilterLock,
       filteredFilterStocks, sortedFilterStocks, sortFilterBy, filterSortIcon,
       positiveCount, POSITIVE_KEYS,
+      mainBusinessText,
       filterIndustries,
       filterRefreshing, refreshFilterStocks,
       sortedSectorPools, sortedPools,

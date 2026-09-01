@@ -396,6 +396,44 @@ const StockAPI = {
   },
 
   /**
+   * 获取个股主营构成（东财 F10 主营构成，RPT_F10_FN_MAINOP）。
+   * 取最新报告期的「按产品」(MAINOP_TYPE=2) 构成，按收入占比降序返回前若干主业。
+   * @param {string} code sh600519
+   * @returns {Promise<Array<{name:string, ratio:number}>|null>}
+   *   如 [{ name: '茅台酒', ratio: 85.7 }, { name: '其他系列酒', ratio: 14.3 }]
+   */
+  async getMainBusiness(code) {
+    const secucode = this.toSecucode(code);
+    try {
+      const url = `https://datacenter-web.eastmoney.com/api/data/v1/get?reportName=RPT_F10_FN_MAINOP&columns=ALL&filter=(SECUCODE%3D%22${secucode}%22)&pageNumber=1&pageSize=60&sortColumns=REPORT_DATE&sortTypes=-1`;
+      const resp = await fetch(url, { cache: 'no-store' });
+      const json = await resp.json();
+      const rows = (json.result && json.result.data) || [];
+      if (!rows.length) return null;
+      // 报告期倒序排列，取最新一期全部构成行
+      const latest = rows[0].REPORT_DATE.slice(0, 10);
+      const period = rows.filter(r => (r.REPORT_DATE || '').slice(0, 10) === latest);
+      // 优先「按产品」(2)，其次「按行业」(1)
+      let items = period.filter(r => String(r.MAINOP_TYPE) === '2');
+      if (!items.length) items = period.filter(r => String(r.MAINOP_TYPE) === '1');
+      if (!items.length) items = period;
+      items.sort((a, b) => (b.MBI_RATIO || 0) - (a.MBI_RATIO || 0));
+      const out = [];
+      for (const it of items) {
+        if (!it.ITEM_NAME) continue;
+        let ratio = it.MBI_RATIO != null ? it.MBI_RATIO
+                  : (it.MBR_RATIO != null ? it.MBR_RATIO : null);
+        if (ratio == null) continue;
+        out.push({ name: String(it.ITEM_NAME), ratio: +ratio });
+      }
+      return out.length ? out : null;
+    } catch (e) {
+      console.debug('获取主营构成失败', code);
+      return null;
+    }
+  },
+
+  /**
    * 获取季报营收/扣非累计值序列，计算「今年最新报告期 vs 2024年同期」的增长率。
    * 用于「24营比」和「24扣比」字段。
    * @param {string} code sh600519

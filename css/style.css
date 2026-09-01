@@ -171,6 +171,17 @@ body {
 .btn-sm { padding: 4px 10px; font-size: 12px; }
 /* 正数统计：命中正数时高亮 */
 .pos-hit { color: var(--up, #c0392b); font-weight: 600; }
+
+/* 公司主业：名称 + 占比，紧凑展示，超宽自动换行 */
+.mainbiz-cell {
+  font-size: 12px;
+  line-height: 1.35;
+  color: var(--text, #2c3e50);
+  max-width: 168px;
+  white-space: normal;
+  word-break: break-all;
+}
+.mainbiz-cell .muted { font-size: 12px; }
 .btn-locked {
   background: #f59e0b;
   border-color: #f59e0b;

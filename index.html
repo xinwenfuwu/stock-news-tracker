@@ -352,6 +352,7 @@
                   <th class="col-sticky col-sticky-0">序号</th>
                   <th class="col-sticky col-sticky-1">代码</th>
                   <th class="col-sticky col-sticky-2">股票名称</th>
+                  <th>公司主业</th>
                   <th>收藏日期</th>
                   <th>距今</th>
                   <th>备注</th>
@@ -388,6 +389,7 @@
                   <td class="col-sticky col-sticky-0">{{ idx + 1 }}</td>
                   <td class="col-sticky col-sticky-1">{{ f.code }}</td>
                   <td class="col-sticky col-sticky-2">{{ f.name || f.code }}</td>
+                  <td class="mainbiz-cell"><span v-if="f.mainBusiness && f.mainBusiness.length">{{ mainBusinessText(f) }}</span><span v-else class="muted small">—</span></td>
                   <td>{{ f.favDate }}</td>
                   <td>{{ favDays(f) != null ? favDays(f) + '天' : '—' }}</td>
                   <td>
@@ -620,6 +622,7 @@
                 <th class="col-sticky col-sticky-0">序号</th>
                 <th class="col-sticky col-sticky-1">代码</th>
                 <th class="col-sticky col-sticky-2">股票名称</th>
+                <th>公司主业</th>
                 <th class="sortable" @click="sortFilterBy('positiveCount')" title="今涨跌→扣非环比 共20个字段中，数值为正的个数">正数统计 <span class="sort-arrow" v-html="filterSortIcon('positiveCount')"></span></th>
                 <th class="sortable" @click="sortFilterBy('industry')">行业 <span class="sort-arrow" v-html="filterSortIcon('industry')"></span></th>
                 <th>收藏</th>
@@ -655,6 +658,7 @@
                 <td class="col-sticky col-sticky-0">{{ idx + 1 }}</td>
                 <td class="col-sticky col-sticky-1">{{ s.code }}</td>
                 <td class="col-sticky col-sticky-2">{{ s.name }}</td>
+                <td class="mainbiz-cell"><span v-if="s.mainBusiness && s.mainBusiness.length">{{ mainBusinessText(s) }}</span><span v-else class="muted small">—</span></td>
                 <td :class="positiveCount(s) > 0 ? 'pos-hit' : ''"><b>{{ positiveCount(s) }}</b><span class="muted small"> / {{ POSITIVE_KEYS.length }}</span></td>
                 <td>{{ s.industry || '—' }}</td>
                 <td>
@@ -903,6 +907,7 @@
                   <th class="col-sticky col-sticky-0">序号</th>
                   <th class="col-sticky col-sticky-1">代码</th>
                   <th class="col-sticky col-sticky-2">股票名称</th>
+                  <th>公司主业</th>
                   <th class="sortable" @click="sortPoolDetailBy('positiveCount')" title="今涨跌→扣非环比 共20个字段中，数值为正的个数">正数统计 <span class="sort-arrow" v-html="poolSortIcon('positiveCount')"></span></th>
                   <th class="sortable" @click="sortPoolDetailBy('industry')">行业 <span class="sort-arrow" v-html="poolSortIcon('industry')"></span></th>
                   <th>收藏</th>
@@ -939,6 +944,7 @@
                   <td class="col-sticky col-sticky-0">{{ idx + 1 }}</td>
                   <td class="col-sticky col-sticky-1">{{ s.code }}</td>
                   <td class="col-sticky col-sticky-2">{{ s.name }}</td>
+                  <td class="mainbiz-cell"><span v-if="s.mainBusiness && s.mainBusiness.length">{{ mainBusinessText(s) }}</span><span v-else class="muted small">—</span></td>
                   <td :class="positiveCount(s) > 0 ? 'pos-hit' : ''"><b>{{ positiveCount(s) }}</b><span class="muted small"> / {{ POSITIVE_KEYS.length }}</span></td>
                   <td>{{ s.industry || '—' }}</td>
                   <td>
@@ -1023,6 +1029,7 @@
                   <th class="col-sticky col-sticky-0">序号</th>
                   <th class="col-sticky col-sticky-1">代码</th>
                   <th class="col-sticky col-sticky-2">股票名称</th>
+                  <th>公司主业</th>
                   <th class="sortable" @click="sortSectorDetailBy('positiveCount')" title="今涨跌→扣非环比 共20个字段中，数值为正的个数">正数统计 <span class="sort-arrow" v-html="sectorSortIcon('positiveCount')"></span></th>
                   <th class="sortable" @click="sortSectorDetailBy('industry')">行业 <span class="sort-arrow" v-html="sectorSortIcon('industry')"></span></th>
                   <th>收藏</th>
@@ -1059,6 +1066,7 @@
                   <td class="col-sticky col-sticky-0">{{ idx + 1 }}</td>
                   <td class="col-sticky col-sticky-1">{{ s.code }}</td>
                   <td class="col-sticky col-sticky-2">{{ s.name }}</td>
+                  <td class="mainbiz-cell"><span v-if="s.mainBusiness && s.mainBusiness.length">{{ mainBusinessText(s) }}</span><span v-else class="muted small">—</span></td>
                   <td :class="positiveCount(s) > 0 ? 'pos-hit' : ''"><b>{{ positiveCount(s) }}</b><span class="muted small"> / {{ POSITIVE_KEYS.length }}</span></td>
                   <td>{{ s.industry || '—' }}</td>
                   <td>
