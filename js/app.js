@@ -23,6 +23,7 @@ const app = createApp({
     const tabs = [
       { key: 'news', label: '新闻追踪', icon: '📰' },
       { key: 'pools', label: '股票池', icon: '📅' },
+      { key: 'sector', label: '概念行业选股', icon: '🧭' },
       { key: 'hot', label: '热门板块', icon: '🔥' }
     ];
     function goPage(key) {
@@ -31,7 +32,7 @@ const app = createApp({
     }
     // 初始化路由
     const hash = location.hash.replace('#', '');
-    if (['news', 'pools', 'hot'].includes(hash)) currentPage.value = hash;
+    if (['news', 'pools', 'sector', 'hot'].includes(hash)) currentPage.value = hash;
 
     // ===== Toast =====
     const toast = reactive({ show: false, msg: '', type: 'info', _t: null });
@@ -917,6 +918,159 @@ const app = createApp({
     }
 
     // ============================================================
+    //  页面2.5：概念行业选股
+    // ============================================================
+    const sectorSearch = ref('');        // 搜索框
+    const sectorResults = ref([]);       // 搜索结果
+    const sectorSearching = ref(false);
+    const sectorLoading = ref(false);    // 板块成分股加载中
+    const sectorDetail = reactive({ show: false, data: { stocks: [] }, nameEdit: false, nameDraft: '' });
+    const sectorDetailSort = reactive({ key: 'dailyChange', dir: 'desc' });
+
+    // 已保存板块按创建时间倒序
+    const sortedSectorPools = computed(() => [...D.sectorPools].slice().reverse());
+
+    // 搜索板块（防抖由模板 @input 触发，这里直接调用）
+    async function searchSector() {
+      const kw = sectorSearch.value.trim();
+      if (!kw) { sectorResults.value = []; return; }
+      sectorSearching.value = true;
+      try {
+        const all = await StockAPI.getAllSectors();
+        if (!all.length) {
+          sectorResults.value = [];
+          showToast('板块数据加载失败，请稍后重试', 'error');
+        } else {
+          sectorResults.value = await StockAPI.searchSectors(kw);
+        }
+      } catch (e) {
+        sectorResults.value = [];
+        showToast('板块搜索失败，请重试', 'error');
+        console.warn('板块搜索失败', e);
+      } finally {
+        sectorSearching.value = false;
+      }
+    }
+
+    // 选择搜索结果的某个板块：保存并拉取成分股
+    async function addSectorFromSearch(item) {
+      // 查重：同名板块已存在则提示
+      if (D.sectorPools.some(p => p.bk === item.bk)) {
+        showToast('该板块已在列表中', 'info');
+        return;
+      }
+      const sector = {
+        name: item.name,
+        bk: item.bk,
+        type: item.type || '',
+        date: Store.today(),
+        stocks: []
+      };
+      Store.addSectorPool(sector);
+      showToast(`正在获取「${item.name}」成分股...`, 'info');
+      sectorResults.value = [];
+      sectorSearch.value = '';
+      await loadSectorStocks(sector);
+    }
+
+    // 拉取某板块全部成分股并填充
+    async function loadSectorStocks(sector) {
+      sectorLoading.value = true;
+      try {
+        const stocks = await StockAPI.getSectorStocks(sector.bk);
+        if (!stocks.length) { showToast('未获取到该板块成分股', 'error'); return; }
+        // 转成股票池标准股票对象
+        const list = stocks.map(s => {
+          const ns = _newStock(s);
+          ns.dailyChange = s.changePercent;
+          ns.todayPrice = s.price;
+          return ns;
+        });
+        sector.stocks = list;
+        recomputePoolAvg(sector);
+        showToast(`已加载 ${list.length} 只成分股`, 'success');
+      } catch (e) {
+        console.warn('成分股获取失败', e);
+        showToast('成分股获取失败，请重试', 'error');
+      } finally {
+        sectorLoading.value = false;
+      }
+    }
+
+    // 刷新板块成分股的行情与财务数据
+    async function refreshSectorDetail(sector) {
+      // 若尚未获取到成分股，先重新拉取
+      if (!sector.stocks || !sector.stocks.length) {
+        await loadSectorStocks(sector);
+        return;
+      }
+      await refreshPoolDetail(sector);
+    }
+
+    // 详情弹窗打开
+    function openSectorDetail(sector) {
+      sectorDetail.data = sector;
+      sectorDetail.nameEdit = false;
+      sectorDetail.nameDraft = sector.name || '';
+      sectorDetail.show = true;
+    }
+    function startEditSectorName() {
+      sectorDetail.nameDraft = sectorDetail.data.name || '';
+      sectorDetail.nameEdit = true;
+    }
+    function saveSectorName() {
+      sectorDetail.data.name = (sectorDetail.nameDraft || '').trim();
+      sectorDetail.nameEdit = false;
+      showToast('板块名称已更新', 'success');
+    }
+    function deleteSectorPool(id) {
+      if (!confirm('确认删除该概念选股板块？')) return;
+      Store.deleteSectorPool(id);
+      showToast('已删除', 'success');
+    }
+
+    /** 取板块详情某列的排序值（含计算字段） */
+    function sectorVal(s, key) {
+      return poolVal(s, key);
+    }
+    const sortedSectorDetailStocks = computed(() => {
+      const list = [...(sectorDetail.data.stocks || [])];
+      const k = sectorDetailSort.key;
+      const dir = sectorDetailSort.dir === 'asc' ? 1 : -1;
+      list.sort((a, b) => {
+        const va = parseFloat(sectorVal(a, k)); const vb = parseFloat(sectorVal(b, k));
+        if (isNaN(va) && isNaN(vb)) return 0;
+        if (isNaN(va)) return 1;
+        if (isNaN(vb)) return -1;
+        return (va - vb) * dir;
+      });
+      return list;
+    });
+    function sortSectorDetailBy(key) {
+      if (sectorDetailSort.key === key) {
+        sectorDetailSort.dir = sectorDetailSort.dir === 'asc' ? 'desc' : 'asc';
+      } else {
+        sectorDetailSort.key = key;
+        sectorDetailSort.dir = 'desc';
+      }
+    }
+    function sectorSortIcon(key) {
+      if (sectorDetailSort.key !== key) return '⇅';
+      return sectorDetailSort.dir === 'asc' ? '↑' : '↓';
+    }
+    // 板块详情内删除个股（复用股票池删除逻辑）
+    function removeSectorStock(code) {
+      const sec = sectorDetail.data;
+      const idx = (sec.stocks || []).findIndex(s => s.code === code);
+      if (idx === -1) return;
+      const name = sec.stocks[idx].name || code;
+      if (!confirm(`确认从板块中删除「${name}」？`)) return;
+      sec.stocks.splice(idx, 1);
+      recomputePoolAvg(sec);
+      showToast('已删除', 'success');
+    }
+
+    // ============================================================
     //  页面3：热门板块
     // ============================================================
     const hotDate = ref(Store.today());
@@ -1281,6 +1435,12 @@ const app = createApp({
       poolModal, openAddPool, openEditPool, savePool, deletePool, pickDailyStocks,
       poolDetail, openPoolDetail, startEditPoolName, savePoolName, refreshPoolPrices, refreshPoolDetail,
       addPoolStocks, removePoolStock, sortedPoolDetailStocks, sortPoolDetailBy, poolSortIcon,
+      // 页面2.5：概念行业选股
+      sectorSearch, sectorResults, sectorSearching, sectorLoading,
+      sectorDetail, sortedSectorPools, searchSector, addSectorFromSearch,
+      loadSectorStocks, refreshSectorDetail, openSectorDetail, startEditSectorName,
+      saveSectorName, deleteSectorPool, removeSectorStock,
+      sortedSectorDetailStocks, sortSectorDetailBy, sectorSortIcon,
       // 页面3
       hotDate, hotLoading, hotBoards, hotStocks, conceptFreq,
       sortedHotStocks, sortHotBy, hotSortIcon, removeHotStock,

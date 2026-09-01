@@ -15,6 +15,7 @@ const Store = {
     return {
       news: [],
       stockPools: [],
+      sectorPools: [],        // 概念/行业选股板块：[{id, name, bk, type, date, stocks: [...]}]
       dailyData: {},          // { "2024-07-08": { stocks: [...] } }
       hotBoards: [],          // 缓存最近一次热门板块
       hotStocks: [],          // 缓存最近一次热门股票
@@ -53,6 +54,7 @@ const Store = {
     }
     if (!this.data.dailyData) this.data.dailyData = {};
     if (!this.data.stockPools) this.data.stockPools = [];
+    if (!this.data.sectorPools) this.data.sectorPools = [];
     if (!this.data.news) this.data.news = [];
 
     // 自动保存
@@ -144,6 +146,23 @@ const Store = {
   deletePool(id) {
     const i = this.data.stockPools.findIndex(p => p.id === id);
     if (i >= 0) this.data.stockPools.splice(i, 1);
+  },
+
+  // ===== 概念/行业选股板块 =====
+  addSectorPool(sector) {
+    sector.id = this.uid('sp');
+    sector.createdAt = Date.now();
+    this.data.sectorPools.push(sector);
+    return sector;
+  },
+  updateSectorPool(id, patch) {
+    const p = this.data.sectorPools.find(p => p.id === id);
+    if (p) Object.assign(p, patch);
+    return p;
+  },
+  deleteSectorPool(id) {
+    const i = this.data.sectorPools.findIndex(p => p.id === id);
+    if (i >= 0) this.data.sectorPools.splice(i, 1);
   },
 
   // ===== 每日数据 =====

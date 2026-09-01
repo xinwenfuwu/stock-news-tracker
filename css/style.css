@@ -529,6 +529,44 @@ body {
 .concept-count { width: 24px; font-weight: 700; color: var(--primary); }
 .section-title { font-size: 16px; font-weight: 600; margin: 20px 0 10px; }
 
+/* ===== 概念行业选股 ===== */
+.sector-search {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 16px;
+  padding: 14px;
+  background: var(--surface-alt);
+  border-radius: 8px;
+}
+.sector-results { margin-bottom: 8px; }
+.sector-result-list {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+  margin-bottom: 6px;
+}
+.sector-result-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  cursor: pointer;
+  border-bottom: 1px solid #f0f2f5;
+  background: var(--surface);
+}
+.sector-result-item:last-child { border-bottom: none; }
+.sector-result-item:hover { background: #f8faff; }
+.sector-result-name { font-weight: 600; flex: 1; }
+.sector-result-type {
+  font-size: 11px;
+  padding: 2px 8px;
+  border-radius: 10px;
+  background: var(--surface-alt);
+  color: var(--text-secondary);
+}
+.sector-result-change { font-size: 13px; }
+
 /* ===== 模态框 ===== */
 .modal-overlay {
   position: fixed;

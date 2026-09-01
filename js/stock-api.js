@@ -441,6 +441,109 @@ const StockAPI = {
     return results;
   },
 
+  // ============ 概念/行业板块选股 ============
+
+  /** 东财 push2 请求，带 UA 与重试，降低被限流概率 */
+  async _eastFetch(url) {
+    const UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36';
+    for (let i = 0; i < 3; i++) {
+      try {
+        const resp = await fetch(url, { cache: 'no-store', headers: { 'User-Agent': UA } });
+        if (resp.ok) return await resp.json();
+      } catch (e) { /* retry */ }
+      await new Promise(r => setTimeout(r, 400 * (i + 1)));
+    }
+    return null;
+  },
+
+  /**
+   * 分页拉取某类板块列表（概念 m:90+t:3 / 行业 m:90+t:2）
+   * 东财单页上限 100 条，故需分页。单页失败自动重试，全部失败则返回已获取部分。
+   * @returns {Array<{bk, name, change}>}
+   */
+  async _loadSectors(fs) {
+    const all = [];
+    for (let pn = 1; pn <= 8; pn++) {
+      const url = `https://push2.eastmoney.com/api/qt/clist/get?pn=${pn}&pz=100&po=1&np=1&fltt=2&invt=2&fid=f3&fs=${encodeURIComponent(fs)}&fields=f12,f14,f3`;
+      const json = await this._eastFetch(url);
+      const diff = (json && json.data && json.data.diff) || [];
+      all.push(...diff);
+      const total = json && json.data && json.data.total;
+      if (!diff.length || all.length >= total) break;
+      await new Promise(r => setTimeout(r, 500));
+    }
+    return all.map(b => ({ bk: b.f12, name: b.f14, change: b.f3 != null ? parseFloat(b.f3) : null }));
+  },
+
+  /** 板块缓存（避免重复加载） */
+  _sectorCache: null,
+  /** 板块缓存过期时间戳 */
+  _sectorCacheAt: 0,
+
+  /**
+   * 获取全部板块（概念+行业，去重）
+   * 缓存 10 分钟，避免频繁请求触发限流。
+   * @returns {Promise<Array<{bk, name, type}>>} type: '概念'|'行业'
+   */
+  async getAllSectors() {
+    const now = Date.now();
+    if (this._sectorCache && now - this._sectorCacheAt < 10 * 60 * 1000) {
+      return this._sectorCache;
+    }
+    // 概念与行业分开请求，各自失败不互相影响
+    let concepts = [], industries = [];
+    try { concepts = await this._loadSectors('m:90+t:3'); } catch (e) { console.debug('概念板块加载失败', e); }
+    try { industries = await this._loadSectors('m:90+t:2'); } catch (e) { console.debug('行业板块加载失败', e); }
+    const seen = new Set();
+    const all = [];
+    concepts.forEach(s => { if (!seen.has(s.bk)) { seen.add(s.bk); all.push({ ...s, type: '概念' }); } });
+    industries.forEach(s => { if (!seen.has(s.bk)) { seen.add(s.bk); all.push({ ...s, type: '行业' }); } });
+    // 即便部分失败也缓存 2 分钟，避免频繁重试
+    this._sectorCache = all;
+    this._sectorCacheAt = now;
+    return all;
+  },
+
+  /**
+   * 按关键词搜索板块（本地过滤，中文匹配名称）
+   * @param {string} keyword
+   * @returns {Promise<Array<{bk, name, type, change}>>}
+   */
+  async searchSectors(keyword) {
+    const kw = (keyword || '').trim().toLowerCase();
+    if (!kw) return [];
+    const all = await this.getAllSectors();
+    return all.filter(s => s.name.toLowerCase().includes(kw)).slice(0, 20);
+  },
+
+  /**
+   * 获取某板块的全部成分股
+   * @param {string} bk 板块代码，如 BK0896
+   * @returns {Promise<Array<{code, name, price, changePercent}>>} code 为带前缀格式
+   */
+  async getSectorStocks(bk) {
+    const all = [];
+    for (let pn = 1; pn <= 15; pn++) {
+      const url = `https://push2.eastmoney.com/api/qt/clist/get?pn=${pn}&pz=100&po=1&np=1&fltt=2&invt=2&fid=f3&fs=b%3A${bk}&fields=f12,f14,f3,f2`;
+      const json = await this._eastFetch(url);
+      const diff = (json && json.data && json.data.diff) || [];
+      for (const it of diff) {
+        const pure = String(it.f12);
+        const prefix = /^(6|9|4|8)/.test(pure) ? 'sh' : 'sz';
+        all.push({
+          code: prefix + pure,
+          name: it.f14 || '',
+          price: it.f2 != null ? parseFloat(it.f2) : null,
+          changePercent: it.f3 != null ? parseFloat(it.f3) : null
+        });
+      }
+      const total = json && json.data && json.data.total;
+      if (!diff.length || all.length >= total) break;
+      await new Promise(r => setTimeout(r, 300));
+    }
+    return all;
+  },
+
   // ============ 工具方法 ============
 
   _addDays(date, n) {

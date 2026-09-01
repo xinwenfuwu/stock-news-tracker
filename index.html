@@ -202,6 +202,78 @@
         </div>
       </section>
 
+      <!-- ===== 页面2.5：概念行业选股 ===== -->
+      <section v-show="currentPage === 'sector'" class="page">
+        <div class="page-toolbar">
+          <div class="toolbar-left">
+            <h2 class="page-title">🧭 概念行业选股</h2>
+          </div>
+          <div class="toolbar-right">
+            <span class="muted small">输入行业或概念名称，自动列出该板块下所有股票</span>
+          </div>
+        </div>
+
+        <!-- 板块搜索 -->
+        <div class="sector-search">
+          <input v-model="sectorSearch" placeholder="输入行业/概念名称，如：白酒、人工智能、机器人..."
+            style="flex:1;min-width:220px;padding:9px 12px;border:1px solid #d8e0f0;border-radius:8px"
+            @input="searchSector" @keyup.enter="searchSector">
+          <button class="btn btn-primary" @click="searchSector" :disabled="sectorSearching">
+            <span v-if="sectorSearching">⏳ 搜索中...</span>
+            <span v-else>🔍 搜索板块</span>
+          </button>
+        </div>
+
+        <!-- 搜索结果 -->
+        <div class="sector-results" v-if="sectorResults.length">
+          <div class="sector-result-list">
+            <div class="sector-result-item" v-for="item in sectorResults" :key="item.bk"
+                 @click="addSectorFromSearch(item)">
+              <span class="sector-result-name">{{ item.name }}</span>
+              <span class="sector-result-type">{{ item.type }}</span>
+              <span class="sector-result-change" v-if="item.change != null">{{ fmtPct(item.change) }}</span>
+              <button class="btn btn-sm btn-primary">➕ 添加</button>
+            </div>
+          </div>
+          <p class="muted small">点击板块即可添加并自动拉取全部成分股</p>
+        </div>
+        <div class="sector-results" v-else-if="sectorSearching">
+          <p class="muted">正在搜索板块...</p>
+        </div>
+
+        <!-- 已保存板块 -->
+        <div class="section-title" v-if="sortedSectorPools.length">
+          <h3>📋 我的概念选股板块</h3>
+          <span class="muted small">共 {{ sortedSectorPools.length }} 个</span>
+        </div>
+        <div class="pool-grid" v-if="sortedSectorPools.length">
+          <div class="pool-card" v-for="pool in sortedSectorPools" :key="pool.id"
+               @click="openSectorDetail(pool)">
+            <div class="pool-card-header">
+              <span class="pool-date">{{ pool.type || '板块' }}</span>
+              <span class="pool-count">{{ pool.stocks.length }} 只</span>
+            </div>
+            <div class="pool-name">{{ pool.name }}</div>
+            <div class="pool-avg" :class="pctClass(pool.avgChange)">
+              平均涨跌幅 {{ fmtPct(pool.avgChange) }}
+            </div>
+            <div class="pool-stocks-preview">
+              <span v-for="(s, i) in pool.stocks.slice(0, 5)" :key="i" class="stock-chip">
+                {{ s.name || s.code }}
+              </span>
+              <span v-if="pool.stocks.length > 5" class="stock-chip more">+{{ pool.stocks.length - 5 }}</span>
+            </div>
+            <div class="pool-actions" @click.stop>
+              <button class="btn-icon-sm" @click="deleteSectorPool(pool.id)" title="删除">🗑</button>
+            </div>
+          </div>
+        </div>
+        <div class="empty-state" v-if="!sortedSectorPools.length && !sectorSearching">
+          <p>🧭 暂无概念选股板块</p>
+          <p class="muted">在上方输入行业或概念名称，点击板块即可自动列出其下所有股票</p>
+        </div>
+      </section>
+
       <!-- ===== 页面3：热门板块 ===== -->
       <section v-show="currentPage === 'hot'" class="page">
         <div class="page-toolbar">
@@ -560,6 +632,103 @@
           </div>
           <div class="info-box small">
             <p>💡 说明：总市值/振幅/涨跌幅/换手率通过腾讯接口实时获取；净利润/扣非/营收/合同负债/各类增长率/股东人数通过东方财富获取。市净比=总市值÷净利润÷10；市扣比=总市值÷扣非净利润÷10；市同比=总市值÷同比增长率；市环比=总市值÷环比增长率；市营比=总市值÷营业收入；市营同比=总市值÷营收同比增长率（金额统一按亿元计算）。年初涨跌幅=当日价相对当年首个交易日涨跌幅；924涨跌幅=当日价相对2024-09-24收盘价涨跌幅（不复权）。若部分数据获取失败可点击「刷新行情」重试，东方财富接口在部分网络环境可能受限。</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== 概念选股板块详情模态框 ===== -->
+    <div class="modal-overlay" v-if="sectorDetail.show" @click.self="sectorDetail.show = false">
+      <div class="modal modal-xl">
+        <div class="modal-header">
+          <h3 style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+            <template v-if="sectorDetail.nameEdit">
+              <input v-model="sectorDetail.nameDraft" placeholder="输入板块名称" style="width:220px;padding:6px 10px;border:1px solid #d8e0f0;border-radius:6px">
+              <button class="btn btn-sm" @click="saveSectorName">✅ 保存名称</button>
+              <button class="btn btn-sm" @click="sectorDetail.nameEdit=false">✕</button>
+            </template>
+            <template v-else>
+              🧭 {{ sectorDetail.data.name || '概念板块' }}
+              <button class="btn-icon-sm" @click="startEditSectorName" title="编辑板块名称">✏️</button>
+            </template>
+            <span class="muted small">（{{ sectorDetail.data.type || '板块' }} · {{ sectorDetail.data.stocks.length }} 只）</span>
+          </h3>
+          <button class="btn-icon" @click="sectorDetail.show = false">✕</button>
+        </div>
+        <div class="modal-body">
+          <div class="pool-detail-summary">
+            <span>平均涨跌幅：<b :class="pctClass(sectorDetail.data.avgChange)">{{ fmtPct(sectorDetail.data.avgChange) }}</b></span>
+            <button class="btn btn-sm" @click="refreshSectorDetail(sectorDetail.data)" :disabled="sectorLoading">
+              <span v-if="sectorLoading">⏳ 刷新中...</span>
+              <span v-else>🔄 刷新行情</span>
+            </button>
+          </div>
+          <div class="table-wrap table-scroll-x">
+            <table class="data-table pool-detail-table">
+              <thead>
+                <tr>
+                  <th class="col-sticky col-sticky-0">序号</th>
+                  <th class="col-sticky col-sticky-1">代码</th>
+                  <th class="col-sticky col-sticky-2">股票名称</th>
+                  <th class="sortable" @click="sortSectorDetailBy('yearChange')">年初涨跌幅 <span class="sort-arrow" v-html="sectorSortIcon('yearChange')"></span></th>
+                  <th class="sortable" @click="sortSectorDetailBy('change924')">924涨跌幅 <span class="sort-arrow" v-html="sectorSortIcon('change924')"></span></th>
+                  <th class="sortable" @click="sortSectorDetailBy('pbRatio')">市净比 <span class="sort-arrow" v-html="sectorSortIcon('pbRatio')"></span></th>
+                  <th class="sortable" @click="sortSectorDetailBy('pkRatio')">市扣比 <span class="sort-arrow" v-html="sectorSortIcon('pkRatio')"></span></th>
+                  <th class="sortable" @click="sortSectorDetailBy('pyRatio')">市同比 <span class="sort-arrow" v-html="sectorSortIcon('pyRatio')"></span></th>
+                  <th class="sortable" @click="sortSectorDetailBy('phRatio')">市环比 <span class="sort-arrow" v-html="sectorSortIcon('phRatio')"></span></th>
+                  <th class="sortable" @click="sortSectorDetailBy('prRatio')">市营比 <span class="sort-arrow" v-html="sectorSortIcon('prRatio')"></span></th>
+                  <th class="sortable" @click="sortSectorDetailBy('prrRatio')">市营同比 <span class="sort-arrow" v-html="sectorSortIcon('prrRatio')"></span></th>
+                  <th class="sortable" @click="sortSectorDetailBy('totalMarketCap')">总市值(亿) <span class="sort-arrow" v-html="sectorSortIcon('totalMarketCap')"></span></th>
+                  <th class="sortable" @click="sortSectorDetailBy('contractLiab')">合同负债 <span class="sort-arrow" v-html="sectorSortIcon('contractLiab')"></span></th>
+                  <th class="sortable" @click="sortSectorDetailBy('kcfjcxjlr')">扣非净利润 <span class="sort-arrow" v-html="sectorSortIcon('kcfjcxjlr')"></span></th>
+                  <th class="sortable" @click="sortSectorDetailBy('netProfit')">净利润 <span class="sort-arrow" v-html="sectorSortIcon('netProfit')"></span></th>
+                  <th class="sortable" @click="sortSectorDetailBy('revenue')">营业收入 <span class="sort-arrow" v-html="sectorSortIcon('revenue')"></span></th>
+                  <th class="sortable" @click="sortSectorDetailBy('hbGrowth')">环比增长率 <span class="sort-arrow" v-html="sectorSortIcon('hbGrowth')"></span></th>
+                  <th class="sortable" @click="sortSectorDetailBy('profitYoY')">利润同比增长率 <span class="sort-arrow" v-html="sectorSortIcon('profitYoY')"></span></th>
+                  <th class="sortable" @click="sortSectorDetailBy('revenueYoY')">同比增长率 <span class="sort-arrow" v-html="sectorSortIcon('revenueYoY')"></span></th>
+                  <th class="sortable" @click="sortSectorDetailBy('amplitude')">振幅 <span class="sort-arrow" v-html="sectorSortIcon('amplitude')"></span></th>
+                  <th class="sortable" @click="sortSectorDetailBy('dailyChange')">当日涨跌幅 <span class="sort-arrow" v-html="sectorSortIcon('dailyChange')"></span></th>
+                  <th class="sortable" @click="sortSectorDetailBy('shareholderCount')">散户数量 <span class="sort-arrow" v-html="sectorSortIcon('shareholderCount')"></span></th>
+                  <th class="sortable" @click="sortSectorDetailBy('prevShareholderCount')">上期散户数量 <span class="sort-arrow" v-html="sectorSortIcon('prevShareholderCount')"></span></th>
+                  <th class="sortable" @click="sortSectorDetailBy('turnover')">换手率 <span class="sort-arrow" v-html="sectorSortIcon('turnover')"></span></th>
+                  <th class="sortable" @click="sortSectorDetailBy('capitalFlow')">资金流入 <span class="sort-arrow" v-html="sectorSortIcon('capitalFlow')"></span></th>
+                  <th>操作</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="(s, idx) in sortedSectorDetailStocks" :key="s.code">
+                  <td class="col-sticky col-sticky-0">{{ idx + 1 }}</td>
+                  <td class="col-sticky col-sticky-1">{{ s.code }}</td>
+                  <td class="col-sticky col-sticky-2">{{ s.name }}</td>
+                  <td :class="pctClass(s.yearChange)">{{ s.yearChange != null ? fmtPct(s.yearChange) : '—' }}</td>
+                  <td :class="pctClass(s.change924)">{{ s.change924 != null ? fmtPct(s.change924) : '—' }}</td>
+                  <td :class="numClass(sRatio(s).pbRatio)">{{ sRatio(s).pbRatio != null ? fmt(sRatio(s).pbRatio) : '—' }}</td>
+                  <td :class="numClass(sRatio(s).pkRatio)">{{ sRatio(s).pkRatio != null ? fmt(sRatio(s).pkRatio) : '—' }}</td>
+                  <td :class="numClass(sRatio(s).pyRatio)">{{ sRatio(s).pyRatio != null ? fmt(sRatio(s).pyRatio) : '—' }}</td>
+                  <td :class="numClass(sRatio(s).phRatio)">{{ sRatio(s).phRatio != null ? fmt(sRatio(s).phRatio) : '—' }}</td>
+                  <td :class="numClass(sRatio(s).prRatio)">{{ sRatio(s).prRatio != null ? fmt(sRatio(s).prRatio) : '—' }}</td>
+                  <td :class="numClass(sRatio(s).prrRatio)">{{ sRatio(s).prrRatio != null ? fmt(sRatio(s).prrRatio) : '—' }}</td>
+                  <td>{{ s.totalMarketCap != null ? fmt(s.totalMarketCap) : '—' }}</td>
+                  <td>{{ fmtYi(s.contractLiab) }}</td>
+                  <td>{{ fmtYi(s.kcfjcxjlr) }}</td>
+                  <td>{{ fmtYi(s.netProfit) }}</td>
+                  <td>{{ fmtYi(s.revenue) }}</td>
+                  <td :class="pctClass(s.hbGrowth)">{{ s.hbGrowth != null ? fmtPct(s.hbGrowth) : '—' }}</td>
+                  <td :class="pctClass(s.profitYoY)">{{ s.profitYoY != null ? fmtPct(s.profitYoY) : '—' }}</td>
+                  <td :class="pctClass(s.revenueYoY)">{{ s.revenueYoY != null ? fmtPct(s.revenueYoY) : '—' }}</td>
+                  <td :class="numClass(s.amplitude)">{{ s.amplitude != null ? s.amplitude + '%' : '—' }}</td>
+                  <td :class="pctClass(s.dailyChange)">{{ fmtPct(s.dailyChange) }}</td>
+                  <td>{{ s.shareholderCount || '—' }}</td>
+                  <td>{{ s.prevShareholderCount || '—' }}</td>
+                  <td>{{ s.turnover != null ? s.turnover + '%' : '—' }}</td>
+                  <td :class="numClass(s.capitalFlow)">{{ s.capitalFlow != null ? (s.capitalFlow > 0 ? '+' : '') + (s.capitalFlow/1e4).toFixed(2) + '万' : '—' }}</td>
+                  <td><button class="btn btn-sm btn-danger" @click="removeSectorStock(s.code)">🗑 删除</button></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="info-box small">
+            <p>💡 说明：点击「刷新行情」可拉取全部成分股的实时行情与财务数据（东方财富接口在部分网络环境可能受限）。市营比=总市值÷营业收入；市营同比=总市值÷营收同比增长率；年初涨跌幅=当日价相对当年首个交易日涨跌幅；924涨跌幅=当日价相对2024-09-24收盘价涨跌幅（不复权）。</p>
           </div>
         </div>
       </div>
