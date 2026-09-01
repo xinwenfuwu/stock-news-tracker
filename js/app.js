@@ -1686,7 +1686,15 @@ const app = createApp({
       prMin: null, prMax: null,   // 市营比区间
       q24Min: null, q24Max: null,   // 24营比区间
       q24kMin: null, q24kMax: null, // 24扣比区间
-      posMin: null, posMax: null    // 正数统计区间（今涨跌→扣非环比 中为正的字段个数）
+      posMin: null, posMax: null,   // 正数统计区间（今涨跌→扣非环比 中为正的字段个数）
+      ratioFilter: false,            // 比值筛选：924涨跌 < 24营比 + 24扣比
+      industry: ''                   // 行业筛选：'' 表示不限
+    });
+    /** 当前板块成分股涉及的全部行业（去重、中文排序），供行业下拉筛选 */
+    const filterIndustries = computed(() => {
+      const set = new Set();
+      filterPoolStocks.value.forEach(s => set.add(s.industry || '未知'));
+      return [...set].sort((a, b) => String(a).localeCompare(String(b), 'zh-CN'));
     });
     function openFilterPanel() {
       filterPanel.show = true;
@@ -1712,6 +1720,7 @@ const app = createApp({
       filterPanel.q24Min = null; filterPanel.q24Max = null;
       filterPanel.q24kMin = null; filterPanel.q24kMax = null;
       filterPanel.posMin = null; filterPanel.posMax = null;
+      filterPanel.ratioFilter = false; filterPanel.industry = '';
     }
     /** 切换板块后重置区间筛选；若已固定则保留区间 */
     function applyFilterPool() {
@@ -1722,6 +1731,7 @@ const app = createApp({
       filterPanel.q24Min = null; filterPanel.q24Max = null;
       filterPanel.q24kMin = null; filterPanel.q24kMax = null;
       filterPanel.posMin = null; filterPanel.posMax = null;
+      filterPanel.ratioFilter = false; filterPanel.industry = '';
     }
     /** 区间判断工具：v 在 [min,max] 内（含边界），边界均为空则不限（含 null） */
     function inRange(v, min, max) {
@@ -1752,6 +1762,14 @@ const app = createApp({
         if (!inRange(s.q24Rev, filterPanel.q24Min, filterPanel.q24Max)) return false;
         if (!inRange(s.q24Kcf, filterPanel.q24kMin, filterPanel.q24kMax)) return false;
         if (!inRange(positiveCount(s), filterPanel.posMin, filterPanel.posMax)) return false;
+        // 行业筛选
+        if (filterPanel.industry && (s.industry || '未知') !== filterPanel.industry) return false;
+        // 比值筛选：924涨跌 < 24营比 + 24扣比（三值均须有效）
+        if (filterPanel.ratioFilter) {
+          const c9 = s.change924, rv = s.q24Rev, kc = s.q24Kcf;
+          if (c9 == null || isNaN(c9) || rv == null || isNaN(rv) || kc == null || isNaN(kc)) return false;
+          if (!(c9 < rv + kc)) return false;
+        }
         return true;
       });
     });
@@ -2129,6 +2147,7 @@ const app = createApp({
       filterPanel, openFilterPanel, resetFilter, applyFilterPool, toggleFilterLock,
       filteredFilterStocks, sortedFilterStocks, sortFilterBy, filterSortIcon,
       positiveCount, POSITIVE_KEYS,
+      filterIndustries,
       filterRefreshing, refreshFilterStocks,
       sortedSectorPools, sortedPools,
       // 通用：收藏

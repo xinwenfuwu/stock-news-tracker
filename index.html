@@ -590,6 +590,21 @@
               <input type="number" step="1" min="0" :max="POSITIVE_KEYS.length" v-model.number="filterPanel.posMax" placeholder="最大">
             </div>
           </div>
+          <!-- 比值筛选 -->
+          <div class="filter-field">
+            <label class="checkbox-label" title="仅保留满足「924涨跌 < 24营比 + 24扣比」的股票">
+              <input type="checkbox" v-model="filterPanel.ratioFilter"> 比值筛选
+            </label>
+            <span class="muted small">924涨跌 &lt; 24营比+24扣比</span>
+          </div>
+          <!-- 行业筛选 -->
+          <div class="filter-field">
+            <label>行业</label>
+            <select v-model="filterPanel.industry">
+              <option value="">全部行业</option>
+              <option v-for="ind in filterIndustries" :key="ind" :value="ind">{{ ind }}</option>
+            </select>
+          </div>
           <button class="btn btn-sm" @click="resetFilter" :disabled="filterPanel.locked">🔄 重置</button>
           <button class="btn btn-sm" :class="{ 'btn-locked': filterPanel.locked }" @click="toggleFilterLock">
             <span v-if="filterPanel.locked">🔒 已固定</span>
@@ -682,6 +697,8 @@
           <p>💡 <b>字段含义与计算规则</b>：<br>
           · 行业=个股所属一级行业（如食品饮料、银行），来自东方财富公司概况。<br>
           · <b>正数统计</b>=从「今涨跌」到「扣非环比」共 {{ POSITIVE_KEYS.length }} 个字段中，数值为正的个数（空值不计入），显示为「正数个数 / {{ POSITIVE_KEYS.length }}」，正数越多越强势。顶部「正数统计」框可按该个数区间筛选（如填 15—20 即只保留至少15项为正的个股）。<br>
+          · <b>比值筛选</b>=勾选后仅保留满足「924涨跌 < 24营比 + 24扣比」的股票（三者均须有数据）。该规则筛出「股价涨幅小于业绩增幅」的个股（业绩增长未充分反映在股价上）。<br>
+          · <b>行业筛选</b>=按成分股所属一级行业下拉过滤，可与其他条件组合使用。<br>
           · 今涨跌=当日涨跌幅(%)；年涨跌=当日价相对当年首个交易日涨跌幅(%)；924涨跌=当日价相对2024-09-24收盘价涨跌幅(%)（不复权）。<br>
           · 24营比=最新报告期营收 相对 2024年同期营收增长率(%)；24扣比=最新报告期扣非净利润 相对 2024年同期扣非净利润增长率(%)。顶部「24营比/24扣比」框可按该增长率区间筛选。<br>
           · 散户差额=最新散户数量−上期散户数量。<br>
