@@ -65,7 +65,10 @@ const app = createApp({
     }
     function numClass(v) {
       if (v == null || v === '' || isNaN(v)) return 'muted';
-      return '';
+      const n = +v;
+      if (n > 0) return 'up';      // 正数：红
+      if (n < 0) return 'down';    // 负数：绿
+      return 'flat';
     }
     function pctClass(v) {
       if (v == null || v === '' || isNaN(v)) return 'muted';
@@ -95,12 +98,13 @@ const app = createApp({
     /**
      * 市值类比值计算。
      * 统一用「亿元」：总市值=totalMarketCap(亿)，净利润/扣非/营收=元→转亿。
-     * 市净比 = 总市值 ÷ 净利润 ÷ 10
-     * 市扣比 = 总市值 ÷ 扣非净利润 ÷ 10
-     * 市同比 = 总市值 ÷ 同比增长率
-     * 市环比 = 总市值 ÷ 环比增长率
-     * 市营比 = 总市值 ÷ 营业收入
-     * 市营同比 = 总市值 ÷ 营收同比增长率
+     * 市净比(pbRatio) = 总市值 ÷ 净利润 ÷ 10
+     * 市扣比(pkRatio) = 总市值 ÷ 扣非净利润 ÷ 10
+     * 市净同比(pyRatio) = 总市值 ÷ 净利润同比增长率(profitYoY)
+     * 市扣同比(pk2Ratio) = 总市值 ÷ 扣非净利润同比增长率(kcfYoY)
+     * 市营环比(phRatio) = 总市值 ÷ 营收环比增长率(revHb)
+     * 市营比(prRatio) = 总市值 ÷ 营业收入
+     * 市营同比(prrRatio) = 总市值 ÷ 营收同比增长率
      */
     function sRatio(s) {
       const cap = s.totalMarketCap;
@@ -112,15 +116,17 @@ const app = createApp({
       const pr = ratio(cap, rev);          // 总市值/营业收入
       const pRatio = p != null ? +(p / 10).toFixed(2) : null;   // 市净比
       const kRatio = k != null ? +(k / 10).toFixed(2) : null;   // 市扣比
-      // 市同比 = 总市值 ÷ 同比增长率(营收同比)
-      const py = s.revenueYoY != null && +s.revenueYoY !== 0 ? +(+cap / +s.revenueYoY).toFixed(2) : null;
-      // 市环比 = 总市值 ÷ 环比增长率(净利润环比)
-      const ph = s.hbGrowth != null && +s.hbGrowth !== 0 ? +(+cap / +s.hbGrowth).toFixed(2) : null;
+      // 市净同比 = 总市值 ÷ 净利润同比增长率(profitYoY)
+      const py = s.profitYoY != null && +s.profitYoY !== 0 ? +(+cap / +s.profitYoY).toFixed(2) : null;
+      // 市扣同比 = 总市值 ÷ 扣非净利润同比增长率(kcfYoY)
+      const pk2 = s.kcfYoY != null && +s.kcfYoY !== 0 ? +(+cap / +s.kcfYoY).toFixed(2) : null;
+      // 市营环比 = 总市值 ÷ 营收环比增长率(revHb)
+      const ph = s.revHb != null && +s.revHb !== 0 ? +(+cap / +s.revHb).toFixed(2) : null;
       // 市营比 = 总市值 ÷ 营业收入
       const prRatio = pr != null ? +pr.toFixed(2) : null;
       // 市营同比 = 总市值 ÷ 营收同比增长率
       const prrRatio = s.revenueYoY != null && +s.revenueYoY !== 0 ? +(+cap / +s.revenueYoY).toFixed(2) : null;
-      return { pbRatio: pRatio, pkRatio: kRatio, pyRatio: py, phRatio: ph, prRatio, prrRatio };
+      return { pbRatio: pRatio, pkRatio: kRatio, pyRatio: py, pk2Ratio: pk2, phRatio: ph, prRatio, prrRatio };
     }
 
     function parseStocks(val) {
@@ -159,7 +165,8 @@ const app = createApp({
         fav.note = '';
         // 复制现有数据字段（若来源已带行情/财务数据则一并保存）
         const keys = ['dailyChange','amplitude','capitalFlow','shareholderCount','prevShareholderCount',
-          'profitYoY','revenueYoY','hbGrowth','netProfit','kcfjcxjlr','revenue','totalMarketCap',
+          'profitYoY','revenueYoY','hbGrowth','kcfYoY','revHb','q24Rev','q24Kcf',
+          'netProfit','kcfjcxjlr','revenue','totalMarketCap',
           'contractLiab','todayPrice','yearStartPrice','price924','yearChange','change924','turnover'];
         keys.forEach(k => { if (stock[k] != null) fav[k] = stock[k]; });
         const ok = Store.addFavorite(fav);
@@ -238,6 +245,8 @@ const app = createApp({
             if (fin.profitYoY != null) f.profitYoY = fin.profitYoY;
             if (fin.revenueYoY != null) f.revenueYoY = fin.revenueYoY;
             if (fin.hbGrowth != null) f.hbGrowth = fin.hbGrowth;
+            if (fin.kcfYoY != null) f.kcfYoY = fin.kcfYoY;
+            if (fin.revHb != null) f.revHb = fin.revHb;
             if (fin.netProfit != null) f.netProfit = fin.netProfit;
             if (fin.kcfjcxjlr != null) f.kcfjcxjlr = fin.kcfjcxjlr;
             if (fin.revenue != null) f.revenue = fin.revenue;
@@ -245,6 +254,12 @@ const app = createApp({
             if (fin.shareholderCount != null) f.shareholderCount = fin.shareholderCount;
             if (fin.prevShareholderCount != null) f.prevShareholderCount = fin.prevShareholderCount;
           } catch (e) { console.warn('收藏财务数据获取失败', f.code, e); }
+          // 24营比 / 24扣比（季报营收/扣非对比2024同期）
+          try {
+            const q24 = await StockAPI.getQuarterlyFinance(f.code);
+            if (q24.q24Rev != null) f.q24Rev = q24.q24Rev;
+            if (q24.q24Kcf != null) f.q24Kcf = q24.q24Kcf;
+          } catch (e) { console.warn('收藏季报对比获取失败', f.code, e); }
           try {
             const yp = await StockAPI.getYearStartPrice(f.code);
             if (yp != null) f.yearStartPrice = yp;
@@ -746,6 +761,10 @@ const app = createApp({
         profitYoY: null,
         revenueYoY: null,
         hbGrowth: null,
+        kcfYoY: null,        // 扣非净利润同比增长率(%)
+        revHb: null,         // 营收环比增长率(%)
+        q24Rev: null,        // 24营比：最新营收 vs 2024同期 增长率(%)
+        q24Kcf: null,        // 24扣比：最新扣非 vs 2024同期 增长率(%)
         netProfit: null,       // 净利润(元)
         kcfjcxjlr: null,       // 扣非净利润(元)
         revenue: null,         // 营业收入(元)
@@ -782,6 +801,10 @@ const app = createApp({
               s.profitYoY = o.profitYoY;
               s.revenueYoY = o.revenueYoY;
               s.hbGrowth = o.hbGrowth;
+              s.kcfYoY = o.kcfYoY;
+              s.revHb = o.revHb;
+              s.q24Rev = o.q24Rev;
+              s.q24Kcf = o.q24Kcf;
               s.netProfit = o.netProfit;
               s.kcfjcxjlr = o.kcfjcxjlr;
               s.revenue = o.revenue;
@@ -979,6 +1002,8 @@ const app = createApp({
           if (fin.profitYoY != null) s.profitYoY = fin.profitYoY;
           if (fin.revenueYoY != null) s.revenueYoY = fin.revenueYoY;
           if (fin.hbGrowth != null) s.hbGrowth = fin.hbGrowth;
+          if (fin.kcfYoY != null) s.kcfYoY = fin.kcfYoY;
+          if (fin.revHb != null) s.revHb = fin.revHb;
           if (fin.netProfit != null) s.netProfit = fin.netProfit;
           if (fin.kcfjcxjlr != null) s.kcfjcxjlr = fin.kcfjcxjlr;
           if (fin.revenue != null) s.revenue = fin.revenue;
@@ -987,6 +1012,14 @@ const app = createApp({
           if (fin.prevShareholderCount != null) s.prevShareholderCount = fin.prevShareholderCount;
         } catch (e) {
           console.warn('补充数据获取失败', s.code, e);
+        }
+        // 24营比 / 24扣比（季报营收/扣非对比2024同期）
+        try {
+          const q24 = await StockAPI.getQuarterlyFinance(s.code);
+          if (q24.q24Rev != null) s.q24Rev = q24.q24Rev;
+          if (q24.q24Kcf != null) s.q24Kcf = q24.q24Kcf;
+        } catch (e) {
+          console.warn('季报对比获取失败', s.code, e);
         }
         // 年初价 + 924价（不复权历史收盘），每只容错
         try {
@@ -1012,9 +1045,9 @@ const app = createApp({
       showToast('数据刷新完成', 'success');
     }
 
-    /** 取股票池详情某列的排序值（含计算字段 市净比/市扣比/市同比/市环比） */
+    /** 取股票池详情某列的排序值（含计算字段 市净比/市扣比/市净同比/市扣同比/市营环比/市营比/市营同比） */
     function poolVal(s, key) {
-      if (key === 'pbRatio' || key === 'pkRatio' || key === 'pyRatio' || key === 'phRatio' || key === 'prRatio' || key === 'prrRatio') {
+      if (key === 'pbRatio' || key === 'pkRatio' || key === 'pyRatio' || key === 'pk2Ratio' || key === 'phRatio' || key === 'prRatio' || key === 'prrRatio') {
         const r = sRatio(s);
         return r[key];
       }

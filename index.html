@@ -358,10 +358,13 @@
                   <th>当日涨跌幅</th>
                   <th>年初涨跌幅</th>
                   <th>924涨跌幅</th>
+                  <th>24营比</th>
+                  <th>24扣比</th>
                   <th>市净比</th>
                   <th>市扣比</th>
-                  <th>市同比</th>
-                  <th>市环比</th>
+                  <th>市净同比</th>
+                  <th>市扣同比</th>
+                  <th>市营环比</th>
                   <th>市营比</th>
                   <th>市营同比</th>
                   <th>总市值(亿)</th>
@@ -392,9 +395,12 @@
                   <td :class="pctClass(f.dailyChange)">{{ f.dailyChange != null ? fmtPct(f.dailyChange) : '—' }}</td>
                   <td :class="pctClass(f.yearChange)">{{ f.yearChange != null ? fmtPct(f.yearChange) : '—' }}</td>
                   <td :class="pctClass(f.change924)">{{ f.change924 != null ? fmtPct(f.change924) : '—' }}</td>
+                  <td :class="pctClass(f.q24Rev)">{{ f.q24Rev != null ? fmtPct(f.q24Rev) : '—' }}</td>
+                  <td :class="pctClass(f.q24Kcf)">{{ f.q24Kcf != null ? fmtPct(f.q24Kcf) : '—' }}</td>
                   <td :class="numClass(sRatio(f).pbRatio)">{{ sRatio(f).pbRatio != null ? fmt(sRatio(f).pbRatio) : '—' }}</td>
                   <td :class="numClass(sRatio(f).pkRatio)">{{ sRatio(f).pkRatio != null ? fmt(sRatio(f).pkRatio) : '—' }}</td>
                   <td :class="numClass(sRatio(f).pyRatio)">{{ sRatio(f).pyRatio != null ? fmt(sRatio(f).pyRatio) : '—' }}</td>
+                  <td :class="numClass(sRatio(f).pk2Ratio)">{{ sRatio(f).pk2Ratio != null ? fmt(sRatio(f).pk2Ratio) : '—' }}</td>
                   <td :class="numClass(sRatio(f).phRatio)">{{ sRatio(f).phRatio != null ? fmt(sRatio(f).phRatio) : '—' }}</td>
                   <td :class="numClass(sRatio(f).prRatio)">{{ sRatio(f).prRatio != null ? fmt(sRatio(f).prRatio) : '—' }}</td>
                   <td :class="numClass(sRatio(f).prrRatio)">{{ sRatio(f).prrRatio != null ? fmt(sRatio(f).prrRatio) : '—' }}</td>
@@ -688,10 +694,13 @@
                   <th class="sortable" @click="sortPoolDetailBy('dailyChange')">当日涨跌幅 <span class="sort-arrow" v-html="poolSortIcon('dailyChange')"></span></th>
                   <th class="sortable" @click="sortPoolDetailBy('yearChange')">年初涨跌幅 <span class="sort-arrow" v-html="poolSortIcon('yearChange')"></span></th>
                   <th class="sortable" @click="sortPoolDetailBy('change924')">924涨跌幅 <span class="sort-arrow" v-html="poolSortIcon('change924')"></span></th>
+                  <th class="sortable" @click="sortPoolDetailBy('q24Rev')">24营比 <span class="sort-arrow" v-html="poolSortIcon('q24Rev')"></span></th>
+                  <th class="sortable" @click="sortPoolDetailBy('q24Kcf')">24扣比 <span class="sort-arrow" v-html="poolSortIcon('q24Kcf')"></span></th>
                   <th class="sortable" @click="sortPoolDetailBy('pbRatio')">市净比 <span class="sort-arrow" v-html="poolSortIcon('pbRatio')"></span></th>
                   <th class="sortable" @click="sortPoolDetailBy('pkRatio')">市扣比 <span class="sort-arrow" v-html="poolSortIcon('pkRatio')"></span></th>
-                  <th class="sortable" @click="sortPoolDetailBy('pyRatio')">市同比 <span class="sort-arrow" v-html="poolSortIcon('pyRatio')"></span></th>
-                  <th class="sortable" @click="sortPoolDetailBy('phRatio')">市环比 <span class="sort-arrow" v-html="poolSortIcon('phRatio')"></span></th>
+                  <th class="sortable" @click="sortPoolDetailBy('pyRatio')">市净同比 <span class="sort-arrow" v-html="poolSortIcon('pyRatio')"></span></th>
+                  <th class="sortable" @click="sortPoolDetailBy('pk2Ratio')">市扣同比 <span class="sort-arrow" v-html="poolSortIcon('pk2Ratio')"></span></th>
+                  <th class="sortable" @click="sortPoolDetailBy('phRatio')">市营环比 <span class="sort-arrow" v-html="poolSortIcon('phRatio')"></span></th>
                   <th class="sortable" @click="sortPoolDetailBy('prRatio')">市营比 <span class="sort-arrow" v-html="poolSortIcon('prRatio')"></span></th>
                   <th class="sortable" @click="sortPoolDetailBy('prrRatio')">市营同比 <span class="sort-arrow" v-html="poolSortIcon('prrRatio')"></span></th>
                   <th class="sortable" @click="sortPoolDetailBy('totalMarketCap')">总市值(亿) <span class="sort-arrow" v-html="poolSortIcon('totalMarketCap')"></span></th>
@@ -723,9 +732,12 @@
                   <td :class="pctClass(s.dailyChange)">{{ fmtPct(s.dailyChange) }}</td>
                   <td :class="pctClass(s.yearChange)">{{ s.yearChange != null ? fmtPct(s.yearChange) : '—' }}</td>
                   <td :class="pctClass(s.change924)">{{ s.change924 != null ? fmtPct(s.change924) : '—' }}</td>
+                  <td :class="pctClass(s.q24Rev)">{{ s.q24Rev != null ? fmtPct(s.q24Rev) : '—' }}</td>
+                  <td :class="pctClass(s.q24Kcf)">{{ s.q24Kcf != null ? fmtPct(s.q24Kcf) : '—' }}</td>
                   <td :class="numClass(sRatio(s).pbRatio)">{{ sRatio(s).pbRatio != null ? fmt(sRatio(s).pbRatio) : '—' }}</td>
                   <td :class="numClass(sRatio(s).pkRatio)">{{ sRatio(s).pkRatio != null ? fmt(sRatio(s).pkRatio) : '—' }}</td>
                   <td :class="numClass(sRatio(s).pyRatio)">{{ sRatio(s).pyRatio != null ? fmt(sRatio(s).pyRatio) : '—' }}</td>
+                  <td :class="numClass(sRatio(s).pk2Ratio)">{{ sRatio(s).pk2Ratio != null ? fmt(sRatio(s).pk2Ratio) : '—' }}</td>
                   <td :class="numClass(sRatio(s).phRatio)">{{ sRatio(s).phRatio != null ? fmt(sRatio(s).phRatio) : '—' }}</td>
                   <td :class="numClass(sRatio(s).prRatio)">{{ sRatio(s).prRatio != null ? fmt(sRatio(s).prRatio) : '—' }}</td>
                   <td :class="numClass(sRatio(s).prrRatio)">{{ sRatio(s).prrRatio != null ? fmt(sRatio(s).prrRatio) : '—' }}</td>
@@ -747,7 +759,7 @@
             </table>
           </div>
           <div class="info-box small">
-            <p>💡 说明：总市值/振幅/涨跌幅/换手率通过腾讯接口实时获取；净利润/扣非/营收/合同负债/各类增长率/股东人数通过东方财富获取。市净比=总市值÷净利润÷10；市扣比=总市值÷扣非净利润÷10；市同比=总市值÷同比增长率；市环比=总市值÷环比增长率；市营比=总市值÷营业收入；市营同比=总市值÷营收同比增长率（金额统一按亿元计算）。年初涨跌幅=当日价相对当年首个交易日涨跌幅；924涨跌幅=当日价相对2024-09-24收盘价涨跌幅（不复权）。若部分数据获取失败可点击「刷新行情」重试，东方财富接口在部分网络环境可能受限。</p>
+            <p>💡 说明：总市值/振幅/涨跌幅/换手率通过腾讯接口实时获取；净利润/扣非/营收/合同负债/各类增长率/股东人数通过东方财富获取。市净比=总市值÷净利润÷10；市扣比=总市值÷扣非净利润÷10；市净同比=总市值÷净利润同比增长率；市扣同比=总市值÷扣非净利润同比增长率；市营环比=总市值÷营收环比增长率；市营比=总市值÷营业收入；市营同比=总市值÷营收同比增长率（金额统一按亿元计算）。24营比=最新报告期营收 vs 2024年同期营收增长率；24扣比=最新报告期扣非净利润 vs 2024年同期扣非净利润增长率。年初涨跌幅=当日价相对当年首个交易日涨跌幅；924涨跌幅=当日价相对2024-09-24收盘价涨跌幅（不复权）。若部分数据获取失败可点击「刷新行情」重试，东方财富接口在部分网络环境可能受限。</p>
           </div>
         </div>
       </div>
@@ -791,10 +803,13 @@
                   <th class="sortable" @click="sortSectorDetailBy('dailyChange')">当日涨跌幅 <span class="sort-arrow" v-html="sectorSortIcon('dailyChange')"></span></th>
                   <th class="sortable" @click="sortSectorDetailBy('yearChange')">年初涨跌幅 <span class="sort-arrow" v-html="sectorSortIcon('yearChange')"></span></th>
                   <th class="sortable" @click="sortSectorDetailBy('change924')">924涨跌幅 <span class="sort-arrow" v-html="sectorSortIcon('change924')"></span></th>
+                  <th class="sortable" @click="sortSectorDetailBy('q24Rev')">24营比 <span class="sort-arrow" v-html="sectorSortIcon('q24Rev')"></span></th>
+                  <th class="sortable" @click="sortSectorDetailBy('q24Kcf')">24扣比 <span class="sort-arrow" v-html="sectorSortIcon('q24Kcf')"></span></th>
                   <th class="sortable" @click="sortSectorDetailBy('pbRatio')">市净比 <span class="sort-arrow" v-html="sectorSortIcon('pbRatio')"></span></th>
                   <th class="sortable" @click="sortSectorDetailBy('pkRatio')">市扣比 <span class="sort-arrow" v-html="sectorSortIcon('pkRatio')"></span></th>
-                  <th class="sortable" @click="sortSectorDetailBy('pyRatio')">市同比 <span class="sort-arrow" v-html="sectorSortIcon('pyRatio')"></span></th>
-                  <th class="sortable" @click="sortSectorDetailBy('phRatio')">市环比 <span class="sort-arrow" v-html="sectorSortIcon('phRatio')"></span></th>
+                  <th class="sortable" @click="sortSectorDetailBy('pyRatio')">市净同比 <span class="sort-arrow" v-html="sectorSortIcon('pyRatio')"></span></th>
+                  <th class="sortable" @click="sortSectorDetailBy('pk2Ratio')">市扣同比 <span class="sort-arrow" v-html="sectorSortIcon('pk2Ratio')"></span></th>
+                  <th class="sortable" @click="sortSectorDetailBy('phRatio')">市营环比 <span class="sort-arrow" v-html="sectorSortIcon('phRatio')"></span></th>
                   <th class="sortable" @click="sortSectorDetailBy('prRatio')">市营比 <span class="sort-arrow" v-html="sectorSortIcon('prRatio')"></span></th>
                   <th class="sortable" @click="sortSectorDetailBy('prrRatio')">市营同比 <span class="sort-arrow" v-html="sectorSortIcon('prrRatio')"></span></th>
                   <th class="sortable" @click="sortSectorDetailBy('totalMarketCap')">总市值(亿) <span class="sort-arrow" v-html="sectorSortIcon('totalMarketCap')"></span></th>
@@ -826,9 +841,12 @@
                   <td :class="pctClass(s.dailyChange)">{{ fmtPct(s.dailyChange) }}</td>
                   <td :class="pctClass(s.yearChange)">{{ s.yearChange != null ? fmtPct(s.yearChange) : '—' }}</td>
                   <td :class="pctClass(s.change924)">{{ s.change924 != null ? fmtPct(s.change924) : '—' }}</td>
+                  <td :class="pctClass(s.q24Rev)">{{ s.q24Rev != null ? fmtPct(s.q24Rev) : '—' }}</td>
+                  <td :class="pctClass(s.q24Kcf)">{{ s.q24Kcf != null ? fmtPct(s.q24Kcf) : '—' }}</td>
                   <td :class="numClass(sRatio(s).pbRatio)">{{ sRatio(s).pbRatio != null ? fmt(sRatio(s).pbRatio) : '—' }}</td>
                   <td :class="numClass(sRatio(s).pkRatio)">{{ sRatio(s).pkRatio != null ? fmt(sRatio(s).pkRatio) : '—' }}</td>
                   <td :class="numClass(sRatio(s).pyRatio)">{{ sRatio(s).pyRatio != null ? fmt(sRatio(s).pyRatio) : '—' }}</td>
+                  <td :class="numClass(sRatio(s).pk2Ratio)">{{ sRatio(s).pk2Ratio != null ? fmt(sRatio(s).pk2Ratio) : '—' }}</td>
                   <td :class="numClass(sRatio(s).phRatio)">{{ sRatio(s).phRatio != null ? fmt(sRatio(s).phRatio) : '—' }}</td>
                   <td :class="numClass(sRatio(s).prRatio)">{{ sRatio(s).prRatio != null ? fmt(sRatio(s).prRatio) : '—' }}</td>
                   <td :class="numClass(sRatio(s).prrRatio)">{{ sRatio(s).prrRatio != null ? fmt(sRatio(s).prrRatio) : '—' }}</td>
@@ -850,7 +868,7 @@
             </table>
           </div>
           <div class="info-box small">
-            <p>💡 说明：点击「刷新行情」可拉取全部成分股的实时行情与财务数据（东方财富接口在部分网络环境可能受限）。市营比=总市值÷营业收入；市营同比=总市值÷营收同比增长率；年初涨跌幅=当日价相对当年首个交易日涨跌幅；924涨跌幅=当日价相对2024-09-24收盘价涨跌幅（不复权）。</p>
+            <p>💡 说明：点击「刷新行情」可拉取全部成分股的实时行情与财务数据（东方财富接口在部分网络环境可能受限）。市营比=总市值÷营业收入；市营同比=总市值÷营收同比增长率；市营环比=总市值÷营收环比增长率；市净同比=总市值÷净利润同比增长率；市扣同比=总市值÷扣非净利润同比增长率；24营比/24扣比=最新报告期分别对比2024年同期营收/扣非净利润的增长率；年初涨跌幅=当日价相对当年首个交易日涨跌幅；924涨跌幅=当日价相对2024-09-24收盘价涨跌幅（不复权）。</p>
           </div>
         </div>
       </div>

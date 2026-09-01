@@ -301,6 +301,8 @@ const StockAPI = {
    *   profitYoY,        // 利润同比增长率(%)
    *   revenueYoY,       // 同比增长率(营收同比 %)
    *   hbGrowth,         // 环比增长率(净利润环比 %)
+   *   kcfYoY,           // 扣非净利润同比增长率(%)
+   *   revHb,            // 营收环比增长率(%)
    *   contractLiab,     // 最新合同负债(元)
    *   shareholderCount, // 散户数量(本期股东人数)
    *   prevShareholderCount // 上期散户数量
@@ -311,6 +313,7 @@ const StockAPI = {
     const result = {
       netProfit: null, kcfjcxjlr: null, revenue: null,
       profitYoY: null, revenueYoY: null, hbGrowth: null,
+      kcfYoY: null, revHb: null,
       contractLiab: null,
       shareholderCount: null, prevShareholderCount: null
     };
@@ -327,6 +330,8 @@ const StockAPI = {
         result.profitYoY = row.PARENTNETPROFITTZ != null ? parseFloat(row.PARENTNETPROFITTZ) : null;   // 利润同比增长(%)
         result.revenueYoY = row.TOTALOPERATEREVETZ != null ? parseFloat(row.TOTALOPERATEREVETZ) : null;// 营收同比增长(%)
         result.hbGrowth = row.NETPROFITRPHBZC != null ? parseFloat(row.NETPROFITRPHBZC) : null;        // 净利润环比(%)
+        result.kcfYoY = row.KCFJCXSYJLRTZ != null ? parseFloat(row.KCFJCXSYJLRTZ) : null;               // 扣非净利润同比增长(%)
+        result.revHb = row.YYZSRGDHBZC != null ? parseFloat(row.YYZSRGDHBZC) : null;                    // 营收环比增长(%)
       }
     } catch (e) {
       console.debug('财务摘要获取失败', code);
@@ -357,6 +362,60 @@ const StockAPI = {
       }
     } catch (e) {
       console.debug('股东人数获取失败', code);
+    }
+    return result;
+  },
+
+  /**
+   * 获取季报营收/扣非累计值序列，计算「今年最新报告期 vs 2024年同期」的增长率。
+   * 用于「24营比」和「24扣比」字段。
+   * @param {string} code sh600519
+   * @returns {Promise<{q24Rev: number|null, q24Kcf: number|null}>}
+   *   q24Rev：最新报告期营业收入 vs 2024年同期营业收入 的同比增长率(%)
+   *   q24Kcf：最新报告期扣非净利润 vs 2024年同期扣非净利润 的同比增长率(%)
+   */
+  async getQuarterlyFinance(code) {
+    const secucode = this.toSecucode(code);
+    const result = { q24Rev: null, q24Kcf: null };
+    try {
+      // 取最近 12 期（覆盖2024全年至今），按报告期倒序
+      const url = `https://datacenter-web.eastmoney.com/api/data/v1/get?reportName=RPT_F10_FINANCE_MAINFINADATA&columns=ALL&filter=(SECUCODE%3D%22${secucode}%22)&pageNumber=1&pageSize=12&sortColumns=REPORT_DATE&sortTypes=-1`;
+      const resp = await fetch(url, { cache: 'no-store' });
+      const json = await resp.json();
+      const rows = (json.result && json.result.data) || [];
+      if (!rows.length) return result;
+
+      // 解析每一期的报告期与数值，key 形如 "2025-09-30"
+      const parse = (r) => {
+        const date = (r.REPORT_DATE || '').replace('T00:00:00', '').slice(0, 10);
+        return {
+          date,
+          rev: r.TOTALOPERATEREVE != null ? parseFloat(r.TOTALOPERATEREVE) : null,
+          kcf: r.KCFJCXSYJLR != null ? parseFloat(r.KCFJCXSYJLR) : null
+        };
+      };
+      const periods = rows.map(parse).filter(p => p.date);
+
+      // 最新报告期
+      const latest = periods[0];
+      if (!latest) return result;
+
+      // 找到与最新报告期「同年同期」的 2024 期。同期的判断：取报告的 月份日（如 09-30/06-30/03-31/12-31）
+      const md = latest.date.slice(5);            // "09-30"
+      const key2024 = `2024-${md}`;               // "2024-09-30"
+      const target2024 = periods.find(p => p.date === key2024);
+      if (!target2024) return result;
+
+      // 营收增长
+      if (latest.rev != null && target2024.rev != null && +target2024.rev !== 0) {
+        result.q24Rev = +(((latest.rev - target2024.rev) / target2024.rev) * 100).toFixed(2);
+      }
+      // 扣非净利润增长
+      if (latest.kcf != null && target2024.kcf != null && +target2024.kcf !== 0) {
+        result.q24Kcf = +(((latest.kcf - target2024.kcf) / target2024.kcf) * 100).toFixed(2);
+      }
+    } catch (e) {
+      console.debug('季报营收/扣非获取失败', code, e);
     }
     return result;
   },
