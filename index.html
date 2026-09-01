@@ -734,6 +734,50 @@
       </div>
     </div>
 
+    <!-- ===== 概念选股勾选弹窗 ===== -->
+    <div class="modal-overlay" v-if="sectorPick.show" @click.self="sectorPick.show = false">
+      <div class="modal modal-lg">
+        <div class="modal-header">
+          <h3 style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+            🧭 勾选「{{ sectorPick.name }}」成分股
+            <span class="muted small">（{{ sectorPick.type }} · 共 {{ sectorPick.stocks.length }} 只）</span>
+          </h3>
+          <button class="btn-icon" @click="sectorPick.show = false">✕</button>
+        </div>
+        <div class="modal-body">
+          <div class="sector-pick-toolbar">
+            <label class="checkbox-label">
+              <input type="checkbox"
+                     :checked="sectorPick.stocks.length > 0 && sectorPickCount === sectorPick.stocks.length"
+                     @change="toggleSelectAllSector">
+              全选 / 全不选
+            </label>
+            <span class="muted small">已勾选 <b>{{ sectorPickCount }}</b> / {{ sectorPick.stocks.length }} 只</span>
+            <span class="muted small" v-if="sectorPick.loading">⏳ 正在加载成分股...</span>
+          </div>
+          <div class="sector-pick-list" v-if="sectorPick.stocks.length">
+            <div class="sector-pick-item" v-for="s in sectorPick.stocks" :key="s.code">
+              <label class="checkbox-label">
+                <input type="checkbox" v-model="sectorPick.selected[s.code]">
+                <span class="sector-pick-name">{{ s.name || s.code }}</span>
+                <span class="sector-pick-code">{{ s.code }}</span>
+                <span class="sector-pick-change" :class="pctClass(s.changePercent)">{{ fmtPct(s.changePercent) }}</span>
+              </label>
+            </div>
+          </div>
+          <div class="empty-state" v-else-if="!sectorPick.loading">
+            <p>未获取到该板块成分股，请重试</p>
+          </div>
+          <div class="modal-footer-actions">
+            <button class="btn" @click="sectorPick.show = false">取消</button>
+            <button class="btn btn-primary" @click="confirmSectorPick" :disabled="sectorPickCount === 0">
+              ✅ 保存勾选（{{ sectorPickCount }} 只）
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- ===== 设置模态框 ===== -->
     <div class="modal-overlay" v-if="showSettings" @click.self="showSettings = false">
       <div class="modal">

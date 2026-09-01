@@ -567,6 +567,46 @@ body {
 }
 .sector-result-change { font-size: 13px; }
 
+/* ===== 概念选股勾选弹窗 ===== */
+.sector-pick-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 10px 14px;
+  background: var(--surface-alt);
+  border-radius: 8px;
+  margin-bottom: 12px;
+}
+.checkbox-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  font-size: 13px;
+}
+.sector-pick-list {
+  max-height: 52vh;
+  overflow-y: auto;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+.sector-pick-item {
+  padding: 8px 14px;
+  border-bottom: 1px solid #f0f2f5;
+}
+.sector-pick-item:last-child { border-bottom: none; }
+.sector-pick-item:hover { background: #f8faff; }
+.sector-pick-item .checkbox-label { width: 100%; }
+.sector-pick-name { flex: 1; font-weight: 500; }
+.sector-pick-code { color: var(--text-secondary); font-size: 12px; width: 70px; }
+.sector-pick-change { font-size: 12px; width: 70px; text-align: right; }
+.modal-footer-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 14px;
+}
+
 /* ===== 模态框 ===== */
 .modal-overlay {
   position: fixed;

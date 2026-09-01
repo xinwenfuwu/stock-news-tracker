@@ -926,6 +926,8 @@ const app = createApp({
     const sectorLoading = ref(false);    // 板块成分股加载中
     const sectorDetail = reactive({ show: false, data: { stocks: [] }, nameEdit: false, nameDraft: '' });
     const sectorDetailSort = reactive({ key: 'dailyChange', dir: 'desc' });
+    // 勾选弹窗状态：选择板块成分股时使用
+    const sectorPick = reactive({ show: false, loading: false, name: '', bk: '', type: '', stocks: [], selected: {} });
 
     // 已保存板块按创建时间倒序
     const sortedSectorPools = computed(() => [...D.sectorPools].slice().reverse());
@@ -952,25 +954,74 @@ const app = createApp({
       }
     }
 
-    // 选择搜索结果的某个板块：保存并拉取成分股
+    // 点击搜索结果板块：加载成分股并弹出勾选弹窗，供用户勾选要保存的股票
     async function addSectorFromSearch(item) {
       // 查重：同名板块已存在则提示
       if (D.sectorPools.some(p => p.bk === item.bk)) {
         showToast('该板块已在列表中', 'info');
         return;
       }
+      // 打开勾选弹窗并加载成分股
+      sectorPick.show = true;
+      sectorPick.loading = true;
+      sectorPick.sector = item;
+      sectorPick.name = item.name;
+      sectorPick.bk = item.bk;
+      sectorPick.type = item.type || '';
+      sectorPick.stocks = [];
+      sectorPick.selected = {};
+      showToast(`正在获取「${item.name}」成分股...`, 'info');
+      try {
+        const stocks = await StockAPI.getSectorStocks(item.bk);
+        if (!stocks.length) { showToast('未获取到该板块成分股', 'error'); return; }
+        // 转成标准股票对象，默认全部勾选
+        const list = stocks.map(s => {
+          const ns = _newStock(s);
+          ns.dailyChange = s.changePercent;
+          ns.todayPrice = s.price;
+          return ns;
+        });
+        sectorPick.stocks = list;
+        // 默认一键全选
+        list.forEach(s => { sectorPick.selected[s.code] = true; });
+        showToast(`已加载 ${list.length} 只成分股，默认全选`, 'success');
+      } catch (e) {
+        console.warn('成分股获取失败', e);
+        showToast('成分股获取失败，请重试', 'error');
+      } finally {
+        sectorPick.loading = false;
+      }
+    }
+
+    // 全选 / 全不选
+    function toggleSelectAllSector() {
+      const stocks = sectorPick.stocks;
+      if (!stocks.length) return;
+      const allSel = stocks.every(s => sectorPick.selected[s.code]);
+      stocks.forEach(s => { sectorPick.selected[s.code] = !allSel; });
+    }
+    // 已勾选数量
+    const sectorPickCount = computed(() => {
+      return sectorPick.stocks.filter(s => sectorPick.selected[s.code]).length;
+    });
+
+    // 确认保存勾选的股票到概念选股板块
+    function confirmSectorPick() {
+      const selected = sectorPick.stocks.filter(s => sectorPick.selected[s.code]);
+      if (!selected.length) { showToast('请至少勾选一只股票', 'error'); return; }
       const sector = {
-        name: item.name,
-        bk: item.bk,
-        type: item.type || '',
+        name: sectorPick.name,
+        bk: sectorPick.bk,
+        type: sectorPick.type,
         date: Store.today(),
-        stocks: []
+        stocks: selected
       };
       Store.addSectorPool(sector);
-      showToast(`正在获取「${item.name}」成分股...`, 'info');
+      recomputePoolAvg(sector);
+      sectorPick.show = false;
       sectorResults.value = [];
       sectorSearch.value = '';
-      await loadSectorStocks(sector);
+      showToast(`已保存板块「${sectorPick.name}」共 ${selected.length} 只股票`, 'success');
     }
 
     // 拉取某板块全部成分股并填充
@@ -1438,6 +1489,7 @@ const app = createApp({
       // 页面2.5：概念行业选股
       sectorSearch, sectorResults, sectorSearching, sectorLoading,
       sectorDetail, sortedSectorPools, searchSector, addSectorFromSearch,
+      sectorPick, sectorPickCount, toggleSelectAllSector, confirmSectorPick,
       loadSectorStocks, refreshSectorDetail, openSectorDetail, startEditSectorName,
       saveSectorName, deleteSectorPool, removeSectorStock,
       sortedSectorDetailStocks, sortSectorDetailBy, sectorSortIcon,
