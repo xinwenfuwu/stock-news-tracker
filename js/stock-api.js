@@ -444,28 +444,50 @@ const StockAPI = {
   // ============ 概念/行业板块选股 ============
 
   /** 东财 push2 请求，带 UA 与重试，降低被限流概率 */
+  /**
+   * 东财接口多节点轮询：单个节点对连续请求限流敏感，
+   * 通过多个同源数据节点（push2 / push2delay / push2his 等）轮询降级，
+   * 任一节点成功即返回，全部失败返回 null。全程免费（东财公开接口）。
+   * @param {string} url 完整 url，host 会被自动替换到各节点
+   */
   async _eastFetch(url) {
     const UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36';
-    for (let i = 0; i < 3; i++) {
-      try {
-        const resp = await fetch(url, { cache: 'no-store', headers: { 'User-Agent': UA } });
-        if (resp.ok) return await resp.json();
-      } catch (e) { /* retry */ }
-      await new Promise(r => setTimeout(r, 400 * (i + 1)));
+    // 多节点列表：优先主节点，其次延迟节点（独立服务器，通常不同时被限流）
+    const hosts = [
+      'push2.eastmoney.com',
+      'push2delay.eastmoney.com',
+      'push2his.eastmoney.com'
+    ];
+    let u;
+    try { u = new URL(url); } catch (e) { return null; }
+    // 打乱节点顺序的起始偏移，避免多用户同时命中同一节点
+    const start = Math.floor(Math.random() * hosts.length);
+    for (let h = 0; h < hosts.length; h++) {
+      const host = hosts[(start + h) % hosts.length];
+      u.hostname = host;
+      for (let i = 0; i < 2; i++) {
+        try {
+          const resp = await fetch(u.href, { cache: 'no-store', headers: { 'User-Agent': UA } });
+          if (resp.ok) {
+            const json = await resp.json();
+            if (json && json.data !== undefined) return json;
+          }
+        } catch (e) { /* 切下一个 */ }
+        await new Promise(r => setTimeout(r, 300 * (i + 1)));
+      }
     }
     return null;
   },
 
   /**
    * 分页拉取某类板块列表（概念 m:90+t:3 / 行业 m:90+t:2）
-   * 东财单页上限 100 条。为避免触发东财限流：
-   *  - 默认只取前 2 页（按涨幅排序的热门板块，覆盖绝大多数常见概念）
-   *  - 每页间隔 1200ms
+   * 东财单页上限 100 条。因 _eastFetch 已多节点轮询降级，
+   * 此处保持合理页间间隔避免过度请求，支持加载完整板块列表。
    * @param {string} fs 板块筛选条件
-   * @param {number} maxPages 最多加载几页，默认 2
+   * @param {number} maxPages 最多加载几页，默认 6（概念约 6 页、行业约 5 页）
    * @returns {Array<{bk, name, change}>}
    */
-  async _loadSectors(fs, maxPages = 2) {
+  async _loadSectors(fs, maxPages = 6) {
     const all = [];
     for (let pn = 1; pn <= maxPages; pn++) {
       const url = `https://push2.eastmoney.com/api/qt/clist/get?pn=${pn}&pz=100&po=1&np=1&fltt=2&invt=2&fid=f3&fs=${encodeURIComponent(fs)}&fields=f12,f14,f3`;
@@ -474,8 +496,8 @@ const StockAPI = {
       all.push(...diff);
       const total = json && json.data && json.data.total;
       if (!diff.length || all.length >= total) break;
-      // 页间等待，降低连续请求被限流概率
-      await new Promise(r => setTimeout(r, 1200));
+      // 页间等待，降低单节点请求频率
+      await new Promise(r => setTimeout(r, 500));
     }
     return all.map(b => ({ bk: b.f12, name: b.f14, change: b.f3 != null ? parseFloat(b.f3) : null }));
   },
@@ -487,18 +509,18 @@ const StockAPI = {
 
   /**
    * 获取板块列表（概念+行业，去重）。
-   * 默认只加载热门板块（各 2 页，共约 400 个），覆盖绝大多数常见概念，
-   * 避免因分页过多触发东财限流。
-   * @param {boolean} loadAll 是否加载全部板块（分页更多，可能较慢/被限流）
+   * 借助多节点轮询降级，默认加载完整板块列表（概念约 504 + 行业约 496），
+   * 确保任何概念/行业板块都能被搜索到。结果缓存 2 小时避免重复请求。
+   * @param {boolean} loadAll 兼容参数；当前无论是否传 true 均加载完整列表
    * @returns {Promise<Array<{bk, name, type, change}>>} type: '概念'|'行业'
    */
   async getAllSectors(loadAll = false) {
     const now = Date.now();
-    const cacheTtl = loadAll ? 30 * 60 * 1000 : 30 * 60 * 1000;
-    if (this._sectorCache && this._sectorCache._full >= (loadAll ? 1 : 0) && now - this._sectorCacheAt < cacheTtl) {
+    const cacheTtl = 2 * 60 * 60 * 1000; // 2 小时
+    if (this._sectorCache && this._sectorCache._full >= 1 && now - this._sectorCacheAt < cacheTtl) {
       return this._sectorCache.data;
     }
-    const maxPg = loadAll ? 8 : 2;
+    const maxPg = 6; // 概念约6页、行业约5页，足够覆盖全部板块
     // 概念与行业分开请求，各自失败不互相影响
     let concepts = [], industries = [];
     try { concepts = await this._loadSectors('m:90+t:3', maxPg); } catch (e) { console.debug('概念板块加载失败', e); }
@@ -507,8 +529,8 @@ const StockAPI = {
     const all = [];
     concepts.forEach(s => { if (!seen.has(s.bk)) { seen.add(s.bk); all.push({ ...s, type: '概念' }); } });
     industries.forEach(s => { if (!seen.has(s.bk)) { seen.add(s.bk); all.push({ ...s, type: '行业' }); } });
-    // 缓存（保留是否完整加载的标记）
-    this._sectorCache = { data: all, _full: loadAll ? 1 : 0 };
+    // 缓存（始终标记为完整加载，供搜索使用）
+    this._sectorCache = { data: all, _full: 1 };
     this._sectorCacheAt = now;
     return all;
   },
