@@ -16,6 +16,7 @@ const Store = {
       news: [],
       stockPools: [],
       sectorPools: [],        // 概念/行业选股板块：[{id, name, bk, type, date, stocks: [...]}]
+      favorites: [],          // 收藏股票：[{code, name, favDate, note}]
       dailyData: {},          // { "2024-07-08": { stocks: [...] } }
       hotBoards: [],          // 缓存最近一次热门板块
       hotStocks: [],          // 缓存最近一次热门股票
@@ -55,6 +56,7 @@ const Store = {
     if (!this.data.dailyData) this.data.dailyData = {};
     if (!this.data.stockPools) this.data.stockPools = [];
     if (!this.data.sectorPools) this.data.sectorPools = [];
+    if (!this.data.favorites) this.data.favorites = [];
     if (!this.data.news) this.data.news = [];
 
     // 自动保存
@@ -163,6 +165,29 @@ const Store = {
   deleteSectorPool(id) {
     const i = this.data.sectorPools.findIndex(p => p.id === id);
     if (i >= 0) this.data.sectorPools.splice(i, 1);
+  },
+
+  // ===== 收藏 =====
+  isFavorite(code) {
+    return this.data.favorites.some(f => f.code === code);
+  },
+  addFavorite(fav) {
+    // 已存在则忽略
+    if (this.data.favorites.some(f => f.code === fav.code)) return false;
+    fav.id = this.uid('fav');
+    if (!fav.favDate) fav.favDate = this.today();
+    this.data.favorites.push(fav);
+    return true;
+  },
+  removeFavorite(code) {
+    const i = this.data.favorites.findIndex(f => f.code === code);
+    if (i >= 0) { this.data.favorites.splice(i, 1); return true; }
+    return false;
+  },
+  updateFavoriteNote(id, note) {
+    const f = this.data.favorites.find(f => f.id === id);
+    if (f) { f.note = note; return true; }
+    return false;
   },
 
   // ===== 每日数据 =====

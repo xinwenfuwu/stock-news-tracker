@@ -140,6 +140,63 @@ const app = createApp({
     }
 
     // ============================================================
+    //  通用：收藏
+    // ============================================================
+    const favorites = computed(() => D.favorites || []);
+    const sortedFavorites = computed(() => {
+      return [...(D.favorites || [])].sort((a, b) => (b.favDate || '').localeCompare(a.favDate || ''));
+    });
+    function isFav(code) { return Store.isFavorite(code); }
+    /** 收藏/取消收藏（股票对象：code, name） */
+    function toggleFavorite(stock) {
+      if (!stock || !stock.code) return;
+      if (Store.isFavorite(stock.code)) {
+        Store.removeFavorite(stock.code);
+        showToast(`已取消收藏「${stock.name || stock.code}」`, 'success');
+      } else {
+        const ok = Store.addFavorite({
+          code: stock.code,
+          name: stock.name || stock.code,
+          favDate: Store.today(),
+          note: ''
+        });
+        if (ok) showToast(`已收藏「${stock.name || stock.code}」`, 'success');
+      }
+    }
+    function removeFavorite(code) {
+      const f = (D.favorites || []).find(f => f.code === code);
+      if (f && confirm(`确认取消收藏「${f.name || code}」？`)) {
+        Store.removeFavorite(code);
+        showToast('已取消收藏', 'success');
+      }
+    }
+    function updateFavNote(fav, note) {
+      Store.updateFavoriteNote(fav.id, note);
+      showToast('备注已保存', 'success');
+    }
+    /** 收藏距今天数 */
+    function favDays(fav) {
+      if (!fav.favDate) return null;
+      return Store.daysSince(fav.favDate);
+    }
+    // 收藏板块手动新增
+    const favAddCode = ref('');
+    const favAddName = ref('');
+    function addFavoriteManual() {
+      const code = String(favAddCode.value || '').trim();
+      const name = String(favAddName.value || '').trim();
+      if (!code) { showToast('请输入股票代码', 'error'); return; }
+      const ok = Store.addFavorite({ code, name: name || code, favDate: Store.today(), note: '' });
+      if (ok) {
+        showToast(`已收藏「${name || code}」`, 'success');
+        favAddCode.value = '';
+        favAddName.value = '';
+      } else {
+        showToast('该股票已在收藏中', 'info');
+      }
+    }
+
+    // ============================================================
     //  页面1：新闻追踪
     // ============================================================
     const newsFilter = reactive({ date: '', keyword: '', category: '', customTag: '' });
@@ -927,7 +984,10 @@ const app = createApp({
     const sectorDetail = reactive({ show: false, data: { stocks: [] }, nameEdit: false, nameDraft: '' });
     const sectorDetailSort = reactive({ key: 'dailyChange', dir: 'desc' });
     // 勾选弹窗状态：选择板块成分股时使用
-    const sectorPick = reactive({ show: false, loading: false, name: '', bk: '', type: '', stocks: [], selected: {} });
+    const sectorPick = reactive({
+      show: false, loading: false, name: '', bk: '', type: '', stocks: [], selected: {},
+      filter: { no301: false, no688: false, noBj: false, noST: false } // 筛选：去除301/688/北交所/ST
+    });
     // 板块列表加载失败标志（用于显示重试/加载全部）
     const sectorLoadError = ref(false);
     const sectorLoadingAll = ref(false);
@@ -1029,19 +1089,34 @@ const app = createApp({
 
     // 全选 / 全不选
     function toggleSelectAllSector() {
-      const stocks = sectorPick.stocks;
+      const stocks = visibleSectorPickStocks.value;
       if (!stocks.length) return;
       const allSel = stocks.every(s => sectorPick.selected[s.code]);
       stocks.forEach(s => { sectorPick.selected[s.code] = !allSel; });
     }
-    // 已勾选数量
+    // 判断股票是否被某筛选规则排除
+    function sectorPickFiltered(s) {
+      const code = String(s.code || '');
+      const name = String(s.name || '');
+      const f = sectorPick.filter;
+      if (f.no301 && /^30[01]/.test(code)) return true;      // 创业板（300/301）
+      if (f.no688 && /^688/.test(code)) return true;          // 科创板
+      if (f.noBj && /^(4|8|92)/.test(code)) return true;      // 北交所（4/8/92开头）
+      if (f.noST && /ST/i.test(name)) return true;            // ST/*ST
+      return false;
+    }
+    // 过滤后可见的成分股列表
+    const visibleSectorPickStocks = computed(() => {
+      return sectorPick.stocks.filter(s => !sectorPickFiltered(s));
+    });
+    // 已勾选数量（基于过滤后可见股票）
     const sectorPickCount = computed(() => {
-      return sectorPick.stocks.filter(s => sectorPick.selected[s.code]).length;
+      return visibleSectorPickStocks.value.filter(s => sectorPick.selected[s.code]).length;
     });
 
     // 确认保存勾选的股票到概念选股板块
     function confirmSectorPick() {
-      const selected = sectorPick.stocks.filter(s => sectorPick.selected[s.code]);
+      const selected = visibleSectorPickStocks.value.filter(s => sectorPick.selected[s.code]);
       if (!selected.length) { showToast('请至少勾选一只股票', 'error'); return; }
       const sector = {
         name: sectorPick.name,
@@ -1053,6 +1128,7 @@ const app = createApp({
       Store.addSectorPool(sector);
       recomputePoolAvg(sector);
       sectorPick.show = false;
+      sectorPick.filter = { no301: false, no688: false, noBj: false, noST: false };
       sectorResults.value = [];
       sectorSearch.value = '';
       showToast(`已保存板块「${sectorPick.name}」共 ${selected.length} 只股票`, 'success');
@@ -1525,13 +1601,18 @@ const app = createApp({
       sectorLoadError, sectorLoadingAll, reloadSectors, loadAllSectors,
       sectorDetail, sortedSectorPools, searchSector, addSectorFromSearch,
       sectorPick, sectorPickCount, toggleSelectAllSector, confirmSectorPick,
+      visibleSectorPickStocks, sectorPickFiltered,
       loadSectorStocks, refreshSectorDetail, openSectorDetail, startEditSectorName,
       saveSectorName, deleteSectorPool, removeSectorStock,
       sortedSectorDetailStocks, sortSectorDetailBy, sectorSortIcon,
       // 页面3
       hotDate, hotLoading, hotBoards, hotStocks, conceptFreq,
       sortedHotStocks, sortHotBy, hotSortIcon, removeHotStock,
-      loadHotData, fetchHotBoards, refreshHotStocks
+      loadHotData, fetchHotBoards, refreshHotStocks,
+      // 通用：收藏
+      favorites, sortedFavorites, isFav, toggleFavorite, removeFavorite,
+      updateFavNote, favDays,
+      favAddCode, favAddName, addFavoriteManual
     };
   }
 });
