@@ -331,7 +331,94 @@
           </div>
         </div>
 
-        <div class="hot-layout">
+        <!-- 收藏板块（顶部横屏，字段与概念选股一致） -->
+        <div class="fav-panel">
+          <div class="fav-panel-header">
+            <h3 class="panel-title" style="margin:0">⭐ 收藏板块</h3>
+            <div class="fav-add-row" style="margin:0">
+              <input v-model="favAddCode" class="cell-input" placeholder="股票代码" style="width:100px">
+              <input v-model="favAddName" class="cell-input" placeholder="股票名称" style="width:160px">
+              <button class="btn btn-sm" @click="addFavoriteManual" title="添加到收藏板块">＋ 添加</button>
+              <button class="btn btn-sm" @click="refreshFavorites" :disabled="favRefreshing">
+                <span v-if="favRefreshing">⏳ 刷新中...</span>
+                <span v-else>🔄 刷新行情</span>
+              </button>
+            </div>
+          </div>
+          <div class="table-wrap table-scroll-x" v-if="sortedFavorites.length">
+            <table class="data-table pool-detail-table">
+              <thead>
+                <tr>
+                  <th class="col-sticky col-sticky-0">序号</th>
+                  <th class="col-sticky col-sticky-1">代码</th>
+                  <th class="col-sticky col-sticky-2">股票名称</th>
+                  <th>收藏日期</th>
+                  <th>距今</th>
+                  <th>备注</th>
+                  <th>当日涨跌幅</th>
+                  <th>年初涨跌幅</th>
+                  <th>924涨跌幅</th>
+                  <th>市净比</th>
+                  <th>市扣比</th>
+                  <th>市同比</th>
+                  <th>市环比</th>
+                  <th>市营比</th>
+                  <th>市营同比</th>
+                  <th>总市值(亿)</th>
+                  <th>合同负债</th>
+                  <th>扣非净利润</th>
+                  <th>净利润</th>
+                  <th>营业收入</th>
+                  <th>环比增长率</th>
+                  <th>利润同比增长率</th>
+                  <th>同比增长率</th>
+                  <th>振幅</th>
+                  <th>散户数量</th>
+                  <th>换手率</th>
+                  <th>资金流入</th>
+                  <th>操作</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="(f, idx) in sortedFavorites" :key="f.id">
+                  <td class="col-sticky col-sticky-0">{{ idx + 1 }}</td>
+                  <td class="col-sticky col-sticky-1">{{ f.code }}</td>
+                  <td class="col-sticky col-sticky-2">{{ f.name || f.code }}</td>
+                  <td>{{ f.favDate }}</td>
+                  <td>{{ favDays(f) != null ? favDays(f) + '天' : '—' }}</td>
+                  <td>
+                    <input class="fav-note-input" v-model="f.note" :placeholder="'备注'" @change="updateFavNote(f, f.note)">
+                  </td>
+                  <td :class="pctClass(f.dailyChange)">{{ f.dailyChange != null ? fmtPct(f.dailyChange) : '—' }}</td>
+                  <td :class="pctClass(f.yearChange)">{{ f.yearChange != null ? fmtPct(f.yearChange) : '—' }}</td>
+                  <td :class="pctClass(f.change924)">{{ f.change924 != null ? fmtPct(f.change924) : '—' }}</td>
+                  <td :class="numClass(sRatio(f).pbRatio)">{{ sRatio(f).pbRatio != null ? fmt(sRatio(f).pbRatio) : '—' }}</td>
+                  <td :class="numClass(sRatio(f).pkRatio)">{{ sRatio(f).pkRatio != null ? fmt(sRatio(f).pkRatio) : '—' }}</td>
+                  <td :class="numClass(sRatio(f).pyRatio)">{{ sRatio(f).pyRatio != null ? fmt(sRatio(f).pyRatio) : '—' }}</td>
+                  <td :class="numClass(sRatio(f).phRatio)">{{ sRatio(f).phRatio != null ? fmt(sRatio(f).phRatio) : '—' }}</td>
+                  <td :class="numClass(sRatio(f).prRatio)">{{ sRatio(f).prRatio != null ? fmt(sRatio(f).prRatio) : '—' }}</td>
+                  <td :class="numClass(sRatio(f).prrRatio)">{{ sRatio(f).prrRatio != null ? fmt(sRatio(f).prrRatio) : '—' }}</td>
+                  <td>{{ f.totalMarketCap != null ? fmt(f.totalMarketCap) : '—' }}</td>
+                  <td>{{ fmtYi(f.contractLiab) }}</td>
+                  <td>{{ fmtYi(f.kcfjcxjlr) }}</td>
+                  <td>{{ fmtYi(f.netProfit) }}</td>
+                  <td>{{ fmtYi(f.revenue) }}</td>
+                  <td :class="pctClass(f.hbGrowth)">{{ f.hbGrowth != null ? fmtPct(f.hbGrowth) : '—' }}</td>
+                  <td :class="pctClass(f.profitYoY)">{{ f.profitYoY != null ? fmtPct(f.profitYoY) : '—' }}</td>
+                  <td :class="pctClass(f.revenueYoY)">{{ f.revenueYoY != null ? fmtPct(f.revenueYoY) : '—' }}</td>
+                  <td :class="numClass(f.amplitude)">{{ f.amplitude != null ? f.amplitude + '%' : '—' }}</td>
+                  <td>{{ f.shareholderCount || '—' }}</td>
+                  <td>{{ f.turnover != null ? f.turnover + '%' : '—' }}</td>
+                  <td :class="numClass(f.capitalFlow)">{{ f.capitalFlow != null ? (f.capitalFlow > 0 ? '+' : '') + (f.capitalFlow/1e4).toFixed(2) + '万' : '—' }}</td>
+                  <td><button class="btn-icon-sm" @click="removeFavorite(f.code)" title="删除收藏">🗑</button></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="muted small" v-else>暂无收藏。点击股票列表中的 ☆ 即可收藏，或在上方输入代码手动添加。</div>
+        </div>
+
+        <div class="hot-layout hot-layout-2">
           <!-- 热门板块 -->
           <div class="hot-panel">
             <h3 class="panel-title">🔥 当日热门板块</h3>
@@ -356,47 +443,6 @@
               </div>
             </div>
             <div class="muted small" v-else>点击「获取热门板块」加载</div>
-          </div>
-
-          <!-- 新闻概念频次 -->
-          <div class="hot-panel">
-            <h3 class="panel-title">📰 当日新闻概念分布（多→少）</h3>
-            <div class="concept-list" v-if="conceptFreq.length">
-              <div class="concept-bar" v-for="c in conceptFreq" :key="c.name">
-                <span class="concept-name">{{ c.name }}</span>
-                <div class="concept-bar-bg">
-                  <div class="concept-bar-fill" :style="{ width: c.width + '%' }"></div>
-                </div>
-                <span class="concept-count">{{ c.count }}</span>
-              </div>
-            </div>
-            <div class="muted small" v-else>所选日期暂无新闻概念数据</div>
-          </div>
-
-          <!-- 收藏板块 -->
-          <div class="hot-panel">
-            <h3 class="panel-title">⭐ 收藏板块</h3>
-            <div class="fav-add-row">
-              <input v-model="favAddCode" class="cell-input" placeholder="股票代码" style="width:90px">
-              <input v-model="favAddName" class="cell-input" placeholder="股票名称" style="flex:1">
-              <button class="btn btn-sm" @click="addFavoriteManual" title="添加到收藏板块">＋</button>
-            </div>
-            <div class="hot-list fav-list" v-if="sortedFavorites.length">
-              <div class="fav-item" v-for="f in sortedFavorites" :key="f.id">
-                <div class="fav-info">
-                  <span class="fav-name">{{ f.name || f.code }}</span>
-                  <span class="fav-code">{{ f.code }}</span>
-                </div>
-                <div class="fav-meta">
-                  <span class="fav-date" :title="'收藏日：' + f.favDate">收藏 {{ f.favDate }} · 距今 {{ favDays(f) }} 天</span>
-                  <input class="fav-note-input" v-model="f.note" :placeholder="'备注'" @change="updateFavNote(f, f.note)">
-                </div>
-                <div class="fav-actions">
-                  <button class="btn-icon-sm" @click="removeFavorite(f.code)" title="删除收藏">🗑</button>
-                </div>
-              </div>
-            </div>
-            <div class="muted small" v-else>暂无收藏。点击股票列表中的 ☆ 即可收藏。</div>
           </div>
         </div>
 
@@ -637,7 +683,7 @@
                   <th class="col-sticky col-sticky-0">序号</th>
                   <th class="col-sticky col-sticky-1">代码</th>
                   <th class="col-sticky col-sticky-2">股票名称</th>
-                  <th>收藏</th>
+                  <th class="col-sticky col-sticky-3">收藏</th>
                   <th class="sortable" @click="sortPoolDetailBy('contractLiab')">合同负债 <span class="sort-arrow" v-html="poolSortIcon('contractLiab')"></span></th>
                   <th class="sortable" @click="sortPoolDetailBy('dailyChange')">当日涨跌幅 <span class="sort-arrow" v-html="poolSortIcon('dailyChange')"></span></th>
                   <th class="sortable" @click="sortPoolDetailBy('yearChange')">年初涨跌幅 <span class="sort-arrow" v-html="poolSortIcon('yearChange')"></span></th>
@@ -668,7 +714,7 @@
                   <td class="col-sticky col-sticky-0">{{ idx + 1 }}</td>
                   <td class="col-sticky col-sticky-1">{{ s.code }}</td>
                   <td class="col-sticky col-sticky-2">{{ s.name }}</td>
-                  <td>
+                  <td class="col-sticky col-sticky-3">
                     <button class="btn-icon-sm" @click="toggleFavorite(s)" :title="isFav(s.code) ? '取消收藏' : '收藏'">
                       <span :class="isFav(s.code) ? 'fav-active' : ''">{{ isFav(s.code) ? '★' : '☆' }}</span>
                     </button>
@@ -740,7 +786,7 @@
                   <th class="col-sticky col-sticky-0">序号</th>
                   <th class="col-sticky col-sticky-1">代码</th>
                   <th class="col-sticky col-sticky-2">股票名称</th>
-                  <th>收藏</th>
+                  <th class="col-sticky col-sticky-3">收藏</th>
                   <th class="sortable" @click="sortSectorDetailBy('contractLiab')">合同负债 <span class="sort-arrow" v-html="sectorSortIcon('contractLiab')"></span></th>
                   <th class="sortable" @click="sortSectorDetailBy('dailyChange')">当日涨跌幅 <span class="sort-arrow" v-html="sectorSortIcon('dailyChange')"></span></th>
                   <th class="sortable" @click="sortSectorDetailBy('yearChange')">年初涨跌幅 <span class="sort-arrow" v-html="sectorSortIcon('yearChange')"></span></th>
@@ -771,7 +817,7 @@
                   <td class="col-sticky col-sticky-0">{{ idx + 1 }}</td>
                   <td class="col-sticky col-sticky-1">{{ s.code }}</td>
                   <td class="col-sticky col-sticky-2">{{ s.name }}</td>
-                  <td>
+                  <td class="col-sticky col-sticky-3">
                     <button class="btn-icon-sm" @click="toggleFavorite(s)" :title="isFav(s.code) ? '取消收藏' : '收藏'">
                       <span :class="isFav(s.code) ? 'fav-active' : ''">{{ isFav(s.code) ? '★' : '☆' }}</span>
                     </button>

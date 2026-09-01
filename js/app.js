@@ -147,19 +147,22 @@ const app = createApp({
       return [...(D.favorites || [])].sort((a, b) => (b.favDate || '').localeCompare(a.favDate || ''));
     });
     function isFav(code) { return Store.isFavorite(code); }
-    /** 收藏/取消收藏（股票对象：code, name） */
+    /** 收藏/取消收藏（股票对象）—— 保存完整股票字段，使收藏板块可展示与概念选股一致的字段 */
     function toggleFavorite(stock) {
       if (!stock || !stock.code) return;
       if (Store.isFavorite(stock.code)) {
         Store.removeFavorite(stock.code);
         showToast(`已取消收藏「${stock.name || stock.code}」`, 'success');
       } else {
-        const ok = Store.addFavorite({
-          code: stock.code,
-          name: stock.name || stock.code,
-          favDate: Store.today(),
-          note: ''
-        });
+        const fav = _newStock(stock);
+        fav.favDate = Store.today();
+        fav.note = '';
+        // 复制现有数据字段（若来源已带行情/财务数据则一并保存）
+        const keys = ['dailyChange','amplitude','capitalFlow','shareholderCount','prevShareholderCount',
+          'profitYoY','revenueYoY','hbGrowth','netProfit','kcfjcxjlr','revenue','totalMarketCap',
+          'contractLiab','todayPrice','yearStartPrice','price924','yearChange','change924','turnover'];
+        keys.forEach(k => { if (stock[k] != null) fav[k] = stock[k]; });
+        const ok = Store.addFavorite(fav);
         if (ok) showToast(`已收藏「${stock.name || stock.code}」`, 'success');
       }
     }
@@ -186,13 +189,83 @@ const app = createApp({
       const code = String(favAddCode.value || '').trim();
       const name = String(favAddName.value || '').trim();
       if (!code) { showToast('请输入股票代码', 'error'); return; }
-      const ok = Store.addFavorite({ code, name: name || code, favDate: Store.today(), note: '' });
+      // 手动添加也用完整字段结构，便于表格展示一致字段
+      const fav = _newStock({ code, name: name || code });
+      fav.favDate = Store.today();
+      fav.note = '';
+      const ok = Store.addFavorite(fav);
       if (ok) {
         showToast(`已收藏「${name || code}」`, 'success');
         favAddCode.value = '';
         favAddName.value = '';
       } else {
         showToast('该股票已在收藏中', 'info');
+      }
+    }
+    // 刷新收藏股票行情与财务数据
+    const favRefreshing = ref(false);
+    async function refreshFavorites() {
+      const favs = D.favorites || [];
+      if (!favs.length) { showToast('暂无收藏股票', 'error'); return; }
+      favRefreshing.value = true;
+      showToast('正在刷新收藏行情...', 'info');
+      try {
+        // 1) 实时行情（腾讯）
+        let quotes = {};
+        try { quotes = await StockAPI.getQuotes(favs.map(f => f.code).filter(Boolean)); }
+        catch (e) { console.warn('收藏行情刷新失败', e); }
+        for (const f of favs) {
+          const q = quotes[f.code];
+          if (q) {
+            f.name = f.name || q.name;
+            f.dailyChange = q.changePercent;
+            f.amplitude = q.amplitude;
+            f.turnover = q.turnover;
+            f.todayPrice = q.price || f.todayPrice;
+            if (q.totalMarketCap) f.totalMarketCap = q.totalMarketCap;
+          }
+        }
+        showToast('行情已刷新，正在获取财务数据...', 'info');
+        // 2) 财务/股东数据（东财，best-effort）
+        for (let i = 0; i < favs.length; i++) {
+          const f = favs[i];
+          try {
+            const [flow, fin] = await Promise.all([
+              StockAPI.getCapitalFlow(f.code),
+              StockAPI.getFinance(f.code)
+            ]);
+            if (flow != null) f.capitalFlow = flow;
+            if (fin.profitYoY != null) f.profitYoY = fin.profitYoY;
+            if (fin.revenueYoY != null) f.revenueYoY = fin.revenueYoY;
+            if (fin.hbGrowth != null) f.hbGrowth = fin.hbGrowth;
+            if (fin.netProfit != null) f.netProfit = fin.netProfit;
+            if (fin.kcfjcxjlr != null) f.kcfjcxjlr = fin.kcfjcxjlr;
+            if (fin.revenue != null) f.revenue = fin.revenue;
+            if (fin.contractLiab != null) f.contractLiab = fin.contractLiab;
+            if (fin.shareholderCount != null) f.shareholderCount = fin.shareholderCount;
+            if (fin.prevShareholderCount != null) f.prevShareholderCount = fin.prevShareholderCount;
+          } catch (e) { console.warn('收藏财务数据获取失败', f.code, e); }
+          try {
+            const yp = await StockAPI.getYearStartPrice(f.code);
+            if (yp != null) f.yearStartPrice = yp;
+            if (f.price924 == null) {
+              const p924 = await StockAPI.get924Price(f.code);
+              if (p924 != null) f.price924 = p924;
+            }
+          } catch (e) { console.warn('收藏历史价获取失败', f.code, e); }
+          if (f.todayPrice && f.yearStartPrice) {
+            f.yearChange = +(((f.todayPrice - f.yearStartPrice) / f.yearStartPrice) * 100).toFixed(2);
+          }
+          if (f.todayPrice && f.price924) {
+            f.change924 = +(((f.todayPrice - f.price924) / f.price924) * 100).toFixed(2);
+          }
+        }
+        showToast('收藏行情已刷新', 'success');
+      } catch (e) {
+        showToast('刷新失败，请重试', 'error');
+        console.warn('收藏刷新异常', e);
+      } finally {
+        favRefreshing.value = false;
       }
     }
 
@@ -1730,7 +1803,8 @@ const app = createApp({
       // 通用：收藏
       favorites, sortedFavorites, isFav, toggleFavorite, removeFavorite,
       updateFavNote, favDays,
-      favAddCode, favAddName, addFavoriteManual
+      favAddCode, favAddName, addFavoriteManual,
+      favRefreshing, refreshFavorites
     };
   }
 });
