@@ -862,6 +862,10 @@ body {
 }
 .modal-header h3 { font-size: 16px; font-weight: 600; }
 .modal-header .btn-icon { background: var(--surface-alt); color: var(--text-secondary); }
+/* 板块详情标题栏内的「平均涨跌幅」与「刷新行情」 */
+.sd-avg { font-size: 13px; color: var(--text-secondary); white-space: nowrap; }
+.sd-avg b { font-size: 15px; margin-left: 2px; }
+.sector-filter-bar { background: #f7f9fc; }
 .modal-body { padding: 20px; overflow-y: auto; flex: 1; }
 .modal-footer {
   padding: 14px 20px;

@@ -1011,16 +1011,84 @@
               <button class="btn-icon-sm" @click="startEditSectorName" title="编辑板块名称">✏️</button>
             </template>
             <span class="muted small">（{{ sectorDetail.data.type || '板块' }} · {{ sectorDetail.data.stocks.length }} 只）</span>
-          </h3>
-          <button class="btn-icon" @click="sectorDetail.show = false">✕</button>
-        </div>
-        <div class="modal-body">
-          <div class="pool-detail-summary">
-            <span>平均涨跌幅：<b :class="pctClass(sectorDetail.data.avgChange)">{{ fmtPct(sectorDetail.data.avgChange) }}</b></span>
+            <span class="sd-avg">平均涨跌幅：<b :class="pctClass(sectorDetail.data.avgChange)">{{ fmtPct(sectorDetail.data.avgChange) }}</b></span>
             <button class="btn btn-sm" @click="refreshSectorDetail(sectorDetail.data)" :disabled="sectorLoading">
               <span v-if="sectorLoading">⏳ 刷新中...</span>
               <span v-else>🔄 刷新行情</span>
             </button>
+          </h3>
+          <button class="btn-icon" @click="sectorDetail.show = false">✕</button>
+        </div>
+        <div class="modal-body">
+          <!-- 板块详情筛选栏：功能与「筛选板块」一致（不含板块选择，因详情已锁定在该板块） -->
+          <div class="filter-bar sector-filter-bar">
+            <div class="filter-field">
+              <label>市净比</label>
+              <div class="range">
+                <input type="number" step="0.01" v-model.number="sectorFilter.pbMin" placeholder="最小">
+                <span style="color:#909399">—</span>
+                <input type="number" step="0.01" v-model.number="sectorFilter.pbMax" placeholder="最大">
+              </div>
+            </div>
+            <div class="filter-field">
+              <label>市扣比</label>
+              <div class="range">
+                <input type="number" step="0.01" v-model.number="sectorFilter.pkMin" placeholder="最小">
+                <span style="color:#909399">—</span>
+                <input type="number" step="0.01" v-model.number="sectorFilter.pkMax" placeholder="最大">
+              </div>
+            </div>
+            <div class="filter-field">
+              <label>市营比</label>
+              <div class="range">
+                <input type="number" step="0.01" v-model.number="sectorFilter.prMin" placeholder="最小">
+                <span style="color:#909399">—</span>
+                <input type="number" step="0.01" v-model.number="sectorFilter.prMax" placeholder="最大">
+              </div>
+            </div>
+            <div class="filter-field">
+              <label>24营比</label>
+              <div class="range">
+                <input type="number" step="0.01" v-model.number="sectorFilter.q24Min" placeholder="最小">
+                <span style="color:#909399">—</span>
+                <input type="number" step="0.01" v-model.number="sectorFilter.q24Max" placeholder="最大">
+              </div>
+            </div>
+            <div class="filter-field">
+              <label>24扣比</label>
+              <div class="range">
+                <input type="number" step="0.01" v-model.number="sectorFilter.q24kMin" placeholder="最小">
+                <span style="color:#909399">—</span>
+                <input type="number" step="0.01" v-model.number="sectorFilter.q24kMax" placeholder="最大">
+              </div>
+            </div>
+            <div class="filter-field">
+              <label title="今涨跌→扣非环比 共20个字段中，数值为正的个数">正数统计</label>
+              <div class="range">
+                <input type="number" step="1" min="0" :max="POSITIVE_KEYS.length" v-model.number="sectorFilter.posMin" placeholder="最小">
+                <span style="color:#909399">—</span>
+                <input type="number" step="1" min="0" :max="POSITIVE_KEYS.length" v-model.number="sectorFilter.posMax" placeholder="最大">
+              </div>
+            </div>
+            <div class="filter-field">
+              <label class="checkbox-label" title="仅保留满足「924涨跌 < 24营比/2 + 24扣比/2」的股票">
+                <input type="checkbox" v-model="sectorFilter.ratioFilter"> 比值筛选
+              </label>
+              <span class="muted small">924涨跌 &lt; 24营比/2+24扣比/2</span>
+            </div>
+            <div class="filter-field">
+              <label>行业</label>
+              <select v-model="sectorFilter.industry">
+                <option value="">全部行业</option>
+                <option v-for="ind in sectorDetailIndustries" :key="ind" :value="ind">{{ ind }}</option>
+              </select>
+            </div>
+            <button class="btn btn-sm" @click="resetSectorFilter" :disabled="sectorFilter.locked">🔄 重置</button>
+            <button class="btn btn-sm" :class="{ 'btn-locked': sectorFilter.locked }" @click="toggleSectorFilterLock">
+              <span v-if="sectorFilter.locked">🔒 已固定</span>
+              <span v-else>🔓 固定筛选</span>
+            </button>
+            <span class="muted small" v-if="sortedSectorDetailStocks.length">共 {{ sortedSectorDetailStocks.length }} 只</span>
           </div>
           <div class="table-wrap table-scroll-x">
             <table class="data-table pool-detail-table">
