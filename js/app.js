@@ -24,6 +24,7 @@ const app = createApp({
       { key: 'news', label: '新闻追踪', icon: '📰' },
       { key: 'pools', label: '股票池', icon: '📅' },
       { key: 'sector', label: '概念行业选股', icon: '🧭' },
+      { key: 'filter', label: '筛选板块', icon: '🎯' },
       { key: 'hot', label: '热门板块', icon: '🔥' }
     ];
     function goPage(key) {
@@ -32,7 +33,7 @@ const app = createApp({
     }
     // 初始化路由
     const hash = location.hash.replace('#', '');
-    if (['news', 'pools', 'sector', 'hot'].includes(hash)) currentPage.value = hash;
+    if (['news', 'pools', 'sector', 'filter', 'hot'].includes(hash)) currentPage.value = hash;
 
     // ===== Toast =====
     const toast = reactive({ show: false, msg: '', type: 'info', _t: null });
@@ -1647,6 +1648,35 @@ const app = createApp({
       });
     });
 
+    // 筛选结果排序
+    const filterSort = reactive({ key: 'dailyChange', dir: 'desc' });
+    const sortedFilterStocks = computed(() => {
+      const list = [...filteredFilterStocks.value];
+      const k = filterSort.key;
+      const dir = filterSort.dir === 'asc' ? 1 : -1;
+      list.sort((a, b) => {
+        const va = parseFloat(poolVal(a, k));
+        const vb = parseFloat(poolVal(b, k));
+        if (isNaN(va) && isNaN(vb)) return 0;
+        if (isNaN(va)) return 1;
+        if (isNaN(vb)) return -1;
+        return (va - vb) * dir;
+      });
+      return list;
+    });
+    function sortFilterBy(key) {
+      if (filterSort.key === key) {
+        filterSort.dir = filterSort.dir === 'asc' ? 'desc' : 'asc';
+      } else {
+        filterSort.key = key;
+        filterSort.dir = 'desc';
+      }
+    }
+    function filterSortIcon(key) {
+      if (filterSort.key !== key) return '⇅';
+      return filterSort.dir === 'asc' ? '↑' : '↓';
+    }
+
     // ============================================================
     //  设置 / 导入导出
     // ============================================================
@@ -1902,7 +1932,8 @@ const app = createApp({
       loadHotData, fetchHotBoards, refreshHotStocks,
       // 筛选板块
       filterPanel, openFilterPanel, resetFilter, applyFilterPool,
-      filteredFilterStocks, sortedSectorPools, sortedPools,
+      filteredFilterStocks, sortedFilterStocks, sortFilterBy, filterSortIcon,
+      sortedSectorPools, sortedPools,
       // 通用：收藏
       favorites, sortedFavorites, isFav, toggleFavorite, removeFavorite,
       updateFavNote, favDays,

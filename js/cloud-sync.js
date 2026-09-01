@@ -52,7 +52,7 @@ const CloudSync = {
       method: 'POST',
       headers: { 'Authorization': `token ${token}`, 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        description: '股市新闻追踪分析系统 - 数据备份（自动生成，请勿手动修改）',
+        description: '个人自用股市信息追踪分析系统 - 数据备份（自动生成，请勿手动修改）',
         public: false,
         files: { [this.GIST_FILENAME]: { content: JSON.stringify(data) } }
       })
