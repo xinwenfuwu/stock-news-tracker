@@ -169,6 +169,12 @@ body {
 .btn-danger { color: var(--danger); border-color: var(--border); }
 .btn-danger:hover { background: var(--danger); color: #fff; border-color: var(--danger); }
 .btn-sm { padding: 4px 10px; font-size: 12px; }
+.btn-locked {
+  background: #f59e0b;
+  border-color: #f59e0b;
+  color: #fff;
+}
+.btn-locked:hover { background: #d97706; border-color: #d97706; color: #fff; }
 .btn-icon-sm {
   background: none;
   border: none;
@@ -205,6 +211,23 @@ body {
 /* 宽表强制横向滚动 */
 .table-scroll-x { overflow-x: auto; overflow-y: auto; }
 .pool-detail-table { min-width: 2200px; white-space: nowrap; }
+/* 筛选板块：固定高度 + 内部滚动，使横向滚动条固定在可见区域；
+   序号/代码/名称三列 sticky 左冻结，表头 sticky 顶冻结 */
+.filter-scroll {
+  height: calc(100vh - 300px);
+  min-height: 280px;
+  overflow: auto;
+  position: relative;
+}
+.filter-scroll thead th {
+  position: sticky;
+  top: 0;
+  z-index: 40;
+  background: #f5f7fa;
+}
+.filter-scroll th.col-sticky { z-index: 50; }
+.filter-scroll td.col-sticky { z-index: 30; }
+
 /* 筛选板块筛选栏 */
 .filter-bar {
   display: flex;
@@ -714,6 +737,24 @@ body {
   background: var(--surface-alt);
   border-radius: 8px;
   margin-bottom: 12px;
+  flex-wrap: wrap;
+}
+/* 行业筛选（弹窗上部右侧） */
+.sector-pick-industry {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-left: auto;
+  white-space: nowrap;
+}
+.sector-pick-industry select {
+  padding: 5px 8px;
+  border: 1px solid #d8e0f0;
+  border-radius: 6px;
+  background: #fff;
+  font-size: 13px;
+  min-width: 130px;
+  max-width: 220px;
 }
 .checkbox-label {
   display: inline-flex;

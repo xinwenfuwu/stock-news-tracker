@@ -1130,7 +1130,10 @@ const app = createApp({
     // 勾选弹窗状态：选择板块成分股时使用
     const sectorPick = reactive({
       show: false, loading: false, name: '', bk: '', type: '', stocks: [], selected: {},
-      filter: { no301: false, no688: false, noBj: false, noST: false } // 筛选：去除301/688/北交所/ST
+      // 筛选：去除301/688/北交所/ST；industry='' 表示不限行业
+      filter: { no301: false, no688: false, noBj: false, noST: false, industry: '' },
+      industryLoading: false,   // 是否正在补全行业字段
+      industryDone: false       // 本次弹窗是否已尝试补全过行业
     });
     // 板块列表加载失败标志（用于显示重试/加载全部）
     const sectorLoadError = ref(false);
@@ -1241,6 +1244,8 @@ const app = createApp({
       sectorPick.stocks = [];
       sectorPick.selected = {};
       sectorPick.bk = '';
+      sectorPick.filter.industry = '';      // 切换板块时重置行业筛选
+      sectorPick.industryDone = false;
       const names = blocks.map(b => b.name).join(' ∩ ');
       sectorPick.name = names;
       sectorPick.type = '交集筛选';
@@ -1284,6 +1289,7 @@ const app = createApp({
         });
         sectorPick.stocks = list;
         list.forEach(s => { sectorPick.selected[s.code] = true; });
+        loadSectorPickIndustries(true);   // 后台补全行业，供行业下拉筛选
         showToast(`交集筛选完成：${list.length} 只股票（同时属于 ${blockCount} 个概念）`, 'success');
       } catch (e) {
         console.warn('交集筛选失败', e);
@@ -1303,6 +1309,8 @@ const app = createApp({
       sectorPick.type = block.type || '';
       sectorPick.stocks = [];
       sectorPick.selected = {};
+      sectorPick.filter.industry = '';      // 切换板块时重置行业筛选
+      sectorPick.industryDone = false;
       showToast(`正在获取「${block.name}」成分股...`, 'info');
       try {
         const stocks = await StockAPI.getSectorStocks(block.bk);
@@ -1315,6 +1323,7 @@ const app = createApp({
         });
         sectorPick.stocks = list;
         list.forEach(s => { sectorPick.selected[s.code] = true; });
+        loadSectorPickIndustries(true);   // 后台补全行业，供行业下拉筛选
         showToast(`已加载 ${list.length} 只成分股，默认全选`, 'success');
       } catch (e) {
         console.warn('成分股获取失败', e);
@@ -1354,14 +1363,49 @@ const app = createApp({
     }
     // 判断股票是否被某筛选规则排除
     function sectorPickFiltered(s) {
-      const code = String(s.code || '');
+      // 代码可能带 sh/sz/bj 前缀，统一取纯数字后再匹配板块规则
+      const code = String(pureCode(s.code) || '');
       const name = String(s.name || '');
       const f = sectorPick.filter;
       if (f.no301 && /^30[01]/.test(code)) return true;      // 创业板（300/301）
       if (f.no688 && /^688/.test(code)) return true;          // 科创板
       if (f.noBj && /^(4|8|92)/.test(code)) return true;      // 北交所（4/8/92开头）
       if (f.noST && /ST/i.test(name)) return true;            // ST/*ST
+      if (f.industry && (s.industry || '未知') !== f.industry) return true; // 行业筛选
       return false;
+    }
+    /** 当前成分股涉及的全部行业（去重、中文排序），用于下拉选项 */
+    const sectorPickIndustries = computed(() => {
+      const set = new Set();
+      sectorPick.stocks.forEach(s => set.add(s.industry || '未知'));
+      return [...set].sort((a, b) => String(a).localeCompare(String(b), 'zh-CN'));
+    });
+    /** 已获取到真实行业（非「未知」）的股票数量 */
+    const sectorPickIndustryLoaded = computed(() => {
+      return sectorPick.stocks.filter(s => s.industry).length;
+    });
+    /** 异步补全缺失的行业字段（best-effort，不阻塞弹窗交互） */
+    async function loadSectorPickIndustries(force) {
+      if (sectorPick.industryLoading) return;
+      const missing = sectorPick.stocks.filter(s => !s.industry && s.code);
+      if (!missing.length) { sectorPick.industryDone = true; return; }
+      if (!force && sectorPick.industryDone) return;
+      sectorPick.industryLoading = true;
+      try {
+        const CONC = 4;   // 低并发，避免触发接口限流
+        for (let i = 0; i < missing.length; i += CONC) {
+          const batch = missing.slice(i, i + CONC);
+          await Promise.all(batch.map(async s => {
+            try {
+              const ind = await StockAPI.getIndustry(s.code);
+              if (ind) s.industry = ind;
+            } catch (e) { /* 单只失败忽略 */ }
+          }));
+        }
+        sectorPick.industryDone = true;
+      } finally {
+        sectorPick.industryLoading = false;
+      }
     }
     // 过滤后可见的成分股列表
     const visibleSectorPickStocks = computed(() => {
@@ -1618,6 +1662,7 @@ const app = createApp({
     const filterPanel = reactive({
       show: false,
       poolId: '',       // 's-板块id' 或 'p-股票池id'
+      locked: false,      // 是否固定筛选区间（切换板块/重置时保持不变）
       pbMin: null, pbMax: null,   // 市净比区间
       pkMin: null, pkMax: null,   // 市扣比区间
       prMin: null, prMax: null,   // 市营比区间
@@ -1627,7 +1672,20 @@ const app = createApp({
     function openFilterPanel() {
       filterPanel.show = true;
     }
+    /** 一键固定/取消固定筛选区间：固定后切换板块、重置均不再清空已填的区间值 */
+    function toggleFilterLock() {
+      filterPanel.locked = !filterPanel.locked;
+      if (filterPanel.locked) {
+        showToast('已固定筛选区间，切换板块/重置将保留当前区间', 'success');
+      } else {
+        showToast('已取消固定筛选区间', 'info');
+      }
+    }
     function resetFilter() {
+      if (filterPanel.locked) {
+        showToast('筛选区间已固定，请先点击「固定筛选」解锁后再重置', 'error');
+        return;
+      }
       filterPanel.poolId = '';
       filterPanel.pbMin = null; filterPanel.pbMax = null;
       filterPanel.pkMin = null; filterPanel.pkMax = null;
@@ -1635,16 +1693,18 @@ const app = createApp({
       filterPanel.q24Min = null; filterPanel.q24Max = null;
       filterPanel.q24kMin = null; filterPanel.q24kMax = null;
     }
-    /** 切换板块后重置区间筛选，便于查看该板块全部股票 */
+    /** 切换板块后重置区间筛选；若已固定则保留区间 */
     function applyFilterPool() {
+      if (filterPanel.locked) return;
       filterPanel.pbMin = null; filterPanel.pbMax = null;
       filterPanel.pkMin = null; filterPanel.pkMax = null;
       filterPanel.prMin = null; filterPanel.prMax = null;
       filterPanel.q24Min = null; filterPanel.q24Max = null;
       filterPanel.q24kMin = null; filterPanel.q24kMax = null;
     }
-    /** 区间判断工具：v 在 [min,max] 内（含边界），边界为空则不限 */
+    /** 区间判断工具：v 在 [min,max] 内（含边界），边界均为空则不限（含 null） */
     function inRange(v, min, max) {
+      if (min == null && max == null) return true;   // 未设边界，全部通过
       if (v == null || isNaN(v)) return false;
       if (min != null && v < min) return false;
       if (max != null && v > max) return false;
@@ -2033,6 +2093,7 @@ const app = createApp({
       sectorDetail, sortedSectorPools, searchSector, addSectorFromSearch,
       sectorPick, sectorPickCount, toggleSelectAllSector, confirmSectorPick,
       visibleSectorPickStocks, sectorPickFiltered,
+      sectorPickIndustries, sectorPickIndustryLoaded, loadSectorPickIndustries,
       sectorSel, sectorSelCount, sectorSelIntersecting, sectorSelError,
       addSubSector, removeSubSector, clearSectorSel, startIntersectFilter, openSectorSelPick,
       loadSectorStocks, refreshSectorDetail, openSectorDetail, startEditSectorName,
@@ -2043,7 +2104,7 @@ const app = createApp({
       sortedHotStocks, sortHotBy, hotSortIcon, removeHotStock,
       loadHotData, fetchHotBoards, refreshHotStocks,
       // 筛选板块
-      filterPanel, openFilterPanel, resetFilter, applyFilterPool,
+      filterPanel, openFilterPanel, resetFilter, applyFilterPool, toggleFilterLock,
       filteredFilterStocks, sortedFilterStocks, sortFilterBy, filterSortIcon,
       filterRefreshing, refreshFilterStocks,
       sortedSectorPools, sortedPools,
