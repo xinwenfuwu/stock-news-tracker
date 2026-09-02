@@ -296,6 +296,9 @@
             <span v-if="sectorSearching">⏳ 搜索中...</span>
             <span v-else>🔍 搜索板块</span>
           </button>
+          <button class="btn" @click="searchSubSectors" :disabled="sectorSearching" title="在我的概念选股板块中，按名称关键字搜索子版块">
+            🔎 搜索子版块
+          </button>
         </div>
 
         <!-- 搜索结果 -->
@@ -353,13 +356,17 @@
           <p class="muted small" v-if="sectorSelError">⚠️ {{ sectorSelError }}</p>
         </div>
 
-        <!-- 已保存板块 -->
-        <div class="section-title" v-if="sortedSectorPools.length">
-          <h3>📋 我的概念选股板块</h3>
-          <span class="muted small">共 {{ sortedSectorPools.length }} 个</span>
+        <!-- 已保存板块（支持按名称关键字筛选子版块） -->
+        <div class="sector-sub-filter" v-if="sectorSubKeyword">
+          <span>🔍 子版块筛选「<b>{{ sectorSubKeyword }}</b>」· 命中 <b>{{ filteredSectorPools.length }}</b> 个</span>
+          <button class="btn btn-sm" @click="clearSubSectorSearch">✕ 清除筛选</button>
         </div>
-        <div class="pool-grid" v-if="sortedSectorPools.length">
-          <div class="pool-card" v-for="pool in sortedSectorPools" :key="pool.id"
+        <div class="section-title" v-if="filteredSectorPools.length">
+          <h3>📋 我的概念选股板块</h3>
+          <span class="muted small">共 {{ filteredSectorPools.length }} 个<span v-if="sectorSubKeyword">（总 {{ sortedSectorPools.length }} 个）</span></span>
+        </div>
+        <div class="pool-grid" v-if="filteredSectorPools.length">
+          <div class="pool-card" v-for="pool in filteredSectorPools" :key="pool.id"
                @click="openSectorDetail(pool)">
             <div class="pool-card-header">
               <span class="pool-date">{{ pool.type || '板块' }}</span>
@@ -380,9 +387,15 @@
             </div>
           </div>
         </div>
-        <div class="empty-state" v-if="!sortedSectorPools.length && !sectorSearching">
-          <p>🧭 暂无概念选股板块</p>
-          <p class="muted">在上方输入行业或概念名称，点击板块即可自动列出其下所有股票</p>
+        <div class="empty-state" v-if="!filteredSectorPools.length && !sectorSearching">
+          <template v-if="sectorSubKeyword">
+            <p>🔍 未找到名称含「{{ sectorSubKeyword }}」的子板块</p>
+            <button class="btn btn-sm" @click="clearSubSectorSearch">✕ 清除筛选</button>
+          </template>
+          <template v-else>
+            <p>🧭 暂无概念选股板块</p>
+            <p class="muted">在上方输入行业或概念名称，点击板块即可自动列出其下所有股票</p>
+          </template>
         </div>
       </section>
 

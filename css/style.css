@@ -721,6 +721,21 @@ body {
   border-radius: 8px;
 }
 .sector-results { margin-bottom: 8px; }
+/* 子版块搜索：筛选状态提示条 */
+.sector-sub-filter {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 10px;
+  padding: 8px 12px;
+  background: #eef4ff;
+  border: 1px solid #cfe0ff;
+  border-radius: 8px;
+  font-size: 13px;
+  color: var(--text-secondary);
+}
 .sector-result-list {
   border: 1px solid var(--border);
   border-radius: 8px;

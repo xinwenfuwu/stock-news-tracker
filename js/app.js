@@ -1267,6 +1267,34 @@ const app = createApp({
     // 已保存板块按创建时间倒序
     const sortedSectorPools = computed(() => [...D.sectorPools].slice().reverse());
 
+    // 子版块搜索：在「我的概念选股板块」列表中，按名称关键字过滤已保存板块（空关键词=不筛选）
+    const sectorSubKeyword = ref('');
+    const filteredSectorPools = computed(() => {
+      const kw = sectorSubKeyword.value.trim();
+      if (!kw) return sortedSectorPools.value;
+      return sortedSectorPools.value.filter(p => String(p.name || '').includes(kw));
+    });
+    function searchSubSectors() {
+      const kw = String(sectorSearch.value || '').trim();
+      if (!kw) {
+        if (sectorSubKeyword.value) {
+          sectorSubKeyword.value = '';
+          showToast('已取消子版块筛选', 'info');
+        } else {
+          showToast('请先输入板块名称关键字', 'error');
+        }
+        return;
+      }
+      sectorSubKeyword.value = kw;
+      const n = filteredSectorPools.value.length;
+      if (n) showToast(`子版块筛选「${kw}」：命中 ${n} 个板块`, 'success');
+      else showToast(`未找到名称含「${kw}」的子板块`, 'info');
+    }
+    function clearSubSectorSearch() {
+      sectorSubKeyword.value = '';
+      showToast('已取消子版块筛选', 'info');
+    }
+
     // 搜索板块（防抖由模板 @input 触发，这里直接调用）
     async function searchSector() {
       const kw = sectorSearch.value.trim();
@@ -2398,6 +2426,7 @@ const app = createApp({
       sectorSearch, sectorResults, sectorSearching, sectorLoading,
       sectorLoadError, sectorLoadingAll, reloadSectors, loadAllSectors, refreshSectorData,
       sectorDetail, sortedSectorPools, searchSector, addSectorFromSearch,
+      sectorSubKeyword, searchSubSectors, clearSubSectorSearch, filteredSectorPools,
       sectorPick, sectorPickCount, toggleSelectAllSector, confirmSectorPick,
       visibleSectorPickStocks, sectorPickFiltered,
       sectorPickIndustries, sectorPickIndustryLoaded, loadSectorPickIndustries,
