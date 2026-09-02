@@ -918,7 +918,9 @@ body {
   padding: 16px 20px;
   border-bottom: 1px solid var(--border);
 }
-.modal-header h3 { font-size: 16px; font-weight: 600; }
+.modal-header h3 { font-size: 16px; font-weight: 600; flex: 1 1 auto; min-width: 0; }
+/* 概念板块详情：刷新行情 / 收起筛选栏 / 展开字段含义 统一靠右排列在标题栏 */
+.header-actions { display: flex; align-items: center; gap: 8px; flex: 0 0 auto; flex-wrap: wrap; justify-content: flex-end; }
 .modal-header .btn-icon { background: var(--surface-alt); color: var(--text-secondary); }
 /* 板块详情标题栏内的「平均涨跌幅」与「刷新行情」 */
 .sd-avg { font-size: 13px; color: var(--text-secondary); white-space: nowrap; }
@@ -1096,8 +1098,6 @@ body {
   overflow: auto;
 }
 .sector-detail-modal .info-box { flex: 0 0 auto; margin-top: 12px; }
-/* 板块详情：顶部一键收起/展开工具条 */
-.sd-toolbar { display: flex; gap: 8px; margin-bottom: 10px; flex: 0 0 auto; flex-wrap: wrap; }
 
 /* ===== 财经推送独立页面（位于新闻追踪与股票池之间） ===== */
 .finance-layout {

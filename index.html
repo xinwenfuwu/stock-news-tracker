@@ -1084,19 +1084,18 @@
             </template>
             <span class="muted small">（{{ sectorDetail.data.type || '板块' }} · {{ sectorDetail.data.stocks.length }} 只）</span>
             <span class="sd-avg">平均涨跌幅：<b :class="pctClass(sectorDetail.data.avgChange)">{{ fmtPct(sectorDetail.data.avgChange) }}</b></span>
+          </h3>
+          <div class="header-actions">
             <button class="btn btn-sm" @click="refreshSectorDetail(sectorDetail.data)" :disabled="sectorLoading">
               <span v-if="sectorLoading">⏳ 刷新中...</span>
               <span v-else>🔄 刷新行情</span>
             </button>
-          </h3>
-          <button class="btn-icon" @click="sectorDetail.show = false">✕</button>
-        </div>
-        <div class="modal-body">
-          <!-- 一键收起/展开：缩小顶部占用，以显示更多股票内容 -->
-          <div class="sd-toolbar">
             <button class="btn btn-sm" @click="sectorFilterOpen = !sectorFilterOpen">{{ sectorFilterOpen ? '▴ 收起筛选栏' : '▾ 展开筛选栏' }}</button>
             <button class="btn btn-sm" @click="sectorInfoOpen = !sectorInfoOpen">{{ sectorInfoOpen ? '▴ 收起字段含义' : '▾ 展开字段含义' }}</button>
           </div>
+          <button class="btn-icon" @click="sectorDetail.show = false">✕</button>
+        </div>
+        <div class="modal-body">
           <!-- 板块详情筛选栏：功能与「筛选板块」一致（不含板块选择，因详情已锁定在该板块） -->
           <div class="filter-bar sector-filter-bar" v-show="sectorFilterOpen">
             <div class="filter-field">
