@@ -42,8 +42,7 @@
     <!-- 页面内容 -->
     <main class="app-main">
       <!-- ===== 页面1：新闻追踪 ===== -->
-      <section v-show="currentPage === 'news'" class="page news-page-split">
-        <div class="news-main">
+      <section v-show="currentPage === 'news'" class="page">
         <div class="page-toolbar">
           <div class="toolbar-left">
             <div class="date-picker">
@@ -157,33 +156,76 @@
           </table>
         </div>
         <div class="page-footer">共 {{ filteredNews.length }} 条新闻</div>
-        </div><!-- /.news-main -->
+      </section>
 
-        <!-- 右侧：财经推送（嵌入财经网页） -->
-        <aside class="finance-push-panel">
-          <div class="fp-header">
-            <span>📡 财经推送</span>
-            <span class="muted small" v-if="financePush.locked">已锁定</span>
+      <!-- ===== 页面（财经推送：独立页面，位于新闻追踪与股票池之间） ===== -->
+      <section v-show="currentPage === 'finance'" class="page">
+        <div class="page-toolbar">
+          <div class="toolbar-left">
+            <h2 class="page-title" style="margin:0">📡 财经推送</h2>
           </div>
-          <div class="fp-body">
-            <template v-if="!financePush.locked">
-              <p class="muted small">输入财经网址，点击「锁定保留」即可在此嵌入并常驻财经网页。</p>
-              <input class="fp-url-input" v-model="financePush.url"
-                     placeholder="如 https://finance.sina.com.cn">
-              <button class="btn btn-primary btn-block" @click="toggleFinanceLock">🔒 锁定保留</button>
-              <p class="muted small fp-tip">提示：部分财经站点设有 X-Frame-Options 限制，可能无法在框内加载（可改用其移动版/可嵌入地址）。</p>
-            </template>
-            <template v-else>
-              <div class="fp-bar">
-                <input class="fp-url-input" v-model="financePush.url" placeholder="财经网址">
-                <button class="btn btn-sm" @click="toggleFinanceLock">🔓 解锁</button>
+        </div>
+
+        <div class="finance-layout">
+          <!-- 左：嵌入财经网页 -->
+          <div class="fp-embed">
+            <div class="fp-embed-bar">
+              <input class="fp-url-input" v-model="financePush.url" placeholder="输入财经网址，如 https://finance.sina.com.cn">
+              <button v-if="!financePush.locked" class="btn btn-primary" @click="toggleFinanceLock">🔒 锁定保留</button>
+              <button v-else class="btn btn-sm" @click="toggleFinanceLock">🔓 解锁</button>
+            </div>
+            <p v-if="!financePush.locked" class="muted small fp-hint">输入财经网址并点击「锁定保留」，即可在此嵌入并常驻财经网页（部分站点设有 X-Frame-Options 限制可能无法加载）。</p>
+            <p v-else class="muted small fp-hint">已锁定，财经网页已固定常驻。</p>
+            <iframe v-if="financePush.locked && financePush.url" :src="financePush.url" class="fp-iframe" referrerpolicy="no-referrer"></iframe>
+            <p v-else-if="financePush.locked" class="muted small">未设置网址</p>
+          </div>
+
+          <!-- 右：推送新闻到新闻追踪 -->
+          <div class="fp-push">
+            <h3 class="fp-push-title">📝 推送新闻到「新闻追踪」</h3>
+            <p class="muted small">每推送一条，即添加到「新闻追踪」列表（自动补全关联股票股价）。</p>
+            <div class="fp-field">
+              <label>新闻内容 <span class="req">*</span></label>
+              <textarea v-model="financePushNews.content" rows="4" placeholder="输入要推送的财经新闻内容..."></textarea>
+            </div>
+            <div class="fp-field">
+              <label>来源链接</label>
+              <input v-model="financePushNews.url" placeholder="可选，如 https://finance.sina.com.cn/...">
+            </div>
+            <div class="fp-field fp-field-2">
+              <div>
+                <label>日期</label>
+                <input type="date" v-model="financePushNews.date">
               </div>
-              <iframe v-if="financePush.url" :src="financePush.url"
-                      class="fp-iframe" referrerpolicy="no-referrer"></iframe>
-              <p v-else class="muted small">未设置网址</p>
-            </template>
+              <div>
+                <label>分类</label>
+                <select v-model="financePushNews.category">
+                  <option value="">—</option>
+                  <option v-for="c in allCategories" :key="c" :value="c">{{ c }}</option>
+                </select>
+              </div>
+            </div>
+            <div class="fp-field">
+              <label>关联股票</label>
+              <div class="stock-search">
+                <input v-model="financePushNews.stockSearch" @input="onFinanceStockSearch" placeholder="搜索并添加关联股票（可选）">
+                <div class="stock-suggestions" v-if="financePushNews.suggestions.length">
+                  <div v-for="(s, i) in financePushNews.suggestions" :key="i" class="stock-suggestion" @click="addFinanceStock(s)">
+                    {{ s.name }} <span class="muted small">{{ s.code }}</span>
+                  </div>
+                </div>
+              </div>
+              <div class="stock-chips">
+                <span class="stock-chip" v-for="(s, i) in financePushNews.relatedStocks" :key="i">
+                  {{ s.name || s.code }}
+                  <button class="chip-x" @click="removeFinanceStock(i)">×</button>
+                </span>
+                <span v-if="!financePushNews.relatedStocks.length" class="muted small">未关联</span>
+              </div>
+            </div>
+            <button class="btn btn-primary btn-block" @click="pushFinanceNews">📤 推送到新闻追踪</button>
           </div>
-        </aside>
+        </div>
       </section>
 
       <!-- ===== 页面2：股票池 ===== -->

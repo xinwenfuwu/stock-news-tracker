@@ -22,6 +22,7 @@ const app = createApp({
     const currentPage = ref('news');
     const tabs = [
       { key: 'news', label: '新闻追踪', icon: '📰' },
+      { key: 'finance', label: '财经推送', icon: '📡' },
       { key: 'pools', label: '股票池', icon: '📅' },
       { key: 'sector', label: '概念行业选股', icon: '🧭' },
       { key: 'filter', label: '筛选板块', icon: '🎯' },
@@ -33,7 +34,7 @@ const app = createApp({
     }
     // 初始化路由
     const hash = location.hash.replace('#', '');
-    if (['news', 'pools', 'sector', 'filter', 'hot'].includes(hash)) currentPage.value = hash;
+    if (['news', 'finance', 'pools', 'sector', 'filter', 'hot'].includes(hash)) currentPage.value = hash;
 
     // ===== Toast =====
     const toast = reactive({ show: false, msg: '', type: 'info', _t: null });
@@ -311,6 +312,70 @@ const app = createApp({
         financePush.locked = false;
         showToast('已解锁财经推送', 'info');
       }
+    }
+
+    // 财经推送页面：推送新闻到「新闻追踪」
+    const financePushNews = reactive({
+      content: '',          // 新闻内容（必填）
+      url: '',              // 来源链接（可选）
+      date: Store.today(),  // 新闻日期
+      category: '',         // 概念分类（可选）
+      relatedStocks: [],    // 关联股票 [{name, code}]
+      stockSearch: '',
+      suggestions: [],
+      _searchTimer: null
+    });
+    function onFinanceStockSearch() {
+      clearTimeout(financePushNews._searchTimer);
+      const kw = financePushNews.stockSearch.trim();
+      if (!kw) { financePushNews.suggestions = []; return; }
+      financePushNews._searchTimer = setTimeout(async () => {
+        try {
+          const results = await StockAPI.searchStocks(kw);
+          const exist = new Set((financePushNews.relatedStocks || []).map(s => s.code));
+          financePushNews.suggestions = results
+            .filter(r => r.type === 'GP-A' || r.type === 'GP-S' || !r.type)
+            .filter(r => !exist.has(r.code)).slice(0, 8);
+        } catch (e) { financePushNews.suggestions = []; }
+      }, 300);
+    }
+    function addFinanceStock(s) {
+      if (!Array.isArray(financePushNews.relatedStocks)) financePushNews.relatedStocks = [];
+      if (!financePushNews.relatedStocks.find(x => x.code === s.code)) {
+        financePushNews.relatedStocks.push({ name: s.name, code: s.code });
+      }
+      financePushNews.stockSearch = '';
+      financePushNews.suggestions = [];
+    }
+    function removeFinanceStock(idx) {
+      if (Array.isArray(financePushNews.relatedStocks)) financePushNews.relatedStocks.splice(idx, 1);
+    }
+    function pushFinanceNews() {
+      const content = (financePushNews.content || '').trim();
+      if (!content) { showToast('请输入新闻内容', 'error'); return; }
+      const url = (financePushNews.url || '').trim();
+      const fullContent = url ? `🔗 ${url}\n${content}` : content;
+      const item = {
+        date: financePushNews.date || Store.today(),
+        content: fullContent,
+        conceptCategory: '',
+        industryCategory: '',
+        customTag: '',
+        relatedStocks: (financePushNews.relatedStocks || []).map(s => ({ name: s.name, code: s.code })),
+        category: financePushNews.category || '',
+        newsDayPrice: null, price924: null, todayPrice: null
+      };
+      item.daysSince = Store.daysSince(item.date);
+      const added = Store.addNews(item);
+      fillPriceForNews(added, true);
+      showToast('已推送到新闻追踪', 'success');
+      // 重置表单（保留日期）
+      financePushNews.content = '';
+      financePushNews.url = '';
+      financePushNews.relatedStocks = [];
+      financePushNews.category = '';
+      financePushNews.stockSearch = '';
+      financePushNews.suggestions = [];
     }
     const selectedNewsIds = ref([]);
     const sortKey = ref('daysSince');
@@ -2224,6 +2289,7 @@ const app = createApp({
       // 页面1
       newsFilter, selectedNewsIds, sortedNews, filteredNews,
       financePush, toggleFinanceLock,
+      financePushNews, onFinanceStockSearch, addFinanceStock, removeFinanceStock, pushFinanceNews,
       sortKey, sortDir, sortBy, sortIcon,
       allNewsSelected, toggleSelectAll, invertSelection, selectAllNews, clearSelection, deleteSelectedNews,
       newsModal, openAddNews, editNews, saveNews, deleteNews,
