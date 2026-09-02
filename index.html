@@ -677,14 +677,6 @@
               <option v-for="ind in filterIndustries" :key="ind" :value="ind">{{ ind }}</option>
             </select>
           </div>
-          <!-- 字段间距：调节各列之间的水平间距 -->
-          <div class="filter-field">
-            <label title="调节各字段（列）之间的水平间距">字段间距</label>
-            <div class="range">
-              <input type="range" min="2" max="30" step="1" v-model.number="filterColGap" style="width:120px">
-              <span class="muted small">{{ filterColGap }}px</span>
-            </div>
-          </div>
           <button class="btn btn-sm" @click="resetFilter" :disabled="filterPanel.locked">🔄 重置</button>
           <button class="btn btn-sm" :class="{ 'btn-locked': filterPanel.locked }" @click="toggleFilterLock">
             <span v-if="filterPanel.locked">🔒 已固定</span>
@@ -694,7 +686,7 @@
         </div>
 
         <div class="table-wrap filter-scroll" v-if="sortedFilterStocks.length">
-          <table class="data-table pool-detail-table" :style="{ '--filter-col-gap': filterColGap + 'px' }">
+          <table class="data-table pool-detail-table">
             <thead>
               <tr>
                 <th class="col-sticky col-sticky-0">序号</th>
@@ -1100,8 +1092,13 @@
           <button class="btn-icon" @click="sectorDetail.show = false">✕</button>
         </div>
         <div class="modal-body">
+          <!-- 一键收起/展开：缩小顶部占用，以显示更多股票内容 -->
+          <div class="sd-toolbar">
+            <button class="btn btn-sm" @click="sectorFilterOpen = !sectorFilterOpen">{{ sectorFilterOpen ? '▴ 收起筛选栏' : '▾ 展开筛选栏' }}</button>
+            <button class="btn btn-sm" @click="sectorInfoOpen = !sectorInfoOpen">{{ sectorInfoOpen ? '▴ 收起字段含义' : '▾ 展开字段含义' }}</button>
+          </div>
           <!-- 板块详情筛选栏：功能与「筛选板块」一致（不含板块选择，因详情已锁定在该板块） -->
-          <div class="filter-bar sector-filter-bar">
+          <div class="filter-bar sector-filter-bar" v-show="sectorFilterOpen">
             <div class="filter-field">
               <label>市净比</label>
               <div class="range">
@@ -1252,7 +1249,7 @@
               </tbody>
             </table>
           </div>
-          <div class="info-box small">
+          <div class="info-box small" v-show="sectorInfoOpen">
             <p>💡 <b>字段含义与计算规则</b>：<br>
             · 今涨跌=当日涨跌幅(%)；年涨跌=当日价相对当年首个交易日涨跌幅(%)；924涨跌=当日价相对2024-09-24收盘价涨跌幅(%)（不复权）。<br>
             · 24营比=最新报告期营收 相对 2024年同期营收增长率(%)；24扣比=最新报告期扣非净利润 相对 2024年同期扣非净利润增长率(%)。<br>

@@ -1060,13 +1060,25 @@ body {
   .app-main { padding: 12px; }
 }
 
-/* ===== 筛选板块：字段间距（列水平内边距），由「字段间距」拉条控制 =====
-   仅作用于非冻结列，避免影响左侧冻结列（序号/代码/名称）的对齐 */
-.filter-scroll .pool-detail-table th:not(.col-sticky),
-.filter-scroll .pool-detail-table td:not(.col-sticky) {
-  padding-left: var(--filter-col-gap, 8px);
-  padding-right: var(--filter-col-gap, 8px);
+/* ===== 筛选板块：列宽拖拽调整 =====
+   表格改为固定布局，列宽由 colgroup 控制；非冻结列右边缘提供拖拽手柄 */
+.filter-scroll .pool-detail-table,
+.sector-detail-modal .pool-detail-table { table-layout: fixed; min-width: 0; }
+.filter-scroll .pool-detail-table th,
+.filter-scroll .pool-detail-table td,
+.sector-detail-modal .pool-detail-table th,
+.sector-detail-modal .pool-detail-table td { overflow: hidden; text-overflow: ellipsis; }
+/* 概念板块详情弹窗：表头 sticky 在 thead 上，th 需设为相对定位，列宽拖拽手柄才能贴合各单元格右侧 */
+.sector-detail-modal .pool-detail-table thead th { position: relative; }
+.col-resize-handle {
+  position: absolute;
+  top: 0; right: 0;
+  width: 7px; height: 100%;
+  cursor: col-resize;
+  z-index: 35;
+  background: transparent;
 }
+.col-resize-handle:hover { background: rgba(37, 99, 235, 0.35); }
 
 /* ===== 概念板块详情弹窗：底部横向滚动条始终固定 =====
    表体改为纵向不滚动、由表格区域内部滚动，使横向滚动条固定在弹窗底部，
@@ -1084,6 +1096,8 @@ body {
   overflow: auto;
 }
 .sector-detail-modal .info-box { flex: 0 0 auto; margin-top: 12px; }
+/* 板块详情：顶部一键收起/展开工具条 */
+.sd-toolbar { display: flex; gap: 8px; margin-bottom: 10px; flex: 0 0 auto; flex-wrap: wrap; }
 
 /* ===== 财经推送独立页面（位于新闻追踪与股票池之间） ===== */
 .finance-layout {

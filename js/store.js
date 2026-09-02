@@ -18,7 +18,8 @@ const Store = {
       sectorPools: [],        // 概念/行业选股板块：[{id, name, bk, type, date, stocks: [...]}]
       favorites: [],          // 收藏股票：[{code, name, favDate, note}]
       financePush: { url: '', locked: false }, // 财经推送：右侧嵌入的财经网址（锁定后持久化）
-      filterColGap: 8,          // 筛选板块：各字段（列）之间的水平间距(px)
+      filterColWidths: {},      // 筛选板块：各列宽度(px)，按列位置索引（0,1,2...）
+      sectorColWidths: {},      // 概念板块详情弹窗：各列宽度(px)，按列位置索引（0,1,2...）
       dailyData: {},          // { "2024-07-08": { stocks: [...] } }
       hotBoards: [],          // 缓存最近一次热门板块
       hotStocks: [],          // 缓存最近一次热门股票
@@ -63,8 +64,11 @@ const Store = {
     if (!this.data.financePush || typeof this.data.financePush !== 'object') {
       this.data.financePush = { url: '', locked: false };
     }
-    if (typeof this.data.filterColGap !== 'number' || isNaN(this.data.filterColGap)) {
-      this.data.filterColGap = 8;
+    if (typeof this.data.filterColWidths !== 'object' || this.data.filterColWidths === null) {
+      this.data.filterColWidths = {};
+    }
+    if (typeof this.data.sectorColWidths !== 'object' || this.data.sectorColWidths === null) {
+      this.data.sectorColWidths = {};
     }
 
     // 自动保存
@@ -87,6 +91,15 @@ const Store = {
       },
       { deep: true }
     );
+  },
+
+  /** 立即同步持久化（列宽拖拽等需要即时落盘的场景，绕过自动保存的 300ms 防抖） */
+  saveNow() {
+    try {
+      localStorage.setItem(this.STORAGE_KEY, JSON.stringify(this.data));
+    } catch (e) {
+      console.error('保存失败（可能超出存储上限）', e);
+    }
   },
 
   /** 生成唯一 ID */
