@@ -280,6 +280,10 @@
           </div>
           <div class="toolbar-right">
             <span class="muted small">输入行业或概念名称，自动列出该板块下所有股票</span>
+            <button class="btn btn-sm" @click="refreshSectorData" :disabled="sectorSearching || sectorLoadingAll">
+              <span v-if="sectorSearching || sectorLoadingAll">⏳ 刷新中...</span>
+              <span v-else>🔄 刷新数据</span>
+            </button>
           </div>
         </div>
 

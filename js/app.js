@@ -1302,6 +1302,17 @@ const app = createApp({
       await searchSector();
     }
 
+    // 顶部「刷新数据」：清除板块缓存后重新拉取（有搜索词按词刷新，否则加载全部板块）
+    async function refreshSectorData() {
+      StockAPI._sectorCache = null;
+      StockAPI._sectorCacheAt = 0;
+      if (sectorSearch.value.trim()) {
+        await searchSector();
+      } else {
+        await loadAllSectors();
+      }
+    }
+
     // 加载全部板块（分页更多，用于搜索冷门概念）
     async function loadAllSectors() {
       sectorLoadingAll.value = true;
@@ -2385,7 +2396,7 @@ const app = createApp({
       addPoolStocks, removePoolStock, sortedPoolDetailStocks, sortPoolDetailBy, poolSortIcon,
       // 页面2.5：概念行业选股
       sectorSearch, sectorResults, sectorSearching, sectorLoading,
-      sectorLoadError, sectorLoadingAll, reloadSectors, loadAllSectors,
+      sectorLoadError, sectorLoadingAll, reloadSectors, loadAllSectors, refreshSectorData,
       sectorDetail, sortedSectorPools, searchSector, addSectorFromSearch,
       sectorPick, sectorPickCount, toggleSelectAllSector, confirmSectorPick,
       visibleSectorPickStocks, sectorPickFiltered,
