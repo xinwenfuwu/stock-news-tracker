@@ -380,6 +380,64 @@ body {
   text-align: right;
 }
 
+/* ===== 新闻页：左侧新闻 + 右侧财经推送 两栏布局 ===== */
+.news-page-split {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+}
+.news-main { flex: 1 1 auto; min-width: 0; }
+.finance-push-panel {
+  flex: 0 0 420px;
+  width: 420px;
+  align-self: stretch;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  display: flex;
+  flex-direction: column;
+  max-height: calc(100vh - 100px);
+  position: sticky;
+  top: 12px;
+}
+.fp-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--border);
+  font-weight: 600;
+  font-size: 15px;
+}
+.fp-body { padding: 14px; display: flex; flex-direction: column; gap: 10px; flex: 1; min-height: 0; }
+.fp-url-input {
+  padding: 8px 10px;
+  border: 1px solid #d8e0f0;
+  border-radius: 6px;
+  font-size: 13px;
+  width: 100%;
+  box-sizing: border-box;
+}
+.fp-tip { line-height: 1.5; }
+.fp-bar { display: flex; gap: 8px; align-items: center; }
+.fp-bar .fp-url-input { flex: 1; }
+.fp-iframe {
+  flex: 1;
+  width: 100%;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: #fff;
+  min-height: 480px;
+}
+.btn-block { width: 100%; }
+
+/* 窄屏：上下堆叠 */
+@media (max-width: 1100px) {
+  .news-page-split { flex-direction: column; }
+  .finance-push-panel { flex-basis: auto; width: 100%; position: static; max-height: 70vh; }
+}
+
 /* ===== 涨跌颜色 ===== */
 .up { color: var(--up); font-weight: 600; }
 .down { color: var(--down); font-weight: 600; }

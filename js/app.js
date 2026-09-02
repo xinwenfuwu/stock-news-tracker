@@ -295,6 +295,23 @@ const app = createApp({
     //  页面1：新闻追踪
     // ============================================================
     const newsFilter = reactive({ date: '', keyword: '', category: '', customTag: '' });
+    // 财经推送：右侧嵌入财经网页（与 Store 数据同源，自动持久化）
+    const financePush = Store.data.financePush;
+    function toggleFinanceLock() {
+      if (!financePush.locked) {
+        // 锁定：需先有网址
+        if (!financePush.url || !financePush.url.trim()) {
+          showToast('请先输入财经网址再锁定', 'error');
+          return;
+        }
+        financePush.url = financePush.url.trim();
+        financePush.locked = true;
+        showToast('已锁定，财经网页已固定', 'success');
+      } else {
+        financePush.locked = false;
+        showToast('已解锁财经推送', 'info');
+      }
+    }
     const selectedNewsIds = ref([]);
     const sortKey = ref('daysSince');
     const sortDir = ref('desc');
@@ -2203,6 +2220,7 @@ const app = createApp({
       cloud, cloudModal, openCloudModal, cloudLogin, syncToCloud, syncFromCloud, cloudLogout, toggleAutoSync,
       // 页面1
       newsFilter, selectedNewsIds, sortedNews, filteredNews,
+      financePush, toggleFinanceLock,
       sortKey, sortDir, sortBy, sortIcon,
       allNewsSelected, toggleSelectAll, invertSelection, selectAllNews, clearSelection, deleteSelectedNews,
       newsModal, openAddNews, editNews, saveNews, deleteNews,

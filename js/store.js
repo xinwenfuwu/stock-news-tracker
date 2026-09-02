@@ -17,6 +17,7 @@ const Store = {
       stockPools: [],
       sectorPools: [],        // 概念/行业选股板块：[{id, name, bk, type, date, stocks: [...]}]
       favorites: [],          // 收藏股票：[{code, name, favDate, note}]
+      financePush: { url: '', locked: false }, // 财经推送：右侧嵌入的财经网址（锁定后持久化）
       dailyData: {},          // { "2024-07-08": { stocks: [...] } }
       hotBoards: [],          // 缓存最近一次热门板块
       hotStocks: [],          // 缓存最近一次热门股票
@@ -58,6 +59,9 @@ const Store = {
     if (!this.data.sectorPools) this.data.sectorPools = [];
     if (!this.data.favorites) this.data.favorites = [];
     if (!this.data.news) this.data.news = [];
+    if (!this.data.financePush || typeof this.data.financePush !== 'object') {
+      this.data.financePush = { url: '', locked: false };
+    }
 
     // 自动保存
     this._setupAutosave(Vue);
