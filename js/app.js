@@ -1250,7 +1250,8 @@ const app = createApp({
     const sectorDetailSort = reactive({ key: 'dailyChange', dir: 'desc' });
     // 板块详情：筛选栏与「字段含义」说明的一键收起/展开（收起以显示更多股票内容）
     const sectorFilterOpen = ref(true);
-    const sectorInfoOpen = ref(true);
+    // 字段含义与计算规则默认收起，把纵向空间让给个股列表（可一键展开查看）
+    const sectorInfoOpen = ref(false);
     // 勾选弹窗状态：选择板块成分股时使用
     const sectorPick = reactive({
       show: false, loading: false, name: '', bk: '', type: '', stocks: [], selected: {},
@@ -1847,9 +1848,21 @@ const app = createApp({
       ratioFilter: false,            // 比值筛选：924涨跌 < 24营比 + 24扣比
       industry: ''                   // 行业筛选：'' 表示不限
     });
-    // 列宽拖拽调整（鼠标拖动非冻结列右边缘）。通用：传入表格选择器与对应的存储键，
-    // 以便「筛选板块」与「概念板块详情弹窗」各自独立保存列宽。
-    function initColResize(tableSelector, storageKey) {
+    // 各表初始列宽（px）：按内容拟合，避免默认被 table-layout:fixed 均分导致过窄/留白过多。
+    // 顺序与各自 thead 的 th 一一对应；前 3 列(序号/代码/名称)保持 36/78/100 以匹配冻结列 left 偏移。
+    const FILTER_DEFAULT_COL_WIDTHS = [
+      36, 78, 100, 170, 92, 92, 56, 110, 88, 88, 92, 88, 88, 104, 88, 88, 88,
+      110, 110, 110, 110, 110, 110, 110, 100, 130, 100, 100, 76, 120, 120, 88, 110
+    ];
+    const SECTOR_DEFAULT_COL_WIDTHS = [
+      36, 78, 100, 170, 92, 92, 56, 110, 88, 88, 92, 88, 104, 88, 88, 88, 88,
+      110, 110, 110, 110, 110, 110, 110, 100, 130, 100, 100, 76, 120, 88, 110, 96
+    ];
+
+    // 列宽拖拽调整（鼠标拖动非冻结列右边缘）。通用：传入表格选择器、对应的存储键、
+    // 以及初始列宽数组，以便「筛选板块」与「概念板块详情弹窗」各自独立保存列宽，
+    // 且首次打开即有贴合内容的合理初始宽度。
+    function initColResize(tableSelector, storageKey, defaultWidths) {
       const table = document.querySelector(tableSelector);
       if (!table) return;
       const header = table.querySelector('thead tr');
@@ -1862,7 +1875,10 @@ const app = createApp({
       ths.forEach((th, i) => {
         let col = colgroup.children[i];
         if (!col) { col = document.createElement('col'); colgroup.appendChild(col); }
-        const w = (saved[i] != null) ? saved[i] : Math.round(th.getBoundingClientRect().width);
+        let w;
+        if (saved[i] != null) w = saved[i];
+        else if (defaultWidths && defaultWidths[i] != null) w = defaultWidths[i];
+        else w = Math.round(th.getBoundingClientRect().width);
         col.style.width = w + 'px';
       });
       while (colgroup.children.length > ths.length) colgroup.removeChild(colgroup.lastChild);
@@ -2014,15 +2030,15 @@ const app = createApp({
       return filterSort.dir === 'asc' ? '↑' : '↓';
     }
     // 列宽拖拽：初次挂载、切换到筛选页、以及列表变化后均重新初始化（幂等）
-    onMounted(() => { nextTick(() => initColResize('.filter-scroll table', 'filterColWidths')); });
-    watch(sortedFilterStocks, () => nextTick(() => initColResize('.filter-scroll table', 'filterColWidths')), { flush: 'post' });
-    watch(currentPage, (k) => { if (k === 'filter') nextTick(() => initColResize('.filter-scroll table', 'filterColWidths')); });
+    onMounted(() => { nextTick(() => initColResize('.filter-scroll table', 'filterColWidths', FILTER_DEFAULT_COL_WIDTHS)); });
+    watch(sortedFilterStocks, () => nextTick(() => initColResize('.filter-scroll table', 'filterColWidths', FILTER_DEFAULT_COL_WIDTHS)), { flush: 'post' });
+    watch(currentPage, (k) => { if (k === 'filter') nextTick(() => initColResize('.filter-scroll table', 'filterColWidths', FILTER_DEFAULT_COL_WIDTHS)); });
     // 概念板块详情弹窗：打开弹窗、排序/筛选结果变化后，重新初始化列宽拖拽
     watch(() => sectorDetail.show, (v) => {
-      if (v) nextTick(() => initColResize('.sector-detail-modal table', 'sectorColWidths'));
+      if (v) nextTick(() => initColResize('.sector-detail-modal table', 'sectorColWidths', SECTOR_DEFAULT_COL_WIDTHS));
     });
     watch(sortedSectorDetailStocks, () => {
-      if (sectorDetail.show) nextTick(() => initColResize('.sector-detail-modal table', 'sectorColWidths'));
+      if (sectorDetail.show) nextTick(() => initColResize('.sector-detail-modal table', 'sectorColWidths', SECTOR_DEFAULT_COL_WIDTHS));
     }, { flush: 'post' });
 
     // 刷新筛选板块下所有股票的行情/财务数据
