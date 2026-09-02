@@ -677,6 +677,7 @@
                 <th class="sortable" @click="sortFilterBy('kcfHb')">扣非环比 <span class="sort-arrow" v-html="filterSortIcon('kcfHb')"></span></th>
                 <th class="sortable" @click="sortFilterBy('amplitude')">振幅 <span class="sort-arrow" v-html="filterSortIcon('amplitude')"></span></th>
                 <th class="sortable" @click="sortFilterBy('shareholderCount')">最新散户数量 <span class="sort-arrow" v-html="filterSortIcon('shareholderCount')"></span></th>
+                <th class="sortable" @click="sortFilterBy('prevShareholderCount')">上期散户数量 <span class="sort-arrow" v-html="filterSortIcon('prevShareholderCount')"></span></th>
                 <th class="sortable" @click="sortFilterBy('turnover')">换手率 <span class="sort-arrow" v-html="filterSortIcon('turnover')"></span></th>
                 <th class="sortable" @click="sortFilterBy('capitalFlow')">资金流入 <span class="sort-arrow" v-html="filterSortIcon('capitalFlow')"></span></th>
               </tr>
@@ -717,6 +718,7 @@
                 <td :class="pctClass(s.kcfHb)">{{ s.kcfHb != null ? fmtPct(s.kcfHb) : '—' }}</td>
                 <td :class="numClass(s.amplitude)">{{ s.amplitude != null ? s.amplitude + '%' : '—' }}</td>
                 <td>{{ s.shareholderCount || '—' }}</td>
+                <td>{{ s.prevShareholderCount || '—' }}</td>
                 <td>{{ s.turnover != null ? s.turnover + '%' : '—' }}</td>
                 <td :class="numClass(s.capitalFlow)">{{ s.capitalFlow != null ? (s.capitalFlow > 0 ? '+' : '') + (s.capitalFlow/1e4).toFixed(2) + '万' : '—' }}</td>
               </tr>
