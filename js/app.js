@@ -1779,6 +1779,9 @@ const app = createApp({
       ratioFilter: false,            // 比值筛选：924涨跌 < 24营比 + 24扣比
       industry: ''                   // 行业筛选：'' 表示不限
     });
+    // 筛选板块：字段（列）之间的水平间距(px)，持久化到 Store.data.filterColGap
+    const filterColGap = ref(typeof Store.data.filterColGap === 'number' && !isNaN(Store.data.filterColGap) ? Store.data.filterColGap : 8);
+    watch(filterColGap, v => { Store.data.filterColGap = (typeof v === 'number' && !isNaN(v)) ? v : 8; });
     /** 当前板块成分股涉及的全部行业（去重、中文排序），供行业下拉筛选 */
     const filterIndustries = computed(() => {
       const set = new Set();
@@ -2252,6 +2255,7 @@ const app = createApp({
       loadHotData, fetchHotBoards, refreshHotStocks,
       // 筛选板块
       filterPanel, openFilterPanel, resetFilter, applyFilterPool, toggleFilterLock,
+      filterColGap,
       filteredFilterStocks, sortedFilterStocks, sortFilterBy, filterSortIcon,
       positiveCount, POSITIVE_KEYS,
       mainBusinessText,

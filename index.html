@@ -635,6 +635,14 @@
               <option v-for="ind in filterIndustries" :key="ind" :value="ind">{{ ind }}</option>
             </select>
           </div>
+          <!-- 字段间距：调节各列之间的水平间距 -->
+          <div class="filter-field">
+            <label title="调节各字段（列）之间的水平间距">字段间距</label>
+            <div class="range">
+              <input type="range" min="2" max="30" step="1" v-model.number="filterColGap" style="width:120px">
+              <span class="muted small">{{ filterColGap }}px</span>
+            </div>
+          </div>
           <button class="btn btn-sm" @click="resetFilter" :disabled="filterPanel.locked">🔄 重置</button>
           <button class="btn btn-sm" :class="{ 'btn-locked': filterPanel.locked }" @click="toggleFilterLock">
             <span v-if="filterPanel.locked">🔒 已固定</span>
@@ -644,7 +652,7 @@
         </div>
 
         <div class="table-wrap filter-scroll" v-if="sortedFilterStocks.length">
-          <table class="data-table pool-detail-table">
+          <table class="data-table pool-detail-table" :style="{ '--filter-col-gap': filterColGap + 'px' }">
             <thead>
               <tr>
                 <th class="col-sticky col-sticky-0">序号</th>
@@ -659,8 +667,8 @@
                 <th class="sortable" @click="sortFilterBy('yearChange')">年涨跌 <span class="sort-arrow" v-html="filterSortIcon('yearChange')"></span></th>
                 <th class="sortable" @click="sortFilterBy('change924')">924涨跌 <span class="sort-arrow" v-html="filterSortIcon('change924')"></span></th>
                 <th class="sortable" @click="sortFilterBy('q24Rev')">24营比 <span class="sort-arrow" v-html="filterSortIcon('q24Rev')"></span></th>
-                <th class="sortable" @click="sortFilterBy('shareholderDiff')">散户差额 <span class="sort-arrow" v-html="filterSortIcon('shareholderDiff')"></span></th>
                 <th class="sortable" @click="sortFilterBy('q24Kcf')">24扣比 <span class="sort-arrow" v-html="filterSortIcon('q24Kcf')"></span></th>
+                <th class="sortable" @click="sortFilterBy('shareholderDiff')">散户差额 <span class="sort-arrow" v-html="filterSortIcon('shareholderDiff')"></span></th>
                 <th class="sortable" @click="sortFilterBy('pbRatio')">市净比 <span class="sort-arrow" v-html="filterSortIcon('pbRatio')"></span></th>
                 <th class="sortable" @click="sortFilterBy('pkRatio')">市扣比 <span class="sort-arrow" v-html="filterSortIcon('pkRatio')"></span></th>
                 <th class="sortable" @click="sortFilterBy('prRatio')">市营比 <span class="sort-arrow" v-html="filterSortIcon('prRatio')"></span></th>
@@ -700,8 +708,8 @@
                 <td :class="pctClass(s.yearChange)">{{ s.yearChange != null ? fmtPct(s.yearChange) : '—' }}</td>
                 <td :class="pctClass(s.change924)">{{ s.change924 != null ? fmtPct(s.change924) : '—' }}</td>
                 <td :class="pctClass(s.q24Rev)">{{ s.q24Rev != null ? fmtPct(s.q24Rev) : '—' }}</td>
-                <td :class="numClass((s.shareholderCount != null && s.prevShareholderCount != null) ? (s.shareholderCount - s.prevShareholderCount) : null)">{{ (s.shareholderCount != null && s.prevShareholderCount != null) ? (s.shareholderCount - s.prevShareholderCount) : '—' }}</td>
                 <td :class="pctClass(s.q24Kcf)">{{ s.q24Kcf != null ? fmtPct(s.q24Kcf) : '—' }}</td>
+                <td :class="numClass((s.shareholderCount != null && s.prevShareholderCount != null) ? (s.shareholderCount - s.prevShareholderCount) : null)">{{ (s.shareholderCount != null && s.prevShareholderCount != null) ? (s.shareholderCount - s.prevShareholderCount) : '—' }}</td>
                 <td :class="numClass(sRatio(s).pbRatio)">{{ sRatio(s).pbRatio != null ? fmt(sRatio(s).pbRatio) : '—' }}</td>
                 <td :class="numClass(sRatio(s).pkRatio)">{{ sRatio(s).pkRatio != null ? fmt(sRatio(s).pkRatio) : '—' }}</td>
                 <td :class="numClass(sRatio(s).prRatio)">{{ sRatio(s).prRatio != null ? fmt(sRatio(s).prRatio) : '—' }}</td>
@@ -1028,7 +1036,7 @@
 
     <!-- ===== 概念选股板块详情模态框 ===== -->
     <div class="modal-overlay" v-if="sectorDetail.show" @click.self="sectorDetail.show = false">
-      <div class="modal modal-xl modal-fullscreen">
+      <div class="modal modal-xl modal-fullscreen sector-detail-modal">
         <div class="modal-header">
           <h3 style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
             <template v-if="sectorDetail.nameEdit">

@@ -1059,3 +1059,28 @@ body {
   .form-row-3 { grid-template-columns: 1fr; }
   .app-main { padding: 12px; }
 }
+
+/* ===== 筛选板块：字段间距（列水平内边距），由「字段间距」拉条控制 =====
+   仅作用于非冻结列，避免影响左侧冻结列（序号/代码/名称）的对齐 */
+.filter-scroll .pool-detail-table th:not(.col-sticky),
+.filter-scroll .pool-detail-table td:not(.col-sticky) {
+  padding-left: var(--filter-col-gap, 8px);
+  padding-right: var(--filter-col-gap, 8px);
+}
+
+/* ===== 概念板块详情弹窗：底部横向滚动条始终固定 =====
+   表体改为纵向不滚动、由表格区域内部滚动，使横向滚动条固定在弹窗底部，
+   向上滚动内容时不会随页面滚出屏幕 */
+.sector-detail-modal .modal-body {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  padding: 16px;
+}
+.sector-detail-modal .filter-bar.sector-filter-bar { flex: 0 0 auto; }
+.sector-detail-modal .table-scroll-x {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: auto;
+}
+.sector-detail-modal .info-box { flex: 0 0 auto; margin-top: 12px; }
