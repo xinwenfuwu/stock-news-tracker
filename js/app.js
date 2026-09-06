@@ -264,6 +264,19 @@ const app = createApp({
           if (yhl.low != null) s.yearLowPrice = yhl.low;
         }
       } catch (e) { console.warn('历史价获取失败', s.code, e); }
+      // 所属行业 / 主营构成（best-effort，仅在缺失时请求，避免重复拉取）
+      try {
+        if (!s.industry) {
+          const ind = await StockAPI.getIndustry(s.code);
+          if (ind) s.industry = ind;
+        }
+      } catch (e) { console.warn('行业获取失败', s.code, e); }
+      try {
+        if (!s.mainBusiness) {
+          const mb = await StockAPI.getMainBusiness(s.code);
+          if (mb) s.mainBusiness = mb;
+        }
+      } catch (e) { console.warn('主营构成获取失败', s.code, e); }
       if (s.todayPrice && s.yearStartPrice) {
         s.yearChange = +(((s.todayPrice - s.yearStartPrice) / s.yearStartPrice) * 100).toFixed(2);
       }
@@ -2156,11 +2169,63 @@ const app = createApp({
       }
       showToast('行情已刷新，正在获取财务数据...', 'info');
       // 财务/股东/历史价（东财，best-effort，复用共享补全逻辑；顺序执行以降低限流风险）
-      for (const s of daily.stocks) {
+      for (let i = 0; i < daily.stocks.length; i++) {
+        const s = daily.stocks[i];
         try { await enrichStockFinancials(s); } catch (e) { console.warn('热门股财务补全失败', s.code, e); }
+        // 成分股较多时给出进度提示（逐只请求以避免触发接口限流）
+        if ((i + 1) % 25 === 0) showToast(`已补全 ${i + 1}/${daily.stocks.length} 只...`, 'info');
       }
       hotLoading.value = false;
       showToast('行情已刷新', 'success');
+    }
+
+    // 当前选中的热门板块名（用于高亮与表头提示）
+    const hotBoardActive = ref('');
+    const hotBoardLoading = ref(false);
+
+    /**
+     * 点击「当日热门板块」中的某个板块：
+     * 把该板块的全部成分股载入下方「当日股票明细」，字段与格式与筛选板块完全一致。
+     */
+    async function openHotBoard(b) {
+      if (!b) return;
+      if (!b.bk) {
+        showToast('该板块缺少板块代码，请重新「获取热门板块」', 'error');
+        return;
+      }
+      if (hotBoardLoading.value) return;
+      hotBoardLoading.value = true;
+      showToast(`正在获取「${b.name}」成分股...`, 'info');
+      try {
+        const list = await StockAPI.getSectorStocks(b.bk);
+        if (!list || !list.length) {
+          showToast('未获取到成分股（可能受网络限制），可稍后重试', 'error');
+          return;
+        }
+        const daily = Store.getDailyStocks(hotDate.value);
+        daily.stocks = list.map(s => {
+          const ns = _newStock(s);
+          ns.dailyChange = s.changePercent;
+          ns.todayPrice = s.price;
+          return ns;
+        });
+        hotBoardActive.value = b.name;
+        showToast(`已载入「${b.name}」${daily.stocks.length} 只成分股，正在补全字段...`, 'success');
+        await refreshHotStocks();
+      } catch (e) {
+        console.warn('板块成分股获取失败', e);
+        showToast('成分股获取失败，请重试', 'error');
+      } finally {
+        hotBoardLoading.value = false;
+      }
+    }
+
+    /** 清除板块选择，恢复当日新闻关联的股票 */
+    function clearHotBoard() {
+      hotBoardActive.value = '';
+      const daily = D.dailyData[hotDate.value];
+      if (daily) daily.stocks = [];
+      showToast('已清除板块选择', 'success');
     }
 
     // 初始化时若有缓存的热门数据则恢复
@@ -2539,6 +2604,8 @@ const app = createApp({
 
     // 刷新筛选板块下所有股票的行情/财务数据
     const filterRefreshing = ref(false);
+    // 筛选板块页：顶部筛选栏与「字段含义」说明的一键收起/展开（收起以显示更多股票内容）
+    const filterFilterOpen = ref(true);
     async function refreshFilterStocks() {
       const list = filterPoolStocks.value;
       if (!list || !list.length) {
@@ -2897,6 +2964,7 @@ const app = createApp({
       sectorFilterOpen, sectorInfoOpen, favInfoOpen, filterInfoOpen, poolInfoOpen,
       // 页面3
       hotDate, hotLoading, hotBoards, hotStocks, conceptFreq,
+      hotBoardActive, hotBoardLoading, openHotBoard, clearHotBoard,
       sortedHotStocks, sortHotBy, hotSortIcon, removeHotStock,
       loadHotData, fetchHotBoards, refreshHotStocks,
       // 筛选板块
@@ -2907,7 +2975,7 @@ const app = createApp({
       // 统一股票表（四表共用列定义与单元格渲染）
       getColumns, cellHtml, cellClass, onStockSort, stockSortIcon, onTableClick, onTableChange, STOCK_COLUMNS,
       filterIndustries,
-      filterRefreshing, refreshFilterStocks,
+      filterRefreshing, refreshFilterStocks, filterFilterOpen,
       sortedSectorPools, sortedPools,
       // 通用：收藏
       favorites, sortedFavorites, isFav, toggleFavorite, removeFavorite,

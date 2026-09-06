@@ -673,6 +673,13 @@ body {
 .hot-item:nth-child(3) .hot-rank { background: #ca8a04; }
 .hot-name { flex: 1; font-size: 13px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .hot-val { font-weight: 700; font-size: 13px; }
+/* 热门板块项可点击：点击后在下方明细表显示该板块成分股 */
+.hot-item.hot-item-click { cursor: pointer; transition: background-color 0.15s ease, box-shadow 0.15s ease; }
+.hot-item.hot-item-click:hover { background: #e7eefc; box-shadow: inset 0 0 0 1px #c5d8fb; }
+.hot-item.hot-item-click.active { background: #d7e6ff; box-shadow: inset 0 0 0 2px var(--primary); }
+/* 当日股票明细表头：板块名 + 加载状态 + 清除选择 */
+.hot-detail-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 6px; }
+.hot-detail-board { font-size: 13px; color: var(--primary); font-weight: 600; }
 
 /* 收藏板块 */
 .fav-add-row { display: flex; gap: 6px; margin-bottom: 10px; align-items: center; }

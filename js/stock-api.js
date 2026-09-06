@@ -559,7 +559,8 @@ const StockAPI = {
       const json = await resp.json();
       if (json.data && json.data.diff) {
         for (const item of json.data.diff) {
-          results.push({ name: item.f14, change: parseFloat(item.f3) });
+          // bk=板块代码(f12)，供点击板块时拉取其成分股
+          results.push({ bk: item.f12, name: item.f14, change: parseFloat(item.f3) });
         }
       }
     } catch (e) {

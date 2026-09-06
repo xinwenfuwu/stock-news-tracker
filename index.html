@@ -476,7 +476,10 @@
           <div class="hot-panel">
             <h3 class="panel-title">🔥 当日热门板块</h3>
             <div class="hot-list" v-if="hotBoards.length">
-              <div class="hot-item" v-for="(b, i) in hotBoards" :key="i">
+              <div class="hot-item hot-item-click" v-for="(b, i) in hotBoards" :key="i"
+                   :class="{ active: hotBoardActive === b.name }"
+                   @click="openHotBoard(b)"
+                   :title="'点击在下方「当日股票明细」中显示「' + b.name + '」的全部成分股'">
                 <span class="hot-rank">{{ i + 1 }}</span>
                 <span class="hot-name">{{ b.name }}</span>
                 <span class="hot-val" :class="pctClass(b.change)">{{ fmtPct(b.change) }}</span>
@@ -500,7 +503,14 @@
         </div>
 
         <!-- 当日股票表 -->
-        <h3 class="section-title">📋 当日股票明细</h3>
+        <div class="hot-detail-head">
+          <h3 class="section-title" style="margin:0">
+            📋 当日股票明细
+            <span v-if="hotBoardActive" class="hot-detail-board">（{{ hotBoardActive }} · {{ sortedHotStocks.length }} 只）</span>
+            <span v-if="hotBoardLoading" class="muted small">⏳ 加载中...</span>
+          </h3>
+          <button v-if="hotBoardActive" class="btn btn-sm" @click="clearHotBoard">✕ 清除板块选择</button>
+        </div>
         <div class="table-wrap">
           <table class="data-table pool-detail-table hot-stock-table">
             <colgroup>
@@ -522,7 +532,7 @@
                     v-html="cellHtml(col, s, idx, sortedHotStocks, 'hot')"></td>
               </tr>
               <tr v-if="sortedHotStocks.length === 0">
-                <td :colspan="getColumns('hot').length" class="empty-row">选择日期并加载后展示当日股票</td>
+                <td :colspan="getColumns('hot').length" class="empty-row">点击上方「当日热门板块」中的任一板块，即可在此显示该板块的全部成分股；或点击「加载当日数据」</td>
               </tr>
             </tbody>
           </table>
@@ -536,6 +546,7 @@
             <h2 class="page-title" style="margin:0">🎯 筛选板块</h2>
           </div>
           <div class="toolbar-right">
+            <button class="btn btn-sm" @click="filterFilterOpen = !filterFilterOpen">{{ filterFilterOpen ? '▴ 收起筛选栏' : '▾ 展开筛选栏' }}</button>
             <button class="btn btn-sm" @click="filterInfoOpen = !filterInfoOpen" :title="filterInfoOpen ? '隐藏字段含义与计算规则' : '显示字段含义与计算规则'">{{ filterInfoOpen ? '🙈 隐藏说明' : '👁 字段含义' }}</button>
             <button class="btn btn-sm" @click="refreshFilterStocks" :disabled="filterRefreshing">
               <span v-if="filterRefreshing">⏳ 刷新中...</span>
@@ -544,7 +555,7 @@
           </div>
         </div>
 
-        <div class="filter-bar">
+        <div class="filter-bar" v-show="filterFilterOpen">
           <!-- 板块筛选：概念板块 + 股票池 -->
           <div class="filter-field">
             <label>板块筛选</label>
