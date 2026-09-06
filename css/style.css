@@ -272,20 +272,27 @@ body {
   white-space: nowrap;
   overflow: hidden;
 }
+/* 冻结列必须保持 sticky：下方「列宽拖拽把手」规则把 thead th 设成了 position:relative，
+   其优先级(0,2,2)高于本规则(0,2,1)，会把表头的 sticky 覆盖掉——表头一旦退化成 relative，
+   写入的 left 就变成相对偏移，整体被推离内容列（表现为固定字段与下方内容错位）。
+   故此处用更高优先级(0,2,3)重新声明，确保表头与内容同为 sticky、始终对齐。 */
+.pool-detail-table thead tr th.col-sticky,
+.pool-detail-table tbody tr td.col-sticky { position: sticky; }
 .pool-detail-table th.col-sticky { z-index: 30; background: #f5f7fa; }
 .pool-detail-table td.col-sticky { background: var(--surface); }
 .pool-detail-table tbody tr:hover td.col-sticky { background: #dbe7ff; }
-/* 冻结列固定宽度（保证 sticky 偏移与列宽精确衔接，避免重叠/掩盖）
-   第1~4列为冻结列：序号(46) / 代码(88) / 股票名称(104) / 正数统计(76) */
-.pool-detail-table .col-sticky-0 { min-width: 46px; text-align: center; }
-.pool-detail-table .col-sticky-1 { min-width: 88px; }
-.pool-detail-table .col-sticky-2 { min-width: 104px; }
-.pool-detail-table .col-sticky-3 { min-width: 76px; text-align: center; }
-/* 各冻结列的 left 偏移（与上方固定宽度累加一致：0 / 46 / 134 / 238） */
+/* 冻结列宽度完全由 <colgroup> 控制（允许用户拖拽），此处不再写死 min-width，
+   否则单元格被撑宽后会与 sticky 的 left 偏移脱节，出现表头/内容错位或重叠 */
+.pool-detail-table .col-sticky-0 { text-align: center; }
+.pool-detail-table .col-sticky-3 { text-align: center; }
+/* 各冻结列 left 偏移：以下为兜底默认值，实际由 JS 按「前面各列实际宽度累加」动态写入 inline style */
 .col-sticky-0 { left: 0; }
 .col-sticky-1 { left: 46px; }
 .col-sticky-2 { left: 134px; }
 .col-sticky-3 { left: 238px; }
+/* 冻结区与滚动区的分界：末列加右侧阴影，横向滚动时层次清晰、不再显得粘连 */
+.pool-detail-table th.col-sticky-3,
+.pool-detail-table td.col-sticky-3 { box-shadow: 2px 0 4px -2px rgba(0, 0, 0, 0.18); }
 .data-table {
   width: 100%;
   border-collapse: collapse;
@@ -299,7 +306,7 @@ body {
   background: #f5f7fa;
 }
 .data-table th {
-  padding: 10px 8px;
+  padding: 8px 6px;
   text-align: left;
   font-weight: 600;
   color: var(--text-secondary);
@@ -308,7 +315,7 @@ body {
   font-size: 12.5px;
 }
 .data-table td {
-  padding: 8px 8px;
+  padding: 6px 6px;
   border-bottom: 1px solid #f0f2f5;
   vertical-align: middle;
   transition: background-color 0.15s ease;
@@ -326,6 +333,10 @@ body {
 .sort-ic { display: inline-block; margin-left: 2px; font-size: 11px; opacity: 0.55; vertical-align: middle; }
 /* 数值类单元格右对齐，便于按列对比 */
 .pool-detail-table td.num-cell { text-align: right; font-variant-numeric: tabular-nums; }
+/* 普通（非冻结）单元格：超宽内容以省略号截断，避免压到相邻列（固定布局 + nowrap 下必需） */
+.pool-detail-table td { overflow: hidden; text-overflow: ellipsis; }
+/* 数值列表头右对齐，与下方右对齐的数字内容对齐 */
+.pool-detail-table th.num-col { text-align: right; }
 /* 收藏 / 操作 按钮 */
 .fav-btn, .act-btn {
   background: none; border: none; cursor: pointer; font-size: 15px;
@@ -1120,7 +1131,9 @@ body {
 .pool-detail-modal .pool-detail-table th,
 .pool-detail-modal .pool-detail-table td,
 .fav-panel .pool-detail-table th,
-.fav-panel .pool-detail-table td { padding-left: 0.55em; padding-right: 0.55em; }
+.fav-panel .pool-detail-table td,
+.hot-stock-table th,
+.hot-stock-table td { padding-left: 0.55em; padding-right: 0.55em; }
 /* 主业与主要产品 / 概念：宽列、内容多行展示（不被 ellipsis 截断） */
 .filter-scroll .pool-detail-table .concept-cell,
 .sector-detail-modal .pool-detail-table .concept-cell,
@@ -1137,6 +1150,14 @@ body {
 .sector-detail-modal .pool-detail-table .concept-cell,
 .pool-detail-modal .pool-detail-table .concept-cell,
 .fav-panel .pool-detail-table .concept-cell { white-space: pre-line; }
+/* 通用规则：所有容器（含热门表 hot-stock-table）的概念/主业单元格均换行展示、不被 ellipsis 截断，
+   并覆盖上方 .pool-detail-table td 的 overflow:hidden，确保多行内容完整显示且不压到邻列 */
+.pool-detail-table .concept-cell {
+  white-space: pre-line; line-height: 1.5; vertical-align: top; overflow: visible; text-overflow: clip;
+}
+.pool-detail-table .mainbiz-cell {
+  white-space: normal; line-height: 1.5; vertical-align: top; overflow-wrap: anywhere; overflow: visible; text-overflow: clip;
+}
 .col-resize-handle {
   position: absolute;
   top: 0; right: 0;

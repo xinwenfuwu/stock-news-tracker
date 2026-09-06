@@ -426,6 +426,7 @@
               <input v-model="favAddCode" class="cell-input" placeholder="股票代码" style="width:100px">
               <input v-model="favAddName" class="cell-input" placeholder="股票名称" style="width:160px">
               <button class="btn btn-sm" @click="addFavoriteManual" title="添加到收藏板块">＋ 添加</button>
+              <button class="btn btn-sm" @click="favInfoOpen = !favInfoOpen" :title="favInfoOpen ? '隐藏字段含义与计算规则' : '显示字段含义与计算规则'">{{ favInfoOpen ? '🙈 隐藏说明' : '👁 字段含义' }}</button>
               <button class="btn btn-sm" @click="refreshFavorites" :disabled="favRefreshing">
                 <span v-if="favRefreshing">⏳ 刷新中...</span>
                 <span v-else>🔄 刷新行情</span>
@@ -440,7 +441,7 @@
               <thead>
                 <tr>
                   <th v-for="(col, ci) in getColumns('fav')" :key="ci"
-                      :class="['col-' + col.key, col.fixed ? ('col-sticky col-sticky-' + col.fixedIndex) : '', col.sortable ? 'sortable' : '']"
+                      :class="['col-' + col.key, col.fixed ? ('col-sticky col-sticky-' + col.fixedIndex) : '', col.sortable ? 'sortable' : '', (!col.fixed && ['pct','price','ratio','num2','num2pct','money','flow','int','diff'].includes(col.type)) ? 'num-col' : '']"
                       @click="onStockSort(col, 'fav')">
                     <span class="th-label">{{ col.label }}</span><span v-if="col.sortable" class="sort-ic">{{ stockSortIcon(col, 'fav') }}</span>
                   </th>
@@ -456,7 +457,7 @@
             </table>
           </div>
           <div class="muted small" v-else>暂无收藏。点击股票列表中的 ☆ 即可收藏，或在上方输入代码手动添加。</div>
-          <div class="info-box small">
+          <div class="info-box small" v-show="favInfoOpen">
             <p>💡 <b>字段含义与计算规则</b>：<br>
             · 今涨跌=当日涨跌幅(%)；年涨跌=当日价相对当年首个交易日涨跌幅(%)；924涨跌=当日价相对2024-09-24收盘价涨跌幅(%)。<br>
             · 24营比=最新报告期营收 相对 2024年同期营收的增长率(%)；24扣比=最新报告期扣非净利润 相对 2024年同期扣非净利润的增长率(%)。<br>
@@ -508,7 +509,7 @@
             <thead>
               <tr>
                 <th v-for="(col, ci) in getColumns('hot')" :key="ci"
-                    :class="['col-' + col.key, col.fixed ? ('col-sticky col-sticky-' + col.fixedIndex) : '', col.sortable ? 'sortable' : '']"
+                    :class="['col-' + col.key, col.fixed ? ('col-sticky col-sticky-' + col.fixedIndex) : '', col.sortable ? 'sortable' : '', (!col.fixed && ['pct','price','ratio','num2','num2pct','money','flow','int','diff'].includes(col.type)) ? 'num-col' : '']"
                     @click="onStockSort(col, 'hot')">
                   <span class="th-label">{{ col.label }}</span><span v-if="col.sortable" class="sort-ic">{{ stockSortIcon(col, 'hot') }}</span>
                 </th>
@@ -535,6 +536,7 @@
             <h2 class="page-title" style="margin:0">🎯 筛选板块</h2>
           </div>
           <div class="toolbar-right">
+            <button class="btn btn-sm" @click="filterInfoOpen = !filterInfoOpen" :title="filterInfoOpen ? '隐藏字段含义与计算规则' : '显示字段含义与计算规则'">{{ filterInfoOpen ? '🙈 隐藏说明' : '👁 字段含义' }}</button>
             <button class="btn btn-sm" @click="refreshFilterStocks" :disabled="filterRefreshing">
               <span v-if="filterRefreshing">⏳ 刷新中...</span>
               <span v-else>🔄 刷新行情</span>
@@ -641,7 +643,7 @@
             <thead>
               <tr>
                 <th v-for="(col, ci) in getColumns('filter')" :key="ci"
-                    :class="['col-' + col.key, col.fixed ? ('col-sticky col-sticky-' + col.fixedIndex) : '', col.sortable ? 'sortable' : '']"
+                    :class="['col-' + col.key, col.fixed ? ('col-sticky col-sticky-' + col.fixedIndex) : '', col.sortable ? 'sortable' : '', (!col.fixed && ['pct','price','ratio','num2','num2pct','money','flow','int','diff'].includes(col.type)) ? 'num-col' : '']"
                     @click="onStockSort(col, 'filter')">
                   <span class="th-label">{{ col.label }}</span><span v-if="col.sortable" class="sort-ic">{{ stockSortIcon(col, 'filter') }}</span>
                 </th>
@@ -658,10 +660,10 @@
         </div>
         <p class="muted small" v-else>请选择上方板块以查看其成分股，或用区间筛选过滤。若无数据显示，可先「刷新行情」拉取财务数据。</p>
 
-        <div class="info-box small">
+        <div class="info-box small" v-show="filterInfoOpen">
           <p>💡 <b>字段含义与计算规则</b>：<br>
           · 行业=个股所属一级行业（如食品饮料、银行），来自东方财富公司概况。<br>
-          · <b>正数统计</b>=从「今涨跌」到「扣非环比」共 {{ POSITIVE_KEYS.length }} 个字段中，数值为正的个数（空值不计入），显示为「正数个数 / {{ POSITIVE_KEYS.length }}」，正数越多越强势。顶部「正数统计」框可按该个数区间筛选（如填 15—20 即只保留至少15项为正的个股）。<br>
+          · <b>正数统计</b>=统计「日涨跌」到「营收环比」之间共 {{ POSITIVE_KEYS.length }} 个字段，显示为「正数个数 / 有数据的字段个数」（空值不计入总数也不计入正数），比值越高越强势。顶部「正数统计」框仍按正数个数区间筛选（如填 15—20 即只保留至少15项为正的个股）。<br>
           · <b>比值筛选</b>=勾选后仅保留满足「924涨跌 < 24营比/2 + 24扣比/2」（即 924涨跌 小于 24营比与24扣比之均值）的股票（三者均须有数据）。该规则筛出「股价涨幅小于业绩增幅」的个股（业绩增长未充分反映在股价上）。<br>
           · <b>行业筛选</b>=按成分股所属一级行业下拉过滤，可与其他条件组合使用。<br>
           · 今涨跌=当日涨跌幅(%)；年涨跌=当日价相对当年首个交易日涨跌幅(%)；924涨跌=当日价相对2024-09-24收盘价涨跌幅(%)（不复权）。<br>
@@ -852,6 +854,7 @@
         <div class="modal-body">
           <div class="pool-detail-summary">
             <span>平均涨跌幅：<b :class="pctClass(poolDetail.data.avgChange)">{{ fmtPct(poolDetail.data.avgChange) }}</b></span>
+            <button class="btn btn-sm" @click="poolInfoOpen = !poolInfoOpen" :title="poolInfoOpen ? '隐藏字段含义与计算规则' : '显示字段含义与计算规则'">{{ poolInfoOpen ? '🙈 隐藏说明' : '👁 字段含义' }}</button>
             <button class="btn btn-sm" @click="refreshPoolDetail(poolDetail.data)">🔄 刷新行情</button>
           </div>
           <div class="pool-detail-add">
@@ -869,7 +872,7 @@
               <thead>
                 <tr>
                   <th v-for="(col, ci) in getColumns('pool')" :key="ci"
-                      :class="['col-' + col.key, col.fixed ? ('col-sticky col-sticky-' + col.fixedIndex) : '', col.sortable ? 'sortable' : '']"
+                      :class="['col-' + col.key, col.fixed ? ('col-sticky col-sticky-' + col.fixedIndex) : '', col.sortable ? 'sortable' : '', (!col.fixed && ['pct','price','ratio','num2','num2pct','money','flow','int','diff'].includes(col.type)) ? 'num-col' : '']"
                       @click="onStockSort(col, 'pool')">
                     <span class="th-label">{{ col.label }}</span><span v-if="col.sortable" class="sort-ic">{{ stockSortIcon(col, 'pool') }}</span>
                   </th>
@@ -884,7 +887,7 @@
               </tbody>
             </table>
           </div>
-          <div class="info-box small">
+          <div class="info-box small" v-show="poolInfoOpen">
             <p>💡 <b>字段含义与计算规则</b>：<br>
             · <b>价格类</b>：今涨跌=当日涨跌幅(%)；年涨跌=当日价相对当年首个交易日涨跌幅(%)；924涨跌=当日价相对2024-09-24收盘价涨跌幅(%)（不复权）。<br>
             · <b>季度对比</b>：24营比=最新报告期营收 相对 2024年同期营收增长率(%)；24扣比=最新报告期扣非净利润 相对 2024年同期扣非净利润增长率(%)。<br>
@@ -916,12 +919,12 @@
             <span class="sd-avg">平均涨跌幅：<b :class="pctClass(sectorDetail.data.avgChange)">{{ fmtPct(sectorDetail.data.avgChange) }}</b></span>
           </h3>
           <div class="header-actions">
+            <button class="btn btn-sm" @click="sectorInfoOpen = !sectorInfoOpen" :title="sectorInfoOpen ? '隐藏字段含义与计算规则' : '显示字段含义与计算规则'">{{ sectorInfoOpen ? '🙈 隐藏说明' : '👁 字段含义' }}</button>
             <button class="btn btn-sm" @click="refreshSectorDetail(sectorDetail.data)" :disabled="sectorLoading">
               <span v-if="sectorLoading">⏳ 刷新中...</span>
               <span v-else>🔄 刷新行情</span>
             </button>
             <button class="btn btn-sm" @click="sectorFilterOpen = !sectorFilterOpen">{{ sectorFilterOpen ? '▴ 收起筛选栏' : '▾ 展开筛选栏' }}</button>
-            <button class="btn btn-sm" @click="sectorInfoOpen = !sectorInfoOpen">{{ sectorInfoOpen ? '▴ 收起字段含义' : '▾ 展开字段含义' }}</button>
           </div>
           <button class="btn-icon" @click="sectorDetail.show = false">✕</button>
         </div>
@@ -1004,7 +1007,7 @@
               <thead>
                 <tr>
                   <th v-for="(col, ci) in getColumns('sector')" :key="ci"
-                      :class="['col-' + col.key, col.fixed ? ('col-sticky col-sticky-' + col.fixedIndex) : '', col.sortable ? 'sortable' : '']"
+                      :class="['col-' + col.key, col.fixed ? ('col-sticky col-sticky-' + col.fixedIndex) : '', col.sortable ? 'sortable' : '', (!col.fixed && ['pct','price','ratio','num2','num2pct','money','flow','int','diff'].includes(col.type)) ? 'num-col' : '']"
                       @click="onStockSort(col, 'sector')">
                     <span class="th-label">{{ col.label }}</span><span v-if="col.sortable" class="sort-ic">{{ stockSortIcon(col, 'sector') }}</span>
                   </th>

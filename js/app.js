@@ -1196,21 +1196,23 @@ const app = createApp({
       showToast('数据刷新完成', 'success');
     }
 
-    /** 正数统计所覆盖的字段区间：从「今涨跌」到「扣非环比」共 20 个字段 */
-    const POSITIVE_KEYS = [
-      'dailyChange', 'yearChange', 'change924', 'q24Rev', 'shareholderDiff',
-      'q24Kcf', 'pbRatio', 'pkRatio', 'prRatio', 'pyRatio',
-      'pk2Ratio', 'prrRatio', 'ph2Ratio', 'pkHbRatio', 'phRatio',
-      'hbGrowth', 'profitYoY', 'revenueYoY', 'kcfYoY', 'kcfHb'
-    ];
-    /** 正数统计：上述字段中数值为正的个数（空值/非数字不计入） */
-    function positiveCount(s) {
-      let n = 0;
+    /** 正数统计：区间字段中「数值为正的个数」与「有数据的字段总数」（空值/非数字不计入总数） */
+    function positiveStat(s) {
+      let pos = 0, total = 0;
       for (const k of POSITIVE_KEYS) {
         const v = poolVal(s, k);
-        if (v != null && !isNaN(parseFloat(v)) && parseFloat(v) > 0) n++;
+        if (v == null || v === '' || isNaN(parseFloat(v))) continue;
+        total++;
+        if (parseFloat(v) > 0) pos++;
       }
-      return n;
+      return { pos, total };
+    }
+    /** 正数统计个数（供排序与区间筛选使用，返回数值） */
+    function positiveCount(s) { return positiveStat(s).pos; }
+    /** 正数统计展示文本：正数个数 / 有数据字段总数 */
+    function positiveCountText(s) {
+      const r = positiveStat(s);
+      return r.total ? (r.pos + '/' + r.total) : '—';
     }
 
     /**
@@ -1321,6 +1323,16 @@ const app = createApp({
       { key: '__action', label: '操作', width: 84, sortable: false, type: 'action' },
       { key: '__note', label: '备注', width: 132, sortable: false, type: 'note' }
     ];
+    /**
+     * 正数统计所覆盖的字段区间：从「日涨跌」到「营收环比」（含两端）之间的全部数据字段。
+     * 直接由 STOCK_COLUMNS 派生，后续调整列顺序/增删列无需手工维护；排除 __ 开头的非数据列。
+     */
+    const POSITIVE_KEYS = (() => {
+      const a = STOCK_COLUMNS.findIndex(c => c.key === 'dailyChange');
+      const b = STOCK_COLUMNS.findIndex(c => c.key === 'revHb');
+      if (a < 0 || b < a) return [];
+      return STOCK_COLUMNS.slice(a, b + 1).map(c => c.key).filter(k => String(k).indexOf('__') !== 0);
+    })();
     // 收藏板块专属附加列（保留原有「收藏日期/距今」，置于末尾，不丢数据；备注已并入 STOCK_COLUMNS 标准列）
     const FAV_EXTRA_COLUMNS = [
       { key: '__favDate', label: '收藏日期', width: 104, sortable: false, type: 'favDate' },
@@ -1344,7 +1356,7 @@ const app = createApp({
         case 'idx': return String((idx || 0) + 1);
         case 'code': return esc(s.code || '');
         case 'name': return esc(s.name || s.code || '');
-        case 'pos': { const n = positiveCount(s); return n != null ? String(n) : '—'; }
+        case 'pos': return positiveCountText(s);
         case 'mainbiz':
           return (s.mainBusiness && s.mainBusiness.length) ? esc(mainBusinessText(s)) : '<span class="muted small">—</span>';
         case 'text':
@@ -1396,7 +1408,9 @@ const app = createApp({
     function cellClass(col, s, idx, list, ctx) {
       const cls = [];
       if (col.fixed) cls.push('col-sticky', 'col-sticky-' + col.fixedIndex);
-      const numeric = ['pct', 'price', 'ratio', 'num2', 'num2pct', 'money', 'flow', 'int', 'diff', 'pos'];
+      // 注意：'pos'(正数统计) 是冻结列且与表头一样居中展示，不能加 num-cell（右对齐），
+      // 否则会出现「表头居中、内容靠右」的错位
+      const numeric = ['pct', 'price', 'ratio', 'num2', 'num2pct', 'money', 'flow', 'int', 'diff'];
       if (numeric.indexOf(col.type) >= 0) cls.push('num-cell');
       if (col.type === 'mainbiz') cls.push('mainbiz-cell');
       if (col.type === 'concept') cls.push('concept-cell');
@@ -1522,6 +1536,10 @@ const app = createApp({
     const sectorFilterOpen = ref(true);
     // 字段含义与计算规则默认收起，把纵向空间让给个股列表（可一键展开查看）
     const sectorInfoOpen = ref(false);
+    // 其余各页/弹窗的「字段含义与计算规则」同样默认隐藏，统一由「刷新行情」左侧的按钮一键切换
+    const favInfoOpen = ref(false);
+    const filterInfoOpen = ref(false);
+    const poolInfoOpen = ref(false);
     // 勾选弹窗状态：选择板块成分股时使用
     const sectorPick = reactive({
       show: false, loading: false, name: '', bk: '', type: '', stocks: [], selected: {},
@@ -2170,6 +2188,25 @@ const app = createApp({
     // 列宽拖拽调整（鼠标拖动非冻结列右边缘）。通用：传入表格选择器、对应的存储键、
     // 以及初始列宽数组，以便「筛选板块」与「概念板块详情弹窗」各自独立保存列宽，
     // 且首次打开即有贴合内容的合理初始宽度。
+    /**
+     * 按 <colgroup> 各列「实际宽度」累加，动态写入冻结列的 left 偏移。
+     * 冻结列宽度可被用户拖拽改变，若 left 仍用硬编码值，就会出现表头与内容错位、
+     * 冻结列相互重叠或与滚动列之间留出无法消除的空档——故每次列宽变化后都必须同步。
+     */
+    function syncStickyOffsets(table) {
+      if (!table) return;
+      const cols = table.querySelectorAll('colgroup col');
+      if (!cols.length) return;
+      let acc = 0;
+      for (let i = 0; i < cols.length; i++) {
+        const cells = table.querySelectorAll('.col-sticky-' + i);
+        if (!cells.length) break;                 // 已越过最后一个冻结列
+        const left = acc + 'px';
+        cells.forEach(c => { c.style.left = left; });
+        acc += parseFloat(cols[i].style.width) || cols[i].getBoundingClientRect().width || 0;
+      }
+    }
+
     function initColResize(tableSelector, storageKey, defaultWidths) {
       const table = document.querySelector(tableSelector);
       if (!table) return;
@@ -2200,8 +2237,9 @@ const app = createApp({
         table.style.width = total + 'px';
       };
       applyTotal();
+      syncStickyOffsets(table);
       ths.forEach((th, i) => {
-        if (th.classList.contains('col-sticky')) return;       // 冻结列固定，不参与拖拽
+        // 冻结列同样可拖拽调宽（拖后由 syncStickyOffsets 实时重算 left，保证不错位）
         if (th.querySelector('.col-resize-handle')) return;
         const h = document.createElement('div');
         h.className = 'col-resize-handle';
@@ -2219,6 +2257,7 @@ const app = createApp({
         const w = Math.max(40, startW + (ev.clientX - startX));
         col.style.width = w + 'px';
         applyTotal();
+        syncStickyOffsets(table);
       };
       const onUp = () => {
         document.removeEventListener('mousemove', onMove);
@@ -2758,7 +2797,7 @@ const app = createApp({
       sortedSectorDetailStocks, sortSectorDetailBy, sectorSortIcon,
       sectorFilter, sectorDetailIndustries, filteredSectorDetailStocks,
       resetSectorFilter, toggleSectorFilterLock,
-      sectorFilterOpen, sectorInfoOpen,
+      sectorFilterOpen, sectorInfoOpen, favInfoOpen, filterInfoOpen, poolInfoOpen,
       // 页面3
       hotDate, hotLoading, hotBoards, hotStocks, conceptFreq,
       sortedHotStocks, sortHotBy, hotSortIcon, removeHotStock,
