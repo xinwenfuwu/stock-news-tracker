@@ -1271,3 +1271,22 @@ body {
   .finance-layout { flex-direction: column; }
   .fp-embed, .fp-push { flex: 1 1 auto; width: 100%; }
 }
+
+/* ===== 固定在屏幕最下方的横向滚动条 =====
+   表格自带横向滚动条位于容器底部，纵向翻页时会随容器上移甚至移出视口，
+   想左右拉动就得先滚到容器底部。这里用一个 fixed 底栏与真实容器双向同步 scrollLeft，
+   使其永远停在屏幕最下方（层级需高于弹窗 1000，低于轻提示 2000）。 */
+#ghost-hscroll {
+  position: fixed;
+  left: 0; right: 0; bottom: 0;
+  height: 14px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  background: #eef2f8;
+  border-top: 1px solid var(--border);
+  box-shadow: 0 -2px 6px rgba(0, 0, 0, 0.08);
+  z-index: 1500;
+  display: none;
+}
+#ghost-hscroll.show { display: block; }
+#ghost-hscroll .ghs-spacer { height: 1px; }

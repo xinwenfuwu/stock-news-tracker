@@ -605,7 +605,7 @@
           </div>
           <!-- 正数统计区间 -->
           <div class="filter-field">
-            <label title="今涨跌→扣非环比 共20个字段中，数值为正的个数">正数统计</label>
+            <label title="日涨跌→营收环比 区间内数值为正的字段个数">正数统计</label>
             <div class="range">
               <input type="number" step="1" min="0" :max="POSITIVE_KEYS.length" v-model.number="filterPanel.posMin" placeholder="最小">
               <span style="color:#909399">—</span>
@@ -972,7 +972,7 @@
               </div>
             </div>
             <div class="filter-field">
-              <label title="今涨跌→扣非环比 共20个字段中，数值为正的个数">正数统计</label>
+              <label title="日涨跌→营收环比 区间内数值为正的字段个数">正数统计</label>
               <div class="range">
                 <input type="number" step="1" min="0" :max="POSITIVE_KEYS.length" v-model.number="sectorFilter.posMin" placeholder="最小">
                 <span style="color:#909399">—</span>

@@ -1281,7 +1281,7 @@ const app = createApp({
       { key: '__idx', label: '序号', fixed: true, fixedIndex: 0, width: 46, sortable: false, type: 'idx' },
       { key: 'code', label: '代码', fixed: true, fixedIndex: 1, width: 88, sortable: true, type: 'code' },
       { key: 'name', label: '股票名称', fixed: true, fixedIndex: 2, width: 104, sortable: true, type: 'name' },
-      { key: 'positiveCount', label: '正数统计', fixed: true, fixedIndex: 3, width: 76, sortable: true, type: 'pos' },
+      { key: 'positiveCount', label: '统计', fixed: true, fixedIndex: 3, width: 60, sortable: true, type: 'pos' },
       { key: 'mainBusiness', label: '主业与主要产品', width: 178, sortable: false, type: 'mainbiz' },
       { key: 'industry', label: '行业', width: 96, sortable: true, type: 'text' },
       { key: 'concept', label: '概念', width: 112, sortable: false, type: 'concept' },
@@ -2235,6 +2235,8 @@ const app = createApp({
         let total = 0;
         [...colgroup.children].forEach(c => { total += parseFloat(c.style.width) || 0; });
         table.style.width = total + 'px';
+        // 表格总宽变化后，同步刷新屏幕最下方横向滚动条的可滚动宽度
+        if (window.__ghostSync) window.__ghostSync();
       };
       applyTotal();
       syncStickyOffsets(table);
@@ -2400,8 +2402,103 @@ const app = createApp({
       const el = document.querySelector(sel);
       if (el) initColResize(sel, key, widths);
     };
+    /**
+     * 把表格的横向滚动条「复制」一份固定在屏幕最下方：
+     * 表格自带横向滚动条位于容器底部，纵向翻页时会随容器一起上移甚至移出视口，
+     * 想左右拉动就得先滚到容器底部。这里用一个 fixed 底栏与真实滚动容器双向同步 scrollLeft，
+     * 使其永远停留在屏幕最下方。
+     */
+    function initGhostHScroll() {
+      let bar = document.getElementById('ghost-hscroll');
+      if (!bar) {
+        bar = document.createElement('div');
+        bar.id = 'ghost-hscroll';
+        bar.innerHTML = '<div class="ghs-spacer"></div>';
+        document.body.appendChild(bar);
+      }
+      const spacer = bar.querySelector('.ghs-spacer');
+      let target = null;    // 当前同步的真实滚动容器
+      let lock = false;     // 防止双向同步互相触发形成回环
+      let queued = false;
+
+      /** 向上找到真正产生横向滚动的容器 */
+      const containerOf = (tb) => {
+        let el = tb.parentElement;
+        while (el && el !== document.body) {
+          const ox = getComputedStyle(el).overflowX;
+          if (ox === 'auto' || ox === 'scroll') return el;
+          el = el.parentElement;
+        }
+        return null;
+      };
+      /** 选取当前视口内可见面积最大、且确实横向溢出的表格容器 */
+      const pick = () => {
+        const vh = window.innerHeight || document.documentElement.clientHeight;
+        const vw = window.innerWidth || document.documentElement.clientWidth;
+        // 有弹窗打开时，只认最上层弹窗内的表格（否则会误选被遮住的页面表格）
+        const overlays = [...document.querySelectorAll('.modal-overlay')].filter(o => o.offsetParent !== null);
+        const scope = overlays.length ? overlays[overlays.length - 1] : document;
+        let best = null, bestArea = 0;
+        for (const tb of scope.querySelectorAll('.pool-detail-table')) {
+          if (!tb.offsetParent) continue;
+          const box = containerOf(tb);
+          if (!box || box.scrollWidth - box.clientWidth < 4) continue;
+          const r = tb.getBoundingClientRect();
+          const visible = Math.min(r.bottom, vh) - Math.max(r.top, 0);
+          if (visible <= 0) continue;
+          const area = visible * Math.min(r.width, vw);
+          if (area > bestArea) { bestArea = area; best = box; }
+        }
+        return best;
+      };
+      const sync = () => {
+        const t = pick();
+        target = t;
+        if (!t) { bar.classList.remove('show'); return; }
+        bar.classList.add('show');
+        spacer.style.width = t.scrollWidth + 'px';
+        if (Math.abs(bar.scrollLeft - t.scrollLeft) > 1) {
+          lock = true;
+          bar.scrollLeft = t.scrollLeft;
+          requestAnimationFrame(() => { lock = false; });
+        }
+      };
+      const scheduleSync = () => {
+        if (queued) return;
+        queued = true;
+        requestAnimationFrame(() => { queued = false; sync(); });
+      };
+
+      // 拖动底栏 → 同步给真实表格容器
+      bar.addEventListener('scroll', () => {
+        if (lock || !target) return;
+        lock = true;
+        target.scrollLeft = bar.scrollLeft;
+        requestAnimationFrame(() => { lock = false; });
+      });
+      // scroll 事件不冒泡，用捕获阶段统一监听（页面滚动 / 弹窗内滚动 / 容器横向滚动）
+      document.addEventListener('scroll', (e) => {
+        if (lock) return;
+        if (e.target === target) {
+          lock = true;
+          bar.scrollLeft = e.target.scrollLeft;
+          requestAnimationFrame(() => { lock = false; });
+        } else {
+          scheduleSync();
+        }
+      }, true);
+      window.addEventListener('resize', scheduleSync);
+      // 弹窗开关、翻页、数据刷新等 DOM 变化后重新判定当前该同步哪张表
+      if (window.MutationObserver) {
+        new MutationObserver(scheduleSync).observe(document.body, { childList: true, subtree: true });
+      }
+      window.__ghostSync = scheduleSync;   // 供列宽拖拽后主动刷新底栏宽度
+      sync();
+    }
+
     onMounted(() => {
       nextTick(() => {
+        initGhostHScroll();
         initResizeFor('.filter-scroll table', 'filterColWidths', FILTER_DEFAULT_COL_WIDTHS);
         if (currentPage.value === 'hot') {
           initResizeFor('.fav-panel table', 'favColWidths', FAV_DEFAULT_COL_WIDTHS);
