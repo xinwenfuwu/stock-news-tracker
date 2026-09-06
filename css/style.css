@@ -223,7 +223,8 @@ body {
 }
 /* 宽表强制横向滚动 */
 .table-scroll-x { overflow-x: auto; overflow-y: auto; }
-.pool-detail-table { min-width: 2200px; white-space: nowrap; }
+/* 统一固定布局：列宽由 <colgroup> 显式宽度控制（含拖拽后落盘的宽度），整表宽度由 JS 设为各列之和 */
+.pool-detail-table { table-layout: fixed; min-width: 0; white-space: nowrap; }
 /* 筛选板块：固定高度 + 内部滚动，使横向滚动条固定在可见区域；
    序号/代码/名称三列 sticky 左冻结，表头 sticky 顶冻结 */
 .filter-scroll {
@@ -274,16 +275,17 @@ body {
 .pool-detail-table th.col-sticky { z-index: 30; background: #f5f7fa; }
 .pool-detail-table td.col-sticky { background: var(--surface); }
 .pool-detail-table tbody tr:hover td.col-sticky { background: #dbe7ff; }
-/* 冻结列固定宽度（保证 sticky 偏移与列宽精确衔接，避免重叠/掩盖） */
-.pool-detail-table .col-sticky-0 { min-width: 36px; text-align: center; }
-.pool-detail-table .col-sticky-1 { min-width: 78px; }
-.pool-detail-table .col-sticky-2 { min-width: 100px; }
-.pool-detail-table .col-sticky-3 { min-width: 44px; text-align: center; }
-/* 各冻结列的 left 偏移（与上方固定宽度累加一致） */
+/* 冻结列固定宽度（保证 sticky 偏移与列宽精确衔接，避免重叠/掩盖）
+   第1~4列为冻结列：序号(46) / 代码(88) / 股票名称(104) / 正数统计(76) */
+.pool-detail-table .col-sticky-0 { min-width: 46px; text-align: center; }
+.pool-detail-table .col-sticky-1 { min-width: 88px; }
+.pool-detail-table .col-sticky-2 { min-width: 104px; }
+.pool-detail-table .col-sticky-3 { min-width: 76px; text-align: center; }
+/* 各冻结列的 left 偏移（与上方固定宽度累加一致：0 / 46 / 134 / 238） */
 .col-sticky-0 { left: 0; }
-.col-sticky-1 { left: 36px; }
-.col-sticky-2 { left: 114px; }
-.col-sticky-3 { left: 214px; }
+.col-sticky-1 { left: 46px; }
+.col-sticky-2 { left: 134px; }
+.col-sticky-3 { left: 238px; }
 .data-table {
   width: 100%;
   border-collapse: collapse;
@@ -319,6 +321,19 @@ body {
 .sortable { cursor: pointer; user-select: none; }
 .sortable:hover { color: var(--primary); }
 .sort-arrow { font-size: 11px; opacity: 0.6; }
+/* 统一表头：标签 + 排序图标（替换旧的 sort-arrow 用法） */
+.th-label { display: inline-block; vertical-align: middle; }
+.sort-ic { display: inline-block; margin-left: 2px; font-size: 11px; opacity: 0.55; vertical-align: middle; }
+/* 数值类单元格右对齐，便于按列对比 */
+.pool-detail-table td.num-cell { text-align: right; font-variant-numeric: tabular-nums; }
+/* 收藏 / 操作 按钮 */
+.fav-btn, .act-btn {
+  background: none; border: none; cursor: pointer; font-size: 15px;
+  padding: 2px 6px; border-radius: 4px; transition: background 0.15s; white-space: nowrap;
+}
+.fav-btn:hover, .act-btn:hover { background: var(--surface-alt, #eef2f8); }
+.fav-btn { color: #f5a623; font-size: 17px; line-height: 1; }
+.act-btn { color: #e5484d; font-size: 13px; }
 
 /* 新闻表列宽 */
 .news-table .col-check { width: 36px; text-align: center; }
@@ -1079,14 +1094,49 @@ body {
 
 /* ===== 筛选板块：列宽拖拽调整 =====
    表格改为固定布局，列宽由 colgroup 控制；非冻结列右边缘提供拖拽手柄 */
+/* 四张股票表共用：列宽拖拽 + 固定布局细节 */
 .filter-scroll .pool-detail-table,
-.sector-detail-modal .pool-detail-table { table-layout: fixed; min-width: 0; }
+.sector-detail-modal .pool-detail-table,
+.pool-detail-modal .pool-detail-table,
+.fav-panel .pool-detail-table { table-layout: fixed; min-width: 0; }
 .filter-scroll .pool-detail-table th,
 .filter-scroll .pool-detail-table td,
 .sector-detail-modal .pool-detail-table th,
-.sector-detail-modal .pool-detail-table td { overflow: hidden; text-overflow: ellipsis; }
-/* 概念板块详情弹窗：表头 sticky 在 thead 上，th 需设为相对定位，列宽拖拽手柄才能贴合各单元格右侧 */
-.sector-detail-modal .pool-detail-table thead th { position: relative; }
+.sector-detail-modal .pool-detail-table td,
+.pool-detail-modal .pool-detail-table th,
+.pool-detail-modal .pool-detail-table td,
+.fav-panel .pool-detail-table th,
+.fav-panel .pool-detail-table td { overflow: hidden; text-overflow: ellipsis; }
+/* 表头 th 设为相对定位，列宽拖拽手柄才能贴合各单元格右侧 */
+.filter-scroll .pool-detail-table thead th,
+.sector-detail-modal .pool-detail-table thead th,
+.pool-detail-modal .pool-detail-table thead th,
+.fav-panel .pool-detail-table thead th { position: relative; }
+/* 列间距：字段与下方数据各留约一字符宽的内边距，形成两字符间距 */
+.filter-scroll .pool-detail-table th,
+.filter-scroll .pool-detail-table td,
+.sector-detail-modal .pool-detail-table th,
+.sector-detail-modal .pool-detail-table td,
+.pool-detail-modal .pool-detail-table th,
+.pool-detail-modal .pool-detail-table td,
+.fav-panel .pool-detail-table th,
+.fav-panel .pool-detail-table td { padding-left: 0.55em; padding-right: 0.55em; }
+/* 主业与主要产品 / 概念：宽列、内容多行展示（不被 ellipsis 截断） */
+.filter-scroll .pool-detail-table .concept-cell,
+.sector-detail-modal .pool-detail-table .concept-cell,
+.pool-detail-modal .pool-detail-table .concept-cell,
+.fav-panel .pool-detail-table .concept-cell,
+.filter-scroll .pool-detail-table .mainbiz-cell,
+.sector-detail-modal .pool-detail-table .mainbiz-cell,
+.pool-detail-modal .pool-detail-table .mainbiz-cell,
+.fav-panel .pool-detail-table .mainbiz-cell {
+  white-space: normal; line-height: 1.5; vertical-align: top; overflow-wrap: anywhere;
+  overflow: visible; text-overflow: clip;
+}
+.filter-scroll .pool-detail-table .concept-cell,
+.sector-detail-modal .pool-detail-table .concept-cell,
+.pool-detail-modal .pool-detail-table .concept-cell,
+.fav-panel .pool-detail-table .concept-cell { white-space: pre-line; }
 .col-resize-handle {
   position: absolute;
   top: 0; right: 0;

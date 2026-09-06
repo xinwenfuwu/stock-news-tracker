@@ -507,6 +507,31 @@ const StockAPI = {
     return first ? first.close : null;
   },
 
+  /**
+   * 获取某股票「今年」的最高价 / 最低价（不复权真实价）。
+   * 拉取年初至今天的全部日K线，扫描 high/low 极值。
+   * @param {string} code sh600519
+   * @param {number} year 年份，缺省为当前年份
+   * @returns {Promise<{high:number, low:number}|null>}
+   */
+  async getYearHighLow(code, year) {
+    const y = year || new Date().getFullYear();
+    try {
+      const data = await this.getKline(code, `${y}-01-01`, this.fmtDate(new Date()));
+      if (!data || !data.length) return null;
+      let hi = -Infinity, lo = Infinity;
+      for (const k of data) {
+        if (k.high != null && !isNaN(k.high) && k.high > hi) hi = k.high;
+        if (k.low != null && !isNaN(k.low) && k.low < lo) lo = k.low;
+      }
+      if (hi === -Infinity || lo === Infinity) return null;
+      return { high: +hi.toFixed(2), low: +lo.toFixed(2) };
+    } catch (e) {
+      console.debug('今年高低价获取失败', code, e);
+      return null;
+    }
+  },
+
   /** 转换 SECUCODE：sh600519 → 600519.SH，sz000001 → 000001.SZ，bj → .BJ */
   toSecucode(code) {
     const pure = this.pureCode(code);
