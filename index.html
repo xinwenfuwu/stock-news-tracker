@@ -501,39 +501,27 @@
         <!-- 当日股票表 -->
         <h3 class="section-title">📋 当日股票明细</h3>
         <div class="table-wrap">
-          <table class="data-table">
+          <table class="data-table pool-detail-table hot-stock-table">
+            <colgroup>
+              <col v-for="(col, ci) in getColumns('hot')" :key="ci" :style="{ width: col.width + 'px' }" :class="col.fixed ? ('col-sticky col-sticky-' + col.fixedIndex) : ''"></col>
+            </colgroup>
             <thead>
               <tr>
-                <th>股票代码</th>
-                <th>股票名称</th>
-                <th class="sortable" @click="sortHotBy('amplitude')">
-                  振幅 <span class="sort-arrow" v-html="hotSortIcon('amplitude')"></span>
+                <th v-for="(col, ci) in getColumns('hot')" :key="ci"
+                    :class="['col-' + col.key, col.fixed ? ('col-sticky col-sticky-' + col.fixedIndex) : '', col.sortable ? 'sortable' : '']"
+                    @click="onStockSort(col, 'hot')">
+                  <span class="th-label">{{ col.label }}</span><span v-if="col.sortable" class="sort-ic">{{ stockSortIcon(col, 'hot') }}</span>
                 </th>
-                <th class="sortable" @click="sortHotBy('dailyChange')">
-                  当日涨跌幅 <span class="sort-arrow" v-html="hotSortIcon('dailyChange')"></span>
-                </th>
-                <th class="col-news">当日新闻</th>
-                <th>分类标签</th>
-                <th>操作</th>
               </tr>
             </thead>
-            <tbody>
-              <tr v-for="s in sortedHotStocks" :key="s.code">
-                <td>{{ s.code }}</td>
-                <td>{{ s.name }}</td>
-                <td :class="numClass(s.amplitude)">{{ fmt(s.amplitude) }}%</td>
-                <td :class="pctClass(s.dailyChange)">{{ fmtPct(s.dailyChange) }}</td>
-                <td class="cell-news"><div class="news-text">{{ s.news || '—' }}</div></td>
-                <td>
-                  <select class="cell-select" v-model="s.category">
-                    <option value="">—</option>
-                    <option v-for="c in allCategories" :key="c" :value="c">{{ c }}</option>
-                  </select>
-                </td>
-                <td><button class="btn-icon-sm" @click="removeHotStock(s.code)">🗑</button></td>
+            <tbody @click="onTableClick($event, 'hot', sortedHotStocks)" @change="onTableChange($event, 'hot')">
+              <tr v-for="(s, idx) in sortedHotStocks" :key="s.code">
+                <td v-for="(col, ci) in getColumns('hot')" :key="ci"
+                    :class="cellClass(col, s, idx, sortedHotStocks, 'hot')"
+                    v-html="cellHtml(col, s, idx, sortedHotStocks, 'hot')"></td>
               </tr>
               <tr v-if="sortedHotStocks.length === 0">
-                <td colspan="7" class="empty-row">选择日期并加载后展示当日股票</td>
+                <td :colspan="getColumns('hot').length" class="empty-row">选择日期并加载后展示当日股票</td>
               </tr>
             </tbody>
           </table>

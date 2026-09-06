@@ -70,6 +70,15 @@ const Store = {
     if (typeof this.data.sectorColWidths !== 'object' || this.data.sectorColWidths === null) {
       this.data.sectorColWidths = {};
     }
+    if (typeof this.data.poolColWidths !== 'object' || this.data.poolColWidths === null) {
+      this.data.poolColWidths = {};
+    }
+    if (typeof this.data.favColWidths !== 'object' || this.data.favColWidths === null) {
+      this.data.favColWidths = {};
+    }
+    if (typeof this.data.hotColWidths !== 'object' || this.data.hotColWidths === null) {
+      this.data.hotColWidths = {};
+    }
 
     // 自动保存
     this._setupAutosave(Vue);
