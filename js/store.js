@@ -23,6 +23,7 @@ const Store = {
       dailyData: {},          // { "2024-07-08": { stocks: [...] } }
       hotBoards: [],          // 缓存最近一次热门板块
       hotStocks: [],          // 缓存最近一次热门股票
+      preMarketBoards: [],    // 缓存最近一次盘前热点板块
       settings: {
         categories: [...this.DEFAULT_CATEGORIES],
         proxyUrl: ''             // Cloudflare Worker 代理地址，用于一键抓取新闻

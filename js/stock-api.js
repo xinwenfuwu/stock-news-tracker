@@ -573,6 +573,30 @@ const StockAPI = {
    * 获取个股涨幅排行（热门股票）
    * @returns {Array<{name, code, change}>}
    */
+  /**
+   * 获取盘前热点板块（概念板块，按涨幅排序）
+   * 与「当日热门板块」（行业板块）互补：概念板块更偏题材/热点，
+   * 适合作为盘前关注的热点方向。
+   * @returns {Array<{bk, name, change}>}
+   */
+  async getPreMarketBoards() {
+    const results = [];
+    try {
+      // 概念板块 fs=m:90+t:3，按涨幅降序取前 15
+      const url = `https://push2.eastmoney.com/api/qt/clist/get?pn=1&pz=15&po=1&np=1&fltt=2&invt=2&fid=f3&fs=m:90+t:3&fields=f2,f3,f12,f14`;
+      const resp = await fetch(url, { cache: 'no-store' });
+      const json = await resp.json();
+      if (json.data && json.data.diff) {
+        for (const item of json.data.diff) {
+          results.push({ bk: item.f12, name: item.f14, change: parseFloat(item.f3) });
+        }
+      }
+    } catch (e) {
+      console.debug('盘前热点板块获取失败');
+    }
+    return results;
+  },
+
   async getStockRanking() {
     const results = [];
     try {

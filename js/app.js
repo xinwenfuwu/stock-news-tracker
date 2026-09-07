@@ -2052,6 +2052,7 @@ const app = createApp({
     const hotLoading = ref(false);
     const hotBoards = ref([]);
     const hotStocks = ref([]);
+    const preMarketBoards = ref([]);
     const hotSort = reactive({ key: 'dailyChange', dir: 'desc' });
 
     // 概念频次（从当日新闻统计）
@@ -2130,15 +2131,19 @@ const app = createApp({
       hotLoading.value = true;
       showToast('正在获取热门板块...', 'info');
       try {
-        const [boards, stocks] = await Promise.all([
+        const [boards, stocks, preBoards] = await Promise.all([
           StockAPI.getBoardRanking(),
-          StockAPI.getStockRanking()
+          StockAPI.getStockRanking(),
+          StockAPI.getPreMarketBoards()
         ]);
         hotBoards.value = boards;
         hotStocks.value = stocks;
+        preMarketBoards.value = preBoards;
         D.hotBoards = boards;
         D.hotStocks = stocks;
-        showToast(boards.length ? `获取到 ${boards.length} 个板块、${stocks.length} 只热门股票` : '获取失败（网络限制），可稍后重试', boards.length ? 'success' : 'error');
+        D.preMarketBoards = preBoards;
+        const ok = boards.length || stocks.length || preBoards.length;
+        showToast(ok ? `获取到 ${boards.length} 个当日板块、${preBoards.length} 个盘前热点、${stocks.length} 只热门股票` : '获取失败（网络限制），可稍后重试', ok ? 'success' : 'error');
       } catch (e) {
         showToast('获取失败', 'error');
       } finally {
@@ -2231,6 +2236,7 @@ const app = createApp({
     // 初始化时若有缓存的热门数据则恢复
     if (D.hotBoards && D.hotBoards.length) hotBoards.value = D.hotBoards;
     if (D.hotStocks && D.hotStocks.length) hotStocks.value = D.hotStocks;
+    if (D.preMarketBoards && D.preMarketBoards.length) preMarketBoards.value = D.preMarketBoards;
 
     // ============================================================
     //  筛选板块（热门板块页 · 板块筛选 + 市值比区间筛选）
@@ -2879,6 +2885,7 @@ const app = createApp({
       if (data.settings) { Object.assign(D.settings, data.settings); }
       if (data.hotBoards) D.hotBoards = data.hotBoards;
       if (data.hotStocks) D.hotStocks = data.hotStocks;
+      if (data.preMarketBoards) D.preMarketBoards = data.preMarketBoards;
       // 迁移 relatedStocks
       D.news.forEach(n => {
         if (typeof n.relatedStocks === 'string') n.relatedStocks = StockAPI.parseStockInput(n.relatedStocks);
@@ -2963,7 +2970,7 @@ const app = createApp({
       resetSectorFilter, toggleSectorFilterLock,
       sectorFilterOpen, sectorInfoOpen, favInfoOpen, filterInfoOpen, poolInfoOpen,
       // 页面3
-      hotDate, hotLoading, hotBoards, hotStocks, conceptFreq,
+      hotDate, hotLoading, hotBoards, hotStocks, preMarketBoards, conceptFreq,
       hotBoardActive, hotBoardLoading, openHotBoard, clearHotBoard,
       sortedHotStocks, sortHotBy, hotSortIcon, removeHotStock,
       loadHotData, fetchHotBoards, refreshHotStocks,

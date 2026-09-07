@@ -488,6 +488,22 @@
             <div class="muted small" v-else>点击「获取热门板块」加载</div>
           </div>
 
+          <!-- 盘前热点板块 -->
+          <div class="hot-panel">
+            <h3 class="panel-title">🌅 盘前热点板块</h3>
+            <div class="hot-list" v-if="preMarketBoards.length">
+              <div class="hot-item hot-item-click" v-for="(b, i) in preMarketBoards" :key="i"
+                   :class="{ active: hotBoardActive === b.name }"
+                   @click="openHotBoard(b)"
+                   :title="'点击在下方「当日股票明细」中显示「' + b.name + '」的全部成分股'">
+                <span class="hot-rank">{{ i + 1 }}</span>
+                <span class="hot-name">{{ b.name }}</span>
+                <span class="hot-val" :class="pctClass(b.change)">{{ fmtPct(b.change) }}</span>
+              </div>
+            </div>
+            <div class="muted small" v-else>点击「获取热门板块」加载</div>
+          </div>
+
           <!-- 热门股票 -->
           <div class="hot-panel">
             <h3 class="panel-title">⭐ 当日热门股票</h3>
@@ -532,7 +548,7 @@
                     v-html="cellHtml(col, s, idx, sortedHotStocks, 'hot')"></td>
               </tr>
               <tr v-if="sortedHotStocks.length === 0">
-                <td :colspan="getColumns('hot').length" class="empty-row">点击上方「当日热门板块」中的任一板块，即可在此显示该板块的全部成分股；或点击「加载当日数据」</td>
+                <td :colspan="getColumns('hot').length" class="empty-row">点击上方「当日热门板块」或「盘前热点板块」中的任一板块，即可在此显示该板块的全部成分股；或点击「加载当日数据」</td>
               </tr>
             </tbody>
           </table>
