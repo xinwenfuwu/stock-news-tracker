@@ -2209,6 +2209,8 @@ const app = createApp({
     // 当前选中的热门板块名（用于高亮与表头提示）
     const hotBoardActive = ref('');
     const hotBoardLoading = ref(false);
+    // true=当前明细展示的是「单只个股」；false=展示的是「板块成分股」
+    const hotDetailIsStock = ref(false);
 
     /**
      * 点击「当日热门板块」中的某个板块：
@@ -2237,6 +2239,7 @@ const app = createApp({
           return ns;
         });
         hotBoardActive.value = b.name;
+        hotDetailIsStock.value = false;
         showToast(`已载入「${b.name}」${daily.stocks.length} 只成分股，正在补全字段...`, 'success');
         await refreshHotStocks();
       } catch (e) {
@@ -2247,12 +2250,46 @@ const app = createApp({
       }
     }
 
-    /** 清除板块选择，恢复当日新闻关联的股票 */
+    /** 清除板块/个股选择，恢复当日新闻关联的股票 */
     function clearHotBoard() {
       hotBoardActive.value = '';
+      hotDetailIsStock.value = false;
       const daily = D.dailyData[hotDate.value];
       if (daily) daily.stocks = [];
-      showToast('已清除板块选择', 'success');
+      showToast('已清除选择', 'success');
+    }
+
+    /**
+     * 点击「当日热门股票」中的某只个股：
+     * 把该个股单独载入下方「当日股票明细」，字段与格式与筛选板块完全一致。
+     * 与 openHotBoard（板块→成分股）互补：这里展示的是单只个股本身。
+     */
+    async function openHotStock(s) {
+      if (!s) return;
+      const code = s.code;
+      if (!code) {
+        showToast('该股票缺少代码，请重新「获取热门板块」', 'error');
+        return;
+      }
+      if (hotBoardLoading.value) return;
+      hotBoardLoading.value = true;
+      const label = s.name || code;
+      showToast(`正在获取「${label}」的行情与财务数据...`, 'info');
+      try {
+        const daily = Store.getDailyStocks(hotDate.value);
+        const ns = _newStock({ code, name: s.name });
+        if (s.change != null) ns.dailyChange = s.change;
+        daily.stocks = [ns];
+        hotBoardActive.value = label;
+        hotDetailIsStock.value = true;
+        showToast(`已载入个股「${label}」，正在补全字段...`, 'success');
+        await refreshHotStocks();
+      } catch (e) {
+        console.warn('个股载入失败', e);
+        showToast('个股载入失败，请重试', 'error');
+      } finally {
+        hotBoardLoading.value = false;
+      }
     }
 
     // 初始化时若有缓存的热门数据则恢复
@@ -2999,7 +3036,7 @@ const app = createApp({
       sectorFilterOpen, sectorInfoOpen, favInfoOpen, filterInfoOpen, poolInfoOpen,
       // 页面3
       hotDate, hotLoading, hotBoards, hotStocks, preMarketBoards, amplitudeBoards, conceptFreq,
-      hotBoardActive, hotBoardLoading, openHotBoard, clearHotBoard,
+      hotBoardActive, hotBoardLoading, hotDetailIsStock, openHotBoard, openHotStock, clearHotBoard,
       sortedHotStocks, sortHotBy, hotSortIcon, removeHotStock,
       loadHotData, fetchHotBoards, refreshHotStocks,
       refreshAmplitudeBoards, ampLoading, hotPanelsHidden, financePushHidden,

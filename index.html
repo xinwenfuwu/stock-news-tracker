@@ -467,7 +467,10 @@
           <div class="hot-panel">
             <h3 class="panel-title">⭐ 当日热门股票</h3>
             <div class="hot-list" v-if="hotStocks.length">
-              <div class="hot-item" v-for="(s, i) in hotStocks" :key="i">
+              <div class="hot-item hot-item-click" v-for="(s, i) in hotStocks" :key="i"
+                   :class="{ active: hotBoardActive === s.name && hotDetailIsStock }"
+                   @click="openHotStock(s)"
+                   :title="'点击在下方「当日股票明细」中显示个股「' + s.name + '」的详细信息'">
                 <span class="hot-rank">{{ i + 1 }}</span>
                 <span class="hot-name">{{ s.name }}</span>
                 <span class="hot-val" :class="pctClass(s.change)">{{ fmtPct(s.change) }}</span>
@@ -503,10 +506,10 @@
         <div class="hot-detail-head">
           <h3 class="section-title" style="margin:0">
             📋 当日股票明细
-            <span v-if="hotBoardActive" class="hot-detail-board">（{{ hotBoardActive }} · {{ sortedHotStocks.length }} 只）</span>
+            <span v-if="hotBoardActive" class="hot-detail-board">（{{ hotDetailIsStock ? '个股' : '板块' }}：{{ hotBoardActive }} · {{ sortedHotStocks.length }} 只）</span>
             <span v-if="hotBoardLoading" class="muted small">⏳ 加载中...</span>
           </h3>
-          <button v-if="hotBoardActive" class="btn btn-sm" @click="clearHotBoard">✕ 清除板块选择</button>
+          <button v-if="hotBoardActive" class="btn btn-sm" @click="clearHotBoard">{{ hotDetailIsStock ? '✕ 清除个股选择' : '✕ 清除板块选择' }}</button>
         </div>
         <div class="table-wrap">
           <table class="data-table pool-detail-table hot-stock-table">
@@ -529,7 +532,7 @@
                     v-html="cellHtml(col, s, idx, sortedHotStocks, 'hot')"></td>
               </tr>
               <tr v-if="sortedHotStocks.length === 0">
-                <td :colspan="getColumns('hot').length" class="empty-row">点击上方「当日热门板块」或「盘前热点板块」中的任一板块，即可在此显示该板块的全部成分股；或点击「加载当日数据」</td>
+                <td :colspan="getColumns('hot').length" class="empty-row">点击上方「当日热门板块」「盘前热点板块」「振幅板块」中的任一板块，即可在此显示该板块的全部成分股；点击「当日热门股票」中的个股，则显示该个股信息；或点击「加载当日数据」</td>
               </tr>
             </tbody>
           </table>

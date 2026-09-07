@@ -831,7 +831,8 @@ const StockAPI = {
     for (let pn = 1; pn <= 15; pn++) {
       const url = `https://push2.eastmoney.com/api/qt/clist/get?pn=${pn}&pz=100&po=1&np=1&fltt=2&invt=2&fid=f3&fs=b%3A${bk}&fields=f12,f14,f3,f2`;
       const json = await this._eastFetch(url);
-      for (const it of this._diffArray(json)) {
+      const diff = this._diffArray(json);
+      for (const it of diff) {
         const pure = String(it.f12);
         const prefix = /^(6|9|4|8)/.test(pure) ? 'sh' : 'sz';
         all.push({
