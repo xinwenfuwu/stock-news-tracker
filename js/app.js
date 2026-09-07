@@ -2571,17 +2571,21 @@ const app = createApp({
       nextTick(() => {
         initGhostHScroll();
         initResizeFor('.filter-scroll table', 'filterColWidths', FILTER_DEFAULT_COL_WIDTHS);
-        if (currentPage.value === 'hot') {
+        if (currentPage.value === 'filter') {
           initResizeFor('.fav-panel table', 'favColWidths', FAV_DEFAULT_COL_WIDTHS);
+        }
+        if (currentPage.value === 'hot') {
           initResizeFor('.hot-stock-table', 'hotColWidths', HOT_DEFAULT_COL_WIDTHS);
         }
       });
     });
     watch(sortedFilterStocks, () => nextTick(() => initResizeFor('.filter-scroll table', 'filterColWidths', FILTER_DEFAULT_COL_WIDTHS)), { flush: 'post' });
     watch(currentPage, (k) => {
-      if (k === 'filter') nextTick(() => initResizeFor('.filter-scroll table', 'filterColWidths', FILTER_DEFAULT_COL_WIDTHS));
-      if (k === 'hot') {
+      if (k === 'filter') {
+        nextTick(() => initResizeFor('.filter-scroll table', 'filterColWidths', FILTER_DEFAULT_COL_WIDTHS));
         nextTick(() => initResizeFor('.fav-panel table', 'favColWidths', FAV_DEFAULT_COL_WIDTHS));
+      }
+      if (k === 'hot') {
         nextTick(() => initResizeFor('.hot-stock-table', 'hotColWidths', HOT_DEFAULT_COL_WIDTHS));
       }
     });
@@ -2603,9 +2607,9 @@ const app = createApp({
     watch(sortedPoolDetailStocks, () => {
       if (poolDetail.show) nextTick(() => initResizeFor('.pool-detail-modal .pool-detail-table', 'poolColWidths', POOL_DEFAULT_COL_WIDTHS));
     }, { flush: 'post' });
-    // 收藏板块（位于 hot 页）
+    // 收藏板块（位于 筛选板块 页，筛选栏下方）
     watch(sortedFavorites, () => {
-      if (currentPage.value === 'hot') nextTick(() => initResizeFor('.fav-panel table', 'favColWidths', FAV_DEFAULT_COL_WIDTHS));
+      if (currentPage.value === 'filter') nextTick(() => initResizeFor('.fav-panel table', 'favColWidths', FAV_DEFAULT_COL_WIDTHS));
     }, { flush: 'post' });
 
     // 刷新筛选板块下所有股票的行情/财务数据

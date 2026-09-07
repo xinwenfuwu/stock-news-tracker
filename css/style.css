@@ -615,6 +615,9 @@ body {
 @media (max-width: 900px) {
   .hot-layout { grid-template-columns: 1fr; }
 }
+/* 热门页三栏并排：当日热门板块 / 盘前热点板块 / 当日热门股票，缩小宽度同栏展示 */
+.hot-layout-2 { grid-template-columns: repeat(3, 1fr); }
+@media (max-width: 560px) { .hot-layout-2 { grid-template-columns: 1fr; } }
 /* 收藏板块：顶部横屏全宽面板 */
 .fav-panel {
   background: var(--surface);
