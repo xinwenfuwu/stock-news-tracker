@@ -547,24 +547,99 @@ const StockAPI = {
   // ============ 热门板块/股票 ============
 
   /**
+   * 将东财 clist 返回的 diff 统一成数组。
+   * 新版接口可能返回以序号为键的对象，旧版为数组，这里做兼容。
+   */
+  _diffArray(json) {
+    const d = json && json.data && json.data.diff;
+    if (!d) return [];
+    if (Array.isArray(d)) return d;
+    return Object.keys(d).map(k => d[k]);
+  },
+
+  /**
+   * JSONP 请求（东财接口支持 cb 回调参数）。
+   * 通过注入 <script> 加载数据，不受浏览器同源策略（CORS）限制，
+   * 是静态站点（如 GitHub Pages）直连东财接口失败时最可靠的兜底方案。
+   */
+  _eastJsonp(url, timeout = 7000) {
+    return new Promise((resolve, reject) => {
+      const cbName = '__emcb_' + Math.random().toString(36).slice(2) + '_' + Date.now();
+      let script = null;
+      let settled = false;
+      const cleanup = () => {
+        try { delete window[cbName]; } catch (e) {}
+        if (script && script.parentNode) script.parentNode.removeChild(script);
+      };
+      const timer = setTimeout(() => {
+        if (settled) return;
+        settled = true; cleanup(); reject(new Error('jsonp timeout'));
+      }, timeout);
+      window[cbName] = (data) => {
+        if (settled) return;
+        settled = true; clearTimeout(timer); cleanup();
+        if (data) resolve(data); else reject(new Error('jsonp empty'));
+      };
+      try {
+        // 注意：不能用 URL.searchParams.set() 追加 cb —— 它会重新编码整个查询串，
+        // 把 fs=m:90+t:2 中的 "+" 变成空格/ %2B，导致东财返回空数据。
+        // 这里直接字符串拼接，完整保留原有参数编码。
+        const src = url + (url.indexOf('?') >= 0 ? '&' : '?') + 'cb=' + cbName;
+        script = document.createElement('script');
+        script.charset = 'utf-8';
+        script.onerror = () => {
+          if (settled) return;
+          settled = true; clearTimeout(timer); cleanup(); reject(new Error('jsonp error'));
+        };
+        script.src = src;
+        document.head.appendChild(script);
+      } catch (e) {
+        if (settled) return;
+        settled = true; clearTimeout(timer); cleanup(); reject(e);
+      }
+    });
+  },
+
+  /**
+   * 统一的东财 GET：
+   * 1) 优先 fetch —— 注意不携带任何自定义请求头，保持「简单请求」以避免触发 CORS 预检；
+   * 2) 失败则降级 JSONP —— 完全绕过 CORS。
+   * @returns {object|null}
+   */
+  async _eastGet(url) {
+    try {
+      const resp = await fetch(url, { cache: 'no-store' });
+      if (resp.ok) {
+        const j = await resp.json();
+        if (j) return j;
+      }
+    } catch (e) {
+      console.debug('[stock-api] fetch 失败，改用 JSONP 兜底:', e && e.message);
+    }
+    try {
+      return await this._eastJsonp(url);
+    } catch (e) {
+      console.debug('[stock-api] JSONP 亦失败:', e && e.message);
+    }
+    return null;
+  },
+
+  /**
    * 获取板块涨幅排行（东财）
-   * @returns {Array<{name, change}>}
+   * @returns {Array<{bk, name, change}>}
    */
   async getBoardRanking() {
     // 行业板块 fs=m:90+t:2  概念板块 fs=m:90+t:3
     const results = [];
     try {
       const url = `https://push2.eastmoney.com/api/qt/clist/get?pn=1&pz=15&po=1&np=1&fltt=2&invt=2&fid=f3&fs=m:90+t:2&fields=f2,f3,f12,f14`;
-      const resp = await fetch(url, { cache: 'no-store' });
-      const json = await resp.json();
-      if (json.data && json.data.diff) {
-        for (const item of json.data.diff) {
-          // bk=板块代码(f12)，供点击板块时拉取其成分股
-          results.push({ bk: item.f12, name: item.f14, change: parseFloat(item.f3) });
-        }
+      const json = await this._eastGet(url);
+      for (const item of this._diffArray(json)) {
+        // bk=板块代码(f12)，供点击板块时拉取其成分股
+        results.push({ bk: item.f12, name: item.f14, change: parseFloat(item.f3) });
       }
     } catch (e) {
-      console.debug('板块排行获取失败');
+      console.debug('板块排行获取失败', e);
     }
     return results;
   },
@@ -579,24 +654,17 @@ const StockAPI = {
     try {
       // 概念板块 fs=m:90+t:3，按振幅(f7)降序取前 15
       const url = `https://push2.eastmoney.com/api/qt/clist/get?pn=1&pz=15&po=1&np=1&fltt=2&invt=2&fid=f7&fs=m:90+t:3&fields=f2,f3,f7,f12,f14`;
-      const resp = await fetch(url, { cache: 'no-store' });
-      const json = await resp.json();
-      if (json.data && json.data.diff) {
-        for (const item of json.data.diff) {
-          const amp = item.f7 != null ? parseFloat(item.f7) : parseFloat(item.f3);
-          results.push({ bk: item.f12, name: item.f14, change: isNaN(amp) ? 0 : amp });
-        }
+      const json = await this._eastGet(url);
+      for (const item of this._diffArray(json)) {
+        const amp = item.f7 != null ? parseFloat(item.f7) : parseFloat(item.f3);
+        results.push({ bk: item.f12, name: item.f14, change: isNaN(amp) ? 0 : amp });
       }
     } catch (e) {
-      console.debug('振幅板块获取失败');
+      console.debug('振幅板块获取失败', e);
     }
     return results;
   },
 
-  /**
-   * 获取个股涨幅排行（热门股票）
-   * @returns {Array<{name, code, change}>}
-   */
   /**
    * 获取盘前热点板块（概念板块，按涨幅排序）
    * 与「当日热门板块」（行业板块）互补：概念板块更偏题材/热点，
@@ -608,45 +676,42 @@ const StockAPI = {
     try {
       // 概念板块 fs=m:90+t:3，按涨幅降序取前 15
       const url = `https://push2.eastmoney.com/api/qt/clist/get?pn=1&pz=15&po=1&np=1&fltt=2&invt=2&fid=f3&fs=m:90+t:3&fields=f2,f3,f12,f14`;
-      const resp = await fetch(url, { cache: 'no-store' });
-      const json = await resp.json();
-      if (json.data && json.data.diff) {
-        for (const item of json.data.diff) {
-          results.push({ bk: item.f12, name: item.f14, change: parseFloat(item.f3) });
-        }
+      const json = await this._eastGet(url);
+      for (const item of this._diffArray(json)) {
+        results.push({ bk: item.f12, name: item.f14, change: parseFloat(item.f3) });
       }
     } catch (e) {
-      console.debug('盘前热点板块获取失败');
+      console.debug('盘前热点板块获取失败', e);
     }
     return results;
   },
 
+  /**
+   * 获取个股涨幅排行（热门股票）
+   * @returns {Array<{name, code, change}>}
+   */
   async getStockRanking() {
     const results = [];
     try {
       // 沪深A股，按涨幅降序
       const url = `https://push2.eastmoney.com/api/qt/clist/get?pn=1&pz=15&po=1&np=1&fltt=2&invt=2&fid=f3&fs=m:0+t:6,m:0+t:80,m:1+t:2,m:1+t:23&fields=f2,f3,f12,f14`;
-      const resp = await fetch(url, { cache: 'no-store' });
-      const json = await resp.json();
-      if (json.data && json.data.diff) {
-        for (const item of json.data.diff) {
-          const prefix = String(item.f12).startsWith('6') ? 'sh' : 'sz';
-          results.push({
-            name: item.f14,
-            code: prefix + item.f12,
-            change: parseFloat(item.f3)
-          });
-        }
+      const json = await this._eastGet(url);
+      for (const item of this._diffArray(json)) {
+        const prefix = String(item.f12).startsWith('6') ? 'sh' : 'sz';
+        results.push({
+          name: item.f14,
+          code: prefix + item.f12,
+          change: parseFloat(item.f3)
+        });
       }
     } catch (e) {
-      console.debug('个股排行获取失败');
+      console.debug('个股排行获取失败', e);
     }
     return results;
   },
 
   // ============ 概念/行业板块选股 ============
 
-  /** 东财 push2 请求，带 UA 与重试，降低被限流概率 */
   /**
    * 东财接口多节点轮询：单个节点对连续请求限流敏感，
    * 通过多个同源数据节点（push2 / push2delay / push2his 等）轮询降级，
@@ -654,7 +719,6 @@ const StockAPI = {
    * @param {string} url 完整 url，host 会被自动替换到各节点
    */
   async _eastFetch(url) {
-    const UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36';
     // 多节点列表：优先主节点，其次延迟节点（独立服务器，通常不同时被限流）
     const hosts = [
       'push2.eastmoney.com',
@@ -665,20 +729,27 @@ const StockAPI = {
     try { u = new URL(url); } catch (e) { return null; }
     // 打乱节点顺序的起始偏移，避免多用户同时命中同一节点
     const start = Math.floor(Math.random() * hosts.length);
+    // 1) 各节点尝试「简单」fetch：
+    //    注意不要携带任何自定义请求头（如 User-Agent）——自定义头会把请求变成
+    //    「非简单请求」，浏览器会先发 CORS 预检 OPTIONS，而东财不支持预检，
+    //    导致请求直接失败。这也是此前「获取失败（网络限制）」的主要诱因之一。
     for (let h = 0; h < hosts.length; h++) {
-      const host = hosts[(start + h) % hosts.length];
-      u.hostname = host;
-      for (let i = 0; i < 2; i++) {
-        try {
-          const resp = await fetch(u.href, { cache: 'no-store', headers: { 'User-Agent': UA } });
-          if (resp.ok) {
-            const json = await resp.json();
-            if (json && json.data !== undefined) return json;
-          }
-        } catch (e) { /* 切下一个 */ }
-        await new Promise(r => setTimeout(r, 300 * (i + 1)));
-      }
+      u.hostname = hosts[(start + h) % hosts.length];
+      try {
+        const resp = await fetch(u.href, { cache: 'no-store' });
+        if (resp.ok) {
+          const json = await resp.json();
+          if (json && json.data !== undefined) return json;
+        }
+      } catch (e) { /* 切下一个节点 */ }
+      await new Promise(r => setTimeout(r, 250));
     }
+    // 2) 全部失败 → JSONP 兜底（<script> 注入，绕过 CORS 预检与响应头限制）
+    u.hostname = hosts[0];
+    try {
+      const json = await this._eastJsonp(u.href, 6000);
+      if (json && json.data !== undefined) return json;
+    } catch (e) { /* 忽略，返回 null */ }
     return null;
   },
 
@@ -695,7 +766,7 @@ const StockAPI = {
     for (let pn = 1; pn <= maxPages; pn++) {
       const url = `https://push2.eastmoney.com/api/qt/clist/get?pn=${pn}&pz=100&po=1&np=1&fltt=2&invt=2&fid=f3&fs=${encodeURIComponent(fs)}&fields=f12,f14,f3`;
       const json = await this._eastFetch(url);
-      const diff = (json && json.data && json.data.diff) || [];
+      const diff = this._diffArray(json);
       all.push(...diff);
       const total = json && json.data && json.data.total;
       if (!diff.length || all.length >= total) break;
@@ -760,8 +831,7 @@ const StockAPI = {
     for (let pn = 1; pn <= 15; pn++) {
       const url = `https://push2.eastmoney.com/api/qt/clist/get?pn=${pn}&pz=100&po=1&np=1&fltt=2&invt=2&fid=f3&fs=b%3A${bk}&fields=f12,f14,f3,f2`;
       const json = await this._eastFetch(url);
-      const diff = (json && json.data && json.data.diff) || [];
-      for (const it of diff) {
+      for (const it of this._diffArray(json)) {
         const pure = String(it.f12);
         const prefix = /^(6|9|4|8)/.test(pure) ? 'sh' : 'sz';
         all.push({

@@ -2150,7 +2150,7 @@ const app = createApp({
         D.preMarketBoards = preBoards;
         D.amplitudeBoards = ampBoards;
         const ok = boards.length || stocks.length || preBoards.length || ampBoards.length;
-        showToast(ok ? `获取到 ${boards.length} 个当日板块、${preBoards.length} 个盘前热点、${ampBoards.length} 个振幅板块、${stocks.length} 只热门股票` : '获取失败（网络限制），可稍后重试', ok ? 'success' : 'error');
+        showToast(ok ? `获取到 ${boards.length} 个当日板块、${preBoards.length} 个盘前热点、${ampBoards.length} 个振幅板块、${stocks.length} 只热门股票` : '获取失败：跨域/网络受限（已自动尝试 JSONP 兜底仍失败），请检查网络后重试', ok ? 'success' : 'error');
       } catch (e) {
         showToast('获取失败', 'error');
       } finally {
