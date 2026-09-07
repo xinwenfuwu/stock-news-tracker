@@ -156,16 +156,16 @@
           </table>
         </div>
         <div class="page-footer">共 {{ filteredNews.length }} 条新闻</div>
-      </section>
-
-      <!-- ===== 页面（财经推送：独立页面，位于新闻追踪与股票池之间） ===== -->
-      <section v-show="currentPage === 'finance'" class="page">
-        <div class="page-toolbar">
-          <div class="toolbar-left">
-            <h2 class="page-title" style="margin:0">📡 财经推送</h2>
+        <!-- 财经推送（已移入「新闻追踪」页下方，更名为「美股美债」） -->
+        <div class="finance-moved" v-show="!financePushHidden">
+          <div class="page-toolbar" style="margin-top:24px">
+            <div class="toolbar-left">
+              <h2 class="page-title" style="margin:0">📡 美股美债</h2>
+            </div>
+            <div class="toolbar-right">
+              <button class="btn btn-sm" @click="financePushHidden = !financePushHidden" :title="financePushHidden ? '显示财经推送' : '一键隐藏财经推送'">{{ financePushHidden ? '👁 显示' : '🙈 隐藏' }}</button>
+            </div>
           </div>
-        </div>
-
         <div class="finance-layout">
           <!-- 左：嵌入财经网页 -->
           <div class="fp-embed">
@@ -226,6 +226,17 @@
             <button class="btn btn-primary btn-block" @click="pushFinanceNews">📤 推送到新闻追踪</button>
           </div>
         </div>
+        </div>
+      </section>
+
+      <!-- ===== 页面（美股美债：原财经推送页，内容已移至「新闻追踪」页下方，现为空白页） ===== -->
+      <section v-show="currentPage === 'finance'" class="page">
+        <div class="page-toolbar">
+          <div class="toolbar-left">
+            <h2 class="page-title" style="margin:0">📡 美股美债</h2>
+          </div>
+        </div>
+        <div class="muted small" style="padding:40px;text-align:center">（财经推送功能已移至「新闻追踪」页面下方）</div>
       </section>
 
       <!-- ===== 页面2：股票池 ===== -->
@@ -401,7 +412,7 @@
 
       <!-- ===== 页面3：热门板块 ===== -->
       <section v-show="currentPage === 'hot'" class="page">
-        <div class="page-toolbar">
+        <div class="page-toolbar hot-toolbar">
           <div class="toolbar-left">
             <div class="date-picker">
               <label>选择日期</label>
@@ -413,12 +424,13 @@
             </button>
           </div>
           <div class="toolbar-right">
+            <button class="btn" @click="hotPanelsHidden = !hotPanelsHidden" :title="hotPanelsHidden ? '显示下方 4 个子板块' : '一键隐藏下方 4 个子板块'">{{ hotPanelsHidden ? '👁 显示板块' : '🙈 隐藏板块' }}</button>
             <button class="btn" @click="fetchHotBoards" :disabled="hotLoading">📊 获取热门板块</button>
             <button class="btn" @click="refreshHotStocks" :disabled="hotLoading">🔄 刷新股票行情</button>
           </div>
         </div>
 
-        <div class="hot-layout hot-layout-2">
+        <div class="hot-layout hot-layout-2" v-show="!hotPanelsHidden">
           <!-- 热门板块 -->
           <div class="hot-panel">
             <h3 class="panel-title">🔥 当日热门板块</h3>
@@ -462,6 +474,28 @@
               </div>
             </div>
             <div class="muted small" v-else>点击「获取热门板块」加载</div>
+          </div>
+
+          <!-- 振幅板块（按板块振幅突然拉升排名） -->
+          <div class="hot-panel">
+            <div class="panel-title-row">
+              <h3 class="panel-title" style="margin:0">📈 振幅板块</h3>
+              <button class="btn btn-sm" @click="refreshAmplitudeBoards" :disabled="ampLoading" title="单独刷新振幅板块数据">
+                <span v-if="ampLoading">⏳ 刷新中...</span>
+                <span v-else>🔄 刷新数据</span>
+              </button>
+            </div>
+            <div class="hot-list" v-if="amplitudeBoards.length">
+              <div class="hot-item hot-item-click" v-for="(b, i) in amplitudeBoards" :key="i"
+                   :class="{ active: hotBoardActive === b.name }"
+                   @click="openHotBoard(b)"
+                   :title="'点击在下方「当日股票明细」中显示「' + b.name + '」的全部成分股（按板块振幅突然拉升排名）'">
+                <span class="hot-rank">{{ i + 1 }}</span>
+                <span class="hot-name">{{ b.name }}</span>
+                <span class="hot-val" :class="pctClass(b.change)">{{ fmtPct(b.change) }}</span>
+              </div>
+            </div>
+            <div class="muted small" v-else>点击「获取热门板块」或右侧「刷新数据」加载</div>
           </div>
         </div>
 

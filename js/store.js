@@ -24,6 +24,7 @@ const Store = {
       hotBoards: [],          // 缓存最近一次热门板块
       hotStocks: [],          // 缓存最近一次热门股票
       preMarketBoards: [],    // 缓存最近一次盘前热点板块
+      amplitudeBoards: [],    // 缓存最近一次振幅板块
       settings: {
         categories: [...this.DEFAULT_CATEGORIES],
         proxyUrl: ''             // Cloudflare Worker 代理地址，用于一键抓取新闻

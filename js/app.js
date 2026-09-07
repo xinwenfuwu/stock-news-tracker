@@ -22,7 +22,7 @@ const app = createApp({
     const currentPage = ref('news');
     const tabs = [
       { key: 'news', label: '新闻追踪', icon: '📰' },
-      { key: 'finance', label: '财经推送', icon: '📡' },
+      { key: 'finance', label: '美股美债', icon: '📡' },
       { key: 'pools', label: '股票池', icon: '📅' },
       { key: 'sector', label: '概念行业选股', icon: '🧭' },
       { key: 'filter', label: '筛选板块', icon: '🎯' },
@@ -2053,6 +2053,10 @@ const app = createApp({
     const hotBoards = ref([]);
     const hotStocks = ref([]);
     const preMarketBoards = ref([]);
+    const amplitudeBoards = ref([]);
+    const ampLoading = ref(false);
+    const hotPanelsHidden = ref(false);
+    const financePushHidden = ref(false);
     const hotSort = reactive({ key: 'dailyChange', dir: 'desc' });
 
     // 概念频次（从当日新闻统计）
@@ -2131,23 +2135,41 @@ const app = createApp({
       hotLoading.value = true;
       showToast('正在获取热门板块...', 'info');
       try {
-        const [boards, stocks, preBoards] = await Promise.all([
+        const [boards, stocks, preBoards, ampBoards] = await Promise.all([
           StockAPI.getBoardRanking(),
           StockAPI.getStockRanking(),
-          StockAPI.getPreMarketBoards()
+          StockAPI.getPreMarketBoards(),
+          StockAPI.getAmplitudeBoards()
         ]);
         hotBoards.value = boards;
         hotStocks.value = stocks;
         preMarketBoards.value = preBoards;
+        amplitudeBoards.value = ampBoards;
         D.hotBoards = boards;
         D.hotStocks = stocks;
         D.preMarketBoards = preBoards;
-        const ok = boards.length || stocks.length || preBoards.length;
-        showToast(ok ? `获取到 ${boards.length} 个当日板块、${preBoards.length} 个盘前热点、${stocks.length} 只热门股票` : '获取失败（网络限制），可稍后重试', ok ? 'success' : 'error');
+        D.amplitudeBoards = ampBoards;
+        const ok = boards.length || stocks.length || preBoards.length || ampBoards.length;
+        showToast(ok ? `获取到 ${boards.length} 个当日板块、${preBoards.length} 个盘前热点、${ampBoards.length} 个振幅板块、${stocks.length} 只热门股票` : '获取失败（网络限制），可稍后重试', ok ? 'success' : 'error');
       } catch (e) {
         showToast('获取失败', 'error');
       } finally {
         hotLoading.value = false;
+      }
+    }
+
+    async function refreshAmplitudeBoards() {
+      ampLoading.value = true;
+      showToast('正在刷新振幅板块...', 'info');
+      try {
+        const list = await StockAPI.getAmplitudeBoards();
+        amplitudeBoards.value = list;
+        D.amplitudeBoards = list;
+        showToast(list.length ? `已刷新 ${list.length} 个振幅板块` : '刷新失败（网络限制），可稍后重试', list.length ? 'success' : 'error');
+      } catch (e) {
+        showToast('刷新失败', 'error');
+      } finally {
+        ampLoading.value = false;
       }
     }
 
@@ -2237,6 +2259,7 @@ const app = createApp({
     if (D.hotBoards && D.hotBoards.length) hotBoards.value = D.hotBoards;
     if (D.hotStocks && D.hotStocks.length) hotStocks.value = D.hotStocks;
     if (D.preMarketBoards && D.preMarketBoards.length) preMarketBoards.value = D.preMarketBoards;
+    if (D.amplitudeBoards && D.amplitudeBoards.length) amplitudeBoards.value = D.amplitudeBoards;
 
     // ============================================================
     //  筛选板块（热门板块页 · 板块筛选 + 市值比区间筛选）
@@ -2890,6 +2913,7 @@ const app = createApp({
       if (data.hotBoards) D.hotBoards = data.hotBoards;
       if (data.hotStocks) D.hotStocks = data.hotStocks;
       if (data.preMarketBoards) D.preMarketBoards = data.preMarketBoards;
+      if (data.amplitudeBoards) D.amplitudeBoards = data.amplitudeBoards;
       // 迁移 relatedStocks
       D.news.forEach(n => {
         if (typeof n.relatedStocks === 'string') n.relatedStocks = StockAPI.parseStockInput(n.relatedStocks);
@@ -2974,10 +2998,11 @@ const app = createApp({
       resetSectorFilter, toggleSectorFilterLock,
       sectorFilterOpen, sectorInfoOpen, favInfoOpen, filterInfoOpen, poolInfoOpen,
       // 页面3
-      hotDate, hotLoading, hotBoards, hotStocks, preMarketBoards, conceptFreq,
+      hotDate, hotLoading, hotBoards, hotStocks, preMarketBoards, amplitudeBoards, conceptFreq,
       hotBoardActive, hotBoardLoading, openHotBoard, clearHotBoard,
       sortedHotStocks, sortHotBy, hotSortIcon, removeHotStock,
       loadHotData, fetchHotBoards, refreshHotStocks,
+      refreshAmplitudeBoards, ampLoading, hotPanelsHidden, financePushHidden,
       // 筛选板块
       filterPanel, openFilterPanel, resetFilter, applyFilterPool, toggleFilterLock,
       filteredFilterStocks, sortedFilterStocks, sortFilterBy, filterSortIcon,

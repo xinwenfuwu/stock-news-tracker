@@ -615,9 +615,33 @@ body {
 @media (max-width: 900px) {
   .hot-layout { grid-template-columns: 1fr; }
 }
-/* 热门页三栏并排：当日热门板块 / 盘前热点板块 / 当日热门股票，缩小宽度同栏展示 */
-.hot-layout-2 { grid-template-columns: repeat(3, 1fr); }
+/* 热门页四栏并排：当日热门板块 / 盘前热点板块 / 当日热门股票 / 振幅板块，缩小宽度同栏展示 */
+.hot-layout-2 { grid-template-columns: repeat(4, 1fr); }
+@media (max-width: 1100px) { .hot-layout-2 { grid-template-columns: repeat(2, 1fr); } }
 @media (max-width: 560px) { .hot-layout-2 { grid-template-columns: 1fr; } }
+
+/* 热门板块页：向下滚动时，顶部工具栏（含「选择日期」）固定不动 */
+.hot-toolbar {
+  position: sticky;
+  top: var(--header-h);
+  z-index: 90;
+  background: var(--bg);
+  padding-top: 10px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--border);
+}
+
+/* 板块标题行：标题在左、操作按钮在右 */
+.panel-title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 10px;
+  margin-bottom: 12px;
+}
+.panel-title-row .panel-title { margin-bottom: 0; padding-bottom: 0; border-bottom: none; }
 /* 收藏板块：顶部横屏全宽面板 */
 .fav-panel {
   background: var(--surface);

@@ -570,6 +570,30 @@ const StockAPI = {
   },
 
   /**
+   * 获取振幅板块排行（东财）
+   * 计算规则：对板块振幅（f7）突然拉升/放大进行排名，取概念板块按振幅降序。
+   * @returns {Array<{bk, name, change}>} change 为振幅(%)
+   */
+  async getAmplitudeBoards() {
+    const results = [];
+    try {
+      // 概念板块 fs=m:90+t:3，按振幅(f7)降序取前 15
+      const url = `https://push2.eastmoney.com/api/qt/clist/get?pn=1&pz=15&po=1&np=1&fltt=2&invt=2&fid=f7&fs=m:90+t:3&fields=f2,f3,f7,f12,f14`;
+      const resp = await fetch(url, { cache: 'no-store' });
+      const json = await resp.json();
+      if (json.data && json.data.diff) {
+        for (const item of json.data.diff) {
+          const amp = item.f7 != null ? parseFloat(item.f7) : parseFloat(item.f3);
+          results.push({ bk: item.f12, name: item.f14, change: isNaN(amp) ? 0 : amp });
+        }
+      }
+    } catch (e) {
+      console.debug('振幅板块获取失败');
+    }
+    return results;
+  },
+
+  /**
    * 获取个股涨幅排行（热门股票）
    * @returns {Array<{name, code, change}>}
    */
