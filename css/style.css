@@ -306,16 +306,17 @@ body {
   background: #f5f7fa;
 }
 .data-table th {
-  padding: 8px 6px;
+  padding: 7px 4px;
   text-align: left;
   font-weight: 600;
   color: var(--text-secondary);
   border-bottom: 2px solid var(--border);
   white-space: nowrap;
   font-size: 12.5px;
+  vertical-align: middle;
 }
 .data-table td {
-  padding: 6px 6px;
+  padding: 5px 3px;
   border-bottom: 1px solid #f0f2f5;
   vertical-align: middle;
   transition: background-color 0.15s ease;
@@ -526,9 +527,9 @@ body {
 /* ===== 股票字段表：紧凑对齐，单屏可见更多列 =====
    表头/单元格统一 5px 上下内边距；数值列右上对齐、文本列左对齐；
    冻结列保持居中，避免与滚动列错位。 */
-.pool-detail-table th, .pool-detail-table td { padding: 5px 5px; }
-.pool-detail-table th.num-col { text-align: right; padding-right: 8px; }
-.pool-detail-table td.num-cell { text-align: right; padding-right: 8px; font-variant-numeric: tabular-nums; }
+.pool-detail-table th, .pool-detail-table td { padding: 4px 3px; }
+.pool-detail-table th.num-col { text-align: right; padding-right: 5px; }
+.pool-detail-table td.num-cell { text-align: right; padding-right: 5px; font-variant-numeric: tabular-nums; }
 .pool-detail-table th.col-sticky, .pool-detail-table td.col-sticky { text-align: left; }
 .pool-detail-table th.col-sticky.num-col, .pool-detail-table td.col-sticky.num-cell { text-align: right; }
 .pool-detail-table .col-sticky-0, .pool-detail-table .col-sticky-3 { text-align: center; }
@@ -1232,7 +1233,7 @@ body {
 .fav-panel .pool-detail-table th,
 .fav-panel .pool-detail-table td,
 .hot-stock-table th,
-.hot-stock-table td { padding-left: 0.55em; padding-right: 0.55em; }
+.hot-stock-table td { padding-left: 0.3em; padding-right: 0.3em; }
 /* 主业与主要产品 / 概念：宽列、内容多行展示（不被 ellipsis 截断） */
 .filter-scroll .pool-detail-table .concept-cell,
 .sector-detail-modal .pool-detail-table .concept-cell,
@@ -1242,7 +1243,7 @@ body {
 .sector-detail-modal .pool-detail-table .mainbiz-cell,
 .pool-detail-modal .pool-detail-table .mainbiz-cell,
 .fav-panel .pool-detail-table .mainbiz-cell {
-  white-space: normal; line-height: 1.5; vertical-align: top; overflow-wrap: anywhere;
+  white-space: normal; line-height: 1.5; vertical-align: middle; overflow-wrap: anywhere;
   overflow: visible; text-overflow: clip;
 }
 .filter-scroll .pool-detail-table .concept-cell,
@@ -1252,10 +1253,10 @@ body {
 /* 通用规则：所有容器（含热门表 hot-stock-table）的概念/主业单元格均换行展示、不被 ellipsis 截断，
    并覆盖上方 .pool-detail-table td 的 overflow:hidden，确保多行内容完整显示且不压到邻列 */
 .pool-detail-table .concept-cell {
-  white-space: pre-line; line-height: 1.5; vertical-align: top; overflow: visible; text-overflow: clip;
+  white-space: pre-line; line-height: 1.5; vertical-align: middle; overflow: visible; text-overflow: clip;
 }
 .pool-detail-table .mainbiz-cell {
-  white-space: normal; line-height: 1.5; vertical-align: top; overflow-wrap: anywhere; overflow: visible; text-overflow: clip;
+  white-space: normal; line-height: 1.5; vertical-align: middle; overflow-wrap: anywhere; overflow: visible; text-overflow: clip;
 }
 .col-resize-handle {
   position: absolute;

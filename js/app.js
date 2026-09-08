@@ -2890,6 +2890,18 @@ const app = createApp({
           } catch (e) {
             console.warn('历史价获取失败', s.code, e);
           }
+          // 今年最高/最低价（用于「今年高价 / 距高价 / 今年低价 / 距低价」字段）
+          // 【修复】原筛选表刷新遗漏 getYearHighLow，导致 yearHighPrice/yearLowPrice 始终为空、
+          // 四个高低价字段长期刷新不出数据。与 refreshHotStocks 的 enrichStockFinancials 保持一致。
+          try {
+            const yhl = await StockAPI.getYearHighLow(s.code);
+            if (yhl) {
+              if (yhl.high != null) s.yearHighPrice = yhl.high;
+              if (yhl.low != null) s.yearLowPrice = yhl.low;
+            }
+          } catch (e) {
+            console.warn('今年高低价获取失败', s.code, e);
+          }
           if (s.todayPrice && s.yearStartPrice) {
             s.yearChange = +(((s.todayPrice - s.yearStartPrice) / s.yearStartPrice) * 100).toFixed(2);
           }
