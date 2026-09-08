@@ -547,52 +547,173 @@
           </div>
         </div>
 
-        <!-- 当日股票表 -->
-        <div class="hot-detail-head">
-          <h3 class="section-title" style="margin:0">
-            📋 筛选股票字段表
-            <span v-if="hotBoardActive" class="hot-detail-board">（{{ hotDetailIsStock ? '个股' : '板块' }}：{{ hotBoardActive }} · {{ sortedHotStocks.length }} 只）</span>
-            <span v-if="hotBoardLoading" class="muted small">⏳ 加载中...</span>
-          </h3>
-          <!-- 股票查询：按代码 / 按名称关键字过滤下方明细 -->
-          <div class="hot-search-row">
-            <input v-model="hotSearchCode" class="cell-input" placeholder="代码查询" style="width:104px"
-                   title="按股票代码关键字过滤下方明细（支持部分匹配，如 6005）">
-            <input v-model="hotSearchName" class="cell-input" placeholder="名称查询" style="width:104px"
-                   title="按股票名称关键字过滤下方明细（支持部分匹配，如 茅台）">
-            <button class="btn btn-sm" v-if="hotSearchCode || hotSearchName" @click="clearHotSearch" title="清空查询条件">✕ 清空查询</button>
+        
+        <div class="page-toolbar">
+          <div class="toolbar-left">
+            <h2 class="page-title" style="margin:0">🎯 筛选板块</h2>
           </div>
-          <button v-if="hotBoardActive" class="btn btn-sm" @click="clearHotBoard">{{ hotDetailIsStock ? '✕ 清除个股选择' : '✕ 清除板块选择' }}</button>
+          <div class="toolbar-right">
+            <button class="btn btn-sm" @click="filterFilterOpen = !filterFilterOpen">{{ filterFilterOpen ? '▴ 收起筛选栏' : '▾ 展开筛选栏' }}</button>
+            <button class="btn btn-sm" @click="filterInfoOpen = !filterInfoOpen" :title="filterInfoOpen ? '隐藏字段含义与计算规则' : '显示字段含义与计算规则'">{{ filterInfoOpen ? '🙈 隐藏说明' : '👁 字段含义' }}</button>
+            <button class="btn btn-sm" @click="refreshFilterStocks" :disabled="filterRefreshing">
+              <span v-if="filterRefreshing">⏳ 刷新中...</span>
+              <span v-else>🔄 刷新行情</span>
+            </button>
+          </div>
         </div>
-        <div class="table-wrap">
-          <table class="data-table pool-detail-table hot-stock-table">
+
+
+        <div class="filter-bar" v-show="filterFilterOpen">
+          <!-- 板块筛选：概念板块 + 股票池 -->
+          <div class="filter-field">
+            <label>板块筛选</label>
+            <select v-model="filterPanel.poolId" @change="applyFilterPool">
+              <option value="">— 请选择板块 —</option>
+              <optgroup label="🧭 概念行业板块">
+                <option v-for="sp in sortedSectorPools" :key="'s-'+sp.id" :value="'s-'+sp.id">{{ sp.name }}</option>
+              </optgroup>
+              <optgroup label="📅 股票池">
+                <option v-for="p in sortedPools" :key="'p-'+p.id" :value="'p-'+p.id">{{ p.name }}</option>
+              </optgroup>
+            </select>
+          </div>
+          <!-- 市净比区间 -->
+          <div class="filter-field">
+            <label>市净比</label>
+            <div class="range">
+              <input type="number" step="0.01" v-model.number="filterPanel.pbMin" placeholder="最小">
+              <span style="color:#909399">—</span>
+              <input type="number" step="0.01" v-model.number="filterPanel.pbMax" placeholder="最大">
+            </div>
+          </div>
+          <!-- 市扣比区间 -->
+          <div class="filter-field">
+            <label>市扣比</label>
+            <div class="range">
+              <input type="number" step="0.01" v-model.number="filterPanel.pkMin" placeholder="最小">
+              <span style="color:#909399">—</span>
+              <input type="number" step="0.01" v-model.number="filterPanel.pkMax" placeholder="最大">
+            </div>
+          </div>
+          <!-- 市营比区间 -->
+          <div class="filter-field">
+            <label>市营比</label>
+            <div class="range">
+              <input type="number" step="0.01" v-model.number="filterPanel.prMin" placeholder="最小">
+              <span style="color:#909399">—</span>
+              <input type="number" step="0.01" v-model.number="filterPanel.prMax" placeholder="最大">
+            </div>
+          </div>
+          <!-- 24营比区间 -->
+          <div class="filter-field">
+            <label>24营比</label>
+            <div class="range">
+              <input type="number" step="0.01" v-model.number="filterPanel.q24Min" placeholder="最小">
+              <span style="color:#909399">—</span>
+              <input type="number" step="0.01" v-model.number="filterPanel.q24Max" placeholder="最大">
+            </div>
+          </div>
+          <!-- 24扣比区间 -->
+          <div class="filter-field">
+            <label>24扣比</label>
+            <div class="range">
+              <input type="number" step="0.01" v-model.number="filterPanel.q24kMin" placeholder="最小">
+              <span style="color:#909399">—</span>
+              <input type="number" step="0.01" v-model.number="filterPanel.q24kMax" placeholder="最大">
+            </div>
+          </div>
+          <!-- 正数统计区间 -->
+          <div class="filter-field">
+            <label title="日涨跌→营收环比 区间内数值为正的字段个数">正数统计</label>
+            <div class="range">
+              <input type="number" step="1" min="0" :max="POSITIVE_KEYS.length" v-model.number="filterPanel.posMin" placeholder="最小">
+              <span style="color:#909399">—</span>
+              <input type="number" step="1" min="0" :max="POSITIVE_KEYS.length" v-model.number="filterPanel.posMax" placeholder="最大">
+            </div>
+          </div>
+          <!-- 比值筛选 -->
+          <div class="filter-field">
+            <label class="checkbox-label" title="仅保留满足「924涨跌 < 24营比 + 24扣比」的股票">
+              <input type="checkbox" v-model="filterPanel.ratioFilter"> 比值筛选
+            </label>
+            <span class="muted small">924涨跌 &lt; 24营比/2+24扣比/2</span>
+          </div>
+          <!-- 行业筛选：可收起的下拉勾选（多选），与概念详情一致；未勾选 = 全部 -->
+          <div class="filter-field industry-dropdown-field">
+            <button type="button" class="industry-dropdown-toggle" @click="filterIndustryOpen = !filterIndustryOpen">
+              行业<span v-if="filterPanel.industries.length" class="ind-badge">{{ filterPanel.industries.length }}</span>
+              <span class="ind-caret">{{ filterIndustryOpen ? '▴' : '▾' }}</span>
+            </button>
+            <div class="industry-dropdown-panel" v-show="filterIndustryOpen" @click.stop>
+              <div class="industry-check-list">
+                <label class="industry-check-item" v-for="ind in filterIndustries" :key="ind"
+                       :title="'勾选后仅显示「' + ind + '」行业的成分股'">
+                  <input type="checkbox" :value="ind" v-model="filterPanel.industries">
+                  <span>{{ ind }}</span>
+                </label>
+                <div class="industry-check-actions">
+                  <button type="button" class="btn btn-sm" @click="filterPanel.industries = filterIndustries.slice()">全选</button>
+                  <button type="button" class="btn btn-sm" @click="filterPanel.industries = []">清空</button>
+                </div>
+              </div>
+            </div>
+          </div>
+          <!-- 主业产品筛选：关键字模糊匹配「主业与主要产品」文本 -->
+          <div class="filter-field">
+            <label>主业产品</label>
+            <input class="cell-input" v-model.trim="filterPanel.mainBusiness" placeholder="如：白酒 / 芯片" style="width:128px"
+                   title="按主业与主要产品关键字模糊筛选（如「白酒」「芯片」），仅保留命中股票">
+          </div>
+          <button class="btn btn-sm" @click="resetFilter" :disabled="filterPanel.locked">🔄 重置</button>
+          <button class="btn btn-sm" :class="{ 'btn-locked': filterPanel.locked }" @click="toggleFilterLock">
+            <span v-if="filterPanel.locked">🔒 已固定</span>
+            <span v-else>🔓 固定筛选</span>
+          </button>
+          <span class="muted small" v-if="sortedFilterStocks.length">共 {{ sortedFilterStocks.length }} 只</span>
+        </div>
+
+        <div class="table-wrap filter-scroll" v-if="sortedFilterStocks.length">
+          <table class="data-table pool-detail-table">
             <colgroup>
-              <col v-for="(col, ci) in getColumns('hot')" :key="ci" :style="{ width: col.width + 'px' }" :class="col.fixed ? ('col-sticky col-sticky-' + col.fixedIndex) : ''"></col>
+              <col v-for="(col, ci) in getColumns('filter')" :key="ci" :style="{ width: col.width + 'px' }" :class="col.fixed ? ('col-sticky col-sticky-' + col.fixedIndex) : ''"></col>
             </colgroup>
             <thead>
               <tr>
-                <th v-for="(col, ci) in getColumns('hot')" :key="ci"
+                <th v-for="(col, ci) in getColumns('filter')" :key="ci"
                     :class="['col-' + col.key, col.fixed ? ('col-sticky col-sticky-' + col.fixedIndex) : '', col.sortable ? 'sortable' : '', (!col.fixed && ['pct','price','ratio','num2','num2pct','money','flow','int','diff'].includes(col.type)) ? 'num-col' : '']"
-                    @click="onStockSort(col, 'hot')">
-                  <span class="th-label">{{ col.label }}</span><span v-if="col.sortable" class="sort-ic">{{ stockSortIcon(col, 'hot') }}</span>
+                    @click="onStockSort(col, 'filter')">
+                  <span class="th-label">{{ col.label }}</span><span v-if="col.sortable" class="sort-ic">{{ stockSortIcon(col, 'filter') }}</span>
                 </th>
               </tr>
             </thead>
-            <tbody @click="onTableClick($event, 'hot', sortedHotStocks)" @change="onTableChange($event, 'hot')">
-              <tr v-for="(s, idx) in sortedHotStocks" :key="s.code">
-                <td v-for="(col, ci) in getColumns('hot')" :key="ci"
-                    :class="cellClass(col, s, idx, sortedHotStocks, 'hot')"
-                    v-html="cellHtml(col, s, idx, sortedHotStocks, 'hot')"></td>
-              </tr>
-              <tr v-if="sortedHotStocks.length === 0">
-                <td :colspan="getColumns('hot').length" class="empty-row">点击上方「当日热门板块」「盘前热点板块」「振幅板块」中的任一板块，即可在此显示该板块的全部成分股；点击「当日热门股票」中的个股，则显示该个股信息；或点击「加载当日数据」</td>
+            <tbody @click="onTableClick($event, 'filter', sortedFilterStocks)" @change="onTableChange($event, 'filter')">
+              <tr v-for="(s, idx) in sortedFilterStocks" :key="s.code">
+                <td v-for="(col, ci) in getColumns('filter')" :key="ci"
+                    :class="cellClass(col, s, idx, sortedFilterStocks, 'filter')"
+                    v-html="cellHtml(col, s, idx, sortedFilterStocks, 'filter')"></td>
               </tr>
             </tbody>
           </table>
         </div>
+        <p class="muted small" v-else>请选择上方板块以查看其成分股，或用区间筛选过滤。若无数据显示，可先「刷新行情」拉取财务数据。</p>
+
+        <!-- 收藏板块（已从热门页移入，置于筛选栏下方） -->
+        <div class="info-box small" v-show="filterInfoOpen">
+          <p>💡 <b>字段含义与计算规则</b>：<br>
+          · 行业=个股所属一级行业（如食品饮料、银行），来自东方财富公司概况。<br>
+          · <b>正数统计</b>=统计「日涨跌」到「营收环比」之间共 {{ POSITIVE_KEYS.length }} 个字段，显示为「正数个数 / 有数据的字段个数」（空值不计入总数也不计入正数），比值越高越强势。顶部「正数统计」框仍按正数个数区间筛选（如填 15—20 即只保留至少15项为正的个股）。<br>
+          · <b>比值筛选</b>=勾选后仅保留满足「924涨跌 < 24营比/2 + 24扣比/2」（即 924涨跌 小于 24营比与24扣比之均值）的股票（三者均须有数据）。该规则筛出「股价涨幅小于业绩增幅」的个股（业绩增长未充分反映在股价上）。<br>
+          · <b>行业筛选</b>=按成分股所属一级行业下拉过滤，可与其他条件组合使用。<br>
+          · 今涨跌=当日涨跌幅(%)；年涨跌=当日价相对当年首个交易日涨跌幅(%)；924涨跌=当日价相对2024-09-24收盘价涨跌幅(%)（不复权）。<br>
+          · 24营比=最新报告期营收 相对 2024年同期营收增长率(%)；24扣比=最新报告期扣非净利润 相对 2024年同期扣非净利润增长率(%)。顶部「24营比/24扣比」框可按该增长率区间筛选。<br>
+          · 散户差额=最新散户数量−上期散户数量。<br>
+          · 市净比=总市值÷净利润÷10；市扣比=总市值÷扣非净利润÷10；市营比=总市值÷营业收入；市净同比=总市值÷净利润同比增长率；市扣同比=总市值÷扣非净利润同比增长率；市营同比=总市值÷营收同比增长率；市净环比=总市值÷净利润环比增长率；市扣环比=总市值÷扣非净利润环比增长率；市营环比=总市值÷营收环比增长率（金额统一按亿元）。<br>
+          · 净利润环比=净利润环比增长率(%)；利润同比=净利润同比增长率(%)；营收同比增长率=营业收入同比增长率(%)；扣非同比=扣非净利润同比增长率(%)；扣非环比=扣非净利润环比增长率(%)。<br>
+          · 数据来源：行情/振幅/换手/总市值来自腾讯接口；财务/股东/增长率为东方财富接口（部分网络环境可能受限，可点击「刷新行情」重试）。</p>
+        </div>
       
 
-        <div class="fav-panel" v-show="favPanelOpen">
+<div class="fav-panel" v-show="favPanelOpen">
           <div class="fav-panel-header">
             <h3 class="panel-title" style="margin:0">⭐ 收藏板块</h3>
             <div class="fav-add-row" style="margin:0">
