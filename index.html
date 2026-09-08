@@ -227,6 +227,51 @@
           </div>
         </div>
         </div>
+        <!-- 当日股票明细（点击热门板块页子板块载入的成分股，在此同步展示） -->
+        <!-- 当日股票表 -->
+        <div class="hot-detail-head">
+          <h3 class="section-title" style="margin:0">
+            📋 当日股票明细
+            <span v-if="hotBoardActive" class="hot-detail-board">（{{ hotDetailIsStock ? '个股' : '板块' }}：{{ hotBoardActive }} · {{ sortedHotStocks.length }} 只）</span>
+            <span v-if="hotBoardLoading" class="muted small">⏳ 加载中...</span>
+          </h3>
+          <!-- 股票查询：按代码 / 按名称关键字过滤下方明细 -->
+          <div class="hot-search-row">
+            <input v-model="hotSearchCode" class="cell-input" placeholder="代码查询" style="width:104px"
+                   title="按股票代码关键字过滤下方明细（支持部分匹配，如 6005）">
+            <input v-model="hotSearchName" class="cell-input" placeholder="名称查询" style="width:104px"
+                   title="按股票名称关键字过滤下方明细（支持部分匹配，如 茅台）">
+            <button class="btn btn-sm" v-if="hotSearchCode || hotSearchName" @click="clearHotSearch" title="清空查询条件">✕ 清空查询</button>
+          </div>
+          <button v-if="hotBoardActive" class="btn btn-sm" @click="clearHotBoard">{{ hotDetailIsStock ? '✕ 清除个股选择' : '✕ 清除板块选择' }}</button>
+        </div>
+        <div class="table-wrap">
+          <table class="data-table pool-detail-table hot-stock-table">
+            <colgroup>
+              <col v-for="(col, ci) in getColumns('hot')" :key="ci" :style="{ width: col.width + 'px' }" :class="col.fixed ? ('col-sticky col-sticky-' + col.fixedIndex) : ''"></col>
+            </colgroup>
+            <thead>
+              <tr>
+                <th v-for="(col, ci) in getColumns('hot')" :key="ci"
+                    :class="['col-' + col.key, col.fixed ? ('col-sticky col-sticky-' + col.fixedIndex) : '', col.sortable ? 'sortable' : '', (!col.fixed && ['pct','price','ratio','num2','num2pct','money','flow','int','diff'].includes(col.type)) ? 'num-col' : '']"
+                    @click="onStockSort(col, 'hot')">
+                  <span class="th-label">{{ col.label }}</span><span v-if="col.sortable" class="sort-ic">{{ stockSortIcon(col, 'hot') }}</span>
+                </th>
+              </tr>
+            </thead>
+            <tbody @click="onTableClick($event, 'hot', sortedHotStocks)" @change="onTableChange($event, 'hot')">
+              <tr v-for="(s, idx) in sortedHotStocks" :key="s.code">
+                <td v-for="(col, ci) in getColumns('hot')" :key="ci"
+                    :class="cellClass(col, s, idx, sortedHotStocks, 'hot')"
+                    v-html="cellHtml(col, s, idx, sortedHotStocks, 'hot')"></td>
+              </tr>
+              <tr v-if="sortedHotStocks.length === 0">
+                <td :colspan="getColumns('hot').length" class="empty-row">点击上方「当日热门板块」「盘前热点板块」「振幅板块」中的任一板块，即可在此显示该板块的全部成分股；点击「当日热门股票」中的个股，则显示该个股信息；或点击「加载当日数据」</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
       </section>
 
       <!-- ===== 页面（美股美债：原财经推送页，内容已移至「新闻追踪」页下方，现为空白页） ===== -->
@@ -414,36 +459,6 @@
             <section v-show="currentPage === 'hot'" class="page">
         <div class="page-toolbar">
           <div class="toolbar-left">
-            <h2 class="page-title" style="margin:0">🔥 热门板块</h2>
-          </div>
-          <div class="toolbar-right">
-            <span class="muted small">本功能已合并至「筛选板块」页：日期栏、4 个子板块与成分股明细表均位于筛选板块顶部</span>
-          </div>
-        </div>
-      </section>
-
-
-      <!-- ===== 页面4：筛选板块（与热门板块平行） ===== -->
-      <section v-show="currentPage === 'filter'" class="page">
-        <div class="page-toolbar">
-          <div class="toolbar-left">
-            <h2 class="page-title" style="margin:0">🎯 筛选板块</h2>
-          </div>
-          <div class="toolbar-right">
-            <button class="btn btn-sm" @click="favPanelOpen = !favPanelOpen">{{ favPanelOpen ? '▴ 收起收藏' : '▾ 展开收藏' }}</button>
-            <button class="btn btn-sm" @click="filterFilterOpen = !filterFilterOpen">{{ filterFilterOpen ? '▴ 收起筛选栏' : '▾ 展开筛选栏' }}</button>
-            <button class="btn btn-sm" @click="filterInfoOpen = !filterInfoOpen" :title="filterInfoOpen ? '隐藏字段含义与计算规则' : '显示字段含义与计算规则'">{{ filterInfoOpen ? '🙈 隐藏说明' : '👁 字段含义' }}</button>
-            <button class="btn btn-sm" @click="refreshFilterStocks" :disabled="filterRefreshing">
-              <span v-if="filterRefreshing">⏳ 刷新中...</span>
-              <span v-else>🔄 刷新行情</span>
-            </button>
-          </div>
-        </div>
-
-
-        <!-- 热门板块功能区（已合并至此：日期栏 + 4 个子板块 + 成分股明细表） -->
-        <div class="page-toolbar">
-          <div class="toolbar-left">
             <div class="date-picker">
               <label>选择日期</label>
               <input type="date" v-model="hotDate">
@@ -535,7 +550,7 @@
         <!-- 当日股票表 -->
         <div class="hot-detail-head">
           <h3 class="section-title" style="margin:0">
-            📋 当日股票明细
+            📋 筛选股票字段表
             <span v-if="hotBoardActive" class="hot-detail-board">（{{ hotDetailIsStock ? '个股' : '板块' }}：{{ hotBoardActive }} · {{ sortedHotStocks.length }} 只）</span>
             <span v-if="hotBoardLoading" class="muted small">⏳ 加载中...</span>
           </h3>
@@ -576,6 +591,78 @@
           </table>
         </div>
       
+
+        <div class="fav-panel" v-show="favPanelOpen">
+          <div class="fav-panel-header">
+            <h3 class="panel-title" style="margin:0">⭐ 收藏板块</h3>
+            <div class="fav-add-row" style="margin:0">
+              <input v-model="favAddCode" class="cell-input" placeholder="股票代码" style="width:100px">
+              <input v-model="favAddName" class="cell-input" placeholder="股票名称" style="width:160px">
+              <button class="btn btn-sm" @click="addFavoriteManual" title="添加到收藏板块">＋ 添加</button>
+              <button class="btn btn-sm" @click="favInfoOpen = !favInfoOpen" :title="favInfoOpen ? '隐藏字段含义与计算规则' : '显示字段含义与计算规则'">{{ favInfoOpen ? '🙈 隐藏说明' : '👁 字段含义' }}</button>
+              <button class="btn btn-sm" @click="refreshFavorites" :disabled="favRefreshing">
+                <span v-if="favRefreshing">⏳ 刷新中...</span>
+                <span v-else>🔄 刷新行情</span>
+              </button>
+              <button class="btn btn-sm" @click="favPanelOpen = !favPanelOpen" :title="favPanelOpen ? '隐藏收藏板块' : '显示收藏板块'">{{ favPanelOpen ? '🙈 收起收藏' : '👁 展开收藏' }}</button>
+            </div>
+          </div>
+          <div class="table-wrap table-scroll-x" v-if="sortedFavorites.length">
+            <table class="data-table pool-detail-table">
+              <colgroup>
+                <col v-for="(col, ci) in getColumns('fav')" :key="ci" :style="{ width: col.width + 'px' }" :class="col.fixed ? ('col-sticky col-sticky-' + col.fixedIndex) : ''"></col>
+              </colgroup>
+              <thead>
+                <tr>
+                  <th v-for="(col, ci) in getColumns('fav')" :key="ci"
+                      :class="['col-' + col.key, col.fixed ? ('col-sticky col-sticky-' + col.fixedIndex) : '', col.sortable ? 'sortable' : '', (!col.fixed && ['pct','price','ratio','num2','num2pct','money','flow','int','diff'].includes(col.type)) ? 'num-col' : '']"
+                      @click="onStockSort(col, 'fav')">
+                    <span class="th-label">{{ col.label }}</span><span v-if="col.sortable" class="sort-ic">{{ stockSortIcon(col, 'fav') }}</span>
+                  </th>
+                </tr>
+              </thead>
+              <tbody @click="onTableClick($event, 'fav', sortedFavorites)" @change="onTableChange($event, 'fav')">
+                <tr v-for="(f, idx) in sortedFavorites" :key="f.id">
+                  <td v-for="(col, ci) in getColumns('fav')" :key="ci"
+                      :class="cellClass(col, f, idx, sortedFavorites, 'fav')"
+                      v-html="cellHtml(col, f, idx, sortedFavorites, 'fav')"></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="muted small" v-else>暂无收藏。点击股票列表中的 ☆ 即可收藏，或在上方输入代码手动添加。</div>
+          <div class="info-box small" v-show="favInfoOpen">
+            <p>💡 <b>字段含义与计算规则</b>：<br>
+            · 今涨跌=当日涨跌幅(%)；年涨跌=当日价相对当年首个交易日涨跌幅(%)；924涨跌=当日价相对2024-09-24收盘价涨跌幅(%)。<br>
+            · 24营比=最新报告期营收 相对 2024年同期营收的增长率(%)；24扣比=最新报告期扣非净利润 相对 2024年同期扣非净利润的增长率(%)。<br>
+            · 散户差额=最新散户数量−上期散户数量。<br>
+            · 市净比=总市值÷净利润÷10；市扣比=总市值÷扣非净利润÷10；市营比=总市值÷营业收入（金额统一按亿元）。<br>
+            · 市净同比=总市值÷净利润同比增长率；市扣同比=总市值÷扣非净利润同比增长率；市营同比=总市值÷营收同比增长率。<br>
+            · 市净环比=总市值÷净利润环比增长率；市扣环比=总市值÷扣非净利润环比增长率；市营环比=总市值÷营收环比增长率。<br>
+            · 净利润环比=净利润环比增长率(%)；利润同比=净利润同比增长率(%)；营收同比增长率=营业收入同比增长率(%)；扣非同比=扣非净利润同比增长率(%)；扣非环比=扣非净利润环比增长率(%)。<br>
+            · 振幅=当日振幅(%)；最新散户数量=最新一期股东户数；换手率=当日换手率(%)；资金流入=主力净流入额。<br>
+            · 数据来源：行情/振幅/换手/总市值来自腾讯接口；财务/股东/增长率为东方财富接口。</p>
+          </div>
+        </div>
+      </section>
+
+
+      <!-- ===== 页面4：筛选板块（与热门板块平行） ===== -->
+      <section v-show="currentPage === 'filter'" class="page">
+        <div class="page-toolbar">
+          <div class="toolbar-left">
+            <h2 class="page-title" style="margin:0">🎯 筛选板块</h2>
+          </div>
+          <div class="toolbar-right">
+            <button class="btn btn-sm" @click="filterFilterOpen = !filterFilterOpen">{{ filterFilterOpen ? '▴ 收起筛选栏' : '▾ 展开筛选栏' }}</button>
+            <button class="btn btn-sm" @click="filterInfoOpen = !filterInfoOpen" :title="filterInfoOpen ? '隐藏字段含义与计算规则' : '显示字段含义与计算规则'">{{ filterInfoOpen ? '🙈 隐藏说明' : '👁 字段含义' }}</button>
+            <button class="btn btn-sm" @click="refreshFilterStocks" :disabled="filterRefreshing">
+              <span v-if="filterRefreshing">⏳ 刷新中...</span>
+              <span v-else>🔄 刷新行情</span>
+            </button>
+          </div>
+        </div>
+
 
         <div class="filter-bar" v-show="filterFilterOpen">
           <!-- 板块筛选：概念板块 + 股票池 -->
@@ -694,58 +781,6 @@
         <p class="muted small" v-else>请选择上方板块以查看其成分股，或用区间筛选过滤。若无数据显示，可先「刷新行情」拉取财务数据。</p>
 
         <!-- 收藏板块（已从热门页移入，置于筛选栏下方） -->
-        <div class="fav-panel" v-show="favPanelOpen">
-          <div class="fav-panel-header">
-            <h3 class="panel-title" style="margin:0">⭐ 收藏板块</h3>
-            <div class="fav-add-row" style="margin:0">
-              <input v-model="favAddCode" class="cell-input" placeholder="股票代码" style="width:100px">
-              <input v-model="favAddName" class="cell-input" placeholder="股票名称" style="width:160px">
-              <button class="btn btn-sm" @click="addFavoriteManual" title="添加到收藏板块">＋ 添加</button>
-              <button class="btn btn-sm" @click="favInfoOpen = !favInfoOpen" :title="favInfoOpen ? '隐藏字段含义与计算规则' : '显示字段含义与计算规则'">{{ favInfoOpen ? '🙈 隐藏说明' : '👁 字段含义' }}</button>
-              <button class="btn btn-sm" @click="refreshFavorites" :disabled="favRefreshing">
-                <span v-if="favRefreshing">⏳ 刷新中...</span>
-                <span v-else>🔄 刷新行情</span>
-              </button>
-            </div>
-          </div>
-          <div class="table-wrap table-scroll-x" v-if="sortedFavorites.length">
-            <table class="data-table pool-detail-table">
-              <colgroup>
-                <col v-for="(col, ci) in getColumns('fav')" :key="ci" :style="{ width: col.width + 'px' }" :class="col.fixed ? ('col-sticky col-sticky-' + col.fixedIndex) : ''"></col>
-              </colgroup>
-              <thead>
-                <tr>
-                  <th v-for="(col, ci) in getColumns('fav')" :key="ci"
-                      :class="['col-' + col.key, col.fixed ? ('col-sticky col-sticky-' + col.fixedIndex) : '', col.sortable ? 'sortable' : '', (!col.fixed && ['pct','price','ratio','num2','num2pct','money','flow','int','diff'].includes(col.type)) ? 'num-col' : '']"
-                      @click="onStockSort(col, 'fav')">
-                    <span class="th-label">{{ col.label }}</span><span v-if="col.sortable" class="sort-ic">{{ stockSortIcon(col, 'fav') }}</span>
-                  </th>
-                </tr>
-              </thead>
-              <tbody @click="onTableClick($event, 'fav', sortedFavorites)" @change="onTableChange($event, 'fav')">
-                <tr v-for="(f, idx) in sortedFavorites" :key="f.id">
-                  <td v-for="(col, ci) in getColumns('fav')" :key="ci"
-                      :class="cellClass(col, f, idx, sortedFavorites, 'fav')"
-                      v-html="cellHtml(col, f, idx, sortedFavorites, 'fav')"></td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-          <div class="muted small" v-else>暂无收藏。点击股票列表中的 ☆ 即可收藏，或在上方输入代码手动添加。</div>
-          <div class="info-box small" v-show="favInfoOpen">
-            <p>💡 <b>字段含义与计算规则</b>：<br>
-            · 今涨跌=当日涨跌幅(%)；年涨跌=当日价相对当年首个交易日涨跌幅(%)；924涨跌=当日价相对2024-09-24收盘价涨跌幅(%)。<br>
-            · 24营比=最新报告期营收 相对 2024年同期营收的增长率(%)；24扣比=最新报告期扣非净利润 相对 2024年同期扣非净利润的增长率(%)。<br>
-            · 散户差额=最新散户数量−上期散户数量。<br>
-            · 市净比=总市值÷净利润÷10；市扣比=总市值÷扣非净利润÷10；市营比=总市值÷营业收入（金额统一按亿元）。<br>
-            · 市净同比=总市值÷净利润同比增长率；市扣同比=总市值÷扣非净利润同比增长率；市营同比=总市值÷营收同比增长率。<br>
-            · 市净环比=总市值÷净利润环比增长率；市扣环比=总市值÷扣非净利润环比增长率；市营环比=总市值÷营收环比增长率。<br>
-            · 净利润环比=净利润环比增长率(%)；利润同比=净利润同比增长率(%)；营收同比增长率=营业收入同比增长率(%)；扣非同比=扣非净利润同比增长率(%)；扣非环比=扣非净利润环比增长率(%)。<br>
-            · 振幅=当日振幅(%)；最新散户数量=最新一期股东户数；换手率=当日换手率(%)；资金流入=主力净流入额。<br>
-            · 数据来源：行情/振幅/换手/总市值来自腾讯接口；财务/股东/增长率为东方财富接口。</p>
-          </div>
-        </div>
-
         <div class="info-box small" v-show="filterInfoOpen">
           <p>💡 <b>字段含义与计算规则</b>：<br>
           · 行业=个股所属一级行业（如食品饮料、银行），来自东方财富公司概况。<br>
