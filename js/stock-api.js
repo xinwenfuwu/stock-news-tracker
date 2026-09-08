@@ -257,8 +257,13 @@ const StockAPI = {
     return out;
   },
 
-  // 腾讯历史日K线兜底：web.ifzq.gtimg.cn 对浏览器返回 Access-Control-Allow-Origin:*，
-  // 简单 fetch（不带自定义头）即可直连，无需 JSONP。返回节点 .day 为 [日期,开,收,高,低,量,...]。
+  // 腾讯历史日K线（免费、无需鉴权；响应带 Access-Control-Allow-Origin:*，
+  // 浏览器简单 fetch 即可直连，无需 JSONP）。返回 data[code].day = [日期,开,收,高,低,量]。
+  //
+  // 【重要】实测：该接口在「带复权参数(qfq/bfq)」或「带显式日期区间」时常返回空数据，
+  // 只有形如  param={code},day,,,{根数},   （日期区间留空、复权留空）才稳定返回，
+  // 语义为「最近 N 个交易日」，不复权真实价 —— 正合计算今年高低价/年初价/924价之需。
+  // 多节点轮换，任一成功即用。
   async _tencentKline(code, startDate, endDate, count) {
     const pure = this.pureCode(code);
     const c = String(code).toLowerCase();
@@ -269,40 +274,56 @@ const StockAPI = {
     else if (/^[69]/.test(pure)) market = 'sh';
     else if (/^[48]/.test(pure)) market = 'bj';
     else market = 'sz';
-    const beg = String(startDate || '').replace(/-/g, '');
-    const end = String(endDate || '').replace(/-/g, '');
-    // 根数需覆盖区间交易日数：两年区间约 480 个交易日，硬编码 320 会截断导致算不出年初价/924价
+    const sym = market + pure;
+    // 根数需覆盖区间交易日数：两年约 480 根，320 会截断导致算不出年初价/924价
     const n = count || this._barCount(startDate, endDate);
-    const url = `https://web.ifzq.gtimg.cn/appstock/app/fqkline/get?param=${market}${pure},day,${beg},${end},${n},bfq`;
-    try {
-      const resp = await fetch(url, { cache: 'no-store' });
-      if (!resp.ok) return [];
-      const j = await resp.json();
-      const node = j && j.data && j.data[market + pure];
-      const arr = node && (node.day || node.bfqday || node.qfqday);
-      if (!arr || !arr.length) return [];
-      const out = [];
-      for (const r of arr) {
-        const date = r[0];
-        const close = parseFloat(r[2]);
-        if (!date || isNaN(close)) continue;
-        out.push({ date, open: parseFloat(r[1]), close, high: parseFloat(r[3]), low: parseFloat(r[4]), volume: parseFloat(r[5]) });
+    const nodes = [
+      'https://web.ifzq.gtimg.cn/appstock/app/kline/kline',
+      'https://proxy.finance.qq.com/ifzqgtimg/appstock/app/kline/kline'
+    ];
+    for (const base of nodes) {
+      try {
+        const url = `${base}?param=${sym},day,,,${n},`;
+        const resp = await fetch(url, { cache: 'no-store' });
+        if (!resp.ok) continue;
+        const j = await resp.json();
+        const node = j && j.data && j.data[sym];
+        const arr = node && (node.day || node.bfqday || node.qfqday);
+        if (!arr || !arr.length) continue;
+        const out = [];
+        for (const r of arr) {
+          const date = r[0];
+          const close = parseFloat(r[2]);
+          if (!date || isNaN(close)) continue;
+          out.push({ date, open: parseFloat(r[1]), close, high: parseFloat(r[3]), low: parseFloat(r[4]), volume: parseFloat(r[5]) });
+        }
+        if (out.length) return out;
+      } catch (e) {
+        console.debug('腾讯K线节点失败', base, code, e && e.message);
       }
-      return out;
-    } catch (e) {
-      console.debug('腾讯K线获取失败', code, e);
-      return [];
     }
+    return [];
   },
 
+  /**
+   * 获取日K线（不复权）。
+   * 【数据源顺序】用户反馈东财在其网络下不可用（「东财失败」），而腾讯行情
+   * （qt.gtimg.cn，本文件实时行情所用）可正常访问，且腾讯历史K线免费、CORS 开放。
+   * 故改为：**腾讯优先**，东财仅作兜底。
+   * @returns {Array<{date,open,close,high,low,volume}>}
+   */
   async getKline(code, startDate, endDate, count) {
+    // 1) 腾讯历史日K线（免费、CORS 开放、浏览器直连）
+    try {
+      const bars = await this._tencentKline(code, startDate, endDate, count);
+      if (bars && bars.length) return bars;
+    } catch (e) {
+      console.debug('腾讯K线失败，尝试东财兜底', code, e);
+    }
+    // 2) 兜底：东财日K线（klt=101 日线，fqt=0 不复权真实价；必须带 ut 否则返回空）
     const secid = this.toEastSecid(code);
     const beg = String(startDate || '').replace(/-/g, '');
     const end = String(endDate || '').replace(/-/g, '');
-    // 东财日K线（klt=101 日线，fqt=0 不复权真实价）。
-    // 【关键修复】必须带 ut token，否则 push2his 返回 data:null / 空 klines，
-    // 导致今年高价/距高价/今年低价/距低价/年涨跌/924涨跌 六个字段空白。
-    // 现仍走 _eastGet（fetch → JSONP 兜底）；若东财仍取不到，再降级到腾讯历史K线。
     const url = `https://push2his.eastmoney.com/api/qt/stock/kline/get?ut=fa5fd1943c7b386f172d6893dbfba10b&secid=${secid}` +
       `&fields1=f1,f2,f3,f4,f5,f6&fields2=f51,f52,f53,f54,f55,f56,f57,f58` +
       `&klt=101&fqt=0&beg=${beg}&end=${end}&lmt=1000`;
@@ -314,14 +335,7 @@ const StockAPI = {
         if (out.length) return out;
       }
     } catch (e) {
-      console.debug('东财K线失败，尝试腾讯兜底', code, e);
-    }
-    // 兜底：腾讯历史日K线（已验证可达且 CORS 开放）
-    try {
-      const bars = await this._tencentKline(code, startDate, endDate, count);
-      if (bars && bars.length) return bars;
-    } catch (e) {
-      console.debug('腾讯K线亦失败', code, e);
+      console.debug('东财K线亦失败', code, e);
     }
     return [];
   },
@@ -631,6 +645,13 @@ const StockAPI = {
       data = await this.getKline(code, start, end, n);
     } catch (e) {
       data = [];
+    }
+    // 腾讯接口语义为「最近 N 个交易日」，若根数不足导致未覆盖到 924，则加大根数重试一次
+    if (data.length && data[0].date > start) {
+      try {
+        const more = await this.getKline(code, start, end, 1600);
+        if (more && more.length && more[0].date < data[0].date) data = more;
+      } catch (e) { /* 重试失败则沿用原数据 */ }
     }
     if (!data || !data.length) return out;
     // 今年高低价 + 年初第一个交易日收盘价（K 线按日期升序，首个即年初首个交易日）
