@@ -411,8 +411,38 @@
       </section>
 
       <!-- ===== 页面3：热门板块 ===== -->
-      <section v-show="currentPage === 'hot'" class="page">
-        <div class="page-toolbar hot-toolbar">
+            <section v-show="currentPage === 'hot'" class="page">
+        <div class="page-toolbar">
+          <div class="toolbar-left">
+            <h2 class="page-title" style="margin:0">🔥 热门板块</h2>
+          </div>
+          <div class="toolbar-right">
+            <span class="muted small">本功能已合并至「筛选板块」页：日期栏、4 个子板块与成分股明细表均位于筛选板块顶部</span>
+          </div>
+        </div>
+      </section>
+
+
+      <!-- ===== 页面4：筛选板块（与热门板块平行） ===== -->
+      <section v-show="currentPage === 'filter'" class="page">
+        <div class="page-toolbar">
+          <div class="toolbar-left">
+            <h2 class="page-title" style="margin:0">🎯 筛选板块</h2>
+          </div>
+          <div class="toolbar-right">
+            <button class="btn btn-sm" @click="favPanelOpen = !favPanelOpen">{{ favPanelOpen ? '▴ 收起收藏' : '▾ 展开收藏' }}</button>
+            <button class="btn btn-sm" @click="filterFilterOpen = !filterFilterOpen">{{ filterFilterOpen ? '▴ 收起筛选栏' : '▾ 展开筛选栏' }}</button>
+            <button class="btn btn-sm" @click="filterInfoOpen = !filterInfoOpen" :title="filterInfoOpen ? '隐藏字段含义与计算规则' : '显示字段含义与计算规则'">{{ filterInfoOpen ? '🙈 隐藏说明' : '👁 字段含义' }}</button>
+            <button class="btn btn-sm" @click="refreshFilterStocks" :disabled="filterRefreshing">
+              <span v-if="filterRefreshing">⏳ 刷新中...</span>
+              <span v-else>🔄 刷新行情</span>
+            </button>
+          </div>
+        </div>
+
+
+        <!-- 热门板块功能区（已合并至此：日期栏 + 4 个子板块 + 成分股明细表） -->
+        <div class="page-toolbar">
           <div class="toolbar-left">
             <div class="date-picker">
               <label>选择日期</label>
@@ -545,24 +575,7 @@
             </tbody>
           </table>
         </div>
-      </section>
-
-      <!-- ===== 页面4：筛选板块（与热门板块平行） ===== -->
-      <section v-show="currentPage === 'filter'" class="page">
-        <div class="page-toolbar">
-          <div class="toolbar-left">
-            <h2 class="page-title" style="margin:0">🎯 筛选板块</h2>
-          </div>
-          <div class="toolbar-right">
-            <button class="btn btn-sm" @click="favPanelOpen = !favPanelOpen">{{ favPanelOpen ? '▴ 收起收藏' : '▾ 展开收藏' }}</button>
-            <button class="btn btn-sm" @click="filterFilterOpen = !filterFilterOpen">{{ filterFilterOpen ? '▴ 收起筛选栏' : '▾ 展开筛选栏' }}</button>
-            <button class="btn btn-sm" @click="filterInfoOpen = !filterInfoOpen" :title="filterInfoOpen ? '隐藏字段含义与计算规则' : '显示字段含义与计算规则'">{{ filterInfoOpen ? '🙈 隐藏说明' : '👁 字段含义' }}</button>
-            <button class="btn btn-sm" @click="refreshFilterStocks" :disabled="filterRefreshing">
-              <span v-if="filterRefreshing">⏳ 刷新中...</span>
-              <span v-else>🔄 刷新行情</span>
-            </button>
-          </div>
-        </div>
+      
 
         <div class="filter-bar" v-show="filterFilterOpen">
           <!-- 板块筛选：概念板块 + 股票池 -->
