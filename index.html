@@ -253,7 +253,7 @@
             <thead>
               <tr>
                 <th v-for="(col, ci) in getColumns('hot')" :key="ci"
-                    :class="['col-' + col.key, col.fixed ? ('col-sticky col-sticky-' + col.fixedIndex) : '', col.sortable ? 'sortable' : '', (!col.fixed && ['pct','price','ratio','num2','num2pct','money','flow','int','diff'].includes(col.type)) ? 'num-col' : '']"
+                    :class="['col-' + col.key, col.fixed ? ('col-sticky col-sticky-' + col.fixedIndex) : '', col.sortable ? 'sortable' : '', isNumCol(col) ? 'num-col' : '']"
                     @click="onStockSort(col, 'hot')">
                   <span class="th-label">{{ col.label }}</span><span v-if="col.sortable" class="sort-ic">{{ stockSortIcon(col, 'hot') }}</span>
                 </th>
@@ -681,7 +681,7 @@
             <thead>
               <tr>
                 <th v-for="(col, ci) in getColumns('filter')" :key="ci"
-                    :class="['col-' + col.key, col.fixed ? ('col-sticky col-sticky-' + col.fixedIndex) : '', col.sortable ? 'sortable' : '', (!col.fixed && ['pct','price','ratio','num2','num2pct','money','flow','int','diff'].includes(col.type)) ? 'num-col' : '']"
+                    :class="['col-' + col.key, col.fixed ? ('col-sticky col-sticky-' + col.fixedIndex) : '', col.sortable ? 'sortable' : '', isNumCol(col) ? 'num-col' : '']"
                     @click="onStockSort(col, 'filter')">
                   <span class="th-label">{{ col.label }}</span><span v-if="col.sortable" class="sort-ic">{{ stockSortIcon(col, 'filter') }}</span>
                 </th>
@@ -737,7 +737,7 @@
               <thead>
                 <tr>
                   <th v-for="(col, ci) in getColumns('fav')" :key="ci"
-                      :class="['col-' + col.key, col.fixed ? ('col-sticky col-sticky-' + col.fixedIndex) : '', col.sortable ? 'sortable' : '', (!col.fixed && ['pct','price','ratio','num2','num2pct','money','flow','int','diff'].includes(col.type)) ? 'num-col' : '']"
+                      :class="['col-' + col.key, col.fixed ? ('col-sticky col-sticky-' + col.fixedIndex) : '', col.sortable ? 'sortable' : '', isNumCol(col) ? 'num-col' : '']"
                       @click="onStockSort(col, 'fav')">
                     <span class="th-label">{{ col.label }}</span><span v-if="col.sortable" class="sort-ic">{{ stockSortIcon(col, 'fav') }}</span>
                   </th>
@@ -904,7 +904,7 @@
             <thead>
               <tr>
                 <th v-for="(col, ci) in getColumns('filter')" :key="ci"
-                    :class="['col-' + col.key, col.fixed ? ('col-sticky col-sticky-' + col.fixedIndex) : '', col.sortable ? 'sortable' : '', (!col.fixed && ['pct','price','ratio','num2','num2pct','money','flow','int','diff'].includes(col.type)) ? 'num-col' : '']"
+                    :class="['col-' + col.key, col.fixed ? ('col-sticky col-sticky-' + col.fixedIndex) : '', col.sortable ? 'sortable' : '', isNumCol(col) ? 'num-col' : '']"
                     @click="onStockSort(col, 'filter')">
                   <span class="th-label">{{ col.label }}</span><span v-if="col.sortable" class="sort-ic">{{ stockSortIcon(col, 'filter') }}</span>
                 </th>
@@ -1134,7 +1134,7 @@
               <thead>
                 <tr>
                   <th v-for="(col, ci) in getColumns('pool')" :key="ci"
-                      :class="['col-' + col.key, col.fixed ? ('col-sticky col-sticky-' + col.fixedIndex) : '', col.sortable ? 'sortable' : '', (!col.fixed && ['pct','price','ratio','num2','num2pct','money','flow','int','diff'].includes(col.type)) ? 'num-col' : '']"
+                      :class="['col-' + col.key, col.fixed ? ('col-sticky col-sticky-' + col.fixedIndex) : '', col.sortable ? 'sortable' : '', isNumCol(col) ? 'num-col' : '']"
                       @click="onStockSort(col, 'pool')">
                     <span class="th-label">{{ col.label }}</span><span v-if="col.sortable" class="sort-ic">{{ stockSortIcon(col, 'pool') }}</span>
                   </th>
@@ -1283,7 +1283,7 @@
               <thead>
                 <tr>
                   <th v-for="(col, ci) in getColumns('sector')" :key="ci"
-                      :class="['col-' + col.key, col.fixed ? ('col-sticky col-sticky-' + col.fixedIndex) : '', col.sortable ? 'sortable' : '', (!col.fixed && ['pct','price','ratio','num2','num2pct','money','flow','int','diff'].includes(col.type)) ? 'num-col' : '']"
+                      :class="['col-' + col.key, col.fixed ? ('col-sticky col-sticky-' + col.fixedIndex) : '', col.sortable ? 'sortable' : '', isNumCol(col) ? 'num-col' : '']"
                       @click="onStockSort(col, 'sector')">
                     <span class="th-label">{{ col.label }}</span><span v-if="col.sortable" class="sort-ic">{{ stockSortIcon(col, 'sector') }}</span>
                   </th>

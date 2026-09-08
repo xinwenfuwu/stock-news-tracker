@@ -284,19 +284,39 @@ const app = createApp({
         if (q24.q24Rev != null) s.q24Rev = q24.q24Rev;
         if (q24.q24Kcf != null) s.q24Kcf = q24.q24Kcf;
       } catch (e) { console.warn('季报对比获取失败', s.code, e); }
+      // 历史价：优先「一次请求取四项」（getHistoryBundle，请求量降为 1/3），
+      // 取不到的项再逐项兜底。各项独立 try —— 原先四项挤在同一个 try 里，
+      // 只要 getYearStartPrice 抛异常，后面三项就永远不会执行，六个字段全部空白。
       try {
-        const yp = await StockAPI.getYearStartPrice(s.code);
-        if (yp != null) s.yearStartPrice = yp;
-        if (s.price924 == null) {
+        const hb = await StockAPI.getHistoryBundle(s.code);
+        if (hb) {
+          if (hb.yearStartPrice != null) s.yearStartPrice = hb.yearStartPrice;
+          if (hb.price924 != null) s.price924 = hb.price924;
+          if (hb.yearHighPrice != null) s.yearHighPrice = hb.yearHighPrice;
+          if (hb.yearLowPrice != null) s.yearLowPrice = hb.yearLowPrice;
+        }
+      } catch (e) { console.warn('历史价批量获取失败', s.code, e); }
+      if (s.yearStartPrice == null) {
+        try {
+          const yp = await StockAPI.getYearStartPrice(s.code);
+          if (yp != null) s.yearStartPrice = yp;
+        } catch (e) { console.warn('年初价获取失败', s.code, e); }
+      }
+      if (s.price924 == null) {
+        try {
           const p924 = await StockAPI.get924Price(s.code);
           if (p924 != null) s.price924 = p924;
-        }
-        const yhl = await StockAPI.getYearHighLow(s.code);
-        if (yhl) {
-          if (yhl.high != null) s.yearHighPrice = yhl.high;
-          if (yhl.low != null) s.yearLowPrice = yhl.low;
-        }
-      } catch (e) { console.warn('历史价获取失败', s.code, e); }
+        } catch (e) { console.warn('924价获取失败', s.code, e); }
+      }
+      if (s.yearHighPrice == null || s.yearLowPrice == null) {
+        try {
+          const yhl = await StockAPI.getYearHighLow(s.code);
+          if (yhl) {
+            if (yhl.high != null) s.yearHighPrice = yhl.high;
+            if (yhl.low != null) s.yearLowPrice = yhl.low;
+          }
+        } catch (e) { console.warn('今年高低价获取失败', s.code, e); }
+      }
       // 所属行业 / 主营构成（best-effort，仅在缺失时请求，避免重复拉取）
       try {
         if (!s.industry) {
@@ -1466,14 +1486,22 @@ const app = createApp({
         default: return '—';
       }
     }
+    /**
+     * 数值列（右对齐）判定 —— 表头与单元格必须共用同一套规则。
+     * 原先表头只对部分类型、且排除冻结列才加 num-col，而单元格 cellClass 对更多类型
+     * （cap / curPrice / favGain 等）也加 num-cell，导致「表头靠左、数据靠右」，
+     * 字段与数据不在同一条中轴线上。这里统一为一份定义。
+     */
+    const NUMERIC_COL_TYPES = ['pct', 'price', 'ratio', 'num2', 'num2pct', 'money', 'flow', 'int', 'diff', 'cap', 'curPrice', 'favGain'];
+    function isNumCol(col) { return !!col && NUMERIC_COL_TYPES.indexOf(col.type) >= 0; }
+
     /** 单元格 class（冻结列 + 数值列 + 涨跌色 + 多行展示） */
     function cellClass(col, s, idx, list, ctx) {
       const cls = [];
       if (col.fixed) cls.push('col-sticky', 'col-sticky-' + col.fixedIndex);
       // 注意：'pos'(正数统计) 是冻结列且与表头一样居中展示，不能加 num-cell（右对齐），
       // 否则会出现「表头居中、内容靠右」的错位
-      const numeric = ['pct', 'price', 'ratio', 'num2', 'num2pct', 'money', 'flow', 'int', 'diff', 'cap', 'curPrice', 'favGain'];
-      if (numeric.indexOf(col.type) >= 0) cls.push('num-cell');
+      if (isNumCol(col)) cls.push('num-cell');
       if (col.type === 'mainbiz') cls.push('mainbiz-cell');
       if (col.type === 'concept') cls.push('concept-cell');
       if (col.type === 'pct') cls.push(pctClass(poolVal(s, col.key)));
@@ -2248,6 +2276,34 @@ const app = createApp({
       }
     }
 
+    /**
+     * 以固定并发度执行异步任务。
+     * 板块成分股动辄上百只，若逐只串行补全（每只约 7 次请求），总耗时与失败率都会急剧上升，
+     * 是「今年高价/距高价/今年低价/距低价/年涨跌/924涨跌」六个字段长期刷新不出的主因；
+     * 但若一次性全并发又会被接口限流。这里取折中并发度（默认 6）。
+     * @param {Array} items 待处理项
+     * @param {number} limit 并发度
+     * @param {(item:any, index:number)=>Promise<any>} worker 处理函数
+     */
+    async function runWithConcurrency(items, limit, worker) {
+      const list = items || [];
+      if (!list.length) return;
+      const n = Math.max(1, Math.min(limit || 6, list.length));
+      let idx = 0;
+      const runners = [];
+      for (let w = 0; w < n; w++) {
+        runners.push((async () => {
+          for (;;) {
+            const i = idx++;
+            if (i >= list.length) return;
+            try { await worker(list[i], i); }
+            catch (e) { console.warn('并发补全任务失败', e); }
+          }
+        })());
+      }
+      await Promise.all(runners);
+    }
+
     async function refreshHotStocks() {
       const daily = D.dailyData[hotDate.value];
       if (!daily || !daily.stocks.length) {
@@ -2270,13 +2326,15 @@ const app = createApp({
         }
       }
       showToast('行情已刷新，正在获取财务数据...', 'info');
-      // 财务/股东/历史价（东财，best-effort，复用共享补全逻辑；顺序执行以降低限流风险）
-      for (let i = 0; i < daily.stocks.length; i++) {
-        const s = daily.stocks[i];
+      // 财务/股东/历史价（东财，best-effort，复用共享补全逻辑）
+      // 并发补全：成分股数量多时串行会显著拖慢并触发限流，导致六项历史价字段取不到
+      let done = 0;
+      await runWithConcurrency(daily.stocks, 6, async (s) => {
         try { await enrichStockFinancials(s); } catch (e) { console.warn('热门股财务补全失败', s.code, e); }
-        // 成分股较多时给出进度提示（逐只请求以避免触发接口限流）
-        if ((i + 1) % 25 === 0) showToast(`已补全 ${i + 1}/${daily.stocks.length} 只...`, 'info');
-      }
+        done++;
+        // 给出进度提示
+        if (done % 25 === 0) showToast(`已补全 ${done}/${daily.stocks.length} 只...`, 'info');
+      });
       hotLoading.value = false;
       showToast('行情已刷新', 'success');
     }
@@ -2830,8 +2888,9 @@ const app = createApp({
         }
         // 2) 补充财务/股东数据（东方财富，best-effort）
         const works = list.filter(s => s.code);
-        for (let i = 0; i < works.length; i++) {
-          const s = works[i];
+        // 并发补全：成分股数量多时串行会显著拖慢并触发限流
+        let done = 0;
+        await runWithConcurrency(works, 6, async (s) => {
           try {
             const [flow, fin] = await Promise.all([
               StockAPI.getCapitalFlow(s.code),
@@ -2879,28 +2938,45 @@ const app = createApp({
           } catch (e) {
             console.warn('季报对比获取失败', s.code, e);
           }
-          // 年初价 + 924价
+          // 历史价：优先「一次请求取四项」，取不到的项再逐项兜底（各自独立 try，互不连坐）
           try {
-            const yp = await StockAPI.getYearStartPrice(s.code);
-            if (yp != null) s.yearStartPrice = yp;
-            if (s.price924 == null) {
+            const hb = await StockAPI.getHistoryBundle(s.code);
+            if (hb) {
+              if (hb.yearStartPrice != null) s.yearStartPrice = hb.yearStartPrice;
+              if (hb.price924 != null) s.price924 = hb.price924;
+              if (hb.yearHighPrice != null) s.yearHighPrice = hb.yearHighPrice;
+              if (hb.yearLowPrice != null) s.yearLowPrice = hb.yearLowPrice;
+            }
+          } catch (e) {
+            console.warn('历史价批量获取失败', s.code, e);
+          }
+          if (s.yearStartPrice == null) {
+            try {
+              const yp = await StockAPI.getYearStartPrice(s.code);
+              if (yp != null) s.yearStartPrice = yp;
+            } catch (e) {
+              console.warn('年初价获取失败', s.code, e);
+            }
+          }
+          if (s.price924 == null) {
+            try {
               const p924 = await StockAPI.get924Price(s.code);
               if (p924 != null) s.price924 = p924;
+            } catch (e) {
+              console.warn('924价获取失败', s.code, e);
             }
-          } catch (e) {
-            console.warn('历史价获取失败', s.code, e);
           }
           // 今年最高/最低价（用于「今年高价 / 距高价 / 今年低价 / 距低价」字段）
-          // 【修复】原筛选表刷新遗漏 getYearHighLow，导致 yearHighPrice/yearLowPrice 始终为空、
-          // 四个高低价字段长期刷新不出数据。与 refreshHotStocks 的 enrichStockFinancials 保持一致。
-          try {
-            const yhl = await StockAPI.getYearHighLow(s.code);
-            if (yhl) {
-              if (yhl.high != null) s.yearHighPrice = yhl.high;
-              if (yhl.low != null) s.yearLowPrice = yhl.low;
+          if (s.yearHighPrice == null || s.yearLowPrice == null) {
+            try {
+              const yhl = await StockAPI.getYearHighLow(s.code);
+              if (yhl) {
+                if (yhl.high != null) s.yearHighPrice = yhl.high;
+                if (yhl.low != null) s.yearLowPrice = yhl.low;
+              }
+            } catch (e) {
+              console.warn('今年高低价获取失败', s.code, e);
             }
-          } catch (e) {
-            console.warn('今年高低价获取失败', s.code, e);
           }
           if (s.todayPrice && s.yearStartPrice) {
             s.yearChange = +(((s.todayPrice - s.yearStartPrice) / s.yearStartPrice) * 100).toFixed(2);
@@ -2908,7 +2984,9 @@ const app = createApp({
           if (s.todayPrice && s.price924) {
             s.change924 = +(((s.todayPrice - s.price924) / s.price924) * 100).toFixed(2);
           }
-        }
+          done++;
+          if (done % 25 === 0) showToast(`已补全 ${done}/${works.length} 只...`, 'info');
+        });
         showToast('刷新完成', 'success');
       } finally {
         filterRefreshing.value = false;
@@ -3187,7 +3265,7 @@ const app = createApp({
       positiveCount, POSITIVE_KEYS,
       mainBusinessText, mainBizKcfRatio, stockConcepts, contractLiabCell,
       // 统一股票表（四表共用列定义与单元格渲染）
-      getColumns, cellHtml, cellClass, onStockSort, stockSortIcon, onTableClick, onTableChange, STOCK_COLUMNS,
+      getColumns, cellHtml, cellClass, isNumCol, onStockSort, stockSortIcon, onTableClick, onTableChange, STOCK_COLUMNS,
       filterIndustries, filterIndustryOpen,
       filterRefreshing, refreshFilterStocks, filterFilterOpen, favPanelOpen,
       sortedSectorPools, sortedPools,

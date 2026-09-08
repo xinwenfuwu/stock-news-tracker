@@ -259,7 +259,7 @@ const StockAPI = {
 
   // 腾讯历史日K线兜底：web.ifzq.gtimg.cn 对浏览器返回 Access-Control-Allow-Origin:*，
   // 简单 fetch（不带自定义头）即可直连，无需 JSONP。返回节点 .day 为 [日期,开,收,高,低,量,...]。
-  async _tencentKline(code, startDate, endDate) {
+  async _tencentKline(code, startDate, endDate, count) {
     const pure = this.pureCode(code);
     const c = String(code).toLowerCase();
     let market = 'sh';
@@ -271,7 +271,9 @@ const StockAPI = {
     else market = 'sz';
     const beg = String(startDate || '').replace(/-/g, '');
     const end = String(endDate || '').replace(/-/g, '');
-    const url = `https://web.ifzq.gtimg.cn/appstock/app/fqkline/get?param=${market}${pure},day,${beg},${end},320,bfq`;
+    // 根数需覆盖区间交易日数：两年区间约 480 个交易日，硬编码 320 会截断导致算不出年初价/924价
+    const n = count || this._barCount(startDate, endDate);
+    const url = `https://web.ifzq.gtimg.cn/appstock/app/fqkline/get?param=${market}${pure},day,${beg},${end},${n},bfq`;
     try {
       const resp = await fetch(url, { cache: 'no-store' });
       if (!resp.ok) return [];
@@ -293,7 +295,7 @@ const StockAPI = {
     }
   },
 
-  async getKline(code, startDate, endDate) {
+  async getKline(code, startDate, endDate, count) {
     const secid = this.toEastSecid(code);
     const beg = String(startDate || '').replace(/-/g, '');
     const end = String(endDate || '').replace(/-/g, '');
@@ -316,7 +318,7 @@ const StockAPI = {
     }
     // 兜底：腾讯历史日K线（已验证可达且 CORS 开放）
     try {
-      const bars = await this._tencentKline(code, startDate, endDate);
+      const bars = await this._tencentKline(code, startDate, endDate, count);
       if (bars && bars.length) return bars;
     } catch (e) {
       console.debug('腾讯K线亦失败', code, e);
@@ -587,6 +589,73 @@ const StockAPI = {
       console.debug('今年高低价获取失败', code, e);
       return null;
     }
+  },
+
+  /**
+   * 估算区间所需的 K 线根数。
+   * 腾讯 fqkline 的第 5 个参数即返回根数，硬编码 320 在两年区间（约 480 个交易日）
+   * 会被截断，导致取不到年初价/924价。这里按自然日折算交易日并留冗余。
+   */
+  _barCount(startDate, endDate) {
+    try {
+      const s = new Date(startDate), e = new Date(endDate);
+      const days = Math.ceil((e - s) / 86400000) + 1;
+      // 两年区间约 480 个交易日；根数过大时腾讯会直接返回空，故上限取 800
+      return Math.min(800, Math.max(320, Math.ceil(days * 7 / 5) + 40));
+    } catch (e) {
+      return 640;
+    }
+  },
+
+  /**
+   * 一次请求取回「年初价 / 924价 / 今年最高价 / 今年最低价」四项历史价。
+   *
+   * 【为什么要合并】原先每只股票要分别调用 getYearStartPrice / get924Price /
+   * getYearHighLow，即 3 次 K 线请求。热门板块点击后的成分股动辄上百只，
+   * 串行请求量达数百至上千次，极易触发接口限流与浏览器超时，表现为
+   * 「今年高价/距高价/今年低价/距低价/年涨跌/924涨跌」六个字段长期刷新不出数据
+   * （其他页面股票数少、能跑完，所以看起来「都正常」）。
+   * 改为一次拉取 2024-09-01 至今的全部日 K，一次性算出四项，请求量降为原来的 1/3。
+   * @param {string} code sh600519
+   * @returns {Promise<{yearStartPrice,price924,yearHighPrice,yearLowPrice}>} 取不到的项为 null
+   */
+  async getHistoryBundle(code) {
+    const out = { yearStartPrice: null, price924: null, yearHighPrice: null, yearLowPrice: null };
+    if (!code) return out;
+    const y = new Date().getFullYear();
+    const start = '2024-09-01';
+    const end = this.fmtDate(new Date());
+    const n = this._barCount(start, end);
+    let data = [];
+    try {
+      data = await this.getKline(code, start, end, n);
+    } catch (e) {
+      data = [];
+    }
+    if (!data || !data.length) return out;
+    // 今年高低价 + 年初第一个交易日收盘价（K 线按日期升序，首个即年初首个交易日）
+    const prefix = `${y}-`;
+    let hi = -Infinity, lo = Infinity, first = null;
+    for (const k of data) {
+      if (k.date && k.date.indexOf(prefix) === 0) {
+        if (k.high != null && !isNaN(k.high) && k.high > hi) hi = k.high;
+        if (k.low != null && !isNaN(k.low) && k.low < lo) lo = k.low;
+        if (!first) first = k;
+      }
+    }
+    if (hi !== -Infinity) out.yearHighPrice = +hi.toFixed(2);
+    if (lo !== Infinity) out.yearLowPrice = +lo.toFixed(2);
+    if (first) out.yearStartPrice = first.close;
+    // 924 收盘价：优先精确匹配，非交易日则取之前最近一个交易日
+    const exact = data.find(k => k.date === '2024-09-24');
+    if (exact) {
+      out.price924 = exact.close;
+    } else {
+      let prev = null;
+      for (const k of data) { if (k.date && k.date <= '2024-09-24') prev = k; }
+      if (prev) out.price924 = prev.close;
+    }
+    return out;
   },
 
   /** 转换 SECUCODE：sh600519 → 600519.SH，sz000001 → 000001.SZ，bj → .BJ */

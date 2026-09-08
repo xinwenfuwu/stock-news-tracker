@@ -1250,6 +1250,12 @@ body {
 .sector-detail-modal .pool-detail-table .concept-cell,
 .pool-detail-modal .pool-detail-table .concept-cell,
 .fav-panel .pool-detail-table .concept-cell { white-space: pre-line; }
+/* 收藏字段表：字段（表头）与数据保持同一条中轴线
+   —— 垂直方向统一居中；水平方向由 isNumCol 统一判定，表头与单元格同为右对齐/左对齐 */
+.fav-panel .pool-detail-table th,
+.fav-panel .pool-detail-table td { vertical-align: middle; }
+.fav-panel .pool-detail-table th.num-col,
+.fav-panel .pool-detail-table td.num-cell { text-align: right; }
 /* 通用规则：所有容器（含热门表 hot-stock-table）的概念/主业单元格均换行展示、不被 ellipsis 截断，
    并覆盖上方 .pool-detail-table td 的 overflow:hidden，确保多行内容完整显示且不压到邻列 */
 .pool-detail-table .concept-cell {
