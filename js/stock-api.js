@@ -237,44 +237,91 @@ const StockAPI = {
    * 获取日K线（不复权）
    * @returns {Array<{date,open,close,high,low,volume}>}
    */
+  // 把东财 klines 文本数组解析成统一结构
+  _parseEastKline(kl) {
+    const out = [];
+    for (const line of kl) {
+      // klines 每项：日期,开盘,收盘,最高,最低,成交量,成交额,振幅,...（顺序由 fields2 决定）
+      const p = String(line).split(',');
+      const close = parseFloat(p[2]);
+      if (!p[0] || isNaN(close)) continue;
+      out.push({
+        date: p[0],
+        open: parseFloat(p[1]),
+        close,
+        high: parseFloat(p[3]),
+        low: parseFloat(p[4]),
+        volume: parseFloat(p[5])
+      });
+    }
+    return out;
+  },
+
+  // 腾讯历史日K线兜底：web.ifzq.gtimg.cn 对浏览器返回 Access-Control-Allow-Origin:*，
+  // 简单 fetch（不带自定义头）即可直连，无需 JSONP。返回节点 .day 为 [日期,开,收,高,低,量,...]。
+  async _tencentKline(code, startDate, endDate) {
+    const pure = this.pureCode(code);
+    const c = String(code).toLowerCase();
+    let market = 'sh';
+    if (/^sz/.test(c)) market = 'sz';
+    else if (/^bj/.test(c)) market = 'bj';
+    else if (/^sh/.test(c)) market = 'sh';
+    else if (/^[69]/.test(pure)) market = 'sh';
+    else if (/^[48]/.test(pure)) market = 'bj';
+    else market = 'sz';
+    const beg = String(startDate || '').replace(/-/g, '');
+    const end = String(endDate || '').replace(/-/g, '');
+    const url = `https://web.ifzq.gtimg.cn/appstock/app/fqkline/get?param=${market}${pure},day,${beg},${end},320,bfq`;
+    try {
+      const resp = await fetch(url, { cache: 'no-store' });
+      if (!resp.ok) return [];
+      const j = await resp.json();
+      const node = j && j.data && j.data[market + pure];
+      const arr = node && (node.day || node.bfqday || node.qfqday);
+      if (!arr || !arr.length) return [];
+      const out = [];
+      for (const r of arr) {
+        const date = r[0];
+        const close = parseFloat(r[2]);
+        if (!date || isNaN(close)) continue;
+        out.push({ date, open: parseFloat(r[1]), close, high: parseFloat(r[3]), low: parseFloat(r[4]), volume: parseFloat(r[5]) });
+      }
+      return out;
+    } catch (e) {
+      console.debug('腾讯K线获取失败', code, e);
+      return [];
+    }
+  },
+
   async getKline(code, startDate, endDate) {
-    // 东财日K线（klt=101 日线，fqt=0 不复权真实价）。
-    //
-    // 【重要】原实现使用腾讯 web.ifzq.gtimg.cn 且携带 User-Agent/Referer 自定义请求头：
-    // 浏览器会把该请求判定为「非简单请求」从而发起 CORS 预检(OPTIONS)，而腾讯接口不支持预检，
-    // 请求在预检阶段即被拦截 —— 这正是「今年高价/距高价/今年低价/距低价/年涨跌/924涨跌」
-    // 六个依赖历史价的字段长期刷新不出数据的根因。
-    // 现改为东财接口，并统一走 _eastGet（fetch 失败自动降级 JSONP，彻底绕开 CORS）。
     const secid = this.toEastSecid(code);
     const beg = String(startDate || '').replace(/-/g, '');
     const end = String(endDate || '').replace(/-/g, '');
-    const url = `https://push2his.eastmoney.com/api/qt/stock/kline/get?secid=${secid}` +
+    // 东财日K线（klt=101 日线，fqt=0 不复权真实价）。
+    // 【关键修复】必须带 ut token，否则 push2his 返回 data:null / 空 klines，
+    // 导致今年高价/距高价/今年低价/距低价/年涨跌/924涨跌 六个字段空白。
+    // 现仍走 _eastGet（fetch → JSONP 兜底）；若东财仍取不到，再降级到腾讯历史K线。
+    const url = `https://push2his.eastmoney.com/api/qt/stock/kline/get?ut=fa5fd1943c7b386f172d6893dbfba10b&secid=${secid}` +
       `&fields1=f1,f2,f3,f4,f5,f6&fields2=f51,f52,f53,f54,f55,f56,f57,f58` +
       `&klt=101&fqt=0&beg=${beg}&end=${end}&lmt=1000`;
     try {
       const json = await this._eastGet(url);
       const kl = json && json.data && json.data.klines;
-      if (!kl || !kl.length) return [];
-      const out = [];
-      for (const line of kl) {
-        // klines 每项：日期,开盘,收盘,最高,最低,成交量,成交额,振幅,...（顺序由 fields2 决定）
-        const p = String(line).split(',');
-        const close = parseFloat(p[2]);
-        if (!p[0] || isNaN(close)) continue;
-        out.push({
-          date: p[0],
-          open: parseFloat(p[1]),
-          close,
-          high: parseFloat(p[3]),
-          low: parseFloat(p[4]),
-          volume: parseFloat(p[5])
-        });
+      if (kl && kl.length) {
+        const out = this._parseEastKline(kl);
+        if (out.length) return out;
       }
-      return out;
     } catch (e) {
-      console.error('获取K线失败', code, e);
-      return [];
+      console.debug('东财K线失败，尝试腾讯兜底', code, e);
     }
+    // 兜底：腾讯历史日K线（已验证可达且 CORS 开放）
+    try {
+      const bars = await this._tencentKline(code, startDate, endDate);
+      if (bars && bars.length) return bars;
+    } catch (e) {
+      console.debug('腾讯K线亦失败', code, e);
+    }
+    return [];
   },
 
   // ============ 东方财富 补充数据（best-effort） ============
