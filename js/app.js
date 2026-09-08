@@ -1330,9 +1330,6 @@ const app = createApp({
       { key: 'code', label: '代码', fixed: true, fixedIndex: 1, width: 88, sortable: true, type: 'code' },
       { key: 'name', label: '股票名称', fixed: true, fixedIndex: 2, width: 104, sortable: true, type: 'name' },
       { key: 'positiveCount', label: '统计', fixed: true, fixedIndex: 3, width: 60, sortable: true, type: 'pos' },
-      { key: 'mainBusiness', label: '主业与主要产品', width: 178, sortable: false, type: 'mainbiz' },
-      { key: 'industry', label: '行业', width: 96, sortable: true, type: 'text' },
-      { key: 'concept', label: '概念', width: 112, sortable: false, type: 'concept' },
       { key: 'dailyChange', label: '日涨跌', width: 88, sortable: true, type: 'pct' },
       { key: 'yearHighPrice', label: '今年高价', width: 88, sortable: true, type: 'price' },
       { key: 'distToYearHigh', label: '距高价', width: 88, sortable: true, type: 'pct' },
@@ -1342,6 +1339,12 @@ const app = createApp({
       { key: 'distToYearLow', label: '距低价', width: 88, sortable: true, type: 'pct' },
       { key: 'yearChange', label: '年涨跌', width: 88, sortable: true, type: 'pct' },
       { key: 'change924', label: '924涨跌', width: 88, sortable: true, type: 'pct' },
+      // 总市值（单位：亿元）：按需求置于「924涨跌」之后
+      { key: 'totalMarketCap', label: '总市值', width: 96, sortable: true, type: 'cap' },
+      // 营收 / 净利润 / 扣非净利润：按需求置于「924涨跌」之后
+      { key: 'revenue', label: '营业收入', width: 100, sortable: true, type: 'money' },
+      { key: 'netProfit', label: '净利润', width: 100, sortable: true, type: 'money' },
+      { key: 'kcfjcxjlr', label: '扣非净利润', width: 100, sortable: true, type: 'money' },
       { key: 'q24Rev', label: '24营比', width: 88, sortable: true, type: 'pct' },
       { key: 'q24Kcf', label: '24扣比', width: 88, sortable: true, type: 'pct' },
       { key: 'pbRatio', label: '市净比', width: 86, sortable: true, type: 'ratio' },
@@ -1353,9 +1356,6 @@ const app = createApp({
       { key: 'phRatio', label: '市净环比', width: 92, sortable: true, type: 'num2' },
       { key: 'pkHbRatio', label: '市扣环比', width: 92, sortable: true, type: 'num2' },
       { key: 'ph2Ratio', label: '市营环比', width: 92, sortable: true, type: 'num2' },
-      { key: 'netProfit', label: '净利润', width: 100, sortable: true, type: 'money' },
-      { key: 'kcfjcxjlr', label: '扣非净利润', width: 100, sortable: true, type: 'money' },
-      { key: 'revenue', label: '营业收入', width: 100, sortable: true, type: 'money' },
       { key: 'profitYoY', label: '净利润同比', width: 96, sortable: true, type: 'pct' },
       { key: 'hbGrowth', label: '净利润环比', width: 96, sortable: true, type: 'pct' },
       { key: 'kcfYoY', label: '扣非同比', width: 92, sortable: true, type: 'pct' },
@@ -1369,8 +1369,10 @@ const app = createApp({
       { key: 'turnover', label: '换手率', width: 78, sortable: true, type: 'num2pct' },
       { key: 'capitalFlow', label: '资金流入', width: 104, sortable: true, type: 'flow' },
       { key: 'contractLiab', label: '合同负债及排名', width: 100, sortable: true, type: 'contractliab' },
-      // 总市值（单位：亿元），置于「收藏」列之前
-      { key: 'totalMarketCap', label: '总市值', width: 96, sortable: true, type: 'cap' },
+      // 主业与主要产品 / 概念 / 行业：按需求置于字段栏最后（收藏/操作/备注之前）
+      { key: 'mainBusiness', label: '主业与主要产品', width: 178, sortable: false, type: 'mainbiz' },
+      { key: 'concept', label: '概念', width: 112, sortable: false, type: 'concept' },
+      { key: 'industry', label: '行业', width: 96, sortable: true, type: 'text' },
       { key: '__fav', label: '收藏', width: 58, sortable: false, type: 'fav' },
       { key: '__action', label: '操作', width: 84, sortable: false, type: 'action' },
       { key: '__note', label: '备注', width: 132, sortable: false, type: 'note' }
@@ -1999,6 +2001,22 @@ const app = createApp({
       sectorDetail.show = true;
       // 打开新板块时重置详情内筛选区间（已固定则保留）
       if (!sectorFilter.locked) resetSectorFilter();
+      // 【修复】概念行业选股页点击子版块后，「今年高价/距高价/今年低价/距低价/年涨跌/924涨跌」
+      // 六个依赖历史价的字段长期空白。根因：热门板块在 openHotBoard 后会自动 await refreshHotStocks()
+      // 补全历史价，而本页 openSectorDetail 仅打开弹窗、不触发任何补全，须用户手动点「刷新行情」。
+      // 这里在打开时检测：若成分股尚未补全历史价（yearStartPrice/yearHighPrice/price924 缺失），
+      // 自动触发 refreshSectorDetail → refreshPoolDetail 补全，体验与热门板块一致。
+      // 已补全过则跳过，避免重复请求触发接口限流。
+      if (sector.stocks && sector.stocks.length) {
+        const needHist = sector.stocks.some(s =>
+          s.yearStartPrice == null || s.yearHighPrice == null || s.price924 == null);
+        if (needHist) {
+          sectorLoading.value = true;
+          refreshSectorDetail(sector)
+            .catch(e => console.warn('板块详情历史价自动补全失败', sector.name, e))
+            .finally(() => { sectorLoading.value = false; });
+        }
+      }
     }
     function startEditSectorName() {
       sectorDetail.nameDraft = sectorDetail.data.name || '';
@@ -2374,7 +2392,8 @@ const app = createApp({
       q24kMin: null, q24kMax: null, // 24扣比区间
       posMin: null, posMax: null,   // 正数统计区间（今涨跌→扣非环比 中为正的字段个数）
       ratioFilter: false,            // 比值筛选：924涨跌 < 24营比 + 24扣比
-      industry: ''                   // 行业筛选：'' 表示不限
+      industry: '',                  // 行业筛选：'' 表示不限
+      mainBusiness: ''               // 主业产品筛选：关键字模糊匹配「主业与主要产品」文本，'' 表示不限
     });
     // 各表初始列宽（px）：与 STOCK_COLUMNS 宽度一一对应（见下方 SORT_STATES 之后的定义）。
 
@@ -2497,6 +2516,7 @@ const app = createApp({
       filterPanel.q24kMin = null; filterPanel.q24kMax = null;
       filterPanel.posMin = null; filterPanel.posMax = null;
       filterPanel.ratioFilter = false; filterPanel.industry = '';
+      filterPanel.mainBusiness = '';
     }
     /** 切换板块后重置区间筛选；若已固定则保留区间 */
     function applyFilterPool() {
@@ -2508,6 +2528,7 @@ const app = createApp({
       filterPanel.q24kMin = null; filterPanel.q24kMax = null;
       filterPanel.posMin = null; filterPanel.posMax = null;
       filterPanel.ratioFilter = false; filterPanel.industry = '';
+      filterPanel.mainBusiness = '';
     }
     /** 区间判断工具：v 在 [min,max] 内（含边界），边界均为空则不限（含 null） */
     function inRange(v, min, max) {
@@ -2553,6 +2574,15 @@ const app = createApp({
         const c9 = s.change924, rv = s.q24Rev, kc = s.q24Kcf;
         if (c9 == null || isNaN(c9) || rv == null || isNaN(rv) || kc == null || isNaN(kc)) return false;
         if (!(c9 < rv / 2 + kc / 2)) return false;
+      }
+      // 主业产品筛选：关键字模糊匹配「主业与主要产品」文本（mainBusiness 为 {name,ratio} 数组）
+      if (f.mainBusiness && f.mainBusiness.trim()) {
+        const kw = f.mainBusiness.trim();
+        const mb = s.mainBusiness;
+        const text = Array.isArray(mb)
+          ? mb.map(x => (x && x.name) || x).join(' ')
+          : (mb ? String(mb) : '');
+        if (text.indexOf(kw) === -1) return false;
       }
       return true;
     }

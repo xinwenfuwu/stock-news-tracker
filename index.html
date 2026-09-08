@@ -747,6 +747,12 @@
               <option v-for="ind in filterIndustries" :key="ind" :value="ind">{{ ind }}</option>
             </select>
           </div>
+          <!-- 主业产品筛选：关键字模糊匹配「主业与主要产品」文本 -->
+          <div class="filter-field">
+            <label>主业产品</label>
+            <input class="cell-input" v-model.trim="filterPanel.mainBusiness" placeholder="如：白酒 / 芯片" style="width:128px"
+                   title="按主业与主要产品关键字模糊筛选（如「白酒」「芯片」），仅保留命中股票">
+          </div>
           <button class="btn btn-sm" @click="resetFilter" :disabled="filterPanel.locked">🔄 重置</button>
           <button class="btn btn-sm" :class="{ 'btn-locked': filterPanel.locked }" @click="toggleFilterLock">
             <span v-if="filterPanel.locked">🔒 已固定</span>
