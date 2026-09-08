@@ -739,13 +739,25 @@
             </label>
             <span class="muted small">924涨跌 &lt; 24营比/2+24扣比/2</span>
           </div>
-          <!-- 行业筛选 -->
-          <div class="filter-field">
-            <label>行业</label>
-            <select v-model="filterPanel.industry">
-              <option value="">全部行业</option>
-              <option v-for="ind in filterIndustries" :key="ind" :value="ind">{{ ind }}</option>
-            </select>
+          <!-- 行业筛选：可收起的下拉勾选（多选），与概念详情一致；未勾选 = 全部 -->
+          <div class="filter-field industry-dropdown-field">
+            <button type="button" class="industry-dropdown-toggle" @click="filterIndustryOpen = !filterIndustryOpen">
+              行业<span v-if="filterPanel.industries.length" class="ind-badge">{{ filterPanel.industries.length }}</span>
+              <span class="ind-caret">{{ filterIndustryOpen ? '▴' : '▾' }}</span>
+            </button>
+            <div class="industry-dropdown-panel" v-show="filterIndustryOpen" @click.stop>
+              <div class="industry-check-list">
+                <label class="industry-check-item" v-for="ind in filterIndustries" :key="ind"
+                       :title="'勾选后仅显示「' + ind + '」行业的成分股'">
+                  <input type="checkbox" :value="ind" v-model="filterPanel.industries">
+                  <span>{{ ind }}</span>
+                </label>
+                <div class="industry-check-actions">
+                  <button type="button" class="btn btn-sm" @click="filterPanel.industries = filterIndustries.slice()">全选</button>
+                  <button type="button" class="btn btn-sm" @click="filterPanel.industries = []">清空</button>
+                </div>
+              </div>
+            </div>
           </div>
           <!-- 主业产品筛选：关键字模糊匹配「主业与主要产品」文本 -->
           <div class="filter-field">
@@ -1112,23 +1124,27 @@
               </label>
               <span class="muted small">924涨跌 &lt; 24营比/2+24扣比/2</span>
             </div>
-            <!-- 行业选择：行业列表支持勾选（可多选），未勾选任何行业 = 全部 -->
-            <div class="filter-field industry-check-field">
-              <label>行业
-                <span class="muted small" v-if="sectorFilter.industries.length">（已选 {{ sectorFilter.industries.length }}）</span>
-              </label>
-              <div class="industry-check-list">
-                <label class="industry-check-item" v-for="ind in sectorDetailIndustries" :key="ind"
-                       :title="'勾选后仅显示「' + ind + '」行业的成分股'">
-                  <input type="checkbox" :value="ind" v-model="sectorFilter.industries">
-                  <span>{{ ind }}</span>
-                </label>
-                <div class="industry-check-actions">
-                  <button type="button" class="btn btn-sm" @click="sectorFilter.industries = sectorDetailIndustries.slice()">全选</button>
-                  <button type="button" class="btn btn-sm" @click="sectorFilter.industries = []">清空</button>
+            <!-- 行业选择：可收起的下拉勾选（多选），未勾选任何行业 = 全部 -->
+            <div class="filter-field industry-dropdown-field">
+              <button type="button" class="industry-dropdown-toggle" @click="sectorIndustryOpen = !sectorIndustryOpen">
+                行业<span v-if="sectorFilter.industries.length" class="ind-badge">{{ sectorFilter.industries.length }}</span>
+                <span class="ind-caret">{{ sectorIndustryOpen ? '▴' : '▾' }}</span>
+              </button>
+              <div class="industry-dropdown-panel" v-show="sectorIndustryOpen" @click.stop>
+                <div class="industry-check-list">
+                  <label class="industry-check-item" v-for="ind in sectorDetailIndustries" :key="ind"
+                         :title="'勾选后仅显示「' + ind + '」行业的成分股'">
+                    <input type="checkbox" :value="ind" v-model="sectorFilter.industries">
+                    <span>{{ ind }}</span>
+                  </label>
+                  <div class="industry-check-actions">
+                    <button type="button" class="btn btn-sm" @click="sectorFilter.industries = sectorDetailIndustries.slice()">全选</button>
+                    <button type="button" class="btn btn-sm" @click="sectorFilter.industries = []">清空</button>
+                  </div>
                 </div>
               </div>
             </div>
+<!-- /industry-dropdown -->
             <button class="btn btn-sm" @click="resetSectorFilter" :disabled="sectorFilter.locked">🔄 重置</button>
             <button class="btn btn-sm" :class="{ 'btn-locked': sectorFilter.locked }" @click="toggleSectorFilterLock">
               <span v-if="sectorFilter.locked">🔒 已固定</span>

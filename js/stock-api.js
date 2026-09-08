@@ -617,13 +617,21 @@ const StockAPI = {
    * @returns {object|null}
    */
   async _eastGet(url) {
-    // 多节点轮询：push2 主节点被限流/不可达时，自动切到 push2delay / push2his
-    // （二者是东财的独立延迟/历史节点，通常不会同时受限），显著提高取数成功率。
     let u = null;
     try { u = new URL(url); } catch (e) { u = null; }
-    const hosts = (u && u.hostname.indexOf('push2') === 0)
-      ? ['push2.eastmoney.com', 'push2delay.eastmoney.com', 'push2his.eastmoney.com']
-      : [null];   // 非 push2 域名（如 datacenter-web）不做替换
+    const isKline = !!(u && u.pathname.indexOf('/kline/') >= 0);
+    let hosts;
+    if (u && u.hostname.indexOf('push2') === 0) {
+      // K 线只有 push2his / push2delay 提供真实数据；push2 主节点对 kline 接口返回
+      // data:{klines:[]} 这类「成功但空」的响应。若把 push2 排在最前，_eastGet 会把它当成成功
+      // 直接短路返回，导致「今年高价/距高价/今年低价/距低价/年涨跌/924涨跌」永远取不到数据。
+      // 故 K 线请求跳过 push2，且只在确有 klines 时才算成功（空数据继续尝试下一节点）。
+      hosts = isKline
+        ? ['push2his.eastmoney.com', 'push2delay.eastmoney.com']
+        : ['push2.eastmoney.com', 'push2delay.eastmoney.com', 'push2his.eastmoney.com'];
+    } else {
+      hosts = [null];   // 非 push2 域名（如 datacenter-web）不做替换
+    }
     for (const host of hosts) {
       // 用字符串拼接而非 URL 序列化，避免 searchParams 重新编码把 "fs=m:90+t:2" 的 "+" 变成空格
       let target = url;
@@ -635,7 +643,10 @@ const StockAPI = {
         const resp = await fetch(target, { cache: 'no-store' });
         if (resp.ok) {
           const j = await resp.json();
-          if (j && j.data !== undefined) return j;
+          if (j && j.data != null) {
+            if (isKline) { if (j.data.klines && j.data.klines.length) return j; }
+            else return j;
+          }
         }
       } catch (e) {
         console.debug('[stock-api] fetch 失败，改用 JSONP 兜底:', e && e.message);
@@ -643,7 +654,10 @@ const StockAPI = {
       // 2) JSONP：注入 <script> 加载，完全绕过 CORS
       try {
         const j = await this._eastJsonp(target, 9000);
-        if (j && j.data !== undefined) return j;
+        if (j && j.data != null) {
+          if (isKline) { if (j.data.klines && j.data.klines.length) return j; }
+          else return j;
+        }
       } catch (e) {
         console.debug('[stock-api] JSONP 亦失败:', e && e.message);
       }

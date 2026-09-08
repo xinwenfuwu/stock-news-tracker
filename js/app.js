@@ -1331,6 +1331,17 @@ const app = createApp({
       { key: 'name', label: '股票名称', fixed: true, fixedIndex: 2, width: 104, sortable: true, type: 'name' },
       { key: 'positiveCount', label: '统计', fixed: true, fixedIndex: 3, width: 60, sortable: true, type: 'pos' },
       { key: 'dailyChange', label: '日涨跌', width: 88, sortable: true, type: 'pct' },
+      // 以下 9 个字段按需求统一置于「日涨跌」之后：
+      // 总市值 / 营业收入 / 净利润 / 扣非净利润 / 24营比 / 24扣比 / 市营比 / 市净比 / 市扣比
+      { key: 'totalMarketCap', label: '总市值', width: 96, sortable: true, type: 'cap' },
+      { key: 'revenue', label: '营业收入', width: 100, sortable: true, type: 'money' },
+      { key: 'netProfit', label: '净利润', width: 100, sortable: true, type: 'money' },
+      { key: 'kcfjcxjlr', label: '扣非净利润', width: 100, sortable: true, type: 'money' },
+      { key: 'q24Rev', label: '24营比', width: 88, sortable: true, type: 'pct' },
+      { key: 'q24Kcf', label: '24扣比', width: 88, sortable: true, type: 'pct' },
+      { key: 'prRatio', label: '市营比', width: 86, sortable: true, type: 'ratio' },
+      { key: 'pbRatio', label: '市净比', width: 86, sortable: true, type: 'ratio' },
+      { key: 'pkRatio', label: '市扣比', width: 86, sortable: true, type: 'ratio' },
       { key: 'yearHighPrice', label: '今年高价', width: 88, sortable: true, type: 'price' },
       { key: 'distToYearHigh', label: '距高价', width: 88, sortable: true, type: 'pct' },
       // 现价：今日实时股价，固定红色显示，便于与今年高低价直接对照
@@ -1339,17 +1350,6 @@ const app = createApp({
       { key: 'distToYearLow', label: '距低价', width: 88, sortable: true, type: 'pct' },
       { key: 'yearChange', label: '年涨跌', width: 88, sortable: true, type: 'pct' },
       { key: 'change924', label: '924涨跌', width: 88, sortable: true, type: 'pct' },
-      // 总市值（单位：亿元）：按需求置于「924涨跌」之后
-      { key: 'totalMarketCap', label: '总市值', width: 96, sortable: true, type: 'cap' },
-      // 营收 / 净利润 / 扣非净利润：按需求置于「924涨跌」之后
-      { key: 'revenue', label: '营业收入', width: 100, sortable: true, type: 'money' },
-      { key: 'netProfit', label: '净利润', width: 100, sortable: true, type: 'money' },
-      { key: 'kcfjcxjlr', label: '扣非净利润', width: 100, sortable: true, type: 'money' },
-      { key: 'q24Rev', label: '24营比', width: 88, sortable: true, type: 'pct' },
-      { key: 'q24Kcf', label: '24扣比', width: 88, sortable: true, type: 'pct' },
-      { key: 'pbRatio', label: '市净比', width: 86, sortable: true, type: 'ratio' },
-      { key: 'pkRatio', label: '市扣比', width: 86, sortable: true, type: 'ratio' },
-      { key: 'prRatio', label: '市营比', width: 86, sortable: true, type: 'ratio' },
       { key: 'pyRatio', label: '市净同比', width: 92, sortable: true, type: 'num2' },
       { key: 'pk2Ratio', label: '市扣同比', width: 92, sortable: true, type: 'num2' },
       { key: 'prrRatio', label: '市营同比', width: 92, sortable: true, type: 'num2' },
@@ -1593,6 +1593,7 @@ const app = createApp({
     const sectorResults = ref([]);       // 搜索结果
     const sectorSearching = ref(false);
     const sectorLoading = ref(false);    // 板块成分股加载中
+    const sectorIndustryOpen = ref(false); // 板块详情内「行业」勾选下拉是否展开
     const sectorDetail = reactive({ show: false, data: { stocks: [] }, nameEdit: false, nameDraft: '' });
     const sectorDetailSort = reactive({ key: 'dailyChange', dir: 'desc' });
     // 板块详情：筛选栏与「字段含义」说明的一键收起/展开（收起以显示更多股票内容）
@@ -2392,9 +2393,11 @@ const app = createApp({
       q24kMin: null, q24kMax: null, // 24扣比区间
       posMin: null, posMax: null,   // 正数统计区间（今涨跌→扣非环比 中为正的字段个数）
       ratioFilter: false,            // 比值筛选：924涨跌 < 24营比 + 24扣比
-      industry: '',                  // 行业筛选：'' 表示不限
+      industry: '',                  // 行业筛选（单选下拉，兼容旧值）
+      industries: [],                // 行业筛选（多选勾选，与 sector 详情一致；勾选优先于 industry）
       mainBusiness: ''               // 主业产品筛选：关键字模糊匹配「主业与主要产品」文本，'' 表示不限
     });
+    const filterIndustryOpen = ref(false); // 筛选栏「行业」勾选下拉是否展开
     // 各表初始列宽（px）：与 STOCK_COLUMNS 宽度一一对应（见下方 SORT_STATES 之后的定义）。
 
     // 列宽拖拽调整（鼠标拖动非冻结列右边缘）。通用：传入表格选择器、对应的存储键、
@@ -2516,7 +2519,7 @@ const app = createApp({
       filterPanel.q24kMin = null; filterPanel.q24kMax = null;
       filterPanel.posMin = null; filterPanel.posMax = null;
       filterPanel.ratioFilter = false; filterPanel.industry = '';
-      filterPanel.mainBusiness = '';
+      filterPanel.industries = []; filterPanel.mainBusiness = '';
     }
     /** 切换板块后重置区间筛选；若已固定则保留区间 */
     function applyFilterPool() {
@@ -2528,7 +2531,7 @@ const app = createApp({
       filterPanel.q24kMin = null; filterPanel.q24kMax = null;
       filterPanel.posMin = null; filterPanel.posMax = null;
       filterPanel.ratioFilter = false; filterPanel.industry = '';
-      filterPanel.mainBusiness = '';
+      filterPanel.industries = []; filterPanel.mainBusiness = '';
     }
     /** 区间判断工具：v 在 [min,max] 内（含边界），边界均为空则不限（含 null） */
     function inRange(v, min, max) {
@@ -3131,7 +3134,7 @@ const app = createApp({
       saveSectorName, deleteSectorPool, removeSectorStock,
       sortedSectorDetailStocks, sortSectorDetailBy, sectorSortIcon,
       sectorFilter, sectorDetailIndustries, filteredSectorDetailStocks,
-      resetSectorFilter, toggleSectorFilterLock,
+      resetSectorFilter, toggleSectorFilterLock, sectorIndustryOpen,
       sectorFilterOpen, sectorInfoOpen, favInfoOpen, filterInfoOpen, poolInfoOpen,
       // 页面3
       hotDate, hotLoading, hotBoards, hotStocks, preMarketBoards, amplitudeBoards, conceptFreq,
@@ -3147,7 +3150,7 @@ const app = createApp({
       mainBusinessText, mainBizKcfRatio, stockConcepts, contractLiabCell,
       // 统一股票表（四表共用列定义与单元格渲染）
       getColumns, cellHtml, cellClass, onStockSort, stockSortIcon, onTableClick, onTableChange, STOCK_COLUMNS,
-      filterIndustries,
+      filterIndustries, filterIndustryOpen,
       filterRefreshing, refreshFilterStocks, filterFilterOpen, favPanelOpen,
       sortedSectorPools, sortedPools,
       // 通用：收藏

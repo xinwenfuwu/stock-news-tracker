@@ -501,6 +501,37 @@ body {
   padding-top: 6px;
   border-top: 1px dashed var(--border, #dcdfe6);
 }
+/* ===== 行业筛选：可收起的下拉勾选（概念详情 / 筛选栏 共用） ===== */
+.industry-dropdown-field { position: relative; align-self: flex-end; z-index: 60; }
+.industry-dropdown-toggle {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 6px 10px; border: 1px solid #d8e0f0; border-radius: 6px;
+  background: #fff; font-size: 13px; color: var(--text-primary, #1f2937);
+  cursor: pointer; white-space: nowrap; position: relative; z-index: 60;
+}
+.industry-dropdown-toggle:hover { border-color: var(--primary, #3b6fe0); }
+.ind-badge {
+  display: inline-flex; align-items: center; justify-content: center;
+  min-width: 16px; height: 16px; padding: 0 4px; border-radius: 8px;
+  background: var(--primary, #3b6fe0); color: #fff; font-size: 11px; font-weight: 600;
+}
+.ind-caret { font-size: 11px; opacity: 0.6; }
+.industry-dropdown-panel {
+  position: absolute; top: calc(100% + 4px); left: 0; z-index: 61;
+  background: #fff; border: 1px solid #d8e0f0; border-radius: 8px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.12); padding: 6px;
+}
+.industry-dropdown-panel .industry-check-list { max-height: 220px; }
+
+/* ===== 股票字段表：紧凑对齐，单屏可见更多列 =====
+   表头/单元格统一 5px 上下内边距；数值列右上对齐、文本列左对齐；
+   冻结列保持居中，避免与滚动列错位。 */
+.pool-detail-table th, .pool-detail-table td { padding: 5px 5px; }
+.pool-detail-table th.num-col { text-align: right; padding-right: 8px; }
+.pool-detail-table td.num-cell { text-align: right; padding-right: 8px; font-variant-numeric: tabular-nums; }
+.pool-detail-table th.col-sticky, .pool-detail-table td.col-sticky { text-align: left; }
+.pool-detail-table th.col-sticky.num-col, .pool-detail-table td.col-sticky.num-cell { text-align: right; }
+.pool-detail-table .col-sticky-0, .pool-detail-table .col-sticky-3 { text-align: center; }
 .flat { color: var(--flat); }
 .muted { color: var(--text-placeholder); }
 .small { font-size: 12px; }
