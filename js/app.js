@@ -177,12 +177,14 @@ const app = createApp({
         const fav = _newStock(stock);
         fav.favDate = Store.today();
         fav.note = '';
+        // 添加当日股价快照：供「距添加」字段计算基准，且不会被后续行情刷新覆盖
+        fav.favPrice = (stock.todayPrice != null && !isNaN(stock.todayPrice)) ? +stock.todayPrice : null;
         // 复制现有数据字段（若来源已带行情/财务数据则一并保存）
         const keys = ['industry','dailyChange','amplitude','capitalFlow','shareholderCount','prevShareholderCount',
           'profitYoY','revenueYoY','hbGrowth','kcfYoY','revHb','kcfHb','q24Rev','q24Kcf',
           'netProfit','kcfjcxjlr','revenue','totalMarketCap',
           'contractLiab','todayPrice','yearStartPrice','price924','yearChange','change924','turnover',
-          'yearHighPrice','yearLowPrice'];
+          'yearHighPrice','yearLowPrice','favPrice'];
         keys.forEach(k => { if (stock[k] != null) fav[k] = stock[k]; });
         const ok = Store.addFavorite(fav);
         if (ok) showToast(`已收藏「${stock.name || stock.code}」`, 'success');
@@ -203,6 +205,37 @@ const app = createApp({
     function favDays(fav) {
       if (!fav.favDate) return null;
       return Store.daysSince(fav.favDate);
+    }
+    /**
+     * 「距添加」：自加入收藏以来的涨跌幅(%)
+     * 计算规则：(现价 - 添加当日股价) / 添加当日股价 × 100
+     * 添加当日股价取自收藏快照字段 favPrice（收藏时写入，历史数据缺失时由刷新流程按收藏日期回填当日收盘价）。
+     */
+    function favGainPct(fav) {
+      if (!fav) return null;
+      const base = fav.favPrice;
+      const cur = fav.todayPrice;
+      if (base == null || cur == null || isNaN(base) || isNaN(cur) || !base) return null;
+      return +(((cur - base) / base) * 100).toFixed(2);
+    }
+    /** 回填「添加当日股价」：缺失 favPrice 时，按收藏日期取当日收盘价（历史收藏同样适用） */
+    async function ensureFavPrice(fav) {
+      if (!fav || !fav.code || !fav.favDate) return;
+      if (fav.favPrice != null && !isNaN(fav.favPrice)) return;
+      try {
+        // 收藏日若为非交易日则无K线，向后顺延 7 天取首个交易日收盘价
+        const ymd = (d) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+        const d0 = new Date(fav.favDate);
+        const d1 = new Date(d0.getTime() + 7 * 86400000);
+        const rows = await StockAPI.getKline(fav.code, ymd(d0), ymd(d1));
+        const close = rows && rows.length ? rows[0].close : null;
+        if (close != null && !isNaN(close)) {
+          fav.favPrice = close;
+          Store.save();
+        }
+      } catch (e) {
+        console.debug('添加日股价回填失败', fav.code, e);
+      }
     }
     // 收藏板块手动新增
     const favAddCode = ref('');
@@ -311,6 +344,8 @@ const app = createApp({
         showToast('行情已刷新，正在获取财务数据...', 'info');
         // 2) 财务/股东数据（东财，best-effort，复用共享补全逻辑）
         for (let i = 0; i < favs.length; i++) {
+          // 「距添加」基准价缺失时（如历史收藏/手动添加），按收藏日期回填当日收盘价
+          await ensureFavPrice(favs[i]);
           await enrichStockFinancials(favs[i]);
         }
         showToast('收藏行情已刷新', 'success');
@@ -1301,6 +1336,8 @@ const app = createApp({
       { key: 'dailyChange', label: '日涨跌', width: 88, sortable: true, type: 'pct' },
       { key: 'yearHighPrice', label: '今年高价', width: 88, sortable: true, type: 'price' },
       { key: 'distToYearHigh', label: '距高价', width: 88, sortable: true, type: 'pct' },
+      // 现价：今日实时股价，固定红色显示，便于与今年高低价直接对照
+      { key: 'todayPrice', label: '现价', width: 84, sortable: true, type: 'curPrice' },
       { key: 'yearLowPrice', label: '今年低价', width: 88, sortable: true, type: 'price' },
       { key: 'distToYearLow', label: '距低价', width: 88, sortable: true, type: 'pct' },
       { key: 'yearChange', label: '年涨跌', width: 88, sortable: true, type: 'pct' },
@@ -1332,6 +1369,8 @@ const app = createApp({
       { key: 'turnover', label: '换手率', width: 78, sortable: true, type: 'num2pct' },
       { key: 'capitalFlow', label: '资金流入', width: 104, sortable: true, type: 'flow' },
       { key: 'contractLiab', label: '合同负债及排名', width: 100, sortable: true, type: 'contractliab' },
+      // 总市值（单位：亿元），置于「收藏」列之前
+      { key: 'totalMarketCap', label: '总市值', width: 96, sortable: true, type: 'cap' },
       { key: '__fav', label: '收藏', width: 58, sortable: false, type: 'fav' },
       { key: '__action', label: '操作', width: 84, sortable: false, type: 'action' },
       { key: '__note', label: '备注', width: 132, sortable: false, type: 'note' }
@@ -1349,6 +1388,8 @@ const app = createApp({
     // 收藏板块专属附加列（保留原有「收藏日期/距今」，置于末尾，不丢数据；备注已并入 STOCK_COLUMNS 标准列）
     const FAV_EXTRA_COLUMNS = [
       { key: '__favDate', label: '收藏日期', width: 104, sortable: false, type: 'favDate' },
+      // 距添加：(现价 - 添加当日股价) / 添加当日股价，百分比
+      { key: '__favGain', label: '距添加', width: 88, sortable: true, type: 'favGain' },
       { key: '__favDays', label: '距今', width: 70, sortable: false, type: 'favDays' }
     ];
 
@@ -1389,6 +1430,10 @@ const app = createApp({
         case 'num2': { const val = v(col.key); return (val != null && !isNaN(val)) ? (+val).toFixed(2) : '—'; }
         case 'num2pct': { const val = s[col.key]; return (val != null && !isNaN(val)) ? (+val).toFixed(2) + '%' : '—'; }
         case 'money': { const val = s[col.key]; return (val != null && !isNaN(val)) ? fmtYi(val) : '—'; }
+        // 总市值：单位已是「亿元」，直接保留两位小数展示
+        case 'cap': { const val = s[col.key]; return (val != null && !isNaN(val)) ? (+val).toFixed(2) + '亿' : '—'; }
+        // 现价：今日实时股价，固定红色
+        case 'curPrice': { const val = s[col.key]; return (val != null && !isNaN(val)) ? '<span class="price-red">' + (+val).toFixed(2) + '</span>' : '—'; }
         case 'int': { const val = s[col.key]; return (val != null && !isNaN(val)) ? Math.round(val).toLocaleString('en-US') : '—'; }
         case 'diff': { const val = v(col.key); return (val != null && !isNaN(val)) ? ((val > 0 ? '+' : '') + Math.round(val).toLocaleString('en-US')) : '—'; }
         case 'flow': {
@@ -1397,6 +1442,8 @@ const app = createApp({
           return '<span class="' + numClass(val) + '">' + fmtYi(val) + '</span>';
         }
         case 'favDate': return esc(s.favDate || '—');
+        // 距添加：自加入收藏以来的涨跌幅 (现价-添加日股价)/添加日股价
+        case 'favGain': { const val = favGainPct(s); return (val != null && !isNaN(val)) ? '<span class="' + pctClass(val) + '">' + fmtPct(val) + '</span>' : '—'; }
         case 'favDays': { const d = favDays(s); return d != null ? d + '天' : '—'; }
         case 'note': {
           if (ctx === 'fav') {
@@ -1423,11 +1470,12 @@ const app = createApp({
       if (col.fixed) cls.push('col-sticky', 'col-sticky-' + col.fixedIndex);
       // 注意：'pos'(正数统计) 是冻结列且与表头一样居中展示，不能加 num-cell（右对齐），
       // 否则会出现「表头居中、内容靠右」的错位
-      const numeric = ['pct', 'price', 'ratio', 'num2', 'num2pct', 'money', 'flow', 'int', 'diff'];
+      const numeric = ['pct', 'price', 'ratio', 'num2', 'num2pct', 'money', 'flow', 'int', 'diff', 'cap', 'curPrice', 'favGain'];
       if (numeric.indexOf(col.type) >= 0) cls.push('num-cell');
       if (col.type === 'mainbiz') cls.push('mainbiz-cell');
       if (col.type === 'concept') cls.push('concept-cell');
       if (col.type === 'pct') cls.push(pctClass(poolVal(s, col.key)));
+      if (col.type === 'favGain') cls.push(pctClass(favGainPct(s)));
       if (col.type === 'flow') cls.push(numClass(s[col.key]));
       return cls.join(' ');
     }
@@ -1991,7 +2039,8 @@ const app = createApp({
       q24kMin: null, q24kMax: null,
       posMin: null, posMax: null,
       ratioFilter: false,
-      industry: ''
+      industry: '',
+      industries: []   // 行业多选勾选（与单选 industry 二选一，勾选优先）
     });
     /** 当前板块详情成分股涉及的全部行业（去重、中文排序），供行业下拉筛选 */
     const sectorDetailIndustries = computed(() => {
@@ -2010,7 +2059,7 @@ const app = createApp({
       sectorFilter.q24Min = null; sectorFilter.q24Max = null;
       sectorFilter.q24kMin = null; sectorFilter.q24kMax = null;
       sectorFilter.posMin = null; sectorFilter.posMax = null;
-      sectorFilter.ratioFilter = false; sectorFilter.industry = '';
+      sectorFilter.ratioFilter = false; sectorFilter.industry = ''; sectorFilter.industries = [];
     }
     function toggleSectorFilterLock() {
       sectorFilter.locked = !sectorFilter.locked;
@@ -2098,7 +2147,12 @@ const app = createApp({
 
     const sortedHotStocks = computed(() => {
       const daily = D.dailyData[hotDate.value];
-      const list = daily ? [...daily.stocks] : [];
+      let list = daily ? [...daily.stocks] : [];
+      // 股票查询：按代码 / 名称关键字过滤（两者同时填写时取交集）
+      const codeQ = String(hotSearchCode.value || '').trim().toLowerCase();
+      const nameQ = String(hotSearchName.value || '').trim().toLowerCase();
+      if (codeQ) list = list.filter(s => String(s.code || '').toLowerCase().indexOf(codeQ) >= 0);
+      if (nameQ) list = list.filter(s => String(s.name || '').toLowerCase().indexOf(nameQ) >= 0);
       const k = hotSort.key;
       const dir = hotSort.dir === 'asc' ? 1 : -1;
       list.sort((a, b) => {
@@ -2206,6 +2260,14 @@ const app = createApp({
       showToast('行情已刷新', 'success');
     }
 
+    // 当日股票明细的「股票查询」条件：按代码 / 按名称关键字过滤
+    const hotSearchCode = ref('');
+    const hotSearchName = ref('');
+    /** 清空股票查询条件 */
+    function clearHotSearch() {
+      hotSearchCode.value = '';
+      hotSearchName.value = '';
+    }
     // 当前选中的热门板块名（用于高亮与表头提示）
     const hotBoardActive = ref('');
     const hotBoardLoading = ref(false);
@@ -2480,7 +2542,12 @@ const app = createApp({
       if (!inRange(s.q24Kcf, f.q24kMin, f.q24kMax)) return false;
       if (!inRange(positiveCount(s), f.posMin, f.posMax)) return false;
       // 行业筛选
-      if (f.industry && (s.industry || '未知') !== f.industry) return false;
+      // 行业筛选：兼容「单选字符串(industry)」与「多选勾选(industries 数组)」
+      {
+        const multi = (f.industries && f.industries.length) ? f.industries : null;
+        const picked = multi || (f.industry ? [f.industry] : []);
+        if (picked.length && picked.indexOf(s.industry || '未知') === -1) return false;
+      }
       // 比值筛选：924涨跌 < 24营比/2 + 24扣比/2（924涨跌 小于二者均值，三值均须有效）
       if (f.ratioFilter) {
         const c9 = s.change924, rv = s.q24Rev, kc = s.q24Kcf;
@@ -2676,6 +2743,8 @@ const app = createApp({
     const filterRefreshing = ref(false);
     // 筛选板块页：顶部筛选栏与「字段含义」说明的一键收起/展开（收起以显示更多股票内容）
     const filterFilterOpen = ref(true);
+    // 收藏板块折叠开关（收藏板块位于筛选结果表下方，可通过工具栏「收起收藏」隐藏）
+    const favPanelOpen = ref(true);
     async function refreshFilterStocks() {
       const list = filterPoolStocks.value;
       if (!list || !list.length) {
@@ -3037,6 +3106,7 @@ const app = createApp({
       // 页面3
       hotDate, hotLoading, hotBoards, hotStocks, preMarketBoards, amplitudeBoards, conceptFreq,
       hotBoardActive, hotBoardLoading, hotDetailIsStock, openHotBoard, openHotStock, clearHotBoard,
+      hotSearchCode, hotSearchName, clearHotSearch,
       sortedHotStocks, sortHotBy, hotSortIcon, removeHotStock,
       loadHotData, fetchHotBoards, refreshHotStocks,
       refreshAmplitudeBoards, ampLoading, hotPanelsHidden, financePushHidden,
@@ -3048,7 +3118,7 @@ const app = createApp({
       // 统一股票表（四表共用列定义与单元格渲染）
       getColumns, cellHtml, cellClass, onStockSort, stockSortIcon, onTableClick, onTableChange, STOCK_COLUMNS,
       filterIndustries,
-      filterRefreshing, refreshFilterStocks, filterFilterOpen,
+      filterRefreshing, refreshFilterStocks, filterFilterOpen, favPanelOpen,
       sortedSectorPools, sortedPools,
       // 通用：收藏
       favorites, sortedFavorites, isFav, toggleFavorite, removeFavorite,

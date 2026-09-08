@@ -509,6 +509,14 @@
             <span v-if="hotBoardActive" class="hot-detail-board">（{{ hotDetailIsStock ? '个股' : '板块' }}：{{ hotBoardActive }} · {{ sortedHotStocks.length }} 只）</span>
             <span v-if="hotBoardLoading" class="muted small">⏳ 加载中...</span>
           </h3>
+          <!-- 股票查询：按代码 / 按名称关键字过滤下方明细 -->
+          <div class="hot-search-row">
+            <input v-model="hotSearchCode" class="cell-input" placeholder="代码查询" style="width:104px"
+                   title="按股票代码关键字过滤下方明细（支持部分匹配，如 6005）">
+            <input v-model="hotSearchName" class="cell-input" placeholder="名称查询" style="width:104px"
+                   title="按股票名称关键字过滤下方明细（支持部分匹配，如 茅台）">
+            <button class="btn btn-sm" v-if="hotSearchCode || hotSearchName" @click="clearHotSearch" title="清空查询条件">✕ 清空查询</button>
+          </div>
           <button v-if="hotBoardActive" class="btn btn-sm" @click="clearHotBoard">{{ hotDetailIsStock ? '✕ 清除个股选择' : '✕ 清除板块选择' }}</button>
         </div>
         <div class="table-wrap">
@@ -546,6 +554,7 @@
             <h2 class="page-title" style="margin:0">🎯 筛选板块</h2>
           </div>
           <div class="toolbar-right">
+            <button class="btn btn-sm" @click="favPanelOpen = !favPanelOpen">{{ favPanelOpen ? '▴ 收起收藏' : '▾ 展开收藏' }}</button>
             <button class="btn btn-sm" @click="filterFilterOpen = !filterFilterOpen">{{ filterFilterOpen ? '▴ 收起筛选栏' : '▾ 展开筛选栏' }}</button>
             <button class="btn btn-sm" @click="filterInfoOpen = !filterInfoOpen" :title="filterInfoOpen ? '隐藏字段含义与计算规则' : '显示字段含义与计算规则'">{{ filterInfoOpen ? '🙈 隐藏说明' : '👁 字段含义' }}</button>
             <button class="btn btn-sm" @click="refreshFilterStocks" :disabled="filterRefreshing">
@@ -646,8 +655,33 @@
           <span class="muted small" v-if="sortedFilterStocks.length">共 {{ sortedFilterStocks.length }} 只</span>
         </div>
 
+        <div class="table-wrap filter-scroll" v-if="sortedFilterStocks.length">
+          <table class="data-table pool-detail-table">
+            <colgroup>
+              <col v-for="(col, ci) in getColumns('filter')" :key="ci" :style="{ width: col.width + 'px' }" :class="col.fixed ? ('col-sticky col-sticky-' + col.fixedIndex) : ''"></col>
+            </colgroup>
+            <thead>
+              <tr>
+                <th v-for="(col, ci) in getColumns('filter')" :key="ci"
+                    :class="['col-' + col.key, col.fixed ? ('col-sticky col-sticky-' + col.fixedIndex) : '', col.sortable ? 'sortable' : '', (!col.fixed && ['pct','price','ratio','num2','num2pct','money','flow','int','diff'].includes(col.type)) ? 'num-col' : '']"
+                    @click="onStockSort(col, 'filter')">
+                  <span class="th-label">{{ col.label }}</span><span v-if="col.sortable" class="sort-ic">{{ stockSortIcon(col, 'filter') }}</span>
+                </th>
+              </tr>
+            </thead>
+            <tbody @click="onTableClick($event, 'filter', sortedFilterStocks)" @change="onTableChange($event, 'filter')">
+              <tr v-for="(s, idx) in sortedFilterStocks" :key="s.code">
+                <td v-for="(col, ci) in getColumns('filter')" :key="ci"
+                    :class="cellClass(col, s, idx, sortedFilterStocks, 'filter')"
+                    v-html="cellHtml(col, s, idx, sortedFilterStocks, 'filter')"></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <p class="muted small" v-else>请选择上方板块以查看其成分股，或用区间筛选过滤。若无数据显示，可先「刷新行情」拉取财务数据。</p>
+
         <!-- 收藏板块（已从热门页移入，置于筛选栏下方） -->
-        <div class="fav-panel">
+        <div class="fav-panel" v-show="favPanelOpen">
           <div class="fav-panel-header">
             <h3 class="panel-title" style="margin:0">⭐ 收藏板块</h3>
             <div class="fav-add-row" style="margin:0">
@@ -698,31 +732,6 @@
             · 数据来源：行情/振幅/换手/总市值来自腾讯接口；财务/股东/增长率为东方财富接口。</p>
           </div>
         </div>
-
-        <div class="table-wrap filter-scroll" v-if="sortedFilterStocks.length">
-          <table class="data-table pool-detail-table">
-            <colgroup>
-              <col v-for="(col, ci) in getColumns('filter')" :key="ci" :style="{ width: col.width + 'px' }" :class="col.fixed ? ('col-sticky col-sticky-' + col.fixedIndex) : ''"></col>
-            </colgroup>
-            <thead>
-              <tr>
-                <th v-for="(col, ci) in getColumns('filter')" :key="ci"
-                    :class="['col-' + col.key, col.fixed ? ('col-sticky col-sticky-' + col.fixedIndex) : '', col.sortable ? 'sortable' : '', (!col.fixed && ['pct','price','ratio','num2','num2pct','money','flow','int','diff'].includes(col.type)) ? 'num-col' : '']"
-                    @click="onStockSort(col, 'filter')">
-                  <span class="th-label">{{ col.label }}</span><span v-if="col.sortable" class="sort-ic">{{ stockSortIcon(col, 'filter') }}</span>
-                </th>
-              </tr>
-            </thead>
-            <tbody @click="onTableClick($event, 'filter', sortedFilterStocks)" @change="onTableChange($event, 'filter')">
-              <tr v-for="(s, idx) in sortedFilterStocks" :key="s.code">
-                <td v-for="(col, ci) in getColumns('filter')" :key="ci"
-                    :class="cellClass(col, s, idx, sortedFilterStocks, 'filter')"
-                    v-html="cellHtml(col, s, idx, sortedFilterStocks, 'filter')"></td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-        <p class="muted small" v-else>请选择上方板块以查看其成分股，或用区间筛选过滤。若无数据显示，可先「刷新行情」拉取财务数据。</p>
 
         <div class="info-box small" v-show="filterInfoOpen">
           <p>💡 <b>字段含义与计算规则</b>：<br>
@@ -1049,12 +1058,22 @@
               </label>
               <span class="muted small">924涨跌 &lt; 24营比/2+24扣比/2</span>
             </div>
-            <div class="filter-field">
-              <label>行业</label>
-              <select v-model="sectorFilter.industry">
-                <option value="">全部行业</option>
-                <option v-for="ind in sectorDetailIndustries" :key="ind" :value="ind">{{ ind }}</option>
-              </select>
+            <!-- 行业选择：行业列表支持勾选（可多选），未勾选任何行业 = 全部 -->
+            <div class="filter-field industry-check-field">
+              <label>行业
+                <span class="muted small" v-if="sectorFilter.industries.length">（已选 {{ sectorFilter.industries.length }}）</span>
+              </label>
+              <div class="industry-check-list">
+                <label class="industry-check-item" v-for="ind in sectorDetailIndustries" :key="ind"
+                       :title="'勾选后仅显示「' + ind + '」行业的成分股'">
+                  <input type="checkbox" :value="ind" v-model="sectorFilter.industries">
+                  <span>{{ ind }}</span>
+                </label>
+                <div class="industry-check-actions">
+                  <button type="button" class="btn btn-sm" @click="sectorFilter.industries = sectorDetailIndustries.slice()">全选</button>
+                  <button type="button" class="btn btn-sm" @click="sectorFilter.industries = []">清空</button>
+                </div>
+              </div>
             </div>
             <button class="btn btn-sm" @click="resetSectorFilter" :disabled="sectorFilter.locked">🔄 重置</button>
             <button class="btn btn-sm" :class="{ 'btn-locked': sectorFilter.locked }" @click="toggleSectorFilterLock">

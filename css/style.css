@@ -467,6 +467,40 @@ body {
 /* ===== 涨跌颜色 ===== */
 .up { color: var(--up); font-weight: 600; }
 .down { color: var(--down); font-weight: 600; }
+/* 现价列：今日实时股价，固定红色高亮（不受涨跌影响） */
+.price-red { color: var(--up, #dc2626); font-weight: 700; }
+
+/* ===== 当日股票明细 · 股票查询 ===== */
+.hot-search-row { display: flex; align-items: center; gap: 6px; }
+
+/* ===== 行业勾选列表（概念行业选股 · 筛选栏） ===== */
+.industry-check-field { align-self: flex-start; }
+.industry-check-list {
+  max-height: 148px;
+  overflow-y: auto;
+  border: 1px solid var(--border, #dcdfe6);
+  border-radius: 6px;
+  padding: 6px 8px;
+  min-width: 132px;
+  background: var(--surface, #fff);
+}
+.industry-check-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 2px 0;
+  font-size: 12px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.industry-check-item input { cursor: pointer; margin: 0; }
+.industry-check-actions {
+  display: flex;
+  gap: 6px;
+  margin-top: 6px;
+  padding-top: 6px;
+  border-top: 1px dashed var(--border, #dcdfe6);
+}
 .flat { color: var(--flat); }
 .muted { color: var(--text-placeholder); }
 .small { font-size: 12px; }

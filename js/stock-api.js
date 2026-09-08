@@ -238,29 +238,39 @@ const StockAPI = {
    * @returns {Array<{date,open,close,high,low,volume}>}
    */
   async getKline(code, startDate, endDate) {
-    // 末尾参数留空 = 不复权（真实价格）
-    const url = `https://web.ifzq.gtimg.cn/appstock/app/fqkline/get?param=${code},day,${startDate},${endDate},640,`;
+    // 东财日K线（klt=101 日线，fqt=0 不复权真实价）。
+    //
+    // 【重要】原实现使用腾讯 web.ifzq.gtimg.cn 且携带 User-Agent/Referer 自定义请求头：
+    // 浏览器会把该请求判定为「非简单请求」从而发起 CORS 预检(OPTIONS)，而腾讯接口不支持预检，
+    // 请求在预检阶段即被拦截 —— 这正是「今年高价/距高价/今年低价/距低价/年涨跌/924涨跌」
+    // 六个依赖历史价的字段长期刷新不出数据的根因。
+    // 现改为东财接口，并统一走 _eastGet（fetch 失败自动降级 JSONP，彻底绕开 CORS）。
+    const secid = this.toEastSecid(code);
+    const beg = String(startDate || '').replace(/-/g, '');
+    const end = String(endDate || '').replace(/-/g, '');
+    const url = `https://push2his.eastmoney.com/api/qt/stock/kline/get?secid=${secid}` +
+      `&fields1=f1,f2,f3,f4,f5,f6&fields2=f51,f52,f53,f54,f55,f56,f57,f58` +
+      `&klt=101&fqt=0&beg=${beg}&end=${end}&lmt=1000`;
     try {
-      const resp = await fetch(url, {
-        cache: 'no-store',
-        headers: {
-          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-          'Referer': 'https://gu.qq.com/'
-        }
-      });
-      const json = await resp.json();
-      const block = json.data && json.data[code];
-      if (!block) return [];
-      // 不复权在 day 字段，前复权在 qfqday
-      const rows = block.day || block.qfqday || [];
-      return rows.map(r => ({
-        date: r[0],
-        open: parseFloat(r[1]),
-        close: parseFloat(r[2]),
-        high: parseFloat(r[3]),
-        low: parseFloat(r[4]),
-        volume: parseFloat(r[5])
-      }));
+      const json = await this._eastGet(url);
+      const kl = json && json.data && json.data.klines;
+      if (!kl || !kl.length) return [];
+      const out = [];
+      for (const line of kl) {
+        // klines 每项：日期,开盘,收盘,最高,最低,成交量,成交额,振幅,...（顺序由 fields2 决定）
+        const p = String(line).split(',');
+        const close = parseFloat(p[2]);
+        if (!p[0] || isNaN(close)) continue;
+        out.push({
+          date: p[0],
+          open: parseFloat(p[1]),
+          close,
+          high: parseFloat(p[3]),
+          low: parseFloat(p[4]),
+          volume: parseFloat(p[5])
+        });
+      }
+      return out;
     } catch (e) {
       console.error('获取K线失败', code, e);
       return [];
@@ -607,19 +617,36 @@ const StockAPI = {
    * @returns {object|null}
    */
   async _eastGet(url) {
-    try {
-      const resp = await fetch(url, { cache: 'no-store' });
-      if (resp.ok) {
-        const j = await resp.json();
-        if (j) return j;
+    // 多节点轮询：push2 主节点被限流/不可达时，自动切到 push2delay / push2his
+    // （二者是东财的独立延迟/历史节点，通常不会同时受限），显著提高取数成功率。
+    let u = null;
+    try { u = new URL(url); } catch (e) { u = null; }
+    const hosts = (u && u.hostname.indexOf('push2') === 0)
+      ? ['push2.eastmoney.com', 'push2delay.eastmoney.com', 'push2his.eastmoney.com']
+      : [null];   // 非 push2 域名（如 datacenter-web）不做替换
+    for (const host of hosts) {
+      // 用字符串拼接而非 URL 序列化，避免 searchParams 重新编码把 "fs=m:90+t:2" 的 "+" 变成空格
+      let target = url;
+      if (host && u && u.hostname !== host) {
+        target = u.protocol + '//' + host + u.pathname + (u.search || '');
       }
-    } catch (e) {
-      console.debug('[stock-api] fetch 失败，改用 JSONP 兜底:', e && e.message);
-    }
-    try {
-      return await this._eastJsonp(url);
-    } catch (e) {
-      console.debug('[stock-api] JSONP 亦失败:', e && e.message);
+      // 1) 简单请求 fetch（不带任何自定义头，避免 CORS 预检）
+      try {
+        const resp = await fetch(target, { cache: 'no-store' });
+        if (resp.ok) {
+          const j = await resp.json();
+          if (j && j.data !== undefined) return j;
+        }
+      } catch (e) {
+        console.debug('[stock-api] fetch 失败，改用 JSONP 兜底:', e && e.message);
+      }
+      // 2) JSONP：注入 <script> 加载，完全绕过 CORS
+      try {
+        const j = await this._eastJsonp(target, 9000);
+        if (j && j.data !== undefined) return j;
+      } catch (e) {
+        console.debug('[stock-api] JSONP 亦失败:', e && e.message);
+      }
     }
     return null;
   },
