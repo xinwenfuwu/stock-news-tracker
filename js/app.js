@@ -2126,6 +2126,8 @@ const app = createApp({
     const hotPanelsHidden = ref(false);
     const financePushHidden = ref(false);
     const hotSort = reactive({ key: 'dailyChange', dir: 'desc' });
+    // 点击热门板块 4 个子版块后，成分股同时载入下方「筛选板块」列表（与 filterPanel.poolId='hot' 联动）
+    const hotFilterStocks = ref([]);
 
     // 概念频次（从当日新闻统计）
     const conceptFreq = computed(() => {
@@ -2321,6 +2323,10 @@ const app = createApp({
         });
         hotBoardActive.value = b.name;
         hotDetailIsStock.value = false;
+        // 联动：把成分股同时载入下方「筛选板块」列表（尊重「固定筛选」区间）
+        if (!filterPanel.locked) resetHotFilterRanges();
+        filterPanel.poolId = 'hot';
+        hotFilterStocks.value = daily.stocks;
         showToast(`已载入「${b.name}」${daily.stocks.length} 只成分股，正在补全字段...`, 'success');
         await refreshHotStocks();
       } catch (e) {
@@ -2335,6 +2341,8 @@ const app = createApp({
     function clearHotBoard() {
       hotBoardActive.value = '';
       hotDetailIsStock.value = false;
+      hotFilterStocks.value = [];
+      if (!filterPanel.locked) filterPanel.poolId = '';
       const daily = D.dailyData[hotDate.value];
       if (daily) daily.stocks = [];
       showToast('已清除选择', 'success');
@@ -2363,6 +2371,10 @@ const app = createApp({
         daily.stocks = [ns];
         hotBoardActive.value = label;
         hotDetailIsStock.value = true;
+        // 联动：把个股同时载入下方「筛选板块」列表（尊重「固定筛选」区间）
+        if (!filterPanel.locked) resetHotFilterRanges();
+        filterPanel.poolId = 'hot';
+        hotFilterStocks.value = daily.stocks;
         showToast(`已载入个股「${label}」，正在补全字段...`, 'success');
         await refreshHotStocks();
       } catch (e) {
@@ -2520,10 +2532,22 @@ const app = createApp({
       filterPanel.posMin = null; filterPanel.posMax = null;
       filterPanel.ratioFilter = false; filterPanel.industry = '';
       filterPanel.industries = []; filterPanel.mainBusiness = '';
+      hotFilterStocks.value = [];   // 同步清空热门板块联动的筛选列表
     }
     /** 切换板块后重置区间筛选；若已固定则保留区间 */
     function applyFilterPool() {
       if (filterPanel.locked) return;
+      filterPanel.pbMin = null; filterPanel.pbMax = null;
+      filterPanel.pkMin = null; filterPanel.pkMax = null;
+      filterPanel.prMin = null; filterPanel.prMax = null;
+      filterPanel.q24Min = null; filterPanel.q24Max = null;
+      filterPanel.q24kMin = null; filterPanel.q24kMax = null;
+      filterPanel.posMin = null; filterPanel.posMax = null;
+      filterPanel.ratioFilter = false; filterPanel.industry = '';
+      filterPanel.industries = []; filterPanel.mainBusiness = '';
+    }
+    /** 切换热门板块时清空筛选区间（不触碰 poolId，由调用方设置）；调用方需自行判断「固定筛选」开关 */
+    function resetHotFilterRanges() {
       filterPanel.pbMin = null; filterPanel.pbMax = null;
       filterPanel.pkMin = null; filterPanel.pkMax = null;
       filterPanel.prMin = null; filterPanel.prMax = null;
@@ -2545,6 +2569,7 @@ const app = createApp({
     const filterPoolStocks = computed(() => {
       const id = filterPanel.poolId;
       if (!id) return [];
+      if (id === 'hot') return hotFilterStocks.value;   // 点击热门板块 4 子版块载入的成分股
       if (id.startsWith('s-')) {
         const sp = (D.sectorPools || []).find(p => 's-' + p.id === id);
         return sp ? (sp.stocks || []) : [];
@@ -3139,6 +3164,7 @@ const app = createApp({
       // 页面3
       hotDate, hotLoading, hotBoards, hotStocks, preMarketBoards, amplitudeBoards, conceptFreq,
       hotBoardActive, hotBoardLoading, hotDetailIsStock, openHotBoard, openHotStock, clearHotBoard,
+      hotFilterStocks,
       hotSearchCode, hotSearchName, clearHotSearch,
       sortedHotStocks, sortHotBy, hotSortIcon, removeHotStock,
       loadHotData, fetchHotBoards, refreshHotStocks,

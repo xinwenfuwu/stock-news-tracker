@@ -569,6 +569,7 @@
             <label>板块筛选</label>
             <select v-model="filterPanel.poolId" @change="applyFilterPool">
               <option value="">— 请选择板块 —</option>
+              <option v-if="hotFilterStocks.length" :value="'hot'">🔥 {{ hotBoardActive || '当前热门板块' }}</option>
               <optgroup label="🧭 概念行业板块">
                 <option v-for="sp in sortedSectorPools" :key="'s-'+sp.id" :value="'s-'+sp.id">{{ sp.name }}</option>
               </optgroup>
@@ -791,6 +792,7 @@
             <label>板块筛选</label>
             <select v-model="filterPanel.poolId" @change="applyFilterPool">
               <option value="">— 请选择板块 —</option>
+              <option v-if="hotFilterStocks.length" :value="'hot'">🔥 {{ hotBoardActive || '当前热门板块' }}</option>
               <optgroup label="🧭 概念行业板块">
                 <option v-for="sp in sortedSectorPools" :key="'s-'+sp.id" :value="'s-'+sp.id">{{ sp.name }}</option>
               </optgroup>
