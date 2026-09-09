@@ -183,7 +183,8 @@ const app = createApp({
         const keys = ['industry','dailyChange','amplitude','capitalFlow','shareholderCount','prevShareholderCount',
           'profitYoY','revenueYoY','hbGrowth','kcfYoY','revHb','kcfHb','q24Rev','q24Kcf',
           'netProfit','kcfjcxjlr','revenue','totalMarketCap',
-          'contractLiab','todayPrice','yearStartPrice','price924','yearChange','change924','turnover',
+          'contractLiab','todayPrice','yearStartPrice','price924','yearChange','change924',
+          'weekAgoClose','monthAgoClose','weekChange','monthChange','turnover',
           'yearHighPrice','yearLowPrice','favPrice'];
         keys.forEach(k => { if (stock[k] != null) fav[k] = stock[k]; });
         const ok = Store.addFavorite(fav);
@@ -294,6 +295,8 @@ const app = createApp({
           if (hb.price924 != null) s.price924 = hb.price924;
           if (hb.yearHighPrice != null) s.yearHighPrice = hb.yearHighPrice;
           if (hb.yearLowPrice != null) s.yearLowPrice = hb.yearLowPrice;
+          if (hb.weekAgoClose != null) s.weekAgoClose = hb.weekAgoClose;
+          if (hb.monthAgoClose != null) s.monthAgoClose = hb.monthAgoClose;
         }
       } catch (e) { console.warn('历史价批量获取失败', s.code, e); }
       if (s.yearStartPrice == null) {
@@ -335,6 +338,13 @@ const app = createApp({
       }
       if (s.todayPrice && s.price924) {
         s.change924 = +(((s.todayPrice - s.price924) / s.price924) * 100).toFixed(2);
+      }
+      // 一周涨跌 / 一月涨跌：现价 vs 5 / 20 个交易日前收盘价
+      if (s.todayPrice && s.weekAgoClose) {
+        s.weekChange = +(((s.todayPrice - s.weekAgoClose) / s.weekAgoClose) * 100).toFixed(2);
+      }
+      if (s.todayPrice && s.monthAgoClose) {
+        s.monthChange = +(((s.todayPrice - s.monthAgoClose) / s.monthAgoClose) * 100).toFixed(2);
       }
     }
 
@@ -951,6 +961,10 @@ const app = createApp({
         price924: null,        // 2024-09-24 收盘价
         yearChange: null,      // 年初涨跌幅(%)
         change924: null,       // 924涨跌幅(%)
+        weekAgoClose: null,    // 一周前(5个交易日前)收盘价
+        monthAgoClose: null,   // 一月前(20个交易日前)收盘价
+        weekChange: null,      // 一周涨跌：现价 vs 一周前收盘价(%)
+        monthChange: null,     // 一月涨跌：现价 vs 一月前收盘价(%)
         turnover: null
       };
     }
@@ -993,6 +1007,10 @@ const app = createApp({
               s.price924 = o.price924;
               s.yearChange = o.yearChange;
               s.change924 = o.change924;
+              s.weekAgoClose = o.weekAgoClose;
+              s.monthAgoClose = o.monthAgoClose;
+              s.weekChange = o.weekChange;
+              s.monthChange = o.monthChange;
             }
           });
         }
@@ -1248,6 +1266,14 @@ const app = createApp({
             if (yhl.high != null) s.yearHighPrice = yhl.high;
             if (yhl.low != null) s.yearLowPrice = yhl.low;
           }
+          // 一周前 / 一月前收盘价（用于「一周涨跌 / 一月涨跌」）
+          if (s.weekAgoClose == null || s.monthAgoClose == null) {
+            const hb = await StockAPI.getHistoryBundle(s.code);
+            if (hb) {
+              if (hb.weekAgoClose != null) s.weekAgoClose = hb.weekAgoClose;
+              if (hb.monthAgoClose != null) s.monthAgoClose = hb.monthAgoClose;
+            }
+          }
         } catch (e) {
           console.warn('历史价获取失败', s.code, e);
         }
@@ -1257,6 +1283,13 @@ const app = createApp({
         }
         if (s.todayPrice && s.price924) {
           s.change924 = +(((s.todayPrice - s.price924) / s.price924) * 100).toFixed(2);
+        }
+        // 一周涨跌 / 一月涨跌
+        if (s.todayPrice && s.weekAgoClose) {
+          s.weekChange = +(((s.todayPrice - s.weekAgoClose) / s.weekAgoClose) * 100).toFixed(2);
+        }
+        if (s.todayPrice && s.monthAgoClose) {
+          s.monthChange = +(((s.todayPrice - s.monthAgoClose) / s.monthAgoClose) * 100).toFixed(2);
         }
         // 每 5 只让出一次事件循环，避免卡顿
         if ((i + 1) % 5 === 0) await new Promise(r => setTimeout(r, 0));
@@ -1351,25 +1384,27 @@ const app = createApp({
       { key: 'name', label: '股票名称', fixed: true, fixedIndex: 2, width: 104, sortable: true, type: 'name' },
       { key: 'positiveCount', label: '统计', fixed: true, fixedIndex: 3, width: 60, sortable: true, type: 'pos' },
       { key: 'dailyChange', label: '日涨跌', width: 88, sortable: true, type: 'pct' },
-      // 以下 9 个字段按需求统一置于「日涨跌」之后：
-      // 总市值 / 营业收入 / 净利润 / 扣非净利润 / 24营比 / 24扣比 / 市营比 / 市净比 / 市扣比
+      // 财务估值段：总市值 / 营业收入 / 净利润 / 扣非净利润 / 市营比 / 市净比 / 市扣比
+      // 按需求：24营比、24扣比 紧随「市扣比」之后
       { key: 'totalMarketCap', label: '总市值', width: 96, sortable: true, type: 'cap' },
       { key: 'revenue', label: '营业收入', width: 100, sortable: true, type: 'money' },
       { key: 'netProfit', label: '净利润', width: 100, sortable: true, type: 'money' },
       { key: 'kcfjcxjlr', label: '扣非净利润', width: 100, sortable: true, type: 'money' },
-      { key: 'q24Rev', label: '24营比', width: 88, sortable: true, type: 'pct' },
-      { key: 'q24Kcf', label: '24扣比', width: 88, sortable: true, type: 'pct' },
       { key: 'prRatio', label: '市营比', width: 86, sortable: true, type: 'ratio' },
       { key: 'pbRatio', label: '市净比', width: 86, sortable: true, type: 'ratio' },
       { key: 'pkRatio', label: '市扣比', width: 86, sortable: true, type: 'ratio' },
-      { key: 'yearHighPrice', label: '今年高价', width: 88, sortable: true, type: 'price' },
-      { key: 'distToYearHigh', label: '距高价', width: 88, sortable: true, type: 'pct' },
-      // 现价：今日实时股价，固定红色显示，便于与今年高低价直接对照
+      { key: 'q24Rev', label: '24营比', width: 88, sortable: true, type: 'pct' },
+      { key: 'q24Kcf', label: '24扣比', width: 88, sortable: true, type: 'pct' },
+      // 现价：今日实时股价，固定红色显示，便于与各项涨跌幅直接对照
       { key: 'todayPrice', label: '现价', width: 84, sortable: true, type: 'curPrice' },
-      { key: 'yearLowPrice', label: '今年低价', width: 88, sortable: true, type: 'price' },
-      { key: 'distToYearLow', label: '距低价', width: 88, sortable: true, type: 'pct' },
+      // 涨跌幅段（按需求：一周涨跌 / 一月涨跌 / 年涨跌 / 924涨跌 均置于「距高价」左侧）
+      // 一周涨跌 = 现价 vs 5 个交易日前收盘价；一月涨跌 = 现价 vs 20 个交易日前收盘价
+      { key: 'weekChange', label: '一周涨跌', width: 88, sortable: true, type: 'pct' },
+      { key: 'monthChange', label: '一月涨跌', width: 88, sortable: true, type: 'pct' },
       { key: 'yearChange', label: '年涨跌', width: 88, sortable: true, type: 'pct' },
       { key: 'change924', label: '924涨跌', width: 88, sortable: true, type: 'pct' },
+      { key: 'distToYearHigh', label: '距高价', width: 88, sortable: true, type: 'pct' },
+      { key: 'distToYearLow', label: '距低价', width: 88, sortable: true, type: 'pct' },
       { key: 'pyRatio', label: '市净同比', width: 92, sortable: true, type: 'num2' },
       { key: 'pk2Ratio', label: '市扣同比', width: 92, sortable: true, type: 'num2' },
       { key: 'prrRatio', label: '市营同比', width: 92, sortable: true, type: 'num2' },
@@ -1386,6 +1421,9 @@ const app = createApp({
       { key: 'shareholderDiff', label: '散户差额', width: 92, sortable: true, type: 'diff' },
       { key: 'shareholderCount', label: '最新散户', width: 96, sortable: true, type: 'int' },
       { key: 'prevShareholderCount', label: '上期散户', width: 96, sortable: true, type: 'int' },
+      // 按需求：今年高价、今年低价 置于「换手率」左侧
+      { key: 'yearHighPrice', label: '今年高价', width: 88, sortable: true, type: 'price' },
+      { key: 'yearLowPrice', label: '今年低价', width: 88, sortable: true, type: 'price' },
       { key: 'turnover', label: '换手率', width: 78, sortable: true, type: 'num2pct' },
       { key: 'capitalFlow', label: '资金流入', width: 104, sortable: true, type: 'flow' },
       { key: 'contractLiab', label: '合同负债及排名', width: 100, sortable: true, type: 'contractliab' },
@@ -1398,15 +1436,18 @@ const app = createApp({
       { key: '__note', label: '备注', width: 132, sortable: false, type: 'note' }
     ];
     /**
-     * 正数统计所覆盖的字段区间：从「日涨跌」到「营收环比」（含两端）之间的全部数据字段。
-     * 直接由 STOCK_COLUMNS 派生，后续调整列顺序/增删列无需手工维护；排除 __ 开头的非数据列。
+     * 正数统计所覆盖的字段集合：日涨跌 + 财务/估值 + 涨跌幅 + 今年高低价 + 同比/环比系列。
+     * 【注意】这里用显式清单而非按列顺序切片 —— 列顺序会随需求调整，
+     * 若用切片，调整列顺序就会悄悄改变「统计」列的口径。
      */
-    const POSITIVE_KEYS = (() => {
-      const a = STOCK_COLUMNS.findIndex(c => c.key === 'dailyChange');
-      const b = STOCK_COLUMNS.findIndex(c => c.key === 'revHb');
-      if (a < 0 || b < a) return [];
-      return STOCK_COLUMNS.slice(a, b + 1).map(c => c.key).filter(k => String(k).indexOf('__') !== 0);
-    })();
+    const POSITIVE_KEYS = [
+      'dailyChange', 'totalMarketCap', 'revenue', 'netProfit', 'kcfjcxjlr',
+      'prRatio', 'pbRatio', 'pkRatio', 'q24Rev', 'q24Kcf',
+      'todayPrice', 'weekChange', 'monthChange', 'yearChange', 'change924',
+      'distToYearHigh', 'distToYearLow', 'yearHighPrice', 'yearLowPrice',
+      'pyRatio', 'pk2Ratio', 'prrRatio', 'phRatio', 'pkHbRatio', 'ph2Ratio',
+      'profitYoY', 'hbGrowth', 'kcfYoY', 'kcfHb', 'revenueYoY', 'revHb'
+    ];
     // 收藏板块专属附加列（保留原有「收藏日期/距今」，置于末尾，不丢数据；备注已并入 STOCK_COLUMNS 标准列）
     const FAV_EXTRA_COLUMNS = [
       { key: '__favDate', label: '收藏日期', width: 104, sortable: false, type: 'favDate' },
@@ -2946,6 +2987,8 @@ const app = createApp({
               if (hb.price924 != null) s.price924 = hb.price924;
               if (hb.yearHighPrice != null) s.yearHighPrice = hb.yearHighPrice;
               if (hb.yearLowPrice != null) s.yearLowPrice = hb.yearLowPrice;
+              if (hb.weekAgoClose != null) s.weekAgoClose = hb.weekAgoClose;
+              if (hb.monthAgoClose != null) s.monthAgoClose = hb.monthAgoClose;
             }
           } catch (e) {
             console.warn('历史价批量获取失败', s.code, e);
@@ -2983,6 +3026,13 @@ const app = createApp({
           }
           if (s.todayPrice && s.price924) {
             s.change924 = +(((s.todayPrice - s.price924) / s.price924) * 100).toFixed(2);
+          }
+          // 一周涨跌 / 一月涨跌
+          if (s.todayPrice && s.weekAgoClose) {
+            s.weekChange = +(((s.todayPrice - s.weekAgoClose) / s.weekAgoClose) * 100).toFixed(2);
+          }
+          if (s.todayPrice && s.monthAgoClose) {
+            s.monthChange = +(((s.todayPrice - s.monthAgoClose) / s.monthAgoClose) * 100).toFixed(2);
           }
           done++;
           if (done % 25 === 0) showToast(`已补全 ${done}/${works.length} 只...`, 'info');

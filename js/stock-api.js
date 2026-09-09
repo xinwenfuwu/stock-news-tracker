@@ -634,7 +634,10 @@ const StockAPI = {
    * @returns {Promise<{yearStartPrice,price924,yearHighPrice,yearLowPrice}>} 取不到的项为 null
    */
   async getHistoryBundle(code) {
-    const out = { yearStartPrice: null, price924: null, yearHighPrice: null, yearLowPrice: null };
+    const out = {
+      yearStartPrice: null, price924: null, yearHighPrice: null, yearLowPrice: null,
+      weekAgoClose: null, monthAgoClose: null
+    };
     if (!code) return out;
     const y = new Date().getFullYear();
     const start = '2024-09-01';
@@ -676,6 +679,15 @@ const StockAPI = {
       for (const k of data) { if (k.date && k.date <= '2024-09-24') prev = k; }
       if (prev) out.price924 = prev.close;
     }
+    // 一周前 / 一月前收盘价（用于「一周涨跌 / 一月涨跌」）：按交易日回溯 5 / 20 根
+    const back = (n) => {
+      const i = data.length - 1 - n;
+      if (i < 0) return null;
+      const c = data[i].close;
+      return (c != null && !isNaN(c) && c) ? c : null;
+    };
+    out.weekAgoClose = back(5);
+    out.monthAgoClose = back(20);
     return out;
   },
 
