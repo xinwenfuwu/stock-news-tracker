@@ -1383,7 +1383,6 @@ const app = createApp({
       { key: 'code', label: '代码', fixed: true, fixedIndex: 1, width: 88, sortable: true, type: 'code' },
       { key: 'name', label: '股票名称', fixed: true, fixedIndex: 2, width: 104, sortable: true, type: 'name' },
       { key: 'positiveCount', label: '统计', fixed: true, fixedIndex: 3, width: 60, sortable: true, type: 'pos' },
-      { key: 'dailyChange', label: '日涨跌', width: 88, sortable: true, type: 'pct' },
       // 财务估值段：总市值 / 营业收入 / 净利润 / 扣非净利润 / 市营比 / 市净比 / 市扣比
       // 按需求：24营比、24扣比 紧随「市扣比」之后
       { key: 'totalMarketCap', label: '总市值', width: 96, sortable: true, type: 'cap' },
@@ -1395,14 +1394,16 @@ const app = createApp({
       { key: 'pkRatio', label: '市扣比', width: 86, sortable: true, type: 'ratio' },
       { key: 'q24Rev', label: '24营比', width: 88, sortable: true, type: 'pct' },
       { key: 'q24Kcf', label: '24扣比', width: 88, sortable: true, type: 'pct' },
+      // 924涨跌 / 年涨跌：按需求置于「24扣比」右侧（紧贴 24扣比），二者位置互换
+      { key: 'change924', label: '924涨跌', width: 88, sortable: true, type: 'pct' },
+      { key: 'yearChange', label: '年涨跌', width: 88, sortable: true, type: 'pct' },
       // 现价：今日实时股价，固定红色显示，便于与各项涨跌幅直接对照
       { key: 'todayPrice', label: '现价', width: 84, sortable: true, type: 'curPrice' },
-      // 涨跌幅段（按需求：一周涨跌 / 一月涨跌 / 年涨跌 / 924涨跌 均置于「距高价」左侧）
+      // 涨跌幅段（日涨跌紧贴一周涨跌左侧；一周/一月涨跌置于「距高价」左侧）
       // 一周涨跌 = 现价 vs 5 个交易日前收盘价；一月涨跌 = 现价 vs 20 个交易日前收盘价
+      { key: 'dailyChange', label: '日涨跌', width: 88, sortable: true, type: 'pct' },
       { key: 'weekChange', label: '一周涨跌', width: 88, sortable: true, type: 'pct' },
       { key: 'monthChange', label: '一月涨跌', width: 88, sortable: true, type: 'pct' },
-      { key: 'yearChange', label: '年涨跌', width: 88, sortable: true, type: 'pct' },
-      { key: 'change924', label: '924涨跌', width: 88, sortable: true, type: 'pct' },
       { key: 'distToYearHigh', label: '距高价', width: 88, sortable: true, type: 'pct' },
       { key: 'distToYearLow', label: '距低价', width: 88, sortable: true, type: 'pct' },
       { key: 'pyRatio', label: '市净同比', width: 92, sortable: true, type: 'num2' },
