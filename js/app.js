@@ -1252,30 +1252,41 @@ const app = createApp({
         } catch (e) {
           console.warn('季报对比获取失败', s.code, e);
         }
-        // 年初价 + 924价（不复权历史收盘），每只容错
+        // 历史价：优先「一次请求取四项 + 一周/一月」（getHistoryBundle，请求量降为 1/4 且腾讯优先），
+        // 取不到的项再逐项兜底（各自独立 try，互不连坐）。旧实现把三项挤在同一 try 里，
+        // 且 924 走 getHistoryClose 的窄窗口取不到 2024-09-24，导致「924涨跌」等字段长期为空。
+        // 收藏/热门/筛选页早已改用此模式，唯独本函数（概念行业选股 + 股票池详情共用）遗漏。
         try {
-          const yp = await StockAPI.getYearStartPrice(s.code);
-          if (yp != null) s.yearStartPrice = yp;
-          if (s.price924 == null) {
+          const hb = await StockAPI.getHistoryBundle(s.code);
+          if (hb) {
+            if (hb.yearStartPrice != null) s.yearStartPrice = hb.yearStartPrice;
+            if (hb.price924 != null) s.price924 = hb.price924;
+            if (hb.yearHighPrice != null) s.yearHighPrice = hb.yearHighPrice;
+            if (hb.yearLowPrice != null) s.yearLowPrice = hb.yearLowPrice;
+            if (hb.weekAgoClose != null) s.weekAgoClose = hb.weekAgoClose;
+            if (hb.monthAgoClose != null) s.monthAgoClose = hb.monthAgoClose;
+          }
+        } catch (e) { console.warn('历史价批量获取失败', s.code, e); }
+        if (s.yearStartPrice == null) {
+          try {
+            const yp = await StockAPI.getYearStartPrice(s.code);
+            if (yp != null) s.yearStartPrice = yp;
+          } catch (e) { console.warn('年初价获取失败', s.code, e); }
+        }
+        if (s.price924 == null) {
+          try {
             const p924 = await StockAPI.get924Price(s.code);
             if (p924 != null) s.price924 = p924;
-          }
-          // 今年最高/最低价（用于「今年高价 / 距高价 / 今年低价 / 距低价」字段）
-          const yhl = await StockAPI.getYearHighLow(s.code);
-          if (yhl) {
-            if (yhl.high != null) s.yearHighPrice = yhl.high;
-            if (yhl.low != null) s.yearLowPrice = yhl.low;
-          }
-          // 一周前 / 一月前收盘价（用于「一周涨跌 / 一月涨跌」）
-          if (s.weekAgoClose == null || s.monthAgoClose == null) {
-            const hb = await StockAPI.getHistoryBundle(s.code);
-            if (hb) {
-              if (hb.weekAgoClose != null) s.weekAgoClose = hb.weekAgoClose;
-              if (hb.monthAgoClose != null) s.monthAgoClose = hb.monthAgoClose;
+          } catch (e) { console.warn('924价获取失败', s.code, e); }
+        }
+        if (s.yearHighPrice == null || s.yearLowPrice == null) {
+          try {
+            const yhl = await StockAPI.getYearHighLow(s.code);
+            if (yhl) {
+              if (yhl.high != null) s.yearHighPrice = yhl.high;
+              if (yhl.low != null) s.yearLowPrice = yhl.low;
             }
-          }
-        } catch (e) {
-          console.warn('历史价获取失败', s.code, e);
+          } catch (e) { console.warn('今年高低价获取失败', s.code, e); }
         }
         // 重新计算年初涨跌幅、924涨跌幅
         if (s.todayPrice && s.yearStartPrice) {

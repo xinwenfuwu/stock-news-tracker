@@ -213,9 +213,23 @@ const StockAPI = {
    */
   async getHistoryClose(code, date) {
     const d = new Date(date);
-    const start = this._addDays(d, -10);
-    const end = this._addDays(d, 5);
-    const data = await this.getKline(code, this.fmtDate(start), this.fmtDate(end));
+    // 【关键修复】腾讯历史K线接口 param=...,day,,,n, 返回的是「最近 n 个交易日」，
+    // 并非按 start/end 日期区间截取。旧实现只用「目标日前10天~后5天」窄窗口，经 _barCount
+    // 地板值后只取回最近的 ~320 根（约到 2025 年中），远够不到 2024-09-24，导致 get924Price
+    // 永远取不到价、924涨跌字段长期空白。现按「目标日 → 今天」真实跨度申请足够根数
+    // （腾讯优先，东财兜底），确保覆盖目标日；根数上限 800（腾讯对过大根数会返回空）。
+    const spanDays = Math.ceil((Date.now() - d.getTime()) / 86400000) + 30; // 留 30 天冗余
+    const count = Math.min(800, Math.max(320, Math.ceil(spanDays * 7 / 5) + 20));
+    const start = this.fmtDate(this._addDays(d, -20));
+    const end = this.fmtDate(new Date());
+    let data = await this.getKline(code, start, end, count);
+    // 根数不足未覆盖到目标日时，加大根数重试一次（沿用能覆盖更早日期的结果）
+    if (data && data.length && data[0].date > date) {
+      try {
+        const more = await this.getKline(code, start, end, 1600);
+        if (more && more.length && more[0].date < data[0].date) data = more;
+      } catch (e) { /* 重试失败则沿用原数据 */ }
+    }
     if (!data || !data.length) return null;
     // 精确匹配日期
     const exact = data.find(k => k.date === date);
