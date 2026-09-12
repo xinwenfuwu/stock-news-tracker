@@ -890,6 +890,7 @@ body {
 }
 .semantic-chip.concept { background: #efe9ff; color: #5a32e6; }
 .semantic-chip.mod { background: #ffe9c7; color: #b06a00; }
+.semantic-chip.product { background: #d8f5e8; color: #0a7a4f; }
 .semantic-chip.mini { background: #efe9ff; color: #5a32e6; padding: 1px 6px; font-size: 11px; }
 .semantic-method { color: #8a7fb5; font-size: 12px; }
 .semantic-board {
@@ -908,6 +909,7 @@ body {
 .semantic-table .code { font-family: monospace; color: var(--text-secondary); }
 .semantic-table .name { font-weight: 600; }
 .semantic-table .concepts { white-space: normal; }
+.semantic-table .role { white-space: normal; color: var(--text-secondary); font-size: 12px; min-width: 220px; }
 .semantic-error { color: #c0392b; margin: 0; }
 .semantic-result .tiny { font-size: 11px; color: #9b93c4; margin-top: 8px; }
 
