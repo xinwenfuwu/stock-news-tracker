@@ -355,6 +355,11 @@
           <button class="btn" @click="searchSubSectors" :disabled="sectorSearching" title="在我的概念选股板块中，按名称关键字搜索子版块">
             🔎 搜索子版块
           </button>
+          <button class="btn btn-ai" @click="semanticSearch" :disabled="semantic.searching || sectorSearching"
+            title="用自然语言描述选股意图，AI 自动解析概念并交叉匹配板块，如：主营为ai安全的核心上市公司">
+            <span v-if="semantic.searching">⏳ 语义理解中...</span>
+            <span v-else>🤖 AI语义搜索</span>
+          </button>
         </div>
 
         <!-- 搜索结果 -->
@@ -384,6 +389,64 @@
               <span v-else>📚 加载全部板块</span>
             </button>
           </div>
+        </div>
+
+        <!-- AI 语义选股结果 -->
+        <div class="semantic-result" v-if="semantic.searching">
+          <div class="semantic-loading">
+            <span class="ai-spinner">🤖</span>
+            <span>AI 正在理解语义、交叉匹配概念板块并排序核心标的…</span>
+          </div>
+        </div>
+        <div class="semantic-result" v-else-if="semantic.done">
+          <div class="semantic-header">
+            <h3>🤖 AI 语义筛选结果</h3>
+            <button class="btn btn-sm btn-primary" @click="saveSemanticAsPool" :disabled="semantic.saved || !semantic.stocks.length">
+              {{ semantic.saved ? '✅ 已保存' : '💾 保存到我的板块' }}
+            </button>
+          </div>
+          <div class="semantic-meta">
+            <span class="semantic-tag-label">识别概念：</span>
+            <span class="semantic-chip concept" v-for="c in semantic.concepts" :key="c">{{ c }}</span>
+            <template v-if="semantic.modifiers.length">
+              <span class="semantic-tag-label">修饰：</span>
+              <span class="semantic-chip mod" v-for="m in semantic.modifiers" :key="m">{{ m==='核心'?'核心/龙头':(m==='小市值'?'小市值':'') }}</span>
+            </template>
+            <span class="semantic-method" v-if="semantic.method==='intersect'">· 多概念取「交集」（同时具备上述主题的公司）</span>
+            <span class="semantic-method" v-else-if="semantic.method==='union'">· 概念无完全交集，已展示「并集」</span>
+            <span class="semantic-method" v-else>· 单概念</span>
+          </div>
+          <p class="muted small" v-if="semantic.boards.length">
+            命中板块（前 {{ Math.min(semantic.boards.length, 12) }} / {{ semantic.boards.length }}）：
+            <span class="semantic-board" v-for="b in semantic.boards.slice(0,12)" :key="b.bk">{{ b.name }}</span>
+            <span v-if="semantic.boards.length>12">…</span>
+          </p>
+          <div class="semantic-table-wrap" v-if="semantic.stocks.length">
+            <table class="semantic-table">
+              <thead>
+                <tr>
+                  <th>排名</th><th>代码</th><th>名称</th><th>现价</th>
+                  <th>涨跌幅</th><th>总市值(亿)</th><th>命中概念</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="(s, i) in semantic.stocks" :key="s.code">
+                  <td class="rank">{{ i + 1 }}</td>
+                  <td class="code">{{ s.code.toUpperCase() }}</td>
+                  <td class="name">{{ s.name }}</td>
+                  <td>{{ s.price != null ? s.price.toFixed(2) : '-' }}</td>
+                  <td :class="pctClass(s.changePercent)">{{ fmtPct(s.changePercent) }}</td>
+                  <td>{{ s.marketCap ? (s.marketCap/1e8).toFixed(1) : '-' }}</td>
+                  <td class="concepts"><span class="semantic-chip mini" v-for="c in s.concepts" :key="c">{{ c }}</span></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <p class="muted small" v-else>未找到同时符合上述概念的上市公司，可尝试调整描述（如去掉"核心"或减少概念）。</p>
+          <p class="muted tiny">说明：语义筛选基于东方财富概念/行业板块的成分股交叉匹配；"核心/龙头"按总市值降序取前 20 家代表性标的，"主营"判定以板块归属近似。</p>
+        </div>
+        <div class="semantic-result" v-else-if="semantic.error">
+          <p class="semantic-error">⚠️ {{ semantic.error }}</p>
         </div>
 
         <!-- 已选概念（主选 + 次选）交集筛选 -->
