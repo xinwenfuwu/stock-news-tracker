@@ -79,6 +79,111 @@ const SEMANTIC_CONCEPTS = [
     hints: ['医疗', '健康'] }
 ];
 
+/**
+ * 产品级语义知识库（语义筛选的核心新增能力）
+ * 与 SEMANTIC_CONCEPTS（概念/行业板块名映射）不同，这里直接把
+ * 「具体产品 / 技术 / 材料 / 设备」映射到【真实上市公司 + 业务环节】，
+ * 由产业链研究整理，因此不是去匹配板块名，而是直接给出做这件事的公司。
+ * 例：薄膜铌酸锂 → 光库科技、天通股份、中际旭创……（上游晶体→中游调制器→下游光模块）
+ *
+ * 每条 stocks 中的 code 形如 sh600330 / sz300620（与 getQuotes 一致），
+ * role 为该公司在产业链中的定位，用于结果透明展示。
+ */
+const SEMANTIC_PRODUCTS = [
+  {
+    key: '薄膜铌酸锂',
+    desc: '薄膜铌酸锂(TFLN)调制器/光芯片及上游晶体材料，用于 1.6T/3.2T 高速光模块、CPO 共封装；是 AI 光互联的核心增量环节。',
+    aliases: ['薄膜铌酸锂', '薄膜磷酸锂', 'tfiln', 'tfin', 'lnoi', '铌酸锂调制器', '铌酸锂光模块', '铌酸锂晶圆', '铌酸锂芯片', '铌酸锂晶体', '铌酸锂'],
+    stocks: [
+      { code: 'sz300620', name: '光库科技', role: '中游核心·国内唯一 8 英寸 TFLN 调制器 IDM 量产龙头，英伟达供应链' },
+      { code: 'sz002281', name: '光迅科技', role: '中游·自研 TFLN 调制芯片批量出货' },
+      { code: 'sz000988', name: '华工科技', role: '中游·TFLN 调制器自研送样验证' },
+      { code: 'sh600330', name: '天通股份', role: '上游·8 英寸光学级铌酸锂晶圆量产绝对龙头（市占约 40%）' },
+      { code: 'sz002222', name: '福晶科技', role: '上游·高纯光学晶体/铌酸锂单晶全球龙头' },
+      { code: 'sh688126', name: '沪硅产业', role: '上游·薄膜铌酸锂衬底量产、8 英寸送样' },
+      { code: 'sz000962', name: '东方钽业', role: '上游·光学级高纯五氧化二铌主力供货商' },
+      { code: 'sh601061', name: '中信金属', role: '上游·高纯铌原料（巴西 CBMM）国内独家代理' },
+      { code: 'sz300308', name: '中际旭创', role: '下游·全球光模块龙头，1.6T 主力采用 TFLN 方案' },
+      { code: 'sz300502', name: '新易盛', role: '下游·800G/1.6T 光模块含 TFLN 技术路线' },
+      { code: 'sz301205', name: '联特科技', role: '下游·光模块厂商，布局 TFLN 方案' },
+      { code: 'sh688205', name: '德科立', role: '下游·推出基于 TFLN 的低功耗光模块' },
+      { code: 'sh603083', name: '剑桥科技', role: '下游·基于铌酸锂技术研发高端产品' },
+      { code: 'sz300747', name: '锐科激光', role: '特种薄膜铌酸锂器件小产线' }
+    ]
+  },
+  {
+    key: 'HBM',
+    desc: 'HBM（高带宽存储）是 AI 训练最核心的存储品种，国产替代与先进封装主线；覆盖上游材料/设备、封测、存储及接口芯片。',
+    aliases: ['hbm', '高带宽存储', '高带宽内存', 'hbm3', 'hbm4', 'hbm存储', '存储芯片'],
+    stocks: [
+      { code: 'sh600584', name: '长电科技', role: '封测·全球第三封测龙头，XDFOI 支持 HBM 封装' },
+      { code: 'sz002156', name: '通富微电', role: '封测·CXMT 最大封测客户，HBM 国产化封测核心' },
+      { code: 'sz000021', name: '深科技', role: '封测·国内高端存储封测龙头' },
+      { code: 'sz002185', name: '华天科技', role: '封测·存储封装国内第一' },
+      { code: 'sz002409', name: '雅克科技', role: '材料·国内唯一进入 SK海力士/三星/美光 HBM 前驱体供应链' },
+      { code: 'sh688535', name: '华海诚科', role: '材料·国内唯一量产 HBM 环氧塑封料(GMC)' },
+      { code: 'sh688300', name: '联瑞新材', role: '材料·Low-α 球形硅微粉（HBM 封装基板）' },
+      { code: 'sz300398', name: '飞凯材料', role: '材料·先进封装湿电子化学品/锡球/EMC' },
+      { code: 'sz301319', name: '唯特偶', role: '材料·低温无铅锡膏用于 HBM 堆叠' },
+      { code: 'sh688012', name: '中微公司', role: '设备·TSV 深孔刻蚀龙头' },
+      { code: 'sz002371', name: '北方华创', role: '设备·CXMT 第一大设备供应商' },
+      { code: 'sh603283', name: '赛腾股份', role: '设备·HBM 检测设备龙头，供货三星/海力士' },
+      { code: 'sz300567', name: '精测电子', role: '设备·HBM 老化/FT 测试' },
+      { code: 'sh688627', name: '精智达', role: '设备·HBM 存储测试方案' },
+      { code: 'sh688361', name: '中科飞测', role: '设备·3D AOI/HBM 先进封装量测' },
+      { code: 'sh688037', name: '芯源微', role: '设备·临时键合/解键合机（HBM/CoWoS）' },
+      { code: 'sh688008', name: '澜起科技', role: '芯片·内存接口芯片龙头，HBM 配套' },
+      { code: 'sh603986', name: '兆易创新', role: '存储·利基 DRAM+MCU，直接持股 CXMT' },
+      { code: 'sh688525', name: '佰维存储', role: '存储·模组/封测一体化' },
+      { code: 'sz301308', name: '江波龙', role: '存储·企业级存储龙头' },
+      { code: 'sz300475', name: '香农芯创', role: '分销·SK海力士 HBM 核心代理商' }
+    ]
+  },
+  {
+    key: '复合集流体',
+    desc: '复合集流体（以复合铜箔为代表）是新一代锂电集流体材料，更轻更安全；产业链分设备、基膜、成品制造三环节。',
+    aliases: ['复合集流体', '复合铜箔', '复合铝箔', 'pet铜箔', '复合铜', '集流体'],
+    stocks: [
+      { code: 'sh688700', name: '东威科技', role: '设备·复合铜箔水电镀设备绝对龙头（市占超 80%）' },
+      { code: 'sh688392', name: '骄成超声', role: '设备·超声波焊接/检测设备' },
+      { code: 'sz301392', name: '汇成真空', role: '设备·磁控溅射设备核心供应商' },
+      { code: 'sh688359', name: '三孚新科', role: '设备·水电镀药水/专用化工材料' },
+      { code: 'sh603800', name: '洪田股份', role: '设备·磁控溅射设备' },
+      { code: 'sz002585', name: '双星新材', role: '基膜·PET 复合铜箔基膜龙头' },
+      { code: 'sh601208', name: '东材科技', role: '基膜·电工级聚酯薄膜龙头' },
+      { code: 'sh600237', name: '铜峰电子', role: '基膜·PET/PP 两种基膜' },
+      { code: 'sz002992', name: '宝明科技', role: '制造·复合铜箔量产龙头（收入+509%）' },
+      { code: 'sz300057', name: '万顺新材', role: '制造·复合铜箔/铝箔' },
+      { code: 'sz002846', name: '英联股份', role: '制造·复合铜箔布局' },
+      { code: 'sh600110', name: '诺德股份', role: '制造·铜箔/复合铜箔' }
+    ]
+  },
+  {
+    key: '人形机器人减速器',
+    desc: '人形机器人机械核心：谐波/RV 减速器（关节骨骼）与行星滚柱丝杠（线性关节），国产替代空间大。',
+    aliases: ['人形机器人减速器', '机器人减速器', '谐波减速器', 'rv减速器', '行星滚柱丝杠', '机器人丝杠', '滚柱丝杠', '机器人关节'],
+    stocks: [
+      { code: 'sh688017', name: '绿的谐波', role: '谐波减速器龙头，国产市占 60%+' },
+      { code: 'sz300503', name: '昊志机电', role: '谐波+RV 减速器双线布局' },
+      { code: 'sz002472', name: '双环传动', role: 'RV 重载减速器龙头' },
+      { code: 'sz000837', name: '秦川机床', role: 'RV 减速器' },
+      { code: 'sz002896', name: '中大力德', role: '谐波/RV/行星减速器一体化' },
+      { code: 'sh600835', name: '上海机电', role: '与纳博特斯克合资 RV 减速机' },
+      { code: 'sh601100', name: '恒立液压', role: '行星滚柱丝杠/线性执行器' },
+      { code: 'sh603667', name: '五洲新春', role: '行星滚柱丝杠量产，切入特斯拉链' },
+      { code: 'sz300580', name: '贝斯特', role: '高精度丝杠磨削' },
+      { code: 'sz300100', name: '双林股份', role: '反向式行星滚柱丝杠突破' },
+      { code: 'sh603009', name: '北特科技', role: '机器人丝杠子公司' },
+      { code: 'sz002050', name: '三花智控', role: '旋转执行器/热管理（Tesla Tier1）' },
+      { code: 'sh601689', name: '拓普集团', role: '线性关节总成（Tesla Optimus）' },
+      { code: 'sz300124', name: '汇川技术', role: '伺服+控制器全栈龙头' },
+      { code: 'sh603728', name: '鸣志电器', role: '空心杯电机' },
+      { code: 'sh603662', name: '柯力传感', role: '六维力传感器龙头' },
+      { code: 'sh688322', name: '奥比中光', role: '3D 视觉感知' }
+    ]
+  }
+];
+
 /** 限制并发的 map（批量拉取板块成分股时避免触发限流） */
 async function mapLimit(items, limit, fn) {
   const results = new Array(items.length);
@@ -104,6 +209,29 @@ function semanticNameScore(name, canon) {
   if (n.startsWith(c)) return 80;
   if (n.includes(c)) return 60;
   return 10;
+}
+
+/** 解析修饰词（核心/龙头、小市值） */
+function parseSemanticModifiers(query) {
+  const m = [];
+  if (/(核心|龙头|主营|主营业务|业务|代表性|核心标的|正宗|纯正|核心公司)/.test(query)) m.push('核心');
+  if (/(小市值|小盘|微小盘|次新)/.test(query)) m.push('小市值');
+  return m;
+}
+
+/**
+ * 产品级语义匹配：把自然语言与 SEMANTIC_PRODUCTS 的产品/技术别名比对，
+ * 命中即返回该产品对应的真实上市公司清单（含产业链定位）。
+ * @param {string} ql 已转小写的查询串
+ * @returns {object|null}
+ */
+function matchProduct(ql) {
+  for (const p of SEMANTIC_PRODUCTS) {
+    for (const a of p.aliases) {
+      if (ql.includes(a.toLowerCase())) return p;
+    }
+  }
+  return null;
 }
 
 const StockAPI = {
@@ -1195,10 +1323,52 @@ const StockAPI = {
    */
   async semanticSearch(rawQuery) {
     const query = String(rawQuery || '').trim();
-    if (!query) return { ok: false, error: '请输入描述，如：主营为ai安全的核心上市公司' };
+    if (!query) return { ok: false, error: '请输入描述，如：生产薄膜铌酸锂的企业 / 主营为ai安全的核心上市公司' };
+
+    const ql = query.toLowerCase();
+
+    // 0) 产品级语义匹配（优先）：自然语言 → 具体产品/技术 → 真实上市公司
+    //    这是与「概念板块交集」不同的能力：直接给出做这件事的公司，而非匹配板块名。
+    const product = matchProduct(ql);
+    if (product) {
+      const modifiers = parseSemanticModifiers(query);
+      const codes = product.stocks.map(s => s.code);
+      let quotes = {};
+      try { quotes = await this.getQuotes(codes); } catch (e) { quotes = {}; }
+      let stocks = product.stocks.map(s => {
+        const q = quotes[s.code] || {};
+        // 腾讯行情 totalMarketCap 单位为「亿元」，统一转成「元」以与概念路径一致
+        const mkt = q.totalMarketCap != null ? q.totalMarketCap * 1e8 : null;
+        return {
+          code: s.code,
+          name: q.name || s.name || s.code,
+          price: q.price != null ? q.price : null,
+          changePercent: q.changePercent != null ? q.changePercent : null,
+          marketCap: mkt,
+          role: s.role || '',
+          concepts: [product.key]
+        };
+      });
+      const TOPN = 20;
+      if (modifiers.includes('核心')) {
+        stocks.sort((a, b) => (b.marketCap || 0) - (a.marketCap || 0));
+        stocks = stocks.slice(0, TOPN);
+      } else if (modifiers.includes('小市值')) {
+        stocks.sort((a, b) => (a.marketCap || 0) - (b.marketCap || 0));
+        stocks = stocks.slice(0, TOPN);
+      }
+      return {
+        ok: true, query,
+        concepts: [product.key], modifiers,
+        method: 'product',
+        productKey: product.key,
+        productDesc: product.desc,
+        boards: [],
+        stocks
+      };
+    }
 
     // 1) 解析概念（自然语言 → 概念本体）
-    const ql = query.toLowerCase();
     const found = [];
     for (const c of SEMANTIC_CONCEPTS) {
       for (const a of c.aliases) {
@@ -1207,9 +1377,7 @@ const StockAPI = {
     }
 
     // 2) 解析修饰词
-    const modifiers = [];
-    if (/(核心|龙头|主营|主营业务|业务|代表性|核心标的|正宗|纯正|核心公司)/.test(query)) modifiers.push('核心');
-    if (/(小市值|小盘|微小盘|次新)/.test(query)) modifiers.push('小市值');
+    const modifiers = parseSemanticModifiers(query);
 
     // 3) 拉取全量板块并匹配每个概念对应的板块
     const allBoards = await this.getAllSectors();
