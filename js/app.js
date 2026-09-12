@@ -1697,6 +1697,72 @@ const app = createApp({
     const sectorLoadError = ref(false);
     const sectorLoadingAll = ref(false);
 
+    // ===== AI 语义选股（自然语言 → 概念交叉 → 核心标的） =====
+    const semantic = reactive({
+      searching: false,
+      error: '',
+      query: '',
+      concepts: [],
+      modifiers: [],
+      method: '',       // 'intersect' | 'union' | 'single'
+      boards: [],       // 命中的板块（用于透明展示）
+      stocks: [],       // 结果股票列表
+      done: false,
+      saved: false      // 是否已保存到我的板块
+    });
+    async function semanticSearch() {
+      const q = String(sectorSearch.value || '').trim();
+      if (!q) { showToast('请输入语义描述，如：主营为ai安全的核心上市公司', 'error'); return; }
+      semantic.searching = true;
+      semantic.error = '';
+      semantic.boards = [];
+      semantic.stocks = [];
+      semantic.done = false;
+      semantic.saved = false;
+      try {
+        const res = await StockAPI.semanticSearch(q);
+        if (!res.ok) {
+          semantic.error = res.error || '解析失败';
+          showToast(semantic.error, 'error');
+        } else {
+          semantic.query = res.query;
+          semantic.concepts = res.concepts;
+          semantic.modifiers = res.modifiers;
+          semantic.method = res.method;
+          semantic.boards = res.boards;
+          semantic.stocks = res.stocks;
+          semantic.done = true;
+          const m = res.method === 'intersect' ? '概念交集（同时具备多主题）'
+            : res.method === 'union' ? '概念并集（无完全交集，已展示并集）' : '单概念';
+          showToast(`AI语义筛选完成：${m}，命中 ${res.stocks.length} 只`, 'success');
+        }
+      } catch (e) {
+        semantic.error = 'AI语义筛选失败：' + (e && e.message ? e.message : e);
+        showToast(semantic.error, 'error');
+        console.warn('AI语义筛选失败', e);
+      } finally {
+        semantic.searching = false;
+      }
+    }
+    // 把语义筛选结果保存为「我的概念选股板块」
+    function saveSemanticAsPool() {
+      if (!semantic.stocks.length) { showToast('暂无可保存的结果', 'error'); return; }
+      if (semantic.saved) { showToast('该结果已保存', 'info'); return; }
+      const conceptLabel = semantic.concepts.join('+') || '语义';
+      const modLabel = semantic.modifiers.includes('核心') ? '(核心)' : '';
+      const sector = {
+        name: `AI语义:${conceptLabel}${modLabel}`,
+        bk: 'SEMANTIC_' + Date.now(),
+        type: 'AI语义',
+        date: Store.today(),
+        stocks: semantic.stocks.map(s => ({ code: s.code, name: s.name }))
+      };
+      Store.addSectorPool(sector);
+      recomputePoolAvg(sector);
+      semantic.saved = true;
+      showToast(`已保存板块「${sector.name}」共 ${sector.stocks.length} 只`, 'success');
+    }
+
     // 已保存板块按创建时间倒序
     const sortedSectorPools = computed(() => [...D.sectorPools].slice().reverse());
 
@@ -3313,6 +3379,8 @@ const app = createApp({
       sectorFilter, sectorDetailIndustries, filteredSectorDetailStocks,
       resetSectorFilter, toggleSectorFilterLock, sectorIndustryOpen,
       sectorFilterOpen, sectorInfoOpen, favInfoOpen, filterInfoOpen, poolInfoOpen,
+      // AI 语义选股
+      semantic, semanticSearch, saveSemanticAsPool,
       // 页面3
       hotDate, hotLoading, hotBoards, hotStocks, preMarketBoards, amplitudeBoards, conceptFreq,
       hotBoardActive, hotBoardLoading, hotDetailIsStock, openHotBoard, openHotStock, clearHotBoard,
