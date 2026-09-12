@@ -846,6 +846,71 @@ body {
   background: var(--surface-alt);
   border-radius: 8px;
 }
+/* AI 语义搜索按钮：渐变高亮，区别于普通搜索 */
+.btn-ai {
+  background: linear-gradient(135deg, #6a5cff, #9b5cff);
+  color: #fff;
+  border: none;
+  font-weight: 600;
+  box-shadow: 0 2px 8px rgba(106, 92, 255, .35);
+}
+.btn-ai:hover:not(:disabled) {
+  background: linear-gradient(135deg, #5a4cff, #8a4cff);
+  color: #fff;
+}
+.btn-ai:disabled { opacity: .6; cursor: default; box-shadow: none; }
+
+/* ===== AI 语义选股结果面板 ===== */
+.semantic-result {
+  margin: 6px 0 14px;
+  padding: 14px 16px;
+  background: linear-gradient(180deg, #faf9ff, #f4f1ff);
+  border: 1px solid #e3dcff;
+  border-radius: 10px;
+}
+.semantic-loading {
+  display: flex; align-items: center; gap: 10px;
+  color: var(--text-secondary); font-size: 14px;
+}
+.ai-spinner { font-size: 20px; animation: ai-bounce 1s infinite ease-in-out; }
+@keyframes ai-bounce { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
+.semantic-header {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 10px; margin-bottom: 10px;
+}
+.semantic-header h3 { margin: 0; font-size: 16px; }
+.semantic-meta {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 6px;
+  margin-bottom: 8px; font-size: 13px; color: var(--text-secondary);
+}
+.semantic-tag-label { font-weight: 600; color: var(--text-primary); }
+.semantic-chip {
+  display: inline-block; padding: 2px 9px; border-radius: 10px;
+  font-size: 12px; font-weight: 600;
+}
+.semantic-chip.concept { background: #efe9ff; color: #5a32e6; }
+.semantic-chip.mod { background: #ffe9c7; color: #b06a00; }
+.semantic-chip.mini { background: #efe9ff; color: #5a32e6; padding: 1px 6px; font-size: 11px; }
+.semantic-method { color: #8a7fb5; font-size: 12px; }
+.semantic-board {
+  display: inline-block; padding: 1px 7px; margin: 2px 4px 2px 0;
+  background: #fff; border: 1px solid #e3dcff; border-radius: 8px;
+  font-size: 12px; color: #6a5cff;
+}
+.semantic-table-wrap { overflow-x: auto; margin-top: 6px; }
+.semantic-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.semantic-table th, .semantic-table td {
+  padding: 7px 10px; text-align: left; border-bottom: 1px solid #ece8ff; white-space: nowrap;
+}
+.semantic-table th { background: #f3efff; color: var(--text-secondary); font-weight: 600; }
+.semantic-table tbody tr:hover { background: #faf8ff; }
+.semantic-table .rank { color: var(--text-secondary); font-weight: 600; }
+.semantic-table .code { font-family: monospace; color: var(--text-secondary); }
+.semantic-table .name { font-weight: 600; }
+.semantic-table .concepts { white-space: normal; }
+.semantic-error { color: #c0392b; margin: 0; }
+.semantic-result .tiny { font-size: 11px; color: #9b93c4; margin-top: 8px; }
+
 .sector-results { margin-bottom: 8px; }
 /* 子版块搜索：筛选状态提示条 */
 .sector-sub-filter {
