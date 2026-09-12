@@ -8,6 +8,104 @@
  *
  * 股票代码格式：sh600519（上海）、sz000001（深圳）、sh688xxx（科创板）、sz30xxxx（创业板）
  */
+
+// ============================================================
+//  AI 语义选股：概念本体（自然语言 → 板块关键词映射）
+//  纯前端、免费、无需后端 / API Key；通过「概念板块交叉匹配 + 总市值排序」
+//  在浏览器侧实现"语义级"筛选。
+//  - aliases：在用户输入的自然语言里被识别为该类概念的词（含英文缩写）
+//  - hints  ：用于在东方财富板块名称里匹配该类概念的关键词（子串）
+// ============================================================
+const SEMANTIC_CONCEPTS = [
+  { canonical: '人工智能', aliases: ['人工智能', 'ai', 'a.i', 'aigc', '大模型', 'gpt', 'chatgpt', '生成式', '多模态', '智能体', 'agent', 'llm', '机器学习', '深度学习', '算力大模型'],
+    hints: ['人工智能', 'ai', 'aigc', '智能体', '多模态', '大模型', 'chatgpt', '深度学习', '机器学习'] },
+  { canonical: '安全', aliases: ['安全', '网络安全', '信息安全', '数据安全', '网安', '信安', '安防', '安保'],
+    hints: ['安全', '安防'] },
+  { canonical: '信创', aliases: ['信创', '国产软件', '国产操作系统', '软件', '操作系统', '数据库', '工业软件'],
+    hints: ['信创', '国产软件', '软件', '操作系统', '数据库'] },
+  { canonical: '芯片半导体', aliases: ['芯片', '半导体', '集成电路', '晶圆', '光刻', '国产芯片', '半导体设备', 'soc', 'mcu'],
+    hints: ['芯片', '半导体', '集成电路', '光刻', '晶圆'] },
+  { canonical: '机器人', aliases: ['机器人', '人形机器人', '工业机器人', '服务机器人', '减速器', '机械臂', '具身智能'],
+    hints: ['机器人', '减速器', '具身'] },
+  { canonical: '算力', aliases: ['算力', '东数西算', '智算', '算力租赁', '数据中心', 'idc', '液冷', '算力中心'],
+    hints: ['算力', '东数西算', '数据中心', 'idc', '液冷'] },
+  { canonical: '智能驾驶', aliases: ['自动驾驶', '无人驾驶', '智能驾驶', '辅助驾驶', '车联网', '智能座舱'],
+    hints: ['自动驾驶', '无人驾驶', '智能驾驶', '车联网', '智能座舱'] },
+  { canonical: '新能源', aliases: ['新能源', '光伏', '风电', '氢能', '储能', '充电桩', '特高压', '绿电'],
+    hints: ['光伏', '风电', '储能', '氢能', '充电桩', '特高压', '新能源', '绿电'] },
+  { canonical: '锂电池新能源车', aliases: ['锂电池', '锂电', '新能源车', '电动汽车', '动力电池', '固态电池', '新能源整车'],
+    hints: ['锂电池', '锂电', '新能源车', '动力电池', '固态电池', '整车'] },
+  { canonical: '医药', aliases: ['医药', '创新药', '生物制药', '医疗器械', '中药', 'cxo', '疫苗', '医疗服务'],
+    hints: ['医药', '创新药', '医疗器械', '中药', '生物制药', 'cxo', '疫苗'] },
+  { canonical: '军工', aliases: ['军工', '国防', '航空装备', '卫星导航', '船舶', '兵器', '军民融合'],
+    hints: ['军工', '国防', '卫星', '航空装备', '船舶', '兵器'] },
+  { canonical: '低空经济', aliases: ['低空经济', '飞行汽车', 'evtol', '通航', '无人机'],
+    hints: ['低空经济', '飞行汽车', '通航', '无人机'] },
+  { canonical: '商业航天', aliases: ['商业航天', '卫星互联网', '火箭', '航天'],
+    hints: ['商业航天', '卫星互联网', '航天'] },
+  { canonical: '消费白酒', aliases: ['白酒', '食品饮料', '消费', '啤酒', '免税', '新零售'],
+    hints: ['白酒', '食品饮料', '啤酒', '免税', '新零售'] },
+  { canonical: '金融', aliases: ['银行', '保险', '券商', '金融', '信托', '期货', '财富管理'],
+    hints: ['银行', '保险', '券商', '期货', '信托'] },
+  { canonical: '房地产', aliases: ['房地产', '地产', '物业服务', '园区开发'],
+    hints: ['房地产', '物业'] },
+  { canonical: '化工', aliases: ['化工', '化学', '化肥', '农药', '塑料', '橡胶', '钛白粉'],
+    hints: ['化工', '化肥', '农药'] },
+  { canonical: '有色金属', aliases: ['有色', '黄金', '稀土', '铜', '铝', '锂矿', '小金属'],
+    hints: ['有色', '黄金', '稀土', '小金属'] },
+  { canonical: '钢铁煤炭', aliases: ['钢铁', '煤炭', '焦炭'],
+    hints: ['钢铁', '煤炭'] },
+  { canonical: '农业', aliases: ['农业', '猪肉', '养殖', '种业', '粮食'],
+    hints: ['农业', '猪肉', '养殖', '种业'] },
+  { canonical: '数字经济', aliases: ['数字经济', '数据要素', '数据确权', '数字中国', '大数据', '云计算', '边缘计算'],
+    hints: ['数字经济', '数据要素', '数据确权', '大数据', '云计算', '边缘计算'] },
+  { canonical: '通信5g', aliases: ['5g', '通信', '光模块', 'cpo', '算力网络', '6g'],
+    hints: ['5g', '通信', '光模块', 'cpo', '6g'] },
+  { canonical: '传媒游戏', aliases: ['传媒', '游戏', '元宇宙', 'vr', 'ar', '影视', '出版', '短剧'],
+    hints: ['传媒', '游戏', '元宇宙', '影视', '出版', '短剧'] },
+  { canonical: '教育', aliases: ['教育', '培训', '职业教育'],
+    hints: ['教育', '培训'] },
+  { canonical: '养老', aliases: ['养老', '银发', '医养'],
+    hints: ['养老', '医养'] },
+  { canonical: '国企改革', aliases: ['国企改革', '中字头', '央企', '国资', '央企改革'],
+    hints: ['国企改革', '中字头', '央企改革', '国资'] },
+  { canonical: '环保', aliases: ['环保', '碳中和', '污水处理', '固废', '绿化'],
+    hints: ['环保', '碳中和', '污水处理'] },
+  { canonical: '电商互联网', aliases: ['电商', '互联网', '平台经济', '直播', '跨境电商'],
+    hints: ['电商', '互联网', '平台经济', '直播'] },
+  { canonical: '氢能源', aliases: ['氢能源', '氢燃料电池', '加氢'],
+    hints: ['氢能源', '氢燃料', '加氢'] },
+  { canonical: '医疗健康', aliases: ['医疗', '健康', '养老医疗', '连锁医疗'],
+    hints: ['医疗', '健康'] }
+];
+
+/** 限制并发的 map（批量拉取板块成分股时避免触发限流） */
+async function mapLimit(items, limit, fn) {
+  const results = new Array(items.length);
+  let i = 0;
+  async function worker() {
+    while (i < items.length) {
+      const idx = i++;
+      results[idx] = await fn(items[idx], idx);
+    }
+  }
+  const n = Math.min(limit, items.length);
+  const workers = [];
+  for (let k = 0; k < n; k++) workers.push(worker());
+  await Promise.all(workers);
+  return results;
+}
+
+/** 板块名称与概念本体的相关度评分（用于排序：越相关越优先被纳入交叉匹配） */
+function semanticNameScore(name, canon) {
+  const n = String(name).toLowerCase();
+  const c = String(canon).toLowerCase();
+  if (n === c) return 100;
+  if (n.startsWith(c)) return 80;
+  if (n.includes(c)) return 60;
+  return 10;
+}
+
 const StockAPI = {
 
   // ============ 代码解析 ============
@@ -1051,6 +1149,145 @@ const StockAPI = {
       await new Promise(r => setTimeout(r, 300));
     }
     return all;
+  },
+
+  /**
+   * 获取某板块成分股（含总市值，用于语义搜索的"核心/龙头"排序）
+   * @param {string} bk 板块代码，如 BK0896
+   * @param {number} maxPages 最多翻几页（默认 15，单页 100 条）
+   * @returns {Promise<Array<{code,name,price,changePercent,marketCap}>>}
+   */
+  async getSectorStocksMeta(bk, maxPages = 15) {
+    const all = [];
+    for (let pn = 1; pn <= maxPages; pn++) {
+      const url = `https://push2.eastmoney.com/api/qt/clist/get?pn=${pn}&pz=100&po=1&np=1&fltt=2&invt=2&fid=f20&fs=b%3A${bk}&fields=f12,f14,f3,f2,f20`;
+      const json = await this._eastFetch(url);
+      const diff = this._diffArray(json);
+      for (const it of diff) {
+        const pure = String(it.f12);
+        const prefix = /^(6|9|4|8)/.test(pure) ? 'sh' : 'sz';
+        all.push({
+          code: prefix + pure,
+          name: it.f14 || '',
+          price: it.f2 != null ? parseFloat(it.f2) : null,
+          changePercent: it.f3 != null ? parseFloat(it.f3) : null,
+          marketCap: it.f20 != null ? parseFloat(it.f20) : null  // 总市值（元）
+        });
+      }
+      const total = json && json.data && json.data.total;
+      if (!diff.length || all.length >= total) break;
+      await new Promise(r => setTimeout(r, 300));
+    }
+    return all;
+  },
+
+  /**
+   * AI 语义选股：把自然语言描述解析为"概念 + 修饰"，交叉匹配板块成分股，
+   * 返回可直接展示的股票列表。纯前端、免费、无需后端 / API Key。
+   *
+   * 示例：「主营为ai安全的核心上市公司」
+   *   → 识别概念 [人工智能, 安全]
+   *   → 取「同时属于 AI 板块 与 安全板块」的公司（概念交集）
+   *   → 修饰"核心" → 按总市值降序取前 20 家（代表性核心标的）
+   *
+   * @param {string} rawQuery 用户自然语言
+   * @returns {Promise<{ok,query,concepts,modifiers,method,boards,stocks,error}>}
+   */
+  async semanticSearch(rawQuery) {
+    const query = String(rawQuery || '').trim();
+    if (!query) return { ok: false, error: '请输入描述，如：主营为ai安全的核心上市公司' };
+
+    // 1) 解析概念（自然语言 → 概念本体）
+    const ql = query.toLowerCase();
+    const found = [];
+    for (const c of SEMANTIC_CONCEPTS) {
+      for (const a of c.aliases) {
+        if (ql.includes(a.toLowerCase())) { found.push(c); break; }
+      }
+    }
+
+    // 2) 解析修饰词
+    const modifiers = [];
+    if (/(核心|龙头|主营|主营业务|业务|代表性|核心标的|正宗|纯正|核心公司)/.test(query)) modifiers.push('核心');
+    if (/(小市值|小盘|微小盘|次新)/.test(query)) modifiers.push('小市值');
+
+    // 3) 拉取全量板块并匹配每个概念对应的板块
+    const allBoards = await this.getAllSectors();
+    const CAP = 12; // 每概念最多纳入的板块数，避免请求过多
+    const conceptBoardLists = found.map(c => {
+      const boards = allBoards.filter(b => {
+        const n = b.name.toLowerCase();
+        return c.hints.some(h => n.includes(h.toLowerCase()));
+      });
+      boards.sort((a, b) => semanticNameScore(b.name, c.canonical) - semanticNameScore(a.name, c.canonical));
+      return { canon: c.canonical, boards: boards.slice(0, CAP) };
+    }).filter(x => x.boards.length);
+
+    if (!conceptBoardLists.length) {
+      return {
+        ok: false,
+        query, concepts: [], modifiers,
+        error: '未识别到已知概念，请尝试：人工智能、ai、安全、芯片、机器人、新能源、医药、军工 等关键词'
+      };
+    }
+
+    // 4) 并发拉取各概念板块成分股（限并发 4），构建 code→股票信息 与 概念归属
+    const stockInfo = new Map();
+    const conceptStockSets = [];
+    for (const { canon, boards } of conceptBoardLists) {
+      const set = new Set();
+      const lists = await mapLimit(boards, 4, (b) => this.getSectorStocksMeta(b.bk));
+      for (const list of lists) {
+        for (const s of list) {
+          set.add(s.code);
+          if (!stockInfo.has(s.code)) stockInfo.set(s.code, s);
+        }
+      }
+      conceptStockSets.push({ canon, set });
+    }
+
+    // 5) 多概念取「股票集合交集」（同时具备多个主题的公司）；无交集则回退并集
+    let resultCodes, method;
+    if (conceptStockSets.length === 1) {
+      resultCodes = [...conceptStockSets[0].set];
+      method = 'single';
+    } else {
+      let inter = conceptStockSets[0].set;
+      for (let i = 1; i < conceptStockSets.length; i++) {
+        inter = new Set([...inter].filter(c => conceptStockSets[i].set.has(c)));
+      }
+      if (inter.size > 0) { resultCodes = [...inter]; method = 'intersect'; }
+      else {
+        const uni = new Set();
+        conceptStockSets.forEach(s => s.set.forEach(c => uni.add(c)));
+        resultCodes = [...uni]; method = 'union';
+      }
+    }
+
+    // 6) 修饰：核心/龙头 → 按总市值降序取前 N；小市值 → 升序取前 N
+    let stocks = resultCodes.map(c => stockInfo.get(c)).filter(Boolean);
+    const TOPN = 20;
+    if (modifiers.includes('核心')) {
+      stocks.sort((a, b) => (b.marketCap || 0) - (a.marketCap || 0));
+      stocks = stocks.slice(0, TOPN);
+    } else if (modifiers.includes('小市值')) {
+      stocks.sort((a, b) => (a.marketCap || 0) - (b.marketCap || 0));
+      stocks = stocks.slice(0, TOPN);
+    }
+
+    // 7) 标注每只股票命中的概念
+    const codeConcepts = {};
+    for (const cs of conceptStockSets) {
+      for (const code of cs.set) (codeConcepts[code] ||= []).push(cs.canon);
+    }
+    stocks.forEach(s => { s.concepts = codeConcepts[s.code] || []; });
+
+    return {
+      ok: true,
+      query, concepts: found.map(c => c.canonical), modifiers, method,
+      boards: conceptBoardLists.flatMap(x => x.boards),
+      stocks
+    };
   },
 
   // ============ 工具方法 ============
