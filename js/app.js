@@ -1704,7 +1704,9 @@ const app = createApp({
       query: '',
       concepts: [],
       modifiers: [],
-      method: '',       // 'intersect' | 'union' | 'single'
+      method: '',       // 'product' | 'intersect' | 'union' | 'single'
+      productKey: '',
+      productDesc: '',
       boards: [],       // 命中的板块（用于透明展示）
       stocks: [],       // 结果股票列表
       done: false,
@@ -1729,10 +1731,13 @@ const app = createApp({
           semantic.concepts = res.concepts;
           semantic.modifiers = res.modifiers;
           semantic.method = res.method;
+          semantic.productKey = res.productKey || '';
+          semantic.productDesc = res.productDesc || '';
           semantic.boards = res.boards;
           semantic.stocks = res.stocks;
           semantic.done = true;
-          const m = res.method === 'intersect' ? '概念交集（同时具备多主题）'
+          const m = res.method === 'product' ? '产品级语义命中（产业链真实标的）'
+            : res.method === 'intersect' ? '概念交集（同时具备多主题）'
             : res.method === 'union' ? '概念并集（无完全交集，已展示并集）' : '单概念';
           showToast(`AI语义筛选完成：${m}，命中 ${res.stocks.length} 只`, 'success');
         }
