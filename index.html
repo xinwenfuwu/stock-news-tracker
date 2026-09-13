@@ -566,12 +566,14 @@
               <button class="btn btn-sm" :class="{ active: reverseSort==='heat' }" @click="setReverseSort('heat')">按热度 {{ reverseSortIcon('heat') }}</button>
             </div>
           </div>
-          <p class="muted tiny">说明：<b>相关度</b> = 该主营业务占上市公司营收的比例（%）；<b>热度</b> = 该业务对应东财板块的成分股数量（股票数越多代表同业公司越多 / 竞争越充分）。默认按相关度从高到低排序，可切换为按热度排序。</p>
+          <p class="muted tiny">说明：结果前<strong>两行固定必有</strong>——① <b>🔥 当前最火业务</b>（默认 AI短剧，可改成当下最火的方向）；② <b>✏️ 自定义业务</b>（自行填写一个业务名称）。这两行可在框内直接修改，其后才是该股票真实的<b>主营构成</b>。<b>相关度</b> = 主营占营收比例（%）；<b>热度</b> = 对应东财板块成分股数。默认按相关度从高到低排序，可切换为按热度排序。业务名称已尽量补全（如「衍生业务」补全为「短剧及IP衍生品业务」）。</p>
           <div class="semantic-table-wrap">
             <table class="semantic-table reverse">
               <thead>
                 <tr>
                   <th>排名</th>
+                  <th>股票名称</th>
+                  <th>代码</th>
                   <th>业务名称</th>
                   <th>营收占比</th>
                   <th class="sortable" @click="setReverseSort('relevance')">相关度(营收占比) <span class="sort-caret">{{ reverseSort==='relevance'?'⬇️':'↕️' }}</span></th>
@@ -580,15 +582,27 @@
                 </tr>
               </thead>
               <tbody>
-                <tr v-for="(s,i) in reverseSorted" :key="s.name">
+                <tr v-for="(s,i) in reverseSorted" :key="s.type !== 'seg' ? s.type : s.name" :class="{ 'row-hot': s.type==='hot', 'row-custom': s.type==='custom' }">
                   <td class="rank">{{ i+1 }}</td>
-                  <td class="name">{{ s.name }}</td>
-                  <td>{{ s.ratio != null ? s.ratio + '%' : '-' }}</td>
+                  <td class="name">{{ s.type==='seg' ? reverse.name : (s.type==='hot' ? '全市场' : '自定义') }}</td>
+                  <td class="code">{{ s.type==='seg' ? reverse.code.toUpperCase() : '—' }}</td>
+                  <td class="seg">
+                    <template v-if="s.type==='hot'">
+                      <span class="badge-hot">🔥 当前最火</span>
+                      <input class="inline-input bus-input" v-model="reverse.hotTheme" placeholder="当前最火业务" />
+                    </template>
+                    <template v-else-if="s.type==='custom'">
+                      <span class="badge-custom">✏️ 自定义</span>
+                      <input class="inline-input bus-input" v-model="reverse.customName" placeholder="自行填写业务名称" />
+                    </template>
+                    <template v-else>{{ s.name }}</template>
+                  </td>
+                  <td>{{ s.ratio != null ? s.ratio + '%' : (s.type==='hot' ? '热门' : '-') }}</td>
                   <td class="relevance">{{ s.relevance != null ? s.relevance + '%' : '-' }}</td>
-                  <td class="heat">{{ s.heat ? s.heat + ' 只' : '—' }}</td>
+                  <td class="heat">{{ s.heat ? s.heat + ' 只' : '-' }}</td>
                   <td class="concepts">
                     <span class="semantic-chip mini" v-for="b in s.boardNames" :key="b">{{ b }}</span>
-                    <span v-if="!s.boardNames.length" class="muted tiny">未匹配板块</span>
+                    <span v-if="!s.boardNames.length" class="muted tiny">—</span>
                   </td>
                 </tr>
               </tbody>
