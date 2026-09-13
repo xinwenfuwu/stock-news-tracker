@@ -1781,18 +1781,28 @@ const app = createApp({
       name: '',
       code: '',
       segments: [],
-      done: false
+      done: false,
+      hotTheme: 'AI短剧',   // 固定首行：当前股市最火的业务名称（可改）
+      customName: ''        // 固定次行：用户自行填写的业务名称（可改）
     });
     function toggleReverseOpen() { reverseOpen.value = !reverseOpen.value; }
     function setReverseSort(k) { reverseSort.value = k; }
     const reverseSorted = computed(() => {
+      // 两个固定必有行：① 当前最火业务 ② 用户自定义业务（始终排在正常业务之前）
+      const rows = [];
+      const ht = (reverse.hotTheme || '').trim() || 'AI短剧';
+      rows.push({ type: 'hot', name: ht, ratio: null, relevance: null, heat: null, boardNames: [], badge: '当前最火业务' });
+      const cn = (reverse.customName || '').trim();
+      rows.push({ type: 'custom', name: cn, ratio: null, relevance: null, heat: null, boardNames: [], badge: '自定义业务' });
+      // 正常业务结果（主营构成），按当前排序方式排序
       const arr = [...(reverse.segments || [])];
       if (reverseSort.value === 'heat') {
-        arr.sort((a, b) => (b.heat - a.heat) || (b.relevance - a.relevance));
+        arr.sort((a, b) => (b.heat || 0) - (a.heat || 0) || (b.relevance || 0) - (a.relevance || 0));
       } else {
-        arr.sort((a, b) => (b.relevance - a.relevance) || (b.heat - a.heat));
+        arr.sort((a, b) => (b.relevance || 0) - (a.relevance || 0) || (b.heat || 0) - (a.heat || 0));
       }
-      return arr;
+      arr.forEach(s => rows.push({ type: 'seg', ...s }));
+      return rows;
     });
     async function reverseBusiness() {
       const v = String(reverse.input || '').trim();
