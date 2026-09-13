@@ -1918,7 +1918,8 @@ const app = createApp({
           changePercent: info.changePercent != null ? info.changePercent : null,
           marketCap: info.totalMarketCap != null ? info.totalMarketCap * 1e8 : null,
           role: '手动添加',
-          concepts: semantic.concepts.slice()
+          concepts: semantic.concepts.slice(),
+          relevance: null
         });
         stockAddCode.value = '';
         showToast('已添加 ' + name, 'success');
