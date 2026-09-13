@@ -1458,6 +1458,95 @@ const StockAPI = {
     };
   },
 
+  /**
+   * 把一个"概念"自然语言解析为其对应的东方财富板块列表。
+   * 用于「语义结果编辑」后，根据用户修改后的概念重建命中板块。
+   *   - 命中已知概念本体（SEMANTIC_CONCEPTS）：按其 hints 匹配板块并按相关度排序取前 12；
+   *   - 未命中本体：按板块名模糊匹配取前 12。
+   * @param {string} concept
+   * @returns {Promise<Array<{bk,name}>>}
+   */
+  async resolveConceptToBoards(concept) {
+    const c = String(concept || '').trim();
+    if (!c) return [];
+    const cl = c.toLowerCase();
+    const found = SEMANTIC_CONCEPTS.find(x =>
+      x.canonical.toLowerCase() === cl ||
+      x.aliases.some(a => a.toLowerCase() === cl) ||
+      x.aliases.some(a => cl.includes(a.toLowerCase())) ||
+      x.hints.some(h => cl.includes(h.toLowerCase()))
+    );
+    const all = await this.getAllSectors();
+    if (found) {
+      return all
+        .filter(b => found.hints.some(h => b.name.toLowerCase().includes(h.toLowerCase())))
+        .sort((a, b) => semanticNameScore(b.name, found.canonical) - semanticNameScore(a.name, found.canonical))
+        .slice(0, 12)
+        .map(b => ({ bk: b.bk, name: b.name }));
+    }
+    return all
+      .filter(b => b.name.toLowerCase().includes(cl))
+      .slice(0, 12)
+      .map(b => ({ bk: b.bk, name: b.name }));
+  },
+
+  /**
+   * 语义结果「重算引擎」：根据当前板块列表 + 修饰词，重新计算符合语义的上市公司。
+   * 这是概念/板块增删改之后的核心逻辑：
+   *   - 多板块取成分股「交集」= 同时归属这些板块的公司（主业同时符合多个主题）；
+   *   - 单板块直接取该板块全部成分股；
+   *   - 修饰词：核心/龙头 → 按总市值降序取前 20；小市值 → 升序取前 20；
+   *   - 最后补齐腾讯实时行情（现价/涨跌幅/总市值）。
+   * @param {{boards:Array<{bk,name}>, modifiers?:string[], concepts?:string[]}} params
+   * @returns {Promise<{ok,stocks,method,boards}>}
+   */
+  async recomputeSemanticStocks({ boards, modifiers = [], concepts = [] }) {
+    if (!boards || !boards.length) return { ok: true, stocks: [], method: 'empty', boards: [] };
+    // 1) 并发拉取各板块成分股（含总市值）
+    const boardLists = await mapLimit(boards, 4, (b) => this.getSectorStocksMeta(b.bk));
+    const stockInfo = new Map();
+    const boardSets = [];
+    boards.forEach((b, idx) => {
+      const set = new Set();
+      for (const s of (boardLists[idx] || [])) { set.add(s.code); if (!stockInfo.has(s.code)) stockInfo.set(s.code, s); }
+      boardSets.push({ bk: b.bk, name: b.name, set });
+    });
+    // 2) 多板块取交集（同时具备多主题）；无交集则并集兜底
+    let resultCodes, method;
+    if (boardSets.length === 1) { resultCodes = [...boardSets[0].set]; method = 'single'; }
+    else {
+      let inter = boardSets[0].set;
+      for (let i = 1; i < boardSets.length; i++) inter = new Set([...inter].filter(c => boardSets[i].set.has(c)));
+      if (inter.size > 0) { resultCodes = [...inter]; method = 'intersect'; }
+      else { const uni = new Set(); boardSets.forEach(s => s.set.forEach(c => uni.add(c))); resultCodes = [...uni]; method = 'union'; }
+    }
+    // 3) 修饰：核心/小市值 → 取前 N；否则按市值降序展示全部
+    let stocks = resultCodes.map(c => stockInfo.get(c)).filter(Boolean);
+    const TOPN = 20;
+    if (modifiers.includes('核心')) { stocks.sort((a, b) => (b.marketCap || 0) - (a.marketCap || 0)); stocks = stocks.slice(0, TOPN); }
+    else if (modifiers.includes('小市值')) { stocks.sort((a, b) => (a.marketCap || 0) - (b.marketCap || 0)); stocks = stocks.slice(0, TOPN); }
+    else { stocks.sort((a, b) => (b.marketCap || 0) - (a.marketCap || 0)); }
+    // 4) 实时行情
+    let quotes = {};
+    try { quotes = await this.getQuotes(stocks.map(s => s.code)); } catch (e) { quotes = {}; }
+    const codeBoards = {};
+    boardSets.forEach(bs => { for (const code of bs.set) (codeBoards[code] ||= []).push(bs.name); });
+    stocks = stocks.map(s => {
+      const q = quotes[s.code] || {};
+      const mkt = q.totalMarketCap != null ? q.totalMarketCap * 1e8 : s.marketCap;
+      return {
+        code: s.code,
+        name: q.name || s.name || s.code,
+        price: q.price != null ? q.price : null,
+        changePercent: q.changePercent != null ? q.changePercent : null,
+        marketCap: mkt,
+        role: '',
+        concepts: codeBoards[s.code] || concepts.slice()
+      };
+    });
+    return { ok: true, stocks, method, boards: boards.slice() };
+  },
+
   // ============ 工具方法 ============
 
   _addDays(date, n) {
