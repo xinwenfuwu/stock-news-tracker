@@ -404,10 +404,17 @@
         <div class="semantic-result" v-else-if="semantic.done">
           <div class="semantic-header">
             <h3>🤖 AI 语义筛选结果</h3>
-            <button class="btn btn-sm btn-primary" @click="saveSemanticAsPool" :disabled="semantic.saved || !semantic.stocks.length">
-              {{ semantic.saved ? '✅ 已保存' : '💾 保存到我的板块' }}
-            </button>
+            <div class="semantic-header-actions">
+              <button class="btn btn-sm btn-ai" @click="recomputeSemanticStocks" :disabled="semantic.recomputing || !semantic.boards.length" title="根据当前识别概念/命中板块重新计算符合语义的上市公司">
+                <span v-if="semantic.recomputing">⏳ 重算中...</span>
+                <span v-else>🔄 按当前条件重算</span>
+              </button>
+              <button class="btn btn-sm btn-primary" @click="saveSemanticAsPool" :disabled="semantic.saved || !semantic.stocks.length">
+                {{ semantic.saved ? '✅ 已保存' : '💾 保存到我的板块' }}
+              </button>
+            </div>
           </div>
+          <p class="muted tiny semantic-hint">提示：编辑「识别概念」或「命中板块」后会自动按条件重算上市公司（多板块取成分股交集＝主业同时符合多主题）；也可点上方按钮手动重算。</p>
           <!-- 识别概念：增删改 -->
           <div class="semantic-edit-block">
             <div class="semantic-edit-title">识别概念 <span class="muted tiny">（可增 / 删 / 改）</span></div>
