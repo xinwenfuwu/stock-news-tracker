@@ -1781,7 +1781,8 @@ const app = createApp({
       code: '',
       segments: [],
       done: false,
-      hotTheme: '',         // 固定首行业务名（反推后自动填入该股最火业务，可改）
+      hotTheme: '',         // 固定首行概念名（反推后自动填入该股最火概念，可改）
+      hotConcept: null,     // 固定首行的「该股最火概念」计算数据 {bk,name,corr,heat,boardNames}
       customName: ''        // 固定次行业务名（用户自行填写）
     });
     function setReverseSort(k) { reverseSort.value = k; }
@@ -1819,24 +1820,38 @@ const app = createApp({
     );
     const reverseSorted = computed(() => {
       const segs = reverse.segments || [];
-      // 找出「该股最火业务」= 主营构成中热度(同业公司数)最高者，回退到营收占比最高者
-      const byHeat = [...segs].sort((a, b) => (b.heat || 0) - (a.heat || 0) || (b.relevance || 0) - (a.relevance || 0));
-      let hotSeg = byHeat[0] || null;
-      const htName = (reverse.hotTheme || '').trim();
-      if (htName && hotSeg) {
-        const m = segs.find(s => s.name && (s.name === htName || s.name.includes(htName) || htName.includes(s.name)));
-        if (m) hotSeg = m;
-      }
       const rows = [];
-      // ① 固定首行：该股最火业务（标签在股票名称列，数据实时取自该业务段）
-      rows.push({
-        type: 'hot',
-        name: htName || (hotSeg ? hotSeg.name : ''),
-        ratio: hotSeg ? hotSeg.ratio : null,
-        relevance: hotSeg ? hotSeg.relevance : null,
-        heat: hotSeg ? hotSeg.heat : null,
-        boardNames: hotSeg ? (hotSeg.boardNames || []) : []
-      });
+      // ① 固定首行：该股最火概念（标签在股票名称列）
+      //    数据取自「与个股日收益率联动最强(相关系数最高)的概念板块」：
+      //    营收占比不适用(显示—)，相关度=联动强度(corr%)，热度=该概念板块成分股数。
+      const hc = reverse.hotConcept;
+      if (hc && hc.name) {
+        rows.push({
+          type: 'hot',
+          name: (reverse.hotTheme || '').trim() || hc.name,
+          ratio: null,
+          relevance: (hc.corr != null) ? hc.corr : null,
+          heat: hc.heat || null,
+          boardNames: hc.boardNames || [hc.name]
+        });
+      } else {
+        // 回退口径：主营构成中热度(同业公司数)最高的业务段
+        const byHeat = [...segs].sort((a, b) => (b.heat || 0) - (a.heat || 0) || (b.relevance || 0) - (a.relevance || 0));
+        let hotSeg = byHeat[0] || null;
+        const htName = (reverse.hotTheme || '').trim();
+        if (htName && hotSeg) {
+          const m = segs.find(s => s.name && (s.name === htName || s.name.includes(htName) || htName.includes(s.name)));
+          if (m) hotSeg = m;
+        }
+        rows.push({
+          type: 'hot',
+          name: htName || (hotSeg ? hotSeg.name : ''),
+          ratio: hotSeg ? hotSeg.ratio : null,
+          relevance: hotSeg ? hotSeg.relevance : null,
+          heat: hotSeg ? hotSeg.heat : null,
+          boardNames: hotSeg ? (hotSeg.boardNames || []) : []
+        });
+      }
       // ② 固定次行：自定义业务（名称可填，数据口径与下方一致）
       rows.push({
         type: 'custom',
@@ -1846,8 +1861,13 @@ const app = createApp({
         heat: reverseCustom.heat,
         boardNames: reverseCustom.boardNames
       });
-      // 正常业务结果（排除已固定在首行的最火业务，避免重复）
-      const below = segs.filter(s => s !== hotSeg);
+      // 正常业务结果（排除已固定在首行的主营构成段，避免重复）
+      let below = segs;
+      if (hc && hc.bk) {
+        // 若最火概念恰好命中某主营构成段，下方不再重复列出该段
+        const hit = segs.find(s => (s.boardCodes || []).includes(hc.bk));
+        if (hit) below = segs.filter(s => s !== hit);
+      }
       if (reverseSort.value === 'heat') {
         below.sort((a, b) => (b.heat || 0) - (a.heat || 0) || (b.relevance || 0) - (a.relevance || 0));
       } else {
@@ -1866,7 +1886,7 @@ const app = createApp({
           reverse.error = res.error || '反推失败';
           showToast(reverse.error, 'error');
         } else {
-          reverse.name = res.name; reverse.code = res.code; reverse.segments = res.segments; reverse.hotTheme = res.hotBusiness || ''; reverse.done = true;
+          reverse.name = res.name; reverse.code = res.code; reverse.segments = res.segments; reverse.hotTheme = res.hotBusiness || ''; reverse.hotConcept = res.hotConcept || null; reverse.done = true;
           showToast(`反推完成：${res.name} 共 ${res.segments.length} 项主营构成`, 'success');
         }
       } catch (e) {
