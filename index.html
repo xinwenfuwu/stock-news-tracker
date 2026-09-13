@@ -408,29 +408,67 @@
               {{ semantic.saved ? '✅ 已保存' : '💾 保存到我的板块' }}
             </button>
           </div>
-          <div class="semantic-meta">
+          <!-- 识别概念：增删改 -->
+          <div class="semantic-edit-block">
+            <div class="semantic-edit-title">识别概念 <span class="muted tiny">（可增 / 删 / 改）</span></div>
             <template v-if="semantic.method==='product'">
               <span class="semantic-chip product">🎯 产品级语义命中：{{ semantic.productKey }}</span>
               <span class="semantic-method">· 基于产业链研究整理的真实标的（非板块名匹配）</span>
             </template>
             <template v-else>
               <span class="semantic-tag-label">识别概念：</span>
-              <span class="semantic-chip concept" v-for="c in semantic.concepts" :key="c">{{ c }}</span>
             </template>
+            <span class="semantic-chip concept editable" v-for="(c,i) in semantic.concepts" :key="'c'+i">
+              <template v-if="editingConceptIdx===i">
+                <input class="inline-input" v-model="conceptDraft" @keyup.enter="commitEditConcept" @blur="commitEditConcept" />
+              </template>
+              <template v-else>
+                {{ c }}
+                <span class="chip-actions">
+                  <button class="icon-btn" title="编辑概念" @click="startEditConcept(i)">✏️</button>
+                  <button class="icon-btn" title="删除概念" @click="removeConcept(i)">🗑️</button>
+                </span>
+              </template>
+            </span>
+            <input class="inline-input add-input" v-model="newConceptText" @keyup.enter="addConcept" placeholder="加概念" />
+            <button class="btn btn-xs" @click="addConcept">＋ 概念</button>
             <template v-if="semantic.modifiers.length">
               <span class="semantic-tag-label">修饰：</span>
-              <span class="semantic-chip mod" v-for="m in semantic.modifiers" :key="m">{{ m==='核心'?'核心/龙头':(m==='小市值'?'小市值':'') }}</span>
+              <span class="semantic-chip mod" v-for="m in semantic.modifiers" :key="'m'+m">{{ m==='核心'?'核心/龙头':(m==='小市值'?'小市值':'') }}</span>
             </template>
             <span class="semantic-method" v-if="semantic.method==='intersect'">· 多概念取「交集」（同时具备上述主题的公司）</span>
             <span class="semantic-method" v-else-if="semantic.method==='union'">· 概念无完全交集，已展示「并集」</span>
             <span class="semantic-method" v-else-if="semantic.method==='single'">· 单概念</span>
           </div>
+
           <p class="muted small" v-if="semantic.method==='product' && semantic.productDesc">{{ semantic.productDesc }}</p>
-          <p class="muted small" v-if="semantic.boards.length">
-            命中板块（前 {{ Math.min(semantic.boards.length, 12) }} / {{ semantic.boards.length }}）：
-            <span class="semantic-board" v-for="b in semantic.boards.slice(0,12)" :key="b.bk">{{ b.name }}</span>
-            <span v-if="semantic.boards.length>12">…</span>
-          </p>
+
+          <!-- 命中板块：增删改 -->
+          <div class="semantic-edit-block">
+            <div class="semantic-edit-title">命中板块 <span class="muted tiny">（可增 / 删 / 改）</span></div>
+            <span class="semantic-board editable" v-for="(b,i) in semantic.boards" :key="'b'+i">
+              <template v-if="editingBoardIdx===i">
+                <input class="inline-input" v-model="boardDraft" @keyup.enter="commitEditBoard" @blur="commitEditBoard" />
+              </template>
+              <template v-else>
+                {{ b.name }}
+                <span class="chip-actions">
+                  <button class="icon-btn" title="编辑板块" @click="startEditBoard(i)">✏️</button>
+                  <button class="icon-btn" title="删除板块" @click="removeBoard(i)">🗑️</button>
+                </span>
+              </template>
+            </span>
+            <span v-if="!semantic.boards.length" class="muted tiny">（暂无，可搜索添加）</span>
+            <span class="board-add">
+              <input class="inline-input" v-model="boardAddKw" @keyup.enter="searchBoardForAdd" placeholder="搜板块名" />
+              <button class="btn btn-xs" @click="searchBoardForAdd" :disabled="boardAdding">🔍 搜</button>
+            </span>
+            <div class="board-add-matches" v-if="boardAddMatches.length">
+              <span class="semantic-board match" v-for="(m,i) in boardAddMatches" :key="'m'+m.bk" @click="addBoard(m)">{{ m.name }} ＋</span>
+            </div>
+          </div>
+
+          <!-- 筛选出的股票：增删改 -->
           <div class="semantic-table-wrap" v-if="semantic.stocks.length">
             <table class="semantic-table">
               <thead>
@@ -439,25 +477,50 @@
                   <th>涨跌幅</th><th>总市值(亿)</th>
                   <th v-if="semantic.method==='product'">产业链定位</th>
                   <th v-else>命中概念</th>
+                  <th>操作</th>
                 </tr>
               </thead>
               <tbody>
-                <tr v-for="(s, i) in semantic.stocks" :key="s.code">
-                  <td class="rank">{{ i + 1 }}</td>
-                  <td class="code">{{ s.code.toUpperCase() }}</td>
-                  <td class="name">{{ s.name }}</td>
-                  <td>{{ s.price != null ? s.price.toFixed(2) : '-' }}</td>
-                  <td :class="pctClass(s.changePercent)">{{ fmtPct(s.changePercent) }}</td>
-                  <td>{{ s.marketCap ? (s.marketCap/1e8).toFixed(1) : '-' }}</td>
-                  <td v-if="semantic.method==='product'" class="role">{{ s.role }}</td>
-                  <td v-else class="concepts"><span class="semantic-chip mini" v-for="c in s.concepts" :key="c">{{ c }}</span></td>
+                <tr v-for="(s,i) in semantic.stocks" :key="s.code">
+                  <template v-if="editingStockCode===s.code">
+                    <td class="rank">{{ i+1 }}</td>
+                    <td class="code">{{ s.code.toUpperCase() }}</td>
+                    <td><input class="inline-input" v-model="stockNameDraft" placeholder="名称" /></td>
+                    <td>{{ s.price != null ? s.price.toFixed(2) : '-' }}</td>
+                    <td :class="pctClass(s.changePercent)">{{ fmtPct(s.changePercent) }}</td>
+                    <td>{{ s.marketCap ? (s.marketCap/1e8).toFixed(1) : '-' }}</td>
+                    <td v-if="semantic.method==='product'"><input class="inline-input wide" v-model="stockRoleDraft" placeholder="产业链定位" /></td>
+                    <td v-else><input class="inline-input wide" v-model="stockConceptsDraft" placeholder="概念,逗号分隔" /></td>
+                    <td class="ops">
+                      <button class="icon-btn" title="保存" @click="commitEditStock">💾</button>
+                      <button class="icon-btn" title="取消" @click="cancelEditStock">✕</button>
+                    </td>
+                  </template>
+                  <template v-else>
+                    <td class="rank">{{ i+1 }}</td>
+                    <td class="code">{{ s.code.toUpperCase() }}</td>
+                    <td class="name">{{ s.name }}</td>
+                    <td>{{ s.price != null ? s.price.toFixed(2) : '-' }}</td>
+                    <td :class="pctClass(s.changePercent)">{{ fmtPct(s.changePercent) }}</td>
+                    <td>{{ s.marketCap ? (s.marketCap/1e8).toFixed(1) : '-' }}</td>
+                    <td v-if="semantic.method==='product'" class="role">{{ s.role }}</td>
+                    <td v-else class="concepts"><span class="semantic-chip mini" v-for="c in s.concepts" :key="'sc'+c">{{ c }}</span></td>
+                    <td class="ops">
+                      <button class="icon-btn" title="编辑" @click="startEditStock(s)">✏️</button>
+                      <button class="icon-btn" title="删除" @click="removeStock(s.code)">🗑️</button>
+                    </td>
+                  </template>
                 </tr>
               </tbody>
             </table>
           </div>
-          <p class="muted small" v-else>未找到符合条件的上市公司，可尝试调整描述（如去掉"核心"或减少概念）。</p>
-          <p class="muted tiny" v-if="semantic.method==='product'">说明：产品级语义库由产业链研究整理，覆盖具体产品/技术对应的真实上市公司及业务环节，并可继续扩充更多产品关键词；行情数据来自腾讯股票接口。</p>
-          <p class="muted tiny" v-else>说明：概念级语义基于东方财富概念/行业板块的成分股交叉匹配；"核心/龙头"按总市值降序取前 20 家代表性标的。</p>
+          <div class="semantic-add-stock">
+            <input class="inline-input wide" v-model="stockAddCode" @keyup.enter="addStockByCode" placeholder="输入股票代码添加（如 600519 / sh600519）" />
+            <button class="btn btn-xs btn-primary" @click="addStockByCode" :disabled="stockAdding">＋ 添加股票</button>
+          </div>
+          <p class="muted small" v-if="!semantic.stocks.length">未找到符合条件的上市公司，可尝试调整描述（如去掉"核心"或减少概念），或手动「添加股票」。</p>
+          <p class="muted tiny" v-if="semantic.method==='product'">说明：产品级语义库由产业链研究整理，覆盖具体产品/技术对应的真实上市公司及业务环节，并可继续扩充更多产品关键词；行情数据来自腾讯股票接口。增删改后点「保存到我的板块」会保存当前编辑结果。</p>
+          <p class="muted tiny" v-else>说明：概念级语义基于东方财富概念/行业板块的成分股交叉匹配；"核心/龙头"按总市值降序取前 20 家代表性标的。增删改后点「保存到我的板块」会保存当前编辑结果。</p>
         </div>
         <div class="semantic-result" v-else-if="semantic.error">
           <p class="semantic-error">⚠️ {{ semantic.error }}</p>
