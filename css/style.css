@@ -911,6 +911,7 @@ body {
 .semantic-table .code { font-family: monospace; color: var(--text-secondary); }
 .semantic-table .name { font-weight: 600; }
 .semantic-table .concepts { white-space: normal; }
+.semantic-table .relevance { font-weight: 700; color: #5a32e6; text-align: center; min-width: 64px; }
 .semantic-table .role { white-space: normal; color: var(--text-secondary); font-size: 12px; min-width: 220px; }
 .semantic-error { color: #c0392b; margin: 0; }
 .semantic-result .tiny { font-size: 11px; color: #9b93c4; margin-top: 8px; }
