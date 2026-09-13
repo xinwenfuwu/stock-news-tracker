@@ -1704,11 +1704,12 @@ const app = createApp({
       query: '',
       concepts: [],
       modifiers: [],
-      method: '',       // 'product' | 'intersect' | 'union' | 'single'
+      method: '',       // 'product' | 'revenue' | 'boards' | 'empty'
       productKey: '',
       productDesc: '',
       boards: [],       // 命中的板块（用于透明展示）
       stocks: [],       // 结果股票列表
+      matchers: [],     // 营收占比相关度的主营段名匹配词（重算时回传，保持业务意图）
       done: false,
       saved: false,     // 是否已保存到我的板块
       recomputing: false // 编辑概念/板块后正在按条件重算
@@ -1736,10 +1737,11 @@ const app = createApp({
           semantic.productDesc = res.productDesc || '';
           semantic.boards = res.boards;
           semantic.stocks = res.stocks;
+          semantic.matchers = res.matchers || [];
           semantic.done = true;
-          const m = res.method === 'product' ? '产品级语义命中（产业链真实标的）'
-            : res.method === 'intersect' ? '概念交集（同时具备多主题）'
-            : res.method === 'union' ? '概念并集（无完全交集，已展示并集）' : '单概念';
+          const m = res.method === 'product' ? '产品级语义命中（产业链真实标的，营收占比相关度）'
+            : res.method === 'boards' ? '按当前板块重算（营收占比相关度）'
+            : res.method === 'revenue' ? '营收占比相关度（主营构成匹配）' : '空';
           showToast(`AI语义筛选完成：${m}，命中 ${res.stocks.length} 只`, 'success');
         }
       } catch (e) {
@@ -1801,14 +1803,15 @@ const app = createApp({
         const res = await StockAPI.recomputeSemanticStocks({
           boards: semantic.boards.map(b => ({ bk: b.bk, name: b.name })),
           modifiers: semantic.modifiers,
-          concepts: semantic.concepts
+          concepts: semantic.concepts,
+          matchers: semantic.matchers
         });
         semantic.stocks = res.stocks;
         semantic.method = res.method;
         semantic.saved = false;
         const m = res.method === 'intersect' ? '概念交集（同时归属这些板块的公司）'
           : res.method === 'union' ? '概念并集（无完全交集，已展示并集）'
-          : res.method === 'single' ? '单板块' : '空';
+          : res.method === 'single' ? '单板块' : (res.method === 'boards' ? '按当前板块重算（营收占比相关度）' : '空');
         showToast(`已按当前条件重算：${m}，命中 ${res.stocks.length} 只`, 'success');
       } catch (e) {
         showToast('重算失败：' + (e && e.message ? e.message : e), 'error');
