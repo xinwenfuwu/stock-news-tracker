@@ -913,6 +913,27 @@ body {
 .semantic-error { color: #c0392b; margin: 0; }
 .semantic-result .tiny { font-size: 11px; color: #9b93c4; margin-top: 8px; }
 
+/* ===== 语义结果 增删改 ===== */
+.semantic-edit-block { background: var(--surface-alt); border-radius: 8px; padding: 10px 12px; margin-bottom: 10px; }
+.semantic-edit-title { font-weight: 600; color: var(--text-primary); margin-bottom: 6px; font-size: 13px; }
+.semantic-chip.editable, .semantic-board.editable { padding-right: 4px; }
+.chip-actions { display: inline-flex; gap: 2px; margin-left: 4px; vertical-align: middle; }
+.icon-btn { border: none; background: transparent; cursor: pointer; font-size: 12px; padding: 0 2px; line-height: 1; border-radius: 4px; }
+.icon-btn:hover { background: rgba(0,0,0,0.06); }
+.inline-input { border: 1px solid #c9c2ec; border-radius: 6px; padding: 2px 6px; font-size: 12px; width: 80px; }
+.inline-input:focus { outline: none; border-color: #6a5cff; box-shadow: 0 0 0 2px rgba(106,92,255,0.15); }
+.inline-input.wide { width: 200px; }
+.inline-input.add-input { width: 64px; }
+.btn-xs { font-size: 12px; padding: 2px 8px; border-radius: 6px; border: 1px solid #c9c2ec; background: #fff; cursor: pointer; }
+.btn-xs:hover { background: #f3efff; }
+.board-add { margin-left: 6px; }
+.board-add-matches { margin-top: 6px; display: flex; flex-wrap: wrap; gap: 4px; }
+.semantic-board.match { cursor: pointer; background: #eef9f1; border-color: #bfe6cd; color: #0a7a4f; }
+.semantic-board.match:hover { background: #d8f5e8; }
+.semantic-table .ops { white-space: nowrap; }
+.semantic-table .ops .icon-btn { font-size: 14px; }
+.semantic-add-stock { display: flex; gap: 8px; align-items: center; margin-top: 10px; }
+
 .sector-results { margin-bottom: 8px; }
 /* 子版块搜索：筛选状态提示条 */
 .sector-sub-filter {
