@@ -1772,7 +1772,6 @@ const app = createApp({
     }
 
     // ===== 反推业务：输入一只股票，反推其主营构成的相关度与热度 =====
-    const reverseOpen = ref(false);
     const reverseSort = ref('relevance'); // 'relevance' | 'heat'
     const reverse = reactive({
       loading: false,
@@ -1782,26 +1781,79 @@ const app = createApp({
       code: '',
       segments: [],
       done: false,
-      hotTheme: '',         // 固定首行：反推后自动填入「该股最火业务」（可改）
-      customName: ''        // 固定次行：用户自行填写的业务名称（可改）
+      hotTheme: '',         // 固定首行业务名（反推后自动填入该股最火业务，可改）
+      customName: ''        // 固定次行业务名（用户自行填写）
     });
-    function toggleReverseOpen() { reverseOpen.value = !reverseOpen.value; }
     function setReverseSort(k) { reverseSort.value = k; }
-    const reverseSorted = computed(() => {
-      // 两个固定必有行：① 当前最火业务 ② 用户自定义业务（始终排在正常业务之前）
-      const rows = [];
-      const ht = (reverse.hotTheme || '').trim() || 'AI短剧';
-      rows.push({ type: 'hot', name: ht, ratio: null, relevance: null, heat: null, boardNames: [], badge: '当前最火业务' });
-      const cn = (reverse.customName || '').trim();
-      rows.push({ type: 'custom', name: cn, ratio: null, relevance: null, heat: null, boardNames: [], badge: '自定义业务' });
-      // 正常业务结果（主营构成），按当前排序方式排序
-      const arr = [...(reverse.segments || [])];
-      if (reverseSort.value === 'heat') {
-        arr.sort((a, b) => (b.heat || 0) - (a.heat || 0) || (b.relevance || 0) - (a.relevance || 0));
-      } else {
-        arr.sort((a, b) => (b.relevance || 0) - (a.relevance || 0) || (b.heat || 0) - (a.heat || 0));
+    // 自定义业务行的计算数据（与下方主营构成行口径完全一致：营收占比/相关度/热度=股票数/对应板块）
+    const reverseCustom = reactive({ ratio: null, relevance: null, heat: null, boardNames: [] });
+    watch(
+      [() => reverse.customName, () => reverse.done, () => reverse.name],
+      async () => {
+        const cn = (reverse.customName || '').trim();
+        if (!reverse.done || !cn) {
+          reverseCustom.ratio = null; reverseCustom.relevance = null; reverseCustom.heat = null; reverseCustom.boardNames = [];
+          return;
+        }
+        // 1) 优先匹配该股票已有的主营构成业务，直接复用其计算数据
+        const m = (reverse.segments || []).find(s => s.name && (s.name === cn || s.name.includes(cn) || cn.includes(s.name)));
+        if (m) {
+          reverseCustom.ratio = m.ratio; reverseCustom.relevance = m.relevance; reverseCustom.heat = m.heat; reverseCustom.boardNames = m.boardNames || [];
+          return;
+        }
+        // 2) 否则按业务名解析东财板块，取成分股数作为热度（股票数）
+        try {
+          const boards = await StockAPI.searchSectors(cn);
+          if (boards && boards.length) {
+            const cnt = await StockAPI.getSectorStockCount(boards[0].code);
+            reverseCustom.heat = cnt || null;
+            reverseCustom.boardNames = [boards[0].name];
+          } else {
+            reverseCustom.heat = null; reverseCustom.boardNames = [];
+          }
+        } catch (e) {
+          reverseCustom.heat = null; reverseCustom.boardNames = [];
+        }
+        reverseCustom.ratio = null; reverseCustom.relevance = null;
       }
-      arr.forEach(s => rows.push({ type: 'seg', ...s }));
+    );
+    const reverseSorted = computed(() => {
+      const segs = reverse.segments || [];
+      // 找出「该股最火业务」= 主营构成中热度(同业公司数)最高者，回退到营收占比最高者
+      const byHeat = [...segs].sort((a, b) => (b.heat || 0) - (a.heat || 0) || (b.relevance || 0) - (a.relevance || 0));
+      let hotSeg = byHeat[0] || null;
+      const htName = (reverse.hotTheme || '').trim();
+      if (htName && hotSeg) {
+        const m = segs.find(s => s.name && (s.name === htName || s.name.includes(htName) || htName.includes(s.name)));
+        if (m) hotSeg = m;
+      }
+      const rows = [];
+      // ① 固定首行：该股最火业务（标签在股票名称列，数据实时取自该业务段）
+      rows.push({
+        type: 'hot',
+        name: htName || (hotSeg ? hotSeg.name : ''),
+        ratio: hotSeg ? hotSeg.ratio : null,
+        relevance: hotSeg ? hotSeg.relevance : null,
+        heat: hotSeg ? hotSeg.heat : null,
+        boardNames: hotSeg ? (hotSeg.boardNames || []) : []
+      });
+      // ② 固定次行：自定义业务（名称可填，数据口径与下方一致）
+      rows.push({
+        type: 'custom',
+        name: (reverse.customName || '').trim(),
+        ratio: reverseCustom.ratio,
+        relevance: reverseCustom.relevance,
+        heat: reverseCustom.heat,
+        boardNames: reverseCustom.boardNames
+      });
+      // 正常业务结果（排除已固定在首行的最火业务，避免重复）
+      const below = segs.filter(s => s !== hotSeg);
+      if (reverseSort.value === 'heat') {
+        below.sort((a, b) => (b.heat || 0) - (a.heat || 0) || (b.relevance || 0) - (a.relevance || 0));
+      } else {
+        below.sort((a, b) => (b.relevance || 0) - (a.relevance || 0) || (b.heat || 0) - (a.heat || 0));
+      }
+      below.forEach(s => rows.push({ type: 'seg', ...s }));
       return rows;
     });
     async function reverseBusiness() {
@@ -3611,7 +3663,7 @@ const app = createApp({
       editingBoardIdx, boardDraft, boardAddKw, boardAddMatches, boardAdding, startEditBoard, commitEditBoard, cancelEditBoard, removeBoard, searchBoardForAdd, addBoard,
       editingStockCode, stockNameDraft, stockRoleDraft, stockConceptsDraft, stockAddCode, stockAdding, startEditStock, commitEditStock, cancelEditStock, removeStock, addStockByCode,
       // 反推业务
-      reverse, reverseOpen, reverseSorted, reverseSort, toggleReverseOpen, setReverseSort, reverseBusiness, reverseSortIcon,
+      reverse, reverseSorted, reverseSort, setReverseSort, reverseBusiness, reverseSortIcon,
       // 页面3
       hotDate, hotLoading, hotBoards, hotStocks, preMarketBoards, amplitudeBoards, conceptFreq,
       hotBoardActive, hotBoardLoading, hotDetailIsStock, openHotBoard, openHotStock, clearHotBoard,
