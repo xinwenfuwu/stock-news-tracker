@@ -913,6 +913,8 @@ body {
 .semantic-table .concepts { white-space: normal; }
 .semantic-table .relevance { font-weight: 700; color: #5a32e6; text-align: center; min-width: 64px; }
 .semantic-table .role { white-space: normal; color: var(--text-secondary); font-size: 12px; min-width: 220px; }
+.semantic-chip.mini.seg { background: #e7f7ee; color: #0a7a4f; font-weight: 500; margin: 1px 2px; }
+.semantic-chip.mini.seg b { color: #c0392b; font-weight: 700; }
 .semantic-error { color: #c0392b; margin: 0; }
 .semantic-result .tiny { font-size: 11px; color: #9b93c4; margin-top: 8px; }
 
