@@ -863,35 +863,53 @@ const StockAPI = {
    * @returns {Promise<Array<{name:string, ratio:number}>|null>}
    *   如 [{ name: '茅台酒', ratio: 85.7 }, { name: '其他系列酒', ratio: 14.3 }]
    */
+  /**
+   * 把东财主营构成原始行解析为「按产品」营收占比构成（用于反推业务/语义营收占比相关度）。
+   * @param {Array} rows RPT_F10_FN_MAINOP 原始行
+   * @returns {Array<{name:string, ratio:number}>|null}
+   */
+  _parseMainBiz(rows) {
+    if (!rows || !rows.length) return null;
+    // 报告期倒序排列，取最新一期全部构成行
+    const latest = rows[0].REPORT_DATE.slice(0, 10);
+    const period = rows.filter(r => (r.REPORT_DATE || '').slice(0, 10) === latest);
+    // 优先「按产品」(2)，其次「按行业」(1)
+    let items = period.filter(r => String(r.MAINOP_TYPE) === '2');
+    if (!items.length) items = period.filter(r => String(r.MAINOP_TYPE) === '1');
+    if (!items.length) items = period;
+    items.sort((a, b) => (b.MBI_RATIO || 0) - (a.MBI_RATIO || 0));
+    const out = [];
+    for (const it of items) {
+      if (!it.ITEM_NAME) continue;
+      let ratio = it.MBI_RATIO != null ? it.MBI_RATIO
+                : (it.MBR_RATIO != null ? it.MBR_RATIO : null);
+      if (ratio == null) continue;
+      out.push({ name: String(it.ITEM_NAME), ratio: +ratio });
+    }
+    return out.length ? out : null;
+  },
+
   async getMainBusiness(code) {
     const secucode = this.toSecucode(code);
+    const url = `https://datacenter-web.eastmoney.com/api/data/v1/get?reportName=RPT_F10_FN_MAINOP&columns=ALL&filter=(SECUCODE%3D%22${secucode}%22)&pageNumber=1&pageSize=60&sortColumns=REPORT_DATE&sortTypes=-1`;
+    // 1) 优先 fetch（简单请求）
     try {
-      const url = `https://datacenter-web.eastmoney.com/api/data/v1/get?reportName=RPT_F10_FN_MAINOP&columns=ALL&filter=(SECUCODE%3D%22${secucode}%22)&pageNumber=1&pageSize=60&sortColumns=REPORT_DATE&sortTypes=-1`;
       const resp = await fetch(url, { cache: 'no-store' });
       const json = await resp.json();
       const rows = (json.result && json.result.data) || [];
-      if (!rows.length) return null;
-      // 报告期倒序排列，取最新一期全部构成行
-      const latest = rows[0].REPORT_DATE.slice(0, 10);
-      const period = rows.filter(r => (r.REPORT_DATE || '').slice(0, 10) === latest);
-      // 优先「按产品」(2)，其次「按行业」(1)
-      let items = period.filter(r => String(r.MAINOP_TYPE) === '2');
-      if (!items.length) items = period.filter(r => String(r.MAINOP_TYPE) === '1');
-      if (!items.length) items = period;
-      items.sort((a, b) => (b.MBI_RATIO || 0) - (a.MBI_RATIO || 0));
-      const out = [];
-      for (const it of items) {
-        if (!it.ITEM_NAME) continue;
-        let ratio = it.MBI_RATIO != null ? it.MBI_RATIO
-                  : (it.MBR_RATIO != null ? it.MBR_RATIO : null);
-        if (ratio == null) continue;
-        out.push({ name: String(it.ITEM_NAME), ratio: +ratio });
-      }
-      return out.length ? out : null;
+      if (rows.length) return this._parseMainBiz(rows);
     } catch (e) {
-      console.debug('获取主营构成失败', code);
-      return null;
+      console.debug('获取主营构成失败(fetch)，尝试 JSONP 兜底', code);
     }
+    // 2) JSONP 兜底（绕过浏览器 CORS 预检，datacenter-web 支持 cb 回调）
+    try {
+      const json = await this._eastJsonp(url, 9000);
+      const rows = (json && json.result && json.result.data) || [];
+      if (rows.length) return this._parseMainBiz(rows);
+    } catch (e) {
+      console.debug('获取主营构成失败(JSONP)', code);
+    }
+    return null;
   },
 
   /**
@@ -937,33 +955,53 @@ const StockAPI = {
     }
     if (!code) return { ok: false, error: `未找到股票「${kw}」，请确认代码或名称（如 603533 / 掌阅科技）` };
 
-    // 2) 拉取主营构成
+    // 2) 拉取主营构成（已内置 fetch + JSONP 双兜底，浏览器 CORS 下也尽量可用）
     let mb = null;
     try { mb = await this.getMainBusiness(code); } catch (e) { mb = null; }
     if (!mb || !mb.length) {
-      return { ok: false, error: `未能获取「${name || code}」的主营构成（东财 F10 暂无可用的主营构成数据）` };
+      return { ok: false, error: `未能获取「${name || code}」的主营构成（东财 F10 暂无可用的主营构成数据，或网络被限制）` };
     }
 
-    // 3) 全量板块（用于业务→板块映射），并逐业务统计热度
-    const allBoards = await this.getAllSectors();
-    const topSegs = mb.slice(0, 8); // 仅前 8 项业务计算热度，控制请求数
-    const heatArr = await mapLimit(topSegs, 3, async (seg) => {
-      const boards = this._matchSegmentBoards(seg.name, allBoards);
-      let heat = 0; const boardNames = [];
-      if (boards.length) {
-        try { heat = await this.getSectorStockCount(boards[0].bk); } catch (e) { heat = 0; }
-        boards.slice(0, 3).forEach(b => boardNames.push(b.name));
-      }
-      return { heat, boardNames };
+    // 3) 先组装主营构成结果（业务名称已补全、营收占比即相关度），保证主结果一定返回
+    const segments = mb.map(seg => {
+      const ratio = Math.round(seg.ratio * 1000) / 10;
+      return {
+        name: this._expandSegName(code, seg.name, []),
+        ratio,
+        relevance: ratio,
+        heat: 0,
+        boardNames: []
+      };
     });
 
-    // 4) 组装结果：相关度 = 该业务占营收比例（%）。注意 MBI_RATIO 为小数(0.x)，需 ×100 转为百分比，
-    //    与 revenueRelevance 的口径一致（如 0.387 → 38.7%）。
-    const segments = mb.map((seg, i) => {
-      const h = i < heatArr.length ? heatArr[i] : { heat: 0, boardNames: [] };
-      const ratio = Math.round(seg.ratio * 1000) / 10;
-      return { name: seg.name, ratio, relevance: ratio, heat: h.heat, boardNames: h.boardNames };
-    });
+    // 4) 热度与板块映射：尽力而为，任何失败都不影响主结果展示
+    try {
+      const allBoards = await this.getAllSectors();
+      const topSegs = segments.slice(0, 8); // 仅前 8 项业务计算热度，控制请求数
+      const heatArr = await mapLimit(topSegs, 3, async (seg) => {
+        try {
+          const boards = this._matchSegmentBoards(seg.name, allBoards);
+          let heat = 0; const boardNames = [];
+          if (boards.length) {
+            try { heat = await this.getSectorStockCount(boards[0].bk); } catch (e) { heat = 0; }
+            boards.slice(0, 3).forEach(b => boardNames.push(b.name));
+          }
+          // 用匹配到的板块名二次补全（如「衍生业务」→「衍生业务（短剧）」）
+          return { heat, boardNames, expanded: this._expandSegName(code, seg.name, boardNames) };
+        } catch (e) {
+          return { heat: 0, boardNames: [], expanded: seg.name };
+        }
+      });
+      topSegs.forEach((seg, i) => {
+        const h = heatArr[i] || { heat: 0, boardNames: [], expanded: seg.name };
+        seg.heat = h.heat;
+        seg.boardNames = h.boardNames;
+        seg.name = h.expanded;
+      });
+    } catch (e) {
+      console.warn('反推业务：热度统计失败，仅展示主营构成（营收占比）', e);
+    }
+
     segments.sort((a, b) => (b.relevance - a.relevance) || (b.heat - a.heat));
 
     return { ok: true, name: name || code, code, segments };
@@ -982,6 +1020,49 @@ const StockAPI = {
     'AI': ['人工智能', 'AI'],
     '大模型': ['大模型', '人工智能'],
     '安全': ['安全', '网络安全']
+  },
+
+  /**
+   * 主营构成段名「补全」映射：东财 F10 的部分段名过于笼统（如「衍生业务」「其他」），
+   * 反推业务时直接展示会让用户看不出具体在做什么。这里把已知公司的笼统段名补全为
+   * 具体业务名。键支持两种形式：
+   *   - `${纯代码}|${段名}`：公司级精确补全（优先级最高，如 掌阅科技 的「衍生业务」）
+   *   - `${段名}`：通用补全（谨慎使用，仅对含义明确的段名生效）
+   * 命中不到且段名本身较笼统时，_expandSegName 会退而以「匹配到的板块名」补充说明。
+   */
+  _SEG_NAME_EXPAND: {
+    '603533|衍生业务': '短剧及IP衍生品业务',
+    '603533|数字阅读平台': '数字阅读平台',
+    '603533|版权产品': '版权产品',
+    '300364|短剧及IP衍生品业务': '短剧及IP衍生品业务',
+    '300364|网络文学': '网络文学',
+    '300364|IP衍生': 'IP衍生业务',
+    '300413|芒果TV': '芒果TV互联网视频业务',
+    '300413|新媒体互动': '新媒体互动业务',
+    '603000|内容科技': '内容科技业务',
+    '603000|移动互联网': '移动互联网业务',
+    '688004|传媒安全': '传媒安全业务',
+    '688228|AI内容安全': 'AI内容安全业务'
+  },
+
+  /** 笼统段名正则：命中且无法精确补全时，用匹配到的板块名补充说明 */
+  _VAGUE_SEG: /^(衍生|其他|其他业务|商品销售|主营业务|主业|合计|小计|分部|业务|产品|贸易|经销|服务|销售|代理|运营|投资|其他收入|其他类|其他产品)$/,
+
+  /**
+   * 补全/丰富主营构成段名，便于用户一眼看懂这家公司「衍生业务」到底指什么。
+   * @param {string} code sh603533
+   * @param {string} segName 原始段名（如「衍生业务」）
+   * @param {Array<string>} boardNames 该段匹配到的东财板块名（用于兜底补充说明）
+   * @returns {string} 补全后的段名
+   */
+  _expandSegName(code, segName, boardNames) {
+    const pure = this.pureCode(code);
+    const exact = this._SEG_NAME_EXPAND[`${pure}|${segName}`] || this._SEG_NAME_EXPAND[segName];
+    if (exact) return exact;
+    if (this._VAGUE_SEG.test(String(segName || '').trim()) && boardNames && boardNames.length) {
+      return `${segName}（${boardNames[0]}）`;
+    }
+    return segName;
   },
 
   /**
