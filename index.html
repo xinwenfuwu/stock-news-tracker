@@ -355,10 +355,15 @@
           <button class="btn" @click="searchSubSectors" :disabled="sectorSearching" title="在我的概念选股板块中，按名称关键字搜索子版块">
             🔎 搜索子版块
           </button>
-          <button class="btn" @click="toggleReverseOpen" :class="{ active: reverseOpen }"
-            :title="reverseOpen ? '收起反推业务面板' : '输入一只股票，反推其各主营业务/产品的营收占比（相关度）与业务热度'">
-            {{ reverseOpen ? '🔼 收起反推' : '🔄 反推业务' }}
-          </button>
+          <span class="reverse-inline" title="输入一只股票，反推其各主营业务/产品的营收占比（相关度）与业务热度（结果表首两行固定为「该股最火业务」与「自定义业务」）">
+            <input v-model="reverse.input" placeholder="股票代码/名称，如 000711 / 掌阅科技"
+              style="width:210px;min-width:160px;padding:9px 12px;border:1px solid #d8e0f0;border-radius:8px"
+              @keyup.enter="reverseBusiness">
+            <button class="btn" @click="reverseBusiness" :disabled="reverse.loading">
+              <span v-if="reverse.loading">⏳ 反推中...</span>
+              <span v-else>🔄 反推业务</span>
+            </button>
+          </span>
           <button class="btn btn-ai" @click="semanticSearch" :disabled="semantic.searching || sectorSearching"
             title="用自然语言描述选股意图：产品级如「生产薄膜铌酸锂的企业」；概念级如「主营为ai安全的核心上市公司」">
             <span v-if="semantic.searching">⏳ 语义理解中...</span>
@@ -368,17 +373,6 @@
         <p class="muted tiny" style="margin:-6px 0 14px">
           产品级语义示例：在上方输入框输入 <b>生产薄膜铌酸锂的企业</b> / <b>HBM核心公司</b> / <b>复合铜箔龙头</b> / <b>人形机器人减速器</b>，点 🤖 AI语义搜索 即可直接得到相关上市公司及产业链定位。
         </p>
-
-        <!-- 反推业务：输入一只股票，反推其主营构成的相关度与热度（展开/收起由上方「🔄 反推业务 / 🔼 收起反推」按钮统一控制） -->
-        <div class="reverse-bar" v-if="reverseOpen">
-          <input v-model="reverse.input" placeholder="输入股票代码或名称，如：掌阅科技 / 603533"
-            style="flex:1;min-width:220px;padding:9px 12px;border:1px solid #d8e0f0;border-radius:8px"
-            @keyup.enter="reverseBusiness">
-          <button class="btn btn-primary" @click="reverseBusiness" :disabled="reverse.loading">
-            <span v-if="reverse.loading">⏳ 反推中...</span>
-            <span v-else>🔄 反推</span>
-          </button>
-        </div>
 
         <!-- 搜索结果 -->
         <div class="sector-results" v-if="sectorResults.length">
@@ -565,7 +559,7 @@
               <button class="btn btn-sm" :class="{ active: reverseSort==='heat' }" @click="setReverseSort('heat')">按热度 {{ reverseSortIcon('heat') }}</button>
             </div>
           </div>
-          <p class="muted tiny">说明：结果前<strong>两行固定必有</strong>——① <b>🔥 该股最火业务</b>（反推后<strong>自动填入与本股票相关的各平台热点业务/产品</strong>，按热度最高者生成，框内可改）；② <b>✏️ 自定义业务</b>（自行填写一个业务名称）。这两行可在框内直接修改，其后才是该股票真实的<b>主营构成</b>。<b>相关度</b> = 主营占营收比例（%）；<b>热度</b> = 对应东财板块成分股数（同业公司越多越热门）。默认按相关度从高到低排序，可切换为按热度排序。业务名称已尽量补全（如「衍生业务」补全为「短剧及IP衍生品业务」）。</p>
+          <p class="muted tiny">说明：结果前<strong>两行固定必有</strong>——① <b>🔥 该股最火业务</b>（标签固定在「股票名称」列；反推后<strong>自动填入与本股票相关的各平台热点业务/产品</strong>，取主营构成中热度最高者，其营收占比/相关度/热度均与下方业务行同口径计算，热度=该业务所含东财板块股票数，框内可改）；② <b>✏️ 自定义业务</b>（标签同样在「股票名称」列；在框内填写业务名，若匹配该股票主营构成则复用其数据，否则按业务名解析东财板块取股票数作为热度）。其后才是该股票真实的<b>主营构成</b>（已排除首行最火业务避免重复）。<b>相关度</b> = 主营占营收比例（%）；<b>热度</b> = 对应东财板块成分股数（同业公司越多越热门）。默认按相关度从高到低排序，可切换为按热度排序。</p>
           <div class="semantic-table-wrap">
             <table class="semantic-table reverse">
               <thead>
@@ -581,27 +575,25 @@
                 </tr>
               </thead>
               <tbody>
-                <tr v-for="(s,i) in reverseSorted" :key="s.type !== 'seg' ? s.type : s.name" :class="{ 'row-hot': s.type==='hot', 'row-custom': s.type==='custom' }">
+                <tr v-for="(s,i) in reverseSorted" :key="'r_' + (s.type !== 'seg' ? s.type : (s.name + '|' + (s.ratio != null ? s.ratio : '')))" :class="{ 'row-hot': s.type==='hot', 'row-custom': s.type==='custom' }">
                   <td class="rank">{{ i+1 }}</td>
-                  <td class="name">{{ s.type==='seg' ? reverse.name : (s.type==='hot' ? (reverse.name || '该股') : '自定义') }}</td>
-                  <td class="code">{{ (s.type==='seg' || s.type==='hot') ? reverse.code.toUpperCase() : '—' }}</td>
+                  <td class="name">
+                    <template v-if="s.type==='hot'"><span class="badge-hot">🔥 该股最火业务</span></template>
+                    <template v-else-if="s.type==='custom'"><span class="badge-custom">✏️ 自定义</span></template>
+                    <template v-else>{{ reverse.name }}</template>
+                  </td>
+                  <td class="code">{{ s.type!=='custom' ? reverse.code.toUpperCase() : '—' }}</td>
                   <td class="seg">
-                    <template v-if="s.type==='hot'">
-                      <span class="badge-hot">🔥 该股最火业务</span>
-                      <input class="inline-input bus-input" v-model="reverse.hotTheme" placeholder="自动识别的最火业务(可改)" />
-                    </template>
-                    <template v-else-if="s.type==='custom'">
-                      <span class="badge-custom">✏️ 自定义</span>
-                      <input class="inline-input bus-input" v-model="reverse.customName" placeholder="自行填写业务名称" />
-                    </template>
+                    <input v-if="s.type==='hot'" class="inline-input bus-input" v-model="reverse.hotTheme" placeholder="自动识别的最火业务(可改)" />
+                    <input v-else-if="s.type==='custom'" class="inline-input bus-input" v-model="reverse.customName" placeholder="自行填写业务名称" />
                     <template v-else>{{ s.name }}</template>
                   </td>
-                  <td>{{ s.ratio != null ? s.ratio + '%' : (s.type==='hot' ? '热门' : '-') }}</td>
+                  <td>{{ s.ratio != null ? s.ratio + '%' : '-' }}</td>
                   <td class="relevance">{{ s.relevance != null ? s.relevance + '%' : '-' }}</td>
                   <td class="heat">{{ s.heat ? s.heat + ' 只' : '-' }}</td>
                   <td class="concepts">
                     <span class="semantic-chip mini" v-for="b in s.boardNames" :key="b">{{ b }}</span>
-                    <span v-if="!s.boardNames.length" class="muted tiny">—</span>
+                    <span v-if="!s.boardNames || !s.boardNames.length" class="muted tiny">—</span>
                   </td>
                 </tr>
               </tbody>
