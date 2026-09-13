@@ -256,6 +256,32 @@ function semanticNameScore(name, canon) {
   return 10;
 }
 
+/** 由收盘价序列计算日收益率序列（不含股息，足够用于联动相关性分析） */
+function _returns(closes) {
+  const r = [];
+  for (let i = 1; i < closes.length; i++) {
+    const a = closes[i - 1], b = closes[i];
+    if (a > 0 && isFinite(b)) r.push((b - a) / a);
+  }
+  return r;
+}
+
+/** 皮尔逊相关系数（衡量两个收益率序列的线性相关强度，范围 [-1,1]） */
+function _pearson(a, b) {
+  const n = Math.min(a.length, b.length);
+  if (n < 2) return NaN;
+  let sa = 0, sb = 0;
+  for (let i = 0; i < n; i++) { sa += a[i]; sb += b[i]; }
+  const ma = sa / n, mb = sb / n;
+  let num = 0, da = 0, db = 0;
+  for (let i = 0; i < n; i++) {
+    const x = a[i] - ma, y = b[i] - mb;
+    num += x * y; da += x * x; db += y * y;
+  }
+  if (da === 0 || db === 0) return NaN;
+  return num / Math.sqrt(da * db);
+}
+
 /** 解析修饰词（核心/龙头、小市值） */
 function parseSemanticModifiers(query) {
   const m = [];
@@ -981,21 +1007,22 @@ const StockAPI = {
       const heatArr = await mapLimit(topSegs, 3, async (seg) => {
         try {
           const boards = this._matchSegmentBoards(seg.name, allBoards);
-          let heat = 0; const boardNames = [];
+          let heat = 0; const boardNames = []; const boardCodes = [];
           if (boards.length) {
+            boards.slice(0, 3).forEach(b => { boardNames.push(b.name); boardCodes.push(b.bk); });
             try { heat = await this.getSectorStockCount(boards[0].bk); } catch (e) { heat = 0; }
-            boards.slice(0, 3).forEach(b => boardNames.push(b.name));
           }
           // 用匹配到的板块名二次补全（如「衍生业务」→「衍生业务（短剧）」）
-          return { heat, boardNames, expanded: this._expandSegName(code, seg.name, boardNames) };
+          return { heat, boardNames, boardCodes, expanded: this._expandSegName(code, seg.name, boardNames) };
         } catch (e) {
-          return { heat: 0, boardNames: [], expanded: seg.name };
+          return { heat: 0, boardNames: [], boardCodes: [], expanded: seg.name };
         }
       });
       topSegs.forEach((seg, i) => {
-        const h = heatArr[i] || { heat: 0, boardNames: [], expanded: seg.name };
+        const h = heatArr[i] || { heat: 0, boardNames: [], boardCodes: [], expanded: seg.name };
         seg.heat = h.heat;
         seg.boardNames = h.boardNames;
+        seg.boardCodes = h.boardCodes;
         seg.name = h.expanded;
       });
     } catch (e) {
@@ -1004,14 +1031,100 @@ const StockAPI = {
 
     segments.sort((a, b) => (b.relevance - a.relevance) || (b.heat - a.heat));
 
-    // 5) 计算「该股最火业务」：主营构成中热度(同业公司数)最高的业务，即与本基金(股票)
-    //    相关、且在各平台上同业公司最多的热点业务/产品；若所有业务均未匹配到板块(heat=0)，
-    //    则回退到营收占比最高的业务。该值用于反推结果表首行固定行，按股票动态生成而非写死。
-    let hotBusiness = '';
-    const byHeat = [...segments].sort((a, b) => (b.heat - a.heat) || (b.relevance - a.relevance));
-    if (byHeat[0]) hotBusiness = byHeat[0].heat > 0 ? byHeat[0].name : segments[0].name;
+    // 5) 计算「该股最火概念」：在个股主营构成所映射到的东财概念板块中，
+    //    找出与个股日收益率联动最强（皮尔逊相关系数最高）的概念——即平时最能带动该股上涨的概念。
+    //    失败则回退到旧口径（同业公司数最多的主营构成段）。
+    let hotConcept = null;
+    try {
+      hotConcept = await this._computeHotConcept(code, segments);
+    } catch (e) {
+      console.warn('反推业务：最火概念(联动)计算失败，回退到同业公司数口径', e);
+    }
 
-    return { ok: true, name: name || code, code, segments, hotBusiness };
+    let hotBusiness = '';
+    if (hotConcept && hotConcept.name) {
+      hotBusiness = hotConcept.name;
+    } else {
+      const byHeat = [...segments].sort((a, b) => (b.heat - a.heat) || (b.relevance - a.relevance));
+      if (byHeat[0]) hotBusiness = byHeat[0].heat > 0 ? byHeat[0].name : segments[0].name;
+    }
+
+    return { ok: true, name: name || code, code, segments, hotBusiness, hotConcept };
+  },
+
+  /**
+   * 计算「该股最火概念」：在个股主营构成映射到的东财概念板块里，取与个股日收益率
+   * 联动最强（相关系数最高）的概念。即：平时最能带动该股上涨的概念/题材。
+   * @param {string} code 东财前缀代码，如 sh600519
+   * @param {Array} segments 主营构成段（含 boardCodes 字段）
+   * @returns {Promise<{bk,name,corr,heat,boardNames}|null>}
+   */
+  async _computeHotConcept(code, segments) {
+    // 收集去重后的概念板块代码（限制数量，控制请求数）
+    const bkSet = new Set();
+    for (const s of segments) {
+      for (const bk of (s.boardCodes || [])) if (bk) bkSet.add(bk);
+    }
+    const bks = [...bkSet].slice(0, 10);
+    if (!bks.length) return null;
+
+    // 个股近 ~200 个交易日的日收益率
+    const stockBars = await this.getKline(code, this._daysAgo(220), this.fmtDate(new Date()), 220);
+    if (!stockBars || stockBars.length < 40) return null;
+    const stockRet = _returns(stockBars.map(b => b.close));
+
+    // 各概念板块近 ~200 个交易日的日收益率 + 与个股的相关系数
+    const rows = await mapLimit(bks, 3, async (bk) => {
+      try {
+        const bars = await this.getBoardReturns(bk);
+        if (!bars || bars.length < 40) return null;
+        const ret = _returns(bars.map(b => b.close));
+        const n = Math.min(stockRet.length, ret.length);
+        if (n < 30) return null;
+        const corr = _pearson(stockRet.slice(-n), ret.slice(-n));
+        if (isNaN(corr) || corr <= 0) return null; // 仅取正向联动（带动上涨）
+        return { bk, corr };
+      } catch (e) { return null; }
+    });
+    const valid = rows.filter(Boolean).sort((a, b) => b.corr - a.corr);
+    if (!valid.length) return null;
+
+    const best = valid[0];
+    let name = best.bk, stockCount = 0;
+    try {
+      const all = await this.getAllSectors();
+      const b = (all || []).find(x => x.bk === best.bk);
+      if (b) name = b.name;
+    } catch (e) { /* ignore */ }
+    try { stockCount = await this.getSectorStockCount(best.bk); } catch (e) { stockCount = 0; }
+    return {
+      bk: best.bk,
+      name,
+      corr: Math.round(best.corr * 1000) / 10, // 联动强度(%)
+      heat: stockCount,                         // 该概念板块成分股数
+      boardNames: [name]
+    };
+  },
+
+  /**
+   * 获取概念板块指数日K线（用于计算与个股的联动强度）。
+   * 板块 secid 格式为 90.BKxxxx，走 push2his 东财节点（已内置多节点兜底）。
+   * @param {string} bk 板块代码，如 BK0896
+   */
+  async getBoardReturns(bk) {
+    const secid = '90.' + String(bk).replace(/^BK/i, 'BK');
+    const url = `https://push2his.eastmoney.com/api/qt/stock/kline/get?ut=fa5fd1943c7b386f172d6893dbfba10b` +
+      `&secid=${secid}&fields1=f1,f2,f3,f4,f5,f6&fields2=f51,f52,f53,f54,f55,f56,f57,f58` +
+      `&klt=101&fqt=0&beg=20240101&end=20500101&lmt=250`;
+    const json = await this._eastGet(url);
+    const kl = json && json.data && json.data.klines;
+    if (!kl || !kl.length) return [];
+    return this._parseEastKline(kl);
+  },
+
+  _daysAgo(n) {
+    const d = new Date(Date.now() - n * 86400000);
+    return this.fmtDate(d);
   },
 
   /**
