@@ -1768,6 +1768,105 @@ const app = createApp({
       showToast(`已保存板块「${sector.name}」共 ${sector.stocks.length} 只`, 'success');
     }
 
+    // 用户编辑语义结果后，允许重新保存
+    function markSemanticDirty() { semantic.saved = false; }
+
+    // ===== 语义结果 增删改：识别概念 =====
+    const editingConceptIdx = ref(-1);
+    const conceptDraft = ref('');
+    const newConceptText = ref('');
+    function startEditConcept(i) { editingConceptIdx.value = i; conceptDraft.value = semantic.concepts[i] || ''; }
+    function commitEditConcept() {
+      const i = editingConceptIdx.value; const v = conceptDraft.value.trim();
+      if (i >= 0 && v) semantic.concepts[i] = v;
+      editingConceptIdx.value = -1; markSemanticDirty();
+    }
+    function cancelEditConcept() { editingConceptIdx.value = -1; }
+    function removeConcept(i) { if (i >= 0) semantic.concepts.splice(i, 1); markSemanticDirty(); }
+    function addConcept() {
+      const v = newConceptText.value.trim(); if (v) { semantic.concepts.push(v); newConceptText.value = ''; markSemanticDirty(); }
+    }
+
+    // ===== 语义结果 增删改：命中板块 =====
+    const editingBoardIdx = ref(-1);
+    const boardDraft = ref('');
+    const boardAddKw = ref('');
+    const boardAddMatches = ref([]);
+    const boardAdding = ref(false);
+    function startEditBoard(i) { editingBoardIdx.value = i; boardDraft.value = semantic.boards[i] ? (semantic.boards[i].name || '') : ''; }
+    function commitEditBoard() {
+      const i = editingBoardIdx.value; const v = boardDraft.value.trim();
+      if (i >= 0 && semantic.boards[i]) semantic.boards[i].name = v;
+      editingBoardIdx.value = -1; markSemanticDirty();
+    }
+    function cancelEditBoard() { editingBoardIdx.value = -1; }
+    function removeBoard(i) { if (i >= 0) semantic.boards.splice(i, 1); markSemanticDirty(); }
+    async function searchBoardForAdd() {
+      const kw = boardAddKw.value.trim(); if (!kw) { boardAddMatches.value = []; return; }
+      boardAdding.value = true;
+      try {
+        const all = await StockAPI.getAllSectors();
+        const k = kw.toLowerCase();
+        boardAddMatches.value = all.filter(b => String(b.name || '').toLowerCase().includes(k)).slice(0, 8);
+      } catch (e) { boardAddMatches.value = []; }
+      finally { boardAdding.value = false; }
+    }
+    function addBoard(b) {
+      if (!b) return;
+      semantic.boards.push({ bk: b.bk, name: b.name });
+      boardAddMatches.value = []; boardAddKw.value = ''; markSemanticDirty();
+    }
+
+    // ===== 语义结果 增删改：筛选出的股票 =====
+    const editingStockCode = ref('');
+    const stockNameDraft = ref('');
+    const stockRoleDraft = ref('');
+    const stockConceptsDraft = ref('');
+    const stockAddCode = ref('');
+    const stockAdding = ref(false);
+    function startEditStock(s) {
+      editingStockCode.value = s.code; stockNameDraft.value = s.name || '';
+      stockRoleDraft.value = s.role || ''; stockConceptsDraft.value = (s.concepts || []).join(',');
+    }
+    function commitEditStock() {
+      const s = semantic.stocks.find(x => x.code === editingStockCode.value);
+      if (s) {
+        s.name = stockNameDraft.value.trim() || s.name;
+        s.role = stockRoleDraft.value.trim();
+        s.concepts = (stockConceptsDraft.value || '').split(/[,，]/).map(t => t.trim()).filter(Boolean);
+      }
+      editingStockCode.value = ''; markSemanticDirty();
+    }
+    function cancelEditStock() { editingStockCode.value = ''; }
+    function removeStock(code) {
+      const i = semantic.stocks.findIndex(x => x.code === code);
+      if (i >= 0) semantic.stocks.splice(i, 1); markSemanticDirty();
+    }
+    async function addStockByCode() {
+      const raw = stockAddCode.value.trim();
+      if (!raw) { showToast('请输入股票代码', 'error'); return; }
+      const code = StockAPI.inferPrefix(raw);
+      stockAdding.value = true;
+      try {
+        const q = await StockAPI.getQuotes([code]);
+        const info = (q && q[code]) || {};
+        const name = info.name || raw.toUpperCase();
+        semantic.stocks.push({
+          code, name,
+          price: info.price != null ? info.price : null,
+          changePercent: info.changePercent != null ? info.changePercent : null,
+          marketCap: info.totalMarketCap != null ? info.totalMarketCap * 1e8 : null,
+          role: '手动添加',
+          concepts: semantic.concepts.slice()
+        });
+        stockAddCode.value = '';
+        showToast('已添加 ' + name, 'success');
+        markSemanticDirty();
+      } catch (e) {
+        showToast('添加失败：' + (e && e.message ? e.message : e), 'error');
+      } finally { stockAdding.value = false; }
+    }
+
     // 已保存板块按创建时间倒序
     const sortedSectorPools = computed(() => [...D.sectorPools].slice().reverse());
 
@@ -3384,8 +3483,11 @@ const app = createApp({
       sectorFilter, sectorDetailIndustries, filteredSectorDetailStocks,
       resetSectorFilter, toggleSectorFilterLock, sectorIndustryOpen,
       sectorFilterOpen, sectorInfoOpen, favInfoOpen, filterInfoOpen, poolInfoOpen,
-      // AI 语义选股
+      // AI 语义选股（含结果 增删改）
       semantic, semanticSearch, saveSemanticAsPool,
+      editingConceptIdx, conceptDraft, newConceptText, startEditConcept, commitEditConcept, cancelEditConcept, removeConcept, addConcept,
+      editingBoardIdx, boardDraft, boardAddKw, boardAddMatches, boardAdding, startEditBoard, commitEditBoard, cancelEditBoard, removeBoard, searchBoardForAdd, addBoard,
+      editingStockCode, stockNameDraft, stockRoleDraft, stockConceptsDraft, stockAddCode, stockAdding, startEditStock, commitEditStock, cancelEditStock, removeStock, addStockByCode,
       // 页面3
       hotDate, hotLoading, hotBoards, hotStocks, preMarketBoards, amplitudeBoards, conceptFreq,
       hotBoardActive, hotBoardLoading, hotDetailIsStock, openHotBoard, openHotStock, clearHotBoard,
