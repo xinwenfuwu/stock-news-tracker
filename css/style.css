@@ -876,9 +876,11 @@ body {
 @keyframes ai-bounce { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
 .semantic-header {
   display: flex; align-items: center; justify-content: space-between;
-  gap: 10px; margin-bottom: 10px;
+  gap: 10px; margin-bottom: 6px;
 }
 .semantic-header h3 { margin: 0; font-size: 16px; }
+.semantic-header-actions { display: flex; align-items: center; gap: 8px; }
+.semantic-hint { margin: 2px 0 12px; color: #8a82b8; }
 .semantic-meta {
   display: flex; flex-wrap: wrap; align-items: center; gap: 6px;
   margin-bottom: 8px; font-size: 13px; color: var(--text-secondary);
