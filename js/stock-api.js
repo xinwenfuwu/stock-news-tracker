@@ -16,67 +16,112 @@
 //  - aliases：在用户输入的自然语言里被识别为该类概念的词（含英文缩写）
 //  - hints  ：用于在东方财富板块名称里匹配该类概念的关键词（子串）
 // ============================================================
+//  segHints：命中概念后用于匹配「主营构成段名」的精确子串（相关度计算）。
+//  注意：务必用「精确词组」而非过宽单字——如用「智能」会误命中蓝思科技
+//  （其段名均为「智能手机/智能汽车/智能头显」）；故统一用「人工智能」「内容安全」等完整词组。
 const SEMANTIC_CONCEPTS = [
   { canonical: '人工智能', aliases: ['人工智能', 'ai', 'a.i', 'aigc', '大模型', 'gpt', 'chatgpt', '生成式', '多模态', '智能体', 'agent', 'llm', '机器学习', '深度学习', '算力大模型'],
-    hints: ['人工智能', 'ai', 'aigc', '智能体', '多模态', '大模型', 'chatgpt', '深度学习', '机器学习'] },
+    hints: ['人工智能', 'ai', 'aigc', '智能体', '多模态', '大模型', 'chatgpt', '深度学习', '机器学习'],
+    segHints: ['人工智能', '大模型', '机器学习', '深度学习', '算法', '多模态', '自然语言', '语义理解', '智能体', '生成式', 'ai'] },
   { canonical: '安全', aliases: ['安全', '网络安全', '信息安全', '数据安全', '网安', '信安', '安防', '安保'],
-    hints: ['安全', '安防'] },
+    hints: ['安全', '安防'],
+    segHints: ['安全', '安防', '网络安全', '信息安全', '内容安全', '数据安全', '保密', '加密', '防火墙'] },
   { canonical: '信创', aliases: ['信创', '国产软件', '国产操作系统', '软件', '操作系统', '数据库', '工业软件'],
-    hints: ['信创', '国产软件', '软件', '操作系统', '数据库'] },
+    hints: ['信创', '国产软件', '软件', '操作系统', '数据库'],
+    segHints: ['信创', '国产软件', '操作系统', '数据库', '工业软件', '办公软件'] },
   { canonical: '芯片半导体', aliases: ['芯片', '半导体', '集成电路', '晶圆', '光刻', '国产芯片', '半导体设备', 'soc', 'mcu'],
-    hints: ['芯片', '半导体', '集成电路', '光刻', '晶圆'] },
+    hints: ['芯片', '半导体', '集成电路', '光刻', '晶圆'],
+    segHints: ['芯片', '半导体', '集成电路', '晶圆', '光刻', '碳化硅', '功率半导体', '封测', '存储芯片', 'mcu', 'soc'] },
   { canonical: '机器人', aliases: ['机器人', '人形机器人', '工业机器人', '服务机器人', '减速器', '机械臂', '具身智能'],
-    hints: ['机器人', '减速器', '具身'] },
+    hints: ['机器人', '减速器', '具身'],
+    segHints: ['机器人', '减速器', '伺服', '电机', '丝杠', '传感器', '具身'] },
   { canonical: '算力', aliases: ['算力', '东数西算', '智算', '算力租赁', '数据中心', 'idc', '液冷', '算力中心'],
-    hints: ['算力', '东数西算', '数据中心', 'idc', '液冷'] },
+    hints: ['算力', '东数西算', '数据中心', 'idc', '液冷'],
+    segHints: ['算力', '数据中心', 'idc', '液冷', '智算', '东数西算', '云计算'] },
   { canonical: '智能驾驶', aliases: ['自动驾驶', '无人驾驶', '智能驾驶', '辅助驾驶', '车联网', '智能座舱'],
-    hints: ['自动驾驶', '无人驾驶', '智能驾驶', '车联网', '智能座舱'] },
+    hints: ['自动驾驶', '无人驾驶', '智能驾驶', '车联网', '智能座舱'],
+    segHints: ['自动驾驶', '无人驾驶', '智能驾驶', '车联网', '智能座舱', '智能汽车'] },
   { canonical: '新能源', aliases: ['新能源', '光伏', '风电', '氢能', '储能', '充电桩', '特高压', '绿电'],
-    hints: ['光伏', '风电', '储能', '氢能', '充电桩', '特高压', '新能源', '绿电'] },
+    hints: ['光伏', '风电', '储能', '氢能', '充电桩', '特高压', '新能源', '绿电'],
+    segHints: ['光伏', '风电', '储能', '氢能', '充电桩', '特高压', '绿电', '电池'] },
   { canonical: '锂电池新能源车', aliases: ['锂电池', '锂电', '新能源车', '电动汽车', '动力电池', '固态电池', '新能源整车'],
-    hints: ['锂电池', '锂电', '新能源车', '动力电池', '固态电池', '整车'] },
+    hints: ['锂电池', '锂电', '新能源车', '动力电池', '固态电池', '整车'],
+    segHints: ['锂电池', '锂电', '新能源车', '动力电池', '固态电池', '整车'] },
   { canonical: '医药', aliases: ['医药', '创新药', '生物制药', '医疗器械', '中药', 'cxo', '疫苗', '医疗服务'],
-    hints: ['医药', '创新药', '医疗器械', '中药', '生物制药', 'cxo', '疫苗'] },
+    hints: ['医药', '创新药', '医疗器械', '中药', '生物制药', 'cxo', '疫苗'],
+    segHints: ['创新药', '医疗器械', '中药', '生物制药', 'cxo', '疫苗', '医疗服务', '医药'] },
   { canonical: '军工', aliases: ['军工', '国防', '航空装备', '卫星导航', '船舶', '兵器', '军民融合'],
-    hints: ['军工', '国防', '卫星', '航空装备', '船舶', '兵器'] },
+    hints: ['军工', '国防', '卫星', '航空装备', '船舶', '兵器'],
+    segHints: ['军工', '国防', '卫星', '航空装备', '船舶', '兵器', '军民融合'] },
   { canonical: '低空经济', aliases: ['低空经济', '飞行汽车', 'evtol', '通航', '无人机'],
-    hints: ['低空经济', '飞行汽车', '通航', '无人机'] },
+    hints: ['低空经济', '飞行汽车', '通航', '无人机'],
+    segHints: ['低空', '飞行汽车', 'evtol', '无人机', '通航'] },
   { canonical: '商业航天', aliases: ['商业航天', '卫星互联网', '火箭', '航天'],
-    hints: ['商业航天', '卫星互联网', '航天'] },
+    hints: ['商业航天', '卫星互联网', '航天'],
+    segHints: ['商业航天', '卫星互联网', '火箭', '航天'] },
   { canonical: '消费白酒', aliases: ['白酒', '食品饮料', '消费', '啤酒', '免税', '新零售'],
-    hints: ['白酒', '食品饮料', '啤酒', '免税', '新零售'] },
+    hints: ['白酒', '食品饮料', '啤酒', '免税', '新零售'],
+    segHints: ['白酒', '食品饮料', '啤酒', '免税', '新零售', '消费'] },
   { canonical: '金融', aliases: ['银行', '保险', '券商', '金融', '信托', '期货', '财富管理'],
-    hints: ['银行', '保险', '券商', '期货', '信托'] },
+    hints: ['银行', '保险', '券商', '期货', '信托'],
+    segHints: ['银行', '保险', '券商', '期货', '信托', '财富管理'] },
   { canonical: '房地产', aliases: ['房地产', '地产', '物业服务', '园区开发'],
-    hints: ['房地产', '物业'] },
+    hints: ['房地产', '物业'],
+    segHints: ['房地产', '地产', '物业服务', '园区'] },
   { canonical: '化工', aliases: ['化工', '化学', '化肥', '农药', '塑料', '橡胶', '钛白粉'],
-    hints: ['化工', '化肥', '农药'] },
+    hints: ['化工', '化肥', '农药'],
+    segHints: ['化工', '化肥', '农药', '钛白粉', '化学'] },
   { canonical: '有色金属', aliases: ['有色', '黄金', '稀土', '铜', '铝', '锂矿', '小金属'],
-    hints: ['有色', '黄金', '稀土', '小金属'] },
+    hints: ['有色', '黄金', '稀土', '小金属'],
+    segHints: ['有色', '黄金', '稀土', '铜', '铝', '锂矿', '小金属'] },
   { canonical: '钢铁煤炭', aliases: ['钢铁', '煤炭', '焦炭'],
-    hints: ['钢铁', '煤炭'] },
+    hints: ['钢铁', '煤炭'],
+    segHints: ['钢铁', '煤炭', '焦炭'] },
   { canonical: '农业', aliases: ['农业', '猪肉', '养殖', '种业', '粮食'],
-    hints: ['农业', '猪肉', '养殖', '种业'] },
+    hints: ['农业', '猪肉', '养殖', '种业'],
+    segHints: ['农业', '猪肉', '养殖', '种业', '粮食'] },
   { canonical: '数字经济', aliases: ['数字经济', '数据要素', '数据确权', '数字中国', '大数据', '云计算', '边缘计算'],
-    hints: ['数字经济', '数据要素', '数据确权', '大数据', '云计算', '边缘计算'] },
+    hints: ['数字经济', '数据要素', '数据确权', '大数据', '云计算', '边缘计算'],
+    segHints: ['数字经济', '数据要素', '数据确权', '大数据', '云计算', '边缘计算', '数据交易'] },
   { canonical: '通信5g', aliases: ['5g', '通信', '光模块', 'cpo', '算力网络', '6g'],
-    hints: ['5g', '通信', '光模块', 'cpo', '6g'] },
-  { canonical: '传媒游戏', aliases: ['传媒', '游戏', '元宇宙', 'vr', 'ar', '影视', '出版', '短剧'],
-    hints: ['传媒', '游戏', '元宇宙', '影视', '出版', '短剧'] },
+    hints: ['5g', '通信', '光模块', 'cpo', '6g'],
+    segHints: ['5g', '通信', '光模块', 'cpo', '6g', '光通信'] },
+  { canonical: '传媒游戏', aliases: ['传媒', '游戏', '元宇宙', 'vr', 'ar', '影视', '出版'],
+    hints: ['传媒', '游戏', '元宇宙', '影视', '出版'],
+    segHints: ['传媒', '影视', '游戏', '出版', '元宇宙', '直播', '短视频', '版权', '动漫', '网剧'] },
   { canonical: '教育', aliases: ['教育', '培训', '职业教育'],
-    hints: ['教育', '培训'] },
+    hints: ['教育', '培训'],
+    segHints: ['教育', '培训', '职业教育'] },
   { canonical: '养老', aliases: ['养老', '银发', '医养'],
-    hints: ['养老', '医养'] },
+    hints: ['养老', '医养'],
+    segHints: ['养老', '医养', '银发'] },
   { canonical: '国企改革', aliases: ['国企改革', '中字头', '央企', '国资', '央企改革'],
-    hints: ['国企改革', '中字头', '央企改革', '国资'] },
+    hints: ['国企改革', '中字头', '央企改革', '国资'],
+    segHints: ['国企改革', '中字头', '央企', '国资'] },
   { canonical: '环保', aliases: ['环保', '碳中和', '污水处理', '固废', '绿化'],
-    hints: ['环保', '碳中和', '污水处理'] },
+    hints: ['环保', '碳中和', '污水处理'],
+    segHints: ['环保', '碳中和', '污水处理', '固废'] },
   { canonical: '电商互联网', aliases: ['电商', '互联网', '平台经济', '直播', '跨境电商'],
-    hints: ['电商', '互联网', '平台经济', '直播'] },
+    hints: ['电商', '互联网', '平台经济', '直播'],
+    segHints: ['电商', '互联网', '平台', '直播', '跨境电商'] },
   { canonical: '氢能源', aliases: ['氢能源', '氢燃料电池', '加氢'],
-    hints: ['氢能源', '氢燃料', '加氢'] },
+    hints: ['氢能源', '氢燃料', '加氢'],
+    segHints: ['氢能源', '氢燃料', '加氢'] },
   { canonical: '医疗健康', aliases: ['医疗', '健康', '养老医疗', '连锁医疗'],
-    hints: ['医疗', '健康'] }
+    hints: ['医疗', '健康'],
+    segHints: ['医疗', '健康', '医养'] },
+  { canonical: '短剧', aliases: ['短剧', '微短剧', '互动剧', '小程序剧', '短剧游戏'],
+    hints: ['短剧', '微短剧', '互动剧'],
+    segHints: ['短剧', '微短剧', '互动剧', '网剧', '小程序剧'] },
+  { canonical: '内容审核', aliases: ['审核', '内容审核', '内容审查', '审查', '合规审核', '风控审核', '安全审核', '内容安全审核', '舆情审核'],
+    hints: ['审核', '内容安全', '内容审核', '数据安全', '网络安全', '网络安', '信安', '数字水印'],
+    segHints: ['审核', '内容审核', '内容安全', '审查', '版权', '舆情', '风控', '合规', '视听内容', '传媒安全', '网络内容', '数字水印', '安全审核', '内容风控', '数据安全'] },
+  { canonical: '版权', aliases: ['版权', 'ip版权', '知识产权', '著作权'],
+    hints: ['版权', '知识产权'],
+    segHints: ['版权', '知识产权', 'ip'] },
+  { canonical: '舆情', aliases: ['舆情', '舆论', '口碑监测', '舆论监测'],
+    hints: ['舆情'],
+    segHints: ['舆情', '舆论'] }
 ];
 
 /**
@@ -219,13 +264,96 @@ function parseSemanticModifiers(query) {
   return m;
 }
 
+// ============ 语义 → 主营构成匹配（营收占比相关度） ============
+// 从自然语言查询抽取「业务/产品」匹配词，并聚合命中概念的主营段名匹配词，
+// 用于把候选公司的「主营构成」段名与语义描述做子串匹配，命中段营收占比之和即相关度。
+
+/** 停用词：从查询里剔除，避免「的/为/企业」等噪声成为段名匹配词 */
+const SEMANTIC_STOPWORDS = new Set([
+  '的', '为', '是', '了', '和', '与', '及', '或', '在', '有', '做', '找', '整理', '生产', '企业', '上市', '公司',
+  '主营', '核心', '龙头', '我们', '请', '帮', '我', '等', '哪些', '什么', '列出', '给出', '筛选', '选出', '符合',
+  '业务', '产品', '占', '营收', '比例', '收入', '主要', '从事', '关于', '相关', '一个', '一种', '进行', '提供',
+  '服务', '技术', '方案', '系统', '平台', '分析', '研究', '推荐', '希望', '想', '需要', '如何', '怎么', '哪家',
+  '正宗', '纯正', '标的', '概念', '板块', '股票', '股', '梳理', '罗列', '一共', '全部', '所有', '分别', '各自',
+  '以及', '并且', '同时', '既', '又', '该', '这个', '这些', '那些', '一家', '一些'
+]);
+
 /**
- * 产品级语义「相关度」评分：根据产业链定位(role 文本)评估该公司与该产品/业务的贴合度。
- * 用于「相关度」列展示与排序（用户要求：按上市公司与语义中业务/产品的相关度从大到小排序）。
- * 纯文本启发式、透明可解释：龙头/市占 > 唯一/IDM > 核心 > 自研量产突破 > 验证布局 > 代理分销。
- * @param {string} role
- * @returns {number} 0-100
+ * 从自然语言查询抽取业务/产品匹配词（作为主营构成段名的子串）。
+ * 中文按 2~3 字滑动窗口切分（剔除停用词），英文/数字按整词提取。
+ * 例：「ai短剧审核」→ ['短剧','剧审','审核','ai']（'剧审'为无害噪声）
  */
+function extractQueryTerms(query) {
+  const q = String(query || '').toLowerCase();
+  const terms = new Set();
+  const latin = q.match(/[a-z0-9]{2,}/g) || [];
+  latin.forEach(t => terms.add(t));
+  const cn = q.match(/[一-龥]+/g) || [];
+  cn.forEach(run => {
+    if (run.length <= 4) terms.add(run);
+    for (let n = 2; n <= 3; n++) {
+      for (let i = 0; i + n <= run.length; i++) {
+        const g = run.slice(i, i + n);
+        if (!SEMANTIC_STOPWORDS.has(g)) terms.add(g);
+      }
+    }
+  });
+  return [...terms];
+}
+
+/**
+ * 把自然语言解析为语义匹配要素。
+ *  - concepts：命中的概念本体（用于概念板块检索候选池 + 标签展示）
+ *  - boardHints：从命中概念聚合的「板块名」匹配词（候选池发现）
+ *  - segHints：从命中概念聚合的「主营构成段名」匹配词（相关度计算）
+ *  - generic：从查询直接抽取的通用匹配词（同时用于板块名与段名）
+ */
+function buildMatchers(query) {
+  const ql = String(query || '').toLowerCase();
+  const concepts = [];
+  const boardHints = new Set();
+  const segHints = new Set();
+  for (const c of SEMANTIC_CONCEPTS) {
+    if (c.aliases.some(a => ql.includes(a.toLowerCase()))) {
+      concepts.push(c.canonical);
+      (c.hints || []).forEach(h => boardHints.add(h.toLowerCase()));
+      (c.segHints || []).forEach(h => segHints.add(h.toLowerCase()));
+    }
+  }
+  const generic = extractQueryTerms(query);
+  generic.forEach(t => { boardHints.add(t); segHints.add(t); });
+  return { concepts, boardHints: [...boardHints], segHints: [...segHints], generic };
+}
+
+/** 主营构成段名是否命中任一匹配词（子串，忽略大小写） */
+function segMatches(segName, matchersArr) {
+  if (!segName) return false;
+  const s = String(segName).toLowerCase();
+  for (const m of matchersArr) if (s.includes(m)) return true;
+  return false;
+}
+
+/**
+ * 根据主营构成计算「营收占比相关度」。
+ * 相关度 = 命中语义描述的主营业务/产品段之营收占比之和（%，0~100）。
+ * @returns {{relevance:number, matched:Array<{name:string,ratio:number}>}}
+ */
+function revenueRelevance(mainBiz, matchersArr) {
+  if (!mainBiz || !mainBiz.length) return { relevance: 0, matched: [] };
+  let rel = 0;
+  const matched = [];
+  for (const seg of mainBiz) {
+    if (segMatches(seg.name, matchersArr)) {
+      const r = (seg.ratio || 0);
+      rel += r;
+      matched.push({ name: seg.name, ratio: Math.round(r * 1000) / 10 });
+    }
+  }
+  if (rel > 1) rel = 1; // ratio 以小数计，封顶 100%
+  return { relevance: Math.round(rel * 1000) / 10, matched };
+}
+
+/** 产品级语义「相关度」评分（产品库兜底：东财未列明细分业务时按产业链角色保底） */
 function scoreRoleRelevance(role) {
   const r = String(role || '');
   let s = 68;
@@ -240,8 +368,8 @@ function scoreRoleRelevance(role) {
 }
 
 /**
- * 产品级语义匹配：把自然语言与 SEMANTIC_PRODUCTS 的产品/技术别名比对，
- * 命中即返回该产品对应的真实上市公司清单（含产业链定位）。
+ * 产品级语义匹配：把自然语言与 SEMANTIC_PRODUCTS 的产品/技术别名比对。
+ * 命中后作为候选种子 + 段名匹配补充，最终仍由主营构成营收占比计算相关度。
  * @param {string} ql 已转小写的查询串
  * @returns {object|null}
  */
@@ -1341,148 +1469,169 @@ const StockAPI = {
    * @param {string} rawQuery 用户自然语言
    * @returns {Promise<{ok,query,concepts,modifiers,method,boards,stocks,error}>}
    */
-  async semanticSearch(rawQuery) {
-    const query = String(rawQuery || '').trim();
-    if (!query) return { ok: false, error: '请输入描述，如：生产薄膜铌酸锂的企业 / 主营为ai安全的核心上市公司' };
-
-    const ql = query.toLowerCase();
-
-    // 0) 产品级语义匹配（优先）：自然语言 → 具体产品/技术 → 真实上市公司
-    //    这是与「概念板块交集」不同的能力：直接给出做这件事的公司，而非匹配板块名。
-    const product = matchProduct(ql);
-    if (product) {
-      const modifiers = parseSemanticModifiers(query);
-      const codes = product.stocks.map(s => s.code);
-      let quotes = {};
-      try { quotes = await this.getQuotes(codes); } catch (e) { quotes = {}; }
-      let stocks = product.stocks.map(s => {
-        const q = quotes[s.code] || {};
-        // 腾讯行情 totalMarketCap 单位为「亿元」，统一转成「元」以与概念路径一致
-        const mkt = q.totalMarketCap != null ? q.totalMarketCap * 1e8 : null;
-        return {
-          code: s.code,
-          name: q.name || s.name || s.code,
-          price: q.price != null ? q.price : null,
-          changePercent: q.changePercent != null ? q.changePercent : null,
-          marketCap: mkt,
-          role: s.role || '',
-          concepts: [product.key],
-          relevance: scoreRoleRelevance(s.role)
-        };
-      });
-      const TOPN = 20;
-      // 统一按「相关度」降序（同分按总市值降序）排序，符合用户要求
-      stocks.sort((a, b) => (b.relevance - a.relevance) || ((b.marketCap || 0) - (a.marketCap || 0)));
-      if (modifiers.includes('核心')) {
-        stocks = stocks.slice(0, TOPN);
-      } else if (modifiers.includes('小市值')) {
-        // 在相关度合格公司中挑市值最小的 20 家（展示仍按相关度排序）
-        stocks = [...stocks].sort((a, b) => (a.marketCap || 0) - (b.marketCap || 0)).slice(0, TOPN)
-          .sort((a, b) => (b.relevance - a.relevance) || ((b.marketCap || 0) - (a.marketCap || 0)));
-      }
-      return {
-        ok: true, query,
-        concepts: [product.key], modifiers,
-        method: 'product',
-        productKey: product.key,
-        productDesc: product.desc,
-        boards: [],
-        stocks
-      };
-    }
-
-    // 1) 解析概念（自然语言 → 概念本体）
-    const found = [];
-    for (const c of SEMANTIC_CONCEPTS) {
-      for (const a of c.aliases) {
-        if (ql.includes(a.toLowerCase())) { found.push(c); break; }
-      }
-    }
-
-    // 2) 解析修饰词
-    const modifiers = parseSemanticModifiers(query);
-
-    // 3) 拉取全量板块并匹配每个概念对应的板块
+  /**
+   * 营收占比相关度 语义选股引擎（统一入口）。
+   * 核心算法：相关度 = 命中语义描述的主营业务/产品段之「营收占比」之和（%）。
+   *  - 候选池：命中概念的板块成分股（交集优先，否则按覆盖度截断的并集）；或外部显式板块。
+   *  - 逐候选拉取东财 F10 主营构成，命中段营收占比求和即得相关度；相关度=0 的剔除。
+   *  - 按相关度降序排序；修饰词「核心」取前 20，「小市值」取市值最小 20 家。
+   * @param {object} p
+   *  - query, matchers{buildMatchers 结果}, modifiers, seedCodes, productKey, productDesc, productStocks, explicitBoards
+   */
+  async _revenueSearch({ query, matchers, modifiers, seedCodes = [], productKey = '', productDesc = '', productStocks = [], explicitBoards = null }) {
     const allBoards = await this.getAllSectors();
-    const CAP = 12; // 每概念最多纳入的板块数，避免请求过多
-    const conceptBoardLists = found.map(c => {
-      const boards = allBoards.filter(b => {
-        const n = b.name.toLowerCase();
-        return c.hints.some(h => n.includes(h.toLowerCase()));
-      });
-      boards.sort((a, b) => semanticNameScore(b.name, c.canonical) - semanticNameScore(a.name, c.canonical));
-      return { canon: c.canonical, boards: boards.slice(0, CAP) };
-    }).filter(x => x.boards.length);
-
-    if (!conceptBoardLists.length) {
-      return {
-        ok: false,
-        query, concepts: [], modifiers,
-        error: '未识别到已知概念，请尝试：人工智能、ai、安全、芯片、机器人、新能源、医药、军工 等关键词'
-      };
+    let conceptBoardLists;
+    if (explicitBoards && explicitBoards.length) {
+      conceptBoardLists = [{ canon: '自定义', boards: explicitBoards.map(b => ({ bk: b.bk, name: b.name })) }];
+    } else {
+      const CAP_PER = 6; // 每概念取名称最相关的前 6 个板块，控制候选规模
+      conceptBoardLists = (matchers.concepts || []).map(canon => {
+        const c = SEMANTIC_CONCEPTS.find(x => x.canonical === canon);
+        const hints = (c && c.hints) || [];
+        let boards = allBoards.filter(b => hints.some(h => b.name.toLowerCase().includes(h.toLowerCase())));
+        boards.sort((a, b) => semanticNameScore(b.name, canon) - semanticNameScore(a.name, canon));
+        return { canon, boards: boards.slice(0, CAP_PER) };
+      }).filter(x => x.boards.length);
+      // 通用词兜底：没有任何概念命中时，用查询抽取词直接匹配板块名
+      if (!conceptBoardLists.length && (matchers.generic || []).length) {
+        const boards = allBoards.filter(b => matchers.generic.some(g => b.name.toLowerCase().includes(g)));
+        boards.sort((a, b) => b.name.length - a.name.length);
+        conceptBoardLists.push({ canon: '通用', boards: boards.slice(0, CAP_PER) });
+      }
     }
+    const allBoardLists = conceptBoardLists.flatMap(x => x.boards);
 
-    // 4) 并发拉取各概念板块成分股（限并发 4），构建 code→股票信息 与 概念归属
+    // 1) 拉取成分股，构建候选集合
     const stockInfo = new Map();
-    const conceptStockSets = [];
+    const conceptSets = [];
     for (const { canon, boards } of conceptBoardLists) {
       const set = new Set();
-      const lists = await mapLimit(boards, 4, (b) => this.getSectorStocksMeta(b.bk));
-      for (const list of lists) {
-        for (const s of list) {
-          set.add(s.code);
-          if (!stockInfo.has(s.code)) stockInfo.set(s.code, s);
-        }
-      }
-      conceptStockSets.push({ canon, set });
+      const lists = await mapLimit(boards, 4, b => this.getSectorStocksMeta(b.bk));
+      for (const list of lists) for (const s of list) { set.add(s.code); if (!stockInfo.has(s.code)) stockInfo.set(s.code, s); }
+      conceptSets.push(set);
     }
-
-    // 5) 多概念取「股票集合交集」（同时具备多个主题的公司）；无交集则回退并集
-    let resultCodes, method;
-    if (conceptStockSets.length === 1) {
-      resultCodes = [...conceptStockSets[0].set];
-      method = 'single';
+    let resultCodes;
+    const coverage = new Map();
+    if (conceptSets.length === 1) {
+      resultCodes = [...conceptSets[0]];
     } else {
-      let inter = conceptStockSets[0].set;
-      for (let i = 1; i < conceptStockSets.length; i++) {
-        inter = new Set([...inter].filter(c => conceptStockSets[i].set.has(c)));
-      }
-      if (inter.size > 0) { resultCodes = [...inter]; method = 'intersect'; }
-      else {
-        const uni = new Set();
-        conceptStockSets.forEach(s => s.set.forEach(c => uni.add(c)));
-        resultCodes = [...uni]; method = 'union';
+      // 交集优先（同时具备多主题），规模合理时使用；否则按覆盖度截断并集
+      let inter = conceptSets[0];
+      for (let i = 1; i < conceptSets.length; i++) inter = new Set([...inter].filter(c => conceptSets[i].has(c)));
+      conceptSets.forEach(set => set.forEach(c => coverage.set(c, (coverage.get(c) || 0) + 1)));
+      if (inter.size >= 5 && inter.size <= 400) {
+        resultCodes = [...inter];
+      } else {
+        resultCodes = [...coverage.keys()].sort((a, b) => (coverage.get(b) || 0) - (coverage.get(a) || 0));
       }
     }
+    // 产品库种子直接纳入候选
+    seedCodes.forEach(c => { if (!stockInfo.has(c)) stockInfo.set(c, { code: c, name: c }); resultCodes.push(c); });
+    // 候选截断上限（控制主营构成请求数量）
+    const CAND_CAP = explicitBoards && explicitBoards.length ? 250 : 160;
+    if (resultCodes.length > CAND_CAP) {
+      if (coverage.size) resultCodes.sort((a, b) => (coverage.get(b) || 0) - (coverage.get(a) || 0));
+      resultCodes = resultCodes.slice(0, CAND_CAP);
+    }
+    resultCodes = [...new Set(resultCodes)];
 
-    // 6) 标注每只股票命中的概念，并计算「相关度」= 命中概念数 / 识别到的总概念数
-    const totalConcepts = found.length;
-    const codeConcepts = {};
-    for (const cs of conceptStockSets) {
-      for (const code of cs.set) (codeConcepts[code] ||= []).push(cs.canon);
-    }
-    let stocks = resultCodes.map(c => stockInfo.get(c)).filter(Boolean);
-    stocks.forEach(s => {
-      s.concepts = codeConcepts[s.code] || [];
-      s.relevance = totalConcepts ? Math.round((s.concepts.length / totalConcepts) * 100) : 100;
+    // 2) 逐候选拉取主营构成，计算营收占比相关度
+    const matchersArr = (matchers.segHints || []).map(s => String(s).toLowerCase());
+    const roleMap = {};
+    productStocks.forEach(s => { roleMap[s.code] = s.role || ''; });
+    const raw = await mapLimit(resultCodes, 6, async (code) => {
+      const info = stockInfo.get(code) || { code, name: code };
+      let mb = null;
+      try { mb = await this.getMainBusiness(code); } catch (e) { mb = null; }
+      const { relevance, matched } = revenueRelevance(mb, matchersArr);
+      return { info, relevance, matched };
     });
 
-    // 7) 统一按「相关度」降序（同分总市值降序）排序；核心→取前20，小市值→市值最小20家
+    // 3) 过滤相关度>0，补齐行情，组装结果
+    const codes2 = raw.filter(x => x.relevance > 0).map(x => x.info.code);
+    let quotes = {};
+    try { quotes = await this.getQuotes(codes2); } catch (e) { quotes = {}; }
+    const buildStock = (x) => {
+      const q = quotes[x.info.code] || {};
+      const mkt = q.totalMarketCap != null ? q.totalMarketCap * 1e8 : (x.info.marketCap || null);
+      return {
+        code: x.info.code,
+        name: q.name || x.info.name || x.info.code,
+        price: q.price != null ? q.price : null,
+        changePercent: q.changePercent != null ? q.changePercent : null,
+        marketCap: mkt,
+        role: '',
+        concepts: (matchers.concepts || []).slice(),
+        matchedSegments: x.matched,
+        relevance: x.relevance
+      };
+    };
+    let stocks = raw.filter(x => x.relevance > 0).map(buildStock);
+    // 产品库兜底：主营构成未匹配出细分业务（东财未列明）时，用产业链角色评分保底展示种子公司
+    if (productKey && stocks.length === 0) {
+      for (const x of raw) {
+        if (seedCodes.includes(x.info.code) && x.relevance === 0) {
+          const st = buildStock(x);
+          st.relevance = scoreRoleRelevance(roleMap[x.info.code] || '');
+          st.matchedSegments = [];
+          stocks.push(st);
+        }
+      }
+      stocks.sort((a, b) => (b.relevance - a.relevance) || ((b.marketCap || 0) - (a.marketCap || 0)));
+    } else {
+      stocks.sort((a, b) => (b.relevance - a.relevance) || ((b.marketCap || 0) - (a.marketCap || 0)));
+    }
     const TOPN = 20;
-    stocks.sort((a, b) => (b.relevance - a.relevance) || ((b.marketCap || 0) - (a.marketCap || 0)));
-    if (modifiers.includes('核心')) {
-      stocks = stocks.slice(0, TOPN);
-    } else if (modifiers.includes('小市值')) {
+    if (modifiers.includes('核心')) stocks = stocks.slice(0, TOPN);
+    else if (modifiers.includes('小市值')) {
       stocks = [...stocks].sort((a, b) => (a.marketCap || 0) - (b.marketCap || 0)).slice(0, TOPN)
         .sort((a, b) => (b.relevance - a.relevance) || ((b.marketCap || 0) - (a.marketCap || 0)));
     }
-
     return {
-      ok: true,
-      query, concepts: found.map(c => c.canonical), modifiers, method,
-      boards: conceptBoardLists.flatMap(x => x.boards),
+      ok: true, query,
+      concepts: matchers.concepts || [],
+      modifiers,
+      method: productKey ? 'product' : (explicitBoards && explicitBoards.length ? 'boards' : 'revenue'),
+      productKey, productDesc,
+      matchers: matchers.segHints || [],
+      boards: allBoardLists,
       stocks
     };
+  },
+
+  async semanticSearch(rawQuery) {
+    const query = String(rawQuery || '').trim();
+    if (!query) return { ok: false, error: '请输入描述，如：生产薄膜铌酸锂的企业 / 主营为ai安全的核心上市公司 / ai短剧审核' };
+    const ql = query.toLowerCase();
+    const modifiers = parseSemanticModifiers(query);
+    const matchers = buildMatchers(query);
+
+    // 命中已知产品库：作为候选种子 + 段名匹配补充，最终仍由主营构成营收占比计算相关度
+    let seedCodes = [], productKey = '', productDesc = '', productStocks = [];
+    const product = matchProduct(ql);
+    if (product) {
+      seedCodes = product.stocks.map(s => s.code);
+      productStocks = product.stocks;
+      productKey = product.key;
+      productDesc = product.desc;
+      const pterms = extractQueryTerms(product.key + ' ' + product.desc);
+      pterms.forEach(t => { if (!matchers.segHints.includes(t)) matchers.segHints.push(t); });
+      if (!matchers.concepts.length) matchers.concepts.push(product.key);
+    }
+
+    if (!matchers.concepts.length && !matchers.generic.length) {
+      return {
+        ok: false, query, concepts: [], modifiers,
+        error: '未识别到已知概念，请尝试：人工智能、ai、安全、芯片、机器人、新能源、医药、军工、短剧、审核、内容安全 等关键词'
+      };
+    }
+    try {
+      return await this._revenueSearch({
+        query, matchers, modifiers, seedCodes, productKey, productDesc, productStocks
+      });
+    } catch (e) {
+      return { ok: false, query, concepts: matchers.concepts, modifiers, error: 'AI语义筛选失败：' + (e && e.message ? e.message : e) };
+    }
   },
 
   /**
@@ -1527,56 +1676,30 @@ const StockAPI = {
    * @param {{boards:Array<{bk,name}>, modifiers?:string[], concepts?:string[]}} params
    * @returns {Promise<{ok,stocks,method,boards}>}
    */
-  async recomputeSemanticStocks({ boards, modifiers = [], concepts = [] }) {
+  async recomputeSemanticStocks({ boards, modifiers = [], concepts = [], matchers = [], productKey = '', productDesc = '' }) {
     if (!boards || !boards.length) return { ok: true, stocks: [], method: 'empty', boards: [] };
-    // 1) 并发拉取各板块成分股（含总市值）
-    const boardLists = await mapLimit(boards, 4, (b) => this.getSectorStocksMeta(b.bk));
-    const stockInfo = new Map();
-    const boardSets = [];
-    boards.forEach((b, idx) => {
-      const set = new Set();
-      for (const s of (boardLists[idx] || [])) { set.add(s.code); if (!stockInfo.has(s.code)) stockInfo.set(s.code, s); }
-      boardSets.push({ bk: b.bk, name: b.name, set });
-    });
-    // 2) 多板块取交集（同时具备多主题）；无交集则并集兜底
-    let resultCodes, method;
-    if (boardSets.length === 1) { resultCodes = [...boardSets[0].set]; method = 'single'; }
-    else {
-      let inter = boardSets[0].set;
-      for (let i = 1; i < boardSets.length; i++) inter = new Set([...inter].filter(c => boardSets[i].set.has(c)));
-      if (inter.size > 0) { resultCodes = [...inter]; method = 'intersect'; }
-      else { const uni = new Set(); boardSets.forEach(s => s.set.forEach(c => uni.add(c))); resultCodes = [...uni]; method = 'union'; }
+    // 优先使用上一次搜索的业务意图(matchers，即营收占比相关度的匹配词)；
+    // 否则由 concepts 重建 matchers，保证「编辑概念/板块后重算」仍按主营构成营收占比计算相关度。
+    let m;
+    if (matchers && matchers.length) {
+      m = { concepts: (concepts || []).slice(), segHints: matchers.slice(), generic: [], boardHints: [] };
+    } else {
+      m = buildMatchers((concepts || []).join(' '));
     }
-    // 3) 实时行情 + 标注命中板块，计算「相关度」= 命中板块数 / 选定板块总数，再排序
-    let quotes = {};
-    try { quotes = await this.getQuotes(resultCodes); } catch (e) { quotes = {}; }
-    const codeBoards = {};
-    boardSets.forEach(bs => { for (const code of bs.set) (codeBoards[code] ||= []).push(bs.name); });
-    const totalBoards = boards.length;
-    let stocks = resultCodes.map(c => stockInfo.get(c)).filter(Boolean).map(s => {
-      const q = quotes[s.code] || {};
-      const mkt = q.totalMarketCap != null ? q.totalMarketCap * 1e8 : s.marketCap;
-      return {
-        code: s.code,
-        name: q.name || s.name || s.code,
-        price: q.price != null ? q.price : null,
-        changePercent: q.changePercent != null ? q.changePercent : null,
-        marketCap: mkt,
-        role: '',
-        concepts: codeBoards[s.code] || concepts.slice(),
-        relevance: totalBoards ? Math.round((codeBoards[s.code].length / totalBoards) * 100) : 100
-      };
-    });
-    // 4) 统一按「相关度」降序（同分总市值降序）排序；核心→取前20，小市值→市值最小20家
-    const TOPN = 20;
-    stocks.sort((a, b) => (b.relevance - a.relevance) || ((b.marketCap || 0) - (a.marketCap || 0)));
-    if (modifiers.includes('核心')) {
-      stocks = stocks.slice(0, TOPN);
-    } else if (modifiers.includes('小市值')) {
-      stocks = [...stocks].sort((a, b) => (a.marketCap || 0) - (b.marketCap || 0)).slice(0, TOPN)
-        .sort((a, b) => (b.relevance - a.relevance) || ((b.marketCap || 0) - (a.marketCap || 0)));
+    try {
+      return await this._revenueSearch({
+        query: (concepts || []).join('+'),
+        matchers: m,
+        modifiers,
+        seedCodes: [],
+        productKey,
+        productDesc,
+        productStocks: [],
+        explicitBoards: boards.map(b => ({ bk: b.bk, name: b.name }))
+      });
+    } catch (e) {
+      return { ok: false, stocks: [], method: 'error', boards: boards.slice(), error: '重算失败：' + (e && e.message ? e.message : e) };
     }
-    return { ok: true, stocks, method, boards: boards.slice() };
   },
 
   // ============ 工具方法 ============
