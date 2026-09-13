@@ -939,6 +939,17 @@ body {
 .semantic-table .ops .icon-btn { font-size: 14px; }
 .semantic-add-stock { display: flex; gap: 8px; align-items: center; margin-top: 10px; }
 
+/* ===== 反推业务 ===== */
+.reverse-bar { display: flex; gap: 8px; align-items: center; margin: 4px 0 14px; }
+.reverse-bar input { font-size: 13px; }
+.reverse-result { margin-top: 14px; }
+.semantic-table .heat { font-weight: 700; color: #d9720a; text-align: center; min-width: 70px; }
+.semantic-table th.sortable { cursor: pointer; user-select: none; }
+.semantic-table th.sortable:hover { background: #e9e2ff; }
+.semantic-table .sort-caret { font-size: 10px; color: #6a5cff; }
+.btn.active { background: #6a5cff; color: #fff; border-color: #6a5cff; }
+.btn.active:hover { background: #5a4ce0; }
+
 .sector-results { margin-bottom: 8px; }
 /* 子版块搜索：筛选状态提示条 */
 .sector-sub-filter {
