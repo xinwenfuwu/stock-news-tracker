@@ -910,6 +910,7 @@ body {
 .semantic-table .rank { color: var(--text-secondary); font-weight: 600; }
 .semantic-table .code { font-family: monospace; color: var(--text-secondary); }
 .semantic-table .name { font-weight: 600; }
+.semantic-table.reverse .seg, .semantic-table .seg { white-space: normal; min-width: 150px; color: var(--text-primary); font-weight: 500; }
 .semantic-table .concepts { white-space: normal; }
 .semantic-table .relevance { font-weight: 700; color: #5a32e6; text-align: center; min-width: 64px; }
 .semantic-table .role { white-space: normal; color: var(--text-secondary); font-size: 12px; min-width: 220px; }
@@ -938,6 +939,14 @@ body {
 .semantic-table .ops { white-space: nowrap; }
 .semantic-table .ops .icon-btn { font-size: 14px; }
 .semantic-add-stock { display: flex; gap: 8px; align-items: center; margin-top: 10px; }
+/* 反推业务：固定两行（当前最火 / 自定义） */
+.semantic-table.reverse tr.row-hot { background: #fff4ec; }
+.semantic-table.reverse tr.row-hot:hover { background: #ffead9; }
+.semantic-table.reverse tr.row-custom { background: #f3efff; }
+.semantic-table.reverse tr.row-custom:hover { background: #ece7ff; }
+.badge-hot { display: inline-block; font-size: 11px; font-weight: 700; color: #fff; background: #ff7a18; border-radius: 4px; padding: 1px 6px; margin-right: 6px; vertical-align: middle; }
+.badge-custom { display: inline-block; font-size: 11px; font-weight: 700; color: #fff; background: #6a5cff; border-radius: 4px; padding: 1px 6px; margin-right: 6px; vertical-align: middle; }
+.bus-input { width: 150px; vertical-align: middle; }
 
 /* ===== 反推业务 ===== */
 .reverse-bar { display: flex; gap: 8px; align-items: center; margin: 4px 0 14px; }
