@@ -482,9 +482,8 @@
                 <tr>
                   <th>排名</th><th>代码</th><th>名称</th><th>现价</th>
                   <th>涨跌幅</th><th>总市值(亿)</th>
-                  <th>相关度</th>
-                  <th v-if="semantic.method==='product'">产业链定位</th>
-                  <th v-else>命中概念</th>
+                  <th title="相关度 = 命中语义描述的主营业务/产品之营收占比之和(%)">相关度(营收占比)</th>
+                  <th>命中主营业务(占营收)</th>
                   <th>操作</th>
                 </tr>
               </thead>
@@ -498,8 +497,7 @@
                     <td :class="pctClass(s.changePercent)">{{ fmtPct(s.changePercent) }}</td>
                     <td>{{ s.marketCap ? (s.marketCap/1e8).toFixed(1) : '-' }}</td>
                     <td class="relevance">{{ s.relevance != null ? s.relevance + '%' : '—' }}</td>
-                    <td v-if="semantic.method==='product'"><input class="inline-input wide" v-model="stockRoleDraft" placeholder="产业链定位" /></td>
-                    <td v-else><input class="inline-input wide" v-model="stockConceptsDraft" placeholder="概念,逗号分隔" /></td>
+                    <td><input class="inline-input wide" v-model="stockConceptsDraft" placeholder="概念,逗号分隔" /></td>
                     <td class="ops">
                       <button class="icon-btn" title="保存" @click="commitEditStock">💾</button>
                       <button class="icon-btn" title="取消" @click="cancelEditStock">✕</button>
@@ -513,8 +511,10 @@
                     <td :class="pctClass(s.changePercent)">{{ fmtPct(s.changePercent) }}</td>
                     <td>{{ s.marketCap ? (s.marketCap/1e8).toFixed(1) : '-' }}</td>
                     <td class="relevance">{{ s.relevance != null ? s.relevance + '%' : '—' }}</td>
-                    <td v-if="semantic.method==='product'" class="role">{{ s.role }}</td>
-                    <td v-else class="concepts"><span class="semantic-chip mini" v-for="c in s.concepts" :key="'sc'+c">{{ c }}</span></td>
+                    <td class="concepts">
+                      <span class="semantic-chip mini seg" v-for="ms in (s.matchedSegments||[])" :key="'ms'+ms.name" :title="ms.name+' 占营收 '+ms.ratio+'%'">{{ ms.name }} <b>{{ ms.ratio }}%</b></span>
+                      <span class="semantic-chip mini" v-if="!(s.matchedSegments&&s.matchedSegments.length)" v-for="c in s.concepts" :key="'sc'+c">{{ c }}</span>
+                    </td>
                     <td class="ops">
                       <button class="icon-btn" title="编辑" @click="startEditStock(s)">✏️</button>
                       <button class="icon-btn" title="删除" @click="removeStock(s.code)">🗑️</button>
@@ -529,8 +529,7 @@
             <button class="btn btn-xs btn-primary" @click="addStockByCode" :disabled="stockAdding">＋ 添加股票</button>
           </div>
           <p class="muted small" v-if="!semantic.stocks.length">未找到符合条件的上市公司，可尝试调整描述（如去掉"核心"或减少概念），或手动「添加股票」。</p>
-          <p class="muted tiny" v-if="semantic.method==='product'">说明：产品级语义库由产业链研究整理，覆盖具体产品/技术对应的真实上市公司及业务环节，并可继续扩充更多产品关键词；行情数据来自腾讯股票接口。表中「相关度」按该公司主业与语义中产品/业务的贴合程度（龙头/核心 &gt; 自研量产 &gt; 配套代理）从大到小排序。增删改后点「保存到我的板块」会保存当前编辑结果。</p>
-          <p class="muted tiny" v-else>说明：概念级语义基于东方财富概念/行业板块的成分股交叉匹配；「相关度」= 命中概念数 ÷ 识别到的概念总数（多概念交集时=100%）。结果按相关度从高到低排序，"核心/龙头"取前 20 家代表性标的。增删改后点「保存到我的板块」会保存当前编辑结果。</p>
+          <p class="muted tiny">说明：AI 语义选股按「主营构成营收占比」计算相关度——逐家拉取东方财富 F10 主营构成，把段名与你的语义描述做匹配，命中业务段的营收占比之和即为相关度（%），按相关度从高到低排序。"核心/龙头"取前 20 家；修改概念/板块后点「按当前条件重算」会基于最新主营构成重新计算。行情数据来自腾讯股票接口。相关度=0 的标的已自动剔除，因此像蓝思科技这类与该业务无关的公司不会出现在结果中。</p>
         </div>
         <div class="semantic-result" v-else-if="semantic.error">
           <p class="semantic-error">⚠️ {{ semantic.error }}</p>
