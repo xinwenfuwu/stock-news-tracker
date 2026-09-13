@@ -220,6 +220,26 @@ function parseSemanticModifiers(query) {
 }
 
 /**
+ * 产品级语义「相关度」评分：根据产业链定位(role 文本)评估该公司与该产品/业务的贴合度。
+ * 用于「相关度」列展示与排序（用户要求：按上市公司与语义中业务/产品的相关度从大到小排序）。
+ * 纯文本启发式、透明可解释：龙头/市占 > 唯一/IDM > 核心 > 自研量产突破 > 验证布局 > 代理分销。
+ * @param {string} role
+ * @returns {number} 0-100
+ */
+function scoreRoleRelevance(role) {
+  const r = String(role || '');
+  let s = 68;
+  if (/代理|分销/.test(r)) s = 58; // 代理/分销环节：非主业自产，相关度最低
+  else if (/绝对龙头|市占/.test(r)) s = 96;
+  else if (/龙头/.test(r)) s = 92;
+  else if (/唯一|IDM/.test(r)) s = 89;
+  else if (/核心/.test(r)) s = 87;
+  else if (/自研|量产|突破|送样/.test(r)) s = 78;
+  else if (/验证|布局|小产线|切入|配套/.test(r)) s = 66;
+  return s;
+}
+
+/**
  * 产品级语义匹配：把自然语言与 SEMANTIC_PRODUCTS 的产品/技术别名比对，
  * 命中即返回该产品对应的真实上市公司清单（含产业链定位）。
  * @param {string} ql 已转小写的查询串
@@ -1346,16 +1366,19 @@ const StockAPI = {
           changePercent: q.changePercent != null ? q.changePercent : null,
           marketCap: mkt,
           role: s.role || '',
-          concepts: [product.key]
+          concepts: [product.key],
+          relevance: scoreRoleRelevance(s.role)
         };
       });
       const TOPN = 20;
+      // 统一按「相关度」降序（同分按总市值降序）排序，符合用户要求
+      stocks.sort((a, b) => (b.relevance - a.relevance) || ((b.marketCap || 0) - (a.marketCap || 0)));
       if (modifiers.includes('核心')) {
-        stocks.sort((a, b) => (b.marketCap || 0) - (a.marketCap || 0));
         stocks = stocks.slice(0, TOPN);
       } else if (modifiers.includes('小市值')) {
-        stocks.sort((a, b) => (a.marketCap || 0) - (b.marketCap || 0));
-        stocks = stocks.slice(0, TOPN);
+        // 在相关度合格公司中挑市值最小的 20 家（展示仍按相关度排序）
+        stocks = [...stocks].sort((a, b) => (a.marketCap || 0) - (b.marketCap || 0)).slice(0, TOPN)
+          .sort((a, b) => (b.relevance - a.relevance) || ((b.marketCap || 0) - (a.marketCap || 0)));
       }
       return {
         ok: true, query,
@@ -1432,23 +1455,27 @@ const StockAPI = {
       }
     }
 
-    // 6) 修饰：核心/龙头 → 按总市值降序取前 N；小市值 → 升序取前 N
-    let stocks = resultCodes.map(c => stockInfo.get(c)).filter(Boolean);
-    const TOPN = 20;
-    if (modifiers.includes('核心')) {
-      stocks.sort((a, b) => (b.marketCap || 0) - (a.marketCap || 0));
-      stocks = stocks.slice(0, TOPN);
-    } else if (modifiers.includes('小市值')) {
-      stocks.sort((a, b) => (a.marketCap || 0) - (b.marketCap || 0));
-      stocks = stocks.slice(0, TOPN);
-    }
-
-    // 7) 标注每只股票命中的概念
+    // 6) 标注每只股票命中的概念，并计算「相关度」= 命中概念数 / 识别到的总概念数
+    const totalConcepts = found.length;
     const codeConcepts = {};
     for (const cs of conceptStockSets) {
       for (const code of cs.set) (codeConcepts[code] ||= []).push(cs.canon);
     }
-    stocks.forEach(s => { s.concepts = codeConcepts[s.code] || []; });
+    let stocks = resultCodes.map(c => stockInfo.get(c)).filter(Boolean);
+    stocks.forEach(s => {
+      s.concepts = codeConcepts[s.code] || [];
+      s.relevance = totalConcepts ? Math.round((s.concepts.length / totalConcepts) * 100) : 100;
+    });
+
+    // 7) 统一按「相关度」降序（同分总市值降序）排序；核心→取前20，小市值→市值最小20家
+    const TOPN = 20;
+    stocks.sort((a, b) => (b.relevance - a.relevance) || ((b.marketCap || 0) - (a.marketCap || 0)));
+    if (modifiers.includes('核心')) {
+      stocks = stocks.slice(0, TOPN);
+    } else if (modifiers.includes('小市值')) {
+      stocks = [...stocks].sort((a, b) => (a.marketCap || 0) - (b.marketCap || 0)).slice(0, TOPN)
+        .sort((a, b) => (b.relevance - a.relevance) || ((b.marketCap || 0) - (a.marketCap || 0)));
+    }
 
     return {
       ok: true,
@@ -1520,18 +1547,13 @@ const StockAPI = {
       if (inter.size > 0) { resultCodes = [...inter]; method = 'intersect'; }
       else { const uni = new Set(); boardSets.forEach(s => s.set.forEach(c => uni.add(c))); resultCodes = [...uni]; method = 'union'; }
     }
-    // 3) 修饰：核心/小市值 → 取前 N；否则按市值降序展示全部
-    let stocks = resultCodes.map(c => stockInfo.get(c)).filter(Boolean);
-    const TOPN = 20;
-    if (modifiers.includes('核心')) { stocks.sort((a, b) => (b.marketCap || 0) - (a.marketCap || 0)); stocks = stocks.slice(0, TOPN); }
-    else if (modifiers.includes('小市值')) { stocks.sort((a, b) => (a.marketCap || 0) - (b.marketCap || 0)); stocks = stocks.slice(0, TOPN); }
-    else { stocks.sort((a, b) => (b.marketCap || 0) - (a.marketCap || 0)); }
-    // 4) 实时行情
+    // 3) 实时行情 + 标注命中板块，计算「相关度」= 命中板块数 / 选定板块总数，再排序
     let quotes = {};
-    try { quotes = await this.getQuotes(stocks.map(s => s.code)); } catch (e) { quotes = {}; }
+    try { quotes = await this.getQuotes(resultCodes); } catch (e) { quotes = {}; }
     const codeBoards = {};
     boardSets.forEach(bs => { for (const code of bs.set) (codeBoards[code] ||= []).push(bs.name); });
-    stocks = stocks.map(s => {
+    const totalBoards = boards.length;
+    let stocks = resultCodes.map(c => stockInfo.get(c)).filter(Boolean).map(s => {
       const q = quotes[s.code] || {};
       const mkt = q.totalMarketCap != null ? q.totalMarketCap * 1e8 : s.marketCap;
       return {
@@ -1541,9 +1563,19 @@ const StockAPI = {
         changePercent: q.changePercent != null ? q.changePercent : null,
         marketCap: mkt,
         role: '',
-        concepts: codeBoards[s.code] || concepts.slice()
+        concepts: codeBoards[s.code] || concepts.slice(),
+        relevance: totalBoards ? Math.round((codeBoards[s.code].length / totalBoards) * 100) : 100
       };
     });
+    // 4) 统一按「相关度」降序（同分总市值降序）排序；核心→取前20，小市值→市值最小20家
+    const TOPN = 20;
+    stocks.sort((a, b) => (b.relevance - a.relevance) || ((b.marketCap || 0) - (a.marketCap || 0)));
+    if (modifiers.includes('核心')) {
+      stocks = stocks.slice(0, TOPN);
+    } else if (modifiers.includes('小市值')) {
+      stocks = [...stocks].sort((a, b) => (a.marketCap || 0) - (b.marketCap || 0)).slice(0, TOPN)
+        .sort((a, b) => (b.relevance - a.relevance) || ((b.marketCap || 0) - (a.marketCap || 0)));
+    }
     return { ok: true, stocks, method, boards: boards.slice() };
   },
 
