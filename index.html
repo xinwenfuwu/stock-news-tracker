@@ -347,7 +347,7 @@
         <div class="sector-search">
           <input v-model="sectorSearch" placeholder="输入行业/概念名称，如：白酒、人工智能、机器人..."
             style="flex:1;min-width:220px;padding:9px 12px;border:1px solid #d8e0f0;border-radius:8px"
-            @input="searchSector" @keyup.enter="searchSector">
+            @keyup.enter="searchSector">
           <button class="btn btn-primary" @click="searchSector" :disabled="sectorSearching">
             <span v-if="sectorSearching">⏳ 搜索中...</span>
             <span v-else>🔍 搜索板块</span>
@@ -356,8 +356,8 @@
             🔎 搜索子版块
           </button>
           <button class="btn" @click="toggleReverseOpen" :class="{ active: reverseOpen }"
-            title="输入一只股票，反推其各主营业务/产品的营收占比（相关度）与业务热度">
-            🔄 反推业务
+            :title="reverseOpen ? '收起反推业务面板' : '输入一只股票，反推其各主营业务/产品的营收占比（相关度）与业务热度'">
+            {{ reverseOpen ? '🔼 收起反推' : '🔄 反推业务' }}
           </button>
           <button class="btn btn-ai" @click="semanticSearch" :disabled="semantic.searching || sectorSearching"
             title="用自然语言描述选股意图：产品级如「生产薄膜铌酸锂的企业」；概念级如「主营为ai安全的核心上市公司」">
@@ -369,16 +369,15 @@
           产品级语义示例：在上方输入框输入 <b>生产薄膜铌酸锂的企业</b> / <b>HBM核心公司</b> / <b>复合铜箔龙头</b> / <b>人形机器人减速器</b>，点 🤖 AI语义搜索 即可直接得到相关上市公司及产业链定位。
         </p>
 
-        <!-- 反推业务：输入一只股票，反推其主营构成的相关度与热度 -->
+        <!-- 反推业务：输入一只股票，反推其主营构成的相关度与热度（展开/收起由上方「🔄 反推业务 / 🔼 收起反推」按钮统一控制） -->
         <div class="reverse-bar" v-if="reverseOpen">
           <input v-model="reverse.input" placeholder="输入股票代码或名称，如：掌阅科技 / 603533"
             style="flex:1;min-width:220px;padding:9px 12px;border:1px solid #d8e0f0;border-radius:8px"
             @keyup.enter="reverseBusiness">
           <button class="btn btn-primary" @click="reverseBusiness" :disabled="reverse.loading">
             <span v-if="reverse.loading">⏳ 反推中...</span>
-            <span v-else>🔄 反推业务</span>
+            <span v-else>🔄 反推</span>
           </button>
-          <button class="btn btn-sm" @click="toggleReverseOpen">收起</button>
         </div>
 
         <!-- 搜索结果 -->
