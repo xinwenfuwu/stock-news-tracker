@@ -355,6 +355,10 @@
           <button class="btn" @click="searchSubSectors" :disabled="sectorSearching" title="在我的概念选股板块中，按名称关键字搜索子版块">
             🔎 搜索子版块
           </button>
+          <button class="btn" @click="toggleReverseOpen" :class="{ active: reverseOpen }"
+            title="输入一只股票，反推其各主营业务/产品的营收占比（相关度）与业务热度">
+            🔄 反推业务
+          </button>
           <button class="btn btn-ai" @click="semanticSearch" :disabled="semantic.searching || sectorSearching"
             title="用自然语言描述选股意图：产品级如「生产薄膜铌酸锂的企业」；概念级如「主营为ai安全的核心上市公司」">
             <span v-if="semantic.searching">⏳ 语义理解中...</span>
@@ -364,6 +368,18 @@
         <p class="muted tiny" style="margin:-6px 0 14px">
           产品级语义示例：在上方输入框输入 <b>生产薄膜铌酸锂的企业</b> / <b>HBM核心公司</b> / <b>复合铜箔龙头</b> / <b>人形机器人减速器</b>，点 🤖 AI语义搜索 即可直接得到相关上市公司及产业链定位。
         </p>
+
+        <!-- 反推业务：输入一只股票，反推其主营构成的相关度与热度 -->
+        <div class="reverse-bar" v-if="reverseOpen">
+          <input v-model="reverse.input" placeholder="输入股票代码或名称，如：掌阅科技 / 603533"
+            style="flex:1;min-width:220px;padding:9px 12px;border:1px solid #d8e0f0;border-radius:8px"
+            @keyup.enter="reverseBusiness">
+          <button class="btn btn-primary" @click="reverseBusiness" :disabled="reverse.loading">
+            <span v-if="reverse.loading">⏳ 反推中...</span>
+            <span v-else>🔄 反推业务</span>
+          </button>
+          <button class="btn btn-sm" @click="toggleReverseOpen">收起</button>
+        </div>
 
         <!-- 搜索结果 -->
         <div class="sector-results" v-if="sectorResults.length">
@@ -533,6 +549,54 @@
         </div>
         <div class="semantic-result" v-else-if="semantic.error">
           <p class="semantic-error">⚠️ {{ semantic.error }}</p>
+        </div>
+
+        <!-- 反推业务结果 -->
+        <div class="reverse-result" v-if="reverse.loading">
+          <div class="semantic-loading">
+            <span class="ai-spinner">🔄</span>
+            <span>正在拉取主营构成并反推业务相关度与热度…</span>
+          </div>
+        </div>
+        <div class="reverse-result" v-else-if="reverse.done">
+          <div class="semantic-header">
+            <h3>🔄 反推业务：{{ reverse.name }} <span class="muted small">{{ reverse.code.toUpperCase() }}</span></h3>
+            <div class="semantic-header-actions">
+              <button class="btn btn-sm" :class="{ active: reverseSort==='relevance' }" @click="setReverseSort('relevance')">按相关度 {{ reverseSortIcon('relevance') }}</button>
+              <button class="btn btn-sm" :class="{ active: reverseSort==='heat' }" @click="setReverseSort('heat')">按热度 {{ reverseSortIcon('heat') }}</button>
+            </div>
+          </div>
+          <p class="muted tiny">说明：<b>相关度</b> = 该主营业务占上市公司营收的比例（%）；<b>热度</b> = 该业务对应东财板块的成分股数量（股票数越多代表同业公司越多 / 竞争越充分）。默认按相关度从高到低排序，可切换为按热度排序。</p>
+          <div class="semantic-table-wrap">
+            <table class="semantic-table reverse">
+              <thead>
+                <tr>
+                  <th>排名</th>
+                  <th>业务名称</th>
+                  <th>营收占比</th>
+                  <th class="sortable" @click="setReverseSort('relevance')">相关度(营收占比) <span class="sort-caret">{{ reverseSort==='relevance'?'⬇️':'↕️' }}</span></th>
+                  <th class="sortable" @click="setReverseSort('heat')">热度(股票数) <span class="sort-caret">{{ reverseSort==='heat'?'⬇️':'↕️' }}</span></th>
+                  <th>对应板块</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="(s,i) in reverseSorted" :key="s.name">
+                  <td class="rank">{{ i+1 }}</td>
+                  <td class="name">{{ s.name }}</td>
+                  <td>{{ s.ratio != null ? s.ratio + '%' : '-' }}</td>
+                  <td class="relevance">{{ s.relevance != null ? s.relevance + '%' : '-' }}</td>
+                  <td class="heat">{{ s.heat ? s.heat + ' 只' : '—' }}</td>
+                  <td class="concepts">
+                    <span class="semantic-chip mini" v-for="b in s.boardNames" :key="b">{{ b }}</span>
+                    <span v-if="!s.boardNames.length" class="muted tiny">未匹配板块</span>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <div class="reverse-result" v-else-if="reverse.error">
+          <p class="semantic-error">⚠️ {{ reverse.error }}</p>
         </div>
 
         <!-- 已选概念（主选 + 次选）交集筛选 -->
