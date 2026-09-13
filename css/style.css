@@ -840,12 +840,15 @@ body {
 .sector-search {
   display: flex;
   align-items: center;
+  flex-wrap: wrap;
   gap: 8px;
   margin-bottom: 16px;
   padding: 14px;
   background: var(--surface-alt);
   border-radius: 8px;
 }
+/* 反推业务输入框组：直接内联在板块搜索工具栏中（不再单独展开面板） */
+.reverse-inline { display: inline-flex; gap: 8px; align-items: center; }
 /* AI 语义搜索按钮：渐变高亮，区别于普通搜索 */
 .btn-ai {
   background: linear-gradient(135deg, #6a5cff, #9b5cff);
@@ -949,8 +952,6 @@ body {
 .bus-input { width: 150px; vertical-align: middle; }
 
 /* ===== 反推业务 ===== */
-.reverse-bar { display: flex; gap: 8px; align-items: center; margin: 4px 0 14px; }
-.reverse-bar input { font-size: 13px; }
 .reverse-result { margin-top: 14px; }
 .semantic-table .heat { font-weight: 700; color: #d9720a; text-align: center; min-width: 70px; }
 .semantic-table th.sortable { cursor: pointer; user-select: none; }
