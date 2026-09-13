@@ -895,6 +895,142 @@ const StockAPI = {
   },
 
   /**
+   * 获取某板块的成分股数量（单请求取 total，用于「热度」统计，避免逐页拉取）。
+   * @param {string} bk 板块代码 BKxxxx
+   * @returns {Promise<number>}
+   */
+  async getSectorStockCount(bk) {
+    try {
+      const url = `https://push2.eastmoney.com/api/qt/clist/get?pn=1&pz=1&po=1&np=1&fltt=2&invt=2&fid=f20&fs=b%3A${bk}&fields=f12`;
+      const json = await this._eastFetch(url);
+      const total = json && json.data && json.data.total;
+      return total != null ? total : 0;
+    } catch (e) {
+      return 0;
+    }
+  },
+
+  /**
+   * 反推业务：输入一只股票（代码或名称），反推出它的主营构成中各个业务/产品的
+   * 营收占比（相关度），并对每个业务映射其所属东财板块、统计该板块成分股数量作为「热度」。
+   *
+   * 「热度」定义（按用户要求：业务在本业务名称股票中的热度）
+   *   = 该业务对应东财板块的成分股数量（股票数越多 → 同业公司越多 / 竞争越充分）。
+   *
+   * @param {string} input 股票代码或名称，如 掌阅科技 / 603533 / sh603533
+   * @returns {Promise<{ok,name,code,segments:[{name,ratio,relevance,heat,boardNames}],error}>}
+   */
+  async reverseBusiness(input) {
+    const kw = String(input || '').trim();
+    if (!kw) return { ok: false, error: '请输入股票代码或名称，如：掌阅科技 / 603533' };
+
+    // 1) 解析股票代码（纯代码直用；名称走腾讯联想接口解析）
+    let code = '', name = '';
+    if (/^\d{4,8}$/.test(kw) || /^(sh|sz|bj)\d{4,8}$/i.test(kw)) {
+      code = this.inferPrefix(kw);
+    } else {
+      try {
+        const hints = await this.searchStocks(kw);
+        const hit = hints.find(h => h.name === kw) || (hints.length ? hints[0] : null);
+        if (hit) { code = hit.code; name = hit.name; }
+      } catch (e) { /* ignore */ }
+    }
+    if (!code) return { ok: false, error: `未找到股票「${kw}」，请确认代码或名称（如 603533 / 掌阅科技）` };
+
+    // 2) 拉取主营构成
+    let mb = null;
+    try { mb = await this.getMainBusiness(code); } catch (e) { mb = null; }
+    if (!mb || !mb.length) {
+      return { ok: false, error: `未能获取「${name || code}」的主营构成（东财 F10 暂无可用的主营构成数据）` };
+    }
+
+    // 3) 全量板块（用于业务→板块映射），并逐业务统计热度
+    const allBoards = await this.getAllSectors();
+    const topSegs = mb.slice(0, 8); // 仅前 8 项业务计算热度，控制请求数
+    const heatArr = await mapLimit(topSegs, 3, async (seg) => {
+      const boards = this._matchSegmentBoards(seg.name, allBoards);
+      let heat = 0; const boardNames = [];
+      if (boards.length) {
+        try { heat = await this.getSectorStockCount(boards[0].bk); } catch (e) { heat = 0; }
+        boards.slice(0, 3).forEach(b => boardNames.push(b.name));
+      }
+      return { heat, boardNames };
+    });
+
+    // 4) 组装结果：相关度 = 该业务占营收比例（%）。注意 MBI_RATIO 为小数(0.x)，需 ×100 转为百分比，
+    //    与 revenueRelevance 的口径一致（如 0.387 → 38.7%）。
+    const segments = mb.map((seg, i) => {
+      const h = i < heatArr.length ? heatArr[i] : { heat: 0, boardNames: [] };
+      const ratio = Math.round(seg.ratio * 1000) / 10;
+      return { name: seg.name, ratio, relevance: ratio, heat: h.heat, boardNames: h.boardNames };
+    });
+    segments.sort((a, b) => (b.relevance - a.relevance) || (b.heat - a.heat));
+
+    return { ok: true, name: name || code, code, segments };
+  },
+
+  /**
+   * 业务段名 → 板块映射的常见同义词扩展（段名抽词后，再补充这些同义词作为候选匹配词，
+   * 提升「版权→知识产权」「数字阅读→出版」等不易直接字面值匹配的命中率）。
+   */
+  _SEG_SYNONYMS: {
+    '版权': ['知识产权', '版权'],
+    '数字阅读': ['在线阅读', '数字出版', '出版'],
+    '短剧': ['短剧', '互动游戏', '影视'],
+    '网络文学': ['网文', '文学', '出版'],
+    '内容': ['内容', '传媒'],
+    'AI': ['人工智能', 'AI'],
+    '大模型': ['大模型', '人工智能'],
+    '安全': ['安全', '网络安全']
+  },
+
+  /**
+   * 把主营构成段名映射到东财板块（取名称最相关的前几个）。
+   * 做法：从段名抽取关键词（清洗通用后缀 + 中文 2~3 字 n-gram + 英文整词），
+   * 在所有板块名中做子串匹配，按 semanticNameScore 取最相关者。
+   * @param {string} segName 主营构成段名
+   * @param {Array} allBoards 全量板块
+   * @returns {Array<{bk,name,type}>}
+   */
+  _matchSegmentBoards(segName, allBoards) {
+    let clean = String(segName || '')
+      .replace(/[（(].*?[)）]/g, '')
+      .replace(/(业务|产品|收入|及其他|其他|分部|板块|类|系列|相关|服务|销售|生产|制造|经营|业务群|业务线|产品类|合计|小计|业务板块)\s*$/g, '')
+      .replace(/(及|与|和|与及).*$/, '')
+      .trim();
+    const cands = new Set([clean, String(segName || '')]);
+    const cn = clean.match(/[一-龥]+/g) || [];
+    cn.forEach(run => {
+      if (run.length <= 4) cands.add(run);
+      for (let n = 2; n <= 3; n++) {
+        for (let i = 0; i + n <= run.length; i++) cands.add(run.slice(i, i + n));
+      }
+      // 同义词扩展
+      for (const k of Object.keys(this._SEG_SYNONYMS)) {
+        if (run.includes(k)) (this._SEG_SYNONYMS[k] || []).forEach(s => cands.add(s));
+      }
+    });
+    (clean.toLowerCase().match(/[a-z0-9]{2,}/g) || []).forEach(t => cands.add(t));
+
+    const hits = [];
+    for (const b of allBoards) {
+      const bn = b.name.toLowerCase();
+      let best = 0;
+      for (const c of cands) {
+        if (!c || c.length < 2) continue;
+        const cl = c.toLowerCase();
+        if (bn.includes(cl)) {
+          const s = semanticNameScore(b.name, c);
+          if (s > best) best = s;
+        }
+      }
+      if (best > 0) hits.push({ b, score: best });
+    }
+    hits.sort((x, y) => y.score - x.score);
+    return hits.slice(0, 3).map(x => x.b);
+  },
+
+  /**
    * 获取季报营收/扣非累计值序列，计算「今年最新报告期 vs 2024年同期」的增长率。
    * 用于「24营比」和「24扣比」字段。
    * @param {string} code sh600519
