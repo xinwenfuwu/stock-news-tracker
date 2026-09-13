@@ -1782,7 +1782,7 @@ const app = createApp({
       code: '',
       segments: [],
       done: false,
-      hotTheme: 'AI短剧',   // 固定首行：当前股市最火的业务名称（可改）
+      hotTheme: '',         // 固定首行：反推后自动填入「该股最火业务」（可改）
       customName: ''        // 固定次行：用户自行填写的业务名称（可改）
     });
     function toggleReverseOpen() { reverseOpen.value = !reverseOpen.value; }
@@ -1814,7 +1814,7 @@ const app = createApp({
           reverse.error = res.error || '反推失败';
           showToast(reverse.error, 'error');
         } else {
-          reverse.name = res.name; reverse.code = res.code; reverse.segments = res.segments; reverse.done = true;
+          reverse.name = res.name; reverse.code = res.code; reverse.segments = res.segments; reverse.hotTheme = res.hotBusiness || ''; reverse.done = true;
           showToast(`反推完成：${res.name} 共 ${res.segments.length} 项主营构成`, 'success');
         }
       } catch (e) {
