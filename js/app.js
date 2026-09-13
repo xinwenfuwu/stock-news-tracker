@@ -1771,6 +1771,52 @@ const app = createApp({
       showToast(`已保存板块「${sector.name}」共 ${sector.stocks.length} 只`, 'success');
     }
 
+    // ===== 反推业务：输入一只股票，反推其主营构成的相关度与热度 =====
+    const reverseOpen = ref(false);
+    const reverseSort = ref('relevance'); // 'relevance' | 'heat'
+    const reverse = reactive({
+      loading: false,
+      error: '',
+      input: '',
+      name: '',
+      code: '',
+      segments: [],
+      done: false
+    });
+    function toggleReverseOpen() { reverseOpen.value = !reverseOpen.value; }
+    function setReverseSort(k) { reverseSort.value = k; }
+    const reverseSorted = computed(() => {
+      const arr = [...(reverse.segments || [])];
+      if (reverseSort.value === 'heat') {
+        arr.sort((a, b) => (b.heat - a.heat) || (b.relevance - a.relevance));
+      } else {
+        arr.sort((a, b) => (b.relevance - a.relevance) || (b.heat - a.heat));
+      }
+      return arr;
+    });
+    async function reverseBusiness() {
+      const v = String(reverse.input || '').trim();
+      if (!v) { showToast('请输入股票代码或名称，如：掌阅科技 / 603533', 'error'); return; }
+      reverse.loading = true; reverse.error = ''; reverse.done = false; reverse.segments = [];
+      try {
+        const res = await StockAPI.reverseBusiness(v);
+        if (!res.ok) {
+          reverse.error = res.error || '反推失败';
+          showToast(reverse.error, 'error');
+        } else {
+          reverse.name = res.name; reverse.code = res.code; reverse.segments = res.segments; reverse.done = true;
+          showToast(`反推完成：${res.name} 共 ${res.segments.length} 项主营构成`, 'success');
+        }
+      } catch (e) {
+        reverse.error = '反推业务失败：' + (e && e.message ? e.message : e);
+        showToast(reverse.error, 'error');
+        console.warn('反推业务失败', e);
+      } finally {
+        reverse.loading = false;
+      }
+    }
+    function reverseSortIcon(k) { return reverseSort.value === k ? '⬇️' : '↕️'; }
+
     // 用户编辑语义结果后，允许重新保存
     function markSemanticDirty() { semantic.saved = false; }
 
@@ -3554,6 +3600,8 @@ const app = createApp({
       editingConceptIdx, conceptDraft, newConceptText, startEditConcept, commitEditConcept, cancelEditConcept, removeConcept, addConcept,
       editingBoardIdx, boardDraft, boardAddKw, boardAddMatches, boardAdding, startEditBoard, commitEditBoard, cancelEditBoard, removeBoard, searchBoardForAdd, addBoard,
       editingStockCode, stockNameDraft, stockRoleDraft, stockConceptsDraft, stockAddCode, stockAdding, startEditStock, commitEditStock, cancelEditStock, removeStock, addStockByCode,
+      // 反推业务
+      reverse, reverseOpen, reverseSorted, reverseSort, toggleReverseOpen, setReverseSort, reverseBusiness, reverseSortIcon,
       // 页面3
       hotDate, hotLoading, hotBoards, hotStocks, preMarketBoards, amplitudeBoards, conceptFreq,
       hotBoardActive, hotBoardLoading, hotDetailIsStock, openHotBoard, openHotStock, clearHotBoard,
