@@ -1710,7 +1710,8 @@ const app = createApp({
       boards: [],       // 命中的板块（用于透明展示）
       stocks: [],       // 结果股票列表
       done: false,
-      saved: false      // 是否已保存到我的板块
+      saved: false,     // 是否已保存到我的板块
+      recomputing: false // 编辑概念/板块后正在按条件重算
     });
     async function semanticSearch() {
       const q = String(sectorSearch.value || '').trim();
@@ -1771,20 +1772,78 @@ const app = createApp({
     // 用户编辑语义结果后，允许重新保存
     function markSemanticDirty() { semantic.saved = false; }
 
+    // ===== 语义结果「重算引擎」：概念/板块是选股条件，股票列表由它们推导 =====
+
+    // 根据当前概念列表，重新解析出对应的板块集合（替换 semantic.boards）
+    async function rebuildBoardsFromConcepts() {
+      const resolved = [];
+      for (const c of semantic.concepts) {
+        const bs = await StockAPI.resolveConceptToBoards(c);
+        resolved.push(...bs);
+      }
+      const map = new Map();
+      for (const b of resolved) if (!map.has(b.bk)) map.set(b.bk, b);
+      semantic.boards = [...map.values()];
+    }
+
+    // 用当前板块 + 修饰词重算符合语义的上市公司
+    async function recomputeSemanticStocks() {
+      if (!semantic.boards.length) {
+        semantic.stocks = [];
+        if (semantic.method !== 'product') semantic.method = 'empty';
+        semantic.recomputing = false;
+        markSemanticDirty();
+        showToast('当前没有命中板块，无法重算；请先添加板块或在概念里补充主题', 'info');
+        return;
+      }
+      semantic.recomputing = true;
+      try {
+        const res = await StockAPI.recomputeSemanticStocks({
+          boards: semantic.boards.map(b => ({ bk: b.bk, name: b.name })),
+          modifiers: semantic.modifiers,
+          concepts: semantic.concepts
+        });
+        semantic.stocks = res.stocks;
+        semantic.method = res.method;
+        semantic.saved = false;
+        const m = res.method === 'intersect' ? '概念交集（同时归属这些板块的公司）'
+          : res.method === 'union' ? '概念并集（无完全交集，已展示并集）'
+          : res.method === 'single' ? '单板块' : '空';
+        showToast(`已按当前条件重算：${m}，命中 ${res.stocks.length} 只`, 'success');
+      } catch (e) {
+        showToast('重算失败：' + (e && e.message ? e.message : e), 'error');
+        console.warn('语义重算失败', e);
+      } finally {
+        semantic.recomputing = false;
+      }
+    }
+
+    // 概念变化：重建板块并立刻重算
+    async function onConceptChanged() {
+      if (semantic.method === 'product') { markSemanticDirty(); return; } // 产品级结果由产业链库定义，概念仅作标签
+      await rebuildBoardsFromConcepts();
+      await recomputeSemanticStocks();
+    }
+    // 板块变化：直接用当前板块重算
+    async function onBoardChanged() {
+      await recomputeSemanticStocks();
+    }
+
     // ===== 语义结果 增删改：识别概念 =====
     const editingConceptIdx = ref(-1);
     const conceptDraft = ref('');
     const newConceptText = ref('');
     function startEditConcept(i) { editingConceptIdx.value = i; conceptDraft.value = semantic.concepts[i] || ''; }
-    function commitEditConcept() {
+    async function commitEditConcept() {
       const i = editingConceptIdx.value; const v = conceptDraft.value.trim();
       if (i >= 0 && v) semantic.concepts[i] = v;
-      editingConceptIdx.value = -1; markSemanticDirty();
+      editingConceptIdx.value = -1;
+      await onConceptChanged();
     }
     function cancelEditConcept() { editingConceptIdx.value = -1; }
-    function removeConcept(i) { if (i >= 0) semantic.concepts.splice(i, 1); markSemanticDirty(); }
-    function addConcept() {
-      const v = newConceptText.value.trim(); if (v) { semantic.concepts.push(v); newConceptText.value = ''; markSemanticDirty(); }
+    async function removeConcept(i) { if (i >= 0) semantic.concepts.splice(i, 1); await onConceptChanged(); }
+    async function addConcept() {
+      const v = newConceptText.value.trim(); if (v) { semantic.concepts.push(v); newConceptText.value = ''; await onConceptChanged(); }
     }
 
     // ===== 语义结果 增删改：命中板块 =====
@@ -1794,13 +1853,14 @@ const app = createApp({
     const boardAddMatches = ref([]);
     const boardAdding = ref(false);
     function startEditBoard(i) { editingBoardIdx.value = i; boardDraft.value = semantic.boards[i] ? (semantic.boards[i].name || '') : ''; }
-    function commitEditBoard() {
+    async function commitEditBoard() {
       const i = editingBoardIdx.value; const v = boardDraft.value.trim();
       if (i >= 0 && semantic.boards[i]) semantic.boards[i].name = v;
-      editingBoardIdx.value = -1; markSemanticDirty();
+      editingBoardIdx.value = -1;
+      await onBoardChanged();
     }
     function cancelEditBoard() { editingBoardIdx.value = -1; }
-    function removeBoard(i) { if (i >= 0) semantic.boards.splice(i, 1); markSemanticDirty(); }
+    async function removeBoard(i) { if (i >= 0) semantic.boards.splice(i, 1); await onBoardChanged(); }
     async function searchBoardForAdd() {
       const kw = boardAddKw.value.trim(); if (!kw) { boardAddMatches.value = []; return; }
       boardAdding.value = true;
@@ -1811,10 +1871,11 @@ const app = createApp({
       } catch (e) { boardAddMatches.value = []; }
       finally { boardAdding.value = false; }
     }
-    function addBoard(b) {
+    async function addBoard(b) {
       if (!b) return;
       semantic.boards.push({ bk: b.bk, name: b.name });
-      boardAddMatches.value = []; boardAddKw.value = ''; markSemanticDirty();
+      boardAddMatches.value = []; boardAddKw.value = '';
+      await onBoardChanged();
     }
 
     // ===== 语义结果 增删改：筛选出的股票 =====
@@ -3485,6 +3546,7 @@ const app = createApp({
       sectorFilterOpen, sectorInfoOpen, favInfoOpen, filterInfoOpen, poolInfoOpen,
       // AI 语义选股（含结果 增删改）
       semantic, semanticSearch, saveSemanticAsPool,
+      recomputeSemanticStocks, onConceptChanged, onBoardChanged,
       editingConceptIdx, conceptDraft, newConceptText, startEditConcept, commitEditConcept, cancelEditConcept, removeConcept, addConcept,
       editingBoardIdx, boardDraft, boardAddKw, boardAddMatches, boardAdding, startEditBoard, commitEditBoard, cancelEditBoard, removeBoard, searchBoardForAdd, addBoard,
       editingStockCode, stockNameDraft, stockRoleDraft, stockConceptsDraft, stockAddCode, stockAdding, startEditStock, commitEditStock, cancelEditStock, removeStock, addStockByCode,
