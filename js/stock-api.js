@@ -1004,7 +1004,14 @@ const StockAPI = {
 
     segments.sort((a, b) => (b.relevance - a.relevance) || (b.heat - a.heat));
 
-    return { ok: true, name: name || code, code, segments };
+    // 5) 计算「该股最火业务」：主营构成中热度(同业公司数)最高的业务，即与本基金(股票)
+    //    相关、且在各平台上同业公司最多的热点业务/产品；若所有业务均未匹配到板块(heat=0)，
+    //    则回退到营收占比最高的业务。该值用于反推结果表首行固定行，按股票动态生成而非写死。
+    let hotBusiness = '';
+    const byHeat = [...segments].sort((a, b) => (b.heat - a.heat) || (b.relevance - a.relevance));
+    if (byHeat[0]) hotBusiness = byHeat[0].heat > 0 ? byHeat[0].name : segments[0].name;
+
+    return { ok: true, name: name || code, code, segments, hotBusiness };
   },
 
   /**
