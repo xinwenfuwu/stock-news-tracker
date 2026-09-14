@@ -402,7 +402,20 @@
               </div>
             </div>
           </template>
-          <p class="muted small">点击板块设为主选并添加；点「次选」加入次选概念列表（主行业概念=行业板块，多个次行业概念=概念板块）</p>
+          <template v-if="sectorResultsIdx.length">
+            <div class="sector-group-title">🔢 指数板块（如高端装备）</div>
+            <div class="sector-result-list">
+              <div class="sector-result-item" v-for="item in sectorResultsIdx" :key="item.bk"
+                   @click="addSectorFromSearch(item)">
+                <span class="sector-result-name">{{ item.name }}</span>
+                <span class="sector-result-type">{{ item.type }}</span>
+                <span class="sector-result-change" v-if="item.change != null">{{ fmtPct(item.change) }}</span>
+                <button class="btn btn-sm btn-primary">➕ 添加</button>
+                <button class="btn btn-sm" @click.stop="addSubSector(item)">次选</button>
+              </div>
+            </div>
+          </template>
+          <p class="muted small">点击板块设为主选并添加；点「次选」加入次选概念列表。<b>主行业概念</b>=行业板块，<b>多个次行业概念</b>=概念板块，<b>指数板块</b>=东财指数类（如「高端装备」000097）。</p>
         </div>
         <div class="sector-results" v-else-if="sectorSearching">
           <p class="muted">正在搜索板块...</p>
