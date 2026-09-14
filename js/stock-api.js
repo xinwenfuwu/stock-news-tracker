@@ -226,8 +226,49 @@ const SEMANTIC_PRODUCTS = [
       { code: 'sh603662', name: '柯力传感', role: '六维力传感器龙头' },
       { code: 'sh688322', name: '奥比中光', role: '3D 视觉感知' }
     ]
+  },
+  {
+    key: '发电设备',
+    desc: '发电设备（电站装备）：用于电力生产的核心装备，涵盖燃煤/燃气/核电/水电/抽水蓄能/风电等机组的主机与辅机——发电锅炉、汽轮机、燃气轮机、发电机、水轮发电机组、余热锅炉等。',
+    aliases: ['发电设备', '发电装备', '发电机械', '发电锅炉', '汽轮发电机', '发电机组', '电站设备', '电站装备', '电力主机'],
+    stocks: [
+      { code: 'sh600875', name: '东方电气', role: '发电设备绝对龙头：火电/核电/水电/燃机/风电全套主机（锅炉·汽轮机·发电机·水轮机）' },
+      { code: 'sh601727', name: '上海电气', role: '发电设备龙头：燃煤/燃机/核电/风电主机及输配电装备' },
+      { code: 'sz002202', name: '金风科技', role: '风力发电设备龙头（永磁直驱整机）' },
+      { code: 'sh601615', name: '明阳智能', role: '风电整机龙头（半直驱，海风领先）' },
+      { code: 'sz300772', name: '运达股份', role: '风电整机领先厂商' },
+      { code: 'sh688660', name: '电气风电', role: '风电整机（海上风电强）' },
+      { code: 'sz002266', name: '浙富控股', role: '水轮发电机组/抽水蓄能机组核心供应商' },
+      { code: 'sz000922', name: '佳电股份', role: '特种电机/发电设备配套电机' },
+      { code: 'sz002255', name: '海陆重工', role: '余热锅炉/电站辅机设备' },
+      { code: 'sz002630', name: '华西能源', role: '锅炉及发电设备总包' },
+      { code: 'sz002534', name: '西子洁能', role: '余热锅炉/电站设备（余热发电）' },
+      { code: 'sh600475', name: '华光环能', role: '锅炉/电站设备（热电联产）' }
+    ]
   }
 ];
+
+/**
+ * 产品短语 → 东财板块名 别名映射。
+ * 语义搜索无已知概念命中时，用于把口语化产品词解析到真实板块
+ * （如「发电设备」在东财里没有同名板块，真实板块是「电力设备/风电设备/其他电源设备Ⅱ」）。
+ */
+const BOARD_NAME_ALIASES = {
+  '发电设备': ['电力设备', '风电设备', '其他电源设备Ⅱ'],
+  '电力设备': ['电力设备', '风电设备', '其他电源设备Ⅱ'],
+  '风电设备': ['风电设备', '电力设备'],
+  '光伏设备': ['光伏设备', '光伏'],
+  '锂电设备': ['锂电设备', '锂电池'],
+  '半导体设备': ['半导体设备', '半导体'],
+  '机器人设备': ['机器人', '人形机器人'],
+  '医疗设备': ['医疗器械', '医疗'],
+  '通信设备': ['通信设备', '通信'],
+  '化工设备': ['专用设备', '化工'],
+  '环保设备': ['环保设备', '环保'],
+  '工程机械': ['工程机械'],
+  '储能设备': ['储能', '电源设备'],
+  '军工设备': ['军工', '国防军工']
+};
 
 /** 限制并发的 map（批量拉取板块成分股时避免触发限流） */
 async function mapLimit(items, limit, fn) {
@@ -305,9 +346,37 @@ const SEMANTIC_STOPWORDS = new Set([
 ]);
 
 /**
+ * 通用类别词：单独作为匹配词时无区分度，禁止独立成词。
+ * 否则「发电设备」被拆成「设备」会误匹配所有设备股、「锂电池」被拆成「电池」误匹配所有电池股。
+ */
+const GENERIC_CATEGORY_NOUNS = new Set([
+  '设备', '机器', '仪器', '仪表', '装置', '装备', '系统', '材料', '原料', '产品', '部件', '零件',
+  '组件', '器件', '模组', '模块', '平台', '技术', '方案', '服务', '业务', '软件', '硬件', '芯片',
+  '电池', '电机', '工具', '机构', '结构', '总成', '耗材', '用品'
+]);
+
+/**
+ * 去掉短语尾部的通用类别词（仅去一层），如「发电设备」→「发电」、「智能发电设备」→「智能发电」。
+ * 头部词用于兼容「发电锅炉」「发电汽轮机」等具体品种写法。
+ */
+function stripCategorySuffix(run) {
+  let s = run;
+  for (const cat of GENERIC_CATEGORY_NOUNS) {
+    if (s.length > cat.length && s.endsWith(cat)) {
+      s = s.slice(0, s.length - cat.length);
+      break;
+    }
+  }
+  return s;
+}
+
+/**
  * 从自然语言查询抽取业务/产品匹配词（作为主营构成段名的子串）。
- * 中文按 2~3 字滑动窗口切分（剔除停用词），英文/数字按整词提取。
- * 例：「ai短剧审核」→ ['短剧','剧审','审核','ai']（'剧审'为无害噪声）
+ * 关键约束：不要把「发电设备」拆成「发电」+「设备」分别匹配——
+ *   - 完整短语保留为首要匹配词（整词优先，避免曲解本意）；
+ *   - 中文 2~3 字滑动窗口仅作补充，但【剔除通用类别词碎片】（如「设备」会误命中所有设备股）；
+ *   - 若短语以通用类别词结尾（如「发电设备」→头部「发电」），额外加入头部，使其能匹配「发电锅炉」等具体品种。
+ * 例：「发电设备」→ ['发电设备','发电','电设','发电设','电设备']（不再含无意义的「设备」）
  */
 function extractQueryTerms(query) {
   const q = String(query || '').toLowerCase();
@@ -316,11 +385,22 @@ function extractQueryTerms(query) {
   latin.forEach(t => terms.add(t));
   const cn = q.match(/[一-龥]+/g) || [];
   cn.forEach(run => {
-    if (run.length <= 4) terms.add(run);
+    if (run.length <= 6) terms.add(run); // 完整短语优先（整词）
+    // 2~3 字滑动窗口补充，剔除停用词与【通用类别词】碎片
     for (let n = 2; n <= 3; n++) {
       for (let i = 0; i + n <= run.length; i++) {
         const g = run.slice(i, i + n);
-        if (!SEMANTIC_STOPWORDS.has(g)) terms.add(g);
+        if (SEMANTIC_STOPWORDS.has(g)) continue;
+        if (GENERIC_CATEGORY_NOUNS.has(g)) continue;
+        terms.add(g);
+      }
+    }
+    // 头部词抽取：短语以通用类别词结尾时，取除掉尾部类别词后的头部（兼容「发电锅炉」等具体品种写法）
+    const head = stripCategorySuffix(run);
+    if (head && head.length >= 2 && head !== run) {
+      terms.add(head);
+      for (let n = 2; n <= Math.min(3, head.length); n++) {
+        for (let i = 0; i + n <= head.length; i++) terms.add(head.slice(i, i + n));
       }
     }
   });
@@ -2019,15 +2099,31 @@ const StockAPI = {
         boards.sort((a, b) => semanticNameScore(b.name, canon) - semanticNameScore(a.name, canon));
         return { canon, boards: boards.slice(0, CAP_PER) };
       }).filter(x => x.boards.length);
-      // 通用词兜底：没有任何概念命中时，按用户的「完整本意」匹配板块名（不拆词曲解）
-      //  - 优先：板块名包含「完整查询词」（如「发电设备」只匹配发电设备相关板块，绝不误匹配「网络设备」）
-      //  - 兜底：完整词无任何板块命中时，才退化为查询抽取词（2~3 字碎片）匹配，兼容组合/冷门词
+      // 通用词兜底：没有任何概念命中时，按用户的「完整本意」匹配板块（绝不拆词曲解）
+      //  - 1) 优先：用「完整查询词」经东财搜索建议 API 直接解析板块（覆盖概念/行业/指数，可靠且不分词）
+      //  - 2) 兜底：完整词无板块时，走产品→板块别名映射（如「发电设备」→「电力设备/风电设备」）
+      //  - 3) 兜底：本地全量板块名包含完整词的
+      //  - 4) 最后兜底：完整词无任何板块命中时，才退化为查询抽取词（已剔除通用类别词碎片）匹配，兼容组合/冷门词
       if (!conceptBoardLists.length && (matchers.generic || []).length) {
         const fullQ = (query || '').toLowerCase().trim();
-        let boards = fullQ ? allBoards.filter(b => b.name.toLowerCase().includes(fullQ)) : [];
-        if (!boards.length) {
-          boards = allBoards.filter(b => matchers.generic.some(g => b.name.toLowerCase().includes(g)));
+        let boards = [];
+        if (fullQ) {
+          try {
+            const sug = await this.resolveBoardViaSuggest(query.trim());
+            if (sug && sug.length) boards = sug.map(b => ({ bk: b.bk || b.code, name: b.name }));
+          } catch (e) { /* 忽略 */ }
         }
+        if (!boards.length && fullQ) {
+          const aliasKey = BOARD_NAME_ALIASES[fullQ] || BOARD_NAME_ALIASES[stripCategorySuffix(fullQ)] || [];
+          for (const a of aliasKey) {
+            try {
+              const sug = await this.resolveBoardViaSuggest(a);
+              if (sug && sug.length) { boards = sug.map(b => ({ bk: b.bk || b.code, name: b.name })); break; }
+            } catch (e) { /* 忽略 */ }
+          }
+        }
+        if (!boards.length && fullQ) boards = allBoards.filter(b => b.name.toLowerCase().includes(fullQ));
+        if (!boards.length) boards = allBoards.filter(b => matchers.generic.some(g => b.name.toLowerCase().includes(g)));
         boards.sort((a, b) => {
           const an = a.name.toLowerCase(), bn = b.name.toLowerCase();
           const aw = fullQ && an.startsWith(fullQ) ? 1 : 0;
