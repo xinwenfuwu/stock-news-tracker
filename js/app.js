@@ -1787,7 +1787,8 @@ const app = createApp({
       done: false,
       hotTheme: '',         // 固定首行概念名（反推后自动填入该股最火概念，可改）
       hotConcept: null,     // 固定首行的「该股最火概念」计算数据 {bk,name,corr,heat,boardNames}
-      customName: ''        // 固定次行业务名（用户自行填写）
+      customName: '',       // 固定次行业务名（用户自行填写）
+      industry: ''          // 反推个股所属细分行业（明细到最细层级，如「电力设备 / 其他电源设备Ⅱ / 综合电力设备商」）
     });
     function setReverseSort(k) { reverseSort.value = k; }
     // 自定义业务行的计算数据（与下方主营构成行口径完全一致：营收占比/相关度/热度=股票数/对应板块）
@@ -1883,7 +1884,7 @@ const app = createApp({
     async function reverseBusiness() {
       const v = String(reverse.input || '').trim();
       if (!v) { showToast('请输入股票代码或名称，如：掌阅科技 / 603533', 'error'); return; }
-      reverse.loading = true; reverse.error = ''; reverse.done = false; reverse.segments = [];
+      reverse.loading = true; reverse.error = ''; reverse.done = false; reverse.segments = []; reverse.industry = '';
       try {
         const res = await StockAPI.reverseBusiness(v);
         if (!res.ok) {
@@ -1891,6 +1892,12 @@ const app = createApp({
           showToast(reverse.error, 'error');
         } else {
           reverse.name = res.name; reverse.code = res.code; reverse.segments = res.segments; reverse.hotTheme = res.hotBusiness || ''; reverse.hotConcept = res.hotConcept || null; reverse.done = true;
+          reverse.industry = '';
+          // 异步补全细分行业（best-effort，不阻塞结果展示）
+          try {
+            const ind = await StockAPI.getIndustryDetail(res.code);
+            if (ind) reverse.industry = ind;
+          } catch (e) { console.debug('反推业务细分行业获取失败', res.code, e); }
           showToast(`反推完成：${res.name} 共 ${res.segments.length} 项主营构成`, 'success');
         }
       } catch (e) {
