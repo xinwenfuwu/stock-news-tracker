@@ -235,7 +235,7 @@ const SEMANTIC_PRODUCTS = [
   {
     key: '火电发电设备',
     desc: '用于火力发电厂的设备（电站主机与辅机）：燃煤/燃气锅炉、汽轮机、汽轮发电机、余热锅炉、电站辅机（磨煤机/给水泵）、超超临界机组、循环流化床锅炉等。',
-    aliases: ['火电发电设备', '火电厂设备', '火电设备', '火电装备', '电站锅炉', '火电机组', '燃煤发电', '燃气发电', '超超临界', '燃机发电'],
+    aliases: ['火电发电设备', '火力发电设备', '火电厂设备', '火电设备', '火电装备', '电站锅炉', '火电机组', '燃煤发电', '燃气发电', '超超临界', '燃机发电'],
     stocks: [
       { code: 'sz002353', name: '杰瑞股份', role: '燃气发电设备/分布式能源装备（杰瑞动力：柴油·燃气发电机组）' },
       { code: 'sh600875', name: '东方电气', role: '火电发电设备绝对龙头：锅炉·汽轮机·汽轮发电机全套主机（燃煤/燃机/超超临界）' },
@@ -376,7 +376,8 @@ const SEMANTIC_STOPWORDS = new Set([
 const GENERIC_CATEGORY_NOUNS = new Set([
   '设备', '机器', '仪器', '仪表', '装置', '装备', '系统', '材料', '原料', '产品', '部件', '零件',
   '组件', '器件', '模组', '模块', '平台', '技术', '方案', '服务', '业务', '软件', '硬件', '芯片',
-  '电池', '电机', '工具', '机构', '结构', '总成', '耗材', '用品'
+  '电池', '电机', '工具', '机构', '结构', '总成', '耗材', '用品',
+  '电厂', '发电厂' // 宽泛环境词：单独作匹配词会误命中火电/水电运营商（其段名含「火电厂/发电厂」），但厂商段名为「电站设备/发电设备/锅炉」不含
 ]);
 
 /**
@@ -385,7 +386,7 @@ const GENERIC_CATEGORY_NOUNS = new Set([
  * 因此领域词不单独作为段名/板块独立匹配词（仅作领域加权），避免误匹配火电/水电运营上市公司。
  */
 const DOMAIN_MODIFIERS = new Set([
-  '火电', '水电', '核电', '风电', '光伏', '太阳能', '燃气', '生物质', '垃圾', '煤电',
+  '火电', '火力', '水电', '核电', '风电', '光伏', '太阳能', '燃气', '生物质', '垃圾', '煤电',
   '燃机', '分布式', '抽水蓄能', '潮汐', '地热', '光热'
 ]);
 
@@ -394,6 +395,21 @@ const DOMAIN_MODIFIERS = new Set([
  * 不单独作为段名核心命中词，仅保留 ≥3 字的产品短语（发电设备/电设备/锅炉/汽轮机）作核心匹配。
  */
 const WEAK_PRODUCT_WORDS = new Set(['发电', '电力', '生产', '制造']);
+
+/**
+ * 运营商负向标志词：纯发电/供电/供热运营商的主营段名特征词。
+ * 设备制造商的主营段名（发电设备/锅炉/汽轮机…）绝不含这些词；
+ * 故段名含运营商标志且无任何「设备实体词」时，不计入相关度——从根本上区分「生产设备的厂商」与「运营商」。
+ */
+const OPERATOR_SIGNS = [
+  '火力发电', '发电-电力', '发电—电力', '电力销售', '售电', '热电', '供热', '供电', '发电业务',
+  '电力生产', '能源供应', '配售电', '购售电', '电力购销', '热力供应', '发电运营', '电力交易'
+];
+/** 设备实体词护栏：段名含这些词即视为真实设备制造业务，即便同时出现运营商标志也不排除 */
+const PRODUCT_ENTITY = [
+  '设备', '锅炉', '汽轮机', '发电机', '机组', '磨煤机', '给水泵', '电机', '变压器', '电缆',
+  '阀门', '压缩机', '泵', '辅机', '超超临界', '循环流化床', '水轮', '开关', '电抗器', '电容器', '绝缘子'
+];
 
 /**
  * 去掉短语尾部的通用类别词（仅去一层），如「发电设备」→「发电」、「智能发电设备」→「智能发电」。
@@ -426,6 +442,22 @@ function stripCategorySuffix(run) {
  * 例：「火电发电设备」→ terms:[发电设备,火电发电设备,电设备,发电设,电设,火电发电,…]；domain:[火电]
  *     （不再含无意义的「火电」「发电」独立词）
  */
+/** 判断拼接碎片是否以领域修饰词开头（如「火力发电」「火电发电」=领域词+产品词拼接，无区分度，会误命中运营上市公司） */
+function termStartsWithDomain(g) {
+  for (const d of DOMAIN_MODIFIERS) {
+    if (g.length > d.length && g.startsWith(d)) return true;
+  }
+  return false;
+}
+
+/** 碎片是否含任一领域修饰词（子串，不限开头） */
+function fragmentHasDomain(g) {
+  for (const d of DOMAIN_MODIFIERS) {
+    if (g.includes(d)) return true;
+  }
+  return false;
+}
+
 function extractQueryTerms(query) {
   const q = String(query || '').toLowerCase();
   const terms = new Set();
@@ -445,17 +477,22 @@ function extractQueryTerms(query) {
         if (GENERIC_CATEGORY_NOUNS.has(g)) continue;
         if (DOMAIN_MODIFIERS.has(g)) { domain.add(g); continue; } // 领域词单列
         if (n === 2 && WEAK_PRODUCT_WORDS.has(g)) continue;       // 弱产品词不单独成词
+        if (termStartsWithDomain(g)) continue;                    // 领域词+产品词拼接碎片（火力发电/火电发电）不单独成词，避免误命中运营商
+        // 3字碎片若含「发电/电力/领域词」（力发电/电发电/火力发/发电设…），均为无独立产品意义的拼接碎片，剔除（精准匹配由「发电设备」等4字词与产品整词承担）
+        if (n === 3 && (g.includes('发电') || g.includes('电力') || fragmentHasDomain(g))) continue;
         terms.add(g);
       }
     }
     const head = stripCategorySuffix(run);
-    if (head && head.length >= 2 && head !== run) {
+    if (head && head.length >= 2 && head !== run && !termStartsWithDomain(head)) {
       if (!DOMAIN_MODIFIERS.has(head)) terms.add(head);
       for (let n = 2; n <= Math.min(3, head.length); n++) {
         for (let i = 0; i + n <= head.length; i++) {
           const g = head.slice(i, i + n);
           if (SEMANTIC_STOPWORDS.has(g) || GENERIC_CATEGORY_NOUNS.has(g) || DOMAIN_MODIFIERS.has(g)) continue;
           if (n === 2 && WEAK_PRODUCT_WORDS.has(g)) continue;
+          if (termStartsWithDomain(g)) continue;
+          if (n === 3 && (g.includes('发电') || g.includes('电力') || fragmentHasDomain(g))) continue;
           terms.add(g);
         }
       }
@@ -513,6 +550,8 @@ function revenueRelevance(mainBiz, coreArr, domainArr) {
   const matched = [];
   for (const seg of mainBiz) {
     const s = String(seg.name).toLowerCase();
+    // 排除纯运营商段名：含运营商标志词且无任何设备实体词（火力发电及供热/发电-电力/售电/供热…），避免误匹配火电/水电运营商
+    if (OPERATOR_SIGNS.some(sig => s.includes(sig)) && !PRODUCT_ENTITY.some(e => s.includes(e))) continue;
     if (!coreArr.some(m => s.includes(m))) continue; // 必含产品核心词
     const r = (seg.ratio || 0);
     let ratio = r;
@@ -2260,19 +2299,24 @@ const StockAPI = {
         resultCodes = [...coverage.keys()].sort((a, b) => (coverage.get(b) || 0) - (coverage.get(a) || 0));
       }
     }
-    // 产品库种子直接纳入候选
-    seedCodes.forEach(c => { if (!stockInfo.has(c)) stockInfo.set(c, { code: c, name: c }); resultCodes.push(c); });
-    // 候选截断上限（控制主营构成请求数量）
+    // 候选截断上限（控制主营构成请求数量）；先截断板块候选，再强制纳入产品种子（避免被裁掉）
     const CAND_CAP = explicitBoards && explicitBoards.length ? 250 : 160;
     if (resultCodes.length > CAND_CAP) {
       if (coverage.size) resultCodes.sort((a, b) => (coverage.get(b) || 0) - (coverage.get(a) || 0));
       resultCodes = resultCodes.slice(0, CAND_CAP);
     }
     resultCodes = [...new Set(resultCodes)];
+    // 产品库种子强制纳入候选（确保用户期望的生产厂商必出现，不被候选截断裁掉）
+    seedCodes.forEach(c => { if (!stockInfo.has(c)) stockInfo.set(c, { code: c, name: c }); if (!resultCodes.includes(c)) resultCodes.push(c); });
 
     // 2) 逐候选拉取主营构成，计算营收占比相关度
     // 段名匹配拆分为「产品核心词」与「领域修饰词」：核心词必含，领域词仅加权（避免误匹配运营上市公司）
-    let coreArr = (matchers.segHints || []).map(s => String(s).toLowerCase()).filter(t => !DOMAIN_MODIFIERS.has(t));
+    // 核心匹配词额外剔除「长度≤4 且内含领域修饰词的拼接碎片」（火力发/力发电/火电发/火电发电/火力发电…），
+    // 这些短碎片无独立产品意义、只会误命中「火力发电及供热」等运营商段名；完整产品短语（火电发电设备 6字）不受影响。
+    const DOMAIN_LIST = [...DOMAIN_MODIFIERS];
+    let coreArr = (matchers.segHints || []).map(s => String(s).toLowerCase())
+      .filter(t => !DOMAIN_MODIFIERS.has(t))
+      .filter(t => !(t.length <= 4 && DOMAIN_LIST.some(d => t.includes(d))));
     if (!coreArr.length) coreArr = (matchers.segHints || []).map(s => String(s).toLowerCase()); // 回退：纯领域词查询
     const domainArr = (matchers.domain || []).map(s => String(s).toLowerCase());
     const roleMap = {};
@@ -2305,20 +2349,21 @@ const StockAPI = {
       };
     };
     let stocks = raw.filter(x => x.relevance > 0).map(buildStock);
-    // 产品库兜底：主营构成未匹配出细分业务（东财未列明）时，用产业链角色评分保底展示种子公司
-    if (productKey && stocks.length === 0) {
+    // 产品库兜底：确保用户期望的生产厂商（杰瑞股份/东方电气/上海电气…种子公司）始终出现——
+    // 当其主营构成未列明细导致相关度=0 被过滤时，按产业链角色评分保底补入（即便已有其他公司命中）。
+    if (productKey) {
+      const have = new Set(stocks.map(s => s.code));
       for (const x of raw) {
-        if (seedCodes.includes(x.info.code) && x.relevance === 0) {
+        if (seedCodes.includes(x.info.code) && !have.has(x.info.code)) {
           const st = buildStock(x);
-          st.relevance = scoreRoleRelevance(roleMap[x.info.code] || '');
-          st.matchedSegments = [];
+          const roleScore = scoreRoleRelevance(roleMap[x.info.code] || '');
+          st.relevance = st.relevance > 0 ? st.relevance : roleScore;
+          st.matchedSegments = st.matchedSegments || [];
           stocks.push(st);
         }
       }
-      stocks.sort((a, b) => (b.relevance - a.relevance) || ((b.marketCap || 0) - (a.marketCap || 0)));
-    } else {
-      stocks.sort((a, b) => (b.relevance - a.relevance) || ((b.marketCap || 0) - (a.marketCap || 0)));
     }
+    stocks.sort((a, b) => (b.relevance - a.relevance) || ((b.marketCap || 0) - (a.marketCap || 0)));
     const TOPN = 20;
     if (modifiers.includes('核心')) stocks = stocks.slice(0, TOPN);
     else if (modifiers.includes('小市值')) {
@@ -2352,8 +2397,10 @@ const StockAPI = {
       productStocks = product.stocks;
       productKey = product.key;
       productDesc = product.desc;
-      const pterms = extractQueryTerms(product.key + ' ' + product.desc);
-      pterms.forEach(t => { if (!matchers.segHints.includes(t)) matchers.segHints.push(t); });
+      // 仅用产品 key 生成精准匹配词：desc 的泛化长描述（含「火力发电厂」「燃煤/燃气」等）若整体做滑动窗口，
+      // 会产生「火力发/力发电/燃煤」等碎片误命中火电运营商；精准核心词（发电设备/锅炉/汽轮机…）已由 SEMANTIC_CONCEPTS 概念提供。
+      const pterms = extractQueryTerms(product.key);
+      pterms.terms.forEach(t => { if (!matchers.segHints.includes(t)) matchers.segHints.push(t); });
       if (!matchers.concepts.length) matchers.concepts.push(product.key);
     }
 
