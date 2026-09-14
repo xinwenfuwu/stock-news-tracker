@@ -945,7 +945,8 @@ const StockAPI = {
    */
   async getSectorStockCount(bk) {
     try {
-      const url = `https://push2.eastmoney.com/api/qt/clist/get?pn=1&pz=1&po=1&np=1&fltt=2&invt=2&fid=f20&fs=b%3A${bk}&fields=f12`;
+      const code = this._normalizeBoardCode(bk);
+      const url = `https://push2.eastmoney.com/api/qt/clist/get?pn=1&pz=1&po=1&np=1&fltt=2&invt=2&fid=f20&fs=b%3A${code}&fields=f12`;
       const json = await this._eastFetch(url);
       const total = json && json.data && json.data.total;
       return total != null ? total : 0;
@@ -1732,27 +1733,89 @@ const StockAPI = {
    * @param {string} keyword
    * @returns {Promise<Array<{bk, name, type, change}>>}
    */
+  /**
+   * 归一化板块代码：东财返回的板块代码可能带 secid 前缀
+   * （如指数 "1.000097"、概念 "90.BK1303"），成分股查询 fs=b:<code>
+   * 统一用冒号后的纯代码，避免 "1.000097" 这类带前缀代码查不到成分股。
+   */
+  _normalizeBoardCode(bk) {
+    if (!bk) return bk;
+    const s = String(bk);
+    if (s.indexOf('.') >= 0) return s.split('.').pop();
+    return s;
+  },
+
+  /**
+   * 通过东财「搜索建议」API 直接解析关键词→板块（JSONP，绕过浏览器 CORS）。
+   * 该接口覆盖概念/行业/指数（含「高端装备」「人工智能」这类平时归类在指数下的板块），
+   * 比本地过滤全量板块列表更可靠（不受分页/加载失败影响）。
+   * @returns {Promise<Array<{bk,code,name,type,secid,change}>>}
+   */
+  async resolveBoardViaSuggest(keyword) {
+    const kw = (keyword || '').trim();
+    if (!kw) return [];
+    const token = 'D43BF7224A6D6F3AEA560038B6A1D52C';
+    const url = `https://searchapi.eastmoney.com/api/suggest/get?input=${encodeURIComponent(kw)}&type=14&token=${token}`;
+    try {
+      const j = await this._eastJsonp(url, 9000);
+      const arr = (j && j.QuotationCodeTable && j.QuotationCodeTable.Data) || [];
+      const out = [];
+      for (const x of arr) {
+        const cls = x.Classify;
+        const st = String(x.SecurityType);
+        // 仅保留板块类：BK(概念/行业) / Index(板块指数) / 中证指数(24)
+        const isBoard = cls === 'BK' || cls === 'Index' || cls === '24' ||
+                        st === '9' || st === '5' || st === '11' || st === '2' || st === '3';
+        if (!isBoard) continue;
+        let type = '概念';
+        if (st === '5' || cls === 'Index') type = '指数';
+        else if (st === '11' || cls === '24') type = '指数';
+        else if (st === '2' || st === '3') type = '行业';
+        out.push({ bk: x.Code, code: x.Code, name: x.Name, type, secid: x.QuoteID, change: null });
+      }
+      return out;
+    } catch (e) {
+      console.debug('[stock-api] 搜索建议解析失败，回退本地过滤', e && e.message);
+      return [];
+    }
+  },
+
+  /**
+   * 按关键词搜索板块（本地过滤 + 东财搜索建议双路合并）。
+   * 本地过滤保证概念/行业/指数已加载项的精确分类；
+   * 搜索建议兜底，确保「高端装备」「人工智能」等指数板块也能被直接搜到。
+   * @param {string} keyword
+   * @returns {Promise<Array<{bk,code,name,type,secid,change}>>}
+   */
   async searchSectors(keyword) {
     const kw = (keyword || '').trim().toLowerCase();
     if (!kw) return [];
+    // 1) 本地过滤（已加载的概念/行业/指数全量列表，含正确 行业/概念 分类）
     const all = await this.getAllSectors();
-    let matched = all.filter(s => s.name.toLowerCase().includes(kw));
-    // 缓存未命中兜底：直接拉「指数板块」列表再匹配，覆盖概念/行业之外的高频指数（如高端装备 000097）
-    if (!matched.length) {
-      try {
-        const idx = await this._loadSectors('m:90+t:5', 1);
-        matched = idx.filter(s => s.name.toLowerCase().includes(kw)).map(s => ({ ...s, type: '指数' }));
-      } catch (e) { /* 忽略兜底失败 */ }
-    }
-    // 排序：以关键词开头（最贴合的主行业）> 仅包含关键词；同名长度短（更精确）优先
-    matched.sort((a, b) => {
+    const local = all.filter(s => s.name.toLowerCase().includes(kw)).map(s => ({ ...s, code: s.bk }));
+    // 2) 东财搜索建议（JSONP，绕过 CORS）：直接解析关键词→板块，补充本地未收录的指数等
+    let suggest = [];
+    try { suggest = await this.resolveBoardViaSuggest(keyword); } catch (e) { /* 忽略 */ }
+    // 合并去重（以归一化后的代码为准；先本地后建议，本地保留精确 行业/概念 分类）
+    const seen = new Set();
+    const merge = [];
+    const pushItem = (it) => {
+      const key = this._normalizeBoardCode(it.bk || it.code || '');
+      if (!key || seen.has(key)) return;
+      seen.add(key);
+      merge.push({ bk: it.bk || it.code, code: it.bk || it.code, name: it.name, type: it.type, secid: it.secid, change: it.change != null ? it.change : null });
+    };
+    local.forEach(pushItem);
+    suggest.forEach(pushItem);
+    // 排序：以关键词开头（最贴合）> 仅包含关键词；同名长度短（更精确）优先
+    merge.sort((a, b) => {
       const an = a.name.toLowerCase(), bn = b.name.toLowerCase();
       const as = an.startsWith(kw) ? 2 : 1;
       const bs = bn.startsWith(kw) ? 2 : 1;
       if (as !== bs) return bs - as;
       return an.length - bn.length;
     });
-    return matched.slice(0, 30);
+    return merge.slice(0, 30);
   },
 
   /**
@@ -1761,9 +1824,10 @@ const StockAPI = {
    * @returns {Promise<Array<{code, name, price, changePercent}>>} code 为带前缀格式
    */
   async getSectorStocks(bk) {
+    const code = this._normalizeBoardCode(bk);
     const all = [];
     for (let pn = 1; pn <= 15; pn++) {
-      const url = `https://push2.eastmoney.com/api/qt/clist/get?pn=${pn}&pz=100&po=1&np=1&fltt=2&invt=2&fid=f3&fs=b%3A${bk}&fields=f12,f14,f3,f2`;
+      const url = `https://push2.eastmoney.com/api/qt/clist/get?pn=${pn}&pz=100&po=1&np=1&fltt=2&invt=2&fid=f3&fs=b%3A${code}&fields=f12,f14,f3,f2`;
       const json = await this._eastFetch(url);
       const diff = this._diffArray(json);
       for (const it of diff) {
@@ -1790,9 +1854,10 @@ const StockAPI = {
    * @returns {Promise<Array<{code,name,price,changePercent,marketCap}>>}
    */
   async getSectorStocksMeta(bk, maxPages = 15) {
+    const code = this._normalizeBoardCode(bk);
     const all = [];
     for (let pn = 1; pn <= maxPages; pn++) {
-      const url = `https://push2.eastmoney.com/api/qt/clist/get?pn=${pn}&pz=100&po=1&np=1&fltt=2&invt=2&fid=f20&fs=b%3A${bk}&fields=f12,f14,f3,f2,f20`;
+      const url = `https://push2.eastmoney.com/api/qt/clist/get?pn=${pn}&pz=100&po=1&np=1&fltt=2&invt=2&fid=f20&fs=b%3A${code}&fields=f12,f14,f3,f2,f20`;
       const json = await this._eastFetch(url);
       const diff = this._diffArray(json);
       for (const it of diff) {
