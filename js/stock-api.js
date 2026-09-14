@@ -1028,6 +1028,41 @@ const StockAPI = {
   },
 
   /**
+   * 获取个股所属行业（明细到最细层级，best-effort）。
+   * 通过东财 F10 公司概况的板块三级行业链拼接：一级/二级/三级，如「电力设备 / 其他电源设备Ⅱ / 综合电力设备商」。
+   * 用于反推业务结果表的「所属行业」列。fetch 失败自动降级 JSONP（绕过 CORS）。
+   * @param {string} code sh600875 或 600875.SH
+   * @returns {Promise<string|null>}
+   */
+  async getIndustryDetail(code) {
+    const secucode = this.toSecucode(code);
+    const url = `https://datacenter-web.eastmoney.com/api/data/v1/get?reportName=RPT_F10_ORG_BASICINFO&columns=ALL&filter=(SECUCODE%3D%22${secucode}%22)&pageNumber=1&pageSize=1`;
+    let row = null;
+    try {
+      const resp = await fetch(url, { cache: 'no-store' });
+      const json = await resp.json();
+      row = json.result && json.result.data && json.result.data[0];
+    } catch (e) {
+      console.debug('获取细分行业失败(fetch)，尝试 JSONP 兜底', code);
+    }
+    if (!row) {
+      try {
+        const json = await this._eastJsonp(url, 9000);
+        row = json && json.result && json.result.data && json.result.data[0];
+      } catch (e) {
+        console.debug('获取细分行业失败(JSONP)', code);
+      }
+    }
+    if (row) {
+      const chain = [row.BOARD_NAME_1LEVEL, row.BOARD_NAME_2LEVEL, row.BOARD_NAME_3LEVEL]
+        .filter(v => v && String(v).trim());
+      if (chain.length) return chain.join(' / ');
+      if (row.CSRC_INDUSTRY_NAME) return String(row.CSRC_INDUSTRY_NAME).replace(/-/g, ' / ');
+    }
+    return null;
+  },
+
+  /**
    * 获取个股主营构成（东财 F10 主营构成，RPT_F10_FN_MAINOP）。
    * 取最新报告期的「按产品」(MAINOP_TYPE=2) 构成，按收入占比降序返回前若干主业。
    * @param {string} code sh600519
