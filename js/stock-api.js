@@ -1733,7 +1733,16 @@ const StockAPI = {
     const kw = (keyword || '').trim().toLowerCase();
     if (!kw) return [];
     const all = await this.getAllSectors();
-    return all.filter(s => s.name.toLowerCase().includes(kw)).slice(0, 20);
+    const matched = all.filter(s => s.name.toLowerCase().includes(kw));
+    // 排序：以关键词开头（最贴合的主行业）> 仅包含关键词；同名长度短（更精确）优先
+    matched.sort((a, b) => {
+      const an = a.name.toLowerCase(), bn = b.name.toLowerCase();
+      const as = an.startsWith(kw) ? 2 : 1;
+      const bs = bn.startsWith(kw) ? 2 : 1;
+      if (as !== bs) return bs - as;
+      return an.length - bn.length;
+    });
+    return matched.slice(0, 30);
   },
 
   /**
@@ -1829,10 +1838,22 @@ const StockAPI = {
         boards.sort((a, b) => semanticNameScore(b.name, canon) - semanticNameScore(a.name, canon));
         return { canon, boards: boards.slice(0, CAP_PER) };
       }).filter(x => x.boards.length);
-      // 通用词兜底：没有任何概念命中时，用查询抽取词直接匹配板块名
+      // 通用词兜底：没有任何概念命中时，按用户的「完整本意」匹配板块名（不拆词曲解）
+      //  - 优先：板块名包含「完整查询词」（如「发电设备」只匹配发电设备相关板块，绝不误匹配「网络设备」）
+      //  - 兜底：完整词无任何板块命中时，才退化为查询抽取词（2~3 字碎片）匹配，兼容组合/冷门词
       if (!conceptBoardLists.length && (matchers.generic || []).length) {
-        const boards = allBoards.filter(b => matchers.generic.some(g => b.name.toLowerCase().includes(g)));
-        boards.sort((a, b) => b.name.length - a.name.length);
+        const fullQ = (query || '').toLowerCase().trim();
+        let boards = fullQ ? allBoards.filter(b => b.name.toLowerCase().includes(fullQ)) : [];
+        if (!boards.length) {
+          boards = allBoards.filter(b => matchers.generic.some(g => b.name.toLowerCase().includes(g)));
+        }
+        boards.sort((a, b) => {
+          const an = a.name.toLowerCase(), bn = b.name.toLowerCase();
+          const aw = fullQ && an.startsWith(fullQ) ? 1 : 0;
+          const bw = fullQ && bn.startsWith(fullQ) ? 1 : 0;
+          if (aw !== bw) return bw - aw;          // 以完整词开头的最贴合，排前
+          return an.length - bn.length;           // 同名长度短（更精确）优先
+        });
         conceptBoardLists.push({ canon: '通用', boards: boards.slice(0, CAP_PER) });
       }
     }
