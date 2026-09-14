@@ -1709,15 +1709,18 @@ const StockAPI = {
     if (this._sectorCache && this._sectorCache._full >= 1 && now - this._sectorCacheAt < cacheTtl) {
       return this._sectorCache.data;
     }
-    const maxPg = 6; // 概念约6页、行业约5页，足够覆盖全部板块
-    // 概念与行业分开请求，各自失败不互相影响
-    let concepts = [], industries = [];
+    const maxPg = 6; // 概念约6页、行业约5页、指数约6页，足够覆盖全部板块
+    // 概念 / 行业 / 指数(板块指数，如「高端装备」000097)分开请求，各自失败不互相影响
+    let concepts = [], industries = [], indices = [];
     try { concepts = await this._loadSectors('m:90+t:3', maxPg); } catch (e) { console.debug('概念板块加载失败', e); }
     try { industries = await this._loadSectors('m:90+t:2', maxPg); } catch (e) { console.debug('行业板块加载失败', e); }
+    try { indices = await this._loadSectors('m:90+t:5', maxPg); } catch (e) { console.debug('指数板块加载失败', e); }
     const seen = new Set();
     const all = [];
     concepts.forEach(s => { if (!seen.has(s.bk)) { seen.add(s.bk); all.push({ ...s, type: '概念' }); } });
     industries.forEach(s => { if (!seen.has(s.bk)) { seen.add(s.bk); all.push({ ...s, type: '行业' }); } });
+    // 指数板块（如「高端装备」000097）单独一类，确保「搜索板块」能搜到平时归类在指数下的概念
+    indices.forEach(s => { if (!seen.has(s.bk)) { seen.add(s.bk); all.push({ ...s, type: '指数' }); } });
     // 缓存（始终标记为完整加载，供搜索使用）
     this._sectorCache = { data: all, _full: 1 };
     this._sectorCacheAt = now;
@@ -1733,7 +1736,14 @@ const StockAPI = {
     const kw = (keyword || '').trim().toLowerCase();
     if (!kw) return [];
     const all = await this.getAllSectors();
-    const matched = all.filter(s => s.name.toLowerCase().includes(kw));
+    let matched = all.filter(s => s.name.toLowerCase().includes(kw));
+    // 缓存未命中兜底：直接拉「指数板块」列表再匹配，覆盖概念/行业之外的高频指数（如高端装备 000097）
+    if (!matched.length) {
+      try {
+        const idx = await this._loadSectors('m:90+t:5', 1);
+        matched = idx.filter(s => s.name.toLowerCase().includes(kw)).map(s => ({ ...s, type: '指数' }));
+      } catch (e) { /* 忽略兜底失败 */ }
+    }
     // 排序：以关键词开头（最贴合的主行业）> 仅包含关键词；同名长度短（更精确）优先
     matched.sort((a, b) => {
       const an = a.name.toLowerCase(), bn = b.name.toLowerCase();
