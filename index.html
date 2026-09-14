@@ -374,19 +374,35 @@
           产品级语义示例：在上方输入框输入 <b>生产薄膜铌酸锂的企业</b> / <b>HBM核心公司</b> / <b>复合铜箔龙头</b> / <b>人形机器人减速器</b>，点 🤖 AI语义搜索 即可直接得到相关上市公司及产业链定位。
         </p>
 
-        <!-- 搜索结果 -->
+        <!-- 搜索结果：按「主行业概念（行业板块）＋ 多个次行业概念（概念板块）」分组 -->
         <div class="sector-results" v-if="sectorResults.length">
-          <div class="sector-result-list">
-            <div class="sector-result-item" v-for="item in sectorResults" :key="item.bk"
-                 @click="addSectorFromSearch(item)">
-              <span class="sector-result-name">{{ item.name }}</span>
-              <span class="sector-result-type">{{ item.type }}</span>
-              <span class="sector-result-change" v-if="item.change != null">{{ fmtPct(item.change) }}</span>
-              <button class="btn btn-sm btn-primary">➕ 添加</button>
-              <button class="btn btn-sm" @click.stop="addSubSector(item)">次选</button>
+          <template v-if="sectorResultsMain.length">
+            <div class="sector-group-title">🏭 主行业概念</div>
+            <div class="sector-result-list">
+              <div class="sector-result-item" v-for="item in sectorResultsMain" :key="item.bk"
+                   @click="addSectorFromSearch(item)">
+                <span class="sector-result-name">{{ item.name }}</span>
+                <span class="sector-result-type">{{ item.type }}</span>
+                <span class="sector-result-change" v-if="item.change != null">{{ fmtPct(item.change) }}</span>
+                <button class="btn btn-sm btn-primary">➕ 添加</button>
+                <button class="btn btn-sm" @click.stop="addSubSector(item)">次选</button>
+              </div>
             </div>
-          </div>
-          <p class="muted small">点击板块设为主选并添加；点「次选」加入次选概念列表</p>
+          </template>
+          <template v-if="sectorResultsSub.length">
+            <div class="sector-group-title">🔗 多个次行业概念</div>
+            <div class="sector-result-list">
+              <div class="sector-result-item" v-for="item in sectorResultsSub" :key="item.bk"
+                   @click="addSectorFromSearch(item)">
+                <span class="sector-result-name">{{ item.name }}</span>
+                <span class="sector-result-type">{{ item.type }}</span>
+                <span class="sector-result-change" v-if="item.change != null">{{ fmtPct(item.change) }}</span>
+                <button class="btn btn-sm btn-primary">➕ 添加</button>
+                <button class="btn btn-sm" @click.stop="addSubSector(item)">次选</button>
+              </div>
+            </div>
+          </template>
+          <p class="muted small">点击板块设为主选并添加；点「次选」加入次选概念列表（主行业概念=行业板块，多个次行业概念=概念板块）</p>
         </div>
         <div class="sector-results" v-else-if="sectorSearching">
           <p class="muted">正在搜索板块...</p>
