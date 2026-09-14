@@ -912,6 +912,7 @@ body {
 .semantic-table tbody tr:hover { background: #faf8ff; }
 .semantic-table .rank { color: var(--text-secondary); font-weight: 600; }
 .semantic-table .code { font-family: monospace; color: var(--text-secondary); }
+.semantic-table .industry { white-space: normal; color: var(--text-secondary); font-size: 12px; min-width: 132px; }
 .semantic-table .name { font-weight: 600; }
 .semantic-table.reverse .seg, .semantic-table .seg { white-space: normal; min-width: 150px; color: var(--text-primary); font-weight: 500; }
 .semantic-table .concepts { white-space: normal; }
