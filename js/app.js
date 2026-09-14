@@ -1672,6 +1672,9 @@ const app = createApp({
     // ============================================================
     const sectorSearch = ref('');        // 搜索框
     const sectorResults = ref([]);       // 搜索结果
+    // 搜索结果按「主行业概念（行业板块）＋ 多个次行业概念（概念板块）」分组（沿用板块自带 type 字段）
+    const sectorResultsMain = computed(() => sectorResults.value.filter(s => s.type === '行业'));
+    const sectorResultsSub = computed(() => sectorResults.value.filter(s => s.type === '概念'));
     const sectorSearching = ref(false);
     const sectorLoading = ref(false);    // 板块成分股加载中
     const sectorIndustryOpen = ref(false); // 板块详情内「行业」勾选下拉是否展开
@@ -3665,6 +3668,7 @@ const app = createApp({
       sectorLoadError, sectorLoadingAll, reloadSectors, loadAllSectors, refreshSectorData,
       sectorDetail, sortedSectorPools, searchSector, addSectorFromSearch,
       sectorSubKeyword, searchSubSectors, clearSubSectorSearch, filteredSectorPools,
+    sectorResultsMain, sectorResultsSub,
       sectorPick, sectorPickCount, toggleSelectAllSector, confirmSectorPick,
       visibleSectorPickStocks, sectorPickFiltered,
       sectorPickIndustries, sectorPickIndustryLoaded, loadSectorPickIndustries,
