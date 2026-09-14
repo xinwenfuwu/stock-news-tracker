@@ -44,6 +44,11 @@ const SEMANTIC_CONCEPTS = [
   { canonical: '新能源', aliases: ['新能源', '光伏', '风电', '氢能', '储能', '充电桩', '特高压', '绿电'],
     hints: ['光伏', '风电', '储能', '氢能', '充电桩', '特高压', '新能源', '绿电'],
     segHints: ['光伏', '风电', '储能', '氢能', '充电桩', '特高压', '绿电', '电池'] },
+  { canonical: '发电设备',
+    aliases: ['发电设备', '电站设备', '发电装备', '发电机械', '电力设备', '电源设备', '发电机组', '电站装备', '燃机', '超超临界'],
+    // 候选板块指向「设备制造」类（电源设备/风电设备/电力设备），而非「发电运营」类（火电/水电运营商板块）
+    hints: ['其他电源设备', '电力设备', '风电设备', '发电设备', '电站设备', '锅炉', '汽轮机', '发电机', '超超临界'],
+    segHints: ['发电设备', '锅炉', '汽轮机', '发电机', '机组', '电站', '装备', '余热锅炉', '水轮', '燃机'] },
   { canonical: '锂电池新能源车', aliases: ['锂电池', '锂电', '新能源车', '电动汽车', '动力电池', '固态电池', '新能源整车'],
     hints: ['锂电池', '锂电', '新能源车', '动力电池', '固态电池', '整车'],
     segHints: ['锂电池', '锂电', '新能源车', '动力电池', '固态电池', '整车'] },
@@ -228,10 +233,29 @@ const SEMANTIC_PRODUCTS = [
     ]
   },
   {
+    key: '火电发电设备',
+    desc: '用于火力发电厂的设备（电站主机与辅机）：燃煤/燃气锅炉、汽轮机、汽轮发电机、余热锅炉、电站辅机（磨煤机/给水泵）、超超临界机组、循环流化床锅炉等。',
+    aliases: ['火电发电设备', '火电厂设备', '火电设备', '火电装备', '电站锅炉', '火电机组', '燃煤发电', '燃气发电', '超超临界', '燃机发电'],
+    stocks: [
+      { code: 'sz002353', name: '杰瑞股份', role: '燃气发电设备/分布式能源装备（杰瑞动力：柴油·燃气发电机组）' },
+      { code: 'sh600875', name: '东方电气', role: '火电发电设备绝对龙头：锅炉·汽轮机·汽轮发电机全套主机（燃煤/燃机/超超临界）' },
+      { code: 'sh601727', name: '上海电气', role: '火电发电设备龙头：燃煤/燃机/超超临界主机' },
+      { code: 'sh600475', name: '华光环能', role: '电站锅炉/余热锅炉（热电联产）' },
+      { code: 'sz002630', name: '华西能源', role: '电站锅炉及火电发电设备总包' },
+      { code: 'sz002255', name: '海陆重工', role: '余热锅炉/电站辅机设备' },
+      { code: 'sz002534', name: '西子洁能', role: '余热锅炉/电站设备（余热发电）' },
+      { code: 'sz002266', name: '浙富控股', role: '火电/抽水蓄能机组（水火发电设备）' },
+      { code: 'sz000922', name: '佳电股份', role: '电站配套特种电机' },
+      { code: 'sz300145', name: '中金环境', role: '电站给水泵/循环水泵' },
+      { code: 'sz300411', name: '金盾股份', role: '电站通风/核电·火电风机' }
+    ]
+  },
+  {
     key: '发电设备',
     desc: '发电设备（电站装备）：用于电力生产的核心装备，涵盖燃煤/燃气/核电/水电/抽水蓄能/风电等机组的主机与辅机——发电锅炉、汽轮机、燃气轮机、发电机、水轮发电机组、余热锅炉等。',
     aliases: ['发电设备', '发电装备', '发电机械', '发电锅炉', '汽轮发电机', '发电机组', '电站设备', '电站装备', '电力主机'],
     stocks: [
+      { code: 'sz002353', name: '杰瑞股份', role: '燃气发电设备/分布式能源装备（杰瑞动力：柴油·燃气发电机组）' },
       { code: 'sh600875', name: '东方电气', role: '发电设备绝对龙头：火电/核电/水电/燃机/风电全套主机（锅炉·汽轮机·发电机·水轮机）' },
       { code: 'sh601727', name: '上海电气', role: '发电设备龙头：燃煤/燃机/核电/风电主机及输配电装备' },
       { code: 'sz002202', name: '金风科技', role: '风力发电设备龙头（永磁直驱整机）' },
@@ -356,6 +380,22 @@ const GENERIC_CATEGORY_NOUNS = new Set([
 ]);
 
 /**
+ * 领域/发电方式修饰词：火电/水电/核电/风电/光伏… 单独出现只表示「发电方式」，不代表设备产品。
+ * 语义搜索「火电发电设备」要的是「生产火电厂设备的厂家」，不是「火电运营商」——
+ * 因此领域词不单独作为段名/板块独立匹配词（仅作领域加权），避免误匹配火电/水电运营上市公司。
+ */
+const DOMAIN_MODIFIERS = new Set([
+  '火电', '水电', '核电', '风电', '光伏', '太阳能', '燃气', '生物质', '垃圾', '煤电',
+  '燃机', '分布式', '抽水蓄能', '潮汐', '地热', '光热'
+]);
+
+/**
+ * 弱产品动作词：发电/电力/生产… 单独作为匹配词无区分度（火电运营商主营也含「发电」），
+ * 不单独作为段名核心命中词，仅保留 ≥3 字的产品短语（发电设备/电设备/锅炉/汽轮机）作核心匹配。
+ */
+const WEAK_PRODUCT_WORDS = new Set(['发电', '电力', '生产', '制造']);
+
+/**
  * 去掉短语尾部的通用类别词（仅去一层），如「发电设备」→「发电」、「智能发电设备」→「智能发电」。
  * 头部词用于兼容「发电锅炉」「发电汽轮机」等具体品种写法。
  */
@@ -378,33 +418,50 @@ function stripCategorySuffix(run) {
  *   - 若短语以通用类别词结尾（如「发电设备」→头部「发电」），额外加入头部，使其能匹配「发电锅炉」等具体品种。
  * 例：「发电设备」→ ['发电设备','发电','电设','发电设','电设备']（不再含无意义的「设备」）
  */
+/**
+ * 抽取查询匹配词，区分「产品核心词(terms)」与「领域修饰词(domain)」。
+ *  - 整词优先；2~3 字滑动窗口补充，剔除停用词、通用类别词碎片；
+ *  - 领域修饰词（火电/水电/风电…）单独收集到 domain，不进入 terms（避免误匹配运营上市公司）；
+ *  - 弱产品动作词（发电/电力…）不单独成词，只保留 ≥3 字产品短语作核心匹配。
+ * 例：「火电发电设备」→ terms:[发电设备,火电发电设备,电设备,发电设,电设,火电发电,…]；domain:[火电]
+ *     （不再含无意义的「火电」「发电」独立词）
+ */
 function extractQueryTerms(query) {
   const q = String(query || '').toLowerCase();
   const terms = new Set();
+  const domain = new Set();
   const latin = q.match(/[a-z0-9]{2,}/g) || [];
   latin.forEach(t => terms.add(t));
   const cn = q.match(/[一-龥]+/g) || [];
   cn.forEach(run => {
-    if (run.length <= 6) terms.add(run); // 完整短语优先（整词）
-    // 2~3 字滑动窗口补充，剔除停用词与【通用类别词】碎片
+    if (run.length <= 6) {
+      if (DOMAIN_MODIFIERS.has(run)) domain.add(run);
+      else terms.add(run); // 完整短语优先（整词）
+    }
     for (let n = 2; n <= 3; n++) {
       for (let i = 0; i + n <= run.length; i++) {
         const g = run.slice(i, i + n);
         if (SEMANTIC_STOPWORDS.has(g)) continue;
         if (GENERIC_CATEGORY_NOUNS.has(g)) continue;
+        if (DOMAIN_MODIFIERS.has(g)) { domain.add(g); continue; } // 领域词单列
+        if (n === 2 && WEAK_PRODUCT_WORDS.has(g)) continue;       // 弱产品词不单独成词
         terms.add(g);
       }
     }
-    // 头部词抽取：短语以通用类别词结尾时，取除掉尾部类别词后的头部（兼容「发电锅炉」等具体品种写法）
     const head = stripCategorySuffix(run);
     if (head && head.length >= 2 && head !== run) {
-      terms.add(head);
+      if (!DOMAIN_MODIFIERS.has(head)) terms.add(head);
       for (let n = 2; n <= Math.min(3, head.length); n++) {
-        for (let i = 0; i + n <= head.length; i++) terms.add(head.slice(i, i + n));
+        for (let i = 0; i + n <= head.length; i++) {
+          const g = head.slice(i, i + n);
+          if (SEMANTIC_STOPWORDS.has(g) || GENERIC_CATEGORY_NOUNS.has(g) || DOMAIN_MODIFIERS.has(g)) continue;
+          if (n === 2 && WEAK_PRODUCT_WORDS.has(g)) continue;
+          terms.add(g);
+        }
       }
     }
   });
-  return [...terms];
+  return { terms: [...terms], domain: [...domain] };
 }
 
 /**
@@ -426,9 +483,10 @@ function buildMatchers(query) {
       (c.segHints || []).forEach(h => segHints.add(h.toLowerCase()));
     }
   }
-  const generic = extractQueryTerms(query);
-  generic.forEach(t => { boardHints.add(t); segHints.add(t); });
-  return { concepts, boardHints: [...boardHints], segHints: [...segHints], generic };
+  const g = extractQueryTerms(query);
+  g.terms.forEach(t => { boardHints.add(t); segHints.add(t); });
+  g.domain.forEach(t => { segHints.add(t); }); // 领域词只进段名（加权），不进 boardHints（不驱动运营板块）
+  return { concepts, boardHints: [...boardHints], segHints: [...segHints], generic: [...g.terms], domain: [...g.domain] };
 }
 
 /** 主营构成段名是否命中任一匹配词（子串，忽略大小写） */
@@ -442,18 +500,25 @@ function segMatches(segName, matchersArr) {
 /**
  * 根据主营构成计算「营收占比相关度」。
  * 相关度 = 命中语义描述的主营业务/产品段之营收占比之和（%，0~100）。
- * @returns {{relevance:number, matched:Array<{name:string,ratio:number}>}}
+ * 关键约束：段名【必须命中产品核心词(coreArr)之一】才计入——领域修饰词(domainArr)仅作加权，
+ * 避免「火电发电设备」误命中火电运营商（其主营段仅含「火电」不含发电设备类段）。
+ * @param {string[]} coreArr 产品核心匹配词（发电设备/锅炉/汽轮机…），段名必含其一
+ * @param {string[]} domainArr 领域修饰词（火电/水电…），命中则相关度 ×1.15
  */
-function revenueRelevance(mainBiz, matchersArr) {
+function revenueRelevance(mainBiz, coreArr, domainArr) {
   if (!mainBiz || !mainBiz.length) return { relevance: 0, matched: [] };
+  if (!coreArr || !coreArr.length) return { relevance: 0, matched: [] };
+  const domainSet = new Set(domainArr || []);
   let rel = 0;
   const matched = [];
   for (const seg of mainBiz) {
-    if (segMatches(seg.name, matchersArr)) {
-      const r = (seg.ratio || 0);
-      rel += r;
-      matched.push({ name: seg.name, ratio: Math.round(r * 1000) / 10 });
-    }
+    const s = String(seg.name).toLowerCase();
+    if (!coreArr.some(m => s.includes(m))) continue; // 必含产品核心词
+    const r = (seg.ratio || 0);
+    let ratio = r;
+    if (domainSet.size && domainArr.some(d => s.includes(d))) ratio = r * 1.15; // 领域命中加权
+    rel += Math.min(ratio, 1);
+    matched.push({ name: seg.name, ratio: Math.round(r * 1000) / 10 });
   }
   if (rel > 1) rel = 1; // ratio 以小数计，封顶 100%
   return { relevance: Math.round(rel * 1000) / 10, matched };
@@ -2171,14 +2236,17 @@ const StockAPI = {
     resultCodes = [...new Set(resultCodes)];
 
     // 2) 逐候选拉取主营构成，计算营收占比相关度
-    const matchersArr = (matchers.segHints || []).map(s => String(s).toLowerCase());
+    // 段名匹配拆分为「产品核心词」与「领域修饰词」：核心词必含，领域词仅加权（避免误匹配运营上市公司）
+    let coreArr = (matchers.segHints || []).map(s => String(s).toLowerCase()).filter(t => !DOMAIN_MODIFIERS.has(t));
+    if (!coreArr.length) coreArr = (matchers.segHints || []).map(s => String(s).toLowerCase()); // 回退：纯领域词查询
+    const domainArr = (matchers.domain || []).map(s => String(s).toLowerCase());
     const roleMap = {};
     productStocks.forEach(s => { roleMap[s.code] = s.role || ''; });
     const raw = await mapLimit(resultCodes, 6, async (code) => {
       const info = stockInfo.get(code) || { code, name: code };
       let mb = null;
       try { mb = await this.getMainBusiness(code); } catch (e) { mb = null; }
-      const { relevance, matched } = revenueRelevance(mb, matchersArr);
+      const { relevance, matched } = revenueRelevance(mb, coreArr, domainArr);
       return { info, relevance, matched };
     });
 
