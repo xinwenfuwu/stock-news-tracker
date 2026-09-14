@@ -596,6 +596,7 @@
                   <th>排名</th>
                   <th>股票名称</th>
                   <th>代码</th>
+                  <th>所属行业</th>
                   <th>业务名称</th>
                   <th>营收占比</th>
                   <th class="sortable" @click="setReverseSort('relevance')">相关度/联动 <span class="sort-caret">{{ reverseSort==='relevance'?'⬇️':'↕️' }}</span></th>
@@ -612,6 +613,7 @@
                     <template v-else>{{ reverse.name }}</template>
                   </td>
                   <td class="code">{{ s.type!=='custom' ? reverse.code.toUpperCase() : '—' }}</td>
+                  <td class="industry">{{ reverse.industry || '—' }}</td>
                   <td class="seg">
                     <input v-if="s.type==='hot'" class="inline-input bus-input" v-model="reverse.hotTheme" placeholder="自动识别的最火概念(可改)" />
                     <input v-else-if="s.type==='custom'" class="inline-input bus-input" v-model="reverse.customName" placeholder="自行填写业务名称" />
