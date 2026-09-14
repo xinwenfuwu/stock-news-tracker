@@ -946,6 +946,11 @@ const StockAPI = {
   async getSectorStockCount(bk) {
     try {
       const code = this._normalizeBoardCode(bk);
+      // 指数板块：数据中心成分股数量（push2 fs=b:code 对指数返回 0）
+      if (this._isIndexBoard(code)) {
+        const codes = await this._getIndexConstituentCodes(code);
+        return codes.length;
+      }
       const url = `https://push2.eastmoney.com/api/qt/clist/get?pn=1&pz=1&po=1&np=1&fltt=2&invt=2&fid=f20&fs=b%3A${code}&fields=f12`;
       const json = await this._eastFetch(url);
       const total = json && json.data && json.data.total;
@@ -1825,6 +1830,12 @@ const StockAPI = {
    */
   async getSectorStocks(bk) {
     const code = this._normalizeBoardCode(bk);
+    // 指数板块：数据中心成分股 + 批量行情补全名称/价格（push2 fs=b:code 对指数查不到成员）
+    if (this._isIndexBoard(code)) {
+      return (await this._getIndexConstituents(code)).map(s => ({
+        code: s.code, name: s.name, price: s.price, changePercent: s.changePercent
+      }));
+    }
     const all = [];
     for (let pn = 1; pn <= 15; pn++) {
       const url = `https://push2.eastmoney.com/api/qt/clist/get?pn=${pn}&pz=100&po=1&np=1&fltt=2&invt=2&fid=f3&fs=b%3A${code}&fields=f12,f14,f3,f2`;
@@ -1855,6 +1866,10 @@ const StockAPI = {
    */
   async getSectorStocksMeta(bk, maxPages = 15) {
     const code = this._normalizeBoardCode(bk);
+    // 指数板块：复用指数成分股完整信息（含总市值），与 getSectorStocks 同源
+    if (this._isIndexBoard(code)) {
+      return await this._getIndexConstituents(code);
+    }
     const all = [];
     for (let pn = 1; pn <= maxPages; pn++) {
       const url = `https://push2.eastmoney.com/api/qt/clist/get?pn=${pn}&pz=100&po=1&np=1&fltt=2&invt=2&fid=f20&fs=b%3A${code}&fields=f12,f14,f3,f2,f20`;
@@ -1876,6 +1891,97 @@ const StockAPI = {
       await new Promise(r => setTimeout(r, 300));
     }
     return all;
+  },
+
+  /**
+   * 判断板块代码是否为「指数板块」（纯 6 位数字，如 000097 / 931071）。
+   * 概念/行业板块代码为 BKxxxx（字母开头），可用 push2 fs=b:BKxxxx 直接拉成分股；
+   * 指数板块必须用东财数据中心 RPT_INDEX_COMPONENT 取成分股代码，再用行情接口补全名称/价格。
+   */
+  _isIndexBoard(bk) {
+    const c = this._normalizeBoardCode(bk);
+    return /^\d{6}$/.test(c || '');
+  },
+
+  /**
+   * 通过东财数据中心获取指数成分股代码清单（RPT_INDEX_COMPONENT，按 INDEX_CODE 过滤）。
+   * 该接口无 CORS 头，浏览器端 fetch 失败时用 JSONP(cb) 兜底；字段仅含 SECURITY_CODE（无名称）。
+   * @param {string} indexCode 指数代码，如 000097 / 931071
+   * @returns {Promise<string[]>} 6 位股票代码数组
+   */
+  async _getIndexConstituentCodes(indexCode) {
+    const codes = [];
+    for (let pn = 1; pn <= 10; pn++) {
+      const url = `https://datacenter-web.eastmoney.com/api/data/v1/get?reportName=RPT_INDEX_COMPONENT&columns=SECURITY_CODE&filter=(INDEX_CODE%3D%22${indexCode}%22)&pageNumber=${pn}&pageSize=100&source=WEB&client=WEB`;
+      let json = null;
+      try {
+        const resp = await fetch(url, { cache: 'no-store' });
+        json = await resp.json();
+      } catch (e) { /* fetch 被 CORS 拦截，走 JSONP 兜底 */ }
+      if (!json) {
+        try { json = await this._eastJsonp(url, 9000); } catch (e) { /* 忽略 */ }
+      }
+      const data = (json && json.result && json.result.data) || [];
+      if (!Array.isArray(data) || !data.length) break;
+      for (const it of data) { if (it.SECURITY_CODE) codes.push(String(it.SECURITY_CODE)); }
+      if (data.length < 100) break;
+      await new Promise(r => setTimeout(r, 200));
+    }
+    return codes;
+  },
+
+  /**
+   * 批量获取股票行情（名称/最新价/涨跌幅/总市值），补全指数成分股的展示字段。
+   * 走 push2 qt/ulist.np/get（与板块成分股同源，_eastFetch 自带 JSONP 兜底）。
+   * @param {string[]} codes 6 位股票代码
+   * @returns {Promise<Object>} key=secid(市场.代码)，value={name,price,changePercent,marketCap}
+   */
+  async _batchQuote(codes) {
+    if (!codes.length) return {};
+    const toSecid = (c) => (/^[69]/.test(c) ? '1.' : '0.') + c;
+    const secids = codes.map(toSecid).join(',');
+    // 注意：qt/ulist.np/get 与 clist 同款字段编号（f12=代码, f14=名称, f2=价格, f3=涨跌幅, f20=总市值）
+    const url = `https://push2.eastmoney.com/api/qt/ulist.np/get?fltt=2&invt=2&fields=f12,f14,f2,f3,f20&secids=${secids}`;
+    const json = await this._eastFetch(url);
+    const diff = (json && json.data && json.data.diff) || [];
+    const map = {};
+    const list = Array.isArray(diff) ? diff : Object.values(diff);
+    for (const it of list) {
+      if (!it) continue;
+      const pure = String(it.f12 || '').replace(/\.\w+$/, '');
+      if (!pure) continue;
+      map[toSecid(pure)] = {
+        name: it.f14 || '',
+        price: it.f2 != null ? parseFloat(it.f2) : null,
+        changePercent: it.f3 != null ? parseFloat(it.f3) : null,
+        marketCap: it.f20 != null ? parseFloat(it.f20) : null
+      };
+    }
+    return map;
+  },
+
+  /**
+   * 获取指数板块成分股完整信息（代码/名称/价格/涨跌幅/总市值）。
+   * 组合 RPT_INDEX_COMPONENT（代码清单）+ push2 批量行情（名称/价格）。
+   * @param {string} indexCode 指数代码
+   * @returns {Promise<Array<{code,name,price,changePercent,marketCap}>>}
+   */
+  async _getIndexConstituents(indexCode) {
+    const codes = await this._getIndexConstituentCodes(indexCode);
+    const quote = await this._batchQuote(codes);
+    const out = [];
+    for (const c of codes) {
+      const secid = (/^[69]/.test(c) ? '1.' : '0.') + c;
+      const q = quote[secid] || {};
+      out.push({
+        code: (/^[69]/.test(c) ? 'sh' : 'sz') + c,
+        name: q.name || '',
+        price: q.price != null ? q.price : null,
+        changePercent: q.changePercent != null ? q.changePercent : null,
+        marketCap: q.marketCap != null ? q.marketCap : null
+      });
+    }
+    return out;
   },
 
   /**
