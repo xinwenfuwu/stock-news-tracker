@@ -1394,12 +1394,11 @@ const app = createApp({
       { key: 'code', label: '代码', fixed: true, fixedIndex: 1, width: 88, sortable: true, type: 'code' },
       { key: 'name', label: '股票名称', fixed: true, fixedIndex: 2, width: 104, sortable: true, type: 'name' },
       { key: 'positiveCount', label: '统计', fixed: true, fixedIndex: 3, width: 60, sortable: true, type: 'pos' },
-      // 财务估值段：总市值 / 营业收入 / 净利润 / 扣非净利润 / 市营比 / 市净比 / 市扣比
-      // 按需求：24营比、24扣比 紧随「市扣比」之后
-      { key: 'totalMarketCap', label: '总市值', width: 96, sortable: true, type: 'cap' },
-      { key: 'revenue', label: '营业收入', width: 100, sortable: true, type: 'money' },
+      // 财务估值段：净利润 / 扣非净利润 / 相关度 / 市营比 / 市净比 / 市扣比
+      // 按需求：24营比、24扣比 紧随「市扣比」之后；「相关度」列位于「市营比」左侧（来自 AI 语义搜索的营收占比相关度）
       { key: 'netProfit', label: '净利润', width: 100, sortable: true, type: 'money' },
       { key: 'kcfjcxjlr', label: '扣非净利润', width: 100, sortable: true, type: 'money' },
+      { key: 'relevance', label: '相关度', width: 88, sortable: true, type: 'relevance' },
       { key: 'prRatio', label: '市营比', width: 86, sortable: true, type: 'ratio' },
       { key: 'pbRatio', label: '市净比', width: 86, sortable: true, type: 'ratio' },
       { key: 'pkRatio', label: '市扣比', width: 86, sortable: true, type: 'ratio' },
@@ -1437,6 +1436,9 @@ const app = createApp({
       { key: 'yearHighPrice', label: '今年高价', width: 88, sortable: true, type: 'price' },
       { key: 'yearLowPrice', label: '今年低价', width: 88, sortable: true, type: 'price' },
       { key: 'turnover', label: '换手率', width: 78, sortable: true, type: 'num2pct' },
+      // 按需求：总市值、营业收入 移至「资金流入」左侧
+      { key: 'totalMarketCap', label: '总市值', width: 96, sortable: true, type: 'cap' },
+      { key: 'revenue', label: '营业收入', width: 100, sortable: true, type: 'money' },
       { key: 'capitalFlow', label: '资金流入', width: 104, sortable: true, type: 'flow' },
       { key: 'contractLiab', label: '合同负债及排名', width: 100, sortable: true, type: 'contractliab' },
       // 主业与主要产品 / 概念 / 行业：按需求置于字段栏最后（收藏/操作/备注之前）
@@ -1503,6 +1505,8 @@ const app = createApp({
         case 'price': { const val = s[col.key]; return (val != null && !isNaN(val)) ? (+val).toFixed(2) : '—'; }
         case 'ratio': { const val = v(col.key); return (val != null && !isNaN(val)) ? (+val).toFixed(2) : '—'; }
         case 'num2': { const val = v(col.key); return (val != null && !isNaN(val)) ? (+val).toFixed(2) : '—'; }
+        // 相关度：来自 AI 语义搜索的「营收占比相关度」(命中主营构成段营收占比之和 %)；无语义来源时显示占位
+        case 'relevance': { const val = s[col.key]; return (val != null && !isNaN(val)) ? ((+val).toFixed(1) + '%') : '—'; }
         case 'num2pct': { const val = s[col.key]; return (val != null && !isNaN(val)) ? (+val).toFixed(2) + '%' : '—'; }
         case 'money': { const val = s[col.key]; return (val != null && !isNaN(val)) ? fmtYi(val) : '—'; }
         // 总市值：单位已是「亿元」，直接保留两位小数展示
@@ -1545,7 +1549,7 @@ const app = createApp({
      * （cap / curPrice / favGain 等）也加 num-cell，导致「表头靠左、数据靠右」，
      * 字段与数据不在同一条中轴线上。这里统一为一份定义。
      */
-    const NUMERIC_COL_TYPES = ['pct', 'price', 'ratio', 'num2', 'num2pct', 'money', 'flow', 'int', 'diff', 'cap', 'curPrice', 'favGain'];
+    const NUMERIC_COL_TYPES = ['pct', 'price', 'ratio', 'num2', 'num2pct', 'money', 'flow', 'int', 'diff', 'cap', 'curPrice', 'favGain', 'relevance'];
     function isNumCol(col) { return !!col && NUMERIC_COL_TYPES.indexOf(col.type) >= 0; }
 
     /** 单元格 class（冻结列 + 数值列 + 涨跌色 + 多行展示） */
@@ -1767,7 +1771,7 @@ const app = createApp({
         bk: 'SEMANTIC_' + Date.now(),
         type: 'AI语义',
         date: Store.today(),
-        stocks: semantic.stocks.map(s => ({ code: s.code, name: s.name }))
+        stocks: semantic.stocks.map(s => ({ code: s.code, name: s.name, relevance: s.relevance != null ? s.relevance : null }))
       };
       Store.addSectorPool(sector);
       recomputePoolAvg(sector);
