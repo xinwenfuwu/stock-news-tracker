@@ -1581,11 +1581,12 @@ const StockAPI = {
    * （其他页面股票数少、能跑完，所以看起来「都正常」）。
    * 改为一次拉取 2024-09-01 至今的全部日 K，一次性算出四项，请求量降为原来的 1/3。
    * @param {string} code sh600519
-   * @returns {Promise<{yearStartPrice,price924,yearHighPrice,yearLowPrice}>} 取不到的项为 null
+   * @returns {Promise<{yearStartPrice,price924,yearHighPrice,yearLowPrice,yearHighDate,yearLowDate}>} 取不到的项为 null
    */
   async getHistoryBundle(code) {
     const out = {
       yearStartPrice: null, price924: null, yearHighPrice: null, yearLowPrice: null,
+      yearHighDate: null, yearLowDate: null,
       weekAgoClose: null, monthAgoClose: null
     };
     if (!code) return out;
@@ -1609,16 +1610,16 @@ const StockAPI = {
     if (!data || !data.length) return out;
     // 今年高低价 + 年初第一个交易日收盘价（K 线按日期升序，首个即年初首个交易日）
     const prefix = `${y}-`;
-    let hi = -Infinity, lo = Infinity, first = null;
+    let hi = -Infinity, lo = Infinity, first = null, hiDate = null, loDate = null;
     for (const k of data) {
       if (k.date && k.date.indexOf(prefix) === 0) {
-        if (k.high != null && !isNaN(k.high) && k.high > hi) hi = k.high;
-        if (k.low != null && !isNaN(k.low) && k.low < lo) lo = k.low;
+        if (k.high != null && !isNaN(k.high) && k.high > hi) { hi = k.high; hiDate = k.date; }
+        if (k.low != null && !isNaN(k.low) && k.low < lo) { lo = k.low; loDate = k.date; }
         if (!first) first = k;
       }
     }
-    if (hi !== -Infinity) out.yearHighPrice = +hi.toFixed(2);
-    if (lo !== Infinity) out.yearLowPrice = +lo.toFixed(2);
+    if (hi !== -Infinity) { out.yearHighPrice = +hi.toFixed(2); out.yearHighDate = hiDate; }
+    if (lo !== Infinity) { out.yearLowPrice = +lo.toFixed(2); out.yearLowDate = loDate; }
     if (first) out.yearStartPrice = first.close;
     // 924 收盘价：优先精确匹配，非交易日则取之前最近一个交易日
     const exact = data.find(k => k.date === '2024-09-24');
