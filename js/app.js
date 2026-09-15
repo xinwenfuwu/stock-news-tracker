@@ -3602,6 +3602,8 @@ const app = createApp({
       // 用云端数据覆盖本地
       if (data.news) { D.news.splice(0, D.news.length, ...data.news); }
       if (data.stockPools) { D.stockPools.splice(0, D.stockPools.length, ...data.stockPools); }
+      // 恢复「概念行业选股」板块（含 AI 语义搜索保存的板块及其相关度字段），否则跨设备从云端加载会丢失
+      if (data.sectorPools) { D.sectorPools.splice(0, D.sectorPools.length, ...data.sectorPools); }
       if (data.dailyData) { Object.keys(D.dailyData).forEach(k => delete D.dailyData[k]); Object.assign(D.dailyData, data.dailyData); }
       if (data.settings) { Object.assign(D.settings, data.settings); }
       if (data.hotBoards) D.hotBoards = data.hotBoards;
