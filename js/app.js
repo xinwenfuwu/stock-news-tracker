@@ -295,6 +295,8 @@ const app = createApp({
           if (hb.price924 != null) s.price924 = hb.price924;
           if (hb.yearHighPrice != null) s.yearHighPrice = hb.yearHighPrice;
           if (hb.yearLowPrice != null) s.yearLowPrice = hb.yearLowPrice;
+          if (hb.yearHighDate != null) s.yearHighDate = hb.yearHighDate;
+          if (hb.yearLowDate != null) s.yearLowDate = hb.yearLowDate;
           if (hb.weekAgoClose != null) s.weekAgoClose = hb.weekAgoClose;
           if (hb.monthAgoClose != null) s.monthAgoClose = hb.monthAgoClose;
         }
@@ -1263,6 +1265,8 @@ const app = createApp({
             if (hb.price924 != null) s.price924 = hb.price924;
             if (hb.yearHighPrice != null) s.yearHighPrice = hb.yearHighPrice;
             if (hb.yearLowPrice != null) s.yearLowPrice = hb.yearLowPrice;
+            if (hb.yearHighDate != null) s.yearHighDate = hb.yearHighDate;
+            if (hb.yearLowDate != null) s.yearLowDate = hb.yearLowDate;
             if (hb.weekAgoClose != null) s.weekAgoClose = hb.weekAgoClose;
             if (hb.monthAgoClose != null) s.monthAgoClose = hb.monthAgoClose;
           }
@@ -1434,7 +1438,9 @@ const app = createApp({
       { key: 'prevShareholderCount', label: '上期散户', width: 96, sortable: true, type: 'int' },
       // 按需求：今年高价、今年低价 置于「换手率」左侧
       { key: 'yearHighPrice', label: '今年高价', width: 88, sortable: true, type: 'price' },
+      { key: 'yearHighDays', label: '距高天', width: 74, sortable: true, type: 'days' },
       { key: 'yearLowPrice', label: '今年低价', width: 88, sortable: true, type: 'price' },
+      { key: 'yearLowDays', label: '距低天', width: 74, sortable: true, type: 'days' },
       { key: 'turnover', label: '换手率', width: 78, sortable: true, type: 'num2pct' },
       // 按需求：总市值、营业收入 移至「资金流入」左侧
       { key: 'totalMarketCap', label: '总市值', width: 96, sortable: true, type: 'cap' },
@@ -1475,6 +1481,18 @@ const app = createApp({
       return String(x == null ? '' : x)
         .replace(/&/g, '&amp;').replace(/</g, '&lt;')
         .replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    }
+    /** 计算「日期当天距离今天多少天」（自然日差，按本地零点对齐，规避时区偏移）。
+     *  @param {string} dateStr 'YYYY-MM-DD'；非法或缺失返回 null */
+    function daysFromDate(dateStr) {
+      if (!dateStr) return null;
+      const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(dateStr);
+      if (!m) return null;
+      const d = new Date(+m[1], +m[2] - 1, +m[3]);
+      const now = new Date();
+      const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+      const diff = Math.round((today - d) / 86400000);
+      return isNaN(diff) ? null : diff;
     }
     /** 取某上下文对应的列定义（收藏表额外附加 3 列） */
     function getColumns(ctx) {
@@ -1524,6 +1542,8 @@ const app = createApp({
         // 距添加：自加入收藏以来的涨跌幅 (现价-添加日股价)/添加日股价
         case 'favGain': { const val = favGainPct(s); return (val != null && !isNaN(val)) ? '<span class="' + pctClass(val) + '">' + fmtPct(val) + '</span>' : '—'; }
         case 'favDays': { const d = favDays(s); return d != null ? d + '天' : '—'; }
+        // 距高天 / 距低天：今年最高/最低价当天距今天数（自然日），无数据占位
+        case 'days': { const val = poolVal(s, col.key); return (val != null && !isNaN(val)) ? (val + '天') : '—'; }
         case 'note': {
           if (ctx === 'fav') {
             return '<input class="fav-note-input" data-action="note" data-id="' + esc(s.id) + '" value="' + esc(s.note || '') + '" placeholder="备注">';
@@ -1629,6 +1649,9 @@ const app = createApp({
         return (s.todayPrice && s.yearLowPrice)
           ? +(((s.todayPrice - s.yearLowPrice) / s.yearLowPrice) * 100).toFixed(2) : null;
       }
+      // 距高天 / 距低天：今年最高价 / 最低价当天，距离今天的自然日数（无极值日期时为 null）
+      if (key === 'yearHighDays') return daysFromDate(s.yearHighDate);
+      if (key === 'yearLowDays') return daysFromDate(s.yearLowDate);
       return s[key];
     }
 
@@ -3377,6 +3400,8 @@ const app = createApp({
               if (hb.price924 != null) s.price924 = hb.price924;
               if (hb.yearHighPrice != null) s.yearHighPrice = hb.yearHighPrice;
               if (hb.yearLowPrice != null) s.yearLowPrice = hb.yearLowPrice;
+              if (hb.yearHighDate != null) s.yearHighDate = hb.yearHighDate;
+              if (hb.yearLowDate != null) s.yearLowDate = hb.yearLowDate;
               if (hb.weekAgoClose != null) s.weekAgoClose = hb.weekAgoClose;
               if (hb.monthAgoClose != null) s.monthAgoClose = hb.monthAgoClose;
             }
