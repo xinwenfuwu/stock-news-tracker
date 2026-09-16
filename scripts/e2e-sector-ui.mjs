@@ -436,6 +436,24 @@ const main = async () => {
     check('注意事项位于「当日热门板块」面板右侧', geo.toRight, JSON.stringify(geo));
     check('与「当日热门板块」顶部对齐（同排显示）', geo.topAligned, JSON.stringify(geo));
     check('与四个热门面板同属一个网格布局', geo.sameGrid, JSON.stringify(geo));
+
+    // 热门页「当日股票明细」工具栏里的个股搜索添加（同一套逻辑的 hot 入口）
+    const hotRel = await page.evaluate(() => {
+      const wrap = document.querySelector('.quick-add-hot');
+      const info = [...document.querySelectorAll('section.page .toolbar-right button')].find(b => b.textContent.includes('字段含义'));
+      if (!wrap || !info) return null;
+      const a = wrap.getBoundingClientRect(), b = info.getBoundingClientRect();
+      return { left: a.x + a.width <= b.x + 2, sameRow: Math.abs(a.y - b.y) < 24 };
+    });
+    check('当日明细工具栏的个股搜索添加在「字段含义」左侧', hotRel && hotRel.left && hotRel.sameRow, JSON.stringify(hotRel));
+    await page.locator('.quick-add-hot button').click();
+    await page.waitForTimeout(400);
+    check('空输入点击给出提示（输入校验生效）', /请输入股票代码或名称/.test(await page.locator('.toast').innerText()));
+    await page.fill('.quick-add-hot .quick-add-input', '600519');
+    await page.locator('.quick-add-hot button').click();
+    await page.waitForTimeout(500);
+    check('未选板块时明确提示先选板块（而不是静默失败）',
+      /请先选择板块/.test(await page.locator('.toast').innerText()), await page.locator('.toast').innerText());
     check('无 JS 报错', errors.length === 0, errors.join(' | '));
     await ctx.close();
   }
