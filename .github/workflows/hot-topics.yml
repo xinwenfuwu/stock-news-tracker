@@ -2,8 +2,8 @@ name: 每日抓取火热话题
 
 on:
   schedule:
-    # 北京时间约 22:00 抓取当日各站 Top10（UTC+8）
-    - cron: '0 14 * * *'
+    # 每 2 小时抓一次（UTC 整点 → 北京时间 08:00/10:00/…/次日 06:00），保证「刷新」拿到的快照足够新
+    - cron: '0 */2 * * *'
   workflow_dispatch:
 
 permissions:
@@ -30,10 +30,10 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add data/hot-topics/*.json
+          git add -A data/hot-topics
           if git diff --cached --quiet; then
             echo "无变化，跳过提交"
           else
-            git commit -m "chore: 每日火热话题快照 $(date +'%Y-%m-%d')"
+            git commit -m "chore: 火热话题快照 $(date -u +'%Y-%m-%d %H:%M UTC')"
             git push https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git HEAD:main
           fi
