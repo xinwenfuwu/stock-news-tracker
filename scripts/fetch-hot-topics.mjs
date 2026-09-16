@@ -4,13 +4,15 @@
  * 复用 js/hot-topics.js 的分类与来源配置（单一数据源）。
  * 用法：node scripts/fetch-hot-topics.mjs [YYYY-MM-DD]
  * ============================================================ */
-import { writeFileSync, mkdirSync } from 'node:fs';
+import { writeFileSync, readFileSync, mkdirSync, unlinkSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 import ht from '../js/hot-topics.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(__dirname, '..');
+/** 快照保留天数（与前端 HT_SNAPSHOT_KEEP_DAYS 保持一致） */
+const HT_SNAPSHOT_KEEP_DAYS = 60;
 
 function todayStr(d = new Date()) {
   const y = d.getFullYear(), m = String(d.getMonth() + 1).padStart(2, '0'), day = String(d.getDate()).padStart(2, '0');
@@ -189,6 +191,31 @@ async function main() {
   const file = join(dir, `${DATE}.json`);
   writeFileSync(file, JSON.stringify(snapshot, null, 2), 'utf8');
   console.log(`已写入 ${file}`);
+
+  // 维护日期清单 index.json：供前端在没有代理时定位「最近可用快照」
+  const idxPath = join(dir, 'index.json');
+  let dates = [];
+  try {
+    const prev = JSON.parse(readFileSync(idxPath, 'utf8'));
+    if (prev && Array.isArray(prev.dates)) dates = prev.dates;
+  } catch (e) { /* 首次生成 */ }
+  dates = dates.filter(d => /^\d{4}-\d{2}-\d{2}$/.test(d));
+  if (dates.indexOf(DATE) < 0) dates.push(DATE);
+  dates.sort().reverse();
+  const keep = dates.slice(0, HT_SNAPSHOT_KEEP_DAYS);
+  writeFileSync(idxPath, JSON.stringify({
+    updatedAt: new Date().toISOString(),
+    latest: keep[0] || DATE,
+    keepDays: HT_SNAPSHOT_KEEP_DAYS,
+    dates: keep
+  }, null, 2), 'utf8');
+  console.log(`已更新清单 ${idxPath}（共 ${keep.length} 天，最新 ${keep[0]}）`);
+
+  // 清理超出保留期的历史快照，避免仓库无限增长
+  const stale = dates.slice(HT_SNAPSHOT_KEEP_DAYS);
+  for (const d of stale) {
+    try { unlinkSync(join(dir, `${d}.json`)); console.log(`  清理过期快照 ${d}.json`); } catch (e) { /* ignore */ }
+  }
 }
 
 main().catch(e => { console.error(e); process.exit(1); });
