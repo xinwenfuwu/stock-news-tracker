@@ -2237,3 +2237,16 @@ body.auth-locked { overflow: hidden; }
 .membership-pay { border-top: 1px dashed var(--border); padding-top: 18px; }
 .pay-title { font-size: 15px; font-weight: 600; margin-bottom: 12px; }
 .qr-pay-img { width: 220px; height: 220px; object-fit: contain; border: 1px solid var(--border); border-radius: var(--radius); background: #fff; }
+
+/* 用户管理：会员额度三列（注册日期 / 额度 / 停用日期） */
+.um-membership { vertical-align: middle; }
+.um-date { width: 140px; }
+.um-num { width: 64px; text-align: center; }
+.um-quota { display: inline-flex; align-items: center; gap: 4px; }
+.um-unit { color: var(--text-2, #6b7280); font-size: 12px; }
+.um-disable-date { font-variant-numeric: tabular-nums; color: var(--text); }
+.um-disable-date.is-expired { color: var(--down, #16a34a); font-weight: 700; }
+.um-auto-tag {
+  display: inline-block; margin-left: 6px; padding: 1px 6px; border-radius: 6px;
+  font-size: 11px; line-height: 1.5; color: #b42318; background: #fee4e2; border: 1px solid #fda29b;
+}

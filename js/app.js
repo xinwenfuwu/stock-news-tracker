@@ -168,6 +168,36 @@ const app = createApp({
       refreshUserList();
     }
 
+    /* ---------- 会员额度（注册日期 / 额度 / 停用日期） ---------- */
+    function setUserRegisterDate(u, val) {
+      if (!A) return;
+      const r = A.setUserMembership(u.username, { registerDate: val });
+      if (!r.ok) { showToast(r.error, 'error'); refreshUserList(); return; }
+      showToast(`「${u.username}」注册日期已更新`, 'success');
+      refreshUserList();
+    }
+
+    function setUserQuota(u, val) {
+      if (!A) return;
+      const r = A.setUserMembership(u.username, { quotaMonths: val });
+      if (!r.ok) { showToast(r.error, 'error'); refreshUserList(); return; }
+      if (r.user && r.user.disabled && r.user.autoDisabled) {
+        showToast(`「${u.username}」会员已到期，系统已自动停用`, 'warn');
+      } else {
+        showToast(`「${u.username}」会员额度已更新`, 'success');
+      }
+      refreshUserList();
+    }
+
+    /** 停用日期是否已超过今天（'YYYY-MM-DD' 字符串比较） */
+    function isExpiredDate(s) {
+      if (!s) return false;
+      const d = new Date();
+      const p = n => String(n).padStart(2, '0');
+      const today = d.getFullYear() + '-' + p(d.getMonth() + 1) + '-' + p(d.getDate());
+      return today > s;
+    }
+
     function resetUserPassword(u) {
       if (!A) return;
       const np = prompt(`为「${u.username}」设置新密码（8-64 位，须同时包含字母和数字）：`);
@@ -4973,6 +5003,7 @@ const app = createApp({
       authUser, authInitial, authExpiryText, can, fmtDateTime, doLogout, userMenuOpen,
       userModal, userList, openUserManage, addUserByAdmin, changeUserRole,
       toggleUserDisabled, removeUserByAdmin, resetUserPassword,
+      setUserRegisterDate, setUserQuota, isExpiredDate,
       exportUsersTable, importUsersTable,
       pwModal, openChangePassword, submitChangePassword,
       // 登录档案与注册审核

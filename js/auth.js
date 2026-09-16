@@ -389,6 +389,39 @@
     return STATUS_NAME[statusOf(u)];
   }
 
+  /* ============ 会员额度（注册日期 / 月数 / 停用日期） ============ */
+
+  function pad2(n) { return String(n).padStart(2, '0'); }
+
+  /** 本地日期字符串 'YYYY-MM-DD'（按运行环境本地时区，本系统统一用北京时间语义） */
+  function localDateStr(ts) {
+    var d = new Date(ts || Date.now());
+    return d.getFullYear() + '-' + pad2(d.getMonth() + 1) + '-' + pad2(d.getDate());
+  }
+
+  /** 'YYYY-MM-DD' 加上 months 个月，返回 'YYYY-MM-DD'（月份溢出由 Date 自然处理） */
+  function addMonthsToDateStr(s, months) {
+    var p = String(s || '').split('-');
+    var y = parseInt(p[0], 10), m = parseInt(p[1], 10) - 1, d = parseInt(p[2], 10);
+    if (isNaN(y) || isNaN(m) || isNaN(d) || !months || months <= 0) return '';
+    var dt = new Date(y, m, d);
+    dt.setMonth(dt.getMonth() + months);
+    return dt.getFullYear() + '-' + pad2(dt.getMonth() + 1) + '-' + pad2(dt.getDate());
+  }
+
+  /** 由 注册日期 + 额度(月) 推算停用日期；无额度(0/空)视为长期，返回 null */
+  function disableDateOf(u) {
+    if (!u || !u.registerDate || !u.quotaMonths || u.quotaMonths <= 0) return null;
+    return addMonthsToDateStr(u.registerDate, u.quotaMonths);
+  }
+
+  /** 会员是否已到期：今天 > 停用日期（'YYYY-MM-DD' 字符串比较等价于日期比较） */
+  function isMembershipExpired(u, now) {
+    var dd = disableDateOf(u);
+    if (!dd) return false;
+    return localDateStr(now) > dd;
+  }
+
   function loginList(u) {
     return (u && Array.isArray(u.logins)) ? u.logins : [];
   }
@@ -524,6 +557,11 @@
     o.reviewedAt = u.reviewedAt || null;
     o.reviewedBy = u.reviewedBy || '';
     o.registeredAt = u.createdAt || null;
+    o.registerDate = u.registerDate || '';
+    o.quotaMonths = u.quotaMonths || 0;
+    o.disableDate = disableDateOf(u) || '';
+    o.autoDisabled = !!u.autoDisabled;
+    o.disabledAt = u.disabledAt || null;
     o.regIp = u.regIp || '';
     o.regLoc = u.regLoc || '';
     o.regUa = parseUA(u.regUa);        // 界面只展示「Chrome / Windows」这类可读结果
@@ -574,10 +612,17 @@
       return Promise.resolve({ ok: false, error: '登录态不完整' });
     }
     if (Date.now() > sess.exp) return Promise.resolve({ ok: false, error: '登录已过期，请重新登录' });
-    var u = findUser(users || loadUsers(), sess.username);
+    var list = users || loadUsers();
+    var u = findUser(list, sess.username);
     if (!u) return Promise.resolve({ ok: false, error: '账号不存在或已被移除' });
     if (statusOf(u) === STATUS.PENDING) return Promise.resolve({ ok: false, error: '账号待管理员审核通过后才能使用' });
     if (statusOf(u) === STATUS.REJECTED) return Promise.resolve({ ok: false, error: '注册申请未通过审核' });
+    // 会员额度到期：后台自动停用，持有旧会话也会被踢回登录页
+    if (!u.disabled && isMembershipExpired(u)) {
+      u.disabled = true; u.autoDisabled = true; u.disabledAt = Date.now(); u.updatedAt = Date.now();
+      saveUsers(list);
+      return Promise.resolve({ ok: false, error: '会员已到期，账号已被自动停用，请联系管理员' });
+    }
     if (u.disabled) return Promise.resolve({ ok: false, error: '账号已被停用' });
     if (u.role !== sess.role) return Promise.resolve({ ok: false, error: '登录态校验失败' });
     return signSession(sess, u.hash).then(function (expect) {
@@ -734,6 +779,12 @@
         if (st === STATUS.REJECTED) {
           return { ok: false, error: '该注册申请未通过审核，请联系管理员', status: STATUS.REJECTED };
         }
+        // 会员额度到期：后台自动停用，无法登录
+        if (!u.disabled && isMembershipExpired(u)) {
+          u.disabled = true; u.autoDisabled = true; u.disabledAt = Date.now(); u.updatedAt = Date.now();
+          saveUsers(self.users);
+          return { ok: false, error: '会员已到期（停用日期 ' + disableDateOf(u) + '），无法登录，请联系管理员', status: 'expired' };
+        }
         if (u.disabled) return { ok: false, error: '该账号已被停用，请联系管理员' };
         var ttl = remember ? TTL_REMEMBER : TTL_DEFAULT;
         var rec = pushLoginRecord(u, { ua: localUA() });
@@ -845,6 +896,8 @@
       u.status = STATUS.ACTIVE;
       u.reviewNote = '';
       if (role) u.role = roleVal;
+      u.registerDate = u.registerDate || localDateStr(now);
+      u.quotaMonths = u.quotaMonths || 0;
       u.reviewedAt = now;
       u.reviewedBy = (this.user && this.user.username) || '';
       u.updatedAt = now;
@@ -1099,6 +1152,7 @@
           pwSeal: sealPassword(v.password),
           disabled: false, status: STATUS.ACTIVE,
           createdAt: now, updatedAt: now,
+          registerDate: localDateStr(now), quotaMonths: 0,
           createdBy: (self.user && self.user.username) || '',
           logins: []
         };
@@ -1158,9 +1212,36 @@
         if (activeAdmins.length <= 1) return { ok: false, error: '必须至少保留一个可用的管理员' };
       }
       u.disabled = off;
+      u.autoDisabled = false;            // 手动操作，清掉「到期自动停用」标记
+      u.disabledAt = off ? (u.disabledAt || Date.now()) : null;
       u.updatedAt = Date.now();
       saveUsers(this.users);
       return { ok: true, user: publicUser(u) };
+    },
+
+    /**
+     * 管理员设置普通用户的会员信息：注册日期 + 额度(月)。
+     * 停用日期由二者推算，只读展示。若此前因到期被自动停用、现在额度已覆盖今天，自动恢复。
+     */
+    setUserMembership: function (username, opts) {
+      if (!this.isAdmin()) return { ok: false, error: '仅管理员可管理账号' };
+      if (!opts || typeof opts !== 'object') return { ok: false, error: '参数缺失' };
+      this.users = loadUsers();
+      var u = findUser(this.users, username);
+      if (!u) return { ok: false, error: '用户不存在' };
+      if (opts.registerDate !== undefined) u.registerDate = String(opts.registerDate || '').trim();
+      if (opts.quotaMonths !== undefined) {
+        var q = parseInt(opts.quotaMonths, 10);
+        if (isNaN(q) || q < 0) q = 0;
+        u.quotaMonths = q;
+      }
+      u.updatedAt = Date.now();
+      // 此前因到期被自动停用的账号，若额度调整后续期到今天之后，则解除停用
+      if (u.disabled && u.autoDisabled && !isMembershipExpired(u)) {
+        u.disabled = false; u.autoDisabled = false; u.disabledAt = null;
+      }
+      saveUsers(this.users);
+      return { ok: true, user: adminUser(u) };
     },
 
     /** 改密码：改自己的需验原密码；管理员改他人无需。改完自动重签自己的会话，避免把自己踢下线。 */

@@ -82,7 +82,7 @@ async function waitAppReady(page, ms) {
       gate: !!document.getElementById('auth-gate'),
       vueMounted: !!(document.getElementById('app') && document.getElementById('app').__vue_app__),
       gateClass: (document.getElementById('auth-gate') || {}).className || '',
-      visible: ['auth-login-form', 'auth-register-form', 'auth-setup-form', 'auth-code-panel', 'auth-reg-done']
+      visible: ['auth-login-form', 'auth-register-form', 'auth-code-panel', 'auth-reg-done']
         .filter(i => { const el = document.getElementById(i); return el && !el.hidden; }),
       msg: (document.querySelector('#auth-gate .auth-msg') || {}).textContent || '',
       sess: (localStorage.getItem('snt-auth-session-v1') || '').slice(0, 120)
@@ -104,6 +104,20 @@ async function loginFresh(page) {
   await waitAppReady(page);
 }
 
+/** 通过登录表单登录（用于已存在账号） */
+async function loginViaForm(page, user, pw) {
+  await page.fill('#login-username', user);
+  await page.fill('#login-password', pw);
+  await page.click('#auth-login-form .auth-btn');
+  await waitAppReady(page);
+}
+
+function todayStr() {
+  const d = new Date();
+  const p = n => String(n).padStart(2, '0');
+  return d.getFullYear() + '-' + p(d.getMonth() + 1) + '-' + p(d.getDate());
+}
+
 const main = async () => {
   const A = await serveStatic(ROOT);
   const browser = await chromium.launch();
@@ -115,7 +129,8 @@ const main = async () => {
     const { ctx, page, errors } = await newPage(browser);
     await gotoApp(page, A.port);
     check('显示登录关卡', await page.locator('#auth-gate').isVisible());
-    check('首次使用显示「创建管理员」表单', await page.locator('#auth-setup-form').isVisible());
+    check('首次使用直接显示注册表单（登录页不再提供「创建管理员」入口）', await page.locator('#auth-register-form').isVisible());
+    check('登录页已无「创建管理员」表单节点', (await page.locator('#auth-setup-form').count()) === 0);
     check('登录表单此时不显示', !(await page.locator('#auth-login-form').isVisible()));
 
     const g = await page.evaluate(() => ({
@@ -150,45 +165,50 @@ const main = async () => {
   }
 
   // ---------------- 2 ----------------
-  console.log('\n2) 首次初始化：表单校验与创建管理员');
+  console.log('\n2) 首次注册：表单校验 + 注册后待管理员审核（登录页不再创建管理员）');
   {
     const { ctx, page, errors } = await newPage(browser);
     await gotoApp(page, A.port);
 
-    await page.fill('#setup-username', 'admin');
-    await page.fill('#setup-password', '123');
-    await page.fill('#setup-confirm', '123');
-    await page.click('#auth-setup-form .auth-btn');
+    check('首次使用展示注册表单', await page.locator('#auth-register-form').isVisible());
+
+    await page.fill('#reg-username', 'newuser');
+    await page.fill('#reg-password', '123');
+    await page.fill('#reg-confirm', '123');
+    await page.click('#auth-register-form .auth-btn');
     await page.waitForSelector('.auth-msg-error', { timeout: 15000 });
     check('弱密码被拒并给出提示', /至少 8 位/.test(await page.locator('.auth-msg-error').innerText()));
     check('被拒后仍停留在关卡内', await page.locator('#auth-gate').isVisible());
     check('被拒后业务模块仍未加载', await page.evaluate(() => typeof Store === 'undefined'));
 
-    await page.fill('#setup-password', ADMIN_PW);
-    await page.fill('#setup-confirm', 'Admin@2027');
-    await page.click('#auth-setup-form .auth-btn');
+    await page.fill('#reg-password', ADMIN_PW);
+    await page.fill('#reg-confirm', 'Admin@2027');
+    await page.click('#auth-register-form .auth-btn');
     await page.waitForFunction(() => {
       const m = document.querySelector('.auth-msg-error');
       return m && m.textContent.includes('不一致');
     }, null, { timeout: 15000 });
     check('两次密码不一致被拒', /不一致/.test(await page.locator('.auth-msg-error').innerText()));
 
-    await page.fill('#setup-confirm', ADMIN_PW);
-    await page.click('#auth-setup-form .auth-btn');
-    await waitAppReady(page);
+    await page.fill('#reg-confirm', ADMIN_PW);
+    await page.click('#auth-register-form .auth-btn');
+    await page.waitForSelector('#auth-reg-done:not([hidden])', { timeout: 15000 });
+    check('合法输入后进入「待审核」状态（展示申请码）', await page.locator('#auth-reg-done').isVisible());
+    const regCode = await page.inputValue('#reg-code');
+    check('生成注册申请码', regCode.startsWith('SNTREG1.'));
+    check('注册后业务模块仍未加载（仍在关卡）', await page.evaluate(() => typeof Store === 'undefined'));
 
-    check('合法输入后进入系统（关卡消失）', (await page.locator('#auth-gate').count()) === 0);
-    const who = await page.evaluate(() => ({ u: Auth.user && Auth.user.username, r: Auth.user && Auth.user.role }));
-    check('当前用户名为 admin 且角色为管理员', who.u === 'admin' && who.r === 'admin', JSON.stringify(who));
-    check('进入后业务模块才被加载', await page.evaluate(() => typeof Store === 'object'));
-    check('顶部显示当前用户名', (await page.locator('.user-chip').innerText()).includes('admin'));
-    check('顶部显示角色徽标', (await page.locator('.user-role-tag').innerText()).includes('管理员'));
+    // 审核通过前无法登录
+    await page.click('#auth-reg-done-back');
+    await page.waitForSelector('#auth-login-form:not([hidden])', { timeout: 10000 });
+    await page.fill('#login-username', 'newuser');
+    await page.fill('#login-password', ADMIN_PW);
+    await page.click('#auth-login-form .auth-btn');
+    await page.waitForSelector('.auth-msg-error', { timeout: 15000 });
+    check('注册后未审核无法登录', /审核/.test(await page.locator('.auth-msg-error').innerText()));
+    check('未审核账号不会进入系统', await page.locator('#auth-gate').isVisible());
 
-    const storedHash = await page.evaluate(() => JSON.parse(localStorage.getItem('snt-auth-users-v1'))[0].hash);
-    check('密码以 PBKDF2 哈希存储', /^pbkdf2\$150000\$/.test(storedHash), storedHash.slice(0, 30));
-    check('本地存储中不含明文密码', !storedHash.includes(ADMIN_PW));
-    const rawDump = await page.evaluate(() => localStorage.getItem('snt-auth-users-v1'));
-    check('整份账号表也不含明文密码', !rawDump.includes(ADMIN_PW));
+    // 首个管理员由后台（Auth.setup，开发者在控制台调用）分配，不再经登录页
     check('无 JS 报错', errors.length === 0, errors.join(' | '));
     await ctx.close();
   }
@@ -205,6 +225,15 @@ const main = async () => {
     check('刷新后仍保持登录', await page.evaluate(() => !!(Auth && Auth.user)));
     check('刷新后直接进入，无需再次登录', (await page.locator('.user-chip').count()) === 1);
 
+    const storedHash = await page.evaluate(() => {
+      const arr = JSON.parse(localStorage.getItem('snt-auth-users-v1') || '[]');
+      return arr.length ? arr[0].hash : '';
+    });
+    check('密码以 PBKDF2 哈希存储', /^pbkdf2\$150000\$/.test(storedHash), storedHash.slice(0, 30));
+    check('本地存储中不含明文密码', !storedHash.includes(ADMIN_PW));
+    const rawDump = await page.evaluate(() => localStorage.getItem('snt-auth-users-v1'));
+    check('整份账号表也不含明文密码', !rawDump.includes(ADMIN_PW));
+
     await page.click('.user-chip');
     await page.waitForSelector('.user-dropdown', { timeout: 10000 });
     check('用户菜单显示当前账号', (await page.locator('.user-dd-name').innerText()).includes('admin'));
@@ -214,7 +243,7 @@ const main = async () => {
     await page.waitForSelector('#auth-login-form', { timeout: 30000 });
     check('退出后回到登录关卡', await page.locator('#auth-gate').isVisible());
     check('退出后显示的是登录表单（不再是初始化表单）', await page.locator('#auth-login-form').isVisible());
-    check('退出后初始化表单不再出现', !(await page.locator('#auth-setup-form').isVisible()));
+    check('退出后登录页已无「创建管理员」入口', (await page.locator('#auth-setup-form').count()) === 0);
     check('退出后业务模块不再加载', await page.evaluate(() => typeof Store === 'undefined'));
     check('退出后本地会话已清除', await page.evaluate(() => localStorage.getItem('snt-auth-session-v1') === null));
     check('无 JS 报错', errors.length === 0, errors.join(' | '));
@@ -446,6 +475,81 @@ const main = async () => {
     await page.click('#auth-login-form .auth-btn');
     await page.waitForSelector('.auth-msg-error', { timeout: 15000 });
     check('被停用账号无法登录', /停用/.test(await page.locator('.auth-msg-error').innerText()));
+    check('无 JS 报错', errors.length === 0, errors.join(' | '));
+    await ctx.close();
+  }
+
+  // ---------------- 9 ----------------
+  console.log('\n9) 会员额度：注册日期 + 额度到期自动停用，无法登录；续期后恢复');
+  {
+    const { ctx, page, errors } = await newPage(browser);
+    await gotoApp(page, A.port);
+    await loginFresh(page);
+
+    // 管理员添加一个普通用户（默认额度长期）
+    await page.evaluate(() => Auth.addUser('wangwu', 'User@2026', 'user'));
+    await page.click('.user-chip');
+    await page.waitForSelector('.user-dropdown');
+    await page.click('.user-dd-item:has-text("用户管理")');
+    await page.waitForSelector('.um-table', { timeout: 15000 });
+    const row = page.locator('.um-table tbody tr', { hasText: 'wangwu' }).first();
+    check('新用户默认停用日期显示「长期」', (await row.locator('.um-disable-date').innerText()).includes('长期'));
+
+    // 设置 注册日期=2020-01-01，额度=6 → 停用日期 2020-07-01（已过期）
+    await row.locator('.um-date').fill('2020-01-01');
+    await row.locator('.um-date').dispatchEvent('change');
+    await row.locator('.um-num').fill('6');
+    await row.locator('.um-num').dispatchEvent('change');
+    await page.waitForFunction(() => {
+      const tr = Array.from(document.querySelectorAll('.um-table tbody tr'))
+        .find(r => r.textContent.includes('wangwu'));
+      return tr && tr.textContent.includes('2020-07-01');
+    }, null, { timeout: 15000 });
+    check('停用日期 = 注册日期 + 额度 自动推算（2020-01-01 + 6月 = 2020-07-01）', true);
+    check('已过期账号的停用日期标红', (await row.locator('.um-disable-date.is-expired').count()) === 1);
+
+    await page.click('.modal-footer button:has-text("关闭")');
+    await page.click('.user-chip');
+    await page.waitForSelector('.user-dropdown');
+    await page.click('.user-dd-item.is-danger');
+    await page.waitForSelector('#auth-login-form', { timeout: 30000 });
+
+    await page.fill('#login-username', 'wangwu');
+    await page.fill('#login-password', 'User@2026');
+    await page.click('#auth-login-form .auth-btn');
+    await page.waitForSelector('.auth-msg-error', { timeout: 15000 });
+    check('会员到期账号无法登录（提示已到期）', /到期/.test(await page.locator('.auth-msg-error').innerText()));
+    check('到期账号不会进入系统', await page.locator('#auth-gate').isVisible());
+
+    // 管理员续期：注册日期改为今天 + 额度 12 → 不再过期，可登录
+    await loginViaForm(page, 'admin', ADMIN_PW);
+    await page.click('.user-chip');
+    await page.waitForSelector('.user-dropdown');
+    await page.click('.user-dd-item:has-text("用户管理")');
+    await page.waitForSelector('.um-table', { timeout: 15000 });
+    const row2 = page.locator('.um-table tbody tr', { hasText: 'wangwu' }).first();
+    await row2.locator('.um-date').fill(todayStr());
+    await row2.locator('.um-date').dispatchEvent('change');
+    await row2.locator('.um-num').fill('12');
+    await row2.locator('.um-num').dispatchEvent('change');
+    await page.waitForFunction(() => {
+      const arr = (typeof Auth !== 'undefined' && Auth.listUsers) ? Auth.listUsers() : [];
+      const u = arr.find(x => x.username === 'wangwu');
+      return u && !u.disabled;
+    }, null, { timeout: 15000 });
+    check('续期后账号解除停用（不再 autoDisabled）', true);
+
+    await page.click('.modal-footer button:has-text("关闭")');
+    await page.click('.user-chip');
+    await page.waitForSelector('.user-dropdown');
+    await page.click('.user-dd-item.is-danger');
+    await page.waitForSelector('#auth-login-form', { timeout: 30000 });
+
+    await page.fill('#login-username', 'wangwu');
+    await page.fill('#login-password', 'User@2026');
+    await page.click('#auth-login-form .auth-btn');
+    await waitAppReady(page);
+    check('续期后会员账号可正常登录', await page.evaluate(() => Auth.user && Auth.user.username === 'wangwu'));
     check('无 JS 报错', errors.length === 0, errors.join(' | '));
     await ctx.close();
   }

@@ -153,11 +153,15 @@ async function openUserManage(page) {
   await page.waitForSelector('.um-table, .um-empty', { timeout: 15000 });
 }
 
-/** 在登录关卡注册一个账号，返回申请码（自动适配「登录表单」或「首次使用表单」两种入口） */
+/** 在登录关卡注册一个账号，返回申请码（自动适配「登录表单」或「首次使用直接显示注册表单」两种入口） */
 async function registerAtGate(page, username, password) {
-  const entry = (await page.locator('#auth-login-form').isVisible()) ? '#auth-to-register' : '#auth-setup-to-register';
-  await page.click(entry);
-  await page.waitForSelector('#auth-register-form', { timeout: 10000 });
+  if (await page.locator('#auth-login-form').isVisible()) {
+    await page.click('#auth-to-register');
+    await page.waitForSelector('#auth-register-form', { timeout: 10000 });
+  } else {
+    // 首次使用（无账号）：注册表单已直接展示，无需点入口
+    await page.waitForSelector('#auth-register-form:not([hidden])', { timeout: 10000 });
+  }
   await page.fill('#reg-username', username);
   await page.fill('#reg-password', password);
   await page.fill('#reg-confirm', password);
@@ -312,7 +316,7 @@ const main = async () => {
     await openUserManage(page);
 
     const heads = await page.locator('.um-table th').allInnerTexts();
-    check('表头包含要求的 8 列', heads.length === 8, heads.join('|'));
+    check('表头包含要求的 11 列（含会员额度三列）', heads.length === 11, heads.join('|'));
     check('表头含「密码」列', heads.includes('密码'));
     check('表头含「登录IP」列', heads.includes('登录IP'));
     check('表头含「最近登录」列', heads.includes('最近登录'));
@@ -335,13 +339,13 @@ const main = async () => {
 
     // 登录记录（admin 自己刚登录过）
     const adminRow = rows.filter({ hasText: 'admin' });
-    check('最近登录列显示登录时间', /\d{4}-\d{2}-\d{2} \d{2}:\d{2}/.test(await adminRow.locator('td').nth(5).innerText()),
-      await adminRow.locator('td').nth(5).innerText());
+    check('最近登录列显示登录时间', /\d{4}-\d{2}-\d{2} \d{2}:\d{2}/.test(await adminRow.locator('td').nth(8).innerText()),
+      await adminRow.locator('td').nth(8).innerText());
     check('登录IP 列显示伪造的 IP', (await adminRow.locator('.um-ip').innerText()) === FAKE_IP,
       await adminRow.locator('.um-ip').innerText());
     check('登录IP 列显示归属地', (await adminRow.locator('.um-ip-loc').innerText()).includes('广东省'),
       await adminRow.locator('.um-ip-loc').innerText());
-    check('未登录过的账号显示「从未登录」', (await lisiRow.locator('td').nth(5).innerText()).includes('从未登录'));
+    check('未登录过的账号显示「从未登录」', (await lisiRow.locator('td').nth(8).innerText()).includes('从未登录'));
 
     await adminRow.locator('button:has-text("登录记录")').click();
     await page.waitForSelector('.um-logrow', { timeout: 10000 });
@@ -412,9 +416,10 @@ const main = async () => {
     // 用户设备（另一个浏览器上下文 = 另一台设备）：全新环境，没有任何账号
     const userDev = await newPage(browser);
     await gotoApp(userDev.page, A.port);
-    check('新设备首次打开显示「创建管理员」', await userDev.page.locator('#auth-setup-form').isVisible());
-    check('首次使用的新设备也有「注册新账号」入口（不必被迫当管理员）',
-      await userDev.page.locator('#auth-setup-to-register').isVisible());
+    check('新设备首次打开直接显示注册表单（无需被迫当管理员）',
+      await userDev.page.locator('#auth-register-form').isVisible());
+    check('首次使用不再提供「创建管理员」入口',
+      (await userDev.page.locator('#auth-setup-form').count()) === 0);
 
     const reqCode = await registerAtGate(userDev.page, 'zhaoliu', 'Zhaoliu123');
     check('用户设备生成申请码', reqCode.startsWith('SNTREG1.'));

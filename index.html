@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>股市信息分析系统</title>
-  <link rel="stylesheet" href="css/style.css?v=20260917a">
+  <link rel="stylesheet" href="css/style.css?v=20260917b">
   <!-- Vue 3 全局构建版（CDN，无需构建步骤） -->
   <script src="https://unpkg.com/vue@3.4.21/dist/vue.global.prod.js"></script>
 </head>
@@ -17,18 +17,6 @@
         <h1 class="auth-title"><span>股市信息</span><span>分析系统</span></h1>
         <p class="auth-sub" id="auth-sub">请登录后使用</p>
       </div>
-
-      <form class="auth-form" id="auth-setup-form" hidden autocomplete="off">
-        <input class="auth-input" type="text" id="setup-username" placeholder="管理员用户名（2-20 位）" maxlength="20" autocomplete="username">
-        <input class="auth-input" type="password" id="setup-password" placeholder="设置密码（8-64 位，含字母和数字）" maxlength="64" autocomplete="new-password">
-        <input class="auth-input" type="password" id="setup-confirm" placeholder="再输入一次密码" maxlength="64" autocomplete="new-password">
-        <button class="auth-btn" type="submit">创建管理员并进入</button>
-        <p class="auth-tip">本机首次使用。该账号是管理员，之后可在系统内添加普通用户，或让用户在登录页自助注册、由你审核通过。</p>
-        <div class="auth-links">
-          <button type="button" class="auth-link" id="auth-setup-to-register">我不是管理员，我要注册新账号</button>
-          <button type="button" class="auth-link" id="auth-setup-to-code">粘贴准入码</button>
-        </div>
-      </form>
 
       <form class="auth-form" id="auth-login-form" hidden autocomplete="off">
         <input class="auth-input" type="text" id="login-username" placeholder="用户名" maxlength="20" autocomplete="username">
@@ -2405,7 +2393,9 @@
           <table class="um-table" v-if="userList.length">
             <thead>
               <tr>
-                <th>用户名</th><th>角色</th><th>状态</th><th>密码</th>
+                <th>用户名</th><th>角色</th><th>状态</th>
+                <th>注册日期</th><th>额度(月)</th><th>停用日期</th>
+                <th>密码</th>
                 <th>登录IP</th><th>最近登录</th><th>使用时长</th><th>操作</th>
               </tr>
             </thead>
@@ -2424,6 +2414,27 @@
                   </td>
                   <td>
                     <span class="um-badge" :class="badgeClass(u)">{{ u.statusName }}</span>
+                  </td>
+                  <td class="um-membership">
+                    <template v-if="u.role === 'user'">
+                      <input type="date" class="um-input um-date" :value="u.registerDate" @change="setUserRegisterDate(u, $event.target.value)" title="会员注册日期">
+                    </template>
+                    <template v-else>—</template>
+                  </td>
+                  <td class="um-membership">
+                    <template v-if="u.role === 'user'">
+                      <div class="um-quota">
+                        <input type="number" min="0" step="1" class="um-input um-num" :value="u.quotaMonths" @change="setUserQuota(u, $event.target.value)" title="会员额度（月），0 或留空为长期">
+                        <span class="um-unit">月</span>
+                      </div>
+                    </template>
+                    <template v-else>—</template>
+                  </td>
+                  <td class="um-membership">
+                    <span :class="['um-disable-date', { 'is-expired': u.role === 'user' && u.disableDate && isExpiredDate(u.disableDate) }]">
+                      {{ u.disableDate || (u.role === 'user' ? '长期' : '—') }}
+                    </span>
+                    <span v-if="u.autoDisabled" class="um-auto-tag" title="会员到期后由系统自动停用">已到期停用</span>
                   </td>
                   <td>
                     <div class="um-pw">
@@ -2462,7 +2473,7 @@
                   </td>
                 </tr>
                 <tr v-if="expandedUser === u.username" class="um-logrow">
-                  <td colspan="8">
+                  <td colspan="11">
                     <div class="um-log-head">登录记录（最多保留最近 20 次）</div>
                     <table class="um-log-table" v-if="u.logins && u.logins.length">
                       <thead>
@@ -2539,8 +2550,8 @@
     </transition>
   </div>
 
-  <script src="js/auth.js?v=20260917a"></script>
-  <script src="js/auth-boot.js?v=20260917a"></script>
+  <script src="js/auth.js?v=20260917b"></script>
+  <script src="js/auth-boot.js?v=20260917b"></script>
   <!-- store / stock-api / hot-topics / app 由 auth-boot.js 在登录通过后动态装载，
        未登录时它们不会被下载，业务数据也不会进入内存 -->
 </body>

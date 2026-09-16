@@ -20,7 +20,7 @@
   'use strict';
 
   // 与 index.html 中静态资源版本号保持一致，避免升级后命中旧缓存
-  var ASSET_V = '20260917a';
+  var ASSET_V = '20260917b';
 
   // 业务脚本装载顺序（Vue 已在 <head> 静态加载，不在此列）
   var APP_SCRIPTS = [
@@ -36,7 +36,7 @@
   function $(sel) { return document.querySelector(sel); }
 
   var elGate, elSub, elMsg, elLoading, elLoadingText, elRetry;
-  var elSetupForm, elLoginForm, elRegisterForm, elRegDone, elCodePanel;
+  var elLoginForm, elRegisterForm, elRegDone, elCodePanel;
   var elRegCode, elCodeInput, elStrength;
   var busy = false;
 
@@ -56,7 +56,7 @@
       elLoading.hidden = !busy;
       if (elLoadingText) elLoadingText.textContent = text || '';
     }
-    [elSetupForm, elLoginForm, elRegisterForm, elCodePanel].forEach(function (f) {
+    [elLoginForm, elRegisterForm, elCodePanel].forEach(function (f) {
       if (!f) return;
       Array.prototype.forEach.call(f.querySelectorAll('input, button'), function (el) { el.disabled = busy; });
     });
@@ -71,7 +71,6 @@
   };
 
   function showForm(which) {
-    if (elSetupForm) elSetupForm.hidden = which !== 'setup';
     if (elLoginForm) elLoginForm.hidden = which !== 'login';
     if (elRegisterForm) elRegisterForm.hidden = which !== 'register';
     if (elRegDone) elRegDone.hidden = which !== 'regdone';
@@ -191,10 +190,10 @@
           detail: { user: Auth.currentUser }
         }));
       } catch (e) { /* 老浏览器不支持 CustomEvent 构造器时忽略 */ }
-    }).catch(function (err) {
+      }).catch(function (err) {
       setBusy('');
       showMsg(String(err && err.message ? err.message : err), 'error');
-      showForm(Auth.hasUsers() ? 'login' : 'setup');
+      showForm(Auth.hasUsers() ? 'login' : 'register');
       showRetry('资源加载失败，请检查网络后重试');
     });
   }
@@ -202,26 +201,6 @@
   /* ---------------- 事件绑定 ---------------- */
 
   function bind() {
-    if (elSetupForm) {
-      elSetupForm.addEventListener('submit', function (e) {
-        e.preventDefault();
-        if (busy) return;
-        showMsg('');
-        var u = $('#setup-username') ? $('#setup-username').value : '';
-        var p = $('#setup-password') ? $('#setup-password').value : '';
-        var c = $('#setup-confirm') ? $('#setup-confirm').value : '';
-        setBusy('正在创建管理员账号…');
-        Auth.setup(u, p, c).then(function (r) {
-          if (!r.ok) { setBusy(''); showMsg(r.error, 'error'); return; }
-          setBusy('账号已创建，正在进入…');
-          enterApp();
-        }).catch(function (err) {
-          setBusy('');
-          showMsg('创建失败：' + (err && err.message ? err.message : err), 'error');
-        });
-      });
-    }
-
     if (elLoginForm) {
       elLoginForm.addEventListener('submit', function (e) {
         e.preventDefault();
@@ -306,18 +285,13 @@
     }
 
     /* ----- 视图切换 ----- */
-    // 首次使用（还没任何账号）时也要能「不当管理员、改为注册」，否则新设备上用户无路可走
-    [['#auth-to-register', 'register'], ['#auth-setup-to-register', 'register']].forEach(function (pair) {
-      var btn = $(pair[0]);
-      if (btn) btn.addEventListener('click', function () { showMsg(''); showForm(pair[1]); });
-    });
-    [['#auth-to-code', 'code'], ['#auth-setup-to-code', 'code']].forEach(function (pair) {
+    [['#auth-to-register', 'register'], ['#auth-to-code', 'code']].forEach(function (pair) {
       var btn = $(pair[0]);
       if (btn) btn.addEventListener('click', function () { showMsg(''); showForm(pair[1]); });
     });
     ['#auth-reg-back', '#auth-reg-done-back', '#auth-code-back'].forEach(function (sel) {
       var btn = $(sel);
-      if (btn) btn.addEventListener('click', function () { showMsg(''); showForm(Auth.hasUsers() ? 'login' : 'setup'); });
+      if (btn) btn.addEventListener('click', function () { showMsg(''); showForm(Auth.hasUsers() ? 'login' : 'register'); });
     });
     var copyBtn = $('#auth-reg-copy');
     if (copyBtn) copyBtn.addEventListener('click', function () {
@@ -351,7 +325,6 @@
     elMsg = $('#auth-msg');
     elLoading = $('#auth-loading');
     elLoadingText = $('#auth-loading-text');
-    elSetupForm = $('#auth-setup-form');
     elLoginForm = $('#auth-login-form');
     elRegisterForm = $('#auth-register-form');
     elRegDone = $('#auth-reg-done');
@@ -367,7 +340,9 @@
     Auth.init();
 
     if (!Auth.hasUsers()) {
-      showForm('setup');
+      // 首次使用：登录页不再提供「创建管理员」入口，直接展示注册表单。
+      // 首个管理员由后台（Auth.setup，开发者在控制台调用）创建，符合「管理员创建功能后台分配」。
+      showForm('register');
       return;
     }
 
