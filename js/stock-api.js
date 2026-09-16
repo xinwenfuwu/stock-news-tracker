@@ -2521,24 +2521,27 @@ const StockAPI = {
       try {
         let items = [];
         if (s.parse === 'news_eastmoney') {
-          const resp = await fetch(`${base}/news?page=1&size=20`);
-          if (!resp.ok) throw new Error('HTTP ' + resp.status);
-          const j = await resp.json();
-          const list = (j.data && j.data.list) || [];
-          items = list.slice(0, 10).map(it => this._mkItem(
-            [it.title, it.summary].filter(Boolean).join('：').slice(0, 90),
-            this._normTime(it.showTime), it.uniqueUrl || ''
-          ));
+          // 主：Worker 专用 /news（东方财富 7x24）；失败则回退抓东财 HTML 列表页
+          try {
+            const j = await this._proxyJson(`${base}/news?page=1&size=20`);
+            const list = (j.data && j.data.list) || [];
+            items = list.slice(0, 10).map(it => this._mkItem(
+              [it.title, it.summary].filter(Boolean).join('：').slice(0, 90),
+              this._normTime(it.showTime), it.uniqueUrl || ''
+            )).filter(it => it.text);
+          } catch (e) { /* 走下面的 HTML 兜底 */ }
+          if (!items.length) {
+            const html = await this._proxyText(`${base}/proxy?url=${encodeURIComponent(s.endpoint || s.fallback || 'https://finance.eastmoney.com/')}`);
+            items = this._extractFromHtml(html, s.key, s.base).slice(0, 10);
+          }
         } else {
-          const resp = await fetch(`${base}/proxy?url=${encodeURIComponent(s.endpoint)}`);
-          if (!resp.ok) throw new Error('HTTP ' + resp.status);
-          const txt = await resp.text();
+          const txt = await this._proxyText(`${base}/proxy?url=${encodeURIComponent(s.endpoint)}`);
           items = this._parseHotSource(s.parse, s.key, txt).slice(0, 10);
         }
         s.items = items;
-        if (!items.length) s.error = '源返回为空或暂不支持解析';
+        if (!items.length) s.error = '解析为空（源页面结构变化或非新闻页）';
       } catch (e) {
-        s.error = e.message || '抓取失败';
+        s.error = this._friendlyFetchError(e);
       } finally {
         s.loading = false;
       }
@@ -2547,6 +2550,33 @@ const StockAPI = {
     for (const s of sources) for (const it of s.items) merged.push({ ...it, source: s.name, color: s.color, sourceRank: s.rank });
     merged.sort((a, b) => (b.time || '').localeCompare(a.time || ''));
     return { ok: true, date: today, sources, merged: merged.slice(0, 20) };
+  },
+
+  /** 经代理取文本（12s 超时，非 2xx 直接抛错） */
+  async _proxyText(url) {
+    const ctrl = new AbortController();
+    const timer = setTimeout(() => ctrl.abort(), 12000);
+    try {
+      const resp = await fetch(url, { signal: ctrl.signal, cache: 'no-store' });
+      if (!resp.ok) throw new Error('HTTP ' + resp.status);
+      return await resp.text();
+    } finally {
+      clearTimeout(timer);
+    }
+  },
+
+  /** 经代理取 JSON */
+  async _proxyJson(url) {
+    const txt = await this._proxyText(url);
+    try { return JSON.parse(txt); } catch (e) { throw new Error('返回非 JSON'); }
+  },
+
+  /** 把网络层异常翻译成用户能看懂的原因 */
+  _friendlyFetchError(e) {
+    const m = (e && e.message) || String(e || '');
+    if (/AbortError|aborted|timeout|timed out/i.test(m)) return '代理超时（源站响应过慢）';
+    if (/Failed to fetch|NetworkError|Network request failed|fetch failed|Load failed|ERR_/i.test(m)) return '代理不可达（域名被拦截或网络异常）';
+    return m || '抓取失败';
   },
 
   /** 统一构造带分类标签的条目（标题经共享规则净化，垃圾/乱码直接丢弃） */
@@ -2605,9 +2635,11 @@ const StockAPI = {
   },
 
   /** 从 HTML 抽取候选标题（经 Worker /proxy 返回的 HTML 文本） */
-  _extractFromHtml(html, key) {
+  _extractFromHtml(html, key, baseOverride) {
     const out = [];
-    const base = (typeof HotTopics !== 'undefined' && HotTopics.SOURCE_BY_KEY[key] && HotTopics.SOURCE_BY_KEY[key].base) || '';
+    const base = baseOverride
+      || (typeof HotTopics !== 'undefined' && HotTopics.SOURCE_BY_KEY[key] && HotTopics.SOURCE_BY_KEY[key].base)
+      || '';
     try {
       const doc = new DOMParser().parseFromString(html, 'text/html');
       // 去掉脚本/样式，避免抓到 JS 模板残留（如 ${title}）
