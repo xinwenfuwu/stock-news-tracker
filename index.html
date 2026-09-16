@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>股市信息追踪分析系统</title>
-  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/style.css?v=20260916b">
   <!-- Vue 3 全局构建版（CDN，无需构建步骤） -->
   <script src="https://unpkg.com/vue@3.4.21/dist/vue.global.prod.js"></script>
 </head>
@@ -365,27 +365,57 @@
 
               <div v-if="analysisLoading" class="muted small">统计中…</div>
               <template v-else-if="analysisResult">
-                <h4 class="sub-title">跨站重合榜 <span class="muted small">（同一话题在 N/10 个站点出现，点「展开」看具体站点）</span></h4>
-                <div class="overlap-list">
-                  <div class="overlap-item" v-for="(c, i) in analysisResult.clusters" :key="i">
-                    <div class="ov-head">
-                      <span class="ov-ratio" :class="ratioClass(c.siteRanks.length)">{{ c.ratio }}</span>
-                      <span class="ov-title" :title="c.repTitle">{{ c.repTitle }}</span>
-                      <button class="ov-toggle" @click="c._open = !c._open">{{ c._open ? '收起' : '展开' }}</button>
-                    </div>
-                    <div class="ov-sites">
-                      <span class="site-badge" v-for="n in c.siteRanks" :key="n" :style="{ background: htSourceColor(n) }" :title="htSourceName(n)">{{ n }}</span>
-                    </div>
-                    <div class="ov-detail" v-if="c._open">
-                      <div class="ov-detail-row" v-for="(it, j) in c.items" :key="j">
-                        <span class="site-badge sm" :style="{ background: htSourceColor(it.sourceRank) }">{{ it.sourceRank }}</span>
-                        <span class="ov-detail-src">{{ it.sourceName }}</span>
-                        <a v-if="it.url" :href="it.url" target="_blank" rel="noopener" class="ov-detail-text">{{ it.text }}</a>
-                        <span v-else class="ov-detail-text">{{ it.text }}</span>
+                <div class="ht-split">
+                  <div class="ht-split-left">
+                    <h4 class="sub-title">跨站重合榜 <span class="muted small">（同一话题在 N/10 个站点出现，点「展开」看具体站点）</span></h4>
+                    <div class="overlap-list">
+                      <div class="overlap-item" v-for="(c, i) in analysisResult.clusters" :key="i">
+                        <div class="ov-head">
+                          <span class="ov-ratio" :class="ratioClass(c.siteRanks.length)">{{ c.ratio }}</span>
+                          <span class="ov-title" :title="c.repTitle">{{ c.repTitle }}</span>
+                          <button class="ov-toggle" @click="c._open = !c._open">{{ c._open ? '收起' : '展开' }}</button>
+                        </div>
+                        <div class="ov-sites">
+                          <span class="site-badge" v-for="n in c.siteRanks" :key="n" :style="{ background: htSourceColor(n) }" :title="htSourceName(n)">{{ n }}</span>
+                        </div>
+                        <div class="ov-detail" v-if="c._open">
+                          <div class="ov-detail-row" v-for="(it, j) in c.items" :key="j">
+                            <span class="site-badge sm" :style="{ background: htSourceColor(it.sourceRank) }">{{ it.sourceRank }}</span>
+                            <span class="ov-detail-src">{{ it.sourceName }}</span>
+                            <a v-if="it.url" :href="it.url" target="_blank" rel="noopener" class="ov-detail-text">{{ it.text }}</a>
+                            <span v-else class="ov-detail-text">{{ it.text }}</span>
+                          </div>
+                        </div>
                       </div>
+                      <div class="muted small" v-if="!analysisResult.clusters.length">该时间段内暂无足够数据，请等待每日快照积累或切换更长时段。</div>
                     </div>
                   </div>
-                  <div class="muted small" v-if="!analysisResult.clusters.length">该时间段内暂无足够数据，请等待每日快照积累或切换更长时段。</div>
+
+                  <aside class="ht-split-right">
+                    <h4 class="sub-title">主题分类统计 <span class="muted small">（行业 / 概念 / 产品 / 产业 / 科技，一条新闻可命中多个）</span></h4>
+                    <div class="theme-stats">
+                      <div class="theme-dim" v-for="d in analysisResult.themeStats" :key="d.key">
+                        <div class="theme-dim-head" @click="d._open = !d._open">
+                          <span class="theme-dim-caret">{{ d._open ? '▾' : '▸' }}</span>
+                          <span class="theme-dim-name" :style="{ color: d.color }">{{ d.icon }} {{ d.name }}</span>
+                          <span class="theme-dim-count muted small">{{ d.total }} 条命中</span>
+                        </div>
+                        <div class="theme-topics" v-if="d._open">
+                          <div class="theme-topic" v-for="t in (d.showAll ? d.topics : d.topics.slice(0, 6))" :key="t.name"
+                               :title="t.samples.join('\n')">
+                            <span class="tt-name">{{ t.name }}</span>
+                            <span class="tt-track"><span class="tt-fill" :style="{ width: t.width + '%', background: d.color }"></span></span>
+                            <span class="tt-val">{{ t.count }}</span>
+                            <span class="tt-pct">{{ t.pct }}%</span>
+                          </div>
+                          <button class="theme-more" v-if="d.topics.length > 6" @click="d.showAll = !d.showAll">
+                            {{ d.showAll ? '收起' : ('展开全部 ' + d.topics.length + ' 项') }}
+                          </button>
+                          <div class="muted small" v-if="!d.topics.length">该时段未识别到{{ d.name }}类主题词</div>
+                        </div>
+                      </div>
+                    </div>
+                  </aside>
                 </div>
 
                 <h4 class="sub-title">各站分类统计 <span class="muted small">（按 7 大类分布）</span></h4>
@@ -1884,10 +1914,10 @@
     </transition>
   </div>
 
-  <script src="js/store.js"></script>
+  <script src="js/store.js?v=20260916b"></script>
   <script src="js/cloud-sync.js"></script>
-  <script src="js/stock-api.js"></script>
-  <script src="js/hot-topics.js"></script>
-  <script src="js/app.js"></script>
+  <script src="js/stock-api.js?v=20260916b"></script>
+  <script src="js/hot-topics.js?v=20260916b"></script>
+  <script src="js/app.js?v=20260916b"></script>
 </body>
 </html>
