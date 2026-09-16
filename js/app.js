@@ -2748,6 +2748,36 @@ const app = createApp({
       }
     }
 
+    // ===== 火热话题本地快照（替代 GitHub Action 的自动历史积累）=====
+    const HT_SNAPSHOT_KEEP_DAYS = 60;
+    /** 读取某日本地快照 */
+    function getLocalHotTopicSnapshot(date) {
+      const m = Store.data && Store.data.hotTopicSnapshots;
+      return (m && m[date]) || null;
+    }
+    /** 保存当日本地快照（实时抓取成功后调用；随 localStorage 持久化与云端同步） */
+    function saveLocalHotTopicSnapshot(sources) {
+      if (!sources || !sources.length) return;
+      if (!Store.data.hotTopicSnapshots) Store.data.hotTopicSnapshots = {};
+      const slim = sources.map(s => ({
+        rank: s.rank, key: s.key, name: s.name, color: s.color,
+        items: (s.items || []).map(it => ({ text: it.text, time: it.time, url: it.url, cat: it.cat }))
+      }));
+      if (!slim.some(s => s.items.length)) return; // 全空则不覆盖已有快照
+      const date = fmtDate(new Date());
+      Store.data.hotTopicSnapshots[date] = { date, generatedAt: new Date().toISOString(), sources: slim };
+      // 仅保留最近 N 天，避免数据过大
+      const keys = Object.keys(Store.data.hotTopicSnapshots).sort();
+      while (keys.length > HT_SNAPSHOT_KEEP_DAYS) {
+        delete Store.data.hotTopicSnapshots[keys.shift()];
+      }
+    }
+    /** 本地快照已有日期（降序） */
+    const localSnapshotDates = computed(() => {
+      const m = (Store.data && Store.data.hotTopicSnapshots) || {};
+      return Object.keys(m).sort().reverse();
+    });
+
     // 全球信息页：刷新「火热话题」+「美股美债」行情
     async function refreshHotTopics() {
       const proxy = (D.settings.proxyUrl || '').trim();
@@ -2765,6 +2795,7 @@ const app = createApp({
         hotTopicsSources.value = ht.sources || [];
         hotTopicsMerged.value = ht.merged || [];
         usMarket.value = us || [];
+        saveLocalHotTopicSnapshot(ht.sources); // 自动积累当日快照（本地+Gist）
         hotTopicsUpdated.value = new Date().toLocaleString('zh-CN', { hour12: false });
         if (!ht.sources.some(s => s.items.length)) {
           showToast('火热话题：各金融源暂未取到数据，请检查代理连通性', 'error');
@@ -2776,8 +2807,16 @@ const app = createApp({
       }
     }
 
-    /** 加载某日历史快照（data/hot-topics/YYYY-MM-DD.json） */
+    /** 加载某日历史快照（优先本地快照，回退到仓库内置 data/hot-topics/YYYY-MM-DD.json） */
     async function loadHotTopicHistory(date) {
+      // 1) 优先本地快照（打开应用时自动积累）
+      const local = getLocalHotTopicSnapshot(date);
+      if (local) {
+        hotTopicDateHasData.value = true;
+        hotTopicsSources.value = (local.sources || []).map(s => ({ ...s, loading: false, error: (s.items && s.items.length) ? null : '该日该源无数据' }));
+        hotTopicsUpdated.value = (local.generatedAt ? new Date(local.generatedAt).toLocaleString('zh-CN', { hour12: false }) : date) + '（本地快照）';
+        return;
+      }
       hotTopicsLoading.value = true;
       try {
         const resp = await fetch(`./data/hot-topics/${date}.json`, { cache: 'no-store' });
@@ -2817,6 +2856,8 @@ const app = createApp({
         const dates = [];
         for (let i = 0; i < opt.days; i++) dates.push(dateMinusDays(today, i));
         const snapshots = await Promise.all(dates.map(async d => {
+          const local = getLocalHotTopicSnapshot(d);
+          if (local) return local;
           try {
             const r = await fetch(`./data/hot-topics/${d}.json`, { cache: 'no-store' });
             if (!r.ok) return null;
@@ -3896,7 +3937,7 @@ const app = createApp({
       refreshAmplitudeBoards, ampLoading, hotPanelsHidden, financePushHidden,
       // 全球信息页：火热话题 + 美股美债
       hotTopicsSources, hotTopicsMerged, hotTopicsLoading, hotTopicsUpdated, usMarket, refreshHotTopics,
-      htTab, htMode, hotTopicDate, hotTopicDateHasData, htCatFilter, htCategories, htRangeOptions,
+      htTab, htMode, hotTopicDate, hotTopicDateHasData, htCatFilter, htCategories, htRangeOptions, localSnapshotDates,
       analysisRange, analysisLoading, analysisResult, filteredHotSources,
       catColor, htSourceColor, htSourceName, ratioClass, setHtMode, onHotTopicDateChange, runAnalysis,
       // 筛选板块
