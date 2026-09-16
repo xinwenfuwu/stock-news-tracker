@@ -129,5 +129,47 @@ if (existsSync(idxPath)) {
   console.log('  （本地暂无 index.json，跳过）');
 }
 
+console.log('8) themeStats 主题维度统计（行业/概念/产品/产业/科技，多标签命中）');
+assert('5 个维度且顺序正确', ht.THEME_DIMENSIONS.map(d => d.name).join(',') === '行业,概念,产品,产业,科技', ht.THEME_DIMENSIONS.map(d => d.name).join(','));
+assert('每个维度都有词典与配色', ht.THEME_DIMENSIONS.every(d => ht.THEME_KEYWORDS[d.key] && d.color && d.icon));
+const th = ht.themeStats([
+  { text: '华为发布新一代昇腾AI芯片' },
+  { text: '特斯拉无人驾驶电动车Cybercab亮相' },
+  { text: '今天天气不错适合出游' }
+]);
+assert('返回 5 个维度结果', th.length === 5, th.length);
+const thInd = th.find(d => d.key === 'industry'), thCon = th.find(d => d.key === 'concept');
+const thPro = th.find(d => d.key === 'product'), thTch = th.find(d => d.key === 'tech');
+assert('行业命中「半导体」(华为芯片)', thInd.topics.some(t => t.name === '半导体'), JSON.stringify(thInd.topics.map(t => t.name)));
+assert('行业命中「汽车」(特斯拉)', thInd.topics.some(t => t.name === '汽车'));
+assert('概念命中「人工智能」', thCon.topics.some(t => t.name === '人工智能'));
+assert('概念命中「国产替代」(昇腾)', thCon.topics.some(t => t.name === '国产替代'));
+assert('产品命中「芯片」', thPro.topics.some(t => t.name === '芯片'));
+assert('科技命中「人工智能」', thTch.topics.some(t => t.name === '人工智能'));
+assert('科技命中「自动驾驶」(无人驾驶)', thTch.topics.some(t => t.name === '自动驾驶'));
+assert('多标签：同一条新闻进多个维度', thInd.total === 2 && thCon.total === 2 && thPro.total === 2, `行业=${thInd.total} 概念=${thCon.total} 产品=${thPro.total}`);
+assert('无关新闻(天气)不计入任何维度', th.every(d => d.total <= 2), JSON.stringify(th.map(d => d.name + ':' + d.total)));
+assert('total 不超过总条数', th.every(d => d.total <= 3));
+assert('pct 为 0-100 整数', thInd.topics.every(t => Number.isInteger(t.pct) && t.pct >= 0 && t.pct <= 100));
+assert('topics 按命中数降序', thCon.topics.every((t, i, a) => i === 0 || a[i - 1].count >= t.count));
+assert('width 落在 1-100', thCon.topics.every(t => t.width > 0 && t.width <= 100));
+assert('samples 保留样例标题供悬停查看', thInd.topics.every(t => t.samples.length > 0 && typeof t.samples[0] === 'string'));
+assert('空数组安全', ht.themeStats([]).every(d => d.total === 0 && d.topics.length === 0 && d.baseTotal === 0));
+assert('null 入参安全', ht.themeStats(null).length === 5);
+assert('baseTotal 记录统计基数', th[0].baseTotal === 3, th[0].baseTotal);
+assert('同一主题每条新闻只计一次（不因多别名重复累加）', ht.themeStats([{ text: 'AI人工智能大模型ChatGPT' }]).find(d => d.key === 'concept').topics.find(t => t.name === '人工智能').count === 1);
+
+if (snap15 && snap16) {
+  const flatTheme = [];
+  for (const snap of [snap15, snap16]) for (const s of snap.sources) for (const it of (s.items || [])) flatTheme.push({ text: it.text });
+  const ts = ht.themeStats(flatTheme);
+  console.log(`    真实快照 ${flatTheme.length} 条的维度命中情况：`);
+  ts.forEach(d => console.log('      ' + d.name + '：命中 ' + d.total + ' 条 → ' + d.topics.slice(0, 6).map(t => t.name + '(' + t.count + ')').join(' ')));
+  assert('真实数据：五个维度均有命中', ts.every(d => d.total > 0), JSON.stringify(ts.map(d => d.name + ':' + d.total)));
+  assert('真实数据：命中数不超过总条数', ts.every(d => d.total <= flatTheme.length));
+  assert('真实数据：行业/概念命中率合理(>5%)', ts[0].total / flatTheme.length > 0.05 && ts[1].total / flatTheme.length > 0.05,
+    `行业=${ts[0].total} 概念=${ts[1].total} / ${flatTheme.length}`);
+}
+
 console.log(`\n结果：${pass} 通过 / ${fail} 失败`);
 process.exit(fail ? 1 : 0);
