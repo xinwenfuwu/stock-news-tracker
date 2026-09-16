@@ -224,6 +224,8 @@ const main = async () => {
     await page.fill('input[placeholder="建仓成本单价"]', '1000');
     await page.fill('input[placeholder="持仓股数"]', '100');
     await page.click('.holding-modal .modal-actions .btn-primary');
+    // 诊断：保存后先等弹窗关闭，再断言行数（线上偶发 waitForFunction 在弹窗关闭前读不到行）
+    await page.waitForFunction(() => document.querySelectorAll('.holding-modal').length === 0, null, { timeout: 15000 });
     await page.waitForFunction(() => document.querySelectorAll('.holding-table tbody tr').length === 1, null, { timeout: 15000 });
 
     // 编辑：把现价设为 1200
