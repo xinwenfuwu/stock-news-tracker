@@ -225,12 +225,29 @@ async function main() {
 
   console.log('10) 切换日期');
   const dateOpts = await page.$$eval('.brief-date option', els => els.map(e => e.value));
+  const readCounts = () => page.locator('.bc-count').allInnerTexts().then(a => a.map(s => parseInt(s.trim(), 10)));
   if (dateOpts.length > 1) {
+    const c1 = await readCounts();
     await page.selectOption('.brief-date', dateOpts[1]);
-    await page.waitForTimeout(1200);
+    // 单日快讯文件可达 0.65MB，必须等分布真正变化，不能用固定 sleep（线上实测冷加载约 8s）
+    let c2 = c1;
+    for (let i = 0; i < 40; i++) {
+      await page.waitForTimeout(500);
+      c2 = await readCounts();
+      if (JSON.stringify(c2) !== JSON.stringify(c1)) break;
+    }
     check('切换日期后仍能渲染出分类', (await page.locator('.brief-cat').count()) === 13);
+    check('切换日期后分类分布确实变了（不是沿用旧数据）', JSON.stringify(c2) !== JSON.stringify(c1),
+      c1.join('/') + '  ->  ' + c2.join('/'));
+    check('切换后 13 类全部有命中', c2.length === 13 && c2.every(n => n > 0), JSON.stringify(c2));
     await page.selectOption('.brief-date', dateOpts[0]);
-    await page.waitForTimeout(1200);
+    let c3 = c2;
+    for (let i = 0; i < 40; i++) {
+      await page.waitForTimeout(500);
+      c3 = await readCounts();
+      if (JSON.stringify(c3) === JSON.stringify(c1)) break;
+    }
+    check('切回后分布恢复', JSON.stringify(c3) === JSON.stringify(c1), c3.join('/'));
   } else {
     check('当前只有一个快讯日期（跳过切换验证）', true);
   }
