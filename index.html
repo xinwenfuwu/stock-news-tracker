@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>股市信息追踪分析系统</title>
-  <link rel="stylesheet" href="css/style.css?v=20260916d">
+  <link rel="stylesheet" href="css/style.css?v=20260916e">
   <!-- Vue 3 全局构建版（CDN，无需构建步骤） -->
   <script src="https://unpkg.com/vue@3.4.21/dist/vue.global.prod.js"></script>
 </head>
@@ -63,6 +63,12 @@
           </a>
         </nav>
         <div class="header-actions">
+          <button class="btn-icon pause-btn" :class="{ active: dataPaused }" @click="toggleDataPause"
+                  :title="dataPaused ? '数据自动刷新已暂停：进入页面不再自动抓取、不再自动云同步。点击恢复' : '一键暂停数据自动刷新（进入页面自动抓取、自动云同步、自动补价）'">
+            <span v-if="dataPaused">▶</span>
+            <span v-else>⏸</span>
+            <em v-if="dataPaused">已暂停</em>
+          </button>
           <button class="btn-icon cloud-btn" @click="openCloudModal" :title="cloud.loggedIn ? '云端已登录：'+cloud.user : '云端登录同步'" :class="{active: cloud.loggedIn}">
             <span v-if="cloud.loggedIn">☁️✓</span>
             <span v-else>☁️</span>
@@ -601,6 +607,11 @@
             <span v-if="sectorSearching">⏳ 搜索中...</span>
             <span v-else>🔍 搜索板块</span>
           </button>
+          <button class="btn btn-ai" @click="semanticSearch" :disabled="semantic.searching || sectorSearching"
+            title="用自然语言描述选股意图：产品级如「生产薄膜铌酸锂的企业」；概念级如「主营为ai安全的核心上市公司」">
+            <span v-if="semantic.searching">⏳ 语义理解中...</span>
+            <span v-else>🤖 AI语义搜索</span>
+          </button>
           <button class="btn" @click="searchSubSectors" :disabled="sectorSearching" title="在我的概念选股板块中，按名称关键字搜索子版块">
             🔎 搜索子版块
           </button>
@@ -613,11 +624,6 @@
               <span v-else>🔄 反推业务</span>
             </button>
           </span>
-          <button class="btn btn-ai" @click="semanticSearch" :disabled="semantic.searching || sectorSearching"
-            title="用自然语言描述选股意图：产品级如「生产薄膜铌酸锂的企业」；概念级如「主营为ai安全的核心上市公司」">
-            <span v-if="semantic.searching">⏳ 语义理解中...</span>
-            <span v-else>🤖 AI语义搜索</span>
-          </button>
         </div>
         <p class="muted tiny" style="margin:-6px 0 14px">
           产品级语义示例：在上方输入框输入 <b>生产薄膜铌酸锂的企业</b> / <b>HBM核心公司</b> / <b>复合铜箔龙头</b> / <b>人形机器人减速器</b>，点 🤖 AI语义搜索 即可直接得到相关上市公司及产业链定位。
@@ -915,15 +921,29 @@
           <span>🔍 子版块筛选「<b>{{ sectorSubKeyword }}</b>」· 命中 <b>{{ filteredSectorPools.length }}</b> 个</span>
           <button class="btn btn-sm" @click="clearSubSectorSearch">✕ 清除筛选</button>
         </div>
-        <div class="section-title" v-if="filteredSectorPools.length">
+        <div class="section-title section-title-bar" v-if="filteredSectorPools.length">
           <h3>📋 我的概念选股板块</h3>
           <span class="muted small">共 {{ filteredSectorPools.length }} 个<span v-if="sectorSubKeyword">（总 {{ sortedSectorPools.length }} 个）</span></span>
+          <span class="muted tiny stb-hint">拖动卡片可调整顺序</span>
+          <span class="stb-spacer"></span>
+          <button class="btn btn-sm" @click="resetPoolOrder" title="恢复为默认顺序（按创建时间倒序）">↕ 恢复默认顺序</button>
+          <button class="btn btn-sm" @click="refreshSectorPoolsDailyChange" :disabled="sectorPoolsRefreshing"
+                  title="只刷新各板块成分股的「当日涨跌幅」并重算平均涨跌幅，不拉取财务/股东/历史价等字段">
+            <span v-if="sectorPoolsRefreshing">⏳ 刷新中...</span>
+            <span v-else>🔄 一键刷新涨跌</span>
+          </button>
         </div>
         <div class="pool-grid" v-if="filteredSectorPools.length">
           <div class="pool-card" v-for="pool in filteredSectorPools" :key="pool.id"
-               @click="openSectorDetail(pool)">
+               draggable="true"
+               :class="{ 'is-dragging': poolDragId === pool.id, 'is-drop-target': poolDropId === pool.id && poolDragId !== pool.id }"
+               @click="openPoolCard(pool)"
+               @dragstart="onPoolDragStart(pool, $event)"
+               @dragover.prevent="onPoolDragOver(pool)"
+               @drop.prevent="onPoolDrop(pool)"
+               @dragend="onPoolDragEnd">
             <div class="pool-card-header">
-              <span class="pool-date">{{ pool.type || '板块' }}</span>
+              <span class="pool-date"><span class="pool-drag-handle" title="按住拖动可调整板块顺序">⠿</span>{{ pool.type || '板块' }}</span>
               <span class="pool-count">{{ pool.stocks.length }} 只</span>
             </div>
             <div class="pool-name">{{ pool.name }}</div>
@@ -973,7 +993,7 @@
           </div>
         </div>
 
-        <div class="hot-layout hot-layout-2" v-show="!hotPanelsHidden">
+        <div class="hot-layout hot-layout-2 with-notice" v-show="!hotPanelsHidden">
           <!-- 热门板块 -->
           <div class="hot-panel">
             <h3 class="panel-title">🔥 当日热门板块</h3>
@@ -988,6 +1008,12 @@
               </div>
             </div>
             <div class="muted small" v-else>点击「获取热门板块」加载</div>
+          </div>
+
+          <!-- 注意事项：与「当日热门板块」同排，紧贴其右侧 -->
+          <div class="hot-notice" title="服务器资源有限，单个板块的股票数量建议不超过 30 只">
+            <div class="hot-notice-title">⚠️ 注意事项</div>
+            <p>添加股票信息时，股票数量最好不要超过 <b>30</b> 个，服务器有限。</p>
           </div>
 
           <!-- 盘前热点板块 -->
@@ -1048,10 +1074,31 @@
         
         <div class="page-toolbar">
           <div class="toolbar-left">
-            <h2 class="page-title" style="margin:0">🎯 筛选板块</h2>
+            <h2 class="page-title" style="margin:0">🎯 筛选板块<span class="muted small" style="font-weight:400">（当日股票明细）</span></h2>
           </div>
           <div class="toolbar-right">
             <button class="btn btn-sm" @click="filterFilterOpen = !filterFilterOpen">{{ filterFilterOpen ? '▴ 收起筛选栏' : '▾ 展开筛选栏' }}</button>
+            <!-- 个股搜索添加：位于「字段含义」左侧 -->
+            <span class="quick-add quick-add-hot" :class="{ open: quickAdd.hot.open }">
+              <input class="quick-add-input" v-model="quickAdd.hot.text"
+                     placeholder="搜索个股：代码 / 名称"
+                     title="输入股票代码或名称，添加进当前「当日股票明细」列表（可多只，用逗号/分号分隔）"
+                     @input="quickAddSearch('hot')"
+                     @keyup.enter="quickAddSubmit('hot')"
+                     @focus="quickAdd.hot.open = quickAdd.hot.suggestions.length > 0"
+                     @blur="quickAddBlur('hot')">
+              <button class="btn btn-sm" @click="quickAddSubmit('hot')" :disabled="quickAdd.hot.loading">
+                <span v-if="quickAdd.hot.loading">⏳</span>
+                <span v-else>＋ 个股添加</span>
+              </button>
+              <div class="quick-add-pop" v-if="quickAdd.hot.open && quickAdd.hot.suggestions.length">
+                <div class="quick-add-item" v-for="h in quickAdd.hot.suggestions" :key="h.code"
+                     :title="'点击添加「' + h.name + '」'"
+                     @mousedown.prevent="quickAddPick('hot', h)">
+                  <span class="qa-name">{{ h.name }}</span><span class="qa-code">{{ h.pureCode }}</span>
+                </div>
+              </div>
+            </span>
             <button class="btn btn-sm" @click="filterInfoOpen = !filterInfoOpen" :title="filterInfoOpen ? '隐藏字段含义与计算规则' : '显示字段含义与计算规则'">{{ filterInfoOpen ? '🙈 隐藏说明' : '👁 字段含义' }}</button>
             <button class="btn btn-sm" @click="refreshFilterStocks" :disabled="filterRefreshing">
               <span v-if="filterRefreshing">⏳ 刷新中...</span>
@@ -1275,6 +1322,27 @@
           </div>
           <div class="toolbar-right">
             <button class="btn btn-sm" @click="filterFilterOpen = !filterFilterOpen">{{ filterFilterOpen ? '▴ 收起筛选栏' : '▾ 展开筛选栏' }}</button>
+            <!-- 个股搜索添加：位于「字段含义」左侧 -->
+            <span class="quick-add quick-add-filter" :class="{ open: quickAdd.filter.open }">
+              <input class="quick-add-input" v-model="quickAdd.filter.text"
+                     placeholder="搜索个股：代码 / 名称"
+                     title="输入股票代码或名称，添加进上方「板块筛选」选中的板块（可多只，用逗号/分号分隔）"
+                     @input="quickAddSearch('filter')"
+                     @keyup.enter="quickAddSubmit('filter')"
+                     @focus="quickAdd.filter.open = quickAdd.filter.suggestions.length > 0"
+                     @blur="quickAddBlur('filter')">
+              <button class="btn btn-sm" @click="quickAddSubmit('filter')" :disabled="quickAdd.filter.loading">
+                <span v-if="quickAdd.filter.loading">⏳</span>
+                <span v-else>＋ 个股添加</span>
+              </button>
+              <div class="quick-add-pop" v-if="quickAdd.filter.open && quickAdd.filter.suggestions.length">
+                <div class="quick-add-item" v-for="h in quickAdd.filter.suggestions" :key="h.code"
+                     :title="'点击添加「' + h.name + '」'"
+                     @mousedown.prevent="quickAddPick('filter', h)">
+                  <span class="qa-name">{{ h.name }}</span><span class="qa-code">{{ h.pureCode }}</span>
+                </div>
+              </div>
+            </span>
             <button class="btn btn-sm" @click="filterInfoOpen = !filterInfoOpen" :title="filterInfoOpen ? '隐藏字段含义与计算规则' : '显示字段含义与计算规则'">{{ filterInfoOpen ? '🙈 隐藏说明' : '👁 字段含义' }}</button>
             <button class="btn btn-sm" @click="refreshFilterStocks" :disabled="filterRefreshing">
               <span v-if="filterRefreshing">⏳ 刷新中...</span>
@@ -1679,6 +1747,27 @@
             <span class="sd-avg">平均涨跌幅：<b :class="pctClass(sectorDetail.data.avgChange)">{{ fmtPct(sectorDetail.data.avgChange) }}</b></span>
           </h3>
           <div class="header-actions">
+            <!-- 个股搜索添加：位于「字段含义」左侧 -->
+            <span class="quick-add quick-add-sector" :class="{ open: quickAdd.sector.open }">
+              <input class="quick-add-input" v-model="quickAdd.sector.text"
+                     placeholder="搜索个股：代码 / 名称"
+                     title="输入股票代码（如 600519）或名称（如 贵州茅台）添加进本板块；支持多只，用逗号/分号分隔"
+                     @input="quickAddSearch('sector')"
+                     @keyup.enter="quickAddSubmit('sector')"
+                     @focus="quickAdd.sector.open = quickAdd.sector.suggestions.length > 0"
+                     @blur="quickAddBlur('sector')">
+              <button class="btn btn-sm" @click="quickAddSubmit('sector')" :disabled="quickAdd.sector.loading">
+                <span v-if="quickAdd.sector.loading">⏳</span>
+                <span v-else>＋ 个股添加</span>
+              </button>
+              <div class="quick-add-pop" v-if="quickAdd.sector.open && quickAdd.sector.suggestions.length">
+                <div class="quick-add-item" v-for="h in quickAdd.sector.suggestions" :key="h.code"
+                     :title="'点击添加「' + h.name + '」'"
+                     @mousedown.prevent="quickAddPick('sector', h)">
+                  <span class="qa-name">{{ h.name }}</span><span class="qa-code">{{ h.pureCode }}</span>
+                </div>
+              </div>
+            </span>
             <button class="btn btn-sm" @click="sectorInfoOpen = !sectorInfoOpen" :title="sectorInfoOpen ? '隐藏字段含义与计算规则' : '显示字段含义与计算规则'">{{ sectorInfoOpen ? '🙈 隐藏说明' : '👁 字段含义' }}</button>
             <button class="btn btn-sm" @click="refreshSectorDetail(sectorDetail.data)" :disabled="sectorLoading">
               <span v-if="sectorLoading">⏳ 刷新中...</span>
@@ -2095,8 +2184,8 @@
     </transition>
   </div>
 
-  <script src="js/auth.js?v=20260916d"></script>
-  <script src="js/auth-boot.js?v=20260916d"></script>
+  <script src="js/auth.js?v=20260916e"></script>
+  <script src="js/auth-boot.js?v=20260916e"></script>
   <!-- store / stock-api / hot-topics / app 由 auth-boot.js 在登录通过后动态装载，
        未登录时它们不会被下载，业务数据也不会进入内存 -->
 </body>
