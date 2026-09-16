@@ -2954,7 +2954,10 @@ const app = createApp({
         }
         const clusters = (typeof HotTopics !== 'undefined' ? HotTopics.clusterItems(flat) : []).map(c => ({ ...c, _open: false }));
         const siteStats = (typeof HotTopics !== 'undefined' ? HotTopics.siteCategoryStats(flat) : []);
-        analysisResult.value = { clusters, siteStats, dayCount, totalItems: flat.length };
+        // 主题维度统计（行业/概念/产品/产业/科技），多标签命中，与跨站重合榜并排展示
+        const themeStats = (typeof HotTopics !== 'undefined' && HotTopics.themeStats ? HotTopics.themeStats(flat) : [])
+          .map(d => ({ ...d, _open: true, showAll: false }));
+        analysisResult.value = { clusters, siteStats, themeStats, dayCount, totalItems: flat.length };
       } catch (e) {
         showToast('统计分析失败：' + (e && e.message ? e.message : e), 'error');
       } finally {
