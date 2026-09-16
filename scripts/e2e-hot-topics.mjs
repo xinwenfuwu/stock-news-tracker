@@ -106,8 +106,8 @@ const main = async () => {
   // ---------------- 场景 2：代理不可达 → 点刷新应回退 ----------------
   console.log('2) 代理不可达（模拟 workers.dev 被拦截）：点「刷新热门话题」应回退到快照');
   {
-    // 127.0.0.1:9 是保留端口，连接一定失败，等价于「代理不可达」
-    const { ctx, page, errors } = await openApp(browser, A.port, 'http://127.0.0.1:9');
+    // 127.0.0.1:65500 无监听，连接被拒，等价于「代理不可达」
+    const { ctx, page, errors } = await openApp(browser, A.port, 'http://127.0.0.1:65500');
     await waitItems(page);
     await page.locator(FIN_TOOLBAR + ' button').first().click();
     // 等 toast 出现
