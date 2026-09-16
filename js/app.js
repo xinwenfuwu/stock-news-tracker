@@ -2956,7 +2956,7 @@ const app = createApp({
         const siteStats = (typeof HotTopics !== 'undefined' ? HotTopics.siteCategoryStats(flat) : []);
         // 主题维度统计（行业/概念/产品/产业/科技），多标签命中，与跨站重合榜并排展示
         const themeStats = (typeof HotTopics !== 'undefined' && HotTopics.themeStats ? HotTopics.themeStats(flat) : [])
-          .map(d => ({ ...d, _open: true, showAll: false }));
+          .map(d => ({ ...d, _open: true, showAll: false, selTopic: null, newsLimit: 30 }));
         analysisResult.value = { clusters, siteStats, themeStats, dayCount, totalItems: flat.length };
       } catch (e) {
         showToast('统计分析失败：' + (e && e.message ? e.message : e), 'error');
@@ -2964,6 +2964,13 @@ const app = createApp({
         analysisLoading.value = false;
       }
     }
+
+    /** 点击主题词（半导体 / 人工智能 / 医疗器械 …）：就地展开该主题命中的新闻明细；同一维度内一次只看一个主题 */
+    function toggleThemeTopic(dim, topic) {
+      dim.selTopic = dim.selTopic === topic.name ? null : topic.name;
+    }
+    /** 展开更多该主题的新闻（默认先显示 30 条） */
+    function moreThemeNews(dim) { dim.newsLimit = (dim.newsLimit || 30) + 50; }
 
     async function fetchHotBoards() {
       hotLoading.value = true;
@@ -4020,6 +4027,7 @@ const app = createApp({
       htTab, htMode, hotTopicDate, hotTopicDateHasData, htCatFilter, htCategories, htRangeOptions, localSnapshotDates,
       analysisRange, analysisLoading, analysisResult, filteredHotSources,
       catColor, htSourceColor, htSourceName, ratioClass, setHtMode, onHotTopicDateChange, runAnalysis,
+      toggleThemeTopic, moreThemeNews,
       // 筛选板块
       filterPanel, openFilterPanel, resetFilter, applyFilterPool, toggleFilterLock,
       filteredFilterStocks, sortedFilterStocks, sortFilterBy, filterSortIcon,
