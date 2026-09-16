@@ -60,6 +60,18 @@ body {
   white-space: nowrap;
 }
 .brand-icon { font-size: 22px; }
+/* 站名分上下两层：上行「股市信息」、下行「分析系统」 */
+.brand-title {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  font-size: 13.5px;
+  line-height: 1.25;
+  letter-spacing: .3px;
+}
+.brand-title > span { display: block; }
 .main-nav {
   display: flex;
   gap: 4px;
@@ -474,7 +486,7 @@ body {
 /* ===== 当日股票明细 · 股票查询 ===== */
 .hot-search-row { display: flex; align-items: center; gap: 6px; }
 
-/* ===== 行业勾选列表（概念行业选股 · 筛选栏） ===== */
+/* ===== 行业勾选列表（选股 · 筛选栏） ===== */
 .industry-check-field { align-self: flex-start; }
 .industry-check-list {
   max-height: 148px;
@@ -836,7 +848,7 @@ body {
 .concept-count { width: 24px; font-weight: 700; color: var(--primary); }
 .section-title { font-size: 16px; font-weight: 600; margin: 20px 0 10px; }
 
-/* ===== 概念行业选股 ===== */
+/* ===== 选股 ===== */
 .sector-search {
   display: flex;
   align-items: center;
@@ -1748,7 +1760,18 @@ body.auth-locked { overflow: hidden; }
 }
 .auth-brand { text-align: center; margin-bottom: 20px; }
 .auth-logo { display: block; font-size: 30px; line-height: 1; margin-bottom: 10px; }
-.auth-title { font-size: 17px; font-weight: 700; color: var(--text); }
+/* 站名分上下两层：上行「股市信息」、下行「分析系统」 */
+.auth-title {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  font-size: 17px;
+  font-weight: 700;
+  line-height: 1.25;
+  color: var(--text);
+}
+.auth-title > span { display: block; }
 .auth-sub { margin-top: 6px; font-size: 12.5px; color: var(--text-placeholder); }
 
 .auth-form { display: flex; flex-direction: column; gap: 10px; }
