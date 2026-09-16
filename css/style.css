@@ -1645,6 +1645,10 @@ body {
 .cat-filter { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 12px; }
 .cat-chip { border: 1px solid var(--border); background: var(--surface); color: var(--muted); border-radius: 999px; padding: 3px 12px; font-size: 12px; cursor: pointer; }
 .cat-chip.active { color: #fff; }
+.snapshot-dates { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; margin: -4px 0 12px; }
+.snap-date { border: 1px solid var(--border); background: var(--surface); color: var(--muted); border-radius: 6px; padding: 2px 8px; font-size: 12px; cursor: pointer; }
+.snap-date:hover { border-color: var(--accent); color: var(--accent); }
+.snap-date.active { background: var(--accent); color: #fff; border-color: var(--accent); }
 .src-rank { flex: 0 0 auto; width: 18px; height: 18px; line-height: 18px; text-align: center; border-radius: 50%; background: var(--surface-alt); color: var(--muted); font-size: 11px; font-weight: 700; }
 .source-items { list-style: none; counter-reset: none; }
 .item-rank { flex: 0 0 auto; width: 16px; color: var(--muted); font-size: 12px; font-variant-numeric: tabular-nums; }
