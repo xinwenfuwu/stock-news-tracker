@@ -24,7 +24,7 @@ const app = createApp({
       { key: 'news', label: '新闻追踪', icon: '📰' },
       { key: 'finance', label: '全球信息', icon: '🌐' },
       { key: 'pools', label: '股票池', icon: '📅' },
-      { key: 'sector', label: '概念行业选股', icon: '🧭' },
+      { key: 'sector', label: '选股', icon: '🧭' },
       { key: 'filter', label: '筛选板块', icon: '🎯' },
       { key: 'hot', label: '热门板块', icon: '🔥' }
     ];
@@ -1425,7 +1425,7 @@ const app = createApp({
         // 历史价：优先「一次请求取四项 + 一周/一月」（getHistoryBundle，请求量降为 1/4 且腾讯优先），
         // 取不到的项再逐项兜底（各自独立 try，互不连坐）。旧实现把三项挤在同一 try 里，
         // 且 924 走 getHistoryClose 的窄窗口取不到 2024-09-24，导致「924涨跌」等字段长期为空。
-        // 收藏/热门/筛选页早已改用此模式，唯独本函数（概念行业选股 + 股票池详情共用）遗漏。
+        // 收藏/热门/筛选页早已改用此模式，唯独本函数（选股 + 股票池详情共用）遗漏。
         try {
           const hb = await StockAPI.getHistoryBundle(s.code);
           if (hb) {
@@ -1863,7 +1863,7 @@ const app = createApp({
     }
 
     // ============================================================
-    //  页面2.5：概念行业选股
+    //  页面2.5：选股
     // ============================================================
     const sectorSearch = ref('');        // 搜索框
     const sectorResults = ref([]);       // 搜索结果
@@ -2764,7 +2764,7 @@ const app = createApp({
       sectorDetail.show = true;
       // 打开新板块时重置详情内筛选区间（已固定则保留）
       if (!sectorFilter.locked) resetSectorFilter();
-      // 【修复】概念行业选股页点击子版块后，「今年高价/距高价/今年低价/距低价/年涨跌/924涨跌」
+      // 【修复】选股页点击子版块后，「今年高价/距高价/今年低价/距低价/年涨跌/924涨跌」
       // 六个依赖历史价的字段长期空白。根因：热门板块在 openHotBoard 后会自动 await refreshHotStocks()
       // 补全历史价，而本页 openSectorDetail 仅打开弹窗、不触发任何补全，须用户手动点「刷新行情」。
       // 这里在打开时检测：若成分股尚未补全历史价（yearStartPrice/yearHighPrice/price924 缺失），
@@ -4343,7 +4343,7 @@ const app = createApp({
       // 用云端数据覆盖本地
       if (data.news) { D.news.splice(0, D.news.length, ...data.news); }
       if (data.stockPools) { D.stockPools.splice(0, D.stockPools.length, ...data.stockPools); }
-      // 恢复「概念行业选股」板块（含 AI 语义搜索保存的板块及其相关度字段），否则跨设备从云端加载会丢失
+      // 恢复「选股」板块（含 AI 语义搜索保存的板块及其相关度字段），否则跨设备从云端加载会丢失
       if (data.sectorPools) { D.sectorPools.splice(0, D.sectorPools.length, ...data.sectorPools); }
       if (data.dailyData) { Object.keys(D.dailyData).forEach(k => delete D.dailyData[k]); Object.assign(D.dailyData, data.dailyData); }
       if (data.settings) { Object.assign(D.settings, data.settings); }
@@ -4422,7 +4422,7 @@ const app = createApp({
       poolModal, openAddPool, openEditPool, savePool, deletePool, pickDailyStocks,
       poolDetail, openPoolDetail, startEditPoolName, savePoolName, refreshPoolPrices, refreshPoolDetail,
       addPoolStocks, removePoolStock, sortedPoolDetailStocks, sortPoolDetailBy, poolSortIcon,
-      // 页面2.5：概念行业选股
+      // 页面2.5：选股
       sectorSearch, sectorResults, sectorSearching, sectorLoading,
       sectorLoadError, sectorLoadingAll, reloadSectors, loadAllSectors, refreshSectorData,
       sectorDetail, sortedSectorPools, searchSector, addSectorFromSearch,
