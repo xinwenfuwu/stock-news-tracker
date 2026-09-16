@@ -22,7 +22,7 @@ const app = createApp({
     const currentPage = ref('news');
     const tabs = [
       { key: 'news', label: '新闻追踪', icon: '📰' },
-      { key: 'finance', label: '美股美债', icon: '📡' },
+      { key: 'finance', label: '全球信息', icon: '🌐' },
       { key: 'pools', label: '股票池', icon: '📅' },
       { key: 'sector', label: '概念行业选股', icon: '🧭' },
       { key: 'filter', label: '筛选板块', icon: '🎯' },
@@ -31,6 +31,15 @@ const app = createApp({
     function goPage(key) {
       currentPage.value = key;
       location.hash = key;
+      // 进入「全球信息」页：优先加载当日历史快照（无需代理即可展示），无数据且已配代理则实时抓取
+      if (key === 'finance' && !hotTopicsSources.value.length && !hotTopicsLoading.value) {
+        htMode.value = 'history';
+        loadHotTopicHistory(hotTopicDate.value).then(() => {
+          if (!hotTopicDateHasData.value && (D.settings.proxyUrl || '').trim()) {
+            refreshHotTopics();
+          }
+        });
+      }
     }
     // 初始化路由
     const hash = location.hash.replace('#', '');
@@ -2608,6 +2617,57 @@ const app = createApp({
     const hotPanelsHidden = ref(false);
     const financePushHidden = ref(false);
     const hotSort = reactive({ key: 'dailyChange', dir: 'desc' });
+    // 全球信息页：火热话题（10 个金融软件热门消息）+ 美股美债行情
+    const hotTopicsSources = ref([]);
+    const hotTopicsMerged = ref([]);
+    const hotTopicsLoading = ref(false);
+    const hotTopicsUpdated = ref('');
+    const usMarket = ref([]);
+    // 火热话题：每日话题 / 统计分析
+    const htTab = ref('daily');                 // 'daily' | 'analysis'
+    const htMode = ref('live');                 // 'live' | 'history'
+    const hotTopicDate = ref(new Date().toISOString().slice(0, 10));
+    const hotTopicDateHasData = ref(false);
+    const htCatFilter = ref('');
+    const htCategories = (typeof HotTopics !== 'undefined') ? HotTopics.CATEGORIES : [];
+    const htRangeOptions = [
+      { key: '1d', label: '1天内', days: 1 },
+      { key: '3d', label: '3天内', days: 3 },
+      { key: '5d', label: '5天内', days: 5 },
+      { key: '10d', label: '10天内', days: 10 },
+      { key: '1m', label: '一月内', days: 30 }
+    ];
+    const analysisRange = ref('3d');
+    const analysisLoading = ref(false);
+    const analysisResult = ref(null);
+
+    function catColor(c) {
+      return (typeof HotTopics !== 'undefined' && HotTopics.CATEGORY_COLORS[c]) || '#6b7280';
+    }
+    function htSourceByRank(rank) {
+      const list = (typeof HotTopics !== 'undefined' && HotTopics.SOURCE_ORDER) || [];
+      return list.find(s => s.rank === rank) || { name: String(rank), color: '#888' };
+    }
+    function htSourceColor(rank) { return htSourceByRank(rank).color; }
+    function htSourceName(rank) { return htSourceByRank(rank).name; }
+    function ratioClass(n) { return n >= 8 ? 'hot' : (n >= 4 ? 'warm' : ''); }
+    function fmtDate(d) {
+      const y = d.getFullYear(), m = String(d.getMonth() + 1).padStart(2, '0'), day = String(d.getDate()).padStart(2, '0');
+      return `${y}-${m}-${day}`;
+    }
+    function dateMinusDays(dateStr, n) {
+      const d = new Date(dateStr + 'T00:00:00');
+      d.setDate(d.getDate() - n);
+      return fmtDate(d);
+    }
+    const filteredHotSources = computed(() => {
+      const list = hotTopicsSources.value || [];
+      if (!htCatFilter.value) return list.map(s => ({ ...s, filteredItems: s.items, filteredCount: s.items.length }));
+      return list.map(s => {
+        const fi = (s.items || []).filter(it => it.cat === htCatFilter.value);
+        return { ...s, filteredItems: fi, filteredCount: fi.length };
+      });
+    });
     // 点击热门板块 4 个子版块后，成分股同时载入下方「筛选板块」列表（与 filterPanel.poolId='hot' 联动）
     const hotFilterStocks = ref([]);
 
@@ -2685,6 +2745,105 @@ const app = createApp({
       if (daily) {
         daily.stocks = daily.stocks.filter(s => s.code !== code);
         showToast('已移除', 'success');
+      }
+    }
+
+    // 全球信息页：刷新「火热话题」+「美股美债」行情
+    async function refreshHotTopics() {
+      const proxy = (D.settings.proxyUrl || '').trim();
+      if (!proxy) {
+        showToast('请先在「设置」里填写新闻代理地址（Cloudflare Worker）', 'error');
+        return;
+      }
+      htMode.value = 'live';
+      hotTopicsLoading.value = true;
+      try {
+        const [ht, us] = await Promise.all([
+          StockAPI.fetchHotTopics(proxy),
+          StockAPI.fetchUsMarket(proxy)
+        ]);
+        hotTopicsSources.value = ht.sources || [];
+        hotTopicsMerged.value = ht.merged || [];
+        usMarket.value = us || [];
+        hotTopicsUpdated.value = new Date().toLocaleString('zh-CN', { hour12: false });
+        if (!ht.sources.some(s => s.items.length)) {
+          showToast('火热话题：各金融源暂未取到数据，请检查代理连通性', 'error');
+        }
+      } catch (e) {
+        showToast('火热话题刷新失败：' + (e && e.message ? e.message : e), 'error');
+      } finally {
+        hotTopicsLoading.value = false;
+      }
+    }
+
+    /** 加载某日历史快照（data/hot-topics/YYYY-MM-DD.json） */
+    async function loadHotTopicHistory(date) {
+      hotTopicsLoading.value = true;
+      try {
+        const resp = await fetch(`./data/hot-topics/${date}.json`, { cache: 'no-store' });
+        if (!resp.ok) {
+          hotTopicDateHasData.value = false;
+          hotTopicsSources.value = (typeof HotTopics !== 'undefined' ? HotTopics.SOURCE_ORDER : []).map(s => ({ ...s, items: [], loading: false, error: '该日暂无历史快照' }));
+          return;
+        }
+        const snap = await resp.json();
+        hotTopicDateHasData.value = true;
+        hotTopicsSources.value = (snap.sources || []).map(s => ({ ...s, loading: false, error: (s.items && s.items.length) ? null : '该日该源无数据' }));
+        hotTopicsUpdated.value = (snap.generatedAt ? new Date(snap.generatedAt).toLocaleString('zh-CN', { hour12: false }) : date) + '（历史）';
+      } catch (e) {
+        hotTopicDateHasData.value = false;
+        hotTopicsSources.value = [];
+      } finally {
+        hotTopicsLoading.value = false;
+      }
+    }
+
+    function setHtMode(m) {
+      htMode.value = m;
+      if (m === 'history') loadHotTopicHistory(hotTopicDate.value);
+      else refreshHotTopics();
+    }
+    function onHotTopicDateChange() {
+      if (htMode.value === 'history') loadHotTopicHistory(hotTopicDate.value);
+    }
+
+    /** 统计分析：按时间段加载历史快照，跨站聚类 + 各站分类统计 */
+    async function runAnalysis() {
+      const opt = htRangeOptions.find(r => r.key === analysisRange.value) || htRangeOptions[1];
+      analysisLoading.value = true;
+      analysisResult.value = null;
+      try {
+        const today = hotTopicDate.value || fmtDate(new Date());
+        const dates = [];
+        for (let i = 0; i < opt.days; i++) dates.push(dateMinusDays(today, i));
+        const snapshots = await Promise.all(dates.map(async d => {
+          try {
+            const r = await fetch(`./data/hot-topics/${d}.json`, { cache: 'no-store' });
+            if (!r.ok) return null;
+            return await r.json();
+          } catch (e) { return null; }
+        }));
+        const flat = [];
+        let dayCount = 0;
+        for (const snap of snapshots) {
+          if (!snap || !snap.sources) continue;
+          dayCount++;
+          for (const s of snap.sources) {
+            for (const it of (s.items || [])) {
+              flat.push({
+                sourceRank: s.rank, sourceKey: s.key, sourceName: s.name,
+                text: it.text, time: it.time, url: it.url, cat: it.cat || '财经', date: snap.date
+              });
+            }
+          }
+        }
+        const clusters = (typeof HotTopics !== 'undefined' ? HotTopics.clusterItems(flat) : []).map(c => ({ ...c, _open: false }));
+        const siteStats = (typeof HotTopics !== 'undefined' ? HotTopics.siteCategoryStats(flat) : []);
+        analysisResult.value = { clusters, siteStats, dayCount, totalItems: flat.length };
+      } catch (e) {
+        showToast('统计分析失败：' + (e && e.message ? e.message : e), 'error');
+      } finally {
+        analysisLoading.value = false;
       }
     }
 
@@ -3735,6 +3894,11 @@ const app = createApp({
       sortedHotStocks, sortHotBy, hotSortIcon, removeHotStock,
       loadHotData, fetchHotBoards, refreshHotStocks,
       refreshAmplitudeBoards, ampLoading, hotPanelsHidden, financePushHidden,
+      // 全球信息页：火热话题 + 美股美债
+      hotTopicsSources, hotTopicsMerged, hotTopicsLoading, hotTopicsUpdated, usMarket, refreshHotTopics,
+      htTab, htMode, hotTopicDate, hotTopicDateHasData, htCatFilter, htCategories, htRangeOptions,
+      analysisRange, analysisLoading, analysisResult, filteredHotSources,
+      catColor, htSourceColor, htSourceName, ratioClass, setHtMode, onHotTopicDateChange, runAnalysis,
       // 筛选板块
       filterPanel, openFilterPanel, resetFilter, applyFilterPool, toggleFilterLock,
       filteredFilterStocks, sortedFilterStocks, sortFilterBy, filterSortIcon,
