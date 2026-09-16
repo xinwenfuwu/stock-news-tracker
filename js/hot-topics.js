@@ -154,6 +154,40 @@
     return t;
   }
 
+  /** 本地日期格式化（避免 toISOString 的 UTC 时区偏移） */
+  function fmtLocalDate(d) {
+    return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+  }
+  /** 今天的 YYYY-MM-DD */
+  function todayStr() { return fmtLocalDate(new Date()); }
+
+  /**
+   * 实时抓取失败时，决定按优先级回退读取哪些「仓库内置快照」日期。
+   * 返回：日期数组（降序，第一个即最优）。清单不可用时向前回溯 maxLookback 天。
+   * @param {object|null} manifest 仓库清单 { dates: ['YYYY-MM-DD', ...] }
+   * @param {string} today 'YYYY-MM-DD'
+   * @param {number} maxLookback 无清单时向前回溯的天数
+   */
+  function snapshotCandidates(manifest, today, maxLookback) {
+    maxLookback = maxLookback == null ? 14 : maxLookback;
+    const out = [];
+    const push = (d) => {
+      if (typeof d === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(d) && out.indexOf(d) < 0) out.push(d);
+    };
+    const dates = (manifest && Array.isArray(manifest.dates)) ? manifest.dates.slice() : [];
+    // 清单里只取不晚于今天的日期，按降序优先
+    dates.filter(d => typeof d === 'string' && d <= today).sort().reverse().forEach(push);
+    if (out.length) return out;
+    // 清单不可用：从今天起向前回溯
+    const base = /^\d{4}-\d{2}-\d{2}$/.test(today || '') ? new Date(today + 'T00:00:00') : new Date();
+    for (let i = 0; i < maxLookback; i++) {
+      const d = new Date(base.getTime());
+      d.setDate(d.getDate() - i);
+      push(fmtLocalDate(d));
+    }
+    return out;
+  }
+
   /* ---------- 分类 ---------- */
   function classify(text) {
     text = (text || '').toString();
@@ -284,7 +318,8 @@
     CATEGORIES, CATEGORY_COLORS, SOURCE_ORDER, SOURCE_BY_KEY,
     classify, normalizeTitle, bigrams, jaccard, signalTokens, isSameTopic,
     clusterItems, siteCategoryStats,
-    decodeEntities, isJunkTitle, cleanTitle
+    decodeEntities, isJunkTitle, cleanTitle,
+    fmtLocalDate, todayStr, snapshotCandidates
   };
   if (typeof module !== 'undefined' && module.exports) module.exports = global.HotTopics;
 })(typeof window !== 'undefined' ? window : globalThis);
