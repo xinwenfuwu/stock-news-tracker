@@ -459,7 +459,8 @@
    * 主题维度统计：对一批新闻按 行业/概念/产品/产业/科技 五个维度做多标签命中统计。
    * @param {Array<{text:string, date?:string, sourceName?:string}>} items
    * @param {number} sampleMax 每个主题保留的样例标题数（用于悬停查看）
-   * @returns {Array<{key,name,icon,color,total,baseTotal,topics:Array<{name,count,pct,width,samples}>}>}
+   * @returns {Array<{key,name,icon,color,total,baseTotal,topics:Array<{name,count,pct,width,samples,news}>}>}
+   *          topics[].news 为该主题命中的全部新闻（引用原对象，按日期降序、站点序号升序），供点击主题就地展开
    */
   function themeStats(items, sampleMax) {
     sampleMax = sampleMax == null ? 3 : sampleMax;
@@ -468,6 +469,7 @@
     return THEME_DIMENSIONS.map(dim => {
       const counter = {};
       const samples = {};
+      const bucket = {};
       let hitCount = 0;
       for (const it of list) {
         const hits = _hitTopics(it.text, dim.key);
@@ -477,15 +479,20 @@
           counter[name] = (counter[name] || 0) + 1;
           if (!samples[name]) samples[name] = [];
           if (samples[name].length < sampleMax) samples[name].push(it.text);
+          if (!bucket[name]) bucket[name] = [];
+          bucket[name].push(it);
         }
       }
       const topics = Object.keys(counter)
-        .map(name => ({ name, count: counter[name], samples: samples[name] || [] }))
+        .map(name => ({ name, count: counter[name], samples: samples[name] || [], news: bucket[name] || [] }))
         .sort((a, b) => b.count - a.count || a.name.localeCompare(b.name));
       const max = topics.length ? topics[0].count : 1;
       topics.forEach(t => {
         t.pct = base ? Math.round((t.count / base) * 100) : 0;
         t.width = Math.max(6, Math.round((t.count / max) * 100));
+        // 点击主题就地展开用：日期新的在前，同一天按站点序号
+        t.news.sort((a, b) =>
+          String(b.date || '').localeCompare(String(a.date || '')) || ((a.sourceRank || 0) - (b.sourceRank || 0)));
       });
       return {
         key: dim.key, name: dim.name, icon: dim.icon, color: dim.color,
