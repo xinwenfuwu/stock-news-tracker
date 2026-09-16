@@ -1,0 +1,369 @@
+{
+  "date": "2026-09-16",
+  "generatedAt": "2026-09-16T01:26:08.237Z",
+  "sources": [
+    {
+      "rank": 1,
+      "key": "gelonghui",
+      "name": "格隆汇",
+      "color": "#c8102e",
+      "items": []
+    },
+    {
+      "rank": 2,
+      "key": "toutiao",
+      "name": "今日头条",
+      "color": "#2a6cff",
+      "items": [
+        {
+          "text": "崔天凯：一劳永逸解决台湾问题",
+          "time": "",
+          "url": "https://www.toutiao.com/trending/7685701201656054318/?category_name=topic_innerflow&event_type=hot_board&log_pb=%7B%22category_name%22%3A%22topic_innerflow%22%2C%22cluster_type%22%3A%228%22%2C%22enter_from%22%3A%22click_category%22%2C%22entrance_hotspot%22%3A%22outside%22%2C%22event_type%22%3A%22hot_board%22%2C%22hot_board_cluster_id%22%3A%227685701201656054318%22%2C%22hot_board_impr_id%22%3A%22202609160926042DDFBAAAE56D271191B9%22%2C%22jump_page%22%3A%22hot_board_page%22%2C%22location%22%3A%22news_hot_card%22%2C%22page_location%22%3A%22hot_board_page%22%2C%22source%22%3A%22trending_tab%22%2C%22style_id%22%3A%2240132%22%2C%22title%22%3A%22%E5%B4%94%E5%A4%A9%E5%87%AF%EF%BC%9A%E4%B8%80%E5%8A%B3%E6%B0%B8%E9%80%B8%E8%A7%A3%E5%86%B3%E5%8F%B0%E6%B9%BE%E9%97%AE%E9%A2%98%22%7D&rank=&style_id=40132&topic_id=7685701201656054318",
+          "cat": "政治政策"
+        },
+        {
+          "text": "中国为什么又和美国签署天然气长约",
+          "time": "",
+          "url": "https://www.toutiao.com/trending/7685889359882489387/?category_name=topic_innerflow&event_type=hot_board&log_pb=%7B%22category_name%22%3A%22topic_innerflow%22%2C%22cluster_type%22%3A%2213%22%2C%22enter_from%22%3A%22click_category%22%2C%22entrance_hotspot%22%3A%22outside%22%2C%22event_type%22%3A%22hot_board%22%2C%22hot_board_cluster_id%22%3A%227685889359882489387%22%2C%22hot_board_impr_id%22%3A%22202609160926042DDFBAAAE56D271191B9%22%2C%22jump_page%22%3A%22hot_board_page%22%2C%22location%22%3A%22news_hot_card%22%2C%22page_location%22%3A%22hot_board_page%22%2C%22source%22%3A%22trending_tab%22%2C%22style_id%22%3A%2240132%22%2C%22title%22%3A%22%E4%B8%AD%E5%9B%BD%E4%B8%BA%E4%BB%80%E4%B9%88%E5%8F%88%E5%92%8C%E7%BE%8E%E5%9B%BD%E7%AD%BE%E7%BD%B2%E5%A4%A9%E7%84%B6%E6%B0%94%E9%95%BF%E7%BA%A6%22%7D&rank=&style_id=40132&topic_id=7685889359882489387",
+          "cat": "财经"
+        },
+        {
+          "text": "一组数据看8月份国民经济运行平稳",
+          "time": "",
+          "url": "https://www.toutiao.com/trending/7684590075107380772/?category_name=topic_innerflow&event_type=hot_board&log_pb=%7B%22category_name%22%3A%22topic_innerflow%22%2C%22cluster_type%22%3A%222%22%2C%22enter_from%22%3A%22click_category%22%2C%22entrance_hotspot%22%3A%22outside%22%2C%22event_type%22%3A%22hot_board%22%2C%22hot_board_cluster_id%22%3A%227684590075107380772%22%2C%22hot_board_impr_id%22%3A%22202609160926042DDFBAAAE56D271191B9%22%2C%22jump_page%22%3A%22hot_board_page%22%2C%22location%22%3A%22news_hot_card%22%2C%22page_location%22%3A%22hot_board_page%22%2C%22source%22%3A%22trending_tab%22%2C%22style_id%22%3A%2240132%22%2C%22title%22%3A%22%E4%B8%80%E7%BB%84%E6%95%B0%E6%8D%AE%E7%9C%8B8%E6%9C%88%E4%BB%BD%E5%9B%BD%E6%B0%91%E7%BB%8F%E6%B5%8E%E8%BF%90%E8%A1%8C%E5%B9%B3%E7%A8%B3%22%7D&rank=&style_id=40132&topic_id=7684590075107380772",
+          "cat": "经济"
+        },
+        {
+          "text": "华为高层内部万字长文曝光",
+          "time": "",
+          "url": "https://www.toutiao.com/trending/7684927339029577770/?category_name=topic_innerflow&event_type=hot_board&log_pb=%7B%22category_name%22%3A%22topic_innerflow%22%2C%22cluster_type%22%3A%228%22%2C%22enter_from%22%3A%22click_category%22%2C%22entrance_hotspot%22%3A%22outside%22%2C%22event_type%22%3A%22hot_board%22%2C%22hot_board_cluster_id%22%3A%227684927339029577770%22%2C%22hot_board_impr_id%22%3A%22202609160926042DDFBAAAE56D271191B9%22%2C%22jump_page%22%3A%22hot_board_page%22%2C%22location%22%3A%22news_hot_card%22%2C%22page_location%22%3A%22hot_board_page%22%2C%22source%22%3A%22trending_tab%22%2C%22style_id%22%3A%2240132%22%2C%22title%22%3A%22%E5%8D%8E%E4%B8%BA%E9%AB%98%E5%B1%82%E5%86%85%E9%83%A8%E4%B8%87%E5%AD%97%E9%95%BF%E6%96%87%E6%9B%9D%E5%85%89%22%7D&rank=&style_id=40132&topic_id=7684927339029577770",
+          "cat": "科技"
+        },
+        {
+          "text": "一线城市房价涨了",
+          "time": "",
+          "url": "https://www.toutiao.com/trending/7685663412193447470/?category_name=topic_innerflow&event_type=hot_board&log_pb=%7B%22category_name%22%3A%22topic_innerflow%22%2C%22cluster_type%22%3A%221%22%2C%22enter_from%22%3A%22click_category%22%2C%22entrance_hotspot%22%3A%22outside%22%2C%22event_type%22%3A%22hot_board%22%2C%22hot_board_cluster_id%22%3A%227685663412193447470%22%2C%22hot_board_impr_id%22%3A%22202609160926042DDFBAAAE56D271191B9%22%2C%22jump_page%22%3A%22hot_board_page%22%2C%22location%22%3A%22news_hot_card%22%2C%22page_location%22%3A%22hot_board_page%22%2C%22source%22%3A%22trending_tab%22%2C%22style_id%22%3A%2240132%22%2C%22title%22%3A%22%E4%B8%80%E7%BA%BF%E5%9F%8E%E5%B8%82%E6%88%BF%E4%BB%B7%E6%B6%A8%E4%BA%86%22%7D&rank=&style_id=40132&topic_id=7685663412193447470",
+          "cat": "社会热点"
+        },
+        {
+          "text": "西部多了一个“沿海城市”意味着什么",
+          "time": "",
+          "url": "https://www.toutiao.com/trending/7685794948616142884/?category_name=topic_innerflow&event_type=hot_board&log_pb=%7B%22category_name%22%3A%22topic_innerflow%22%2C%22cluster_type%22%3A%228%22%2C%22enter_from%22%3A%22click_category%22%2C%22entrance_hotspot%22%3A%22outside%22%2C%22event_type%22%3A%22hot_board%22%2C%22hot_board_cluster_id%22%3A%227685794948616142884%22%2C%22hot_board_impr_id%22%3A%22202609160926042DDFBAAAE56D271191B9%22%2C%22jump_page%22%3A%22hot_board_page%22%2C%22location%22%3A%22news_hot_card%22%2C%22page_location%22%3A%22hot_board_page%22%2C%22source%22%3A%22trending_tab%22%2C%22style_id%22%3A%2240132%22%2C%22title%22%3A%22%E8%A5%BF%E9%83%A8%E5%A4%9A%E4%BA%86%E4%B8%80%E4%B8%AA%E2%80%9C%E6%B2%BF%E6%B5%B7%E5%9F%8E%E5%B8%82%E2%80%9D%E6%84%8F%E5%91%B3%E7%9D%80%E4%BB%80%E4%B9%88%22%7D&rank=&style_id=40132&topic_id=7685794948616142884",
+          "cat": "财经"
+        },
+        {
+          "text": "女子冒充村干部带货被立案调查",
+          "time": "",
+          "url": "https://www.toutiao.com/trending/7685826976929628196/?category_name=topic_innerflow&event_type=hot_board&log_pb=%7B%22category_name%22%3A%22topic_innerflow%22%2C%22cluster_type%22%3A%220%22%2C%22enter_from%22%3A%22click_category%22%2C%22entrance_hotspot%22%3A%22outside%22%2C%22event_type%22%3A%22hot_board%22%2C%22hot_board_cluster_id%22%3A%227685826976929628196%22%2C%22hot_board_impr_id%22%3A%22202609160926042DDFBAAAE56D271191B9%22%2C%22jump_page%22%3A%22hot_board_page%22%2C%22location%22%3A%22news_hot_card%22%2C%22page_location%22%3A%22hot_board_page%22%2C%22source%22%3A%22trending_tab%22%2C%22style_id%22%3A%2240132%22%2C%22title%22%3A%22%E5%A5%B3%E5%AD%90%E5%86%92%E5%85%85%E6%9D%91%E5%B9%B2%E9%83%A8%E5%B8%A6%E8%B4%A7%E8%A2%AB%E7%AB%8B%E6%A1%88%E8%B0%83%E6%9F%A5%22%7D&rank=&style_id=40132&topic_id=7685826976929628196",
+          "cat": "财经"
+        },
+        {
+          "text": "央视拿下日本名古屋亚运会主转播权",
+          "time": "",
+          "url": "https://www.toutiao.com/trending/7685776806846156351/?category_name=topic_innerflow&event_type=hot_board&log_pb=%7B%22category_name%22%3A%22topic_innerflow%22%2C%22cluster_type%22%3A%2213%22%2C%22enter_from%22%3A%22click_category%22%2C%22entrance_hotspot%22%3A%22outside%22%2C%22event_type%22%3A%22hot_board%22%2C%22hot_board_cluster_id%22%3A%227685776806846156351%22%2C%22hot_board_impr_id%22%3A%22202609160926042DDFBAAAE56D271191B9%22%2C%22jump_page%22%3A%22hot_board_page%22%2C%22location%22%3A%22news_hot_card%22%2C%22page_location%22%3A%22hot_board_page%22%2C%22source%22%3A%22trending_tab%22%2C%22style_id%22%3A%2240132%22%2C%22title%22%3A%22%E5%A4%AE%E8%A7%86%E6%8B%BF%E4%B8%8B%E6%97%A5%E6%9C%AC%E5%90%8D%E5%8F%A4%E5%B1%8B%E4%BA%9A%E8%BF%90%E4%BC%9A%E4%B8%BB%E8%BD%AC%E6%92%AD%E6%9D%83%22%7D&rank=&style_id=40132&topic_id=7685776806846156351",
+          "cat": "财经"
+        },
+        {
+          "text": "俄无人机差点打到英前首相？俄方回应",
+          "time": "",
+          "url": "https://www.toutiao.com/trending/7685383184376168987/?category_name=topic_innerflow&event_type=hot_board&log_pb=%7B%22category_name%22%3A%22topic_innerflow%22%2C%22cluster_type%22%3A%2215%22%2C%22enter_from%22%3A%22click_category%22%2C%22entrance_hotspot%22%3A%22outside%22%2C%22event_type%22%3A%22hot_board%22%2C%22hot_board_cluster_id%22%3A%227685383184376168987%22%2C%22hot_board_impr_id%22%3A%22202609160926042DDFBAAAE56D271191B9%22%2C%22jump_page%22%3A%22hot_board_page%22%2C%22location%22%3A%22news_hot_card%22%2C%22page_location%22%3A%22hot_board_page%22%2C%22source%22%3A%22trending_tab%22%2C%22style_id%22%3A%2240132%22%2C%22title%22%3A%22%E4%BF%84%E6%97%A0%E4%BA%BA%E6%9C%BA%E5%B7%AE%E7%82%B9%E6%89%93%E5%88%B0%E8%8B%B1%E5%89%8D%E9%A6%96%E7%9B%B8%EF%BC%9F%E4%BF%84%E6%96%B9%E5%9B%9E%E5%BA%94%22%7D&rank=&style_id=40132&topic_id=7685383184376168987",
+          "cat": "财经"
+        },
+        {
+          "text": "存1万定期1年但忘了30年",
+          "time": "",
+          "url": "https://www.toutiao.com/trending/7685521416808054803/?category_name=topic_innerflow&event_type=hot_board&log_pb=%7B%22category_name%22%3A%22topic_innerflow%22%2C%22cluster_type%22%3A%226%22%2C%22enter_from%22%3A%22click_category%22%2C%22entrance_hotspot%22%3A%22outside%22%2C%22event_type%22%3A%22hot_board%22%2C%22hot_board_cluster_id%22%3A%227685521416808054803%22%2C%22hot_board_impr_id%22%3A%22202609160926042DDFBAAAE56D271191B9%22%2C%22jump_page%22%3A%22hot_board_page%22%2C%22location%22%3A%22news_hot_card%22%2C%22page_location%22%3A%22hot_board_page%22%2C%22source%22%3A%22trending_tab%22%2C%22style_id%22%3A%2240132%22%2C%22title%22%3A%22%E5%AD%981%E4%B8%87%E5%AE%9A%E6%9C%9F1%E5%B9%B4%E4%BD%86%E5%BF%98%E4%BA%8630%E5%B9%B4%22%7D&rank=&style_id=40132&topic_id=7685521416808054803",
+          "cat": "财经"
+        }
+      ]
+    },
+    {
+      "rank": 3,
+      "key": "ths",
+      "name": "同花顺",
+      "color": "#0a7d3e",
+      "items": [
+        {
+          "text": "����ѧУ",
+          "time": "",
+          "url": "http://school.10jqka.com.cn",
+          "cat": "财经"
+        },
+        {
+          "text": "��������",
+          "time": "",
+          "url": "http://download.10jqka.com.cn",
+          "cat": "财经"
+        },
+        {
+          "text": "�ղ�����",
+          "time": "",
+          "url": "http://comment.10jqka.com.cn/collect/index.php?act=index",
+          "cat": "财经"
+        },
+        {
+          "text": "&nbsp;",
+          "time": "",
+          "url": "http://t.10jqka.com.cn/",
+          "cat": "财经"
+        },
+        {
+          "text": "���ɾ۽�",
+          "time": "",
+          "url": "http://stock.10jqka.com.cn/ggjj_list/",
+          "cat": "财经"
+        },
+        {
+          "text": "��˾����",
+          "time": "",
+          "url": "http://stock.10jqka.com.cn/companynews_list/",
+          "cat": "财经"
+        },
+        {
+          "text": "��˾�о�",
+          "time": "",
+          "url": "http://stock.10jqka.com.cn/gegudp_list/",
+          "cat": "财经"
+        },
+        {
+          "text": "��˾���",
+          "time": "",
+          "url": "http://stock.10jqka.com.cn/ggjd_list/",
+          "cat": "财经"
+        },
+        {
+          "text": "���ҹ�˾����",
+          "time": "",
+          "url": "http://yuanchuang.10jqka.com.cn/djgshd_list/",
+          "cat": "财经"
+        },
+        {
+          "text": "����ѡ��",
+          "time": "",
+          "url": "http://stock.10jqka.com.cn/api/znxg/index.html",
+          "cat": "财经"
+        }
+      ]
+    },
+    {
+      "rank": 4,
+      "key": "eastmoney",
+      "name": "东方财富",
+      "color": "#e63525",
+      "items": []
+    },
+    {
+      "rank": 5,
+      "key": "cailian",
+      "name": "财联社",
+      "color": "#d92121",
+      "items": []
+    },
+    {
+      "rank": 6,
+      "key": "kaipanla",
+      "name": "开盘啦",
+      "color": "#f59e0b",
+      "items": [
+        {
+          "text": "查看更多 &gt;",
+          "time": "",
+          "url": "https://www.kaipanla.com/quick-start/1",
+          "cat": "财经"
+        },
+        {
+          "text": "轮动行情三步带你看懂“涨价暗线”",
+          "time": "",
+          "url": "https://www.kaipanla.com/article/42394",
+          "cat": "财经"
+        },
+        {
+          "text": "观资金变幻，察板块大势！ 用机构增仓捕捉板块风向变化",
+          "time": "",
+          "url": "https://www.kaipanla.com/article/42063",
+          "cat": "财经"
+        },
+        {
+          "text": "弱势行情捕捉超跌反抽，大盘直播助你把握市场节奏",
+          "time": "",
+          "url": "https://www.kaipanla.com/article/41972",
+          "cat": "财经"
+        },
+        {
+          "text": "全球首个3D数据中心发布，十万卡以上超节点将成基础配置",
+          "time": "",
+          "url": "https://www.kaipanla.com/article/42714",
+          "cat": "科技"
+        },
+        {
+          "text": "三星电机与高通联合开发有机桥 AI芯片封装基板向超细线路演进",
+          "time": "",
+          "url": "https://www.kaipanla.com/article/42697",
+          "cat": "科技"
+        },
+        {
+          "text": "国常会研究算力网建设 产业链迎来发展机遇",
+          "time": "",
+          "url": "https://www.kaipanla.com/article/42681",
+          "cat": "科技"
+        },
+        {
+          "text": "粤ICP备2026012599号-4",
+          "time": "",
+          "url": "https://beian.miit.gov.cn",
+          "cat": "财经"
+        }
+      ]
+    },
+    {
+      "rank": 7,
+      "key": "xueqiu",
+      "name": "雪球",
+      "color": "#cc3333",
+      "items": []
+    },
+    {
+      "rank": 8,
+      "key": "wscn",
+      "name": "华尔街见闻",
+      "color": "#222222",
+      "items": [
+        {
+          "text": "OpenAI考虑在IPO之前一轮融资获得1.2万亿美元估值。 近期，该公司围绕新的资本扩充计划举行了多次对话。（英国金融时报）",
+          "time": "2026-09-15 21:56",
+          "url": "",
+          "cat": "科技"
+        },
+        {
+          "text": "帮助小企业利用AI开发应用的初创公司Emergence公布名为Emergence World 2的模拟实验结果，展示了自主智能体在遭遇网络钓鱼攻击和虚假信息等“黑天鹅”事件时会采取",
+          "time": "2026-09-15 19:45",
+          "url": "",
+          "cat": "科技"
+        },
+        {
+          "text": "美国参议院投票表决Clarity ACT，没能法扫清程序性障碍。 比特币短线从7.7万美元上方跳水至7.6万美元下方，跌幅重新扩大至4.3%。 以太坊重新跌超7.1%，刷新日低、逼",
+          "time": "2026-09-15 18:43",
+          "url": "",
+          "cat": "经济"
+        },
+        {
+          "text": "上期所原油期货2611合约夜盘收涨2.85%，报860元人民币/桶。 沪金夜盘收涨0.39%，沪银收涨1.11%。",
+          "time": "2026-09-15 18:30",
+          "url": "",
+          "cat": "经济"
+        },
+        {
+          "text": "美国财长贝森特：我们一直就日本干预（日元汇率）保持联系。 针对日元干预，美方使用了“名义金额”。 凭借一笔“名义金额”，美国财政部得以释放支持日本政策的信号。 美国从中获得（至少）",
+          "time": "2026-09-15 15:50",
+          "url": "",
+          "cat": "政治政策"
+        },
+        {
+          "text": "航运消息人士称，在东西向石油管道遭袭后，沙特红海最大港口延布的石油装船作业暂停。（路透）",
+          "time": "2026-09-15 14:52",
+          "url": "",
+          "cat": "财经"
+        },
+        {
+          "text": "美国柴油期货升至接近5.23美元/加仑，为2022年以来最高水平。",
+          "time": "2026-09-15 13:35",
+          "url": "",
+          "cat": "经济"
+        },
+        {
+          "text": "据报道，美光科技展示全球首款512GB DDR5 RDIMM模块，美光科技预计512GB RDIMM将于2027年下半年量产。",
+          "time": "2026-09-15 13:04",
+          "url": "",
+          "cat": "科技"
+        },
+        {
+          "text": "9月15日晚间，据The Information报道，由于加大了在人工智能领域的投资，字节跳动2026年上半年净利润同比出现下降。同时，受TikTok等海外业务推动，字节跳动上半年",
+          "time": "2026-09-15 12:54",
+          "url": "",
+          "cat": "科技"
+        },
+        {
+          "text": "Salesforce与谷歌云扩大企业AI合作。 Salesforce与AWS宣布扩大合作协议。 Salesforce与英伟达推出“KOA”。 Salesforce称，“KOA”是面",
+          "time": "2026-09-15 12:22",
+          "url": "",
+          "cat": "科技"
+        }
+      ]
+    },
+    {
+      "rank": 9,
+      "key": "wind",
+      "name": "万得",
+      "color": "#0f766e",
+      "items": []
+    },
+    {
+      "rank": 10,
+      "key": "cs",
+      "name": "中国证券",
+      "color": "#b91c1c",
+      "items": [
+        {
+          "text": "${title}",
+          "time": "",
+          "url": "https://www.cs.com.cn/${Link}",
+          "cat": "财经"
+        },
+        {
+          "text": "中证快讯 7x24",
+          "time": "",
+          "url": "https://www.cs.com.cn/sylm/jsbd/list.html",
+          "cat": "财经"
+        },
+        {
+          "text": "山东辖区举办期货经营机构中层人员业务培训班",
+          "time": "",
+          "url": "https://www.cs.com.cn/xwzx/01/2026/09/16/detail_2026091610039498.html",
+          "cat": "财经"
+        },
+        {
+          "text": "祥生医疗：AI赋能 提升高质量超声检查可得性",
+          "time": "",
+          "url": "https://www.cs.com.cn/ssgs/01/2026/09/15/detail_2026091510039425.html",
+          "cat": "科技"
+        },
+        {
+          "text": "敷尔佳：“妆械”双轮驱动均衡增长 实现全渠道销售全景化布局",
+          "time": "",
+          "url": "https://www.cs.com.cn/ssgs/01/2026/09/15/detail_2026091510039422.html",
+          "cat": "财经"
+        },
+        {
+          "text": "东软集团：加码东软医疗股权布局 构筑医疗健康全产业链战略闭环",
+          "time": "",
+          "url": "https://www.cs.com.cn/ssgs/01/2026/09/15/detail_2026091510039421.html",
+          "cat": "社会热点"
+        },
+        {
+          "text": "硅光领域创新成果在2026浦江创新论坛专题论坛发布",
+          "time": "",
+          "url": "https://www.cs.com.cn/xwzx/01/2026/09/15/detail_2026091510039400.html",
+          "cat": "财经"
+        },
+        {
+          "text": "联影医疗“微剂量”DR成像技术对外亮相",
+          "time": "",
+          "url": "https://www.cs.com.cn/ssgs/01/2026/09/15/detail_2026091510039393.html",
+          "cat": "社会热点"
+        },
+        {
+          "text": "艺康集团漂莱特衢州工厂正式启用",
+          "time": "",
+          "url": "https://www.cs.com.cn/ssgs/01/2026/09/15/detail_2026091510039392.html",
+          "cat": "财经"
+        },
+        {
+          "text": "津药药业再添制剂新品种 盐酸布比卡因注射液获批",
+          "time": "",
+          "url": "https://www.cs.com.cn/ssgs/01/2026/09/15/detail_2026091510039386.html",
+          "cat": "财经"
+        }
+      ]
+    }
+  ]
+}
