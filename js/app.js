@@ -187,6 +187,31 @@ const app = createApp({
       toast._t = setTimeout(() => (toast.show = false), 2800);
     }
 
+    // ===== 数据刷新总开关（顶部「暂停」按钮） =====
+    // 语义：暂停的是「自动」发起的刷新——进入页面自动抓取热门话题、导入后自动补价、
+    // 板块详情自动补历史价、数据变化后自动云同步。手动点击的刷新按钮一律照常执行，
+    // 否则暂停后整个页面会变成「点什么都没反应」，那反而是个 bug。
+    if (typeof D.settings.dataPaused !== 'boolean') D.settings.dataPaused = false;
+    const dataPaused = computed({
+      get: () => !!D.settings.dataPaused,
+      set: (v) => { D.settings.dataPaused = !!v; }
+    });
+    /** 自动刷新是否已被暂停（各处自动刷新逻辑统一走这里判断） */
+    function autoRefreshPaused() { return !!D.settings.dataPaused; }
+    /** 被暂停时的统一提示（只在真正会发起自动请求的位置调用，避免刷屏） */
+    function pauseHint(what) {
+      showToast(`已暂停数据自动刷新：未执行${what || '自动刷新'}。可点顶部 ▶ 恢复，或手动点刷新按钮`, 'info');
+    }
+    function toggleDataPause() {
+      dataPaused.value = !dataPaused.value;
+      if (dataPaused.value) {
+        showToast('已暂停数据自动刷新（进入页面不再自动抓取、不再自动云同步；手动刷新按钮照常可用）', 'info');
+      } else {
+        showToast('已恢复数据自动刷新', 'success');
+        if (currentPage.value === 'finance') autoLoadHotTopics();
+      }
+    }
+
     // ===== 通用格式化 =====
     const allCategories = computed(() => D.settings.categories || Store.DEFAULT_CATEGORIES);
 
@@ -961,10 +986,11 @@ const app = createApp({
       }
       showToast(`已导入 ${added} 条新闻`, 'success');
       importModal.show = false;
-      // 尝试批量补价
+      // 尝试批量补价（自动补价同样受顶部「暂停」开关控制）
       nextTick(() => {
         const fresh = D.news.slice(0, added);
-        setTimeout(() => refreshAllPrices(), 300);
+        if (autoRefreshPaused()) pauseHint('导入后的自动补价');
+        else setTimeout(() => refreshAllPrices(), 300);
       });
     }
 
@@ -1010,7 +1036,8 @@ const app = createApp({
         for (const n of news) Store.addNews(n);
         showToast(`抓取并导入 ${news.length} 条财经快讯`, 'success');
         importModal.show = false;
-        setTimeout(() => refreshAllPrices(), 300);
+        if (autoRefreshPaused()) pauseHint('导入后的自动补价');
+        else setTimeout(() => refreshAllPrices(), 300);
       } catch (e) {
         showToast('抓取失败：' + e.message + '。请检查代理地址是否正确', 'error');
       }
@@ -2239,8 +2266,120 @@ const app = createApp({
       } finally { stockAdding.value = false; }
     }
 
-    // 已保存板块按创建时间倒序
-    const sortedSectorPools = computed(() => [...D.sectorPools].slice().reverse());
+    // 已保存板块顺序：一旦用户拖动过卡片（所有板块都有显式 order），就按 order 升序；
+    // 否则沿用旧的「按创建时间倒序」（新板块在最前），保证老数据的观感不变。
+    const sortedSectorPools = computed(() => {
+      const list = [...D.sectorPools];
+      const ordered = list.length > 0 && list.every(p => typeof p.order === 'number' && isFinite(p.order));
+      if (ordered) return list.sort((a, b) => a.order - b.order);
+      return list
+        .map((p, i) => ({ p, i }))
+        .sort((a, b) => ((b.p.createdAt || 0) - (a.p.createdAt || 0)) || (b.i - a.i))
+        .map(x => x.p);
+    });
+
+    // ===== 板块卡片拖动排序 =====
+    const poolDragId = ref('');     // 正在拖动的板块 id
+    const poolDropId = ref('');     // 当前落点板块 id（用于高亮插入位置）
+    let _poolDragged = false;       // 本次是否真的拖动过（用于拖完不误触发「打开详情」）
+
+    /** 当前展示顺序固化为每个板块的 order 字段（持久化） */
+    function _writePoolOrder(list) {
+      list.forEach((p, i) => { p.order = i; });
+    }
+    function onPoolDragStart(pool, e) {
+      if (sectorSubKeyword.value.trim()) {
+        // 筛选状态下只能看到部分板块，拖动会导致顺序错乱，直接拦掉并说清原因
+        showToast('子版块筛选状态下无法拖动排序，请先「✕ 清除筛选」', 'error');
+        if (e && e.preventDefault) e.preventDefault();
+        return;
+      }
+      _poolDragged = false;
+      poolDragId.value = pool.id;
+      if (e && e.dataTransfer) {
+        e.dataTransfer.effectAllowed = 'move';
+        try { e.dataTransfer.setData('text/plain', String(pool.id)); } catch (err) { /* 忽略 */ }
+      }
+    }
+    function onPoolDragOver(pool) {
+      if (!poolDragId.value || poolDragId.value === pool.id) return;
+      _poolDragged = true;
+      poolDropId.value = pool.id;
+    }
+    function onPoolDragEnd() {
+      poolDragId.value = '';
+      poolDropId.value = '';
+      // 延迟复位，避免紧随其后的 click 把「打开详情」触发出来
+      setTimeout(() => { _poolDragged = false; }, 60);
+    }
+    function onPoolDrop(pool) {
+      const fromId = poolDragId.value;
+      poolDragId.value = '';
+      poolDropId.value = '';
+      if (!fromId || fromId === pool.id) return;
+      const list = sortedSectorPools.value.slice();   // 以当前展示顺序为基准
+      const from = list.findIndex(p => p.id === fromId);
+      const to = list.findIndex(p => p.id === pool.id);
+      if (from === -1 || to === -1) return;
+      const [moved] = list.splice(from, 1);
+      list.splice(to, 0, moved);
+      _writePoolOrder(list);
+      showToast(`已调整顺序：「${moved.name || '未命名板块'}」移到第 ${to + 1} 位`, 'success');
+    }
+    /** 点击卡片打开详情（拖动后不触发，避免「拖一下就弹窗」） */
+    function openPoolCard(pool) {
+      if (_poolDragged) return;
+      openSectorDetail(pool);
+    }
+    /** 恢复为默认顺序（按创建时间倒序） */
+    function resetPoolOrder() {
+      D.sectorPools.forEach(p => { delete p.order; });
+      showToast('已恢复默认顺序（按创建时间倒序）', 'success');
+    }
+
+    // ===== 「我的概念选股板块」一键刷新（只刷新当日涨跌） =====
+    const sectorPoolsRefreshing = ref(false);
+    /**
+     * 一键刷新：只刷新各板块成分股的「当日涨跌幅」（顺带更新现价以便重算平均涨跌幅），
+     * 不拉取财务、股东户数、历史价等字段——目的就是快速看板块内当天谁在涨。
+     * 代码数量多时按 60 只一批，避免单次 URL 过长被源站拒绝。
+     */
+    async function refreshSectorPoolsDailyChange() {
+      const pools = sortedSectorPools.value;
+      if (!pools.length) { showToast('暂无概念选股板块', 'error'); return; }
+      if (sectorPoolsRefreshing.value) return;
+      const codes = [];
+      const seen = new Set();
+      pools.forEach(p => (p.stocks || []).forEach(s => {
+        if (s.code && !seen.has(s.code)) { seen.add(s.code); codes.push(s.code); }
+      }));
+      if (!codes.length) { showToast('板块内暂无股票', 'error'); return; }
+      sectorPoolsRefreshing.value = true;
+      showToast(`正在刷新 ${codes.length} 只股票的当日涨跌...`, 'info');
+      try {
+        const quotes = {};
+        const BATCH = 60;
+        for (let i = 0; i < codes.length; i += BATCH) {
+          const batch = codes.slice(i, i + BATCH);
+          try { Object.assign(quotes, (await StockAPI.getQuotes(batch)) || {}); }
+          catch (e) { console.warn('批量行情获取失败', i, e); }
+        }
+        let hit = 0;
+        pools.forEach(pool => {
+          (pool.stocks || []).forEach(s => {
+            const q = quotes[s.code];
+            if (!q) return;
+            if (q.changePercent != null && !isNaN(q.changePercent)) { s.dailyChange = q.changePercent; hit++; }
+            if (q.price != null) s.todayPrice = q.price;
+          });
+          recomputePoolAvg(pool);
+        });
+        if (!hit) showToast('未取到行情（可能受网络限制），请稍后重试', 'error');
+        else showToast(`已刷新 ${hit} 只股票的当日涨跌（其余字段未改动）`, 'success');
+      } finally {
+        sectorPoolsRefreshing.value = false;
+      }
+    }
 
     // 子版块搜索：在「我的概念选股板块」列表中，按名称关键字过滤已保存板块（空关键词=不筛选）
     const sectorSubKeyword = ref('');
@@ -2634,7 +2773,10 @@ const app = createApp({
       if (sector.stocks && sector.stocks.length) {
         const needHist = sector.stocks.some(s =>
           s.yearStartPrice == null || s.yearHighPrice == null || s.price924 == null);
-        if (needHist) {
+        if (needHist && autoRefreshPaused()) {
+          // 暂停期间不自动补全，避免「打开弹窗」就偷偷发一堆请求；手动「刷新行情」仍可用
+          pauseHint('板块详情历史价自动补全');
+        } else if (needHist) {
           sectorLoading.value = true;
           refreshSectorDetail(sector)
             .catch(e => console.warn('板块详情历史价自动补全失败', sector.name, e))
@@ -2734,6 +2876,147 @@ const app = createApp({
       sec.stocks.splice(idx, 1);
       recomputePoolAvg(sec);
       showToast('已删除', 'success');
+    }
+
+    // ============================================================
+    //  个股搜索添加（三处入口共用同一套逻辑）
+    //    · sector：点击「我的概念选股板块」卡片 → 板块详情弹窗「字段含义」左侧
+    //    · hot   ：热门板块页「当日股票明细」工具栏「字段含义」左侧
+    //    · filter：筛选板块页工具栏「字段含义」左侧
+    //  支持：直接输代码（600519 / sh600519）、输入名称联想搜索后点击添加、
+    //        多只用逗号/分号/换行分隔；自动去重、自动补名称与当日行情。
+    // ============================================================
+    const MAX_SUGGESTED_STOCKS = 30;   // 单个板块建议上限（服务器资源有限）
+    const quickAdd = reactive({
+      sector: { text: '', loading: false, suggestions: [], open: false, timer: null },
+      hot: { text: '', loading: false, suggestions: [], open: false, timer: null },
+      filter: { text: '', loading: false, suggestions: [], open: false, timer: null }
+    });
+
+    /** 该入口当前要往哪个列表里加股票 */
+    function quickAddTarget(scope) {
+      if (scope === 'sector') return sectorDetail.data.stocks || [];
+      const id = filterPanel.poolId;
+      if (scope === 'hot') return hotFilterStocks.value || [];
+      if (!id) return null;
+      if (id === 'hot') return hotFilterStocks.value || [];
+      if (id.startsWith('s-')) {
+        const sp = (D.sectorPools || []).find(p => 's-' + p.id === id);
+        return sp ? (sp.stocks || []) : null;
+      }
+      if (id.startsWith('p-')) {
+        const pp = (D.stockPools || []).find(p => 'p-' + p.id === id);
+        return pp ? (pp.stocks || []) : null;
+      }
+      return null;
+    }
+    /** 该入口对应的「板块对象」（用于重算平均涨跌幅；热门板块列表无对象，返回 null） */
+    function quickAddTargetPool(scope) {
+      if (scope === 'sector') return sectorDetail.data;
+      const id = filterPanel.poolId;
+      if (scope === 'hot') return null;
+      if (!id || id === 'hot') return null;
+      if (id.startsWith('s-')) return (D.sectorPools || []).find(p => 's-' + p.id === id) || null;
+      if (id.startsWith('p-')) return (D.stockPools || []).find(p => 'p-' + p.id === id) || null;
+      return null;
+    }
+    /** 输入变化：代码直接留白，名称走腾讯联想（用户主动操作，不受「暂停刷新」影响） */
+    function quickAddSearch(scope) {
+      const st = quickAdd[scope];
+      clearTimeout(st.timer);
+      const kw = String(st.text || '').trim();
+      if (!kw || /^(sh|sz|bj)?\d{4,8}$/i.test(kw)) {
+        st.suggestions = []; st.open = false; return;
+      }
+      st.timer = setTimeout(async () => {
+        try {
+          const hints = await StockAPI.searchStocks(kw);
+          st.suggestions = (hints || []).slice(0, 6);
+        } catch (e) {
+          st.suggestions = [];
+        }
+        st.open = st.suggestions.length > 0;
+      }, 260);
+    }
+    function quickAddBlur(scope) {
+      const st = quickAdd[scope];
+      setTimeout(() => { st.open = false; }, 260);
+    }
+    /** 点击联想项 → 直接加入 */
+    function quickAddPick(scope, item) {
+      const st = quickAdd[scope];
+      if (!item) return;
+      st.open = false;
+      st.text = '';
+      quickAddCommit(scope, [{ code: item.code, name: item.name }]);
+    }
+    /** 真正写入列表（去重 + 补行情 + 重算平均涨跌幅） */
+    async function quickAddCommit(scope, parsed) {
+      const st = quickAdd[scope];
+      const target = quickAddTarget(scope);
+      if (!target) { showToast('请先选择板块（或先点击一个热门板块）再添加个股', 'error'); return; }
+      const existing = new Set(target.map(s => s.code));
+      const news = [];
+      for (const p of (parsed || [])) {
+        if (!p || !p.code || existing.has(p.code)) continue;
+        news.push(_newStock({ code: p.code, name: p.name || '' }));
+        existing.add(p.code);
+      }
+      if (!news.length) { showToast('未识别到新股票（输入为空或已在列表中）', 'info'); return; }
+      st.loading = true;
+      try {
+        const quotes = await StockAPI.getQuotes(news.map(s => s.code));
+        news.forEach(s => {
+          const q = quotes[s.code];
+          if (!q) return;
+          s.name = s.name || q.name || '';
+          if (q.changePercent != null) s.dailyChange = q.changePercent;
+          if (q.amplitude != null) s.amplitude = q.amplitude;
+          if (q.turnover != null) s.turnover = q.turnover;
+          if (q.price != null) s.todayPrice = q.price;
+          if (q.totalMarketCap) s.totalMarketCap = q.totalMarketCap;
+        });
+      } catch (e) {
+        console.warn('添加个股时行情获取失败', e);
+      }
+      target.push(...news);
+      const pool = quickAddTargetPool(scope);
+      if (pool) recomputePoolAvg(pool);
+      st.text = ''; st.suggestions = []; st.open = false;
+      st.loading = false;
+      if (target.length > MAX_SUGGESTED_STOCKS) {
+        showToast(`已添加 ${news.length} 只；该板块现有 ${target.length} 只，建议不超过 ${MAX_SUGGESTED_STOCKS} 只（服务器资源有限）`, 'info');
+      } else {
+        showToast(`已添加 ${news.length} 只股票`, 'success');
+      }
+    }
+    /** 回车 / 点「＋ 添加」：解析输入，名称走联想接口解析成代码后再写入 */
+    async function quickAddSubmit(scope) {
+      const st = quickAdd[scope];
+      const txt = String(st.text || '').trim();
+      if (!txt) { showToast('请输入股票代码或名称', 'error'); return; }
+      if (!quickAddTarget(scope)) { showToast('请先选择板块（或先点击一个热门板块）再添加个股', 'error'); return; }
+      const parsed = StockAPI.parseStockInput(txt);
+      if (!parsed.length) { showToast('未识别到有效股票', 'error'); return; }
+      const needResolve = parsed.filter(p => !p.code);
+      if (needResolve.length) {
+        showToast(`正在按名称匹配「${needResolve.map(p => p.name).join('、')}」...`, 'info');
+        for (const p of needResolve) {
+          try {
+            const hints = await StockAPI.searchStocks(p.name);
+            const hit = (hints || []).find(h => h.name === p.name) || (hints || [])[0];
+            if (hit) { p.code = hit.code; p.name = hit.name; }
+          } catch (e) { /* 忽略单只失败 */ }
+        }
+        const rest = parsed.filter(p => p.code);
+        if (!rest.length) {
+          showToast(`未找到股票「${needResolve.map(p => p.name).join('、')}」，请检查名称或直接输入代码`, 'error');
+          return;
+        }
+        await quickAddCommit(scope, rest);
+        return;
+      }
+      await quickAddCommit(scope, parsed);
     }
 
     // ============================================================
@@ -3003,6 +3286,8 @@ const app = createApp({
      */
     function autoLoadHotTopics() {
       if (hotTopicsSources.value.length || hotTopicsLoading.value) return;
+      // 顶部「暂停」生效时，不发起任何自动抓取（含仓库快照请求）
+      if (autoRefreshPaused()) { pauseHint('自动加载热门话题'); return; }
       htMode.value = 'history';
       loadHotTopicHistory(hotTopicDate.value).then(async () => {
         if (hotTopicDateHasData.value) return;
@@ -4095,6 +4380,8 @@ const app = createApp({
       if (_autoSyncTimer) clearTimeout(_autoSyncTimer);
       _autoSyncUnwatch = Vue.watch(() => JSON.stringify(D), () => {
         if (!cloud.loggedIn || !cloud.autoSync) return;
+        // 暂停自动刷新时同步暂停「自动云同步」（手动点「立即同步」仍可用）
+        if (autoRefreshPaused()) return;
         clearTimeout(_autoSyncTimer);
         _autoSyncTimer = setTimeout(() => {
           syncToCloud();
@@ -4112,6 +4399,8 @@ const app = createApp({
       // 全局
       D, currentPage, tabs, goPage,
       toast, showToast,
+      // 数据刷新总开关（顶部「暂停」按钮）
+      dataPaused, autoRefreshPaused, toggleDataPause,
       allCategories, fmt, fmtPct, fmtDateCN, numClass, pctClass, parseStocks, stocksText, pureCode,
       fmtYi, sRatio,
       showSettings, settingsText, proxyUrl, saveSettings, clearAllData, dataStats,
@@ -4138,6 +4427,11 @@ const app = createApp({
       sectorLoadError, sectorLoadingAll, reloadSectors, loadAllSectors, refreshSectorData,
       sectorDetail, sortedSectorPools, searchSector, addSectorFromSearch,
       sectorSubKeyword, searchSubSectors, clearSubSectorSearch, filteredSectorPools,
+      // 板块卡片拖动排序 + 一键刷新（仅日涨跌）
+      poolDragId, poolDropId, onPoolDragStart, onPoolDragOver, onPoolDrop, onPoolDragEnd,
+      openPoolCard, resetPoolOrder, sectorPoolsRefreshing, refreshSectorPoolsDailyChange,
+      // 个股搜索添加（板块详情 / 热门明细 / 筛选板块三处共用）
+      quickAdd, quickAddSearch, quickAddBlur, quickAddPick, quickAddSubmit,
     sectorResultsMain, sectorResultsSub, sectorResultsIdx,
       sectorPick, sectorPickCount, toggleSelectAllSector, confirmSectorPick,
       visibleSectorPickStocks, sectorPickFiltered,
