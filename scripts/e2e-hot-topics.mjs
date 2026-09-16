@@ -212,6 +212,36 @@ const main = async () => {
     await page.waitForTimeout(250);
     check('再次点击可展开', (await page.locator('.theme-topics').count()) === dims);
 
+    // 点击主题词（半导体 / 人工智能 / 医疗器械 …）→ 右侧就地出现对应新闻
+    console.log('   · 点击主题词展开对应新闻');
+    const topic0 = page.locator('.theme-topic').first();
+    const name0 = (await topic0.locator('.tt-name').innerText()).trim();
+    const count0 = parseInt((await topic0.locator('.tt-val').innerText()).trim(), 10);
+    await topic0.click();
+    await page.waitForSelector('.tt-news', { timeout: 10000 });
+    const rows0 = await page.locator('.tt-news-item').count();
+    check(`点击「${name0}」后出现对应新闻列表`, rows0 > 0, 'rows=' + rows0);
+    check('新闻条数与该主题命中数一致', rows0 === count0, `${rows0} vs ${count0}`);
+    check('展开的主题被高亮标记', (await page.locator('.theme-topic.active').count()) === 1);
+    const head0 = (await page.locator('.tt-news-head .tt-news-title').innerText()).replace(/\s+/g, ' ');
+    check('明细区标明主题与条数', head0.includes(name0) && head0.includes(String(count0)), head0);
+    const meta0 = (await page.locator('.tt-news-item .tt-news-meta').first().innerText()).replace(/\s+/g, ' ');
+    check('每条新闻带站点与日期', /\d{2}-\d{2}/.test(meta0), meta0);
+    const txt0 = (await page.locator('.tt-news-text').first().innerText()).trim();
+    check('新闻标题文本非空', txt0.length > 4, txt0);
+    const links0 = await page.locator('a.tt-news-text').count();
+    check('带原文链接的新闻可点击跳转', links0 > 0, 'links=' + links0);
+
+    // 换一个主题：前一个应自动收起（同一维度一次只看一个）
+    await page.locator('.theme-topic').nth(1).click();
+    await page.waitForTimeout(300);
+    check('一次只展开一个主题', (await page.locator('.tt-news').count()) === 1, 'open=' + (await page.locator('.tt-news').count()));
+    check('新主题的新闻已替换显示', (await page.locator('.tt-news-item').count()) > 0);
+    await page.locator('.theme-topic').nth(1).click();
+    await page.waitForTimeout(300);
+    check('再次点击可收起新闻明细', (await page.locator('.tt-news').count()) === 0);
+    check('收起后不再有高亮主题', (await page.locator('.theme-topic.active').count()) === 0);
+
     check('页面无 JS 报错', errors.length === 0, errors.join(' | '));
     await ctx.close();
   }
