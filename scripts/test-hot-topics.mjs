@@ -158,10 +158,15 @@ assert('空数组安全', ht.themeStats([]).every(d => d.total === 0 && d.topics
 assert('null 入参安全', ht.themeStats(null).length === 5);
 assert('baseTotal 记录统计基数', th[0].baseTotal === 3, th[0].baseTotal);
 assert('同一主题每条新闻只计一次（不因多别名重复累加）', ht.themeStats([{ text: 'AI人工智能大模型ChatGPT' }]).find(d => d.key === 'concept').topics.find(t => t.name === '人工智能').count === 1);
+// 点击主题就地展开所需的新闻明细
+assert('每个主题都带完整命中新闻列表 news', th.every(d => d.topics.every(t => Array.isArray(t.news) && t.news.length === t.count)),
+  JSON.stringify(th.map(d => d.name + ':' + d.topics.map(t => t.news.length + '/' + t.count).join(','))));
+assert('news 保留原条目对象（含 text 字段）', thPro.topics.find(t => t.name === '芯片').news.every(n => typeof n.text === 'string' && n.text.length > 0));
+assert('无命中维度 topics 为空且 news 不残留', ht.themeStats([{ text: '天气不错' }]).find(d => d.key === 'chain').topics.length === 0);
 
 if (snap15 && snap16) {
   const flatTheme = [];
-  for (const snap of [snap15, snap16]) for (const s of snap.sources) for (const it of (s.items || [])) flatTheme.push({ text: it.text });
+  for (const snap of [snap15, snap16]) for (const s of snap.sources) for (const it of (s.items || [])) flatTheme.push({ text: it.text, date: snap.date, sourceRank: s.rank, sourceKey: s.key, sourceName: s.name, time: it.time, url: it.url });
   const ts = ht.themeStats(flatTheme);
   console.log(`    真实快照 ${flatTheme.length} 条的维度命中情况：`);
   ts.forEach(d => console.log('      ' + d.name + '：命中 ' + d.total + ' 条 → ' + d.topics.slice(0, 6).map(t => t.name + '(' + t.count + ')').join(' ')));
@@ -169,6 +174,16 @@ if (snap15 && snap16) {
   assert('真实数据：命中数不超过总条数', ts.every(d => d.total <= flatTheme.length));
   assert('真实数据：行业/概念命中率合理(>5%)', ts[0].total / flatTheme.length > 0.05 && ts[1].total / flatTheme.length > 0.05,
     `行业=${ts[0].total} 概念=${ts[1].total} / ${flatTheme.length}`);
+  // 点击主题 → 展开新闻明细
+  const aiTopic = ts.find(d => d.key === 'concept').topics.find(t => t.name === '人工智能');
+  assert('真实数据：人工智能主题带 news 明细', !!aiTopic && aiTopic.news.length === aiTopic.count && aiTopic.count > 0, aiTopic && `${aiTopic.news.length}/${aiTopic.count}`);
+  assert('真实数据：明细含站点名/站点序号/日期', aiTopic.news.every(n => n.text && n.sourceName && n.sourceRank > 0 && /^\d{4}-\d{2}-\d{2}$/.test(n.date)));
+  assert('真实数据：明细按日期降序', aiTopic.news.every((n, i, a) => i === 0 || String(a[i - 1].date) >= String(n.date)));
+  console.log('    点击「人工智能」将展示的新闻（前 3 条）：');
+  aiTopic.news.slice(0, 3).forEach(n => console.log(`      [${n.sourceName} ${n.date}] ${n.text.slice(0, 38)}`));
+  const hasUrl = aiTopic.news.filter(n => n.url).length;
+  console.log(`    其中 ${hasUrl}/${aiTopic.news.length} 条带原文链接（可点击跳转）`);
+  assert('真实数据：人工智能主题的新闻多带原文链接', hasUrl > 0, hasUrl);
 }
 
 console.log(`\n结果：${pass} 通过 / ${fail} 失败`);
