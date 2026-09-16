@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>股市信息追踪分析系统</title>
-  <link rel="stylesheet" href="css/style.css?v=20260916b">
+  <link rel="stylesheet" href="css/style.css?v=20260916c">
   <!-- Vue 3 全局构建版（CDN，无需构建步骤） -->
   <script src="https://unpkg.com/vue@3.4.21/dist/vue.global.prod.js"></script>
 </head>
@@ -401,13 +401,36 @@
                           <span class="theme-dim-count muted small">{{ d.total }} 条命中</span>
                         </div>
                         <div class="theme-topics" v-if="d._open">
-                          <div class="theme-topic" v-for="t in (d.showAll ? d.topics : d.topics.slice(0, 6))" :key="t.name"
-                               :title="t.samples.join('\n')">
-                            <span class="tt-name">{{ t.name }}</span>
-                            <span class="tt-track"><span class="tt-fill" :style="{ width: t.width + '%', background: d.color }"></span></span>
-                            <span class="tt-val">{{ t.count }}</span>
-                            <span class="tt-pct">{{ t.pct }}%</span>
-                          </div>
+                          <template v-for="t in (d.showAll ? d.topics : d.topics.slice(0, 6))" :key="t.name">
+                            <div class="theme-topic" :class="{ active: d.selTopic === t.name }"
+                                 @click="toggleThemeTopic(d, t)"
+                                 :title="'点击查看「' + t.name + '」相关的 ' + t.count + ' 条新闻'">
+                              <span class="tt-caret">{{ d.selTopic === t.name ? '▾' : '▸' }}</span>
+                              <span class="tt-name">{{ t.name }}</span>
+                              <span class="tt-track"><span class="tt-fill" :style="{ width: t.width + '%', background: d.color }"></span></span>
+                              <span class="tt-val">{{ t.count }}</span>
+                              <span class="tt-pct">{{ t.pct }}%</span>
+                            </div>
+                            <div class="tt-news" v-if="d.selTopic === t.name">
+                              <div class="tt-news-head">
+                                <span class="tt-news-title" :style="{ color: d.color }">「{{ t.name }}」相关新闻 {{ t.news.length }} 条</span>
+                                <span class="muted small">点标题跳原文</span>
+                              </div>
+                              <div class="tt-news-item" v-for="(n, k) in t.news.slice(0, d.newsLimit || 30)" :key="k">
+                                <div class="tt-news-meta">
+                                  <span class="site-badge sm" :style="{ background: htSourceColor(n.sourceRank) }" :title="htSourceName(n.sourceRank)">{{ n.sourceRank }}</span>
+                                  <span class="tt-news-src">{{ n.sourceName }}</span>
+                                  <span class="tt-news-date">{{ (n.date || '').slice(5) }}</span>
+                                  <span class="tt-news-time" v-if="n.time">{{ n.time }}</span>
+                                </div>
+                                <a v-if="n.url" :href="n.url" target="_blank" rel="noopener" class="tt-news-text" :title="n.text">{{ n.text }}</a>
+                                <span v-else class="tt-news-text" :title="n.text">{{ n.text }}</span>
+                              </div>
+                              <button class="theme-more" v-if="t.news.length > (d.newsLimit || 30)" @click.stop="moreThemeNews(d)">
+                                还有 {{ t.news.length - (d.newsLimit || 30) }} 条，点击展开更多
+                              </button>
+                            </div>
+                          </template>
                           <button class="theme-more" v-if="d.topics.length > 6" @click="d.showAll = !d.showAll">
                             {{ d.showAll ? '收起' : ('展开全部 ' + d.topics.length + ' 项') }}
                           </button>
@@ -1914,10 +1937,10 @@
     </transition>
   </div>
 
-  <script src="js/store.js?v=20260916b"></script>
+  <script src="js/store.js?v=20260916c"></script>
   <script src="js/cloud-sync.js"></script>
-  <script src="js/stock-api.js?v=20260916b"></script>
-  <script src="js/hot-topics.js?v=20260916b"></script>
-  <script src="js/app.js?v=20260916b"></script>
+  <script src="js/stock-api.js?v=20260916c"></script>
+  <script src="js/hot-topics.js?v=20260916c"></script>
+  <script src="js/app.js?v=20260916c"></script>
 </body>
 </html>
