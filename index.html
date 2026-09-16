@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>股市信息分析系统</title>
-  <link rel="stylesheet" href="css/style.css?v=20260916k">
+  <link rel="stylesheet" href="css/style.css?v=20260917a">
   <!-- Vue 3 全局构建版（CDN，无需构建步骤） -->
   <script src="https://unpkg.com/vue@3.4.21/dist/vue.global.prod.js"></script>
 </head>
@@ -379,14 +379,15 @@
 
       </section>
 
-      <!-- ===== 页面（用户持仓：各登录用户只看自己的持仓） ===== -->
+      <!-- ===== 页面（用户：持仓管理 + 会员服务） ===== -->
       <section v-show="currentPage === 'holdings'" class="page">
         <div class="page-toolbar">
           <div class="toolbar-left">
-            <h2 class="page-title" style="margin:0">💼 用户持仓</h2>
+            <h2 class="page-title" style="margin:0">👤 用户</h2>
             <span class="muted small" v-if="authUser">（{{ authUser.username }} 的持仓，仅你自己可见）</span>
           </div>
           <div class="toolbar-right">
+            <button class="btn btn-vip" @click="openMembershipService">👑 会员服务</button>
             <button class="btn btn-primary" @click="openAddHolding">➕ 添加持仓</button>
             <button class="btn" @click="refreshHoldingPrices" :disabled="holdingRefreshing">
               <span v-if="holdingRefreshing">⏳ 刷新中...</span>
@@ -517,6 +518,36 @@
             <div class="modal-actions">
               <button class="btn btn-primary" @click="saveHolding">💾 保存</button>
               <button class="btn" @click="holdingModal.show = false">取消</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- 会员服务弹窗 -->
+        <div class="modal-overlay" v-if="membershipModal.show" @click.self="membershipModal.show = false">
+          <div class="modal membership-modal">
+            <h3>👑 会员服务</h3>
+            <div class="membership-body">
+              <p class="membership-desc">开通会员后可使用完整持仓管理、新闻归属追踪及后续高级功能。</p>
+              <div class="membership-plans">
+                <div class="plan-card">
+                  <div class="plan-title">一年期会员</div>
+                  <div class="plan-price">¥2000</div>
+                  <div class="plan-unit">/ 12 个月</div>
+                </div>
+                <div class="plan-card">
+                  <div class="plan-title">6 个月期会员</div>
+                  <div class="plan-price">¥1000</div>
+                  <div class="plan-unit">/ 6 个月</div>
+                </div>
+              </div>
+              <div class="membership-pay">
+                <div class="pay-title">扫码支付</div>
+                <img src="assets/qr-pay-wechat.jpg" alt="微信支付二维码" class="qr-pay-img">
+                <p class="muted small">请使用微信扫描二维码完成支付，支付后请联系管理员开通权限。</p>
+              </div>
+            </div>
+            <div class="modal-actions">
+              <button class="btn" @click="membershipModal.show = false">关闭</button>
             </div>
           </div>
         </div>
@@ -2508,8 +2539,8 @@
     </transition>
   </div>
 
-  <script src="js/auth.js?v=20260916k"></script>
-  <script src="js/auth-boot.js?v=20260916k"></script>
+  <script src="js/auth.js?v=20260917a"></script>
+  <script src="js/auth-boot.js?v=20260917a"></script>
   <!-- store / stock-api / hot-topics / app 由 auth-boot.js 在登录通过后动态装载，
        未登录时它们不会被下载，业务数据也不会进入内存 -->
 </body>

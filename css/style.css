@@ -2222,3 +2222,18 @@ body.auth-locked { overflow: hidden; }
 .suggestion { padding: 8px 12px; cursor: pointer; font-size: 13px; border-bottom: 1px solid #f2f2f2; }
 .suggestion:hover { background: #f5f8ff; }
 .modal-actions { display: flex; gap: 10px; margin-top: 16px; }
+
+/* 会员服务 */
+.btn-vip { background: linear-gradient(135deg, #fff7e6, #ffe4b3); border: 1px solid #ffd699; color: #8c5a00; font-weight: 600; }
+.btn-vip:hover { background: linear-gradient(135deg, #ffefc2, #ffd699); }
+.membership-modal { width: 420px; max-width: 94vw; text-align: center; }
+.membership-body { padding: 6px 4px; }
+.membership-desc { color: var(--text-2, #6b7280); font-size: 14px; margin-bottom: 18px; line-height: 1.6; }
+.membership-plans { display: flex; gap: 12px; justify-content: center; margin-bottom: 22px; }
+.plan-card { flex: 1; border: 1px solid var(--border); border-radius: var(--radius); padding: 16px 10px; background: #fff; }
+.plan-title { font-size: 15px; font-weight: 600; color: var(--text); margin-bottom: 8px; }
+.plan-price { font-size: 28px; font-weight: 800; color: var(--up, #dc2626); line-height: 1; }
+.plan-unit { font-size: 12px; color: var(--text-2); margin-top: 6px; }
+.membership-pay { border-top: 1px dashed var(--border); padding-top: 18px; }
+.pay-title { font-size: 15px; font-weight: 600; margin-bottom: 12px; }
+.qr-pay-img { width: 220px; height: 220px; object-fit: contain; border: 1px solid var(--border); border-radius: var(--radius); background: #fff; }

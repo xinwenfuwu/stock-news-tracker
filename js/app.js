@@ -21,8 +21,8 @@ const app = createApp({
     // ===== 路由 =====
     const currentPage = ref('news');
     const tabs = [
+      { key: 'holdings', label: '用户', icon: '👤' },
       { key: 'news', label: '新闻追踪', icon: '📰' },
-      { key: 'holdings', label: '用户持仓', icon: '💼' },
       { key: 'finance', label: '全球信息', icon: '🌐' },
       { key: 'pools', label: '股票池', icon: '📅' },
       { key: 'sector', label: '选股', icon: '🧭' },
@@ -1055,6 +1055,8 @@ const app = createApp({
     }
     const holdingModal = reactive({ show: false, isEdit: false, data: blankHolding(), stockSearch: '', suggestions: [] });
     const holdingRefreshing = ref(false);
+    const membershipModal = reactive({ show: false });
+    function openMembershipService() { membershipModal.show = true; }
 
     const myHoldings = computed(() => {
       const u = authUser.value && authUser.value.username;
@@ -4963,7 +4965,9 @@ const app = createApp({
       saveHolding, deleteHoldingRow, refreshHoldingPrices, holdingRefreshing,
       onHoldingStockSearch, pickHoldingStock, fetchEntryPrice,
       holdingSortKey, holdingSortDir, sortHoldingBy, holdingSortIcon,
-      holdingDays, holdingCost, holdingMarketValue, holdingChangePct, holdingProfit, holdingProfitPct
+      holdingDays, holdingCost, holdingMarketValue, holdingChangePct, holdingProfit, holdingProfitPct,
+      // 会员服务
+      membershipModal, openMembershipService
       ,
       // 登录账号与权限
       authUser, authInitial, authExpiryText, can, fmtDateTime, doLogout, userMenuOpen,

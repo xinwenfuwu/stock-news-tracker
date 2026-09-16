@@ -1,13 +1,14 @@
 /* ============================================================
- * e2e-holdings.mjs — 「用户持仓」页面 + 新闻表「用户」归属列 真实浏览器端到端验证
+ * e2e-holdings.mjs — 「用户」页面 + 新闻表「用户」归属列 真实浏览器端到端验证
  *
  * 覆盖本轮需求：
- *   1) 导航出现「用户持仓」页，空态正确
- *   2) 添加持仓：建仓日期 / 数量 / 建仓价 / 现价 → 自动算出 天数 / 持仓涨跌幅 / 市值 / 盈亏(元) / 盈亏比例
- *   3) 编辑持仓后重算
- *   4) 刷新现价（走腾讯行情接口）→ 重算盈亏
- *   5) 新闻追踪表最左侧出现「用户」归属列，新增新闻归属当前登录用户
- *   6) 与「暂停数据刷新」约定兼容：进入持仓页不自动发行情请求
+ *   1) 导航出现「用户」页，空态正确
+ *   2) 会员服务弹窗：展示一年期/6 个月期价格 + 微信支付二维码
+ *   3) 添加持仓：建仓日期 / 数量 / 建仓价 / 现价 → 自动算出 天数 / 持仓涨跌幅 / 市值 / 盈亏(元) / 盈亏比例
+ *   4) 编辑持仓后重算
+ *   5) 刷新现价（走腾讯行情接口）→ 重算盈亏
+ *   6) 新闻追踪表最左侧出现「用户」归属列，新增新闻归属当前登录用户
+ *   7) 与「暂停数据刷新」约定兼容：进入持仓页不自动发行情请求
  *
  * 股票搜索（smartbox.gtimg.cn）与实时行情（qt.gtimg.cn）一律用 route 伪造，
  * 保证断言确定、不依赖外网。
@@ -32,7 +33,8 @@ const MIME = {
   '.mjs': 'text/javascript; charset=utf-8',
   '.css': 'text/css; charset=utf-8',
   '.json': 'application/json; charset=utf-8',
-  '.png': 'image/png', '.svg': 'image/svg+xml', '.ico': 'image/x-icon'
+  '.png': 'image/png', '.svg': 'image/svg+xml', '.ico': 'image/x-icon',
+  '.jpg': 'image/jpeg', '.jpeg': 'image/jpeg'
 };
 
 let pass = 0, fail = 0;
@@ -55,7 +57,38 @@ function serveStatic(dir) {
   return new Promise(r => srv.listen(0, '127.0.0.1', () => r({ srv, port: srv.address().port })));
 }
 
+let _shared = null;
 async function newPage(browser) {
+  if (LIVE) {
+    // 线上：复用同一个浏览器上下文（共享 CDN 缓存，避免反复整包下载被 Pages 限流），
+    // 每个场景之间清空 localStorage 并重新加载到登录态。
+    if (!_shared) {
+      const ctx = await browser.newContext();
+      const page = await ctx.newPage();
+      const errors = [];
+      const counts = { qt: 0, smartbox: 0 };
+      page.on('pageerror', e => errors.push(e.message));
+      if (fs.existsSync(VUE_LOCAL)) {
+        await page.route('**unpkg.com/**', r => r.fulfill({ path: VUE_LOCAL, contentType: 'text/javascript' }));
+      }
+      await page.route('**/smartbox.gtimg.cn/**', r => {
+        counts.smartbox++;
+        r.fulfill({ contentType: 'application/javascript', body: 'v_hint="sh~600519~贵州茅台~moutai~GP-A";' });
+      });
+      await page.route('**/qt.gtimg.cn/**', r => {
+        counts.qt++;
+        const fields = new Array(33).fill('');
+        fields[0] = 'sh'; fields[1] = '贵州茅台'; fields[2] = 'sh600519';
+        fields[3] = '1300.00'; fields[4] = '1690.00'; fields[32] = '0.65';
+        r.fulfill({ contentType: 'application/javascript', body: `v_sh600519="${fields.join('~')}";` });
+      });
+      _shared = { ctx, page, errors, counts };
+    } else {
+      await _shared.page.evaluate(() => localStorage.clear());
+      await _shared.page.goto(LIVE_URL, { waitUntil: 'load' });
+    }
+    return _shared;
+  }
   const ctx = await browser.newContext();
   const page = await ctx.newPage();
   const errors = [];
@@ -88,11 +121,13 @@ async function gotoApp(page, port, hash) {
   await page.waitForSelector('#auth-gate', { timeout: 20000 });
 }
 async function waitAppReady(page) {
-  await page.waitForFunction(() => !document.getElementById('auth-gate'), null, { timeout: 45000 });
+  // 线上 GitHub Pages CDN 偶发较慢，超时放宽到 90s（本地通常 1~2s）
+  const t = LIVE ? 90000 : 45000;
+  await page.waitForFunction(() => !document.getElementById('auth-gate'), null, { timeout: t });
   await page.waitForFunction(() => {
     const el = document.getElementById('app');
     return !!(el && el.__vue_app__);
-  }, null, { timeout: 45000 });
+  }, null, { timeout: t });
 }
 async function loginFresh(page, pw = ADMIN_PW) {
   await page.evaluate(async (p) => {
@@ -124,14 +159,14 @@ const main = async () => {
     await loginFresh(page);
     // 进入持仓页：断言进入时不自动发行情请求（暂停约定兼容）
     const before = counts.qt;
-    await page.click('a.nav-item:has-text("用户持仓")');
+    await page.click('a.nav-item:has-text("用户")');
     await page.waitForSelector('.holding-table', { timeout: 15000 });
     await page.waitForTimeout(300);
     check('进入持仓页不自动发行情请求（兼容暂停约定）', counts.qt === before, 'qt=' + counts.qt);
     check('空态提示出现', (await page.locator('.holding-table .empty-row').innerText()).includes('暂无持仓'));
     check('汇总卡在空态不显示', (await page.locator('.hold-summary').count()) === 0);
     check('无 JS 报错', errors.length === 0, errors.join(' | '));
-    await ctx.close();
+    if (!LIVE) await ctx.close();
   }
 
   // ---------------- 2 ----------------
@@ -141,7 +176,7 @@ const main = async () => {
     const { ctx, page, errors } = await newPage(browser);
     await gotoApp(page, A.port);
     await loginFresh(page);
-    await page.click('a.nav-item:has-text("用户持仓")');
+    await page.click('a.nav-item:has-text("用户")');
     await page.waitForSelector('.holding-table', { timeout: 15000 });
     await page.click('button:has-text("添加持仓")');
     await page.waitForSelector('.holding-modal', { timeout: 10000 });
@@ -172,7 +207,7 @@ const main = async () => {
     check('汇总：总盈亏 +10000', sum.includes('+10000'), sum);
     check('汇总：总盈亏比例 +10.00%', sum.includes('+10.00%'), sum);
     check('无 JS 报错', errors.length === 0, errors.join(' | '));
-    await ctx.close();
+    if (!LIVE) await ctx.close();
   }
 
   // ---------------- 3 ----------------
@@ -181,7 +216,7 @@ const main = async () => {
     const { ctx, page, errors } = await newPage(browser);
     await gotoApp(page, A.port);
     await loginFresh(page);
-    await page.click('a.nav-item:has-text("用户持仓")');
+    await page.click('a.nav-item:has-text("用户")');
     await page.waitForSelector('.holding-table', { timeout: 15000 });
     await page.click('button:has-text("添加持仓")');
     await page.waitForSelector('.holding-modal', { timeout: 10000 });
@@ -205,7 +240,7 @@ const main = async () => {
     check('编辑后盈亏比例=+20.00%', c[9].includes('+20.00%'), c[9]);
     check('编辑后现价=1200.00', c[3].includes('1200.00'), c[3]);
     check('无 JS 报错', errors.length === 0, errors.join(' | '));
-    await ctx.close();
+    if (!LIVE) await ctx.close();
   }
 
   // ---------------- 4 ----------------
@@ -214,7 +249,7 @@ const main = async () => {
     const { ctx, page, errors } = await newPage(browser);
     await gotoApp(page, A.port);
     await loginFresh(page);
-    await page.click('a.nav-item:has-text("用户持仓")');
+    await page.click('a.nav-item:has-text("用户")');
     await page.waitForSelector('.holding-table', { timeout: 15000 });
     await page.click('button:has-text("添加持仓")');
     await page.waitForSelector('.holding-modal', { timeout: 10000 });
@@ -234,7 +269,7 @@ const main = async () => {
     check('刷新后盈亏(元)=+30000.00', c[8].includes('+30000.00'), c[8]);
     check('刷新后持仓涨跌幅=+30.00%', c[6].includes('+30.00%'), c[6]);
     check('无 JS 报错', errors.length === 0, errors.join(' | '));
-    await ctx.close();
+    if (!LIVE) await ctx.close();
   }
 
   // ---------------- 5 ----------------
@@ -262,16 +297,48 @@ const main = async () => {
     });
     check('Store 中新闻记录 owner=admin', stored.has && stored.owner === 'admin', JSON.stringify(stored));
     check('无 JS 报错', errors.length === 0, errors.join(' | '));
-    await ctx.close();
+    if (!LIVE) await ctx.close();
   }
 
   // ---------------- 6 ----------------
-  console.log('\n6) 持仓按用户名隔离（admin 的持仓不串到别的键）');
+  console.log('\n6) 会员服务弹窗：价格说明 + 微信支付二维码');
   {
     const { ctx, page, errors } = await newPage(browser);
     await gotoApp(page, A.port);
     await loginFresh(page);
-    await page.click('a.nav-item:has-text("用户持仓")');
+    await page.click('a.nav-item:has-text("用户")');
+    await page.waitForSelector('.holding-table', { timeout: 15000 });
+    // 会员服务按钮在添加持仓左侧
+    const vipBtn = page.locator('button:has-text("会员服务")');
+    check('「会员服务」按钮存在', await vipBtn.count() === 1);
+    const addBtn = page.locator('button:has-text("添加持仓")');
+    const vipBox = await vipBtn.boundingBox();
+    const addBox = await addBtn.boundingBox();
+    check('「会员服务」按钮在「添加持仓」左侧', !!vipBox && !!addBox && vipBox.x < addBox.x, `vip x=${vipBox?.x} add x=${addBox?.x}`);
+    await vipBtn.click();
+    await page.waitForSelector('.membership-modal', { timeout: 10000 });
+    const modalText = await page.locator('.membership-modal').innerText();
+    check('弹窗显示「一年期会员」', modalText.includes('一年期会员'));
+    check('弹窗显示「6 个月期会员」', modalText.includes('6 个月期会员'));
+    check('弹窗显示一年期价格 ¥2000', modalText.includes('¥2000'));
+    check('弹窗显示 6 个月期价格 ¥1000', modalText.includes('¥1000'));
+    check('弹窗显示微信支付二维码图片', await page.locator('.membership-modal .qr-pay-img').count() === 1);
+    const qrSrc = await page.locator('.membership-modal .qr-pay-img').getAttribute('src');
+    check('二维码地址指向 assets/qr-pay-wechat.jpg', qrSrc && qrSrc.includes('assets/qr-pay-wechat.jpg'), qrSrc);
+    await page.click('.membership-modal .modal-actions .btn');
+    await page.waitForFunction(() => document.querySelectorAll('.membership-modal').length === 0, null, { timeout: 10000 });
+    check('点击关闭后弹窗消失', await page.locator('.membership-modal').count() === 0);
+    check('无 JS 报错', errors.length === 0, errors.join(' | '));
+    if (!LIVE) await ctx.close();
+  }
+
+  // ---------------- 7 ----------------
+  console.log('\n7) 持仓按用户名隔离（admin 的持仓不串到别的键）');
+  {
+    const { ctx, page, errors } = await newPage(browser);
+    await gotoApp(page, A.port);
+    await loginFresh(page);
+    await page.click('a.nav-item:has-text("用户")');
     await page.waitForSelector('.holding-table', { timeout: 15000 });
     await page.click('button:has-text("添加持仓")');
     await page.waitForSelector('.holding-modal', { timeout: 10000 });
@@ -283,7 +350,7 @@ const main = async () => {
     const keys = await page.evaluate(() => Object.keys(Store.data.holdings || {}));
     check('持仓只写入 admin 名下', keys.length === 1 && keys[0] === 'admin', JSON.stringify(keys));
     check('无 JS 报错', errors.length === 0, errors.join(' | '));
-    await ctx.close();
+    if (!LIVE) await ctx.close();
   }
 
   await browser.close();
