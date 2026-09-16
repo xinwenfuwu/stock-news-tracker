@@ -3652,43 +3652,58 @@ const app = createApp({
     }
 
     // 全球信息页：刷新「火热话题」+「格隆汇每日快讯」
-    // 代理地址支持填多个（空格/逗号/分号分隔），依次尝试；全部失败则回退到仓库内置快照
+    // 设计要点（合规免费）：
+    //   主路径 = 仓库内置最新快照（GitHub Action 每 2 小时服务端自动抓取，同源 GitHub Pages 直出，无需任何代理）。
+    //   代理（Cloudflare Worker）仅作为"可选实时增强"——配了且可用才叠加真·实时；不可达不再阻断展示，
+    //   而是友好提示并保留已加载的快照。这样即便 workers.dev 在国内被拦截，刷新按钮也能稳定给出最新榜单。
     async function refreshHotTopics() {
       const proxies = String(D.settings.proxyUrl || '').split(/[\s,;]+/).map(s => s.trim()).filter(Boolean);
-      htMode.value = 'live';
       hotTopicsLoading.value = true;
-      let lastErrors = [];
+      let usedSnapshot = false;
       try {
-        for (const p of proxies) {
-          const ht = await StockAPI.fetchHotTopics(p);
-          if (ht.sources && ht.sources.some(s => s.items.length)) {
-            hotTopicsSources.value = ht.sources;
-            hotTopicsMerged.value = ht.merged || [];
-            saveLocalHotTopicSnapshot(ht.sources);   // 自动积累当日本地快照（随 Gist 同步）
-            hotTopicsUpdated.value = new Date().toLocaleString('zh-CN', { hour12: false }) + '（实时）';
-            return;
-          }
-          lastErrors = (ht.sources || []).filter(s => !s.items.length).map(s => `${s.name}: ${s.error || '无数据'}`);
-        }
-
-        // 实时链路不可用（未配代理 / 域名被拦截 / 源站拒绝）→ 回退到自动抓取的快照
+        // 1) 始终先加载仓库内置最新快照（同源、无需代理、合规免费）
         const fb = await loadLatestRepoSnapshot();
         if (fb) {
           hotTopicsSources.value = fb.sources;
           hotTopicsMerged.value = buildMergedList(fb.sources);
           hotTopicDate.value = fb.date;
           hotTopicDateHasData.value = true;
-          htMode.value = 'history';
           const when = fb.generatedAt ? new Date(fb.generatedAt).toLocaleString('zh-CN', { hour12: false }) : fb.date;
           hotTopicsUpdated.value = `${when}（自动抓取快照 ${fb.date}）`;
-          const why = lastErrors.length ? lastErrors.slice(0, 2).join('；') : '未配置新闻代理地址';
-          showToast(`实时抓取不可用（${why}），已回退到自动抓取的快照 ${fb.date}`, 'info');
+          htMode.value = 'history';
+          usedSnapshot = true;
+        }
+
+        // 2) 配置了代理 → 尝试真·实时叠加；全部失败则保留快照
+        if (proxies.length) {
+          for (const p of proxies) {
+            const ht = await StockAPI.fetchHotTopics(p);
+            if (ht.sources && ht.sources.some(s => s.items.length)) {
+              hotTopicsSources.value = ht.sources;
+              hotTopicsMerged.value = ht.merged || [];
+              saveLocalHotTopicSnapshot(ht.sources);
+              hotTopicsUpdated.value = new Date().toLocaleString('zh-CN', { hour12: false }) + '（实时）';
+              htMode.value = 'live';
+              showToast(`已更新为最新实时抓取（${ht.sources.filter(s => s.items.length).length} 个来源）`, 'success');
+              return;
+            }
+          }
+          if (usedSnapshot) {
+            showToast(`实时抓取暂不可用（代理不可达），已展示最新自动抓取快照（${fb.date}）`, 'info');
+          } else {
+            showToast('实时抓取不可用，且暂无可展示的快照；请检查代理地址或稍后重试', 'error');
+          }
           return;
         }
 
-        hotTopicsSources.value = (typeof HotTopics !== 'undefined' ? HotTopics.SOURCE_ORDER : [])
-          .map(s => ({ ...s, items: [], loading: false, error: null }));
-        showToast('实时抓取不可用，且暂无可展示的快照；请检查代理地址或稍后重试', 'error');
+        // 3) 未配置代理：快照即最终结果（合规免费，每 2 小时自动更新）
+        if (usedSnapshot) {
+          showToast(`已加载最新自动抓取快照（${fb.date}，每 2 小时自动更新）`, 'success');
+        } else {
+          hotTopicsSources.value = (typeof HotTopics !== 'undefined' ? HotTopics.SOURCE_ORDER : [])
+            .map(s => ({ ...s, items: [], loading: false, error: null }));
+          showToast('暂无可展示的快照；请稍后重试或配置代理', 'error');
+        }
       } catch (e) {
         showToast('火热话题刷新失败：' + (e && e.message ? e.message : e), 'error');
       } finally {

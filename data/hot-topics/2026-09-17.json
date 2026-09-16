@@ -1,6 +1,6 @@
 {
   "date": "2026-09-17",
-  "generatedAt": "2026-09-16T22:50:15.960Z",
+  "generatedAt": "2026-09-16T23:20:53.675Z",
   "sources": [
     {
       "rank": 1,
@@ -8,6 +8,24 @@
       "name": "格隆汇",
       "color": "#c8102e",
       "items": [
+        {
+          "text": "AI 50大细分方向：拥挤度到什么位置了？ AI内部也呈现出拥挤度的“高低易位”",
+          "time": "",
+          "url": "https://www.gelonghui.com/p/6684891",
+          "cat": "科技"
+        },
+        {
+          "text": "人工智能/AI",
+          "time": "",
+          "url": "https://www.gelonghui.com/subject/37",
+          "cat": "科技"
+        },
+        {
+          "text": "兴证策略张启尧",
+          "time": "",
+          "url": "https://www.gelonghui.com/p/6684891",
+          "cat": "财经"
+        },
         {
           "text": "公告精选︱星源卓镁：拟投资不超2.8亿元建设轻量化精密结构件智能制造项目；北自科技：公司电子布织布机处于生产验证阶段 恒工精密：拟发行可转债募资不超过8.1亿元",
           "time": "",
@@ -49,24 +67,6 @@
           "time": "",
           "url": "https://www.gelonghui.com/p/6683728",
           "cat": "军事"
-        },
-        {
-          "text": "8月CPI升至3.1%超预期，英国央行“淡定”不再？ 能源成本冲击",
-          "time": "",
-          "url": "https://www.gelonghui.com/p/6683393",
-          "cat": "政治政策"
-        },
-        {
-          "text": "欧洲经济数据",
-          "time": "",
-          "url": "https://www.gelonghui.com/subject/47",
-          "cat": "经济"
-        },
-        {
-          "text": "今夜，全球盯紧美联储！ 四种情景，一场赌局",
-          "time": "",
-          "url": "https://www.gelonghui.com/p/6682739",
-          "cat": "经济"
         }
       ]
     },
@@ -77,15 +77,15 @@
       "color": "#2a6cff",
       "items": [
         {
-          "text": "此次美联储议息会议为什么这么重要",
+          "text": "时隔3年多美联储加息25个基点",
           "time": "",
-          "url": "https://www.toutiao.com/trending/7686088830515940874/?category_name=topic_innerflow&event_type=hot_board&log_pb=%7B%22category_name%22%3A%22topic_innerflow%22%2C%22cluster_type%22%3A%2213%22%2C%22enter_from%22%3A%22click_category%22%2C%22entrance_hotspot%22%3A%22outside%22%2C%22event_type%22%3A%22hot_board%22%2C%22hot_board_cluster_id%22%3A%227686088830515940874%22%2C%22hot_board_impr_id%22%3A%2220260917064957075FD009CDE5626518CA%22%2C%22jump_page%22%3A%22hot_board_page%22%2C%22location%22%3A%22news_hot_card%22%2C%22page_location%22%3A%22hot_board_page%22%2C%22source%22%3A%22trending_tab%22%2C%22style_id%22%3A%2240132%22%2C%22title%22%3A%22%E6%AD%A4%E6%AC%A1%E7%BE%8E%E8%81%94%E5%82%A8%E8%AE%AE%E6%81%AF%E4%BC%9A%E8%AE%AE%E4%B8%BA%E4%BB%80%E4%B9%88%E8%BF%99%E4%B9%88%E9%87%8D%E8%A6%81%22%7D&rank=&style_id=40132&topic_id=7686088830515940874",
+          "url": "https://www.toutiao.com/trending/7686269018893831707/?category_name=topic_innerflow&event_type=hot_board&log_pb=%7B%22category_name%22%3A%22topic_innerflow%22%2C%22cluster_type%22%3A%222%22%2C%22enter_from%22%3A%22click_category%22%2C%22entrance_hotspot%22%3A%22outside%22%2C%22event_type%22%3A%22hot_board%22%2C%22hot_board_cluster_id%22%3A%227686269018893831707%22%2C%22hot_board_impr_id%22%3A%22202609170720466DE961DDF76E5C650AEB%22%2C%22jump_page%22%3A%22hot_board_page%22%2C%22location%22%3A%22news_hot_card%22%2C%22page_location%22%3A%22hot_board_page%22%2C%22source%22%3A%22trending_tab%22%2C%22style_id%22%3A%2240132%22%2C%22title%22%3A%22%E6%97%B6%E9%9A%943%E5%B9%B4%E5%A4%9A%E7%BE%8E%E8%81%94%E5%82%A8%E5%8A%A0%E6%81%AF25%E4%B8%AA%E5%9F%BA%E7%82%B9%22%7D&rank=&style_id=40132&topic_id=7686269018893831707",
           "cat": "经济"
         },
         {
           "text": "战火烧到波兰门口 乌还能撑多久",
           "time": "",
-          "url": "https://www.toutiao.com/trending/7686137685596966450/?category_name=topic_innerflow&event_type=hot_board&log_pb=%7B%22category_name%22%3A%22topic_innerflow%22%2C%22cluster_type%22%3A%2213%22%2C%22enter_from%22%3A%22click_category%22%2C%22entrance_hotspot%22%3A%22outside%22%2C%22event_type%22%3A%22hot_board%22%2C%22hot_board_cluster_id%22%3A%227686137685596966450%22%2C%22hot_board_impr_id%22%3A%2220260917064957075FD009CDE5626518CA%22%2C%22jump_page%22%3A%22hot_board_page%22%2C%22location%22%3A%22news_hot_card%22%2C%22page_location%22%3A%22hot_board_page%22%2C%22source%22%3A%22trending_tab%22%2C%22style_id%22%3A%2240132%22%2C%22title%22%3A%22%E6%88%98%E7%81%AB%E7%83%A7%E5%88%B0%E6%B3%A2%E5%85%B0%E9%97%A8%E5%8F%A3+%E4%B9%8C%E8%BF%98%E8%83%BD%E6%92%91%E5%A4%9A%E4%B9%85%22%7D&rank=&style_id=40132&topic_id=7686137685596966450",
+          "url": "https://www.toutiao.com/trending/7686137685596966450/?category_name=topic_innerflow&event_type=hot_board&log_pb=%7B%22category_name%22%3A%22topic_innerflow%22%2C%22cluster_type%22%3A%2213%22%2C%22enter_from%22%3A%22click_category%22%2C%22entrance_hotspot%22%3A%22outside%22%2C%22event_type%22%3A%22hot_board%22%2C%22hot_board_cluster_id%22%3A%227686137685596966450%22%2C%22hot_board_impr_id%22%3A%22202609170720466DE961DDF76E5C650AEB%22%2C%22jump_page%22%3A%22hot_board_page%22%2C%22location%22%3A%22news_hot_card%22%2C%22page_location%22%3A%22hot_board_page%22%2C%22source%22%3A%22trending_tab%22%2C%22style_id%22%3A%2240132%22%2C%22title%22%3A%22%E6%88%98%E7%81%AB%E7%83%A7%E5%88%B0%E6%B3%A2%E5%85%B0%E9%97%A8%E5%8F%A3+%E4%B9%8C%E8%BF%98%E8%83%BD%E6%92%91%E5%A4%9A%E4%B9%85%22%7D&rank=&style_id=40132&topic_id=7686137685596966450",
           "cat": "财经"
         },
         {
@@ -97,44 +97,44 @@
         {
           "text": "拆迁查户口发现父亲有个16岁私生子",
           "time": "",
-          "url": "https://www.toutiao.com/trending/7686068625350606902/?category_name=topic_innerflow&event_type=hot_board&log_pb=%7B%22category_name%22%3A%22topic_innerflow%22%2C%22cluster_type%22%3A%228%22%2C%22enter_from%22%3A%22click_category%22%2C%22entrance_hotspot%22%3A%22outside%22%2C%22event_type%22%3A%22hot_board%22%2C%22hot_board_cluster_id%22%3A%227686068625350606902%22%2C%22hot_board_impr_id%22%3A%2220260917064957075FD009CDE5626518CA%22%2C%22jump_page%22%3A%22hot_board_page%22%2C%22location%22%3A%22news_hot_card%22%2C%22page_location%22%3A%22hot_board_page%22%2C%22source%22%3A%22trending_tab%22%2C%22style_id%22%3A%2240132%22%2C%22title%22%3A%22%E6%8B%86%E8%BF%81%E6%9F%A5%E6%88%B7%E5%8F%A3%E5%8F%91%E7%8E%B0%E7%88%B6%E4%BA%B2%E6%9C%89%E4%B8%AA16%E5%B2%81%E7%A7%81%E7%94%9F%E5%AD%90%22%7D&rank=&style_id=40132&topic_id=7686068625350606902",
-          "cat": "财经"
-        },
-        {
-          "text": "北京任前公示：张朝阳拟任地区法院院长",
-          "time": "",
-          "url": "https://www.toutiao.com/trending/7686114118931922950/?category_name=topic_innerflow&event_type=hot_board&log_pb=%7B%22category_name%22%3A%22topic_innerflow%22%2C%22cluster_type%22%3A%220%22%2C%22enter_from%22%3A%22click_category%22%2C%22entrance_hotspot%22%3A%22outside%22%2C%22event_type%22%3A%22hot_board%22%2C%22hot_board_cluster_id%22%3A%227686114118931922950%22%2C%22hot_board_impr_id%22%3A%2220260917064957075FD009CDE5626518CA%22%2C%22jump_page%22%3A%22hot_board_page%22%2C%22location%22%3A%22news_hot_card%22%2C%22page_location%22%3A%22hot_board_page%22%2C%22source%22%3A%22trending_tab%22%2C%22style_id%22%3A%2240132%22%2C%22title%22%3A%22%E5%8C%97%E4%BA%AC%E4%BB%BB%E5%89%8D%E5%85%AC%E7%A4%BA%EF%BC%9A%E5%BC%A0%E6%9C%9D%E9%98%B3%E6%8B%9F%E4%BB%BB%E5%9C%B0%E5%8C%BA%E6%B3%95%E9%99%A2%E9%99%A2%E9%95%BF%22%7D&rank=&style_id=40132&topic_id=7686114118931922950",
-          "cat": "财经"
-        },
-        {
-          "text": "妈妈忘接孩子 男孩淡定躺台阶吃东西",
-          "time": "",
-          "url": "https://www.toutiao.com/trending/7685683393853456438/?category_name=topic_innerflow&event_type=hot_board&log_pb=%7B%22category_name%22%3A%22topic_innerflow%22%2C%22cluster_type%22%3A%220%22%2C%22enter_from%22%3A%22click_category%22%2C%22entrance_hotspot%22%3A%22outside%22%2C%22event_type%22%3A%22hot_board%22%2C%22hot_board_cluster_id%22%3A%227685683393853456438%22%2C%22hot_board_impr_id%22%3A%2220260917064957075FD009CDE5626518CA%22%2C%22jump_page%22%3A%22hot_board_page%22%2C%22location%22%3A%22news_hot_card%22%2C%22page_location%22%3A%22hot_board_page%22%2C%22source%22%3A%22trending_tab%22%2C%22style_id%22%3A%2240132%22%2C%22title%22%3A%22%E5%A6%88%E5%A6%88%E5%BF%98%E6%8E%A5%E5%AD%A9%E5%AD%90+%E7%94%B7%E5%AD%A9%E6%B7%A1%E5%AE%9A%E8%BA%BA%E5%8F%B0%E9%98%B6%E5%90%83%E4%B8%9C%E8%A5%BF%22%7D&rank=&style_id=40132&topic_id=7685683393853456438",
+          "url": "https://www.toutiao.com/trending/7686068625350606902/?category_name=topic_innerflow&event_type=hot_board&log_pb=%7B%22category_name%22%3A%22topic_innerflow%22%2C%22cluster_type%22%3A%228%22%2C%22enter_from%22%3A%22click_category%22%2C%22entrance_hotspot%22%3A%22outside%22%2C%22event_type%22%3A%22hot_board%22%2C%22hot_board_cluster_id%22%3A%227686068625350606902%22%2C%22hot_board_impr_id%22%3A%22202609170720466DE961DDF76E5C650AEB%22%2C%22jump_page%22%3A%22hot_board_page%22%2C%22location%22%3A%22news_hot_card%22%2C%22page_location%22%3A%22hot_board_page%22%2C%22source%22%3A%22trending_tab%22%2C%22style_id%22%3A%2240132%22%2C%22title%22%3A%22%E6%8B%86%E8%BF%81%E6%9F%A5%E6%88%B7%E5%8F%A3%E5%8F%91%E7%8E%B0%E7%88%B6%E4%BA%B2%E6%9C%89%E4%B8%AA16%E5%B2%81%E7%A7%81%E7%94%9F%E5%AD%90%22%7D&rank=&style_id=40132&topic_id=7686068625350606902",
           "cat": "财经"
         },
         {
           "text": "“豆包手机”正式发售",
           "time": "",
-          "url": "https://www.toutiao.com/trending/7685216512579747882/?category_name=topic_innerflow&event_type=hot_board&log_pb=%7B%22category_name%22%3A%22topic_innerflow%22%2C%22cluster_type%22%3A%226%22%2C%22enter_from%22%3A%22click_category%22%2C%22entrance_hotspot%22%3A%22outside%22%2C%22event_type%22%3A%22hot_board%22%2C%22hot_board_cluster_id%22%3A%227685216512579747882%22%2C%22hot_board_impr_id%22%3A%2220260917064957075FD009CDE5626518CA%22%2C%22jump_page%22%3A%22hot_board_page%22%2C%22location%22%3A%22news_hot_card%22%2C%22page_location%22%3A%22hot_board_page%22%2C%22source%22%3A%22trending_tab%22%2C%22style_id%22%3A%2240132%22%2C%22title%22%3A%22%E2%80%9C%E8%B1%86%E5%8C%85%E6%89%8B%E6%9C%BA%E2%80%9D%E6%AD%A3%E5%BC%8F%E5%8F%91%E5%94%AE%22%7D&rank=&style_id=40132&topic_id=7685216512579747882",
+          "url": "https://www.toutiao.com/trending/7685216512579747882/?category_name=topic_innerflow&event_type=hot_board&log_pb=%7B%22category_name%22%3A%22topic_innerflow%22%2C%22cluster_type%22%3A%226%22%2C%22enter_from%22%3A%22click_category%22%2C%22entrance_hotspot%22%3A%22outside%22%2C%22event_type%22%3A%22hot_board%22%2C%22hot_board_cluster_id%22%3A%227685216512579747882%22%2C%22hot_board_impr_id%22%3A%22202609170720466DE961DDF76E5C650AEB%22%2C%22jump_page%22%3A%22hot_board_page%22%2C%22location%22%3A%22news_hot_card%22%2C%22page_location%22%3A%22hot_board_page%22%2C%22source%22%3A%22trending_tab%22%2C%22style_id%22%3A%2240132%22%2C%22title%22%3A%22%E2%80%9C%E8%B1%86%E5%8C%85%E6%89%8B%E6%9C%BA%E2%80%9D%E6%AD%A3%E5%BC%8F%E5%8F%91%E5%94%AE%22%7D&rank=&style_id=40132&topic_id=7685216512579747882",
           "cat": "财经"
         },
         {
-          "text": "崔天凯：一劳永逸解决台湾问题",
+          "text": "美联储预计年底前还将加息一次",
           "time": "",
-          "url": "https://www.toutiao.com/trending/7685701201656054318/?category_name=topic_innerflow&event_type=hot_board&log_pb=%7B%22category_name%22%3A%22topic_innerflow%22%2C%22cluster_type%22%3A%228%22%2C%22enter_from%22%3A%22click_category%22%2C%22entrance_hotspot%22%3A%22outside%22%2C%22event_type%22%3A%22hot_board%22%2C%22hot_board_cluster_id%22%3A%227685701201656054318%22%2C%22hot_board_impr_id%22%3A%2220260917064957075FD009CDE5626518CA%22%2C%22jump_page%22%3A%22hot_board_page%22%2C%22location%22%3A%22news_hot_card%22%2C%22page_location%22%3A%22hot_board_page%22%2C%22source%22%3A%22trending_tab%22%2C%22style_id%22%3A%2240132%22%2C%22title%22%3A%22%E5%B4%94%E5%A4%A9%E5%87%AF%EF%BC%9A%E4%B8%80%E5%8A%B3%E6%B0%B8%E9%80%B8%E8%A7%A3%E5%86%B3%E5%8F%B0%E6%B9%BE%E9%97%AE%E9%A2%98%22%7D&rank=&style_id=40132&topic_id=7685701201656054318",
+          "url": "https://www.toutiao.com/trending/7686269540065512969/?category_name=topic_innerflow&event_type=hot_board&log_pb=%7B%22category_name%22%3A%22topic_innerflow%22%2C%22cluster_type%22%3A%222%22%2C%22enter_from%22%3A%22click_category%22%2C%22entrance_hotspot%22%3A%22outside%22%2C%22event_type%22%3A%22hot_board%22%2C%22hot_board_cluster_id%22%3A%227686269540065512969%22%2C%22hot_board_impr_id%22%3A%22202609170720466DE961DDF76E5C650AEB%22%2C%22jump_page%22%3A%22hot_board_page%22%2C%22location%22%3A%22news_hot_card%22%2C%22page_location%22%3A%22hot_board_page%22%2C%22source%22%3A%22trending_tab%22%2C%22style_id%22%3A%2240132%22%2C%22title%22%3A%22%E7%BE%8E%E8%81%94%E5%82%A8%E9%A2%84%E8%AE%A1%E5%B9%B4%E5%BA%95%E5%89%8D%E8%BF%98%E5%B0%86%E5%8A%A0%E6%81%AF%E4%B8%80%E6%AC%A1%22%7D&rank=&style_id=40132&topic_id=7686269540065512969",
+          "cat": "经济"
+        },
+        {
+          "text": "适当饿一点好处竟然这么多",
+          "time": "",
+          "url": "https://www.toutiao.com/trending/7685887975183745030/?category_name=topic_innerflow&event_type=hot_board&log_pb=%7B%22category_name%22%3A%22topic_innerflow%22%2C%22cluster_type%22%3A%226%22%2C%22enter_from%22%3A%22click_category%22%2C%22entrance_hotspot%22%3A%22outside%22%2C%22event_type%22%3A%22hot_board%22%2C%22hot_board_cluster_id%22%3A%227685887975183745030%22%2C%22hot_board_impr_id%22%3A%22202609170720466DE961DDF76E5C650AEB%22%2C%22jump_page%22%3A%22hot_board_page%22%2C%22location%22%3A%22news_hot_card%22%2C%22page_location%22%3A%22hot_board_page%22%2C%22source%22%3A%22trending_tab%22%2C%22style_id%22%3A%2240132%22%2C%22title%22%3A%22%E9%80%82%E5%BD%93%E9%A5%BF%E4%B8%80%E7%82%B9%E5%A5%BD%E5%A4%84%E7%AB%9F%E7%84%B6%E8%BF%99%E4%B9%88%E5%A4%9A%22%7D&rank=&style_id=40132&topic_id=7685887975183745030",
+          "cat": "财经"
+        },
+        {
+          "text": "评论员：统一是解决台湾问题唯一途径",
+          "time": "",
+          "url": "https://www.toutiao.com/trending/7686128195107979307/?category_name=topic_innerflow&event_type=hot_board&log_pb=%7B%22category_name%22%3A%22topic_innerflow%22%2C%22cluster_type%22%3A%224%22%2C%22enter_from%22%3A%22click_category%22%2C%22entrance_hotspot%22%3A%22outside%22%2C%22event_type%22%3A%22hot_board%22%2C%22hot_board_cluster_id%22%3A%227686128195107979307%22%2C%22hot_board_impr_id%22%3A%22202609170720466DE961DDF76E5C650AEB%22%2C%22jump_page%22%3A%22hot_board_page%22%2C%22location%22%3A%22news_hot_card%22%2C%22page_location%22%3A%22hot_board_page%22%2C%22source%22%3A%22trending_tab%22%2C%22style_id%22%3A%2240132%22%2C%22title%22%3A%22%E8%AF%84%E8%AE%BA%E5%91%98%EF%BC%9A%E7%BB%9F%E4%B8%80%E6%98%AF%E8%A7%A3%E5%86%B3%E5%8F%B0%E6%B9%BE%E9%97%AE%E9%A2%98%E5%94%AF%E4%B8%80%E9%80%94%E5%BE%84%22%7D&rank=&style_id=40132&topic_id=7686128195107979307",
           "cat": "政治政策"
         },
         {
-          "text": "长黑点的大白菜还能吃吗",
+          "text": "男子酒驾发生事故主动报警“自首”",
           "time": "",
-          "url": "https://www.toutiao.com/trending/7686058045656760339/?category_name=topic_innerflow&event_type=hot_board&log_pb=%7B%22category_name%22%3A%22topic_innerflow%22%2C%22cluster_type%22%3A%226%22%2C%22enter_from%22%3A%22click_category%22%2C%22entrance_hotspot%22%3A%22outside%22%2C%22event_type%22%3A%22hot_board%22%2C%22hot_board_cluster_id%22%3A%227686058045656760339%22%2C%22hot_board_impr_id%22%3A%2220260917064957075FD009CDE5626518CA%22%2C%22jump_page%22%3A%22hot_board_page%22%2C%22location%22%3A%22news_hot_card%22%2C%22page_location%22%3A%22hot_board_page%22%2C%22source%22%3A%22trending_tab%22%2C%22style_id%22%3A%2240132%22%2C%22title%22%3A%22%E9%95%BF%E9%BB%91%E7%82%B9%E7%9A%84%E5%A4%A7%E7%99%BD%E8%8F%9C%E8%BF%98%E8%83%BD%E5%90%83%E5%90%97%22%7D&rank=&style_id=40132&topic_id=7686058045656760339",
-          "cat": "财经"
+          "url": "https://www.toutiao.com/trending/7685327585785774123/?category_name=topic_innerflow&event_type=hot_board&log_pb=%7B%22category_name%22%3A%22topic_innerflow%22%2C%22cluster_type%22%3A%222%22%2C%22enter_from%22%3A%22click_category%22%2C%22entrance_hotspot%22%3A%22outside%22%2C%22event_type%22%3A%22hot_board%22%2C%22hot_board_cluster_id%22%3A%227685327585785774123%22%2C%22hot_board_impr_id%22%3A%22202609170720466DE961DDF76E5C650AEB%22%2C%22jump_page%22%3A%22hot_board_page%22%2C%22location%22%3A%22news_hot_card%22%2C%22page_location%22%3A%22hot_board_page%22%2C%22source%22%3A%22trending_tab%22%2C%22style_id%22%3A%2240132%22%2C%22title%22%3A%22%E7%94%B7%E5%AD%90%E9%85%92%E9%A9%BE%E5%8F%91%E7%94%9F%E4%BA%8B%E6%95%85%E4%B8%BB%E5%8A%A8%E6%8A%A5%E8%AD%A6%E2%80%9C%E8%87%AA%E9%A6%96%E2%80%9D%22%7D&rank=&style_id=40132&topic_id=7685327585785774123",
+          "cat": "社会热点"
         },
         {
-          "text": "女儿撮合离异母亲与丧偶公公结婚",
+          "text": "野人先生创始人：别跟着差评做产品",
           "time": "",
-          "url": "https://www.toutiao.com/trending/7685606376470691859/?category_name=topic_innerflow&event_type=hot_board&log_pb=%7B%22category_name%22%3A%22topic_innerflow%22%2C%22cluster_type%22%3A%226%22%2C%22enter_from%22%3A%22click_category%22%2C%22entrance_hotspot%22%3A%22outside%22%2C%22event_type%22%3A%22hot_board%22%2C%22hot_board_cluster_id%22%3A%227685606376470691859%22%2C%22hot_board_impr_id%22%3A%2220260917064957075FD009CDE5626518CA%22%2C%22jump_page%22%3A%22hot_board_page%22%2C%22location%22%3A%22news_hot_card%22%2C%22page_location%22%3A%22hot_board_page%22%2C%22source%22%3A%22trending_tab%22%2C%22style_id%22%3A%2240132%22%2C%22title%22%3A%22%E5%A5%B3%E5%84%BF%E6%92%AE%E5%90%88%E7%A6%BB%E5%BC%82%E6%AF%8D%E4%BA%B2%E4%B8%8E%E4%B8%A7%E5%81%B6%E5%85%AC%E5%85%AC%E7%BB%93%E5%A9%9A%22%7D&rank=&style_id=40132&topic_id=7685606376470691859",
-          "cat": "财经"
+          "url": "https://www.toutiao.com/trending/7685785355554917898/?category_name=topic_innerflow&event_type=hot_board&log_pb=%7B%22category_name%22%3A%22topic_innerflow%22%2C%22cluster_type%22%3A%2213%22%2C%22enter_from%22%3A%22click_category%22%2C%22entrance_hotspot%22%3A%22outside%22%2C%22event_type%22%3A%22hot_board%22%2C%22hot_board_cluster_id%22%3A%227685785355554917898%22%2C%22hot_board_impr_id%22%3A%22202609170720466DE961DDF76E5C650AEB%22%2C%22jump_page%22%3A%22hot_board_page%22%2C%22location%22%3A%22news_hot_card%22%2C%22page_location%22%3A%22hot_board_page%22%2C%22source%22%3A%22trending_tab%22%2C%22style_id%22%3A%2240132%22%2C%22title%22%3A%22%E9%87%8E%E4%BA%BA%E5%85%88%E7%94%9F%E5%88%9B%E5%A7%8B%E4%BA%BA%EF%BC%9A%E5%88%AB%E8%B7%9F%E7%9D%80%E5%B7%AE%E8%AF%84%E5%81%9A%E4%BA%A7%E5%93%81%22%7D&rank=&style_id=40132&topic_id=7685785355554917898",
+          "cat": "世界500强领导者动态"
         }
       ]
     },

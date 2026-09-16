@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>股市信息分析系统</title>
-  <link rel="stylesheet" href="css/style.css?v=20260917c">
+  <link rel="stylesheet" href="css/style.css?v=20260917d">
   <!-- Vue 3 全局构建版（CDN，无需构建步骤） -->
   <script src="https://unpkg.com/vue@3.4.21/dist/vue.global.prod.js"></script>
 </head>
@@ -549,7 +549,7 @@
           </div>
           <div class="toolbar-right">
             <span class="muted small" v-if="hotTopicsUpdated">更新于 {{ hotTopicsUpdated }}</span>
-            <button class="btn btn-primary" @click="refreshHotTopics" :disabled="hotTopicsLoading">
+            <button class="btn btn-primary" @click="refreshHotTopics" :disabled="hotTopicsLoading" title="重新拉取 GitHub Action 每 2 小时自动抓取的服务端快照（同源免费、合规、无需代理）；若已配置代理则叠加浏览器端实时抓取">
               <span v-if="hotTopicsLoading">⏳ 抓取中...</span>
               <span v-else>🔄 刷新热门话题</span>
             </button>
@@ -2248,12 +2248,12 @@
             <p>默认分类：主线实体、个股实体、主线概念、个股概念、利空概念、行业动态、政策利好、政策利空、业绩预告、业绩快报、重组并购、增持回购、减持解禁、监管处罚、海外市场。可自由增删改。</p>
           </div>
           <div class="form-row">
-            <label>新闻代理地址（用于一键抓取财经快讯，免费 Cloudflare Worker 地址，留空则不能用一键抓取；可填多个地址，用空格或逗号分隔，会依次尝试）</label>
-            <input v-model="proxyUrl" placeholder="https://news-proxy.你的子域.workers.dev">
+            <label>新闻代理地址（可选 · 真·实时增强）「全球信息」页默认展示 GitHub Action 每 2 小时服务端自动抓取的快照（同源免费、合规、无需代理）；填此地址可让「刷新热门话题」走浏览器端实时链路。可填多个，用空格或逗号分隔，依次尝试。</label>
+            <input v-model="proxyUrl" placeholder="https://news-proxy.你的子域.workers.dev（留空也能用）">
           </div>
           <div class="info-box">
-            <p><b>免费开通一键抓取：</b>部署一个 Cloudflare Worker 即可（免费10万次/天）。代码在仓库 <code>worker/news-proxy.js</code>。详见导入页面的步骤说明。</p>
-            <p>若代理域名在国内网络被拦截（如 <code>*.workers.dev</code> 打不开），可在 Cloudflare 给 Worker 绑定自有域名；或直接留空——「全球信息」页会自动回退展示服务端定时抓取的快照。</p>
+            <p><b>合规免费模式（推荐，开箱即用）：</b>「全球信息」的火热话题与格隆汇快讯由 GitHub Action 每 2 小时在服务端自动抓取并随站点发布（同源 GitHub Pages 直出，<b>不依赖任何代理</b>）。点「刷新热门话题」会重新拉取最新快照，最快 2 小时更新一次。</p>
+            <p><b>想要浏览器端真·实时抓取？</b>部署一个 Cloudflare Worker 代理（免费 10 万次/天，代码在仓库 <code>worker/news-proxy.js</code>，详见导入页步骤）。填入地址后刷新即走实时链路。若 <code>*.workers.dev</code> 在国内被拦截，可在 Cloudflare 给 Worker 绑定自有域名；不配也完全可用（走上面的自动快照）。</p>
           </div>
           <div class="form-row">
             <label>数据存储</label>
@@ -2550,8 +2550,8 @@
     </transition>
   </div>
 
-  <script src="js/auth.js?v=20260917c"></script>
-  <script src="js/auth-boot.js?v=20260917c"></script>
+  <script src="js/auth.js?v=20260917d"></script>
+  <script src="js/auth-boot.js?v=20260917d"></script>
   <!-- store / stock-api / hot-topics / app 由 auth-boot.js 在登录通过后动态装载，
        未登录时它们不会被下载，业务数据也不会进入内存 -->
 </body>

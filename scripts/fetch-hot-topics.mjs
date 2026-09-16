@@ -53,26 +53,33 @@ function decodeSmart(buf, encoding) {
   return countBad(gbk) < countBad(utf8) ? gbk : utf8;
 }
 
+/** 超时包装：用 Promise.race 而非 AbortController.signal，兼容 Node 20/22（部分 Node 22 构建里
+ *  fetch 不认全局 AbortController 实例，会抛 "member signal is not of type AbortSignal"）。 */
+function withTimeout(promise, ms, label) {
+  return Promise.race([
+    promise,
+    new Promise((_, rej) => setTimeout(() => rej(new Error('timeout: ' + label)), ms))
+  ]);
+}
+
 async function fetchText(url, { timeout = 8000, isJson = false, encoding = '' } = {}) {
-  const ctrl = new AbortController();
-  const timer = setTimeout(() => ctrl.abort(), timeout);
+  let resp;
   try {
-    const resp = await fetch(url, {
-      signal: ctrl.signal,
+    resp = await withTimeout(fetch(url, {
       headers: {
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36',
         'Accept': 'application/json,text/html,application/xhtml+xml,*/*;q=0.8',
         'Accept-Language': 'zh-CN,zh;q=0.9,en;q=0.8'
       }
-    });
-    if (!resp.ok) throw new Error('HTTP ' + resp.status);
-    if (isJson) return await resp.json();
-    const buf = Buffer.from(await resp.arrayBuffer());
-    let text = decodeSmart(buf, encoding);
-    return text.replace(/^\uFEFF/, '');
-  } finally {
-    clearTimeout(timer);
+    }), timeout, url);
+  } catch (e) {
+    throw new Error((e && e.message) || 'fetch failed');
   }
+  if (!resp.ok) throw new Error('HTTP ' + resp.status);
+  if (isJson) return await resp.json();
+  const buf = Buffer.from(await resp.arrayBuffer());
+  let text = decodeSmart(buf, encoding);
+  return text.replace(/^\uFEFF/, '');
 }
 
 function mkItem(text, time, url) {
@@ -204,21 +211,21 @@ function bjStr(ts) {
 }
 
 async function ghGetJson(url) {
-  const ctrl = new AbortController();
-  const timer = setTimeout(() => ctrl.abort(), 10000);
+  let r;
   try {
-    const r = await fetch(url, {
-      signal: ctrl.signal,
+    r = await withTimeout(fetch(url, {
       headers: {
         'User-Agent': UA,
         'Accept': 'application/json, text/plain, */*',
         'Referer': 'https://www.gelonghui.com/live',
         'Accept-Language': 'zh-CN,zh;q=0.9'
       }
-    });
-    if (!r.ok) throw new Error('HTTP ' + r.status);
-    return await r.json();
-  } finally { clearTimeout(timer); }
+    }), 10000, url);
+  } catch (e) {
+    throw new Error((e && e.message) || 'fetch failed');
+  }
+  if (!r.ok) throw new Error('HTTP ' + r.status);
+  return await r.json();
 }
 
 function mkBrief(it) {
