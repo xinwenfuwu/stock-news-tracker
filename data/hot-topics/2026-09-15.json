@@ -1,6 +1,6 @@
 {
   "date": "2026-09-15",
-  "generatedAt": "2026-09-16T02:53:00.163Z",
+  "generatedAt": "2026-09-16T02:55:17.862Z",
   "sources": [
     {
       "rank": 1,
@@ -8,12 +8,6 @@
       "name": "格隆汇",
       "color": "#c8102e",
       "items": [
-        {
-          "text": "极调研加入我们",
-          "time": "",
-          "url": "https://jdy-enterprise-admin.gelonghui.com/download",
-          "cat": "财经"
-        },
         {
           "text": "28万吨缺口引爆行情？板块开始狂飙 周期反转还是高位博弈?",
           "time": "",
@@ -67,6 +61,12 @@
           "time": "",
           "url": "https://www.gelonghui.com/p/6664565",
           "cat": "财经"
+        },
+        {
+          "text": "早报 (09.16）| 炸裂！OpenAI最新估值或冲1.2万亿美元；油价再度飙升，美股集体收跌；美对伊战争烧掉380亿美元 华为、赛力斯合作重大调整；Meta拟明年上半年部署自研",
+          "time": "",
+          "url": "https://www.gelonghui.com/p/6664561",
+          "cat": "军事"
         }
       ]
     },
@@ -79,13 +79,13 @@
         {
           "text": "崔天凯：一劳永逸解决台湾问题",
           "time": "",
-          "url": "https://www.toutiao.com/trending/7685701201656054318/?category_name=topic_innerflow&event_type=hot_board&log_pb=%7B%22category_name%22%3A%22topic_innerflow%22%2C%22cluster_type%22%3A%228%22%2C%22enter_from%22%3A%22click_category%22%2C%22entrance_hotspot%22%3A%22outside%22%2C%22event_type%22%3A%22hot_board%22%2C%22hot_board_cluster_id%22%3A%227685701201656054318%22%2C%22hot_board_impr_id%22%3A%22202609161052514EA338E33F77F7EA8063%22%2C%22jump_page%22%3A%22hot_board_page%22%2C%22location%22%3A%22news_hot_card%22%2C%22page_location%22%3A%22hot_board_page%22%2C%22source%22%3A%22trending_tab%22%2C%22style_id%22%3A%2240132%22%2C%22title%22%3A%22%E5%B4%94%E5%A4%A9%E5%87%AF%EF%BC%9A%E4%B8%80%E5%8A%B3%E6%B0%B8%E9%80%B8%E8%A7%A3%E5%86%B3%E5%8F%B0%E6%B9%BE%E9%97%AE%E9%A2%98%22%7D&rank=&style_id=40132&topic_id=7685701201656054318",
+          "url": "https://www.toutiao.com/trending/7685701201656054318/?category_name=topic_innerflow&event_type=hot_board&log_pb=%7B%22category_name%22%3A%22topic_innerflow%22%2C%22cluster_type%22%3A%228%22%2C%22enter_from%22%3A%22click_category%22%2C%22entrance_hotspot%22%3A%22outside%22%2C%22event_type%22%3A%22hot_board%22%2C%22hot_board_cluster_id%22%3A%227685701201656054318%22%2C%22hot_board_impr_id%22%3A%22202609161055088D2AE0F0AAB273E6368C%22%2C%22jump_page%22%3A%22hot_board_page%22%2C%22location%22%3A%22news_hot_card%22%2C%22page_location%22%3A%22hot_board_page%22%2C%22source%22%3A%22trending_tab%22%2C%22style_id%22%3A%2240132%22%2C%22title%22%3A%22%E5%B4%94%E5%A4%A9%E5%87%AF%EF%BC%9A%E4%B8%80%E5%8A%B3%E6%B0%B8%E9%80%B8%E8%A7%A3%E5%86%B3%E5%8F%B0%E6%B9%BE%E9%97%AE%E9%A2%98%22%7D&rank=&style_id=40132&topic_id=7685701201656054318",
           "cat": "政治政策"
         },
         {
           "text": "一线城市房价涨了",
           "time": "",
-          "url": "https://www.toutiao.com/trending/7685663412193447470/?category_name=topic_innerflow&event_type=hot_board&log_pb=%7B%22category_name%22%3A%22topic_innerflow%22%2C%22cluster_type%22%3A%221%22%2C%22enter_from%22%3A%22click_category%22%2C%22entrance_hotspot%22%3A%22outside%22%2C%22event_type%22%3A%22hot_board%22%2C%22hot_board_cluster_id%22%3A%227685663412193447470%22%2C%22hot_board_impr_id%22%3A%22202609161052514EA338E33F77F7EA8063%22%2C%22jump_page%22%3A%22hot_board_page%22%2C%22location%22%3A%22news_hot_card%22%2C%22page_location%22%3A%22hot_board_page%22%2C%22source%22%3A%22trending_tab%22%2C%22style_id%22%3A%2240132%22%2C%22title%22%3A%22%E4%B8%80%E7%BA%BF%E5%9F%8E%E5%B8%82%E6%88%BF%E4%BB%B7%E6%B6%A8%E4%BA%86%22%7D&rank=&style_id=40132&topic_id=7685663412193447470",
+          "url": "https://www.toutiao.com/trending/7685663412193447470/?category_name=topic_innerflow&event_type=hot_board&log_pb=%7B%22category_name%22%3A%22topic_innerflow%22%2C%22cluster_type%22%3A%221%22%2C%22enter_from%22%3A%22click_category%22%2C%22entrance_hotspot%22%3A%22outside%22%2C%22event_type%22%3A%22hot_board%22%2C%22hot_board_cluster_id%22%3A%227685663412193447470%22%2C%22hot_board_impr_id%22%3A%22202609161055088D2AE0F0AAB273E6368C%22%2C%22jump_page%22%3A%22hot_board_page%22%2C%22location%22%3A%22news_hot_card%22%2C%22page_location%22%3A%22hot_board_page%22%2C%22source%22%3A%22trending_tab%22%2C%22style_id%22%3A%2240132%22%2C%22title%22%3A%22%E4%B8%80%E7%BA%BF%E5%9F%8E%E5%B8%82%E6%88%BF%E4%BB%B7%E6%B6%A8%E4%BA%86%22%7D&rank=&style_id=40132&topic_id=7685663412193447470",
           "cat": "社会热点"
         },
         {
@@ -97,43 +97,43 @@
         {
           "text": "解放军仪仗司礼大队亮相北京香山论坛",
           "time": "",
-          "url": "https://www.toutiao.com/trending/7685940718300316187/?category_name=topic_innerflow&event_type=hot_board&log_pb=%7B%22category_name%22%3A%22topic_innerflow%22%2C%22cluster_type%22%3A%2215%22%2C%22enter_from%22%3A%22click_category%22%2C%22entrance_hotspot%22%3A%22outside%22%2C%22event_type%22%3A%22hot_board%22%2C%22hot_board_cluster_id%22%3A%227685940718300316187%22%2C%22hot_board_impr_id%22%3A%22202609161052514EA338E33F77F7EA8063%22%2C%22jump_page%22%3A%22hot_board_page%22%2C%22location%22%3A%22news_hot_card%22%2C%22page_location%22%3A%22hot_board_page%22%2C%22source%22%3A%22trending_tab%22%2C%22style_id%22%3A%2240132%22%2C%22title%22%3A%22%E8%A7%A3%E6%94%BE%E5%86%9B%E4%BB%AA%E4%BB%97%E5%8F%B8%E7%A4%BC%E5%A4%A7%E9%98%9F%E4%BA%AE%E7%9B%B8%E5%8C%97%E4%BA%AC%E9%A6%99%E5%B1%B1%E8%AE%BA%E5%9D%9B%22%7D&rank=&style_id=40132&topic_id=7685940718300316187",
+          "url": "https://www.toutiao.com/trending/7685940718300316187/?category_name=topic_innerflow&event_type=hot_board&log_pb=%7B%22category_name%22%3A%22topic_innerflow%22%2C%22cluster_type%22%3A%2215%22%2C%22enter_from%22%3A%22click_category%22%2C%22entrance_hotspot%22%3A%22outside%22%2C%22event_type%22%3A%22hot_board%22%2C%22hot_board_cluster_id%22%3A%227685940718300316187%22%2C%22hot_board_impr_id%22%3A%22202609161055088D2AE0F0AAB273E6368C%22%2C%22jump_page%22%3A%22hot_board_page%22%2C%22location%22%3A%22news_hot_card%22%2C%22page_location%22%3A%22hot_board_page%22%2C%22source%22%3A%22trending_tab%22%2C%22style_id%22%3A%2240132%22%2C%22title%22%3A%22%E8%A7%A3%E6%94%BE%E5%86%9B%E4%BB%AA%E4%BB%97%E5%8F%B8%E7%A4%BC%E5%A4%A7%E9%98%9F%E4%BA%AE%E7%9B%B8%E5%8C%97%E4%BA%AC%E9%A6%99%E5%B1%B1%E8%AE%BA%E5%9D%9B%22%7D&rank=&style_id=40132&topic_id=7685940718300316187",
           "cat": "财经"
         },
         {
           "text": "平陆运河迎来正式通航",
           "time": "",
-          "url": "https://www.toutiao.com/trending/7685802799493808178/?category_name=topic_innerflow&event_type=hot_board&log_pb=%7B%22category_name%22%3A%22topic_innerflow%22%2C%22cluster_type%22%3A%226%22%2C%22enter_from%22%3A%22click_category%22%2C%22entrance_hotspot%22%3A%22outside%22%2C%22event_type%22%3A%22hot_board%22%2C%22hot_board_cluster_id%22%3A%227685802799493808178%22%2C%22hot_board_impr_id%22%3A%22202609161052514EA338E33F77F7EA8063%22%2C%22jump_page%22%3A%22hot_board_page%22%2C%22location%22%3A%22news_hot_card%22%2C%22page_location%22%3A%22hot_board_page%22%2C%22source%22%3A%22trending_tab%22%2C%22style_id%22%3A%2240132%22%2C%22title%22%3A%22%E5%B9%B3%E9%99%86%E8%BF%90%E6%B2%B3%E8%BF%8E%E6%9D%A5%E6%AD%A3%E5%BC%8F%E9%80%9A%E8%88%AA%22%7D&rank=&style_id=40132&topic_id=7685802799493808178",
+          "url": "https://www.toutiao.com/trending/7685802799493808178/?category_name=topic_innerflow&event_type=hot_board&log_pb=%7B%22category_name%22%3A%22topic_innerflow%22%2C%22cluster_type%22%3A%226%22%2C%22enter_from%22%3A%22click_category%22%2C%22entrance_hotspot%22%3A%22outside%22%2C%22event_type%22%3A%22hot_board%22%2C%22hot_board_cluster_id%22%3A%227685802799493808178%22%2C%22hot_board_impr_id%22%3A%22202609161055088D2AE0F0AAB273E6368C%22%2C%22jump_page%22%3A%22hot_board_page%22%2C%22location%22%3A%22news_hot_card%22%2C%22page_location%22%3A%22hot_board_page%22%2C%22source%22%3A%22trending_tab%22%2C%22style_id%22%3A%2240132%22%2C%22title%22%3A%22%E5%B9%B3%E9%99%86%E8%BF%90%E6%B2%B3%E8%BF%8E%E6%9D%A5%E6%AD%A3%E5%BC%8F%E9%80%9A%E8%88%AA%22%7D&rank=&style_id=40132&topic_id=7685802799493808178",
           "cat": "财经"
         },
         {
           "text": "女儿撮合离异母亲与丧偶公公结婚",
           "time": "",
-          "url": "https://www.toutiao.com/trending/7685606376470691859/?category_name=topic_innerflow&event_type=hot_board&log_pb=%7B%22category_name%22%3A%22topic_innerflow%22%2C%22cluster_type%22%3A%226%22%2C%22enter_from%22%3A%22click_category%22%2C%22entrance_hotspot%22%3A%22outside%22%2C%22event_type%22%3A%22hot_board%22%2C%22hot_board_cluster_id%22%3A%227685606376470691859%22%2C%22hot_board_impr_id%22%3A%22202609161052514EA338E33F77F7EA8063%22%2C%22jump_page%22%3A%22hot_board_page%22%2C%22location%22%3A%22news_hot_card%22%2C%22page_location%22%3A%22hot_board_page%22%2C%22source%22%3A%22trending_tab%22%2C%22style_id%22%3A%2240132%22%2C%22title%22%3A%22%E5%A5%B3%E5%84%BF%E6%92%AE%E5%90%88%E7%A6%BB%E5%BC%82%E6%AF%8D%E4%BA%B2%E4%B8%8E%E4%B8%A7%E5%81%B6%E5%85%AC%E5%85%AC%E7%BB%93%E5%A9%9A%22%7D&rank=&style_id=40132&topic_id=7685606376470691859",
+          "url": "https://www.toutiao.com/trending/7685606376470691859/?category_name=topic_innerflow&event_type=hot_board&log_pb=%7B%22category_name%22%3A%22topic_innerflow%22%2C%22cluster_type%22%3A%226%22%2C%22enter_from%22%3A%22click_category%22%2C%22entrance_hotspot%22%3A%22outside%22%2C%22event_type%22%3A%22hot_board%22%2C%22hot_board_cluster_id%22%3A%227685606376470691859%22%2C%22hot_board_impr_id%22%3A%22202609161055088D2AE0F0AAB273E6368C%22%2C%22jump_page%22%3A%22hot_board_page%22%2C%22location%22%3A%22news_hot_card%22%2C%22page_location%22%3A%22hot_board_page%22%2C%22source%22%3A%22trending_tab%22%2C%22style_id%22%3A%2240132%22%2C%22title%22%3A%22%E5%A5%B3%E5%84%BF%E6%92%AE%E5%90%88%E7%A6%BB%E5%BC%82%E6%AF%8D%E4%BA%B2%E4%B8%8E%E4%B8%A7%E5%81%B6%E5%85%AC%E5%85%AC%E7%BB%93%E5%A9%9A%22%7D&rank=&style_id=40132&topic_id=7685606376470691859",
           "cat": "财经"
         },
         {
           "text": "董军出席北京香山论坛开幕式",
           "time": "",
-          "url": "https://www.toutiao.com/trending/7685946389788082715/?category_name=topic_innerflow&event_type=hot_board&log_pb=%7B%22category_name%22%3A%22topic_innerflow%22%2C%22cluster_type%22%3A%2215%22%2C%22enter_from%22%3A%22click_category%22%2C%22entrance_hotspot%22%3A%22outside%22%2C%22event_type%22%3A%22hot_board%22%2C%22hot_board_cluster_id%22%3A%227685946389788082715%22%2C%22hot_board_impr_id%22%3A%22202609161052514EA338E33F77F7EA8063%22%2C%22jump_page%22%3A%22hot_board_page%22%2C%22location%22%3A%22news_hot_card%22%2C%22page_location%22%3A%22hot_board_page%22%2C%22source%22%3A%22trending_tab%22%2C%22style_id%22%3A%2240132%22%2C%22title%22%3A%22%E8%91%A3%E5%86%9B%E5%87%BA%E5%B8%AD%E5%8C%97%E4%BA%AC%E9%A6%99%E5%B1%B1%E8%AE%BA%E5%9D%9B%E5%BC%80%E5%B9%95%E5%BC%8F%22%7D&rank=&style_id=40132&topic_id=7685946389788082715",
+          "url": "https://www.toutiao.com/trending/7685946389788082715/?category_name=topic_innerflow&event_type=hot_board&log_pb=%7B%22category_name%22%3A%22topic_innerflow%22%2C%22cluster_type%22%3A%2215%22%2C%22enter_from%22%3A%22click_category%22%2C%22entrance_hotspot%22%3A%22outside%22%2C%22event_type%22%3A%22hot_board%22%2C%22hot_board_cluster_id%22%3A%227685946389788082715%22%2C%22hot_board_impr_id%22%3A%22202609161055088D2AE0F0AAB273E6368C%22%2C%22jump_page%22%3A%22hot_board_page%22%2C%22location%22%3A%22news_hot_card%22%2C%22page_location%22%3A%22hot_board_page%22%2C%22source%22%3A%22trending_tab%22%2C%22style_id%22%3A%2240132%22%2C%22title%22%3A%22%E8%91%A3%E5%86%9B%E5%87%BA%E5%B8%AD%E5%8C%97%E4%BA%AC%E9%A6%99%E5%B1%B1%E8%AE%BA%E5%9D%9B%E5%BC%80%E5%B9%95%E5%BC%8F%22%7D&rank=&style_id=40132&topic_id=7685946389788082715",
           "cat": "财经"
         },
         {
           "text": "央视拿下日本名古屋亚运会主转播权",
           "time": "",
-          "url": "https://www.toutiao.com/trending/7685776806846156351/?category_name=topic_innerflow&event_type=hot_board&log_pb=%7B%22category_name%22%3A%22topic_innerflow%22%2C%22cluster_type%22%3A%2213%22%2C%22enter_from%22%3A%22click_category%22%2C%22entrance_hotspot%22%3A%22outside%22%2C%22event_type%22%3A%22hot_board%22%2C%22hot_board_cluster_id%22%3A%227685776806846156351%22%2C%22hot_board_impr_id%22%3A%22202609161052514EA338E33F77F7EA8063%22%2C%22jump_page%22%3A%22hot_board_page%22%2C%22location%22%3A%22news_hot_card%22%2C%22page_location%22%3A%22hot_board_page%22%2C%22source%22%3A%22trending_tab%22%2C%22style_id%22%3A%2240132%22%2C%22title%22%3A%22%E5%A4%AE%E8%A7%86%E6%8B%BF%E4%B8%8B%E6%97%A5%E6%9C%AC%E5%90%8D%E5%8F%A4%E5%B1%8B%E4%BA%9A%E8%BF%90%E4%BC%9A%E4%B8%BB%E8%BD%AC%E6%92%AD%E6%9D%83%22%7D&rank=&style_id=40132&topic_id=7685776806846156351",
+          "url": "https://www.toutiao.com/trending/7685776806846156351/?category_name=topic_innerflow&event_type=hot_board&log_pb=%7B%22category_name%22%3A%22topic_innerflow%22%2C%22cluster_type%22%3A%2213%22%2C%22enter_from%22%3A%22click_category%22%2C%22entrance_hotspot%22%3A%22outside%22%2C%22event_type%22%3A%22hot_board%22%2C%22hot_board_cluster_id%22%3A%227685776806846156351%22%2C%22hot_board_impr_id%22%3A%22202609161055088D2AE0F0AAB273E6368C%22%2C%22jump_page%22%3A%22hot_board_page%22%2C%22location%22%3A%22news_hot_card%22%2C%22page_location%22%3A%22hot_board_page%22%2C%22source%22%3A%22trending_tab%22%2C%22style_id%22%3A%2240132%22%2C%22title%22%3A%22%E5%A4%AE%E8%A7%86%E6%8B%BF%E4%B8%8B%E6%97%A5%E6%9C%AC%E5%90%8D%E5%8F%A4%E5%B1%8B%E4%BA%9A%E8%BF%90%E4%BC%9A%E4%B8%BB%E8%BD%AC%E6%92%AD%E6%9D%83%22%7D&rank=&style_id=40132&topic_id=7685776806846156351",
           "cat": "财经"
         },
         {
-          "text": "特朗普力挺禁炒股 自己却被精准豁免",
+          "text": "马斯克为何突然发文称赞太阳能",
           "time": "",
-          "url": "https://www.toutiao.com/trending/7685317151747522566/?category_name=topic_innerflow&event_type=hot_board&log_pb=%7B%22category_name%22%3A%22topic_innerflow%22%2C%22cluster_type%22%3A%220%22%2C%22enter_from%22%3A%22click_category%22%2C%22entrance_hotspot%22%3A%22outside%22%2C%22event_type%22%3A%22hot_board%22%2C%22hot_board_cluster_id%22%3A%227685317151747522566%22%2C%22hot_board_impr_id%22%3A%22202609161052514EA338E33F77F7EA8063%22%2C%22jump_page%22%3A%22hot_board_page%22%2C%22location%22%3A%22news_hot_card%22%2C%22page_location%22%3A%22hot_board_page%22%2C%22source%22%3A%22trending_tab%22%2C%22style_id%22%3A%2240132%22%2C%22title%22%3A%22%E7%89%B9%E6%9C%97%E6%99%AE%E5%8A%9B%E6%8C%BA%E7%A6%81%E7%82%92%E8%82%A1+%E8%87%AA%E5%B7%B1%E5%8D%B4%E8%A2%AB%E7%B2%BE%E5%87%86%E8%B1%81%E5%85%8D%22%7D&rank=&style_id=40132&topic_id=7685317151747522566",
-          "cat": "财经"
+          "url": "https://www.toutiao.com/trending/7685926895107444275/?category_name=topic_innerflow&event_type=hot_board&log_pb=%7B%22category_name%22%3A%22topic_innerflow%22%2C%22cluster_type%22%3A%2213%22%2C%22enter_from%22%3A%22click_category%22%2C%22entrance_hotspot%22%3A%22outside%22%2C%22event_type%22%3A%22hot_board%22%2C%22hot_board_cluster_id%22%3A%227685926895107444275%22%2C%22hot_board_impr_id%22%3A%22202609161055088D2AE0F0AAB273E6368C%22%2C%22jump_page%22%3A%22hot_board_page%22%2C%22location%22%3A%22news_hot_card%22%2C%22page_location%22%3A%22hot_board_page%22%2C%22source%22%3A%22trending_tab%22%2C%22style_id%22%3A%2240132%22%2C%22title%22%3A%22%E9%A9%AC%E6%96%AF%E5%85%8B%E4%B8%BA%E4%BD%95%E7%AA%81%E7%84%B6%E5%8F%91%E6%96%87%E7%A7%B0%E8%B5%9E%E5%A4%AA%E9%98%B3%E8%83%BD%22%7D&rank=&style_id=40132&topic_id=7685926895107444275",
+          "cat": "世界500强领导者动态"
         },
         {
           "text": "罗援：台湾问题是中国核心利益的核心",
           "time": "",
-          "url": "https://www.toutiao.com/trending/7685683888745709595/?category_name=topic_innerflow&event_type=hot_board&log_pb=%7B%22category_name%22%3A%22topic_innerflow%22%2C%22cluster_type%22%3A%220%22%2C%22enter_from%22%3A%22click_category%22%2C%22entrance_hotspot%22%3A%22outside%22%2C%22event_type%22%3A%22hot_board%22%2C%22hot_board_cluster_id%22%3A%227685683888745709595%22%2C%22hot_board_impr_id%22%3A%22202609161052514EA338E33F77F7EA8063%22%2C%22jump_page%22%3A%22hot_board_page%22%2C%22location%22%3A%22news_hot_card%22%2C%22page_location%22%3A%22hot_board_page%22%2C%22source%22%3A%22trending_tab%22%2C%22style_id%22%3A%2240132%22%2C%22title%22%3A%22%E7%BD%97%E6%8F%B4%EF%BC%9A%E5%8F%B0%E6%B9%BE%E9%97%AE%E9%A2%98%E6%98%AF%E4%B8%AD%E5%9B%BD%E6%A0%B8%E5%BF%83%E5%88%A9%E7%9B%8A%E7%9A%84%E6%A0%B8%E5%BF%83%22%7D&rank=&style_id=40132&topic_id=7685683888745709595",
+          "url": "https://www.toutiao.com/trending/7685683888745709595/?category_name=topic_innerflow&event_type=hot_board&log_pb=%7B%22category_name%22%3A%22topic_innerflow%22%2C%22cluster_type%22%3A%220%22%2C%22enter_from%22%3A%22click_category%22%2C%22entrance_hotspot%22%3A%22outside%22%2C%22event_type%22%3A%22hot_board%22%2C%22hot_board_cluster_id%22%3A%227685683888745709595%22%2C%22hot_board_impr_id%22%3A%22202609161055088D2AE0F0AAB273E6368C%22%2C%22jump_page%22%3A%22hot_board_page%22%2C%22location%22%3A%22news_hot_card%22%2C%22page_location%22%3A%22hot_board_page%22%2C%22source%22%3A%22trending_tab%22%2C%22style_id%22%3A%2240132%22%2C%22title%22%3A%22%E7%BD%97%E6%8F%B4%EF%BC%9A%E5%8F%B0%E6%B9%BE%E9%97%AE%E9%A2%98%E6%98%AF%E4%B8%AD%E5%9B%BD%E6%A0%B8%E5%BF%83%E5%88%A9%E7%9B%8A%E7%9A%84%E6%A0%B8%E5%BF%83%22%7D&rank=&style_id=40132&topic_id=7685683888745709595",
           "cat": "政治政策"
         }
       ]
