@@ -2549,11 +2549,13 @@ const StockAPI = {
     return { ok: true, date: today, sources, merged: merged.slice(0, 20) };
   },
 
-  /** 统一构造带分类标签的条目 */
+  /** 统一构造带分类标签的条目（标题经共享规则净化，垃圾/乱码直接丢弃） */
   _mkItem(text, time, url) {
-    text = (text || '').toString().replace(/<[^>]+>/g, '').replace(/\s+/g, ' ').trim().slice(0, 90);
-    const cat = (typeof HotTopics !== 'undefined' && HotTopics.classify) ? HotTopics.classify(text) : '财经';
-    return { text, time: this._normTime(time), url: url || '', cat };
+    const clean = (typeof HotTopics !== 'undefined' && HotTopics.cleanTitle)
+      ? HotTopics.cleanTitle(text)
+      : (text || '').toString().replace(/<[^>]+>/g, '').replace(/\s+/g, ' ').trim().slice(0, 90);
+    const cat = (typeof HotTopics !== 'undefined' && HotTopics.classify) ? HotTopics.classify(clean) : '财经';
+    return { text: clean, time: this._normTime(time), url: url || '', cat };
   },
 
   /** 按 parse 类型解析不同金融软件的返回结构，统一为 [{text,time,url,cat}] */
@@ -2608,28 +2610,34 @@ const StockAPI = {
     const base = (typeof HotTopics !== 'undefined' && HotTopics.SOURCE_BY_KEY[key] && HotTopics.SOURCE_BY_KEY[key].base) || '';
     try {
       const doc = new DOMParser().parseFromString(html, 'text/html');
+      // 去掉脚本/样式，避免抓到 JS 模板残留（如 ${title}）
+      doc.querySelectorAll('script, style, noscript').forEach(el => el.remove());
       const seen = new Set();
       const candidates = [];
       const normUrl = (u) => {
-        if (!u) return '';
+        u = (u || '').trim();
+        if (!u || /^javascript:/i.test(u) || u.charAt(0) === '#') return '';
         if (/^https?:/i.test(u)) return u;
-        if (u.startsWith('//')) return 'https:' + u;
-        if (u.startsWith('/') && base) return base + u;
+        if (u.indexOf('//') === 0) return 'https:' + u;
+        if (u.charAt(0) === '/' && base) return base + u;
         return base ? (base + '/' + u.replace(/^\//, '')) : u;
       };
       doc.querySelectorAll('a').forEach(a => {
         const t = (a.textContent || '').replace(/\s+/g, ' ').trim();
-        if (t.length >= 6 && t.length <= 80) candidates.push({ t, url: normUrl(a.getAttribute('href') || '') });
+        if (t.length >= 6 && t.length <= 120) candidates.push({ t, url: normUrl(a.getAttribute('href') || '') });
       });
       doc.querySelectorAll('.title, .news-title, .headline, .item-title, h2, h3').forEach(el => {
         const t = (el.textContent || '').replace(/\s+/g, ' ').trim();
-        if (t.length >= 6 && t.length <= 80) candidates.push({ t, url: el.closest('a') ? normUrl(el.closest('a').getAttribute('href') || '') : '' });
+        if (t.length >= 6 && t.length <= 120) {
+          const a = el.closest('a');
+          candidates.push({ t, url: a ? normUrl(a.getAttribute('href') || '') : '' });
+        }
       });
       for (const c of candidates) {
-        const norm = c.t.replace(/<[^>]+>/g, '');
-        if (seen.has(norm)) continue;
-        seen.add(norm);
-        out.push(this._mkItem(norm, '', c.url));
+        const item = this._mkItem(c.t, '', c.url);
+        if (!item.text || seen.has(item.text)) continue;
+        seen.add(item.text);
+        out.push(item);
         if (out.length >= 10) break;
       }
     } catch (e) { /* ignore */ }
