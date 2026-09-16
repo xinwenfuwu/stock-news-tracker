@@ -38,6 +38,145 @@ const app = createApp({
     const hash = location.hash.replace('#', '');
     if (['news', 'finance', 'pools', 'sector', 'filter', 'hot'].includes(hash)) currentPage.value = hash;
 
+    // ===== 登录账号与权限 =====
+    // Auth 由 js/auth.js 提供；auth-boot.js 只在登录通过后才加载本文件，
+    // 因此正常情况下这里一定拿得到已登录用户。
+    const A = (typeof Auth !== 'undefined' && Auth) ? Auth : null;
+    const authUser = ref(A && A.user ? A.user : null);
+    const userMenuOpen = ref(false);
+    const userList = ref([]);
+    const userModal = reactive({ show: false, newUsername: '', newPassword: '', newRole: 'user' });
+    const pwModal = reactive({ show: false, username: '', oldPassword: '', newPassword: '', confirmPassword: '' });
+
+    const authInitial = computed(() => {
+      const n = (authUser.value && authUser.value.username) ? authUser.value.username : '?';
+      return n.slice(0, 1).toUpperCase();
+    });
+
+    const authExpiryText = computed(() => {
+      const s = A && A.session;
+      if (!s || !s.exp) return '本次会话有效';
+      const d = new Date(s.exp);
+      const p = n => String(n).padStart(2, '0');
+      return '有效期至 ' + Store.fmtDate(d) + ' ' + p(d.getHours()) + ':' + p(d.getMinutes());
+    });
+
+    /** 权限判定：UI 只是把入口藏起来，真正的拦截在 Auth 的方法内部再做一次 */
+    function can(perm) { return !!(A && A.can(perm)); }
+
+    function fmtDateTime(ts) {
+      if (!ts) return '—';
+      const d = new Date(ts);
+      const p = n => String(n).padStart(2, '0');
+      return Store.fmtDate(d) + ' ' + p(d.getHours()) + ':' + p(d.getMinutes());
+    }
+
+    function doLogout() {
+      userMenuOpen.value = false;
+      if (typeof AuthUI !== 'undefined' && AuthUI.logout) AuthUI.logout();
+      else if (A) { A.logout(); location.reload(); }
+    }
+
+    function refreshUserList() { userList.value = A ? A.listUsers() : []; }
+
+    function openUserManage() {
+      userMenuOpen.value = false;
+      if (!can('users.manage')) { showToast('仅管理员可管理账号', 'error'); return; }
+      userModal.newUsername = ''; userModal.newPassword = ''; userModal.newRole = 'user';
+      refreshUserList();
+      userModal.show = true;
+    }
+
+    function addUserByAdmin() {
+      if (!A) return;
+      A.addUser(userModal.newUsername, userModal.newPassword, userModal.newRole).then(r => {
+        if (!r.ok) { showToast(r.error, 'error'); return; }
+        showToast(`已添加用户「${r.user.username}」`, 'success');
+        userModal.newUsername = ''; userModal.newPassword = ''; userModal.newRole = 'user';
+        refreshUserList();
+      }).catch(e => showToast('添加失败：' + e.message, 'error'));
+    }
+
+    function changeUserRole(u, role) {
+      if (!A) return;
+      const r = A.setUserRole(u.username, role);
+      if (!r.ok) { showToast(r.error, 'error'); refreshUserList(); return; }
+      showToast(`「${u.username}」已设为${A.roleName(role)}`, 'success');
+      refreshUserList();
+    }
+
+    function toggleUserDisabled(u) {
+      if (!A) return;
+      const r = A.setUserDisabled(u.username, !u.disabled);
+      if (!r.ok) { showToast(r.error, 'error'); return; }
+      showToast(`「${u.username}」已${u.disabled ? '启用' : '停用'}`, 'success');
+      refreshUserList();
+    }
+
+    function removeUserByAdmin(u) {
+      if (!A) return;
+      if (!confirm(`确定删除用户「${u.username}」？删除后该账号无法再登录。`)) return;
+      const r = A.removeUser(u.username);
+      if (!r.ok) { showToast(r.error, 'error'); return; }
+      showToast('已删除用户', 'success');
+      refreshUserList();
+    }
+
+    function resetUserPassword(u) {
+      if (!A) return;
+      const np = prompt(`为「${u.username}」设置新密码（至少 6 位）：`);
+      if (np == null) return;
+      A.changePassword(u.username, null, np).then(r => {
+        if (!r.ok) { showToast(r.error, 'error'); return; }
+        showToast(`「${u.username}」的密码已重置`, 'success');
+      }).catch(e => showToast('重置失败：' + e.message, 'error'));
+    }
+
+    function exportUsersTable() {
+      if (!A) return;
+      const blob = new Blob([A.exportUsers()], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'stock-news-accounts-' + Store.today() + '.json';
+      a.click();
+      URL.revokeObjectURL(url);
+      showToast('账号表已导出（只含哈希，不含明文密码）', 'success');
+    }
+
+    function importUsersTable(e) {
+      const file = e.target.files && e.target.files[0];
+      if (!file || !A) return;
+      const reader = new FileReader();
+      reader.onload = () => {
+        const r = A.importUsers(String(reader.result), 'merge');
+        if (!r.ok) { showToast(r.error, 'error'); return; }
+        showToast(`已导入账号表，当前共 ${r.count} 个账号`, 'success');
+        refreshUserList();
+      };
+      reader.readAsText(file);
+      e.target.value = '';
+    }
+
+    function openChangePassword() {
+      userMenuOpen.value = false;
+      if (!A || !A.user) return;
+      pwModal.username = A.user.username;
+      pwModal.oldPassword = ''; pwModal.newPassword = ''; pwModal.confirmPassword = '';
+      pwModal.show = true;
+    }
+
+    function submitChangePassword() {
+      if (!A) return;
+      if (pwModal.newPassword !== pwModal.confirmPassword) { showToast('两次输入的新密码不一致', 'error'); return; }
+      A.changePassword(pwModal.username, pwModal.oldPassword, pwModal.newPassword).then(r => {
+        if (!r.ok) { showToast(r.error, 'error'); return; }
+        pwModal.show = false;
+        authUser.value = A.user;
+        showToast('密码已修改', 'success');
+      }).catch(e => showToast('修改失败：' + e.message, 'error'));
+    }
+
     // ===== Toast =====
     const toast = reactive({ show: false, msg: '', type: 'info', _t: null });
     function showToast(msg, type = 'info') {
@@ -3559,6 +3698,11 @@ const app = createApp({
           initResizeFor('.hot-stock-table', 'hotColWidths', HOT_DEFAULT_COL_WIDTHS);
         }
       });
+      // 点击页面其他位置时收起用户菜单（菜单内部与触发按钮已用 @click.stop 阻止冒泡）
+      document.addEventListener('click', () => { userMenuOpen.value = false; });
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') userMenuOpen.value = false;
+      });
     });
     watch(currentPage, (k) => {
       if (k === 'finance') autoLoadHotTopics();
@@ -4043,6 +4187,13 @@ const app = createApp({
       updateFavNote, favDays,
       favAddCode, favAddName, addFavoriteManual,
       favRefreshing, refreshFavorites
+      ,
+      // 登录账号与权限
+      authUser, authInitial, authExpiryText, can, fmtDateTime, doLogout, userMenuOpen,
+      userModal, userList, openUserManage, addUserByAdmin, changeUserRole,
+      toggleUserDisabled, removeUserByAdmin, resetUserPassword,
+      exportUsersTable, importUsersTable,
+      pwModal, openChangePassword, submitChangePassword
     };
   }
 });
