@@ -2501,5 +2501,172 @@ const StockAPI = {
     const m = String(d.getMonth() + 1).padStart(2, '0');
     const day = String(d.getDate()).padStart(2, '0');
     return `${y}-${m}-${day}`;
+  },
+
+  // ============ 火热话题 / 全球信息 ============
+
+  /**
+   * 抓取「火热话题」：按用户指定排序从 10 个金融软件分别拉取 Top10 影响股市的新闻。
+   * 经 Cloudflare Worker 代理（东方财富走 /news，其余走 /proxy?url=）绕过跨域，逐源并行容错。
+   * 每条自动用 HotTopics.classify 打 7 类标签（财经/政治政策/经济/军事/科技/社会热点/世界500强领导者动态）。
+   * @returns {Promise<{ok:boolean, error?:string, sources:Array, merged:Array}>}
+   */
+  async fetchHotTopics(proxyUrl) {
+    const base = (proxyUrl || '').trim().replace(/\/+$/, '');
+    if (!base) return { ok: false, error: '未配置新闻代理地址', sources: [], merged: [] };
+    const srcList = (typeof HotTopics !== 'undefined' && HotTopics.SOURCE_ORDER) || [];
+    const sources = srcList.map(s => ({ ...s, items: [], loading: true, error: null }));
+    const today = this._todayStr();
+    await Promise.all(sources.map(async (s) => {
+      try {
+        let items = [];
+        if (s.parse === 'news_eastmoney') {
+          const resp = await fetch(`${base}/news?page=1&size=20`);
+          if (!resp.ok) throw new Error('HTTP ' + resp.status);
+          const j = await resp.json();
+          const list = (j.data && j.data.list) || [];
+          items = list.slice(0, 10).map(it => this._mkItem(
+            [it.title, it.summary].filter(Boolean).join('：').slice(0, 90),
+            this._normTime(it.showTime), it.uniqueUrl || ''
+          ));
+        } else {
+          const resp = await fetch(`${base}/proxy?url=${encodeURIComponent(s.endpoint)}`);
+          if (!resp.ok) throw new Error('HTTP ' + resp.status);
+          const txt = await resp.text();
+          items = this._parseHotSource(s.parse, s.key, txt).slice(0, 10);
+        }
+        s.items = items;
+        if (!items.length) s.error = '源返回为空或暂不支持解析';
+      } catch (e) {
+        s.error = e.message || '抓取失败';
+      } finally {
+        s.loading = false;
+      }
+    }));
+    const merged = [];
+    for (const s of sources) for (const it of s.items) merged.push({ ...it, source: s.name, color: s.color, sourceRank: s.rank });
+    merged.sort((a, b) => (b.time || '').localeCompare(a.time || ''));
+    return { ok: true, date: today, sources, merged: merged.slice(0, 20) };
+  },
+
+  /** 统一构造带分类标签的条目 */
+  _mkItem(text, time, url) {
+    text = (text || '').toString().replace(/<[^>]+>/g, '').replace(/\s+/g, ' ').trim().slice(0, 90);
+    const cat = (typeof HotTopics !== 'undefined' && HotTopics.classify) ? HotTopics.classify(text) : '财经';
+    return { text, time: this._normTime(time), url: url || '', cat };
+  },
+
+  /** 按 parse 类型解析不同金融软件的返回结构，统一为 [{text,time,url,cat}] */
+  _parseHotSource(parse, key, txt) {
+    const out = [];
+    const push = (text, time, url) => {
+      const it = this._mkItem(text, time, url);
+      if (it.text) out.push(it);
+    };
+    let j = null;
+    try { j = JSON.parse(txt); } catch (e) { j = null; }
+
+    if (parse === 'json_toutiao' && j) {
+      const arr = (j.data || []);
+      for (const it of arr) {
+        let u = it.Url || '';
+        if (u && !/^https?:/i.test(u)) u = 'https://www.toutiao.com/' + u.replace(/^\//, '');
+        push(it.Title || it.title, '', u);
+      }
+    } else if (parse === 'json_wscn' && j) {
+      const arr = (j.data && j.data.items) || [];
+      for (const it of arr) push(it.content_text || it.content, it.display_time, it.uri ? 'https://wallstreetcn.com/' + it.uri : '');
+    } else if (parse === 'json_cailian' && j) {
+      let arr = Array.isArray(j.data) ? j.data : (j.data && j.data.data) || [];
+      for (const it of arr) push(it.content || it.title, it.publish_time || it.ctime, 'https://www.cailianpress.com/');
+    } else if (parse === 'json_xueqiu' && j) {
+      const arr = (j.items || j.list || []);
+      for (const it of arr) push(it.title || it.description || it.text, '', it.target ? ('https://xueqiu.com' + it.target) : '');
+    } else if (parse === 'json_gelonghui' && j) {
+      const arr = (j.result && j.result.data) || (j.data && j.data) || [];
+      for (const it of arr) push(it.content || it.title || it.text, it.created_at || it.time, 'https://www.gelonghui.com/');
+    } else if (parse && parse.indexOf('html_') === 0 && txt) {
+      // HTML 兜底：抽取页面中的标题级文本
+      return this._extractFromHtml(txt, key);
+    } else if (j) {
+      const arr = j.data || j.result || j.list || j.items || (j.data && j.data.list) || [];
+      if (Array.isArray(arr)) {
+        for (const it of arr) {
+          if (typeof it === 'string') push(it);
+          else push(it.title || it.text || it.content || it.summary || it.subject || it.digest || it.intro,
+                    it.time || it.ctime || it.showTime || it.created_at,
+                    it.url || it.link || it.uri);
+        }
+      }
+    }
+    return out.filter((v, i, a) => a.findIndex(x => x.text === v.text) === i);
+  },
+
+  /** 从 HTML 抽取候选标题（经 Worker /proxy 返回的 HTML 文本） */
+  _extractFromHtml(html, key) {
+    const out = [];
+    const base = (typeof HotTopics !== 'undefined' && HotTopics.SOURCE_BY_KEY[key] && HotTopics.SOURCE_BY_KEY[key].base) || '';
+    try {
+      const doc = new DOMParser().parseFromString(html, 'text/html');
+      const seen = new Set();
+      const candidates = [];
+      const normUrl = (u) => {
+        if (!u) return '';
+        if (/^https?:/i.test(u)) return u;
+        if (u.startsWith('//')) return 'https:' + u;
+        if (u.startsWith('/') && base) return base + u;
+        return base ? (base + '/' + u.replace(/^\//, '')) : u;
+      };
+      doc.querySelectorAll('a').forEach(a => {
+        const t = (a.textContent || '').replace(/\s+/g, ' ').trim();
+        if (t.length >= 6 && t.length <= 80) candidates.push({ t, url: normUrl(a.getAttribute('href') || '') });
+      });
+      doc.querySelectorAll('.title, .news-title, .headline, .item-title, h2, h3').forEach(el => {
+        const t = (el.textContent || '').replace(/\s+/g, ' ').trim();
+        if (t.length >= 6 && t.length <= 80) candidates.push({ t, url: el.closest('a') ? normUrl(el.closest('a').getAttribute('href') || '') : '' });
+      });
+      for (const c of candidates) {
+        const norm = c.t.replace(/<[^>]+>/g, '');
+        if (seen.has(norm)) continue;
+        seen.add(norm);
+        out.push(this._mkItem(norm, '', c.url));
+        if (out.length >= 10) break;
+      }
+    } catch (e) { /* ignore */ }
+    return out;
+  },
+
+  /** 归一化时间：unix 秒/毫秒 → 'YYYY-MM-DD HH:mm'，其它原样截取 */
+  _normTime(t) {
+    if (t == null) return '';
+    t = String(t).trim();
+    if (/^\d{10}$/.test(t)) return new Date(+t * 1000).toISOString().slice(0, 16).replace('T', ' ');
+    if (/^\d{13}$/.test(t)) return new Date(+t).toISOString().slice(0, 16).replace('T', ' ');
+    return t.replace('T', ' ').slice(0, 16);
+  },
+
+  _todayStr() {
+    const d = new Date();
+    const y = d.getFullYear(), m = String(d.getMonth() + 1).padStart(2, '0'), day = String(d.getDate()).padStart(2, '0');
+    return `${y}-${m}-${day}`;
+  },
+
+  /**
+   * 抓取美股三大指数实时行情（经代理），用于「全球信息」页「美股美债」栏。
+   * @param {string} proxyUrl
+   * @returns {Promise<Array<{code,name,val,chg}>>}
+   */
+  async fetchUsMarket(proxyUrl) {
+    const base = (proxyUrl || '').trim().replace(/\/+$/, '');
+    if (!base) return [];
+    const secids = '100.DJIA,100.SPX,100.NDX';
+    try {
+      const target = 'https://push2.eastmoney.com/api/qt/ulist.np/get?fltt=2&invt=2&fields=f12,f14,f2,f3&secids=' + secids;
+      const resp = await fetch(`${base}/proxy?url=${encodeURIComponent(target)}`);
+      if (!resp.ok) return [];
+      const j = await resp.json();
+      const diff = (j.data && j.data.diff) || [];
+      return diff.map(d => ({ code: d.f12, name: d.f14, val: d.f2, chg: d.f3 }));
+    } catch (e) { return []; }
   }
 };
