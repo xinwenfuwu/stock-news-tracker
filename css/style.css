@@ -1694,13 +1694,26 @@ body {
 .theme-dim-name { flex: 0 0 auto; font-size: 13px; font-weight: 700; }
 .theme-dim-count { margin-left: auto; }
 .theme-topics { display: flex; flex-direction: column; gap: 5px; padding: 8px 10px; }
-.theme-topic { display: flex; align-items: center; gap: 6px; font-size: 12px; }
-.tt-name { flex: 0 0 82px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.theme-topic { display: flex; align-items: center; gap: 6px; font-size: 12px; padding: 1px 4px; border-radius: 5px; cursor: pointer; }
+.theme-topic:hover { background: var(--surface-alt); }
+.theme-topic.active { background: var(--surface-alt); box-shadow: inset 0 0 0 1px var(--border); }
+.tt-caret { flex: 0 0 10px; font-size: 10px; color: var(--muted); }
+.tt-name { flex: 0 0 72px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .tt-track { flex: 1 1 auto; height: 8px; background: var(--surface-alt); border-radius: 4px; overflow: hidden; }
 .tt-fill { display: block; height: 100%; border-radius: 4px; }
 .tt-val { flex: 0 0 auto; font-weight: 600; font-variant-numeric: tabular-nums; }
 .tt-pct { flex: 0 0 34px; text-align: right; color: var(--muted); font-variant-numeric: tabular-nums; }
-.theme-more { align-self: flex-start; border: none; background: transparent; color: var(--accent); cursor: pointer; font-size: 12px; padding: 2px 0; }
+/* 点击主题后就地展开的新闻明细 */
+.tt-news { margin: 4px 0 8px 14px; padding: 4px 0 4px 10px; border-left: 2px solid var(--border); display: flex; flex-direction: column; }
+.tt-news-head { display: flex; align-items: baseline; gap: 8px; padding-bottom: 4px; }
+.tt-news-title { font-size: 12px; font-weight: 700; }
+.tt-news-item { display: flex; flex-direction: column; gap: 2px; padding: 5px 0; border-bottom: 1px dashed var(--border); }
+.tt-news-item:last-of-type { border-bottom: none; }
+.tt-news-meta { display: flex; align-items: center; gap: 6px; font-size: 11px; color: var(--muted); }
+.tt-news-date, .tt-news-time { font-variant-numeric: tabular-nums; }
+.tt-news-text { font-size: 12px; line-height: 1.45; color: var(--text); text-decoration: none; word-break: break-word; }
+a.tt-news-text:hover { color: var(--accent); text-decoration: underline; }
+.theme-more { align-self: flex-start; border: none; background: transparent; color: var(--accent); cursor: pointer; font-size: 12px; padding: 4px 0 2px; }
 @media (max-width: 1180px) {
   .ht-split { grid-template-columns: 1fr; }
   .ht-split-left .overlap-list { max-height: none; overflow-y: visible; }
