@@ -53,7 +53,31 @@ function serveStatic(dir) {
   return new Promise(r => srv.listen(0, '127.0.0.1', () => r({ srv, port: srv.address().port })));
 }
 
-/** 打开页面并注入代理设置；拦截 unpkg 用本地 Vue，保证离线可跑 */
+/**
+ * 走真实的「首次初始化管理员 → 进入系统」流程，
+ * 顺便验证登录关卡本身是可用的（业务脚本只在登录后才被注入）。
+ *
+ * 注意：#app 里的 header / main 是静态 HTML，Vue 挂载前就已存在于 DOM，
+ * 所以不能拿它们当「已就绪」的信号，必须等 Vue 真正 mount（container.__vue_app__）。
+ */
+async function loginAs(page, username, password) {
+  const u = username || 'e2e';
+  const p = password || 'E2ePass123';
+  await page.waitForSelector('#auth-gate', { timeout: 20000 });
+  await page.evaluate(async ([name, pass]) => {
+    Auth.init();
+    if (!Auth.hasUsers()) await Auth.setup(name, pass, pass);
+    else if (!Auth.isLoggedIn()) await Auth.login(name, pass, true);
+    AuthUI.enterApp();
+  }, [u, p]);
+  await page.waitForFunction(() => !document.getElementById('auth-gate'), { timeout: 45000 });
+  await page.waitForFunction(() => {
+    const el = document.getElementById('app');
+    return !!(el && el.__vue_app__);
+  }, { timeout: 45000 });
+}
+
+/** 打开页面并注入代理设置 + 登录态；拦截 unpkg 用本地 Vue，保证离线可跑 */
 async function openApp(browser, port, proxyUrl) {
   const ctx = await browser.newContext();
   const page = await ctx.newPage();
@@ -67,6 +91,7 @@ async function openApp(browser, port, proxyUrl) {
     localStorage.setItem('stock-news-tracker-v1', JSON.stringify(s));
   }, saved);
   await page.goto(`http://127.0.0.1:${port}/#finance`, { waitUntil: 'load' });
+  await loginAs(page);
   return { ctx, page, errors };
 }
 
