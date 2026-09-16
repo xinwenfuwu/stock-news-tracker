@@ -31,15 +31,8 @@ const app = createApp({
     function goPage(key) {
       currentPage.value = key;
       location.hash = key;
-      // 进入「全球信息」页：优先加载当日历史快照（无需代理即可展示），无数据且已配代理则实时抓取
-      if (key === 'finance' && !hotTopicsSources.value.length && !hotTopicsLoading.value) {
-        htMode.value = 'history';
-        loadHotTopicHistory(hotTopicDate.value).then(() => {
-          if (!hotTopicDateHasData.value && (D.settings.proxyUrl || '').trim()) {
-            refreshHotTopics();
-          }
-        });
-      }
+      // 进入「全球信息」页：优先展示最近可用的内置快照（同源、无需代理），再考虑实时抓取
+      if (key === 'finance') autoLoadHotTopics();
     }
     // 初始化路由
     const hash = location.hash.replace('#', '');
@@ -2626,7 +2619,7 @@ const app = createApp({
     // 火热话题：每日话题 / 统计分析
     const htTab = ref('daily');                 // 'daily' | 'analysis'
     const htMode = ref('live');                 // 'live' | 'history'
-    const hotTopicDate = ref(new Date().toISOString().slice(0, 10));
+    const hotTopicDate = ref(fmtDate(new Date()));
     const hotTopicDateHasData = ref(false);
     const htCatFilter = ref('');
     const htCategories = (typeof HotTopics !== 'undefined') ? HotTopics.CATEGORIES : [];
@@ -2778,33 +2771,114 @@ const app = createApp({
       return Object.keys(m).sort().reverse();
     });
 
-    // 全球信息页：刷新「火热话题」+「美股美债」行情
-    async function refreshHotTopics() {
-      const proxy = (D.settings.proxyUrl || '').trim();
-      if (!proxy) {
-        showToast('请先在「设置」里填写新闻代理地址（Cloudflare Worker）', 'error');
-        return;
+    /** 从各源重建「综合最火」合并列表（按时间降序） */
+    function buildMergedList(srcs) {
+      const m = [];
+      for (const s of (srcs || [])) for (const it of (s.items || [])) m.push({ ...it, source: s.name, color: s.color, sourceRank: s.rank });
+      m.sort((a, b) => (b.time || '').localeCompare(a.time || ''));
+      return m.slice(0, 20);
+    }
+
+    /**
+     * 读取「仓库内置的最新可用快照」（同源，GitHub Pages 直出，不依赖任何代理）。
+     * 先读清单 data/hot-topics/index.json 定位最新日期，读不到则从今天起向前回溯。
+     */
+    async function loadLatestRepoSnapshot() {
+      const today = fmtDate(new Date());
+      let manifest = null;
+      try {
+        const r = await fetch('./data/hot-topics/index.json', { cache: 'no-store' });
+        if (r.ok) manifest = await r.json();
+      } catch (e) { /* 忽略，走回溯 */ }
+      const dates = (typeof HotTopics !== 'undefined' && HotTopics.snapshotCandidates)
+        ? HotTopics.snapshotCandidates(manifest, today, 14)
+        : [today];
+      for (const d of dates) {
+        try {
+          const r = await fetch(`./data/hot-topics/${d}.json`, { cache: 'no-store' });
+          if (!r.ok) continue;
+          const snap = await r.json();
+          const srcs = (snap.sources || []).map(s => ({
+            ...s, loading: false,
+            items: s.items || [],
+            error: (s.items && s.items.length) ? null : '该源暂无数据'
+          }));
+          if (!srcs.some(s => s.items.length)) continue; // 全空快照跳过
+          return { date: d, generatedAt: snap.generatedAt || '', sources: srcs };
+        } catch (e) { /* 继续回溯前一天 */ }
       }
+      return null;
+    }
+
+    // 全球信息页：刷新「火热话题」+「美股美债」行情
+    // 代理地址支持填多个（空格/逗号/分号分隔），依次尝试；全部失败则回退到仓库内置快照
+    async function refreshHotTopics() {      const proxies = String(D.settings.proxyUrl || '').split(/[\s,;]+/).map(s => s.trim()).filter(Boolean);
       htMode.value = 'live';
       hotTopicsLoading.value = true;
+      let lastErrors = [];
       try {
-        const [ht, us] = await Promise.all([
-          StockAPI.fetchHotTopics(proxy),
-          StockAPI.fetchUsMarket(proxy)
-        ]);
-        hotTopicsSources.value = ht.sources || [];
-        hotTopicsMerged.value = ht.merged || [];
-        usMarket.value = us || [];
-        saveLocalHotTopicSnapshot(ht.sources); // 自动积累当日快照（本地+Gist）
-        hotTopicsUpdated.value = new Date().toLocaleString('zh-CN', { hour12: false });
-        if (!ht.sources.some(s => s.items.length)) {
-          showToast('火热话题：各金融源暂未取到数据，请检查代理连通性', 'error');
+        for (const p of proxies) {
+          const ht = await StockAPI.fetchHotTopics(p);
+          if (ht.sources && ht.sources.some(s => s.items.length)) {
+            hotTopicsSources.value = ht.sources;
+            hotTopicsMerged.value = ht.merged || [];
+            saveLocalHotTopicSnapshot(ht.sources);   // 自动积累当日本地快照（随 Gist 同步）
+            hotTopicsUpdated.value = new Date().toLocaleString('zh-CN', { hour12: false }) + '（实时）';
+            try { usMarket.value = (await StockAPI.fetchUsMarket(p)) || []; } catch (e) { /* 忽略 */ }
+            return;
+          }
+          lastErrors = (ht.sources || []).filter(s => !s.items.length).map(s => `${s.name}: ${s.error || '无数据'}`);
         }
+
+        // 实时链路不可用（未配代理 / 域名被拦截 / 源站拒绝）→ 回退到自动抓取的快照
+        const fb = await loadLatestRepoSnapshot();
+        if (fb) {
+          hotTopicsSources.value = fb.sources;
+          hotTopicsMerged.value = buildMergedList(fb.sources);
+          hotTopicDate.value = fb.date;
+          hotTopicDateHasData.value = true;
+          htMode.value = 'history';
+          const when = fb.generatedAt ? new Date(fb.generatedAt).toLocaleString('zh-CN', { hour12: false }) : fb.date;
+          hotTopicsUpdated.value = `${when}（自动抓取快照 ${fb.date}）`;
+          if (proxies.length && proxies[0] !== '') {
+            try { usMarket.value = (await StockAPI.fetchUsMarket(proxies[0])) || []; } catch (e) { /* 忽略 */ }
+          }
+          const why = lastErrors.length ? lastErrors.slice(0, 2).join('；') : '未配置新闻代理地址';
+          showToast(`实时抓取不可用（${why}），已回退到自动抓取的快照 ${fb.date}`, 'info');
+          return;
+        }
+
+        hotTopicsSources.value = (typeof HotTopics !== 'undefined' ? HotTopics.SOURCE_ORDER : [])
+          .map(s => ({ ...s, items: [], loading: false, error: null }));
+        showToast('实时抓取不可用，且暂无可展示的快照；请检查代理地址或稍后重试', 'error');
       } catch (e) {
         showToast('火热话题刷新失败：' + (e && e.message ? e.message : e), 'error');
       } finally {
         hotTopicsLoading.value = false;
       }
+    }
+
+    /**
+     * 进入「全球信息」页时自动加载（幂等）。
+     * 顺序：本地快照 → 仓库内置最新快照（同源，不依赖代理）→ 已配代理才实时抓取。
+     */
+    function autoLoadHotTopics() {
+      if (hotTopicsSources.value.length || hotTopicsLoading.value) return;
+      htMode.value = 'history';
+      loadHotTopicHistory(hotTopicDate.value).then(async () => {
+        if (hotTopicDateHasData.value) return;
+        const fb = await loadLatestRepoSnapshot();
+        if (fb) {
+          hotTopicsSources.value = fb.sources;
+          hotTopicsMerged.value = buildMergedList(fb.sources);
+          hotTopicDate.value = fb.date;
+          hotTopicDateHasData.value = true;
+          const when = fb.generatedAt ? new Date(fb.generatedAt).toLocaleString('zh-CN', { hour12: false }) : fb.date;
+          hotTopicsUpdated.value = `${when}（自动抓取快照 ${fb.date}）`;
+          return;
+        }
+        if ((D.settings.proxyUrl || '').trim()) refreshHotTopics();
+      });
     }
 
     /** 加载某日历史快照（优先本地快照，回退到仓库内置 data/hot-topics/YYYY-MM-DD.json） */
@@ -3476,6 +3550,9 @@ const app = createApp({
         }
       });
     });
+    watch(currentPage, (k) => {
+      if (k === 'finance') autoLoadHotTopics();
+    }, { immediate: true });
     watch(sortedFilterStocks, () => nextTick(() => initResizeFor('.filter-scroll table', 'filterColWidths', FILTER_DEFAULT_COL_WIDTHS)), { flush: 'post' });
     watch(currentPage, (k) => {
       if (k === 'filter') {
