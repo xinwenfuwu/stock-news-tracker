@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>个人自用股市信息追踪分析系统</title>
+  <title>股市信息追踪分析系统</title>
   <link rel="stylesheet" href="css/style.css">
   <!-- Vue 3 全局构建版（CDN，无需构建步骤） -->
   <script src="https://unpkg.com/vue@3.4.21/dist/vue.global.prod.js"></script>
@@ -15,7 +15,7 @@
       <div class="header-inner">
         <div class="brand">
           <span class="brand-icon">📈</span>
-          <span class="brand-title">个人自用股市信息追踪分析系统</span>
+          <span class="brand-title">股市信息追踪分析系统</span>
         </div>
         <nav class="main-nav">
           <a v-for="tab in tabs" :key="tab.key"
@@ -156,11 +156,11 @@
           </table>
         </div>
         <div class="page-footer">共 {{ filteredNews.length }} 条新闻</div>
-        <!-- 财经推送（已移入「新闻追踪」页下方，更名为「美股美债」） -->
+        <!-- 财经推送（已移入「新闻追踪」页下方，更名为「新闻」） -->
         <div class="finance-moved" v-show="!financePushHidden">
           <div class="page-toolbar" style="margin-top:24px">
             <div class="toolbar-left">
-              <h2 class="page-title" style="margin:0">📡 美股美债</h2>
+              <h2 class="page-title" style="margin:0">📰 新闻</h2>
             </div>
             <div class="toolbar-right">
               <button class="btn btn-sm" @click="financePushHidden = !financePushHidden" :title="financePushHidden ? '显示财经推送' : '一键隐藏财经推送'">{{ financePushHidden ? '👁 显示' : '🙈 隐藏' }}</button>
@@ -274,14 +274,151 @@
 
       </section>
 
-      <!-- ===== 页面（美股美债：原财经推送页，内容已移至「新闻追踪」页下方，现为空白页） ===== -->
+      <!-- ===== 页面（全球信息：左=火热话题 / 右=美股美债） ===== -->
       <section v-show="currentPage === 'finance'" class="page">
         <div class="page-toolbar">
           <div class="toolbar-left">
-            <h2 class="page-title" style="margin:0">📡 美股美债</h2>
+            <h2 class="page-title" style="margin:0">🌐 全球信息</h2>
+          </div>
+          <div class="toolbar-right">
+            <span class="muted small" v-if="hotTopicsUpdated">更新于 {{ hotTopicsUpdated }}</span>
+            <button class="btn btn-primary" @click="refreshHotTopics" :disabled="hotTopicsLoading">
+              <span v-if="hotTopicsLoading">⏳ 抓取中...</span>
+              <span v-else>🔄 刷新热门话题</span>
+            </button>
           </div>
         </div>
-        <div class="muted small" style="padding:40px;text-align:center">（财经推送功能已移至「新闻追踪」页面下方）</div>
+
+        <div class="global-layout">
+          <!-- 左：火热话题 -->
+          <div class="hot-topics-panel">
+            <div class="panel-head">
+              <h3 class="panel-title" style="margin:0">🔥 火热话题</h3>
+              <div class="ht-tabs">
+                <button :class="['ht-tab', { active: htTab === 'daily' }]" @click="htTab = 'daily'">每日话题</button>
+                <button :class="['ht-tab', { active: htTab === 'analysis' }]" @click="htTab = 'analysis'">统计分析</button>
+              </div>
+            </div>
+
+            <!-- ===== 每日话题：10 个软件按序各 Top10 ===== -->
+            <div v-show="htTab === 'daily'">
+              <div class="ht-controls">
+                <label class="ht-label">日期</label>
+                <input type="date" v-model="hotTopicDate" class="ht-date" @change="onHotTopicDateChange">
+                <div class="seg">
+                  <button :class="{ active: htMode === 'live' }" @click="setHtMode('live')">实时</button>
+                  <button :class="{ active: htMode === 'history' }" @click="setHtMode('history')">历史</button>
+                </div>
+                <span class="muted small" v-if="htMode === 'history' && !hotTopicDateHasData">该日暂无历史快照</span>
+                <span class="muted small" v-else-if="htMode === 'history'">已加载历史快照</span>
+              </div>
+
+              <div class="cat-filter">
+                <button :class="['cat-chip', { active: htCatFilter === '' }]" @click="htCatFilter = ''">全部</button>
+                <button v-for="c in htCategories" :key="c"
+                        :class="['cat-chip', { active: htCatFilter === c }]"
+                        :style="htCatFilter === c ? { background: catColor(c), color: '#fff', borderColor: catColor(c) } : {}"
+                        @click="htCatFilter = (htCatFilter === c ? '' : c)">{{ c }}</button>
+              </div>
+
+              <div class="source-grid">
+                <div class="source-card" v-for="s in filteredHotSources" :key="s.key">
+                  <div class="source-head" :style="{ borderColor: s.color }">
+                    <span class="src-rank">{{ s.rank }}</span>
+                    <span class="src-dot" :style="{ background: s.color }"></span>
+                    <span class="src-name">{{ s.name }}</span>
+                    <span class="src-status" v-if="s.loading">加载中…</span>
+                    <span class="src-status" v-else-if="s.error" :title="s.error">暂未取到</span>
+                    <span class="src-status" v-else>{{ (htCatFilter ? s.filteredCount : s.items.length) }} 条</span>
+                  </div>
+                  <ol class="source-items" v-if="(htCatFilter ? s.filteredItems : s.items).length">
+                    <li v-for="(it, i) in (htCatFilter ? s.filteredItems : s.items)" :key="i">
+                      <span class="item-rank">{{ i + 1 }}</span>
+                      <a v-if="it.url" :href="it.url" target="_blank" rel="noopener" :title="it.text" class="item-text">{{ it.text }}</a>
+                      <span v-else class="item-text" :title="it.text">{{ it.text }}</span>
+                      <span class="cat-tag" :style="{ background: catColor(it.cat) }">{{ it.cat }}</span>
+                      <span class="item-time" v-if="it.time">{{ it.time }}</span>
+                    </li>
+                  </ol>
+                  <div class="src-empty muted small" v-else-if="s.error">源暂未取到数据（代理或源限制）</div>
+                  <div class="src-empty muted small" v-else>加载中…</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- ===== 统计分析：跨站重合 + 各站分类 ===== -->
+            <div v-show="htTab === 'analysis'">
+              <div class="ht-controls">
+                <label class="ht-label">时间段</label>
+                <div class="seg">
+                  <button v-for="r in htRangeOptions" :key="r.key" :class="{ active: analysisRange === r.key }" @click="analysisRange = r.key">{{ r.label }}</button>
+                </div>
+                <button class="btn btn-primary" @click="runAnalysis" :disabled="analysisLoading">📊 生成统计</button>
+                <span class="muted small" v-if="analysisResult">覆盖 {{ analysisResult.dayCount }} 天 / {{ analysisResult.totalItems }} 条</span>
+              </div>
+
+              <div v-if="analysisLoading" class="muted small">统计中…</div>
+              <template v-else-if="analysisResult">
+                <h4 class="sub-title">跨站重合榜 <span class="muted small">（同一话题在 N/10 个站点出现，点「展开」看具体站点）</span></h4>
+                <div class="overlap-list">
+                  <div class="overlap-item" v-for="(c, i) in analysisResult.clusters" :key="i">
+                    <div class="ov-head">
+                      <span class="ov-ratio" :class="ratioClass(c.siteRanks.length)">{{ c.ratio }}</span>
+                      <span class="ov-title" :title="c.repTitle">{{ c.repTitle }}</span>
+                      <button class="ov-toggle" @click="c._open = !c._open">{{ c._open ? '收起' : '展开' }}</button>
+                    </div>
+                    <div class="ov-sites">
+                      <span class="site-badge" v-for="n in c.siteRanks" :key="n" :style="{ background: htSourceColor(n) }" :title="htSourceName(n)">{{ n }}</span>
+                    </div>
+                    <div class="ov-detail" v-if="c._open">
+                      <div class="ov-detail-row" v-for="(it, j) in c.items" :key="j">
+                        <span class="site-badge sm" :style="{ background: htSourceColor(it.sourceRank) }">{{ it.sourceRank }}</span>
+                        <span class="ov-detail-src">{{ it.sourceName }}</span>
+                        <a v-if="it.url" :href="it.url" target="_blank" rel="noopener" class="ov-detail-text">{{ it.text }}</a>
+                        <span v-else class="ov-detail-text">{{ it.text }}</span>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="muted small" v-if="!analysisResult.clusters.length">该时间段内暂无足够数据，请等待每日快照积累或切换更长时段。</div>
+                </div>
+
+                <h4 class="sub-title">各站分类统计 <span class="muted small">（按 7 大类分布）</span></h4>
+                <div class="site-cat-stats">
+                  <div class="sc-card" v-for="st in analysisResult.siteStats" :key="st.key">
+                    <div class="sc-head">
+                      <span class="src-rank">{{ st.rank }}</span>
+                      <span class="sc-name">{{ st.name }}</span>
+                      <span class="muted small">{{ st.total }} 条</span>
+                    </div>
+                    <div class="sc-bars" v-if="st.dist.length">
+                      <div class="sc-bar" v-for="d in st.dist" :key="d.cat">
+                        <span class="sc-bar-label">{{ d.cat }}</span>
+                        <span class="sc-bar-track"><span class="sc-bar-fill" :style="{ width: d.width + '%', background: catColor(d.cat) }"></span></span>
+                        <span class="sc-bar-val">{{ d.count }}</span>
+                      </div>
+                    </div>
+                    <div class="muted small" v-else>无数据</div>
+                  </div>
+                </div>
+              </template>
+              <div v-else class="muted small">选择时间段后点击「生成统计」。统计基于已积累的每日快照（仓库 data/hot-topics/*.json，由每日 GitHub Action 自动生成）。</div>
+            </div>
+          </div>
+
+          <!-- 右：美股美债 -->
+          <div class="us-market-panel">
+            <h3 class="panel-title">📡 美股美债</h3>
+            <div class="us-indices" v-if="usMarket.length">
+              <div class="us-idx" v-for="idx in usMarket" :key="idx.code">
+                <div class="idx-name">{{ idx.name }}</div>
+                <div class="idx-val" :class="idx.chg >= 0 ? 'up' : 'down'">{{ idx.val }}</div>
+                <div class="idx-chg" :class="idx.chg >= 0 ? 'up' : 'down'">{{ idx.chg >= 0 ? '+' : '' }}{{ idx.chg }}%</div>
+              </div>
+            </div>
+            <div class="muted small" v-else>点击「刷新热门话题」同步加载美股指数实时行情</div>
+            <div class="us-note muted small">美股三大指数（道琼斯 / 标普500 / 纳斯达克）经代理实时抓取；美债收益率数据源待接入。</div>
+          </div>
+        </div>
       </section>
 
       <!-- ===== 页面2：股票池 ===== -->
@@ -1743,6 +1880,7 @@
   <script src="js/store.js"></script>
   <script src="js/cloud-sync.js"></script>
   <script src="js/stock-api.js"></script>
+  <script src="js/hot-topics.js"></script>
   <script src="js/app.js"></script>
 </body>
 </html>
