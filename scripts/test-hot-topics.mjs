@@ -76,5 +76,26 @@ if (snap15 && snap16) {
   assert('所有条目分类合法', !badCat, badCat && badCat.cat);
 }
 
+console.log('5) 标题净化 cleanTitle / isJunkTitle（导航、栏目拼盘、模板、乱码）');
+// 应被过滤（导航/栏目/模板/乱码/工具入口）
+const JUNK_SAMPLES = [
+  '首页 关于我们', '联系我们 用户反馈', '查看更多 >', '${title}', 'level-2', '7X24小时',
+  '您的IE版本过低，为了您更好的体验，请升至较高版本', '同花顺免费版', '财经要闻 宏观经济',
+  '全部 港股公告摘要', '申请认证 格隆汇公众号矩阵', '个股聚焦 公司新闻', '#航空航天与国防',
+  '����ѧУ', 'i问财智能选股', '今日利好公告', '搜索 查看全部股票/文章/快讯/事件/用户/财富圈搜索结果'
+];
+JUNK_SAMPLES.forEach(s => assert('过滤: ' + s.slice(0, 22), ht.cleanTitle(s) === '', '实际保留 -> ' + ht.cleanTitle(s)));
+// 应被保留（真实新闻标题）
+const KEEP_SAMPLES = [
+  '崔天凯：一劳永逸解决台湾问题',
+  'OpenAI据悉考虑新一轮融资',
+  '全球首个3D数据中心发布，十万卡以上超节点将成基础配置',
+  '一线城市房价涨了',
+  '美国参议院投票表决Clarity ACT，没能法扫清程序性障碍。比特币短线跳水。'
+];
+KEEP_SAMPLES.forEach(s => assert('保留: ' + s.slice(0, 22), ht.cleanTitle(s) !== '', '被误过滤'));
+assert('实体解码 &gt; &amp;', ht.decodeEntities('A&amp;B &gt; C') === 'A&B > C', ht.decodeEntities('A&amp;B &gt; C'));
+assert('cleanTitle 去除 HTML 标签', ht.cleanTitle('<em>央行</em>宣布全面降准0.5个百分点') === '央行宣布全面降准0.5个百分点', ht.cleanTitle('<em>央行</em>宣布全面降准0.5个百分点'));
+
 console.log(`\n结果：${pass} 通过 / ${fail} 失败`);
 process.exit(fail ? 1 : 0);
