@@ -21,6 +21,7 @@ const Store = {
       filterColWidths: {},      // 筛选板块：各列宽度(px)，按列位置索引（0,1,2...）
       sectorColWidths: {},      // 概念板块详情弹窗：各列宽度(px)，按列位置索引（0,1,2...）
       dailyData: {},          // { "2024-07-08": { stocks: [...] } }
+      hotTopicSnapshots: {},  // 火热话题每日快照 { "YYYY-MM-DD": { date, generatedAt, sources:[...] } }
       hotBoards: [],          // 缓存最近一次热门板块
       hotStocks: [],          // 缓存最近一次热门股票
       preMarketBoards: [],    // 缓存最近一次盘前热点板块
@@ -59,6 +60,9 @@ const Store = {
       this.data.settings.categories = [...this.DEFAULT_CATEGORIES];
     }
     if (!this.data.dailyData) this.data.dailyData = {};
+    if (!this.data.hotTopicSnapshots || typeof this.data.hotTopicSnapshots !== 'object') {
+      this.data.hotTopicSnapshots = {};
+    }
     if (!this.data.stockPools) this.data.stockPools = [];
     if (!this.data.sectorPools) this.data.sectorPools = [];
     if (!this.data.favorites) this.data.favorites = [];
