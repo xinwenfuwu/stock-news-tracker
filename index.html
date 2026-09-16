@@ -312,6 +312,12 @@
                 <span class="muted small" v-if="htMode === 'history' && !hotTopicDateHasData">该日暂无历史快照</span>
                 <span class="muted small" v-else-if="htMode === 'history'">已加载历史快照</span>
               </div>
+              <div class="snapshot-dates" v-if="localSnapshotDates.length">
+                <span class="muted small">本地已有快照：</span>
+                <button v-for="d in localSnapshotDates.slice(0, 14)" :key="d"
+                        :class="['snap-date', { active: hotTopicDate === d }]"
+                        @click="hotTopicDate = d; setHtMode('history')">{{ d.slice(5) }}</button>
+              </div>
 
               <div class="cat-filter">
                 <button :class="['cat-chip', { active: htCatFilter === '' }]" @click="htCatFilter = ''">全部</button>
