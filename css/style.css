@@ -1682,6 +1682,29 @@ body {
 .sc-bar-track { flex: 1 1 auto; height: 8px; background: var(--surface-alt); border-radius: 4px; overflow: hidden; }
 .sc-bar-fill { display: block; height: 100%; border-radius: 4px; }
 .sc-bar-val { flex: 0 0 auto; font-variant-numeric: tabular-nums; }
+/* 统计双栏：左=跨站重合榜，右=主题维度统计 */
+.ht-split { display: grid; grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr); gap: 16px; align-items: start; }
+.ht-split-left, .ht-split-right { min-width: 0; }
+.ht-split-left > .sub-title, .ht-split-right > .sub-title { margin-top: 0; }
+.ht-split-left .overlap-list { max-height: 780px; overflow-y: auto; padding-right: 4px; }
+.theme-stats { display: flex; flex-direction: column; gap: 10px; }
+.theme-dim { border: 1px solid var(--border); border-radius: 8px; background: var(--surface); overflow: hidden; }
+.theme-dim-head { display: flex; align-items: center; gap: 8px; padding: 8px 10px; cursor: pointer; user-select: none; background: var(--surface-alt); }
+.theme-dim-caret { flex: 0 0 auto; font-size: 11px; color: var(--muted); }
+.theme-dim-name { flex: 0 0 auto; font-size: 13px; font-weight: 700; }
+.theme-dim-count { margin-left: auto; }
+.theme-topics { display: flex; flex-direction: column; gap: 5px; padding: 8px 10px; }
+.theme-topic { display: flex; align-items: center; gap: 6px; font-size: 12px; }
+.tt-name { flex: 0 0 82px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.tt-track { flex: 1 1 auto; height: 8px; background: var(--surface-alt); border-radius: 4px; overflow: hidden; }
+.tt-fill { display: block; height: 100%; border-radius: 4px; }
+.tt-val { flex: 0 0 auto; font-weight: 600; font-variant-numeric: tabular-nums; }
+.tt-pct { flex: 0 0 34px; text-align: right; color: var(--muted); font-variant-numeric: tabular-nums; }
+.theme-more { align-self: flex-start; border: none; background: transparent; color: var(--accent); cursor: pointer; font-size: 12px; padding: 2px 0; }
+@media (max-width: 1180px) {
+  .ht-split { grid-template-columns: 1fr; }
+  .ht-split-left .overlap-list { max-height: none; overflow-y: visible; }
+}
 @media (max-width: 980px) {
   .global-layout { flex-direction: column; }
   .us-market-panel { flex: 1 1 auto; width: 100%; position: static; }
