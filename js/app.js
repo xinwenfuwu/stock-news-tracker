@@ -3032,7 +3032,7 @@ const app = createApp({
     const hotPanelsHidden = ref(false);
     const financePushHidden = ref(false);
     const hotSort = reactive({ key: 'dailyChange', dir: 'desc' });
-    // 全球信息页：火热话题（10 个金融软件热门消息）+ 美股美债行情
+    // 全球信息页：火热话题（10 个金融软件热门消息）+ 格隆汇每日快讯分类统计
     const hotTopicsSources = ref([]);
     const hotTopicsMerged = ref([]);
     const hotTopicsLoading = ref(false);
@@ -3242,9 +3242,10 @@ const app = createApp({
       return null;
     }
 
-    // 全球信息页：刷新「火热话题」+「美股美债」行情
+    // 全球信息页：刷新「火热话题」+「格隆汇每日快讯」
     // 代理地址支持填多个（空格/逗号/分号分隔），依次尝试；全部失败则回退到仓库内置快照
-    async function refreshHotTopics() {      const proxies = String(D.settings.proxyUrl || '').split(/[\s,;]+/).map(s => s.trim()).filter(Boolean);
+    async function refreshHotTopics() {
+      const proxies = String(D.settings.proxyUrl || '').split(/[\s,;]+/).map(s => s.trim()).filter(Boolean);
       htMode.value = 'live';
       hotTopicsLoading.value = true;
       let lastErrors = [];
@@ -4553,7 +4554,7 @@ const app = createApp({
       sortedHotStocks, sortHotBy, hotSortIcon, removeHotStock,
       loadHotData, fetchHotBoards, refreshHotStocks,
       refreshAmplitudeBoards, ampLoading, hotPanelsHidden, financePushHidden,
-      // 全球信息页：火热话题 + 美股美债
+      // 全球信息页：火热话题 + 格隆汇每日快讯
       hotTopicsSources, hotTopicsMerged, hotTopicsLoading, hotTopicsUpdated, refreshHotTopics,
       briefDates, briefDate, briefItems, briefKeyword, briefLoading, briefError, briefUi, briefPaused,
       briefFiltered, briefSearching, briefStatsList,

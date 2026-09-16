@@ -18,8 +18,13 @@ const BRIEF_KEEP_DAYS = 30;
 /** 单条快讯正文最大保留字符数（快讯正文通常在 100~300 字，超长多为转载长文） */
 const BRIEF_TEXT_MAX = 500;
 
+/** 取「今天」：一律按北京时间（UTC+8），不跟随运行器本地时区。
+ *  GitHub Actions 运行器是 UTC，而定时任务每 2 小时一次，
+ *  其中 UTC 22:00（= 北京时间次日 06:00）那一跑，若按 UTC 判日期会认为"今天"是前一天，
+ *  进而把当天早上的实时榜单写进前一天的快照文件，污染历史数据。 */
 function todayStr(d = new Date()) {
-  const y = d.getFullYear(), m = String(d.getMonth() + 1).padStart(2, '0'), day = String(d.getDate()).padStart(2, '0');
+  const bj = new Date(d.getTime() + 8 * 3600 * 1000);
+  const y = bj.getUTCFullYear(), m = String(bj.getUTCMonth() + 1).padStart(2, '0'), day = String(bj.getUTCDate()).padStart(2, '0');
   return `${y}-${m}-${day}`;
 }
 const DATE = process.argv[2] || todayStr();
@@ -266,19 +271,28 @@ async function fetchGelonghuiBriefs(date, knownMaxId) {
 }
 
 async function main() {
-  console.log(`开始抓取 ${DATE} 的 10 个金融软件热点...`);
-  const sources = [];
-  for (const s of ht.SOURCE_ORDER) {
-    const items = await fetchSource(s);
-    sources.push({ rank: s.rank, key: s.key, name: s.name, color: s.color, items });
-    console.log(`  ${s.rank}. ${s.name}: ${items.length} 条`);
-  }
-  const snapshot = { date: DATE, generatedAt: new Date().toISOString(), sources };
+  const isToday = DATE === todayStr();
   const dir = join(ROOT, 'data', 'hot-topics');
   mkdirSync(dir, { recursive: true });
-  const file = join(dir, `${DATE}.json`);
-  writeFileSync(file, JSON.stringify(snapshot, null, 2), 'utf8');
-  console.log(`已写入 ${file}`);
+
+  // ===== 10 个金融软件热点榜（只能取"当前实时榜单"，无法回溯历史）=====
+  const sources = [];
+  if (isToday) {
+    console.log(`开始抓取 ${DATE} 的 10 个金融软件热点...`);
+    for (const s of ht.SOURCE_ORDER) {
+      const items = await fetchSource(s);
+      sources.push({ rank: s.rank, key: s.key, name: s.name, color: s.color, items });
+      console.log(`  ${s.rank}. ${s.name}: ${items.length} 条`);
+    }
+    const snapshot = { date: DATE, generatedAt: new Date().toISOString(), sources };
+    const file = join(dir, `${DATE}.json`);
+    writeFileSync(file, JSON.stringify(snapshot, null, 2), 'utf8');
+    console.log(`已写入 ${file}`);
+  } else {
+    console.log(`跳过「10 个金融软件热点」：目标日 ${DATE} 不是今天（${todayStr()}）。`);
+    console.log('  各来源只提供"当前实时榜单"，没有历史接口；若照写会把今天的榜单盖上昨天的日期，污染历史快照。');
+    console.log('  本次只抓取可按时间回溯的「格隆汇每日快讯」。');
+  }
 
   // ===== 格隆汇每日快讯（全量，供「全球信息」页右栏 13 分类统计使用）=====
   const briefsFile = join(dir, `briefs-${DATE}.json`);
@@ -318,7 +332,8 @@ async function main() {
     if (prev && Array.isArray(prev.briefsDates)) briefsDates = prev.briefsDates;
   } catch (e) { /* 首次生成 */ }
   dates = dates.filter(d => /^\d{4}-\d{2}-\d{2}$/.test(d));
-  if (dates.indexOf(DATE) < 0) dates.push(DATE);
+  // 只有真正抓到当日热点榜单时才登记该日，避免把没有快照文件的日期列进清单（点了会 404）
+  if (isToday && dates.indexOf(DATE) < 0) dates.push(DATE);
   dates.sort().reverse();
   const keep = dates.slice(0, HT_SNAPSHOT_KEEP_DAYS);
 
@@ -329,7 +344,7 @@ async function main() {
 
   writeFileSync(idxPath, JSON.stringify({
     updatedAt: new Date().toISOString(),
-    latest: keep[0] || DATE,
+    latest: keep[0] || (isToday ? DATE : ''),
     latestBriefs: keepBriefs[0] || '',
     keepDays: HT_SNAPSHOT_KEEP_DAYS,
     briefKeepDays: BRIEF_KEEP_DAYS,

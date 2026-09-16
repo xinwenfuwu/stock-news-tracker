@@ -1524,7 +1524,7 @@ body {
 #ghost-hscroll.show { display: block; }
 #ghost-hscroll .ghs-spacer { height: 1px; }
 
-/* ===== 全球信息页：左=火热话题 / 右=美股美债 ===== */
+/* ===== 全球信息页：左=火热话题 / 右=格隆汇每日快讯 ===== */
 .global-layout {
   display: flex;
   gap: 18px;
