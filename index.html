@@ -4,11 +4,48 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>股市信息追踪分析系统</title>
-  <link rel="stylesheet" href="css/style.css?v=20260916c">
+  <link rel="stylesheet" href="css/style.css?v=20260916d">
   <!-- Vue 3 全局构建版（CDN，无需构建步骤） -->
   <script src="https://unpkg.com/vue@3.4.21/dist/vue.global.prod.js"></script>
 </head>
-<body>
+<body class="auth-locked">
+  <!-- ===== 登录关卡：登录通过前业务脚本不会被加载 ===== -->
+  <div id="auth-gate" class="auth-gate">
+    <div class="auth-card">
+      <div class="auth-brand">
+        <span class="auth-logo">📈</span>
+        <h1 class="auth-title">股市信息追踪分析系统</h1>
+        <p class="auth-sub" id="auth-sub">请登录后使用</p>
+      </div>
+
+      <form class="auth-form" id="auth-setup-form" hidden autocomplete="off">
+        <input class="auth-input" type="text" id="setup-username" placeholder="管理员用户名（2-20 位）" maxlength="20" autocomplete="username">
+        <input class="auth-input" type="password" id="setup-password" placeholder="设置密码（至少 6 位）" maxlength="128" autocomplete="new-password">
+        <input class="auth-input" type="password" id="setup-confirm" placeholder="再输入一次密码" maxlength="128" autocomplete="new-password">
+        <button class="auth-btn" type="submit">创建管理员并进入</button>
+        <p class="auth-tip">本机首次使用。该账号是管理员，之后可在系统内添加普通用户。</p>
+      </form>
+
+      <form class="auth-form" id="auth-login-form" hidden autocomplete="off">
+        <input class="auth-input" type="text" id="login-username" placeholder="用户名" maxlength="20" autocomplete="username">
+        <input class="auth-input" type="password" id="login-password" placeholder="密码" maxlength="128" autocomplete="current-password">
+        <label class="auth-remember"><input type="checkbox" id="login-remember" checked> 记住我（30 天）</label>
+        <button class="auth-btn" type="submit">登录</button>
+      </form>
+
+      <div class="auth-msg" id="auth-msg" hidden></div>
+
+      <div class="auth-loading" id="auth-loading" hidden>
+        <span class="auth-spinner"></span>
+        <span id="auth-loading-text">正在加载…</span>
+      </div>
+
+      <button class="auth-retry" id="auth-retry" type="button" hidden>点击重试</button>
+
+      <div class="auth-foot">未登录无法使用本系统 · 账号由管理员分配</div>
+    </div>
+  </div>
+
   <div id="app">
     <!-- 顶部导航 -->
     <header class="app-header">
@@ -30,11 +67,27 @@
             <span v-if="cloud.loggedIn">☁️✓</span>
             <span v-else>☁️</span>
           </button>
-          <button class="btn-icon" @click="showSettings = true" title="设置">⚙️</button>
+          <button class="btn-icon" v-if="can('settings.write')" @click="showSettings = true" title="设置">⚙️</button>
           <button class="btn-icon" @click="exportData" title="导出数据">⬇️</button>
-          <label class="btn-icon" title="导入数据">
+          <label class="btn-icon" v-if="can('data.import')" title="导入数据">
             ⬆️<input type="file" accept=".json" @change="importData" hidden>
           </label>
+          <div class="user-menu-wrap" v-if="authUser">
+            <button class="user-chip" @click.stop="userMenuOpen = !userMenuOpen" :title="'当前登录：' + authUser.username">
+              <span class="user-avatar">{{ authInitial }}</span>
+              <span class="user-name">{{ authUser.username }}</span>
+              <span class="user-role-tag" :class="{ 'is-admin': authUser.role === 'admin' }">{{ authUser.roleName }}</span>
+            </button>
+            <div class="user-dropdown" v-if="userMenuOpen" @click.stop>
+              <div class="user-dd-head">
+                <div class="user-dd-name">{{ authUser.username }}</div>
+                <div class="user-dd-meta">{{ authUser.roleName }} · {{ authExpiryText }}</div>
+              </div>
+              <button class="user-dd-item" @click="openChangePassword">修改密码</button>
+              <button class="user-dd-item" v-if="can('users.manage')" @click="openUserManage">用户管理</button>
+              <button class="user-dd-item is-danger" @click="doLogout">退出登录</button>
+            </div>
+          </div>
         </div>
       </div>
     </header>
@@ -1931,16 +1984,120 @@
       </div>
     </div>
 
+    <!-- ===== 用户管理模态框（仅管理员可见） ===== -->
+    <div class="modal-overlay" v-if="userModal.show" @click.self="userModal.show = false">
+      <div class="modal modal-lg">
+        <div class="modal-header">
+          <h3>👤 用户管理</h3>
+          <button class="btn-icon" @click="userModal.show = false">✕</button>
+        </div>
+        <div class="modal-body">
+          <div class="um-toolbar">
+            <input class="um-input" v-model="userModal.newUsername" placeholder="用户名（2-20 位）" maxlength="20">
+            <input class="um-input" type="password" v-model="userModal.newPassword" placeholder="初始密码（至少 6 位）" maxlength="128">
+            <select class="um-input" v-model="userModal.newRole">
+              <option value="user">普通用户</option>
+              <option value="admin">管理员</option>
+            </select>
+            <button class="btn btn-primary btn-sm" @click="addUserByAdmin">添加</button>
+            <div class="um-hint">
+              普通用户可以用全部业务页面，但不能改设置、导入/清空数据、管理账号。
+              账号存在本机浏览器，换设备时用下方「导出账号表」迁移；把账号发给别人时，请让对方自行导入。
+            </div>
+          </div>
+
+          <table class="um-table" v-if="userList.length">
+            <thead>
+              <tr>
+                <th>用户名</th><th>角色</th><th>状态</th><th>创建时间</th><th>操作</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="u in userList" :key="u.username">
+                <td>
+                  <span class="um-name">{{ u.username }}</span>
+                  <span class="um-self" v-if="authUser && u.username === authUser.username">当前登录</span>
+                </td>
+                <td>
+                  <select class="um-input" :value="u.role" @change="changeUserRole(u, $event.target.value)">
+                    <option value="user">普通用户</option>
+                    <option value="admin">管理员</option>
+                  </select>
+                </td>
+                <td>
+                  <span class="um-badge" :class="u.disabled ? 'off' : (u.role === 'admin' ? 'admin' : 'user')">
+                    {{ u.disabled ? '已停用' : (u.role === 'admin' ? '管理员' : '正常') }}
+                  </span>
+                </td>
+                <td class="muted">{{ fmtDateTime(u.createdAt) }}</td>
+                <td>
+                  <div class="um-actions">
+                    <button class="btn btn-sm" @click="toggleUserDisabled(u)">{{ u.disabled ? '启用' : '停用' }}</button>
+                    <button class="btn btn-sm" @click="resetUserPassword(u)">重置密码</button>
+                    <button class="btn btn-sm btn-danger" @click="removeUserByAdmin(u)">删除</button>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+          <div class="um-empty" v-else>暂无账号</div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-sm" @click="exportUsersTable">导出账号表</button>
+          <label class="btn btn-sm">
+            导入账号表<input type="file" accept=".json" @change="importUsersTable" hidden>
+          </label>
+          <div class="modal-footer-actions">
+            <button class="btn btn-sm" @click="userModal.show = false">关闭</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== 修改密码模态框 ===== -->
+    <div class="modal-overlay" v-if="pwModal.show" @click.self="pwModal.show = false">
+      <div class="modal">
+        <div class="modal-header">
+          <h3>🔑 修改密码</h3>
+          <button class="btn-icon" @click="pwModal.show = false">✕</button>
+        </div>
+        <div class="modal-body">
+          <div class="um-field">
+            <span>当前账号</span>
+            <div class="um-name">{{ pwModal.username }}</div>
+          </div>
+          <label class="um-field">
+            <span>原密码</span>
+            <input class="um-input" type="password" v-model="pwModal.oldPassword" placeholder="请输入原密码" maxlength="128">
+          </label>
+          <label class="um-field">
+            <span>新密码</span>
+            <input class="um-input" type="password" v-model="pwModal.newPassword" placeholder="至少 6 位" maxlength="128">
+          </label>
+          <label class="um-field">
+            <span>确认新密码</span>
+            <input class="um-input" type="password" v-model="pwModal.confirmPassword" placeholder="再输入一次" maxlength="128">
+          </label>
+          <div class="info-box">改完密码后当前登录保持有效，其他设备上用旧密码的登录会失效。</div>
+        </div>
+        <div class="modal-footer">
+          <div class="modal-footer-actions">
+            <button class="btn btn-sm" @click="pwModal.show = false">取消</button>
+            <button class="btn btn-sm btn-primary" @click="submitChangePassword">确认修改</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- ===== Toast 提示 ===== -->
     <transition name="toast">
       <div class="toast" v-if="toast.show" :class="toast.type">{{ toast.msg }}</div>
     </transition>
   </div>
 
-  <script src="js/store.js?v=20260916c"></script>
-  <script src="js/cloud-sync.js"></script>
-  <script src="js/stock-api.js?v=20260916c"></script>
-  <script src="js/hot-topics.js?v=20260916c"></script>
-  <script src="js/app.js?v=20260916c"></script>
+  <script src="js/auth.js?v=20260916d"></script>
+  <script src="js/auth-boot.js?v=20260916d"></script>
+  <!-- store / stock-api / hot-topics / app 由 auth-boot.js 在登录通过后动态装载，
+       未登录时它们不会被下载，业务数据也不会进入内存 -->
 </body>
 </html>
