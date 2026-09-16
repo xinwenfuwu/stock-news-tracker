@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>股市信息追踪分析系统</title>
-  <link rel="stylesheet" href="css/style.css?v=20260916f">
+  <title>股市信息分析系统</title>
+  <link rel="stylesheet" href="css/style.css?v=20260916g">
   <!-- Vue 3 全局构建版（CDN，无需构建步骤） -->
   <script src="https://unpkg.com/vue@3.4.21/dist/vue.global.prod.js"></script>
 </head>
@@ -14,7 +14,7 @@
     <div class="auth-card">
       <div class="auth-brand">
         <span class="auth-logo">📈</span>
-        <h1 class="auth-title">股市信息追踪分析系统</h1>
+        <h1 class="auth-title"><span>股市信息</span><span>分析系统</span></h1>
         <p class="auth-sub" id="auth-sub">请登录后使用</p>
       </div>
 
@@ -52,7 +52,7 @@
       <div class="header-inner">
         <div class="brand">
           <span class="brand-icon">📈</span>
-          <span class="brand-title">股市信息追踪分析系统</span>
+          <span class="brand-title"><span>股市信息</span><span>分析系统</span></span>
         </div>
         <nav class="main-nav">
           <a v-for="tab in tabs" :key="tab.key"
@@ -583,11 +583,11 @@
         </div>
       </section>
 
-      <!-- ===== 页面2.5：概念行业选股 ===== -->
+      <!-- ===== 页面2.5：选股 ===== -->
       <section v-show="currentPage === 'sector'" class="page">
         <div class="page-toolbar">
           <div class="toolbar-left">
-            <h2 class="page-title">🧭 概念行业选股</h2>
+            <h2 class="page-title">🧭 选股</h2>
           </div>
           <div class="toolbar-right">
             <span class="muted small">输入行业或概念名称，自动列出该板块下所有股票</span>
@@ -2184,8 +2184,8 @@
     </transition>
   </div>
 
-  <script src="js/auth.js?v=20260916f"></script>
-  <script src="js/auth-boot.js?v=20260916f"></script>
+  <script src="js/auth.js?v=20260916g"></script>
+  <script src="js/auth-boot.js?v=20260916g"></script>
   <!-- store / stock-api / hot-topics / app 由 auth-boot.js 在登录通过后动态装载，
        未登录时它们不会被下载，业务数据也不会进入内存 -->
 </body>
