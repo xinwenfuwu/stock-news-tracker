@@ -1,6 +1,6 @@
 /* 火热话题核心逻辑断言测试（Node，无需浏览器）
  * 验证 classify / clusterItems / siteCategoryStats 在合成数据 + 真实种子数据上正确。 */
-import { readFileSync } from 'node:fs';
+import { readFileSync, existsSync } from 'node:fs';
 import ht from '../js/hot-topics.js';
 
 let pass = 0, fail = 0;
@@ -96,6 +96,38 @@ const KEEP_SAMPLES = [
 KEEP_SAMPLES.forEach(s => assert('保留: ' + s.slice(0, 22), ht.cleanTitle(s) !== '', '被误过滤'));
 assert('实体解码 &gt; &amp;', ht.decodeEntities('A&amp;B &gt; C') === 'A&B > C', ht.decodeEntities('A&amp;B &gt; C'));
 assert('cleanTitle 去除 HTML 标签', ht.cleanTitle('<em>央行</em>宣布全面降准0.5个百分点') === '央行宣布全面降准0.5个百分点', ht.cleanTitle('<em>央行</em>宣布全面降准0.5个百分点'));
+
+console.log('6) 实时抓取失败时的快照回退日期候选 snapshotCandidates（代理被拦截的兜底链路）');
+const today = ht.todayStr();
+assert('todayStr 为本地日期格式', /^\d{4}-\d{2}-\d{2}$/.test(today), today);
+assert('fmtLocalDate 无 UTC 偏移', ht.fmtLocalDate(new Date(2026, 8, 16)) === '2026-09-16', ht.fmtLocalDate(new Date(2026, 8, 16)));
+// 有清单：只取不晚于今天的日期，降序优先；未来日期被排除
+const cand1 = ht.snapshotCandidates({ dates: ['2026-09-16', '2026-09-15', '2026-12-31', 'bogus', null] }, '2026-09-16', 14);
+assert('清单优先且降序', cand1[0] === '2026-09-16' && cand1[1] === '2026-09-15', JSON.stringify(cand1));
+assert('清单排除未来日期', cand1.indexOf('2026-12-31') < 0, JSON.stringify(cand1));
+assert('清单过滤非法项', cand1.indexOf('bogus') < 0 && cand1.length === 2, JSON.stringify(cand1));
+// 今天没有快照（比如 Action 还没跑）→ 清单里最早的就是最优候选
+const cand2 = ht.snapshotCandidates({ dates: ['2026-09-15', '2026-09-14'] }, '2026-09-16', 14);
+assert('无当日快照则回退前一可用日', cand2[0] === '2026-09-15', JSON.stringify(cand2));
+// 无清单 / 清单不可用 → 从今天起向前回溯 N 天
+const cand3 = ht.snapshotCandidates(null, '2026-09-16', 3);
+assert('无清单回溯起点为今天', cand3[0] === '2026-09-16', JSON.stringify(cand3));
+assert('无清单回溯 N 天且连续', cand3.length === 3 && cand3[1] === '2026-09-15' && cand3[2] === '2026-09-14', JSON.stringify(cand3));
+assert('空清单同样走回溯', ht.snapshotCandidates({ dates: [] }, '2026-09-16', 2).length === 2);
+assert('跨月回溯正确', ht.snapshotCandidates(null, '2026-10-02', 4).join(',') === '2026-10-02,2026-10-01,2026-09-30,2026-09-29', ht.snapshotCandidates(null, '2026-10-02', 4).join(','));
+
+console.log('7) 抓取脚本产出的快照清单 index.json 与快照一致性');
+const idxPath = new URL('../data/hot-topics/index.json', import.meta.url);
+if (existsSync(idxPath)) {
+  const idx = JSON.parse(readFileSync(idxPath, 'utf8'));
+  assert('清单含 dates 数组', Array.isArray(idx.dates) && idx.dates.length > 0, JSON.stringify(idx.dates));
+  assert('清单 latest 即 dates[0]', idx.latest === idx.dates[0], idx.latest);
+  assert('清单日期降序', idx.dates.join(',') === idx.dates.slice().sort().reverse().join(','), idx.dates.join(','));
+  const miss = idx.dates.filter(d => !existsSync(new URL(`../data/hot-topics/${d}.json`, import.meta.url)));
+  assert('清单里的日期都有对应快照文件', miss.length === 0, miss.join(','));
+} else {
+  console.log('  （本地暂无 index.json，跳过）');
+}
 
 console.log(`\n结果：${pass} 通过 / ${fail} 失败`);
 process.exit(fail ? 1 : 0);
