@@ -2893,11 +2893,12 @@ const app = createApp({
       filter: { text: '', loading: false, suggestions: [], open: false, timer: null }
     });
 
-    /** 该入口当前要往哪个列表里加股票 */
+    /** 该入口当前要往哪个列表里加股票（热门明细与筛选板块都作用于「当前选中的来源」） */
     function quickAddTarget(scope) {
       if (scope === 'sector') return sectorDetail.data.stocks || [];
       const id = filterPanel.poolId;
-      if (scope === 'hot') return hotFilterStocks.value || [];
+      // 没选任何来源（例如刚进热门板块页、还没点板块）时返回 null，
+      // 由调用方提示「请先选择板块」——否则会把股票加进一个当前不显示的列表里，用户以为没反应。
       if (!id) return null;
       if (id === 'hot') return hotFilterStocks.value || [];
       if (id.startsWith('s-')) {
@@ -2910,11 +2911,10 @@ const app = createApp({
       }
       return null;
     }
-    /** 该入口对应的「板块对象」（用于重算平均涨跌幅；热门板块列表无对象，返回 null） */
+    /** 该入口对应的「板块对象」（用于重算平均涨跌幅；热门板块成分股列表无归属对象，返回 null） */
     function quickAddTargetPool(scope) {
       if (scope === 'sector') return sectorDetail.data;
       const id = filterPanel.poolId;
-      if (scope === 'hot') return null;
       if (!id || id === 'hot') return null;
       if (id.startsWith('s-')) return (D.sectorPools || []).find(p => 's-' + p.id === id) || null;
       if (id.startsWith('p-')) return (D.stockPools || []).find(p => 'p-' + p.id === id) || null;
