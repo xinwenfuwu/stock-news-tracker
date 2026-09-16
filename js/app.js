@@ -22,6 +22,7 @@ const app = createApp({
     const currentPage = ref('news');
     const tabs = [
       { key: 'news', label: '新闻追踪', icon: '📰' },
+      { key: 'holdings', label: '用户持仓', icon: '💼' },
       { key: 'finance', label: '全球信息', icon: '🌐' },
       { key: 'pools', label: '股票池', icon: '📅' },
       { key: 'sector', label: '选股', icon: '🧭' },
@@ -36,7 +37,7 @@ const app = createApp({
     }
     // 初始化路由
     const hash = location.hash.replace('#', '');
-    if (['news', 'finance', 'pools', 'sector', 'filter', 'hot'].includes(hash)) currentPage.value = hash;
+    if (['news', 'holdings', 'finance', 'pools', 'sector', 'filter', 'hot'].includes(hash)) currentPage.value = hash;
 
     // ===== 登录账号与权限 =====
     // Auth 由 js/auth.js 提供；auth-boot.js 只在登录通过后才加载本文件，
@@ -414,6 +415,12 @@ const app = createApp({
       if (v == null || v === '' || isNaN(v)) return '—';
       const n = +v;
       return (n > 0 ? '+' : '') + n.toFixed(2) + '%';
+    }
+    /** 带正负号的金额（盈亏用；绝对价如市值仍用 fmt） */
+    function fmtSigned(v) {
+      if (v == null || v === '' || isNaN(v)) return '—';
+      const n = +v;
+      return (n > 0 ? '+' : '') + n.toFixed(2);
     }
     /** 日期 YYYY-MM-DD → YYYY年MM月DD日 */
     function fmtDateCN(dateStr) {
@@ -1034,6 +1041,185 @@ const app = createApp({
       if (!confirm('确认删除该条新闻？')) return;
       Store.deleteNews(id);
       showToast('已删除', 'success');
+    }
+
+    // ============================================================
+    // 页面：用户持仓（各登录用户只看自己的持仓，按用户名隔离）
+    // ============================================================
+    function blankHolding() {
+      return {
+        id: null, code: '', name: '', entryDate: Store.today(),
+        entryPrice: null, currentPrice: null, shares: null,
+        direction: 'long', fee: 0, note: ''
+      };
+    }
+    const holdingModal = reactive({ show: false, isEdit: false, data: blankHolding(), stockSearch: '', suggestions: [] });
+    const holdingRefreshing = ref(false);
+
+    const myHoldings = computed(() => {
+      const u = authUser.value && authUser.value.username;
+      return u ? Store.getUserHoldings(u) : [];
+    });
+
+    function holdingDays(h) { return h.entryDate ? Store.daysSince(h.entryDate) : 0; }
+    function holdingCost(h) {                 // 成本金额 = 建仓价 × 数量
+      const ep = parseFloat(h.entryPrice), sh = parseFloat(h.shares);
+      if (isNaN(ep) || isNaN(sh)) return null;
+      return ep * sh;
+    }
+    function holdingMarketValue(h) {          // 市值 = 现价 × 数量
+      const cp = parseFloat(h.currentPrice), sh = parseFloat(h.shares);
+      if (isNaN(cp) || isNaN(sh)) return null;
+      return cp * sh;
+    }
+    function holdingChangePct(h) {            // 持仓涨跌幅（相对建仓价）
+      const ep = parseFloat(h.entryPrice), cp = parseFloat(h.currentPrice);
+      if (isNaN(ep) || ep === 0 || isNaN(cp)) return null;
+      return (cp - ep) / ep * 100;
+    }
+    function holdingProfit(h) {               // 盈亏金额（扣手续费）
+      const ep = parseFloat(h.entryPrice), cp = parseFloat(h.currentPrice), sh = parseFloat(h.shares);
+      const fee = parseFloat(h.fee) || 0;
+      if (isNaN(ep) || isNaN(cp) || isNaN(sh)) return null;
+      const raw = (cp - ep) * sh;
+      return (h.direction === 'short' ? -raw : raw) - fee;
+    }
+    function holdingProfitPct(h) {            // 盈亏比例 = 盈亏 / 成本
+      const cost = holdingCost(h), profit = holdingProfit(h);
+      if (cost == null || profit == null || cost === 0) return null;
+      return profit / cost * 100;
+    }
+
+    const holdingSummary = computed(() => {
+      let totalCost = 0, totalMarket = 0, totalProfit = 0, count = 0;
+      for (const h of myHoldings.value) {
+        const c = holdingCost(h), m = holdingMarketValue(h), p = holdingProfit(h);
+        if (c != null) totalCost += c;
+        if (m != null) totalMarket += m;
+        if (p != null) totalProfit += p;
+        count++;
+      }
+      return { totalCost, totalMarket, totalProfit, pct: totalCost > 0 ? totalProfit / totalCost * 100 : null, count };
+    });
+
+    const holdingSortKey = ref('entryDate');
+    const holdingSortDir = ref('desc');
+    const sortedHoldings = computed(() => {
+      const list = [...myHoldings.value];
+      const k = holdingSortKey.value, dir = holdingSortDir.value === 'asc' ? 1 : -1;
+      list.sort((a, b) => {
+        let va, vb;
+        if (k === 'days') { va = holdingDays(a); vb = holdingDays(b); }
+        else if (k === 'changePct') { va = holdingChangePct(a); vb = holdingChangePct(b); }
+        else if (k === 'profit') { va = holdingProfit(a); vb = holdingProfit(b); }
+        else if (k === 'marketValue') { va = holdingMarketValue(a); vb = holdingMarketValue(b); }
+        else { va = a[k]; vb = b[k]; }
+        va = parseFloat(va); vb = parseFloat(vb);
+        if (isNaN(va)) va = dir > 0 ? Infinity : -Infinity;
+        if (isNaN(vb)) vb = dir > 0 ? Infinity : -Infinity;
+        return (va - vb) * dir;
+      });
+      return list;
+    });
+    function sortHoldingBy(key) {
+      if (holdingSortKey.value === key) holdingSortDir.value = holdingSortDir.value === 'asc' ? 'desc' : 'asc';
+      else { holdingSortKey.value = key; holdingSortDir.value = 'desc'; }
+    }
+    function holdingSortIcon(key) {
+      if (holdingSortKey.value !== key) return '⇅';
+      return holdingSortDir.value === 'asc' ? '↑' : '↓';
+    }
+
+    function onHoldingStockSearch() {
+      clearTimeout(holdingModal._t);
+      const kw = (holdingModal.stockSearch || '').trim();
+      if (!kw) { holdingModal.suggestions = []; return; }
+      holdingModal._t = setTimeout(async () => {
+        const r = await StockAPI.searchStocks(kw);
+        holdingModal.suggestions = (r || []).slice(0, 8);
+      }, 300);
+    }
+    function pickHoldingStock(s) {
+      holdingModal.data.code = StockAPI.inferPrefix(s.pureCode || s.code || '');
+      holdingModal.data.name = s.name || '';
+      holdingModal.stockSearch = s.name ? (s.name + (s.pureCode ? '(' + s.pureCode + ')' : '')) : holdingModal.data.code;
+      holdingModal.suggestions = [];
+    }
+    function openAddHolding() {
+      holdingModal.isEdit = false;
+      holdingModal.data = blankHolding();
+      holdingModal.stockSearch = '';
+      holdingModal.suggestions = [];
+      holdingModal.show = true;
+    }
+    function editHolding(h) {
+      holdingModal.isEdit = true;
+      holdingModal.data = JSON.parse(JSON.stringify(h));
+      holdingModal.stockSearch = h.name ? (h.name + (h.code ? '(' + pureCode(h.code) + ')' : '')) : (h.code || '');
+      holdingModal.suggestions = [];
+      holdingModal.show = true;
+    }
+    function saveHolding() {
+      const d = holdingModal.data;
+      if (!d.code) { showToast('请选择股票', 'error'); return; }
+      if (!d.entryDate) { showToast('请填写建仓日期', 'error'); return; }
+      const ep = parseFloat(d.entryPrice), sh = parseFloat(d.shares), cp = parseFloat(d.currentPrice);
+      if (isNaN(ep) || ep <= 0) { showToast('建仓价必须大于 0', 'error'); return; }
+      if (isNaN(sh) || sh <= 0) { showToast('持仓数量必须大于 0', 'error'); return; }
+      if (d.currentPrice === '' || d.currentPrice == null || isNaN(cp)) d.currentPrice = ep;
+      const u = authUser.value && authUser.value.username;
+      if (!u) { showToast('未获取到当前用户', 'error'); return; }
+      const rec = {
+        code: d.code, name: d.name || '', entryDate: d.entryDate,
+        entryPrice: ep, currentPrice: parseFloat(d.currentPrice), shares: sh,
+        direction: d.direction || 'long', fee: parseFloat(d.fee) || 0, note: (d.note || '').trim()
+      };
+      if (holdingModal.isEdit) { Store.updateHolding(u, d.id, rec); showToast('已更新持仓', 'success'); }
+      else { Store.addHolding(u, rec); showToast('已添加持仓', 'success'); }
+      holdingModal.show = false;
+    }
+    function deleteHoldingRow(h) {
+      const u = authUser.value && authUser.value.username;
+      if (!u) return;
+      if (!confirm('确认删除该持仓？')) return;
+      Store.deleteHolding(u, h.id);
+      showToast('已删除', 'success');
+    }
+    /** 按建仓日取历史收盘价作为建仓价（不复权真实价） */
+    async function fetchEntryPrice() {
+      const d = holdingModal.data;
+      if (!d.code || !d.entryDate) { showToast('请先选择股票并填写建仓日期', 'error'); return; }
+      try {
+        const px = await StockAPI.getHistoryClose(StockAPI.inferPrefix(d.code), d.entryDate);
+        if (px == null) { showToast('该日无行情（可能停牌或未上市）', 'error'); return; }
+        d.entryPrice = +px.toFixed(2);
+        if (d.currentPrice == null || d.currentPrice === '') d.currentPrice = +px.toFixed(2);
+        showToast('已按建仓日填入收盘价', 'success');
+      } catch (e) { showToast('取价失败：' + e.message, 'error'); }
+    }
+    /** 刷新全部持仓现价（用户手动触发；暂停时不发请求） */
+    async function refreshHoldingPrices() {
+      const list = myHoldings.value;
+      if (!list.length) return;
+      if (autoRefreshPaused()) { pauseHint('持仓现价刷新'); return; }
+      holdingRefreshing.value = true;
+      try {
+        const codes = [...new Set(list.map(h => StockAPI.inferPrefix(h.code)).filter(Boolean))];
+        const quotes = await StockAPI.getQuotes(codes);
+        const map = {};
+        for (const c of codes) {
+          const q = quotes[c];
+          if (q && q.price != null && !isNaN(q.price)) map[c] = q.price;
+        }
+        const u = authUser.value && authUser.value.username;
+        Store.setHoldingPrices(u, map);
+        const hit = Object.keys(map).length;
+        showToast(hit ? `已刷新 ${hit}/${codes.length} 只现价` : '未能获取现价（接口限流或代码无效）', hit ? 'success' : 'error');
+      } catch (e) {
+        showToast('刷新现价失败：' + e.message, 'error');
+      } finally {
+        holdingRefreshing.value = false;
+      }
     }
 
     // 为单条新闻补全股价
@@ -4688,7 +4874,7 @@ const app = createApp({
       toast, showToast,
       // 数据刷新总开关（顶部「暂停」按钮）
       dataPaused, autoRefreshPaused, toggleDataPause,
-      allCategories, fmt, fmtPct, fmtDateCN, numClass, pctClass, parseStocks, stocksText, pureCode,
+      allCategories, fmt, fmtPct, fmtSigned, fmtDateCN, numClass, pctClass, parseStocks, stocksText, pureCode,
       fmtYi, sRatio,
       showSettings, settingsText, proxyUrl, saveSettings, clearAllData, dataStats,
       exportData, importData,
@@ -4771,6 +4957,13 @@ const app = createApp({
       updateFavNote, favDays,
       favAddCode, favAddName, addFavoriteManual,
       favRefreshing, refreshFavorites
+      ,
+      // 用户持仓
+      myHoldings, sortedHoldings, holdingSummary, holdingModal, openAddHolding, editHolding,
+      saveHolding, deleteHoldingRow, refreshHoldingPrices, holdingRefreshing,
+      onHoldingStockSearch, pickHoldingStock, fetchEntryPrice,
+      holdingSortKey, holdingSortDir, sortHoldingBy, holdingSortIcon,
+      holdingDays, holdingCost, holdingMarketValue, holdingChangePct, holdingProfit, holdingProfitPct
       ,
       // 登录账号与权限
       authUser, authInitial, authExpiryText, can, fmtDateTime, doLogout, userMenuOpen,

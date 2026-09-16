@@ -17,6 +17,8 @@ const Store = {
       stockPools: [],
       sectorPools: [],        // 概念/行业选股板块：[{id, name, bk, type, date, stocks: [...]}]
       favorites: [],          // 收藏股票：[{code, name, favDate, note}]
+      holdings: {},            // 用户持仓：{ [username]: [{id, code, name, entryDate, entryPrice, currentPrice, shares, direction, fee, note, createdAt, updatedAt}] }
+      holdingColWidths: {},    // 持仓页：各列宽度(px)，按列位置索引
       financePush: { url: '', locked: false }, // 财经推送：右侧嵌入的财经网址（锁定后持久化）
       filterColWidths: {},      // 筛选板块：各列宽度(px)，按列位置索引（0,1,2...）
       sectorColWidths: {},      // 概念板块详情弹窗：各列宽度(px)，按列位置索引（0,1,2...）
@@ -85,6 +87,12 @@ const Store = {
     if (typeof this.data.hotColWidths !== 'object' || this.data.hotColWidths === null) {
       this.data.hotColWidths = {};
     }
+    if (!this.data.holdings || typeof this.data.holdings !== 'object') {
+      this.data.holdings = {};
+    }
+    if (typeof this.data.holdingColWidths !== 'object' || this.data.holdingColWidths === null) {
+      this.data.holdingColWidths = {};
+    }
 
     // 自动保存
     this._setupAutosave(Vue);
@@ -147,6 +155,13 @@ const Store = {
   addNews(item) {
     item.id = this.uid('n');
     item.createdAt = Date.now();
+    // 归属人：记录创建者用户名（多用户协作时区分来源）；Auth 由 auth-boot 注入，正常已登录
+    if (!item.owner) {
+      try {
+        const u = (typeof Auth !== 'undefined' && Auth && Auth.user) ? Auth.user.username : null;
+        item.owner = u || '—';
+      } catch (e) { item.owner = '—'; }
+    }
     this.data.news.unshift(item);
     return item;
   },
@@ -224,6 +239,45 @@ const Store = {
     const f = this.data.favorites.find(f => f.id === id);
     if (f) { f.note = note; return true; }
     return false;
+  },
+
+  // ===== 用户持仓（按用户名隔离，各自只看各自） =====
+  getUserHoldings(username) {
+    if (!username) return [];
+    if (!this.data.holdings[username]) this.data.holdings[username] = [];
+    return this.data.holdings[username];
+  },
+  addHolding(username, h) {
+    if (!username) return null;
+    if (!this.data.holdings[username]) this.data.holdings[username] = [];
+    h.id = this.uid('h');
+    h.createdAt = Date.now();
+    h.updatedAt = Date.now();
+    this.data.holdings[username].push(h);
+    return h;
+  },
+  updateHolding(username, id, patch) {
+    const list = this.data.holdings[username] || [];
+    const it = list.find(x => x.id === id);
+    if (it) { Object.assign(it, patch, { updatedAt: Date.now() }); return it; }
+    return null;
+  },
+  deleteHolding(username, id) {
+    const list = this.data.holdings[username];
+    if (!list) return false;
+    const i = list.findIndex(x => x.id === id);
+    if (i >= 0) { list.splice(i, 1); return true; }
+    return false;
+  },
+  /** 批量写入现价（刷新后）；priceMap: { code: currentPrice } */
+  setHoldingPrices(username, priceMap) {
+    const list = this.data.holdings[username] || [];
+    for (const it of list) {
+      if (priceMap[it.code] != null && !isNaN(priceMap[it.code])) {
+        it.currentPrice = +priceMap[it.code];
+        it.updatedAt = Date.now();
+      }
+    }
   },
 
   // ===== 每日数据 =====

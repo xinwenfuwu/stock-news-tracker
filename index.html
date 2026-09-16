@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>股市信息分析系统</title>
-  <link rel="stylesheet" href="css/style.css?v=20260916j">
+  <link rel="stylesheet" href="css/style.css?v=20260916k">
   <!-- Vue 3 全局构建版（CDN，无需构建步骤） -->
   <script src="https://unpkg.com/vue@3.4.21/dist/vue.global.prod.js"></script>
 </head>
@@ -183,6 +183,7 @@
             <thead>
               <tr>
                 <th class="col-check"><input type="checkbox" :checked="allNewsSelected" @change="toggleSelectAll"></th>
+                <th class="col-owner">用户</th>
                 <th class="col-date">日期</th>
                 <th class="col-news">新闻</th>
                 <th>概念分类</th>
@@ -212,6 +213,7 @@
               <tr v-for="item in sortedNews" :key="item.id"
                   :class="{ selected: selectedNewsIds.includes(item.id) }">
                 <td><input type="checkbox" :value="item.id" v-model="selectedNewsIds"></td>
+                <td class="col-owner">{{ item.owner || '—' }}</td>
                 <td>{{ item.date }}</td>
                 <td class="cell-news" :title="item.content">
                   <div class="news-text">{{ item.content }}</div>
@@ -251,7 +253,7 @@
                 </td>
               </tr>
               <tr v-if="sortedNews.length === 0">
-                <td colspan="16" class="empty-row">
+                <td colspan="17" class="empty-row">
                   暂无新闻数据，点击「导入新闻」或「手动添加」开始
                 </td>
               </tr>
@@ -375,6 +377,149 @@
           </table>
         </div>
 
+      </section>
+
+      <!-- ===== 页面（用户持仓：各登录用户只看自己的持仓） ===== -->
+      <section v-show="currentPage === 'holdings'" class="page">
+        <div class="page-toolbar">
+          <div class="toolbar-left">
+            <h2 class="page-title" style="margin:0">💼 用户持仓</h2>
+            <span class="muted small" v-if="authUser">（{{ authUser.username }} 的持仓，仅你自己可见）</span>
+          </div>
+          <div class="toolbar-right">
+            <button class="btn btn-primary" @click="openAddHolding">➕ 添加持仓</button>
+            <button class="btn" @click="refreshHoldingPrices" :disabled="holdingRefreshing">
+              <span v-if="holdingRefreshing">⏳ 刷新中...</span>
+              <span v-else>🔄 刷新现价</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="hold-summary" v-if="holdingSummary.count">
+          <div class="hold-card">
+            <div class="hold-card-label">持仓数</div>
+            <div class="hold-card-val">{{ holdingSummary.count }} <span class="muted small">只</span></div>
+          </div>
+          <div class="hold-card">
+            <div class="hold-card-label">总市值</div>
+            <div class="hold-card-val">¥{{ fmt(holdingSummary.totalMarket) }}</div>
+          </div>
+          <div class="hold-card">
+            <div class="hold-card-label">总盈亏</div>
+            <div class="hold-card-val" :class="numClass(holdingSummary.totalProfit)">¥{{ fmtSigned(holdingSummary.totalProfit) }}</div>
+          </div>
+          <div class="hold-card">
+            <div class="hold-card-label">总盈亏比例</div>
+            <div class="hold-card-val" :class="pctClass(holdingSummary.pct)">{{ fmtPct(holdingSummary.pct) }}</div>
+          </div>
+        </div>
+
+        <div class="table-wrap">
+          <table class="data-table holding-table">
+            <thead>
+              <tr>
+                <th class="sortable" @click="sortHoldingBy('name')">股票</th>
+                <th class="sortable" @click="sortHoldingBy('entryDate')">建仓日期 <span class="sort-arrow">{{ holdingSortIcon('entryDate') }}</span></th>
+                <th class="sortable num-col" @click="sortHoldingBy('entryPrice')">建仓价 <span class="sort-arrow">{{ holdingSortIcon('entryPrice') }}</span></th>
+                <th class="sortable num-col" @click="sortHoldingBy('currentPrice')">现价 <span class="sort-arrow">{{ holdingSortIcon('currentPrice') }}</span></th>
+                <th class="sortable num-col" @click="sortHoldingBy('shares')">数量(股) <span class="sort-arrow">{{ holdingSortIcon('shares') }}</span></th>
+                <th class="sortable num-col" @click="sortHoldingBy('days')">天数 <span class="sort-arrow">{{ holdingSortIcon('days') }}</span></th>
+                <th class="sortable num-col" @click="sortHoldingBy('changePct')">持仓涨跌幅 <span class="sort-arrow">{{ holdingSortIcon('changePct') }}</span></th>
+                <th class="sortable num-col" @click="sortHoldingBy('marketValue')">市值 <span class="sort-arrow">{{ holdingSortIcon('marketValue') }}</span></th>
+                <th class="sortable num-col" @click="sortHoldingBy('profit')">盈亏(元) <span class="sort-arrow">{{ holdingSortIcon('profit') }}</span></th>
+                <th class="sortable num-col" @click="sortHoldingBy('profit')">盈亏比例 <span class="sort-arrow">{{ holdingSortIcon('profit') }}</span></th>
+                <th>方向</th>
+                <th>备注</th>
+                <th class="col-actions">操作</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="h in sortedHoldings" :key="h.id">
+                <td class="cell-stock">
+                  <div class="stock-name">{{ h.name || pureCode(h.code) || '—' }}</div>
+                  <div class="stock-code muted small">{{ pureCode(h.code) }}</div>
+                </td>
+                <td>{{ h.entryDate }}</td>
+                <td :class="numClass(h.entryPrice)">{{ fmt(h.entryPrice) }}</td>
+                <td :class="numClass(h.currentPrice)">{{ fmt(h.currentPrice) }}</td>
+                <td class="num-col">{{ fmt(h.shares) }}</td>
+                <td class="num-col">{{ holdingDays(h) }}</td>
+                <td class="num-col" :class="pctClass(holdingChangePct(h))">{{ fmtPct(holdingChangePct(h)) }}</td>
+                <td class="num-col" :class="numClass(holdingMarketValue(h))">{{ fmt(holdingMarketValue(h)) }}</td>
+                <td class="num-col" :class="numClass(holdingProfit(h))">{{ fmtSigned(holdingProfit(h)) }}</td>
+                <td class="num-col" :class="pctClass(holdingProfitPct(h))">{{ fmtPct(holdingProfitPct(h)) }}</td>
+                <td><span class="hold-dir" :class="h.direction === 'short' ? 'is-short' : 'is-long'">{{ h.direction === 'short' ? '空' : '多' }}</span></td>
+                <td class="cell-note" :title="h.note">{{ h.note || '—' }}</td>
+                <td class="col-actions">
+                  <button class="btn-icon-sm" @click="editHolding(h)" title="编辑">✏️</button>
+                  <button class="btn-icon-sm" @click="deleteHoldingRow(h)" title="删除">🗑</button>
+                </td>
+              </tr>
+              <tr v-if="sortedHoldings.length === 0">
+                <td colspan="13" class="empty-row">
+                  暂无持仓，点击「添加持仓」记录你的股票仓位（建仓日期 / 建仓价 / 数量等）
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="page-footer">共 {{ sortedHoldings.length }} 条持仓</div>
+
+        <!-- 添加/编辑持仓 弹窗 -->
+        <div class="modal-overlay" v-if="holdingModal.show" @click.self="holdingModal.show = false">
+          <div class="modal holding-modal">
+            <h3>{{ holdingModal.isEdit ? '✏️ 编辑持仓' : '➕ 添加持仓' }}</h3>
+            <div class="form-row">
+              <label>股票</label>
+              <div class="stock-search-wrap">
+                <input class="cell-input" v-model="holdingModal.stockSearch" @input="onHoldingStockSearch"
+                       placeholder="输入代码或名称，如 600519 / 贵州茅台">
+                <div class="suggestions" v-if="holdingModal.suggestions.length">
+                  <div class="suggestion" v-for="(s, i) in holdingModal.suggestions" :key="i"
+                       @click="pickHoldingStock(s)">{{ s.name }} <span class="muted small">({{ s.pureCode }})</span></div>
+                </div>
+              </div>
+              <span class="muted small" v-if="holdingModal.data.code">已选：{{ holdingModal.data.name || pureCode(holdingModal.data.code) }} · {{ pureCode(holdingModal.data.code) }}</span>
+            </div>
+            <div class="form-row">
+              <label>建仓日期</label>
+              <input type="date" v-model="holdingModal.data.entryDate">
+              <button class="btn btn-sm" @click="fetchEntryPrice" title="按建仓日历史收盘价自动填入建仓价">📅 按建仓日取价</button>
+            </div>
+            <div class="form-row">
+              <label>建仓价</label>
+              <input class="cell-input num-col" type="number" step="0.01" min="0" v-model.number="holdingModal.data.entryPrice" placeholder="建仓成本单价">
+            </div>
+            <div class="form-row">
+              <label>现价</label>
+              <input class="cell-input num-col" type="number" step="0.01" min="0" v-model.number="holdingModal.data.currentPrice" placeholder="留空默认等于建仓价">
+              <span class="muted small">点「刷新现价」可批量更新</span>
+            </div>
+            <div class="form-row">
+              <label>数量(股)</label>
+              <input class="cell-input num-col" type="number" step="1" min="0" v-model.number="holdingModal.data.shares" placeholder="持仓股数">
+            </div>
+            <div class="form-row">
+              <label>方向</label>
+              <select class="select" v-model="holdingModal.data.direction">
+                <option value="long">多（买入持有）</option>
+                <option value="short">空（融券/做空）</option>
+              </select>
+            </div>
+            <div class="form-row">
+              <label>手续费</label>
+              <input class="cell-input num-col" type="number" step="0.01" min="0" v-model.number="holdingModal.data.fee" placeholder="可选，计入盈亏成本">
+            </div>
+            <div class="form-row">
+              <label>备注</label>
+              <input class="cell-input" v-model="holdingModal.data.note" placeholder="可选，如 加仓原因 / 止损位">
+            </div>
+            <div class="modal-actions">
+              <button class="btn btn-primary" @click="saveHolding">💾 保存</button>
+              <button class="btn" @click="holdingModal.show = false">取消</button>
+            </div>
+          </div>
+        </div>
       </section>
 
       <!-- ===== 页面（全球信息：左=火热话题 / 右=格隆汇每日快讯） ===== -->
@@ -2363,8 +2508,8 @@
     </transition>
   </div>
 
-  <script src="js/auth.js?v=20260916j"></script>
-  <script src="js/auth-boot.js?v=20260916j"></script>
+  <script src="js/auth.js?v=20260916k"></script>
+  <script src="js/auth-boot.js?v=20260916k"></script>
   <!-- store / stock-api / hot-topics / app 由 auth-boot.js 在登录通过后动态装载，
        未登录时它们不会被下载，业务数据也不会进入内存 -->
 </body>
