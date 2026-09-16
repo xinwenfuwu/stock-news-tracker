@@ -301,7 +301,7 @@
             </div>
 
             <!-- ===== 每日话题：10 个软件按序各 Top10 ===== -->
-            <div v-show="htTab === 'daily'">
+            <div v-show="htTab === 'daily'" id="ht-daily">
               <div class="ht-controls">
                 <label class="ht-label">日期</label>
                 <input type="date" v-model="hotTopicDate" class="ht-date" @change="onHotTopicDateChange">
@@ -346,14 +346,14 @@
                       <span class="item-time" v-if="it.time">{{ it.time }}</span>
                     </li>
                   </ol>
-                  <div class="src-empty muted small" v-else-if="s.error">源暂未取到数据（代理或源限制）</div>
+                  <div class="src-empty muted small" v-else-if="s.error">暂未取到：{{ s.error }}</div>
                   <div class="src-empty muted small" v-else>加载中…</div>
                 </div>
               </div>
             </div>
 
             <!-- ===== 统计分析：跨站重合 + 各站分类 ===== -->
-            <div v-show="htTab === 'analysis'">
+            <div v-show="htTab === 'analysis'" id="ht-analysis">
               <div class="ht-controls">
                 <label class="ht-label">时间段</label>
                 <div class="seg">
@@ -1793,11 +1793,12 @@
             <p>默认分类：主线实体、个股实体、主线概念、个股概念、利空概念、行业动态、政策利好、政策利空、业绩预告、业绩快报、重组并购、增持回购、减持解禁、监管处罚、海外市场。可自由增删改。</p>
           </div>
           <div class="form-row">
-            <label>新闻代理地址（用于一键抓取财经快讯，免费 Cloudflare Worker 地址，留空则不能用一键抓取）</label>
+            <label>新闻代理地址（用于一键抓取财经快讯，免费 Cloudflare Worker 地址，留空则不能用一键抓取；可填多个地址，用空格或逗号分隔，会依次尝试）</label>
             <input v-model="proxyUrl" placeholder="https://news-proxy.你的子域.workers.dev">
           </div>
           <div class="info-box">
             <p><b>免费开通一键抓取：</b>部署一个 Cloudflare Worker 即可（免费10万次/天）。代码在仓库 <code>worker/news-proxy.js</code>。详见导入页面的步骤说明。</p>
+            <p>若代理域名在国内网络被拦截（如 <code>*.workers.dev</code> 打不开），可在 Cloudflare 给 Worker 绑定自有域名；或直接留空——「全球信息」页会自动回退展示服务端定时抓取的快照。</p>
           </div>
           <div class="form-row">
             <label>数据存储</label>
