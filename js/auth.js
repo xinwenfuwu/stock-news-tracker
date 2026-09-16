@@ -1264,14 +1264,22 @@
       return pre.then(function (chk) {
         if (!chk.ok) return chk;
         return makePasswordHash(pc.value).then(function (hash) {
-          u.hash = hash;
-          u.pwSeal = sealPassword(pc.value);   // 同步更新可显示密码，避免「显示的是旧密码」
-          u.updatedAt = Date.now();
+          // 防竞态：上面 makePasswordHash 是异步（PBKDF2），其间本模块其它方法
+          // （touchSession / syncLoginMeta 等后台心跳）可能 reload 并写回了「旧」的 this.users，
+          // 若直接沿用开头拿到的 u，saveUsers(self.users) 会把过期数组写回、丢掉新密码哈希，
+          // 导致刷新后会话签名与存储哈希对不上而「登录态校验失败」。
+          // 因此在落盘前重新读取最新用户表，并在同一同步步内完成「改值 + 保存」。
+          self.users = loadUsers();
+          var u2 = findUser(self.users, username);
+          if (!u2) return { ok: false, error: '用户不存在' };
+          u2.hash = hash;
+          u2.pwSeal = sealPassword(pc.value);   // 同步更新可显示密码，避免「显示的是旧密码」
+          u2.updatedAt = Date.now();
           if (!saveUsers(self.users)) return { ok: false, error: '保存失败：浏览器本地存储不可用' };
           if (isSelf) {
             // 会话签名绑定密码哈希，改完必须重签，否则自己会被立刻踢下线
-            var rec = currentRecord(u, self.session && self.session.loginAt);
-            return issueSession(u, TTL_REMEMBER, rec ? rec.at : Date.now()).then(function () {
+            var rec = currentRecord(u2, self.session && self.session.loginAt);
+            return issueSession(u2, TTL_REMEMBER, rec ? rec.at : Date.now()).then(function () {
               return { ok: true, resigned: true };
             });
           }
