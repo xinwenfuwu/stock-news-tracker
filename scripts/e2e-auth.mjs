@@ -68,13 +68,31 @@ async function gotoApp(page, port, hash) {
   await page.waitForSelector('#auth-gate', { timeout: 20000 });
 }
 
-/** 等到真的「进入系统」：#app 是静态 HTML，必须等 Vue mount 才算就绪 */
-async function waitAppReady(page) {
-  await page.waitForFunction(() => !document.getElementById('auth-gate'), { timeout: 45000 });
+/**
+ * 等到真的「进入系统」：#app 是静态 HTML，必须等 Vue mount 才算就绪。
+ * 注意 playwright 的签名是 waitForFunction(fn, arg, options)，超时必须放第 3 个参数，
+ * 否则 {timeout} 会被当成传给页面的 arg，超时退回默认 30s —— 出错时很难查。
+ */
+async function waitAppReady(page, ms) {
+  const opt = { timeout: ms || 45000 };
+  try {
+    await page.waitForFunction(() => !document.getElementById('auth-gate'), null, opt);
+  } catch (e) {
+    const st = await page.evaluate(() => ({
+      gate: !!document.getElementById('auth-gate'),
+      vueMounted: !!(document.getElementById('app') && document.getElementById('app').__vue_app__),
+      gateClass: (document.getElementById('auth-gate') || {}).className || '',
+      visible: ['auth-login-form', 'auth-register-form', 'auth-setup-form', 'auth-code-panel', 'auth-reg-done']
+        .filter(i => { const el = document.getElementById(i); return el && !el.hidden; }),
+      msg: (document.querySelector('#auth-gate .auth-msg') || {}).textContent || '',
+      sess: (localStorage.getItem('snt-auth-session-v1') || '').slice(0, 120)
+    })).catch(() => null);
+    throw new Error('等待进入系统超时（auth-gate 未消失）: ' + JSON.stringify(st));
+  }
   await page.waitForFunction(() => {
     const el = document.getElementById('app');
     return !!(el && el.__vue_app__);
-  }, { timeout: 45000 });
+  }, null, opt);
 }
 
 /** 直接以管理员身份进入（跳过表单，仅用于给后续断言准备环境） */
@@ -142,7 +160,7 @@ const main = async () => {
     await page.fill('#setup-confirm', '123');
     await page.click('#auth-setup-form .auth-btn');
     await page.waitForSelector('.auth-msg-error', { timeout: 15000 });
-    check('弱密码被拒并给出提示', /至少 6 位/.test(await page.locator('.auth-msg-error').innerText()));
+    check('弱密码被拒并给出提示', /至少 8 位/.test(await page.locator('.auth-msg-error').innerText()));
     check('被拒后仍停留在关卡内', await page.locator('#auth-gate').isVisible());
     check('被拒后业务模块仍未加载', await page.evaluate(() => typeof Store === 'undefined'));
 
@@ -152,7 +170,7 @@ const main = async () => {
     await page.waitForFunction(() => {
       const m = document.querySelector('.auth-msg-error');
       return m && m.textContent.includes('不一致');
-    }, { timeout: 15000 });
+    }, null, { timeout: 15000 });
     check('两次密码不一致被拒', /不一致/.test(await page.locator('.auth-msg-error').innerText()));
 
     await page.fill('#setup-confirm', ADMIN_PW);
@@ -261,7 +279,7 @@ const main = async () => {
     await page.fill('.um-toolbar input[placeholder^="用户名"]', 'zhangsan');
     await page.fill('.um-toolbar input[placeholder^="初始密码"]', 'User@2026');
     await page.click('.um-toolbar button:has-text("添加")');
-    await page.waitForFunction(() => document.querySelectorAll('.um-table tbody tr').length === 2, { timeout: 20000 });
+    await page.waitForFunction(() => document.querySelectorAll('.um-table tbody tr').length === 2, null, { timeout: 20000 });
     check('可通过界面添加普通用户', (await page.locator('.um-table tbody tr').count()) === 2);
     check('新用户角色为普通用户',
       (await page.locator('.um-table tbody tr').nth(1).locator('select').inputValue()) === 'user');
@@ -272,7 +290,7 @@ const main = async () => {
     await page.waitForFunction(() => {
       const t = document.querySelector('.toast');
       return t && t.textContent.includes('已存在');
-    }, { timeout: 20000 });
+    }, null, { timeout: 20000 });
     check('重复用户名被拒', true);
 
     await page.click('.modal-footer button:has-text("关闭")');
@@ -298,7 +316,7 @@ const main = async () => {
     check('普通用户菜单里有「修改密码」', (await page.locator('.user-dd-item', { hasText: '修改密码' }).count()) === 1);
     check('普通用户角色徽标显示为普通用户', (await page.locator('.user-role-tag').innerText()).includes('普通用户'));
     await page.evaluate(() => document.body.click());
-    await page.waitForFunction(() => !document.querySelector('.user-dropdown'), { timeout: 10000 });
+    await page.waitForFunction(() => !document.querySelector('.user-dropdown'), null, { timeout: 10000 });
     check('点击菜单外可收起用户菜单', true);
 
     const denied = await page.evaluate(() => Auth.addUser('lisi', 'User@2026', 'user'));
@@ -356,21 +374,21 @@ const main = async () => {
     check('打开修改密码弹窗', await page.locator('.um-field').first().isVisible());
 
     await page.fill('.um-field input[placeholder="请输入原密码"]', 'WrongOldPw');
-    await page.fill('.um-field input[placeholder="至少 6 位"]', 'NewPw@2026');
+    await page.fill('#pw-new', 'NewPw@2026');
     await page.fill('.um-field input[placeholder="再输入一次"]', 'NewPw@2026');
     await page.click('.modal-footer button:has-text("确认修改")');
     await page.waitForFunction(() => {
       const t = document.querySelector('.toast');
       return t && t.textContent.includes('原密码不正确');
-    }, { timeout: 15000 });
+    }, null, { timeout: 15000 });
     check('原密码错误时拒绝改密', true);
     check('改密失败后弹窗仍开着', await page.locator('.modal-overlay').isVisible());
 
     await page.fill('.um-field input[placeholder="请输入原密码"]', ADMIN_PW);
-    await page.fill('.um-field input[placeholder="至少 6 位"]', 'NewPw@2026');
+    await page.fill('#pw-new', 'NewPw@2026');
     await page.fill('.um-field input[placeholder="再输入一次"]', 'NewPw@2026');
     await page.click('.modal-footer button:has-text("确认修改")');
-    await page.waitForFunction(() => !document.querySelector('.modal-overlay'), { timeout: 20000 });
+    await page.waitForFunction(() => !document.querySelector('.modal-overlay'), null, { timeout: 20000 });
     check('原密码正确则改密成功（弹窗关闭）', (await page.locator('.modal-overlay').count()) === 0);
     check('改完密码后当前登录保持有效', await page.evaluate(() => Auth.isLoggedIn()));
 
@@ -414,7 +432,7 @@ const main = async () => {
       const tr = Array.from(document.querySelectorAll('.um-table tbody tr'))
         .find(r => r.textContent.includes('lisi'));
       return tr && tr.textContent.includes('已停用');
-    }, { timeout: 15000 });
+    }, null, { timeout: 15000 });
     check('可通过界面停用账号', true);
 
     await page.click('.modal-footer button:has-text("关闭")');

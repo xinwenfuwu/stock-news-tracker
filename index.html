@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>股市信息分析系统</title>
-  <link rel="stylesheet" href="css/style.css?v=20260916i">
+  <link rel="stylesheet" href="css/style.css?v=20260916j">
   <!-- Vue 3 全局构建版（CDN，无需构建步骤） -->
   <script src="https://unpkg.com/vue@3.4.21/dist/vue.global.prod.js"></script>
 </head>
@@ -20,18 +20,62 @@
 
       <form class="auth-form" id="auth-setup-form" hidden autocomplete="off">
         <input class="auth-input" type="text" id="setup-username" placeholder="管理员用户名（2-20 位）" maxlength="20" autocomplete="username">
-        <input class="auth-input" type="password" id="setup-password" placeholder="设置密码（至少 6 位）" maxlength="128" autocomplete="new-password">
-        <input class="auth-input" type="password" id="setup-confirm" placeholder="再输入一次密码" maxlength="128" autocomplete="new-password">
+        <input class="auth-input" type="password" id="setup-password" placeholder="设置密码（8-64 位，含字母和数字）" maxlength="64" autocomplete="new-password">
+        <input class="auth-input" type="password" id="setup-confirm" placeholder="再输入一次密码" maxlength="64" autocomplete="new-password">
         <button class="auth-btn" type="submit">创建管理员并进入</button>
-        <p class="auth-tip">本机首次使用。该账号是管理员，之后可在系统内添加普通用户。</p>
+        <p class="auth-tip">本机首次使用。该账号是管理员，之后可在系统内添加普通用户，或让用户在登录页自助注册、由你审核通过。</p>
+        <div class="auth-links">
+          <button type="button" class="auth-link" id="auth-setup-to-register">我不是管理员，我要注册新账号</button>
+          <button type="button" class="auth-link" id="auth-setup-to-code">粘贴准入码</button>
+        </div>
       </form>
 
       <form class="auth-form" id="auth-login-form" hidden autocomplete="off">
         <input class="auth-input" type="text" id="login-username" placeholder="用户名" maxlength="20" autocomplete="username">
-        <input class="auth-input" type="password" id="login-password" placeholder="密码" maxlength="128" autocomplete="current-password">
+        <input class="auth-input" type="password" id="login-password" placeholder="密码" maxlength="64" autocomplete="current-password">
         <label class="auth-remember"><input type="checkbox" id="login-remember" checked> 记住我（30 天）</label>
         <button class="auth-btn" type="submit">登录</button>
+        <div class="auth-links">
+          <button type="button" class="auth-link" id="auth-to-register">注册新账号</button>
+          <button type="button" class="auth-link" id="auth-to-code">已通过审核？粘贴准入码</button>
+        </div>
       </form>
+
+      <!-- 自助注册：提交后进入待审核，需管理员通过 -->
+      <form class="auth-form" id="auth-register-form" hidden autocomplete="off">
+        <input class="auth-input" type="text" id="reg-username" placeholder="用户名（2-20 位）" maxlength="20" autocomplete="username">
+        <input class="auth-input" type="password" id="reg-password" placeholder="密码（8-64 位，含字母和数字）" maxlength="64" autocomplete="new-password">
+        <input class="auth-input" type="password" id="reg-confirm" placeholder="再输入一次密码" maxlength="64" autocomplete="new-password">
+        <div class="auth-strength" id="reg-strength" hidden><em><i></i></em><span></span></div>
+        <button class="auth-btn" type="submit">提交注册申请</button>
+        <p class="auth-tip">密码须为 8-64 位且同时包含字母和数字。提交后需管理员审核，审核通过才能登录。</p>
+        <div class="auth-links">
+          <button type="button" class="auth-link" id="auth-reg-back">返回登录</button>
+        </div>
+      </form>
+
+      <!-- 注册完成：展示申请码 -->
+      <div class="auth-form" id="auth-reg-done" hidden>
+        <div class="auth-done-title">✅ 注册申请已提交，等待管理员审核</div>
+        <p class="auth-done-sub">管理员通过后才能登录。如果你和管理员不在同一台设备上，请把下面的「申请码」完整发给他；他审核通过后会把一串「准入码」发回给你。</p>
+        <textarea class="auth-code auth-code-lg" id="reg-code" rows="8" readonly spellcheck="false"></textarea>
+        <p class="auth-tip" id="reg-code-hint"></p>
+        <button class="auth-btn" type="button" id="auth-reg-copy">复制申请码</button>
+        <p class="auth-tip">管理员与你在同一台设备时，直接用他账号进「用户管理 → 待审核注册申请」点通过即可，不必转发申请码。</p>
+        <div class="auth-links">
+          <button type="button" class="auth-link" id="auth-reg-done-back">返回登录</button>
+        </div>
+      </div>
+
+      <!-- 粘贴准入码 -->
+      <div class="auth-form" id="auth-code-panel" hidden>
+        <p class="auth-done-sub">把管理员发给你的「准入码」粘贴到下面，确认后即可用注册时设置的密码登录。</p>
+        <textarea class="auth-code" id="auth-code-input" rows="3" placeholder="SNTACC1.xxxxxxxxxx.yyyyyy" spellcheck="false"></textarea>
+        <button class="auth-btn" type="button" id="auth-code-submit">确认并写入本机</button>
+        <div class="auth-links">
+          <button type="button" class="auth-link" id="auth-code-back">返回登录</button>
+        </div>
+      </div>
 
       <div class="auth-msg" id="auth-msg" hidden></div>
 
@@ -42,7 +86,7 @@
 
       <button class="auth-retry" id="auth-retry" type="button" hidden>点击重试</button>
 
-      <div class="auth-foot">未登录无法使用本系统 · 账号由管理员分配</div>
+      <div class="auth-foot">未登录无法使用本系统 · 新账号可自助注册，需管理员审核通过</div>
     </div>
   </div>
 
@@ -2127,15 +2171,49 @@
 
     <!-- ===== 用户管理模态框（仅管理员可见） ===== -->
     <div class="modal-overlay" v-if="userModal.show" @click.self="userModal.show = false">
-      <div class="modal modal-lg">
+      <div class="modal modal-um">
         <div class="modal-header">
           <h3>👤 用户管理</h3>
           <button class="btn-icon" @click="userModal.show = false">✕</button>
         </div>
         <div class="modal-body">
+          <!-- ===== 待审核注册申请 ===== -->
+          <div class="um-pending" v-if="userModal.pending.length">
+            <div class="um-pending-head">
+              <span>🔔 待审核注册申请</span>
+              <span class="um-pending-count">{{ userModal.pending.length }} 人</span>
+            </div>
+            <div class="um-pending-item" v-for="p in userModal.pending" :key="p.username">
+              <div class="um-pending-main">
+                <span class="um-name">{{ p.username }}</span>
+                <span class="um-pending-meta">提交于 {{ fmtDateTime(p.createdAt) }}</span>
+                <span class="um-pending-meta" v-if="p.regIp">来源 {{ p.regIp }}<template v-if="p.regLoc">（{{ p.regLoc }}）</template></span>
+                <span class="um-pending-meta" v-else>来源 IP 未取到</span>
+                <span class="um-pending-meta" v-if="p.regUa" :title="p.regUaRaw">· {{ p.regUa }}</span>
+              </div>
+              <div class="um-actions">
+                <select class="um-input" v-model="userModal.pendingRole[p.username]" :title="'通过后赋予的角色'">
+                  <option value="user">普通用户</option>
+                  <option value="admin">管理员</option>
+                </select>
+                <button class="btn btn-sm btn-primary" @click="approveUserByAdmin(p)">通过</button>
+                <button class="btn btn-sm btn-danger" @click="rejectUserByAdmin(p)">驳回</button>
+                <button class="btn btn-sm" @click="revealPendingPassword(p)" :title="'查看该申请设置的密码'">看密码</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- ===== 粘贴用户发来的注册申请码（跨设备场景） ===== -->
+          <div class="um-code-bar">
+            <input class="um-input um-grow" v-model="userModal.reqCode"
+                   placeholder="用户发来的「注册申请码」（SNTREG1.…），跨设备注册时粘贴到这里"
+                   @keyup.enter="importRequestCode">
+            <button class="btn btn-sm" @click="importRequestCode">导入申请</button>
+          </div>
+
           <div class="um-toolbar">
             <input class="um-input" v-model="userModal.newUsername" placeholder="用户名（2-20 位）" maxlength="20">
-            <input class="um-input" type="password" v-model="userModal.newPassword" placeholder="初始密码（至少 6 位）" maxlength="128">
+            <input class="um-input" type="password" v-model="userModal.newPassword" placeholder="初始密码（8-64 位，含字母和数字）" maxlength="64">
             <select class="um-input" v-model="userModal.newRole">
               <option value="user">普通用户</option>
               <option value="admin">管理员</option>
@@ -2143,42 +2221,91 @@
             <button class="btn btn-primary btn-sm" @click="addUserByAdmin">添加</button>
             <div class="um-hint">
               普通用户可以用全部业务页面，但不能改设置、导入/清空数据、管理账号。
-              账号存在本机浏览器，换设备时用下方「导出账号表」迁移；把账号发给别人时，请让对方自行导入。
+              账号存在本机浏览器：同一台设备上注册的账号会直接出现在上方待审核区；
+              其他设备注册的用户，需要把他发来的「申请码」粘到上面导入，通过后再把系统给出的「准入码」发回给他。
             </div>
           </div>
 
           <table class="um-table" v-if="userList.length">
             <thead>
               <tr>
-                <th>用户名</th><th>角色</th><th>状态</th><th>创建时间</th><th>操作</th>
+                <th>用户名</th><th>角色</th><th>状态</th><th>密码</th>
+                <th>登录IP</th><th>最近登录</th><th>使用时长</th><th>操作</th>
               </tr>
             </thead>
             <tbody>
-              <tr v-for="u in userList" :key="u.username">
-                <td>
-                  <span class="um-name">{{ u.username }}</span>
-                  <span class="um-self" v-if="authUser && u.username === authUser.username">当前登录</span>
-                </td>
-                <td>
-                  <select class="um-input" :value="u.role" @change="changeUserRole(u, $event.target.value)">
-                    <option value="user">普通用户</option>
-                    <option value="admin">管理员</option>
-                  </select>
-                </td>
-                <td>
-                  <span class="um-badge" :class="u.disabled ? 'off' : (u.role === 'admin' ? 'admin' : 'user')">
-                    {{ u.disabled ? '已停用' : (u.role === 'admin' ? '管理员' : '正常') }}
-                  </span>
-                </td>
-                <td class="muted">{{ fmtDateTime(u.createdAt) }}</td>
-                <td>
-                  <div class="um-actions">
-                    <button class="btn btn-sm" @click="toggleUserDisabled(u)">{{ u.disabled ? '启用' : '停用' }}</button>
-                    <button class="btn btn-sm" @click="resetUserPassword(u)">重置密码</button>
-                    <button class="btn btn-sm btn-danger" @click="removeUserByAdmin(u)">删除</button>
-                  </div>
-                </td>
-              </tr>
+              <template v-for="u in userList" :key="u.username">
+                <tr :class="{ 'um-row-pending': u.status === 'pending', 'um-row-off': u.disabled }">
+                  <td>
+                    <span class="um-name">{{ u.username }}</span>
+                    <span class="um-self" v-if="authUser && u.username === authUser.username">当前登录</span>
+                  </td>
+                  <td>
+                    <select class="um-input" :value="u.role" @change="changeUserRole(u, $event.target.value)">
+                      <option value="user">普通用户</option>
+                      <option value="admin">管理员</option>
+                    </select>
+                  </td>
+                  <td>
+                    <span class="um-badge" :class="badgeClass(u)">{{ u.statusName }}</span>
+                  </td>
+                  <td>
+                    <div class="um-pw">
+                      <code class="um-pw-text" :class="{ 'is-empty': !u.hasPassword }">{{ passwordText(u) }}</code>
+                      <button class="btn-mini" v-if="u.hasPassword" @click="toggleRevealPassword(u)">
+                        {{ revealedPw[u.username] ? '隐藏' : '显示' }}
+                      </button>
+                      <button class="btn-mini" v-if="u.hasPassword" @click="copyPassword(u)" title="复制密码">复制</button>
+                    </div>
+                  </td>
+                  <td class="muted">
+                    <div v-if="u.lastIp" class="um-ip">{{ u.lastIp }}</div>
+                    <div v-if="u.lastIp" class="um-ip-loc">{{ u.lastLoc || '—' }}</div>
+                    <span v-else class="muted">未获取到</span>
+                  </td>
+                  <td class="muted">
+                    <div v-if="u.lastLoginAt">{{ fmtDateTime(u.lastLoginAt) }}</div>
+                    <div v-else>从未登录</div>
+                    <button class="btn-mini" v-if="u.loginCount" @click="toggleLoginLog(u)">
+                      {{ expandedUser === u.username ? '收起记录' : '登录记录 ' + u.loginCount }}
+                    </button>
+                  </td>
+                  <td class="muted">
+                    <div class="um-usage">{{ fmtDuration(u.usageSec) }}</div>
+                    <div class="um-usage-sub" v-if="u.lastSessionSec">本次 {{ fmtDuration(u.lastSessionSec) }}</div>
+                  </td>
+                  <td>
+                    <div class="um-actions">
+                      <button class="btn btn-sm btn-primary" v-if="u.status === 'pending'" @click="approveUserByAdmin(u)">通过</button>
+                      <button class="btn btn-sm btn-danger" v-if="u.status === 'pending'" @click="rejectUserByAdmin(u)">驳回</button>
+                      <button class="btn btn-sm" v-if="u.status === 'active'" @click="showApproveCode(u)" title="生成准入码，发给他即可在别的设备登录">准入码</button>
+                      <button class="btn btn-sm" v-if="u.status === 'active'" @click="toggleUserDisabled(u)">{{ u.disabled ? '启用' : '停用' }}</button>
+                      <button class="btn btn-sm" @click="resetUserPassword(u)">重置密码</button>
+                      <button class="btn btn-sm btn-danger" v-if="u.status !== 'pending'" @click="removeUserByAdmin(u)">删除</button>
+                    </div>
+                  </td>
+                </tr>
+                <tr v-if="expandedUser === u.username" class="um-logrow">
+                  <td colspan="8">
+                    <div class="um-log-head">登录记录（最多保留最近 20 次）</div>
+                    <table class="um-log-table" v-if="u.logins && u.logins.length">
+                      <thead>
+                        <tr><th>登录时间</th><th>登录 IP</th><th>归属地</th><th>设备</th><th>本次在线</th></tr>
+                      </thead>
+                      <tbody>
+                        <tr v-for="l in u.logins" :key="l.at">
+                          <td>{{ fmtDateTime(l.at) }}</td>
+                          <td><code>{{ l.ip || '未获取到' }}</code></td>
+                          <td>{{ l.loc || '—' }}</td>
+                          <td>{{ l.ua || '—' }}</td>
+                          <td>{{ fmtDuration(l.sec) }}</td>
+                        </tr>
+                      </tbody>
+                    </table>
+                    <div class="um-empty" v-else>该账号还没有登录记录</div>
+                  </td>
+                </tr>
+              </template>
             </tbody>
           </table>
           <div class="um-empty" v-else>暂无账号</div>
@@ -2213,11 +2340,11 @@
           </label>
           <label class="um-field">
             <span>新密码</span>
-            <input class="um-input" type="password" v-model="pwModal.newPassword" placeholder="至少 6 位" maxlength="128">
+            <input class="um-input" id="pw-new" type="password" v-model="pwModal.newPassword" placeholder="8-64 位，须含字母和数字" maxlength="64">
           </label>
           <label class="um-field">
             <span>确认新密码</span>
-            <input class="um-input" type="password" v-model="pwModal.confirmPassword" placeholder="再输入一次" maxlength="128">
+            <input class="um-input" id="pw-confirm" type="password" v-model="pwModal.confirmPassword" placeholder="再输入一次" maxlength="64">
           </label>
           <div class="info-box">改完密码后当前登录保持有效，其他设备上用旧密码的登录会失效。</div>
         </div>
@@ -2236,8 +2363,8 @@
     </transition>
   </div>
 
-  <script src="js/auth.js?v=20260916i"></script>
-  <script src="js/auth-boot.js?v=20260916i"></script>
+  <script src="js/auth.js?v=20260916j"></script>
+  <script src="js/auth-boot.js?v=20260916j"></script>
   <!-- store / stock-api / hot-topics / app 由 auth-boot.js 在登录通过后动态装载，
        未登录时它们不会被下载，业务数据也不会进入内存 -->
 </body>

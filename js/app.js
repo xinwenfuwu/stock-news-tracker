@@ -45,8 +45,14 @@ const app = createApp({
     const authUser = ref(A && A.user ? A.user : null);
     const userMenuOpen = ref(false);
     const userList = ref([]);
-    const userModal = reactive({ show: false, newUsername: '', newPassword: '', newRole: 'user' });
+    const userModal = reactive({
+      show: false, newUsername: '', newPassword: '', newRole: 'user',
+      pending: [], pendingRole: {}, reqCode: ''
+    });
     const pwModal = reactive({ show: false, username: '', oldPassword: '', newPassword: '', confirmPassword: '' });
+    // 用户管理：哪些账号的密码已展开、哪个账号的登录记录已展开
+    const revealedPw = reactive({});
+    const expandedUser = ref(null);
 
     const authInitial = computed(() => {
       const n = (authUser.value && authUser.value.username) ? authUser.value.username : '?';
@@ -71,18 +77,57 @@ const app = createApp({
       return Store.fmtDate(d) + ' ' + p(d.getHours()) + ':' + p(d.getMinutes());
     }
 
+    /** 秒 → 「1小时23分」/「12分钟」/「56秒」；0 显示「—」 */
+    function fmtDuration(sec) {
+      const s = Math.max(0, Math.floor(Number(sec) || 0));
+      if (!s) return '—';
+      if (s < 60) return s + '秒';
+      const m = Math.floor(s / 60);
+      if (m < 60) return m + '分钟';
+      const h = Math.floor(m / 60);
+      const rm = m % 60;
+      if (h < 24) return h + '小时' + (rm ? rm + '分' : '');
+      return Math.floor(h / 24) + '天' + (h % 24) + '小时';
+    }
+
+    /** 状态徽标配色：待审核=黄、已驳回/停用=红、管理员=琥珀、正常=灰底 */
+    function badgeClass(u) {
+      if (u.status === 'pending') return 'pending';
+      if (u.status === 'rejected') return 'rejected';
+      if (u.disabled) return 'off';
+      return u.role === 'admin' ? 'admin' : 'user';
+    }
+
+    /** 密码列显示：默认打码，只有管理员点过「显示」才展示明文 */
+    function passwordText(u) {
+      if (!u.hasPassword) return '未保存';
+      return revealedPw[u.username] ? (u._plain || '••••') : '••••••••';
+    }
+
     function doLogout() {
       userMenuOpen.value = false;
       if (typeof AuthUI !== 'undefined' && AuthUI.logout) AuthUI.logout();
       else if (A) { A.logout(); location.reload(); }
     }
 
-    function refreshUserList() { userList.value = A ? A.listUsers() : []; }
+    /** 刷新账号列表：管理员看到明细（含登录档案），其他情况只有公开字段 */
+    function refreshUserList() {
+      if (!A) { userList.value = []; userModal.pending = []; return; }
+      const all = (typeof A.listUsersDetail === 'function') ? A.listUsersDetail() : A.listUsers();
+      userList.value = all;
+      userModal.pending = all.filter(u => u.status === 'pending');
+      userModal.pending.forEach(p => {
+        if (!userModal.pendingRole[p.username]) userModal.pendingRole[p.username] = 'user';
+      });
+    }
 
     function openUserManage() {
       userMenuOpen.value = false;
       if (!can('users.manage')) { showToast('仅管理员可管理账号', 'error'); return; }
       userModal.newUsername = ''; userModal.newPassword = ''; userModal.newRole = 'user';
+      userModal.reqCode = '';
+      expandedUser.value = null;
+      Object.keys(revealedPw).forEach(k => delete revealedPw[k]);
       refreshUserList();
       userModal.show = true;
     }
@@ -124,12 +169,119 @@ const app = createApp({
 
     function resetUserPassword(u) {
       if (!A) return;
-      const np = prompt(`为「${u.username}」设置新密码（至少 6 位）：`);
+      const np = prompt(`为「${u.username}」设置新密码（8-64 位，须同时包含字母和数字）：`);
       if (np == null) return;
       A.changePassword(u.username, null, np).then(r => {
         if (!r.ok) { showToast(r.error, 'error'); return; }
+        delete revealedPw[u.username];
         showToast(`「${u.username}」的密码已重置`, 'success');
+        refreshUserList();
       }).catch(e => showToast('重置失败：' + e.message, 'error'));
+    }
+
+    /* ---------- 注册审核 ---------- */
+
+    function approveUserByAdmin(u) {
+      if (!A) return;
+      const role = userModal.pendingRole[u.username] || (u.status === 'pending' ? 'user' : u.role);
+      const r = A.approveUser(u.username, role);
+      if (!r.ok) { showToast(r.error, 'error'); refreshUserList(); return; }
+      refreshUserList();
+      const code = r.approveCode || '';
+      if (code) {
+        copyText(code, `已通过「${u.username}」，准入码已复制到剪贴板`);
+        // 同一台设备上对方本机记录已被改，不需要码；换设备才需要转达，所以把码摆出来方便复制转发
+        prompt(
+          `已通过「${u.username}」的注册申请。\n\n`
+          + '准入码（已同时复制到剪贴板，也可以在这里手动选中复制）：\n\n'
+          + code + '\n\n'
+          + '如果这位用户和你不在一台设备上，请把上面这串码发给他，他在登录页「粘贴准入码」后即可用自己的密码登录。',
+          code
+        );
+      } else {
+        showToast(`已通过「${u.username}」`, 'success');
+      }
+    }
+
+    function rejectUserByAdmin(u) {
+      if (!A) return;
+      const note = prompt(`驳回「${u.username}」的注册申请？可填写原因（可留空）：`, '');
+      if (note == null) return;
+      const r = A.rejectUser(u.username, note);
+      if (!r.ok) { showToast(r.error, 'error'); return; }
+      showToast(`已驳回「${u.username}」的注册申请`, 'success');
+      refreshUserList();
+    }
+
+    function importRequestCode() {
+      if (!A) return;
+      const r = A.applyRequestCode(userModal.reqCode);
+      if (!r.ok) { showToast(r.error, 'error'); return; }
+      userModal.reqCode = '';
+      refreshUserList();
+      showToast(`已导入「${r.user.username}」的注册申请，请审核`, 'success');
+    }
+
+    function showApproveCode(u) {
+      if (!A) return;
+      const r = A.approveCodeFor(u.username);
+      if (!r.ok) { showToast(r.error, 'error'); return; }
+      if (confirm(`「${u.username}」的准入码（发给对方粘贴即可登录）：\n\n${r.approveCode}\n\n现在复制到剪贴板吗？`)) {
+        copyText(r.approveCode, '准入码已复制');
+      }
+    }
+
+    /** 管理员查看密码：按需从混淆存储还原，只放在内存里 */
+    function toggleRevealPassword(u) {
+      if (!A) return;
+      if (revealedPw[u.username]) { delete revealedPw[u.username]; delete u._plain; return; }
+      const r = A.revealPassword(u.username);
+      if (!r.ok) { showToast(r.error, 'error'); return; }
+      u._plain = r.password;
+      revealedPw[u.username] = true;
+    }
+
+    function revealPendingPassword(p) {
+      if (!A) return;
+      const r = A.revealPassword(p.username);
+      showToast(r.ok ? `「${p.username}」当前密码：${r.password}` : r.error, r.ok ? 'info' : 'error');
+    }
+
+    function copyPassword(u) {
+      if (!A) return;
+      const r = A.revealPassword(u.username);
+      if (!r.ok) { showToast(r.error, 'error'); return; }
+      copyText(r.password, `「${u.username}」的密码已复制`);
+    }
+
+    function toggleLoginLog(u) {
+      expandedUser.value = expandedUser.value === u.username ? null : u.username;
+    }
+
+    /** 复制文本（优先用剪贴板 API，不可用时退回选中+execCommand） */
+    function copyText(text, okMsg) {
+      const done = () => showToast(okMsg || '已复制', 'success');
+      const fail = () => showToast('复制失败，请手动选中复制', 'error');
+      try {
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          navigator.clipboard.writeText(text).then(done).catch(fallback);
+          return;
+        }
+      } catch (e) { /* 落到 fallback */ }
+      fallback();
+      function fallback() {
+        try {
+          const ta = document.createElement('textarea');
+          ta.value = text;
+          ta.style.position = 'fixed';
+          ta.style.opacity = '0';
+          document.body.appendChild(ta);
+          ta.select();
+          const ok = document.execCommand('copy');
+          document.body.removeChild(ta);
+          ok ? done() : fail();
+        } catch (e) { fail(); }
+      }
     }
 
     function exportUsersTable() {
@@ -141,7 +293,7 @@ const app = createApp({
       a.download = 'stock-news-accounts-' + Store.today() + '.json';
       a.click();
       URL.revokeObjectURL(url);
-      showToast('账号表已导出（只含哈希，不含明文密码）', 'success');
+      showToast('账号表已导出（含密码密文与登录记录，请妥善保管）', 'success');
     }
 
     function importUsersTable(e) {
@@ -175,6 +327,45 @@ const app = createApp({
         authUser.value = A.user;
         showToast('密码已修改', 'success');
       }).catch(e => showToast('修改失败：' + e.message, 'error'));
+    }
+
+    /* ===== 使用时长统计 + 登录 IP 归档 =====
+     * 语义说明：
+     *   · 时长只在「页面可见 + 5 分钟内有操作」时累计，挂机不计；每 30 秒落一次盘。
+     *   · IP 通过第三方接口查询一次（结果缓存在会话里），**不受数据刷新暂停影响以外的干扰**：
+     *     但为遵守既有「暂停后进入页面不自动发外部请求」的约定，暂停时不查询，该次登录记为「未获取到」。
+     */
+    let hbTimer = null;
+    let hbLastAt = Date.now();
+    let hbLastActive = Date.now();
+    const HB_IDLE_MS = 5 * 60 * 1000;
+
+    function hbMarkActive() { hbLastActive = Date.now(); }
+    function hbTick() {
+      const now = Date.now();
+      const delta = Math.round((now - hbLastAt) / 1000);
+      hbLastAt = now;
+      if (!A || !A.touchSession || !A.session) return;
+      if (document.hidden) return;
+      if (delta <= 0) return;
+      if (now - hbLastActive > HB_IDLE_MS) return;
+      A.touchSession(Math.min(delta, 150));
+    }
+    ['mousemove', 'keydown', 'click', 'scroll', 'touchstart'].forEach(ev => {
+      window.addEventListener(ev, hbMarkActive, { passive: true });
+    });
+    document.addEventListener('visibilitychange', () => {
+      hbLastAt = Date.now();
+      if (!document.hidden) hbMarkActive();
+    });
+    window.addEventListener('beforeunload', hbTick);
+    hbTimer = setInterval(hbTick, 30000);
+
+    /** 登录后补写 IP / 设备（异步，失败不影响使用） */
+    function syncLoginMeta() {
+      if (!A || !A.syncLoginMeta) return;
+      if (autoRefreshPaused()) return;   // 暂停时不发任何自动外部请求
+      A.syncLoginMeta().catch(() => {});
     }
 
     // ===== Toast =====
@@ -4067,6 +4258,8 @@ const app = createApp({
     }
 
     onMounted(() => {
+      // 进入系统后补写本次登录的 IP / 归属地 / 设备（异步、失败不影响使用）
+      syncLoginMeta();
       nextTick(() => {
         initGhostHScroll();
         initResizeFor('.filter-scroll table', 'filterColWidths', FILTER_DEFAULT_COL_WIDTHS);
@@ -4584,7 +4777,12 @@ const app = createApp({
       userModal, userList, openUserManage, addUserByAdmin, changeUserRole,
       toggleUserDisabled, removeUserByAdmin, resetUserPassword,
       exportUsersTable, importUsersTable,
-      pwModal, openChangePassword, submitChangePassword
+      pwModal, openChangePassword, submitChangePassword,
+      // 登录档案与注册审核
+      fmtDuration, badgeClass, passwordText, revealedPw, expandedUser,
+      approveUserByAdmin, rejectUserByAdmin, importRequestCode,
+      showApproveCode, toggleRevealPassword, revealPendingPassword,
+      copyPassword, toggleLoginLog
     };
   }
 });

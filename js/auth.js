@@ -34,6 +34,13 @@
   var ROLE_NAME = { admin: '管理员', user: '普通用户' };
   var ROLE_RANK = { admin: 2, user: 1 };
 
+  // 账号状态：pending=待审核（可登录前必须由管理员通过）, active=正常, rejected=已驳回
+  var STATUS = { PENDING: 'pending', ACTIVE: 'active', REJECTED: 'rejected' };
+  var STATUS_NAME = { pending: '待审核', active: '已通过', rejected: '已驳回', disabled: '已停用' };
+
+  var MAX_LOGIN_RECORDS = 20;   // 每人最多保留的登录记录条数
+  var MAX_CODE_LEN = 8192;      // 申请码/准入码长度上限，防粘贴超大内容
+
   // 权限点 → 所需最低角色。未在此声明的权限点按「最高要求」处理，避免漏配后放开。
   var PERMISSIONS = {
     'data.read': ROLE.USER,
@@ -46,7 +53,20 @@
   };
 
   var USERNAME_RE = /^[A-Za-z0-9_\u4e00-\u9fa5.-]{2,20}$/;
-  var PASSWORD_MIN = 6;
+  var PASSWORD_MIN = 8;
+  var PASSWORD_MAX = 64;
+  var PASSWORD_HAS_LETTER = /[A-Za-z]/;
+  var PASSWORD_HAS_DIGIT = /[0-9]/;
+
+  // 「可还原密码」的混淆密钥（仅防明文直接出现在 localStorage / 导出文件里，不是加密）
+  var SEAL_KEY = 'snt/auth/v1/seal::pV6yRt2Kw9Ns4HdQ';
+
+  // 申请码 / 准入码的签名盐：用于检出复制粘贴时的错漏与随手篡改
+  var CODE_SALT = 'snt/auth/v1/code::mZ3xLb8Tc5Jf1WqY';
+
+  // 申请码前缀（注册者 → 管理员）与准入码前缀（管理员 → 注册者）
+  var CODE_TAG_REQ = 'SNTREG1';
+  var CODE_TAG_OK = 'SNTACC1';
 
   // 用户名不存在时用来「陪跑」一次哈希比对，避免通过响应快慢嗅探账号是否存在
   var DUMMY_HASH = 'pbkdf2$' + ITERATIONS + '$AAAAAAAAAAAAAAAAAAAAAA==$AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=';
@@ -171,6 +191,245 @@
     }).catch(function () { return false; });
   }
 
+  /* ================= 可还原密码（供管理员查看） ================= */
+
+  /**
+   * 混淆存储：XOR + Base64。
+   * 目的只有一个 —— 别让明文密码以肉眼可见的形态躺在 localStorage 和导出文件里。
+   * 它不是加密（密钥就在本文件中，看得懂源码的人能还原），仅供管理员自查密码用。
+   */
+  function sealPassword(pw) {
+    if (typeof pw !== 'string' || !pw) return '';
+    var src = new TextEncoder().encode(pw);
+    var key = new TextEncoder().encode(SEAL_KEY);
+    var out = new Uint8Array(src.length);
+    for (var i = 0; i < src.length; i++) {
+      out[i] = src[i] ^ key[i % key.length] ^ ((i * 31 + 7) & 0xff);
+    }
+    return bytesToB64(out);
+  }
+
+  function unsealPassword(sealed) {
+    if (typeof sealed !== 'string' || !sealed) return '';
+    var buf;
+    try { buf = b64ToBytes(sealed); } catch (e) { return ''; }
+    var key = new TextEncoder().encode(SEAL_KEY);
+    var out = new Uint8Array(buf.length);
+    for (var i = 0; i < buf.length; i++) {
+      out[i] = buf[i] ^ key[i % key.length] ^ ((i * 31 + 7) & 0xff);
+    }
+    try { return new TextDecoder().decode(out); } catch (e) { return ''; }
+  }
+
+  /* ================= 短码（申请码 / 准入码） ================= */
+
+  function b64uFromText(text) {
+    var bytes = new TextEncoder().encode(String(text));
+    var bin = '';
+    for (var i = 0; i < bytes.length; i++) bin += String.fromCharCode(bytes[i]);
+    return btoa(bin).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+  }
+
+  function textFromB64u(s) {
+    var b = String(s).replace(/-/g, '+').replace(/_/g, '/');
+    while (b.length % 4) b += '=';
+    var bin = atob(b);
+    var out = new Uint8Array(bin.length);
+    for (var i = 0; i < bin.length; i++) out[i] = bin.charCodeAt(i);
+    return new TextDecoder().decode(out);
+  }
+
+  /** 把「内容」压成便于人工转发的码：前缀.负载.签名前 12 位 */
+  function packCode(tag, payload) {
+    var body = b64uFromText(JSON.stringify(payload));
+    var sig = '';
+    var text = tag + '|' + body + '|' + CODE_SALT;
+    // 同步的简易校验和：FNV-1a 变体，足够发现「少粘了一段 / 改了一个字符」
+    var h = 0x811c9dc5;
+    for (var i = 0; i < text.length; i++) {
+      h ^= text.charCodeAt(i);
+      h = (h + ((h << 1) + (h << 4) + (h << 7) + (h << 8) + (h << 24))) >>> 0;
+    }
+    sig = h.toString(36);
+    return tag + '.' + body + '.' + sig;
+  }
+
+  function unpackCode(code) {
+    var s = String(code == null ? '' : code).trim().replace(/\s+/g, '');
+    if (!s) return { ok: false, error: '请先粘贴申请码 / 准入码' };
+    if (s.length > MAX_CODE_LEN) return { ok: false, error: '内容过长，请确认粘贴的是完整且正确的码' };
+    var parts = s.split('.');
+    if (parts.length !== 3) return { ok: false, error: '码的格式不对（应为 三段式，形如 SNTREG1.xxxx.yyyy）' };
+    // 按同样规则重算校验和，用来发现「少粘了一段 / 改了一个字符」
+    var text = parts[0] + '|' + parts[1] + '|' + CODE_SALT;
+    var h = 0x811c9dc5;
+    for (var i = 0; i < text.length; i++) {
+      h ^= text.charCodeAt(i);
+      h = (h + ((h << 1) + (h << 4) + (h << 7) + (h << 8) + (h << 24))) >>> 0;
+    }
+    if (parts[2] !== h.toString(36)) {
+      return { ok: false, error: '码校验失败：可能复制不完整或被人改过，请让对方重新复制' };
+    }
+    var obj;
+    try { obj = JSON.parse(textFromB64u(parts[1])); } catch (e) { return { ok: false, error: '码内容无法解析' }; }
+    if (!obj || typeof obj !== 'object') return { ok: false, error: '码内容无法解析' };
+    return { ok: true, tag: parts[0], data: obj };
+  }
+
+  /** 注册申请码：注册者生成，发给管理员（只带用户名 + 密码哈希，不带明文） */
+  function makeRequestCode(u) {
+    return packCode(CODE_TAG_REQ, {
+      v: 1,
+      username: u.username,
+      hash: u.hash,
+      pwSeal: u.pwSeal || '',
+      createdAt: u.createdAt || Date.now()
+    });
+  }
+
+  /** 准入码：管理员审核通过后生成，发给注册者，注册者粘贴后即可登录 */
+  function makeApproveCode(u) {
+    return packCode(CODE_TAG_OK, {
+      v: 1,
+      username: u.username,
+      hash: u.hash,
+      pwSeal: u.pwSeal || '',
+      role: u.role === ROLE.ADMIN ? ROLE.ADMIN : ROLE.USER,
+      approvedAt: u.reviewedAt || Date.now(),
+      approvedBy: u.reviewedBy || ''
+    });
+  }
+
+  /* ================= 设备 / 时段 ================= */
+
+  /** 把 UserAgent 压成一句人话，例如「Chrome 128 / Windows」 */
+  function parseUA(ua) {
+    var s = String(ua || '');
+    if (!s) return '';
+    var browser = '未知浏览器';
+    if (/Edg\//.test(s)) browser = 'Edge';
+    else if (/OPR\/|Opera/.test(s)) browser = 'Opera';
+    else if (/MicroMessenger/i.test(s)) browser = '微信内置';
+    else if (/QQBrowser/i.test(s)) browser = 'QQ浏览器';
+    else if (/Firefox\//.test(s)) browser = 'Firefox';
+    else if (/Chrome\//.test(s)) browser = 'Chrome';
+    else if (/Safari\//.test(s)) browser = 'Safari';
+    var os = '未知系统';
+    if (/Windows NT 10/.test(s)) os = 'Windows';
+    else if (/Windows/.test(s)) os = 'Windows(旧版)';
+    else if (/iPhone|iPad|iPod/.test(s)) os = 'iOS';
+    else if (/Android/.test(s)) os = 'Android';
+    else if (/Mac OS X/.test(s)) os = 'macOS';
+    else if (/Linux/.test(s)) os = 'Linux';
+    return browser + ' / ' + os;
+  }
+
+  function localUA() {
+    try {
+      return (global.navigator && global.navigator.userAgent) ? String(global.navigator.userAgent) : '';
+    } catch (e) { return ''; }
+  }
+
+  /** 当前浏览器的公开 IP 与归属地（接口在浏览器侧解析，无需服务端） */
+  function resolveIp(fetcher) {
+    var doFetch = fetcher || (typeof global.fetch === 'function' ? global.fetch.bind(global) : null);
+    if (!doFetch) return Promise.resolve(null);
+    // 中文地名优先（vore），英文兜底（ip.sb）；两个接口都带 Access-Control-Allow-Origin: *
+    var chain = [
+      {
+        url: 'https://api.vore.top/api/IPdata',
+        pick: function (j) {
+          if (!j || j.code !== 200 || !j.ipinfo || !j.ipinfo.text) return null;
+          var d = j.ipdata || {};
+          var parts = [d.info1, d.info2].filter(Boolean).join(' ');
+          return { ip: j.ipinfo.text, loc: [parts, d.isp].filter(Boolean).join(' · ') };
+        }
+      },
+      {
+        url: 'https://api.ip.sb/geoip',
+        pick: function (j) {
+          if (!j || !j.ip) return null;
+          var parts = [j.country, j.region, j.city].filter(Boolean).join(' ');
+          return { ip: j.ip, loc: [parts, j.isp || j.organization].filter(Boolean).join(' · ') };
+        }
+      }
+    ];
+    function attempt(i) {
+      if (i >= chain.length) return Promise.resolve(null);
+      var node = chain[i];
+      var ctl = null, timer = null;
+      try { ctl = new AbortController(); timer = setTimeout(function () { ctl.abort(); }, 6000); } catch (e) { /* 老浏览器无 AbortController */ }
+      return Promise.resolve(doFetch(node.url, { signal: ctl ? ctl.signal : undefined, cache: 'no-store' }))
+        .then(function (r) { return r && r.ok ? r.json() : null; })
+        .then(function (j) {
+          if (timer) clearTimeout(timer);
+          var got = j ? node.pick(j) : null;
+          if (got && got.ip) return got;
+          return attempt(i + 1);
+        })
+        .catch(function () {
+          if (timer) clearTimeout(timer);
+          return attempt(i + 1);
+        });
+    }
+    return attempt(0);
+  }
+
+  /* ================= 用户记录派生字段 ================= */
+
+  function statusOf(u) {
+    var s = u && u.status;
+    if (s === STATUS.PENDING || s === STATUS.REJECTED) return s;
+    return STATUS.ACTIVE;   // 老数据没有 status 字段，一律视为已通过
+  }
+
+  /** 账号状态展示名：停用优先于审核状态 */
+  function statusName(u) {
+    if (u && u.disabled && statusOf(u) === STATUS.ACTIVE) return STATUS_NAME.disabled;
+    return STATUS_NAME[statusOf(u)];
+  }
+
+  function loginList(u) {
+    return (u && Array.isArray(u.logins)) ? u.logins : [];
+  }
+
+  function lastLogin(u) {
+    var list = loginList(u);
+    if (!list.length) return null;
+    return list[list.length - 1];
+  }
+
+  /** 累计在线时长（秒）= 各次登录记录里的 sec 之和 */
+  function totalUsageSec(u) {
+    return loginList(u).reduce(function (a, r) { return a + (Number(r && r.sec) || 0); }, 0);
+  }
+
+  function pushLoginRecord(u, meta) {
+    if (!Array.isArray(u.logins)) u.logins = [];
+    var rec = {
+      at: (meta && meta.at) || Date.now(),
+      ip: (meta && meta.ip) || '',
+      loc: (meta && meta.loc) || '',
+      ua: (meta && meta.ua) || '',
+      sec: 0
+    };
+    u.logins.push(rec);
+    if (u.logins.length > MAX_LOGIN_RECORDS) u.logins = u.logins.slice(-MAX_LOGIN_RECORDS);
+    return rec;
+  }
+
+  /** 找到当前会话对应的登录记录（优先按 loginAt 精确匹配，其次取最后一条） */
+  function currentRecord(u, loginAt) {
+    var list = loginList(u);
+    if (!list.length) return null;
+    if (loginAt) {
+      for (var i = list.length - 1; i >= 0; i--) {
+        if (list[i] && list[i].at === loginAt) return list[i];
+      }
+    }
+    return list[list.length - 1];
+  }
+
   /* ================= 输入校验 ================= */
 
   function validateUsername(name) {
@@ -181,15 +440,41 @@
     return { ok: true, value: s };
   }
 
+  /**
+   * 密码规则：8-64 位，且必须同时包含字母与数字（大小写不限，可带符号）。
+   * 顺序上先查长度、再查组成，保证错误提示只说最关键的一条。
+   */
   function validatePassword(pw, confirm) {
     var s = String(pw == null ? '' : pw);
     if (!s) return { ok: false, error: '请输入密码' };
-    if (s.length < PASSWORD_MIN) return { ok: false, error: '密码至少 ' + PASSWORD_MIN + ' 位' };
-    if (s.length > 128) return { ok: false, error: '密码不能超过 128 位' };
+    if (s.length < PASSWORD_MIN) {
+      return { ok: false, error: '密码至少 ' + PASSWORD_MIN + ' 位，且需同时包含字母和数字' };
+    }
+    if (s.length > PASSWORD_MAX) return { ok: false, error: '密码不能超过 ' + PASSWORD_MAX + ' 位' };
+    if (/\s/.test(s)) return { ok: false, error: '密码不能包含空格' };
+    if (!PASSWORD_HAS_LETTER.test(s) || !PASSWORD_HAS_DIGIT.test(s)) {
+      return { ok: false, error: '密码必须同时包含字母和数字（例如 abc12345）' };
+    }
     if (confirm !== undefined && confirm !== null && s !== confirm) {
       return { ok: false, error: '两次输入的密码不一致' };
     }
     return { ok: true, value: s };
+  }
+
+  /** 密码强度提示（仅用于界面提示，不做拦截） */
+  function passwordStrength(pw) {
+    var s = String(pw == null ? '' : pw);
+    if (!s) return { level: 0, text: '' };
+    var score = 0;
+    if (s.length >= PASSWORD_MIN) score++;
+    if (s.length >= 12) score++;
+    if (PASSWORD_HAS_LETTER.test(s) && PASSWORD_HAS_DIGIT.test(s)) score++;
+    if (/[A-Z]/.test(s) && /[a-z]/.test(s)) score++;
+    if (/[^A-Za-z0-9]/.test(s)) score++;
+    if (score <= 2) return { level: 1, text: '较弱' };
+    if (score === 3) return { level: 2, text: '中等' };
+    if (score === 4) return { level: 3, text: '较强' };
+    return { level: 4, text: '很强' };
   }
 
   /* ================= 账号表 ================= */
@@ -212,14 +497,51 @@
   }
 
   function publicUser(u) {
+    var last = lastLogin(u);
     return {
       username: u.username,
       role: u.role,
       roleName: ROLE_NAME[u.role] || u.role,
       disabled: !!u.disabled,
+      status: statusOf(u),
+      statusName: statusName(u),
+      pending: statusOf(u) === STATUS.PENDING,
       createdAt: u.createdAt || null,
-      updatedAt: u.updatedAt || null
+      updatedAt: u.updatedAt || null,
+      lastLoginAt: last ? last.at : null,
+      usageSec: totalUsageSec(u),
+      loginCount: loginList(u).length
     };
+  }
+
+  /** 管理员视角的账号明细：附带登录档案与「是否保存了可显示的密码」 */
+  function adminUser(u) {
+    var o = publicUser(u);
+    var last = lastLogin(u);
+    o.email = u.email || '';
+    o.note = u.note || '';
+    o.reviewNote = u.reviewNote || '';
+    o.reviewedAt = u.reviewedAt || null;
+    o.reviewedBy = u.reviewedBy || '';
+    o.registeredAt = u.createdAt || null;
+    o.regIp = u.regIp || '';
+    o.regLoc = u.regLoc || '';
+    o.regUa = parseUA(u.regUa);        // 界面只展示「Chrome / Windows」这类可读结果
+    o.regUaRaw = u.regUa || '';
+    o.hasPassword = !!u.pwSeal;
+    o.lastIp = last ? (last.ip || '') : '';
+    o.lastLoc = last ? (last.loc || '') : '';
+    o.lastUa = last ? (last.ua || '') : '';
+    o.lastSeenAt = (last && last.lastSeenAt) || null;
+    o.lastSessionSec = last ? (Number(last.sec) || 0) : 0;
+    o.logins = loginList(u).slice().reverse().map(function (r) {
+      return {
+        at: r.at, ip: r.ip || '', loc: r.loc || '',
+        ua: parseUA(r.ua), sec: Number(r.sec) || 0,
+        lastSeenAt: r.lastSeenAt || null
+      };
+    });
+    return o;
   }
 
   /* ================= 登录态 ================= */
@@ -228,9 +550,10 @@
     return sha256Hex([sess.username, sess.role, sess.issuedAt, sess.exp, cred, SIGN_SALT].join('|'));
   }
 
-  function issueSession(user, ttl) {
+  /** 签发登录态；loginAt 指向本次登录在用户档案里对应的那条登录记录 */
+  function issueSession(user, ttl, loginAt) {
     var now = Date.now();
-    var sess = { username: user.username, role: user.role, issuedAt: now, exp: now + ttl };
+    var sess = { username: user.username, role: user.role, issuedAt: now, exp: now + ttl, loginAt: loginAt || now };
     return signSession(sess, user.hash).then(function (sig) {
       sess.sig = sig;
       Auth.session = sess;
@@ -244,7 +567,7 @@
     try { storage().removeItem(SESSION_KEY); } catch (e) { /* ignore */ }
   }
 
-  /** 校验登录态：过期、账号被删 / 被停用、角色被改、签名被伪造，全部拦下 */
+  /** 校验登录态：过期、账号被删 / 停用 / 未过审、角色被改、签名被伪造，全部拦下 */
   function verifySession(sess, users) {
     if (!sess || typeof sess !== 'object') return Promise.resolve({ ok: false, error: '未登录' });
     if (!sess.username || !sess.role || !sess.exp || !sess.sig) {
@@ -253,6 +576,8 @@
     if (Date.now() > sess.exp) return Promise.resolve({ ok: false, error: '登录已过期，请重新登录' });
     var u = findUser(users || loadUsers(), sess.username);
     if (!u) return Promise.resolve({ ok: false, error: '账号不存在或已被移除' });
+    if (statusOf(u) === STATUS.PENDING) return Promise.resolve({ ok: false, error: '账号待管理员审核通过后才能使用' });
+    if (statusOf(u) === STATUS.REJECTED) return Promise.resolve({ ok: false, error: '注册申请未通过审核' });
     if (u.disabled) return Promise.resolve({ ok: false, error: '账号已被停用' });
     if (u.role !== sess.role) return Promise.resolve({ ok: false, error: '登录态校验失败' });
     return signSession(sess, u.hash).then(function (expect) {
@@ -267,10 +592,14 @@
     ROLE: ROLE,
     ROLE_NAME: ROLE_NAME,
     ROLE_RANK: ROLE_RANK,
+    STATUS: STATUS,
+    STATUS_NAME: STATUS_NAME,
     PERMISSIONS: PERMISSIONS,
     ITERATIONS: ITERATIONS,
     TTL_DEFAULT: TTL_DEFAULT,
     TTL_REMEMBER: TTL_REMEMBER,
+    PASSWORD_MIN: PASSWORD_MIN,
+    PASSWORD_MAX: PASSWORD_MAX,
 
     /** 可注入的存储实现（测试用） */
     storage: null,
@@ -310,23 +639,68 @@
       return { ok: true, username: u.value, password: p.value };
     },
 
-    /** 首次使用：创建管理员账号并直接登录 */
+    /** 首次使用：创建管理员账号并直接登录（管理员无需审核） */
     setup: function (username, password, confirm) {
       var self = this;
       if (this.hasUsers()) return Promise.resolve({ ok: false, error: '账号已初始化过，请直接登录' });
       var v = this.validate(username, password, confirm);
       if (!v.ok) return Promise.resolve(v);
       return makePasswordHash(v.password).then(function (hash) {
+        var now = Date.now();
         var u = {
           username: v.username, role: ROLE.ADMIN, hash: hash,
-          disabled: false, createdAt: Date.now(), updatedAt: Date.now()
+          pwSeal: sealPassword(v.password),
+          disabled: false, status: STATUS.ACTIVE,
+          createdAt: now, updatedAt: now,
+          logins: []
         };
+        var rec = pushLoginRecord(u, { at: now, ua: localUA() });
         self.users = [u];
         if (!saveUsers(self.users)) return { ok: false, error: '保存失败：浏览器本地存储不可用' };
-        return issueSession(u, TTL_REMEMBER).then(function () {
+        return issueSession(u, TTL_REMEMBER, rec.at).then(function () {
           self.user = publicUser(u);
           return { ok: true, user: self.user };
         });
+      });
+    },
+
+    /**
+     * 自助注册：只写入一条待审核记录，**不会**登录态。
+     * 必须由管理员 approveUser 通过后才能登录。
+     */
+    register: function (username, password) {
+      var self = this;
+      var v = this.validate(username, password, password);
+      if (!v.ok) return Promise.resolve(v);
+      this.users = loadUsers();
+      var exist = findUser(this.users, v.username);
+      if (exist && statusOf(exist) !== STATUS.REJECTED) {
+        var st = statusOf(exist);
+        return Promise.resolve({
+          ok: false,
+          error: st === STATUS.PENDING
+            ? '该用户名已提交注册，正在等待管理员审核'
+            : '该用户名已被使用，请换一个'
+        });
+      }
+      return makePasswordHash(v.password).then(function (hash) {
+        var now = Date.now();
+        var u = {
+          username: v.username, role: ROLE.USER, hash: hash,
+          pwSeal: sealPassword(v.password),
+          disabled: false, status: STATUS.PENDING,
+          createdAt: now, updatedAt: now,
+          logins: []
+        };
+        // 曾被驳回的用户重新申请：覆盖旧记录，避免同名堆叠多条
+        if (exist) {
+          var i = self.users.indexOf(exist);
+          if (i >= 0) self.users[i] = u; else self.users.push(u);
+        } else {
+          self.users.push(u);
+        }
+        if (!saveUsers(self.users)) return { ok: false, error: '保存失败：浏览器本地存储不可用' };
+        return { ok: true, user: publicUser(u), requestCode: makeRequestCode(u) };
       });
     },
 
@@ -352,11 +726,22 @@
       var stored = u ? u.hash : DUMMY_HASH;
       return verifyPassword(password, stored).then(function (okPwd) {
         if (!u || !okPwd) return { ok: false, error: '用户名或密码不正确' };
+        // 审核门禁：密码对也不行，必须已通过审核
+        var st = statusOf(u);
+        if (st === STATUS.PENDING) {
+          return { ok: false, error: '该账号正在等待管理员审核，通过后即可登录', status: STATUS.PENDING };
+        }
+        if (st === STATUS.REJECTED) {
+          return { ok: false, error: '该注册申请未通过审核，请联系管理员', status: STATUS.REJECTED };
+        }
         if (u.disabled) return { ok: false, error: '该账号已被停用，请联系管理员' };
         var ttl = remember ? TTL_REMEMBER : TTL_DEFAULT;
-        return issueSession(u, ttl).then(function () {
+        var rec = pushLoginRecord(u, { ua: localUA() });
+        u.lastLoginAt = rec.at;
+        saveUsers(self.users);
+        return issueSession(u, ttl, rec.at).then(function () {
           self.user = publicUser(u);
-          return { ok: true, user: self.user };
+          return { ok: true, user: self.user, loginAt: rec.at };
         });
       });
     },
@@ -426,6 +811,279 @@
       return this.users.map(publicUser);
     },
 
+    /** 管理员视角明细：含登录档案、使用时长、是否保存了可显示的密码 */
+    listUsersDetail: function () {
+      if (!this.isAdmin()) return this.listUsers();
+      this.users = loadUsers();
+      return this.users.map(adminUser);
+    },
+
+    /** 待审核列表（公开可读，只暴露用户名与申请时间，供登录页提示用） */
+    pendingUsers: function () {
+      this.users = loadUsers();
+      return this.users.filter(function (u) { return statusOf(u) === STATUS.PENDING; }).map(publicUser);
+    },
+
+    pendingCount: function () {
+      return this.pendingUsers().length;
+    },
+
+    /**
+     * 审核通过：pending → active。
+     * 返回 approveCode，管理员把它发给注册者，注册者在登录页粘贴即可登录。
+     */
+    approveUser: function (username, role) {
+      if (!this.isAdmin()) return { ok: false, error: '仅管理员可审核账号' };
+      var roleVal = (role === ROLE.ADMIN) ? ROLE.ADMIN : ROLE.USER;
+      this.users = loadUsers();
+      var u = findUser(this.users, username);
+      if (!u) return { ok: false, error: '用户不存在' };
+      if (statusOf(u) === STATUS.ACTIVE && !u.disabled) {
+        return { ok: false, error: '该账号已经是正常状态' };
+      }
+      var now = Date.now();
+      u.status = STATUS.ACTIVE;
+      u.reviewNote = '';
+      if (role) u.role = roleVal;
+      u.reviewedAt = now;
+      u.reviewedBy = (this.user && this.user.username) || '';
+      u.updatedAt = now;
+      saveUsers(this.users);
+      return { ok: true, user: publicUser(u), approveCode: makeApproveCode(u) };
+    },
+
+    /** 驳回注册申请：pending → rejected（留有被驳回标记，用户可重新申请） */
+    rejectUser: function (username, note) {
+      if (!this.isAdmin()) return { ok: false, error: '仅管理员可审核账号' };
+      this.users = loadUsers();
+      var u = findUser(this.users, username);
+      if (!u) return { ok: false, error: '用户不存在' };
+      u.status = STATUS.REJECTED;
+      u.reviewNote = String(note == null ? '' : note).slice(0, 200);
+      u.reviewedAt = Date.now();
+      u.reviewedBy = (this.user && this.user.username) || '';
+      u.updatedAt = Date.now();
+      saveUsers(this.users);
+      return { ok: true, user: publicUser(u) };
+    },
+
+    /** 重新取某个已通过账号的准入码（补发场景） */
+    approveCodeFor: function (username) {
+      if (!this.isAdmin()) return { ok: false, error: '仅管理员可生成准入码' };
+      var u = findUser(loadUsers(), username);
+      if (!u) return { ok: false, error: '用户不存在' };
+      if (statusOf(u) !== STATUS.ACTIVE) return { ok: false, error: '该账号尚未通过审核' };
+      return { ok: true, approveCode: makeApproveCode(u) };
+    },
+
+    /**
+     * 管理员粘贴「注册申请码」：把申请者的账号拉进本机待审核列表。
+     * 这是纯静态站点在「跨浏览器」场景下的通道 —— 账号表存在各自浏览器里，
+     * 没有共享服务端，所以用一串可转发的码代替接口。
+     */
+    applyRequestCode: function (code) {
+      if (!this.isAdmin()) return { ok: false, error: '仅管理员可导入注册申请' };
+      var p = unpackCode(code);
+      if (!p.ok) return p;
+      if (p.tag !== CODE_TAG_REQ) return { ok: false, error: '这不是注册申请码（应以 SNTREG1 开头）' };
+      var d = p.data || {};
+      var v = validateUsername(d.username);
+      if (!v.ok) return { ok: false, error: '申请码里的用户名不合法：' + v.error };
+      if (typeof d.hash !== 'string' || d.hash.indexOf('pbkdf2$') !== 0) {
+        return { ok: false, error: '申请码里的密码摘要不合法，请让对方重新生成' };
+      }
+      this.users = loadUsers();
+      var exist = findUser(this.users, v.value);
+      var now = Date.now();
+      if (exist && statusOf(exist) === STATUS.ACTIVE) {
+        return { ok: false, error: '本机已有同名且已通过的账号「' + v.value + '」' };
+      }
+      var rec = {
+        username: v.value, role: ROLE.USER, hash: d.hash,
+        pwSeal: typeof d.pwSeal === 'string' ? d.pwSeal : '',
+        disabled: false, status: STATUS.PENDING,
+        createdAt: Number(d.createdAt) || now, updatedAt: now,
+        appliedByCode: true, logins: []
+      };
+      if (exist) {
+        var i = this.users.indexOf(exist);
+        if (i >= 0) this.users[i] = rec; else this.users.push(rec);
+      } else {
+        this.users.push(rec);
+      }
+      if (!saveUsers(this.users)) return { ok: false, error: '保存失败：浏览器本地存储不可用' };
+      return { ok: true, user: publicUser(rec) };
+    },
+
+    /**
+     * 注册者在本机粘贴「准入码」：写入（或更新）本机账号后即可用原密码登录。
+     * 不需要管理员密码，也不需要导入整张账号表（避免泄露其他账号）。
+     */
+    importApproveCode: function (code) {
+      var p = unpackCode(code);
+      if (!p.ok) return p;
+      if (p.tag !== CODE_TAG_OK) return { ok: false, error: '这不是准入码（应以 SNTACC1 开头）' };
+      var d = p.data || {};
+      var v = validateUsername(d.username);
+      if (!v.ok) return { ok: false, error: '准入码里的用户名不合法：' + v.error };
+      if (typeof d.hash !== 'string' || d.hash.indexOf('pbkdf2$') !== 0) {
+        return { ok: false, error: '准入码里的密码摘要不合法，请向管理员重新索取' };
+      }
+      this.users = loadUsers();
+      var exist = findUser(this.users, v.value);
+      if (exist) {
+        // 本机已有同名记录：只有哈希一致才允许覆盖，避免用别人的码顶掉本机账号
+        if (exist.hash !== d.hash) {
+          return { ok: false, error: '本机已存在账号「' + v.value + '」，与准入码不匹配' };
+        }
+        exist.status = STATUS.ACTIVE;
+        exist.role = d.role === ROLE.ADMIN ? ROLE.ADMIN : (exist.role || ROLE.USER);
+        if (typeof d.pwSeal === 'string' && d.pwSeal) exist.pwSeal = d.pwSeal;
+        exist.reviewedAt = Number(d.approvedAt) || Date.now();
+        exist.reviewedBy = String(d.approvedBy || '');
+        exist.updatedAt = Date.now();
+      } else {
+        var now = Date.now();
+        exist = {
+          username: v.value,
+          role: d.role === ROLE.ADMIN ? ROLE.ADMIN : ROLE.USER,
+          hash: d.hash,
+          pwSeal: typeof d.pwSeal === 'string' ? d.pwSeal : '',
+          disabled: false, status: STATUS.ACTIVE,
+          createdAt: now, updatedAt: now,
+          reviewedAt: Number(d.approvedAt) || now,
+          reviewedBy: String(d.approvedBy || ''),
+          importedByCode: true, logins: []
+        };
+        // 用准入码导入的记录必须置顶，否则 hasUsers() 为真时会被误判为「本机已有主账号」
+        this.users.push(exist);
+      }
+      if (!saveUsers(this.users)) return { ok: false, error: '保存失败：浏览器本地存储不可用' };
+      return { ok: true, user: publicUser(exist) };
+    },
+
+    /** 解析一段码，供界面判断是申请码还是准入码（不做任何写入） */
+    parseCode: function (code) {
+      var p = unpackCode(code);
+      if (!p.ok) return p;
+      var d = p.data || {};
+      return {
+        ok: true,
+        tag: p.tag,
+        kind: p.tag === CODE_TAG_REQ ? 'request' : (p.tag === CODE_TAG_OK ? 'approve' : 'unknown'),
+        username: d.username || '',
+        createdAt: Number(d.createdAt || d.approvedAt) || null
+      };
+    },
+
+    /* ---------- 密码查看（仅管理员） ---------- */
+
+    /**
+     * 显示密码：从混淆存储里还原。
+     * 只认管理员；历史账号（改造前创建 / 手工导入）没有该字段时明确说明。
+     */
+    revealPassword: function (username) {
+      if (!this.isAdmin()) return { ok: false, error: '仅管理员可查看密码' };
+      var u = findUser(loadUsers(), username);
+      if (!u) return { ok: false, error: '用户不存在' };
+      if (!u.pwSeal) {
+        return { ok: false, error: '该账号没有保存可显示的密码（改造前创建的账号，或由账号表导入），请用「重置密码」设定新密码' };
+      }
+      var pw = unsealPassword(u.pwSeal);
+      if (!pw) return { ok: false, error: '密码无法还原，请用「重置密码」设定新密码' };
+      return { ok: true, password: pw };
+    },
+
+    /* ---------- 登录档案：IP / 时间 / 使用时长 ---------- */
+
+    /**
+     * 把当前会话的 IP 等信息补写到对应的登录记录上。
+     * 登录时不等 IP（避免网络慢把登录卡住），先进来再异步补。
+     */
+    attachLoginMeta: function (at, meta) {
+      if (!this.user && !this.session) return false;
+      var uname = (this.session && this.session.username) || (this.user && this.user.username);
+      if (!uname) return false;
+      this.users = loadUsers();
+      var u = findUser(this.users, uname);
+      if (!u) return false;
+      var rec = currentRecord(u, at || (this.session && this.session.loginAt));
+      if (!rec) rec = pushLoginRecord(u, { at: at || Date.now() });
+      var m = meta || {};
+      if (m.ip) rec.ip = String(m.ip);
+      if (m.loc) rec.loc = String(m.loc).slice(0, 80);
+      if (m.ua) rec.ua = String(m.ua);
+      rec.updatedAt = Date.now();
+      saveUsers(this.users);
+      return true;
+    },
+
+    /** 注册者的注册来源（管理员在待审核列表里能看到） */
+    attachRegisterMeta: function (username, meta) {
+      this.users = loadUsers();
+      var u = findUser(this.users, username);
+      if (!u) return false;
+      var m = meta || {};
+      if (m.ip) u.regIp = String(m.ip);
+      if (m.loc) u.regLoc = String(m.loc).slice(0, 80);
+      if (m.ua) u.regUa = String(m.ua);
+      saveUsers(this.users);
+      return true;
+    },
+
+    /**
+     * 累计在线时长心跳：给当前会话对应的登录记录加 seconds。
+     * 由界面在有焦点、可见时定时调用；不做任何鉴权以外的事。
+     */
+    touchSession: function (seconds) {
+      var sec = Math.max(0, Math.floor(Number(seconds) || 0));
+      if (!sec) return false;
+      var sess = this.session;
+      if (!sess || !sess.username) return false;
+      this.users = loadUsers();
+      var u = findUser(this.users, sess.username);
+      if (!u || statusOf(u) !== STATUS.ACTIVE || u.disabled) return false;
+      var rec = currentRecord(u, sess.loginAt);
+      if (!rec) rec = pushLoginRecord(u, { at: sess.loginAt || Date.now() });
+      rec.sec = (Number(rec.sec) || 0) + sec;
+      rec.lastSeenAt = Date.now();
+      u.lastSeenAt = rec.lastSeenAt;
+      saveUsers(this.users);
+      return true;
+    },
+
+    /** 当前登录用户在本次会话里的在线秒数 */
+    currentSessionSeconds: function () {
+      if (!this.session) return 0;
+      var u = findUser(loadUsers(), this.session.username);
+      if (!u) return 0;
+      var rec = currentRecord(u, this.session.loginAt);
+      return rec ? (Number(rec.sec) || 0) : 0;
+    },
+
+    /* ---------- 获取本机公网 IP（浏览器直连第三方接口） ---------- */
+
+    /** 结果缓存在 Auth 上，避免一次访问里反复请求；失败返回 null，不抛异常 */
+    resolveIp: function (fetcher) {
+      var self = this;
+      if (self._ipCache) return Promise.resolve(self._ipCache);
+      return resolveIp(fetcher).then(function (got) {
+        if (got && got.ip) self._ipCache = got;
+        return got;
+      }).catch(function () { return null; });
+    },
+
+    /** 便捷组合：登录/进入后调用一次，把 IP 补写到当前登录记录 */
+    syncLoginMeta: function (fetcher) {
+      var self = this;
+      return this.resolveIp(fetcher).then(function (got) {
+        var meta = { ua: localUA() };
+        if (got && got.ip) { meta.ip = got.ip; meta.loc = got.loc || ''; }
+        self.attachLoginMeta(self.session && self.session.loginAt, meta);
+        return got;
+      }).catch(function () { return null; });
+    },
+
     addUser: function (username, password, role) {
       var self = this;
       if (!this.isAdmin()) return Promise.resolve({ ok: false, error: '仅管理员可管理账号' });
@@ -435,9 +1093,14 @@
       this.users = loadUsers();
       if (findUser(this.users, v.username)) return Promise.resolve({ ok: false, error: '该用户名已存在' });
       return makePasswordHash(v.password).then(function (hash) {
+        var now = Date.now();
         var u = {
           username: v.username, role: roleVal, hash: hash,
-          disabled: false, createdAt: Date.now(), updatedAt: Date.now()
+          pwSeal: sealPassword(v.password),
+          disabled: false, status: STATUS.ACTIVE,
+          createdAt: now, updatedAt: now,
+          createdBy: (self.user && self.user.username) || '',
+          logins: []
         };
         self.users.push(u);
         if (!saveUsers(self.users)) return { ok: false, error: '保存失败：浏览器本地存储不可用' };
@@ -521,10 +1184,15 @@
         if (!chk.ok) return chk;
         return makePasswordHash(pc.value).then(function (hash) {
           u.hash = hash;
+          u.pwSeal = sealPassword(pc.value);   // 同步更新可显示密码，避免「显示的是旧密码」
           u.updatedAt = Date.now();
           if (!saveUsers(self.users)) return { ok: false, error: '保存失败：浏览器本地存储不可用' };
           if (isSelf) {
-            return issueSession(u, TTL_REMEMBER).then(function () { return { ok: true, resigned: true }; });
+            // 会话签名绑定密码哈希，改完必须重签，否则自己会被立刻踢下线
+            var rec = currentRecord(u, self.session && self.session.loginAt);
+            return issueSession(u, TTL_REMEMBER, rec ? rec.at : Date.now()).then(function () {
+              return { ok: true, resigned: true };
+            });
           }
           return { ok: true };
         });
@@ -586,7 +1254,16 @@
     verifyPassword: verifyPassword,
     hashText: sha256Hex,
     validateUsername: validateUsername,
-    validatePassword: validatePassword
+    validatePassword: validatePassword,
+    passwordStrength: passwordStrength,
+    sealPassword: sealPassword,
+    unsealPassword: unsealPassword,
+    parseUA: parseUA,
+    makeRequestCode: makeRequestCode,
+    makeApproveCode: makeApproveCode,
+    statusOf: statusOf,
+    totalUsageSec: totalUsageSec,
+    _ipCache: null
   };
 
   global.Auth = Auth;

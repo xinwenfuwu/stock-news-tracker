@@ -1947,6 +1947,176 @@ body.auth-locked { overflow: hidden; }
 .um-field { display: flex; flex-direction: column; gap: 6px; margin-bottom: 14px; font-size: 13px; color: var(--text-secondary); }
 .um-field .um-input { width: 100%; }
 
+/* ===== 登录关卡：注册 / 申请码 / 准入码 ===== */
+
+.auth-links {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 14px;
+  margin-top: 2px;
+  flex-wrap: wrap;
+}
+.auth-link {
+  padding: 0;
+  border: none;
+  background: none;
+  font-size: 12.5px;
+  color: var(--primary);
+  cursor: pointer;
+  text-decoration: none;
+}
+.auth-link:hover { text-decoration: underline; }
+.auth-link:disabled { color: var(--text-placeholder); cursor: not-allowed; text-decoration: none; }
+
+.auth-strength { display: flex; flex-direction: column; gap: 5px; }
+.auth-strength em {
+  display: block;
+  height: 4px;
+  border-radius: 2px;
+  background: var(--border);
+  overflow: hidden;
+}
+.auth-strength em i {
+  display: block;
+  height: 100%;
+  width: 20%;
+  border-radius: 2px;
+  background: var(--danger);
+  transition: width 0.2s ease, background 0.2s ease;
+}
+.auth-strength.lv2 em i { background: #f59e0b; }
+.auth-strength.lv3 em i { background: #2563eb; }
+.auth-strength.lv4 em i { background: #16a34a; }
+.auth-strength span { font-size: 11.5px; color: var(--text-placeholder); }
+
+.auth-code {
+  width: 100%;
+  padding: 9px 11px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface-alt);
+  color: var(--text-secondary);
+  font-family: ui-monospace, Menlo, Consolas, monospace;
+  font-size: 11.5px;
+  line-height: 1.5;
+  word-break: break-all;
+  resize: vertical;
+}
+.auth-code:focus { outline: none; border-color: var(--primary); background: #fff; }
+.auth-code-lg { min-height: 168px; font-size: 11px; }
+
+.auth-done-title { font-size: 14px; font-weight: 600; color: #15803d; text-align: center; }
+.auth-done-sub { font-size: 12px; line-height: 1.7; color: var(--text-placeholder); }
+
+/* ===== 用户管理：待审核 / 密码列 / 登录档案 ===== */
+
+.modal-um { width: 1180px; max-width: 98vw; }
+.modal-um .modal-body { overflow: auto; }
+.um-table { min-width: 1040px; }
+.um-table td:nth-child(1) { white-space: nowrap; }
+.um-table td:nth-child(4) { min-width: 132px; }
+.um-table td:nth-child(5) { min-width: 138px; }
+.um-table td:nth-child(8) { min-width: 250px; }
+
+.um-pending {
+  margin-bottom: 14px;
+  padding: 12px;
+  border: 1px solid #fde68a;
+  border-radius: 10px;
+  background: #fffbeb;
+}
+.um-pending-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 9px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #92400e;
+}
+.um-pending-count {
+  padding: 1px 8px;
+  border-radius: 9px;
+  background: #fde68a;
+  font-size: 11.5px;
+  font-weight: 600;
+}
+.um-pending-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+  padding: 8px 0;
+  border-top: 1px dashed #fde68a;
+}
+.um-pending-item:first-of-type { border-top: none; padding-top: 0; }
+.um-pending-main { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; min-width: 260px; }
+.um-pending-meta { font-size: 12px; color: #a16207; }
+
+.um-code-bar { display: flex; gap: 8px; align-items: center; margin-bottom: 12px; }
+
+.btn-mini {
+  padding: 1px 7px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: #fff;
+  color: var(--primary);
+  font-size: 11.5px;
+  line-height: 1.7;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.btn-mini:hover { background: var(--primary-light); border-color: var(--primary); }
+
+.um-pw { display: flex; align-items: center; gap: 5px; flex-wrap: nowrap; }
+.um-pw-text {
+  font-family: ui-monospace, Menlo, Consolas, monospace;
+  font-size: 12px;
+  color: var(--text);
+  background: var(--surface-alt);
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  padding: 1px 6px;
+  letter-spacing: 0.5px;
+}
+.um-pw-text.is-empty { color: var(--text-placeholder); letter-spacing: 0; font-family: inherit; font-style: italic; }
+
+.um-ip { font-family: ui-monospace, Menlo, Consolas, monospace; font-size: 12px; white-space: nowrap; }
+.um-ip-loc { font-size: 11.5px; color: var(--text-placeholder); white-space: nowrap; }
+
+.um-usage { color: var(--text); }
+.um-usage-sub { font-size: 11.5px; color: var(--text-placeholder); }
+
+.um-badge.pending { background: #fef3c7; color: #92400e; }
+.um-badge.rejected { background: #fef2f2; color: var(--danger); }
+
+.um-row-pending td { background: #fffdf5; }
+.um-row-off td { opacity: 0.62; }
+
+.um-logrow td { padding: 0 10px 12px; background: var(--surface-alt); }
+.um-log-head { padding: 10px 0 7px; font-size: 12.5px; font-weight: 600; color: var(--text-secondary); }
+.um-log-table { width: 100%; border-collapse: collapse; font-size: 12px; background: #fff; border: 1px solid var(--border); border-radius: 8px; }
+.um-log-table th {
+  padding: 6px 8px;
+  text-align: left;
+  font-weight: 600;
+  color: var(--text-placeholder);
+  background: var(--surface-alt);
+  border-bottom: 1px solid var(--border);
+  white-space: nowrap;
+}
+.um-log-table td { padding: 6px 8px; border-bottom: 1px solid var(--border); color: var(--text-secondary); }
+.um-log-table tr:last-child td { border-bottom: none; }
+.um-log-table code { font-family: ui-monospace, Menlo, Consolas, monospace; }
+
+@media (max-width: 1040px) {
+  .modal-um { width: 100%; max-width: 96vw; }
+  .um-table { font-size: 12px; }
+  .um-table th, .um-table td { padding: 7px 6px; }
+}
+
 /* ===== 顶部「暂停数据刷新」按钮 ===== */
 .pause-btn { width: auto; padding: 0 10px; gap: 5px; font-size: 14px; }
 .pause-btn em { font-style: normal; font-size: 12px; letter-spacing: .5px; }
