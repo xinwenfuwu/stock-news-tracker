@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>股市信息分析系统</title>
-  <link rel="stylesheet" href="css/style.css?v=20260916g">
+  <link rel="stylesheet" href="css/style.css?v=20260916i">
   <!-- Vue 3 全局构建版（CDN，无需构建步骤） -->
   <script src="https://unpkg.com/vue@3.4.21/dist/vue.global.prod.js"></script>
 </head>
@@ -523,19 +523,71 @@
             </div>
           </div>
 
-          <!-- 右：美股美债 -->
-          <div class="us-market-panel">
-            <h3 class="panel-title">📡 美股美债</h3>
-            <div class="us-indices" v-if="usMarket.length">
-              <div class="us-idx" v-for="idx in usMarket" :key="idx.code">
-                <div class="idx-name">{{ idx.name }}</div>
-                <div class="idx-val" :class="idx.chg >= 0 ? 'up' : 'down'">{{ idx.val }}</div>
-                <div class="idx-chg" :class="idx.chg >= 0 ? 'up' : 'down'">{{ idx.chg >= 0 ? '+' : '' }}{{ idx.chg }}%</div>
+          <!-- 右：格隆汇每日快讯（全部消息 · 13 分类统计 · 日期与关键词搜索） -->
+          <aside class="brief-panel">
+            <div class="brief-head">
+              <h3 class="panel-title" style="margin:0">📰 格隆汇每日快讯</h3>
+              <span class="muted small" v-if="briefItems.length">
+                共 {{ briefItems.length }} 条<span v-if="briefSearching"> · 匹配 {{ briefFiltered.length }} 条</span>
+              </span>
+            </div>
+
+            <div class="brief-controls">
+              <select class="brief-date" v-model="briefDate" @change="onBriefDateChange" :disabled="briefLoading || !briefDates.length">
+                <option v-for="d in briefDates" :key="d" :value="d">{{ d }}</option>
+                <option v-if="!briefDates.length" value="">暂无快讯日期</option>
+              </select>
+              <div class="brief-search-wrap">
+                <input class="brief-search" v-model="briefKeyword" type="search" placeholder="关键词搜索（如：英伟达 / 降息 / 原油）">
+                <button class="brief-search-clear" v-if="briefKeyword" @click="briefKeyword = ''" title="清空关键词">✕</button>
               </div>
             </div>
-            <div class="muted small" v-else>点击「刷新热门话题」同步加载美股指数实时行情</div>
-            <div class="us-note muted small">美股三大指数（道琼斯 / 标普500 / 纳斯达克）经代理实时抓取；美债收益率数据源待接入。</div>
-          </div>
+
+            <div class="brief-tip muted small" v-if="briefLoading">⏳ 正在加载该日快讯...</div>
+            <div class="brief-tip muted small" v-else-if="briefError">{{ briefError }}</div>
+            <div class="brief-tip muted small" v-else-if="briefSearching && !briefFiltered.length">没有匹配「{{ briefKeyword }}」的快讯</div>
+            <div class="brief-tip muted small" v-else-if="briefItems.length">
+              全部消息按 13 个题材归类（一条可属多类），点分类即可展开该类全部消息
+            </div>
+            <div class="brief-tip muted small" v-else-if="briefPaused">
+              ⏸ 自动加载已暂停（顶部「暂停」开关生效）
+              <button class="btn btn-sm" style="margin-left:6px" @click="loadBriefsNow">📥 加载该日快讯</button>
+            </div>
+
+            <div class="brief-cats" v-if="briefFiltered.length">
+              <div class="brief-cat" v-for="c in briefStatsList" :key="c.key">
+                <div class="brief-cat-head" :class="{ active: briefUi.open[c.key] }" @click="toggleBriefCat(c.key)"
+                     :title="'点击查看「' + c.name + '」相关的 ' + c.count + ' 条快讯'">
+                  <span class="bc-caret">{{ briefUi.open[c.key] ? '▾' : '▸' }}</span>
+                  <span class="bc-icon">{{ c.icon }}</span>
+                  <span class="bc-name">{{ c.name }}</span>
+                  <span class="bc-track"><span class="bc-fill" :style="{ width: c.width + '%', background: c.color }"></span></span>
+                  <span class="bc-count">{{ c.count }}</span>
+                  <span class="bc-pct">{{ c.pct }}%</span>
+                </div>
+                <div class="brief-news" v-if="briefUi.open[c.key]">
+                  <div class="brief-news-head">
+                    <span class="brief-news-title" :style="{ color: c.color }">{{ c.icon }} {{ c.name }} · {{ c.count }} 条</span>
+                    <span class="muted small">点标题跳格隆汇原文</span>
+                  </div>
+                  <div class="brief-item" v-for="(n, k) in c.news.slice(0, briefUi.limit[c.key] || 30)" :key="n.id || k">
+                    <div class="brief-item-meta">
+                      <span class="brief-time">{{ (n.time || '').slice(5) }}</span>
+                      <span class="brief-tag stock" v-for="s in (n.stocks || []).slice(0, 3)" :key="s">{{ s }}</span>
+                      <span class="brief-tag subject" v-for="s in (n.subjects || []).slice(0, 3)" :key="s">{{ s }}</span>
+                    </div>
+                    <a v-if="n.url" :href="n.url" target="_blank" rel="noopener" class="brief-text" v-html="hlBrief(n.text)"></a>
+                    <span v-else class="brief-text" v-html="hlBrief(n.text)"></span>
+                  </div>
+                  <button class="theme-more" v-if="c.news.length > (briefUi.limit[c.key] || 30)" @click.stop="moreBriefNews(c.key)">
+                    还有 {{ c.news.length - (briefUi.limit[c.key] || 30) }} 条，点击展开更多
+                  </button>
+                  <div class="muted small" v-if="!c.news.length">该类暂无匹配快讯</div>
+                </div>
+              </div>
+            </div>
+            <div class="muted small" v-else-if="!briefLoading && !briefError && !briefPaused">暂无快讯数据，等待服务端定时抓取（每 2 小时一次）。</div>
+          </aside>
         </div>
       </section>
 
@@ -2184,8 +2236,8 @@
     </transition>
   </div>
 
-  <script src="js/auth.js?v=20260916g"></script>
-  <script src="js/auth-boot.js?v=20260916g"></script>
+  <script src="js/auth.js?v=20260916i"></script>
+  <script src="js/auth-boot.js?v=20260916i"></script>
   <!-- store / stock-api / hot-topics / app 由 auth-boot.js 在登录通过后动态装载，
        未登录时它们不会被下载，业务数据也不会进入内存 -->
 </body>

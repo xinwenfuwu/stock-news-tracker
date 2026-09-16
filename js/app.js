@@ -32,7 +32,7 @@ const app = createApp({
       currentPage.value = key;
       location.hash = key;
       // 进入「全球信息」页：优先展示最近可用的内置快照（同源、无需代理），再考虑实时抓取
-      if (key === 'finance') autoLoadHotTopics();
+      if (key === 'finance') { autoLoadHotTopics(); autoLoadBriefs(); }
     }
     // 初始化路由
     const hash = location.hash.replace('#', '');
@@ -208,7 +208,7 @@ const app = createApp({
         showToast('已暂停数据自动刷新（进入页面不再自动抓取、不再自动云同步；手动刷新按钮照常可用）', 'info');
       } else {
         showToast('已恢复数据自动刷新', 'success');
-        if (currentPage.value === 'finance') autoLoadHotTopics();
+        if (currentPage.value === 'finance') { autoLoadHotTopics(); autoLoadBriefs(); }
       }
     }
 
@@ -3037,7 +3037,17 @@ const app = createApp({
     const hotTopicsMerged = ref([]);
     const hotTopicsLoading = ref(false);
     const hotTopicsUpdated = ref('');
-    const usMarket = ref([]);
+
+    // ===== 格隆汇每日快讯（「全球信息」页右栏：13 分类统计 + 日期 + 关键词搜索）=====
+    const briefDates = ref([]);        // 有快讯数据的日期（来自仓库 index.json 的 briefsDates）
+    const briefDate = ref('');         // 当前查看日期
+    const briefItems = ref([]);        // 当日全部快讯
+    const briefKeyword = ref('');      // 关键词
+    const briefLoading = ref(false);
+    const briefError = ref('');
+    const briefPaused = ref(false);    // 顶部「暂停」生效时不自动去读快讯文件，改为按钮手动加载
+    const briefUi = reactive({ open: {}, limit: {} });   // 展开状态与「展开更多」条数（与统计解耦，重算不丢）
+    let _briefLoaded = false;          // 已初始化过就不再自动请求（避免每次切页都拉）
     // 火热话题：每日话题 / 统计分析
     const htTab = ref('daily');                 // 'daily' | 'analysis'
     const htMode = ref('live');                 // 'live' | 'history'
@@ -3246,7 +3256,6 @@ const app = createApp({
             hotTopicsMerged.value = ht.merged || [];
             saveLocalHotTopicSnapshot(ht.sources);   // 自动积累当日本地快照（随 Gist 同步）
             hotTopicsUpdated.value = new Date().toLocaleString('zh-CN', { hour12: false }) + '（实时）';
-            try { usMarket.value = (await StockAPI.fetchUsMarket(p)) || []; } catch (e) { /* 忽略 */ }
             return;
           }
           lastErrors = (ht.sources || []).filter(s => !s.items.length).map(s => `${s.name}: ${s.error || '无数据'}`);
@@ -3262,9 +3271,6 @@ const app = createApp({
           htMode.value = 'history';
           const when = fb.generatedAt ? new Date(fb.generatedAt).toLocaleString('zh-CN', { hour12: false }) : fb.date;
           hotTopicsUpdated.value = `${when}（自动抓取快照 ${fb.date}）`;
-          if (proxies.length && proxies[0] !== '') {
-            try { usMarket.value = (await StockAPI.fetchUsMarket(proxies[0])) || []; } catch (e) { /* 忽略 */ }
-          }
           const why = lastErrors.length ? lastErrors.slice(0, 2).join('；') : '未配置新闻代理地址';
           showToast(`实时抓取不可用（${why}），已回退到自动抓取的快照 ${fb.date}`, 'info');
           return;
@@ -3284,6 +3290,93 @@ const app = createApp({
      * 进入「全球信息」页时自动加载（幂等）。
      * 顺序：本地快照 → 仓库内置最新快照（同源，不依赖代理）→ 已配代理才实时抓取。
      */
+    // ===== 格隆汇每日快讯：日期清单 / 加载 / 分类展开 / 关键词高亮 =====
+    /** 首次进入「全球信息」页时按需加载。
+     *  只读同源静态快照做展示；但顶部「暂停」开关生效时，遵循既有约定「不发起任何自动请求」，
+     *  改为在面板里给出「点击加载」按钮，由用户主动触发（主动点击不算自动刷新）。 */
+    async function autoLoadBriefs() {
+      if (_briefLoaded) return;
+      if (autoRefreshPaused()) { briefPaused.value = true; return; }
+      await loadBriefsNow();
+    }
+    /** 用户主动加载该日快讯（暂停状态下也可用） */
+    async function loadBriefsNow() {
+      _briefLoaded = true;
+      briefPaused.value = false;
+      await loadBriefDates();
+      if (briefDate.value) await loadBriefs(briefDate.value);
+    }
+    async function loadBriefDates() {
+      try {
+        const r = await fetch('./data/hot-topics/index.json', { cache: 'no-store' });
+        if (!r.ok) throw new Error('HTTP ' + r.status);
+        const j = await r.json();
+        const list = (j && Array.isArray(j.briefsDates))
+          ? j.briefsDates.filter(d => /^\d{4}-\d{2}-\d{2}$/.test(d)) : [];
+        briefDates.value = list;
+        if (!list.length) { briefError.value = '服务端尚未生成快讯数据（定时任务每 2 小时抓取一次）'; return; }
+        if (!briefDate.value || list.indexOf(briefDate.value) < 0) briefDate.value = list[0];
+      } catch (e) {
+        briefError.value = '快讯日期清单加载失败：' + (e && e.message ? e.message : e);
+      }
+    }
+    async function loadBriefs(date) {
+      if (!date) return;
+      briefLoading.value = true;
+      briefError.value = '';
+      try {
+        const r = await fetch(`./data/hot-topics/briefs-${date}.json`, { cache: 'no-store' });
+        if (!r.ok) throw new Error('HTTP ' + r.status);
+        const j = await r.json();
+        briefItems.value = Array.isArray(j.items) ? j.items : [];
+        if (!briefItems.value.length) briefError.value = `${date} 暂无快讯数据`;
+      } catch (e) {
+        briefItems.value = [];
+        briefError.value = `${date} 快讯加载失败：` + (e && e.message ? e.message : e);
+      } finally {
+        briefLoading.value = false;
+      }
+    }
+    function onBriefDateChange() { loadBriefs(briefDate.value); }
+    function toggleBriefCat(key) {
+      briefUi.open[key] = !briefUi.open[key];
+      if (briefUi.open[key] && !briefUi.limit[key]) briefUi.limit[key] = 30;
+    }
+    function moreBriefNews(key) { briefUi.limit[key] = (briefUi.limit[key] || 30) + 50; }
+    /** 关键词高亮：先转义再包 <mark>，避免把外部快讯正文当 HTML 执行 */
+    function escapeHtml(s) {
+      return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({
+        '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+      }[c]));
+    }
+    function hlBrief(text) {
+      // 先剥掉「格隆汇9月16日｜」这类统一前缀（与统计口径一致），再转义、再高亮
+      const clean = (typeof HotTopics !== 'undefined' && HotTopics.cleanBriefText)
+        ? HotTopics.cleanBriefText(text) : String(text == null ? '' : text);
+      const safe = escapeHtml(clean);
+      const kw = briefKeyword.value.trim();
+      if (!kw) return safe;
+      const esc = escapeHtml(kw).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      try { return safe.replace(new RegExp(esc, 'gi'), m => `<mark>${m}</mark>`); }
+      catch (e) { return safe; }
+    }
+    /** 关键词过滤（正文 / 关联股票 / 关联主题都参与匹配） */
+    const briefFiltered = computed(() => {
+      const kw = briefKeyword.value.trim();
+      if (!kw) return briefItems.value;
+      const k = kw.toLowerCase();
+      return briefItems.value.filter(it =>
+        String(it.text || '').toLowerCase().includes(k) ||
+        (it.stocks || []).some(s => String(s).toLowerCase().includes(k)) ||
+        (it.subjects || []).some(s => String(s).toLowerCase().includes(k)));
+    });
+    const briefSearching = computed(() => !!briefKeyword.value.trim());
+    /** 13 分类统计（在关键词过滤后的集合上统计） */
+    const briefStatsList = computed(() => {
+      if (typeof HotTopics === 'undefined' || !HotTopics.briefStats) return [];
+      return HotTopics.briefStats(briefFiltered.value);
+    });
+
     function autoLoadHotTopics() {
       if (hotTopicsSources.value.length || hotTopicsLoading.value) return;
       // 顶部「暂停」生效时，不发起任何自动抓取（含仓库快照请求）
@@ -3990,7 +4083,7 @@ const app = createApp({
       });
     });
     watch(currentPage, (k) => {
-      if (k === 'finance') autoLoadHotTopics();
+      if (k === 'finance') { autoLoadHotTopics(); autoLoadBriefs(); }
     }, { immediate: true });
     watch(sortedFilterStocks, () => nextTick(() => initResizeFor('.filter-scroll table', 'filterColWidths', FILTER_DEFAULT_COL_WIDTHS)), { flush: 'post' });
     watch(currentPage, (k) => {
@@ -4461,7 +4554,10 @@ const app = createApp({
       loadHotData, fetchHotBoards, refreshHotStocks,
       refreshAmplitudeBoards, ampLoading, hotPanelsHidden, financePushHidden,
       // 全球信息页：火热话题 + 美股美债
-      hotTopicsSources, hotTopicsMerged, hotTopicsLoading, hotTopicsUpdated, usMarket, refreshHotTopics,
+      hotTopicsSources, hotTopicsMerged, hotTopicsLoading, hotTopicsUpdated, refreshHotTopics,
+      briefDates, briefDate, briefItems, briefKeyword, briefLoading, briefError, briefUi, briefPaused,
+      briefFiltered, briefSearching, briefStatsList,
+      onBriefDateChange, toggleBriefCat, moreBriefNews, hlBrief, autoLoadBriefs, loadBriefsNow,
       htTab, htMode, hotTopicDate, hotTopicDateHasData, htCatFilter, htCategories, htRangeOptions, localSnapshotDates,
       analysisRange, analysisLoading, analysisResult, filteredHotSources,
       catColor, htSourceColor, htSourceName, ratioClass, setHtMode, onHotTopicDateChange, runAnalysis,

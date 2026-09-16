@@ -2691,22 +2691,4 @@ const StockAPI = {
     return `${y}-${m}-${day}`;
   },
 
-  /**
-   * 抓取美股三大指数实时行情（经代理），用于「全球信息」页「美股美债」栏。
-   * @param {string} proxyUrl
-   * @returns {Promise<Array<{code,name,val,chg}>>}
-   */
-  async fetchUsMarket(proxyUrl) {
-    const base = (proxyUrl || '').trim().replace(/\/+$/, '');
-    if (!base) return [];
-    const secids = '100.DJIA,100.SPX,100.NDX';
-    try {
-      const target = 'https://push2.eastmoney.com/api/qt/ulist.np/get?fltt=2&invt=2&fields=f12,f14,f2,f3&secids=' + secids;
-      const resp = await fetch(`${base}/proxy?url=${encodeURIComponent(target)}`);
-      if (!resp.ok) return [];
-      const j = await resp.json();
-      const diff = (j.data && j.data.diff) || [];
-      return diff.map(d => ({ code: d.f12, name: d.f14, val: d.f2, chg: d.f3 }));
-    } catch (e) { return []; }
-  }
 };

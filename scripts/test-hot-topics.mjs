@@ -125,6 +125,14 @@ if (existsSync(idxPath)) {
   assert('清单日期降序', idx.dates.join(',') === idx.dates.slice().sort().reverse().join(','), idx.dates.join(','));
   const miss = idx.dates.filter(d => !existsSync(new URL(`../data/hot-topics/${d}.json`, import.meta.url)));
   assert('清单里的日期都有对应快照文件', miss.length === 0, miss.join(','));
+  // 格隆汇快讯清单
+  assert('清单含 briefsDates 数组（格隆汇每日快讯）', Array.isArray(idx.briefsDates) && idx.briefsDates.length > 0,
+    JSON.stringify(idx.briefsDates));
+  assert('briefsDates 降序且 latestBriefs 为最新', idx.briefsDates.join(',') === idx.briefsDates.slice().sort().reverse().join(',')
+    && idx.latestBriefs === idx.briefsDates[0], `latestBriefs=${idx.latestBriefs}`);
+  const missB = idx.briefsDates.filter(d => !existsSync(new URL(`../data/hot-topics/briefs-${d}.json`, import.meta.url)));
+  assert('清单里的快讯日期都有对应 briefs 文件', missB.length === 0, missB.join(','));
+  assert('快讯保留天数独立于快照（briefKeepDays 存在）', typeof idx.briefKeepDays === 'number', String(idx.briefKeepDays));
 } else {
   console.log('  （本地暂无 index.json，跳过）');
 }
@@ -184,6 +192,121 @@ if (snap15 && snap16) {
   const hasUrl = aiTopic.news.filter(n => n.url).length;
   console.log(`    其中 ${hasUrl}/${aiTopic.news.length} 条带原文链接（可点击跳转）`);
   assert('真实数据：人工智能主题的新闻多带原文链接', hasUrl > 0, hasUrl);
+}
+
+console.log('9) briefStats 格隆汇快讯 13 分类统计（合成数据）');
+const BRIEF_CATS = ['国家政策类', '世界500强领导者', '社会热点', '南下资金', '科技突破', '行业标杆上市公司',
+  '大行机构', '美债', '美股', '日韩股', '港股', '黄金', '石油'];
+const bsEmpty = ht.briefStats([]);
+assert('空输入仍返回 13 个分类', bsEmpty.length === 13, String(bsEmpty.length));
+assert('分类名称与顺序完全符合需求', JSON.stringify(bsEmpty.map(d => d.name)) === JSON.stringify(BRIEF_CATS),
+  bsEmpty.map(d => d.name).join('/'));
+assert('空输入各项计数为 0 且无明细', bsEmpty.every(d => d.count === 0 && d.news.length === 0));
+assert('空输入百分比为 0、占比条仍有最小宽度', bsEmpty.every(d => d.pct === 0 && d.width >= 4));
+
+// 每类给一句典型文本，验证关键词词典确实能命中对应分类
+const hitCases = [
+  ['国家政策类', '国务院办公厅印发实施意见，明确关税调整与补贴试点安排'],
+  ['世界500强领导者', '英伟达CEO黄仁勋表示将加大在华投入'],
+  ['社会热点', '某地暴雨引发洪灾，救援工作持续进行'],
+  ['南下资金', '南下资金今日净买入港股20.99亿港元'],
+  ['科技突破', '我国科研团队首次实现可控核聚变重大突破'],
+  ['行业标杆上市公司', '宁德时代发布半年报，净利润同比增长两成'],
+  ['大行机构', '高盛上调目标价，研报看好该板块后市'],
+  ['美债', '美联储主席鲍威尔暗示可能加息25个基点'],
+  ['美股', '美股三大指数收涨，纳指创历史新高'],
+  ['日韩股', '日经225指数收涨逾1%，韩国KOSPI同步走强'],
+  ['港股', '港股恒生指数收涨，恒生科技指数表现强势'],
+  ['黄金', '国际金价走高，现货黄金再创历史新高'],
+  ['石油', '布伦特原油价格上涨，OPEC讨论增产计划']
+];
+for (const [cat, text] of hitCases) {
+  const st = ht.briefStats([{ id: 1, text, time: '2026-09-16 10:00' }]);
+  const d = st.find(x => x.name === cat);
+  assert(`「${text.slice(0, 12)}…」命中「${cat}」`, d && d.count === 1 && d.news.length === 1,
+    d ? `count=${d.count}` : '未找到分类');
+}
+
+// 多标签：一条快讯可同时进入多个分类
+const multi = ht.briefStats([{ id: 2, text: '英伟达CEO黄仁勋：美联储加息预期升温，美股盘前走弱', time: '2026-09-16 09:00' }]);
+const multiHit = multi.filter(d => d.count > 0).map(d => d.name);
+assert('同一条快讯可命中多个分类（多标签）', multiHit.length >= 3, multiHit.join('/'));
+assert('多标签命中下每条明细仍是同一条', multi.every(d => d.news.every(n => n.id === 2)));
+
+// cleanBriefText：剥统一前缀与残留 HTML 标签
+assert('cleanBriefText 剥掉「格隆汇X月X日｜」前缀',
+  ht.cleanBriefText('格隆汇9月16日｜央行宣布降准') === '央行宣布降准',
+  ht.cleanBriefText('格隆汇9月16日｜央行宣布降准'));
+assert('cleanBriefText 剥掉残留 HTML 标签（快讯正文里出现过 <u>）',
+  ht.cleanBriefText('格隆汇9月16日丨本届政府<u>改变过去不干预政策</u>') === '本届政府改变过去不干预政策',
+  ht.cleanBriefText('格隆汇9月16日丨本届政府<u>改变过去不干预政策</u>'));
+assert('cleanBriefText 解析实体并压缩空白',
+  ht.cleanBriefText('格隆汇9月16日｜A&amp;B   公司') === 'A&B 公司',
+  ht.cleanBriefText('格隆汇9月16日｜A&amp;B   公司'));
+assert('前缀剥离后不会误命中（正则只吃中文前缀）',
+  ht.briefStats([{ id: 3, text: '格隆汇9月16日｜公司公告', time: '' }]).find(d => d.name === '国家政策类').count === 0);
+
+// 计数与明细严格一致、百分比算法正确
+const mix = [
+  { id: 11, text: '美股三大指数收涨', time: '2026-09-16 10:00' },
+  { id: 12, text: '美股道琼斯指数创新高', time: '2026-09-16 11:00' },
+  { id: 13, text: '公司发布公告', time: '2026-09-16 12:00' },
+  { id: 14, text: '现货黄金价格上涨', time: '2026-09-16 13:00' }
+];
+const ms = ht.briefStats(mix);
+const usd = ms.find(d => d.name === '美股');
+assert('分类计数等于明细条数', usd.count === 2 && usd.news.length === 2, `${usd.count}/${usd.news.length}`);
+assert('百分比按「命中数 / 总条数」计算', usd.pct === 50, String(usd.pct));
+assert('占比条按最大命中数归一（最多者为 100%）', usd.width === 100, String(usd.width));
+assert('明细按时间降序', usd.news[0].time === '2026-09-16 11:00', usd.news.map(n => n.time).join(','));
+assert('明细保留原始对象（引用一致，含 id/time/url）', usd.news.every(n => n.id && n.time));
+
+console.log('10) 真实格隆汇快讯数据（briefs-*.json）上的分类质量');
+{
+  const idxP = new URL('../data/hot-topics/index.json', import.meta.url);
+  if (existsSync(idxP)) {
+    const idx = JSON.parse(readFileSync(idxP, 'utf8'));
+    const date = (idx.briefsDates || [])[0];
+    const fp = new URL(`../data/hot-topics/briefs-${date}.json`, import.meta.url);
+    if (existsSync(fp)) {
+      const j = JSON.parse(readFileSync(fp, 'utf8'));
+      const items = j.items || [];
+      console.log(`    数据集：${date}，共 ${items.length} 条快讯`);
+      assert('真实快讯数据量充足（>=300 条）', items.length >= 300, String(items.length));
+      assert('每条快讯都有正文与时间', items.every(it => it.text && it.text.length > 4 && /^\d{4}-\d{2}-\d{2}/.test(it.time || '')));
+      assert('每条快讯有唯一 id', new Set(items.map(it => it.id)).size === items.length);
+      const st = ht.briefStats(items);
+      st.forEach(d => console.log(`      ${d.name}：命中 ${d.count} 条（${d.pct}%）`));
+      assert('13 个分类在真实数据上都有命中', st.every(d => d.count > 0),
+        st.filter(d => !d.count).map(d => d.name).join('/') || 'all>0');
+      assert('每类计数与明细条数一致', st.every(d => d.count === d.news.length));
+      // 关键：展开看到的每条，都必须真的含该类关键词
+      const bad = [];
+      for (const d of st) {
+        const kws = ht.BRIEF_KEYWORDS[d.key];
+        for (const n of d.news) {
+          const t = ht.cleanBriefText(n.text);
+          if (!kws.some(k => t.includes(k))) bad.push(`${d.name}:${t.slice(0, 20)}`);
+        }
+      }
+      assert('每类明细都确实命中该类关键词（点开不会看到无关消息）', bad.length === 0, bad.slice(0, 3).join(' | '));
+      const anyHit = items.filter(it => {
+        const t = ht.cleanBriefText(it.text);
+        return Object.values(ht.BRIEF_KEYWORDS).some(kw => kw.some(k => t.includes(k)));
+      });
+      assert('至少命中一类的比例合理（>40%）', anyHit.length / items.length > 0.4,
+        `${anyHit.length}/${items.length}`);
+      const withUrl = items.filter(it => it.url).length;
+      assert('绝大多数快讯带原文链接（可点击跳转）', withUrl / items.length > 0.8,
+        `${withUrl}/${items.length}`);
+      const withStocks = items.filter(it => (it.stocks || []).length).length;
+      console.log(`    其中 ${withUrl} 条带原文链接，${withStocks} 条带关联股票`);
+    } else {
+      console.log('  （本地暂无 briefs 文件，跳过真实数据校验）');
+    }
+  } else {
+    console.log('  （本地暂无 index.json，跳过）');
+  }
 }
 
 console.log(`\n结果：${pass} 通过 / ${fail} 失败`);

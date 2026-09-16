@@ -501,11 +501,148 @@
     });
   }
 
+  /* ============================================================
+   * 格隆汇每日快讯：13 个题材分类（供「全球信息」页右栏使用）
+   * 与上面的 THEME_DIMENSIONS 不同：这里是「一层 13 项」，每项直接带该类全部快讯，
+   * 点某项即展开该类消息（用户需求：点开可以看到分类的消息）。
+   * 同样是多标签命中——一条快讯可同时进入多个分类。
+   * ============================================================ */
+  const BRIEF_DIMENSIONS = [
+    { key: 'policy', name: '国家政策类', icon: '🏛️', color: '#9b2fb5' },
+    { key: 'fortune500', name: '世界500强领导者', icon: '🌍', color: '#b45309' },
+    { key: 'society', name: '社会热点', icon: '🔥', color: '#db2777' },
+    { key: 'southbound', name: '南下资金', icon: '💧', color: '#0a7d3e' },
+    { key: 'tech', name: '科技突破', icon: '🔬', color: '#2563eb' },
+    { key: 'leader', name: '行业标杆上市公司', icon: '🏆', color: '#0369a1' },
+    { key: 'institution', name: '大行机构', icon: '🏦', color: '#7c3aed' },
+    { key: 'ust', name: '美债', icon: '📉', color: '#334155' },
+    { key: 'usstock', name: '美股', icon: '🇺🇸', color: '#e63525' },
+    { key: 'jpkstock', name: '日韩股', icon: '🎌', color: '#0f766e' },
+    { key: 'hkstock', name: '港股', icon: '🇭🇰', color: '#c8102e' },
+    { key: 'gold', name: '黄金', icon: '🥇', color: '#ca8a04' },
+    { key: 'oil', name: '石油', icon: '🛢️', color: '#57534e' }
+  ];
+
+  /* 分类 → 关键词。命中任一即归入该类。
+   * 刻意避开「社会」「规划」「监管」「台风」这类过于宽泛或歧义的词：
+   * 实测过宽会误伤（如「台风」会命中 F-15「台风」战斗机、「规划」会命中投资者提问）。 */
+  const BRIEF_KEYWORDS = {
+    policy: [
+      '国务院', '发改委', '央行', '中国人民银行', '财政部', '证监会', '金融监管总局', '银保监', '国常会', '政治局',
+      '工信部', '商务部', '住建部', '交通运输部', '农业农村部', '水利部', '国家能源局', '国资委', '市场监管总局', '海关总署',
+      '政策', '监管', '印发', '新闻发布会', '国新办', '实施意见', '指导意见', '条例', '法规', '法案', '税收', '关税',
+      '补贴', '试点', '批复', '五年规划', '发展规划', '规划纲要', '部委', '省政府', '市政府', '施政报告',
+      '议会', '国会', '白宫', '内阁', '制裁', '反制', '预算案', '政府', '立法'
+    ],
+    fortune500: [
+      '世界500强', '500强', '苹果', '微软', '英伟达', '特斯拉', '亚马逊', '谷歌', 'Meta', '台积电', '三星', '丰田',
+      '大众汽车', '宝马', '奔驰', '波音', '可口可乐', '沃尔玛', '强生', '辉瑞', '伯克希尔', '沙特阿美', '壳牌',
+      '埃克森美孚', '英特尔', '高通', 'OpenAI', '马斯克', '库克', '黄仁勋', '奥特曼', '巴菲特', '贝索斯', '扎克伯格',
+      'CEO', '首席执行官', '董事长', '创始人', '总裁', '高管', '换帅', '任命', '辞职', '离任', '接任', '掌门人'
+    ],
+    society: [
+      '社会热点', '社会各界', '社会关注', '网友', '热搜', '事故', '灾害', '地震', '台风预警', '台风登陆', '暴雨',
+      '洪水', '火灾', '车祸', '坠机', '伤亡', '遇难', '救援', '塌方', '塌房', '医疗', '教育部', '高校', '就业',
+      '物价', '房价', '养老', '生育', '判刑', '反腐', '落马', '游行', '抗议', '罢工', '食品安全', '民生'
+    ],
+    southbound: [
+      '南下资金', '南向资金', '港股通', '沪深港通', '陆股通', '北向资金', '南向', '北向'
+    ],
+    tech: [
+      '突破', '研发成功', '全球首次', '全球首个', '行业首个', '首次实现', '首次成功', '问世', '量产', '新技术', '专利', '创新',
+      '量子', '核聚变', '光刻', '固态电池', '脑机接口', '人形机器人', '大模型', '人工智能', 'AI', '6G', '商业航天',
+      '基因编辑', 'mRNA', '超导', 'HBM', '算力', '芯片', '半导体', '机器人', '商业卫星', '自动驾驶', '昇腾', '光通信'
+    ],
+    leader: [
+      '贵州茅台', '宁德时代', '比亚迪', '中芯国际', '隆基绿能', '招商银行', '中国平安', '万科', '海康威视', '立讯精密',
+      '格力电器', '美的集团', '五粮液', '京东方', '三一重工', '紫金矿业', '北方稀土', '恒瑞医药', '迈瑞医疗', '药明康德',
+      '寒武纪', '中际旭创', '工业富联', '长江电力', '中国神华', '中国移动', '中国石油', '中国石化', '中国人寿', '中信证券',
+      '牧原股份', '伊利股份', '海天味业', '金山办公', '科大讯飞', '阳光电源', '亿纬锂能', '赣锋锂业', '天齐锂业', '中国中免',
+      '东方财富', '同花顺', '顺丰控股', '中兴通讯', '海光信息', '中国建筑', '中国中铁', '京沪高铁'
+    ],
+    institution: [
+      '高盛', '摩根士丹利', '大摩', '摩根大通', '小摩', '花旗', '美银', '美国银行', '瑞银', '野村', '汇丰', '中金公司',
+      '华泰证券', '国泰君安', '招商证券', '广发证券', '中信建投', '长江证券', '华鑫证券', '里昂', '贝莱德', '桥水',
+      '先锋领航', '黑石', '凯雷', '软银', '评级', '上调', '下调', '目标价', '研报', '分析师', '投行', '资管'
+    ],
+    ust: [
+      '美债', '美债收益率', '美国国债', '十年期', '两年期', '美联储', '鲍威尔', 'FOMC', '联邦基金利率', '加息', '降息', '基点',
+      '缩表', '隔夜逆回购', '美元指数', '国债拍卖'
+    ],
+    usstock: [
+      '美股', '纳斯达克', '道琼斯', '标普500', '标普', '纽交所', 'ADR', '盘前', '盘后', '美国股市', '纳指', '美国上市', 'SEC'
+    ],
+    jpkstock: [
+      '日经', '东证', '日股', '日本股市', 'KOSPI', '韩股', '韩国股市', '日本央行', '日元', '韩元', '日本内阁',
+      '韩国央行', '三星电子', 'SK海力士', '东京证券交易所', '韩国交易所'
+    ],
+    hkstock: [
+      '港股', '恒生指数', '恒指', '恒生科技', '港交所', 'H股', '香港股市', '中概股', '香港交易所', '恒生中国企业'
+    ],
+    gold: [
+      '黄金', '金价', '现货金', 'COMEX黄金', '伦敦金', '央行购金', '金矿', '贵金属', '白银价格', '金条', '黄金ETF'
+    ],
+    oil: [
+      '原油', '油价', 'WTI', '布伦特', 'OPEC', '石油', '页岩油', '炼油', '成品油', '天然气', '油轮', '原油期货',
+      '石油输出国', '柴油', '汽油'
+    ]
+  };
+
+  /** 剥掉格隆汇快讯统一前缀与残留的 HTML 标签，便于关键词匹配与展示 */
+  function cleanBriefText(text) {
+    return decodeEntities(String(text || ''))
+      .replace(/^格隆汇\s*\d+月\d+日\s*[｜|丨]\s*/, '')
+      .replace(/<[^>]+>/g, '')
+      .replace(/\s+/g, ' ')
+      .trim();
+  }
+
+  /** 通用词典命中：返回命中的键数组 */
+  function _hitDict(text, dict) {
+    const hits = [];
+    for (const name in dict) {
+      const aliases = dict[name];
+      for (let i = 0; i < aliases.length; i++) {
+        if (text.indexOf(aliases[i]) >= 0) { hits.push(name); break; }
+      }
+    }
+    return hits;
+  }
+
+  /**
+   * 格隆汇每日快讯分类统计：一层 13 项，每项带该类全部快讯明细。
+   * @param {Array<{text:string,time?:string,url?:string,date?:string,stocks?:string[],subjects?:string[]}>} items
+   * @returns {Array<{key,name,icon,color,count,pct,width,news:Array}>} 按 BRIEF_DIMENSIONS 顺序返回
+   */
+  function briefStats(items) {
+    const list = (items || []).filter(it => it && it.text);
+    const base = list.length;
+    const raw = BRIEF_DIMENSIONS.map(dim => {
+      const kw = BRIEF_KEYWORDS[dim.key] || [];
+      const news = [];
+      for (const it of list) {
+        const t = cleanBriefText(it.text);
+        if (!t) continue;
+        if (kw.some(k => t.indexOf(k) >= 0)) news.push(it);
+      }
+      // 时间新的在前（快讯本身就是时间倒序，这里再兜一次底）
+      news.sort((a, b) => String(b.time || '').localeCompare(String(a.time || '')));
+      return { key: dim.key, name: dim.name, icon: dim.icon, color: dim.color, count: news.length, news };
+    });
+    const max = raw.reduce((m, d) => Math.max(m, d.count), 1);
+    raw.forEach(d => {
+      d.pct = base ? Math.round((d.count / base) * 100) : 0;
+      d.width = Math.max(4, Math.round((d.count / max) * 100));
+    });
+    return raw;
+  }
+
   global.HotTopics = {
     CATEGORIES, CATEGORY_COLORS, SOURCE_ORDER, SOURCE_BY_KEY,
     classify, normalizeTitle, bigrams, jaccard, signalTokens, isSameTopic,
     clusterItems, siteCategoryStats,
     THEME_DIMENSIONS, THEME_KEYWORDS, themeStats,
+    BRIEF_DIMENSIONS, BRIEF_KEYWORDS, briefStats, cleanBriefText,
     decodeEntities, isJunkTitle, cleanTitle,
     fmtLocalDate, todayStr, snapshotCandidates
   };
