@@ -7,6 +7,7 @@
  *      而是自动回退展示最近快照，并给出提示
  *   3) 当日无快照时，自动回退到「前一个可用日期」的快照
  *   4) 分类筛选、统计分析（跨站重合榜 + 各站分类统计）渲染正常
+ *   5) 主题分类统计（行业/概念/产品/产业/科技）渲染在跨站重合榜右侧，可折叠、有条形与样例
  * 用法：node scripts/e2e-hot-topics.mjs
  * ============================================================ */
 import { chromium } from 'playwright';
@@ -170,8 +171,53 @@ const main = async () => {
     await ctx.close();
   }
 
-  // ---------------- 场景 5：当日无快照 → 回退前一可用日 ----------------
-  console.log('5) 当日无快照：应自动回退到「前一个可用日期」的快照');
+  // ---------------- 场景 5：主题维度统计（跨站重合榜右侧） ----------------
+  console.log('5) 主题分类统计：行业/概念/产品/产业/科技 在跨站重合榜右侧');
+  {
+    const { ctx, page, errors } = await openApp(browser, A.port, '');
+    await waitItems(page);
+    await page.locator('.ht-tab', { hasText: '统计分析' }).click();
+    await page.locator('button', { hasText: '生成统计' }).first().click();
+    await page.waitForSelector('.theme-dim', { timeout: 25000 });
+
+    const dims = await page.locator('.theme-dim').count();
+    check('渲染 5 个主题维度统计项', dims === 5, 'dims=' + dims);
+    const dimNames = (await page.locator('.theme-dim-name').allInnerTexts()).join(' ');
+    check('五个维度为 行业/概念/产品/产业/科技',
+      ['行业', '概念', '产品', '产业', '科技'].every(n => dimNames.includes(n)), dimNames.replace(/\s+/g, ' '));
+
+    const topicBars = await page.locator('.theme-topic').count();
+    check('主题条已渲染（统计非空）', topicBars > 0, 'topics=' + topicBars);
+    const widths = await page.locator('.theme-topic .tt-fill').evaluateAll(els => els.slice(0, 6).map(e => e.style.width));
+    check('主题条按命中数给出宽度', widths.length > 0 && widths.every(w => /%$/.test(w)), widths.join(','));
+    const hint = await page.locator('.theme-topic').first().getAttribute('title');
+    check('悬停主题可看样例标题', !!hint && hint.length > 4, String(hint).slice(0, 40));
+    const pcts = (await page.locator('.theme-topic .tt-pct').allInnerTexts()).filter(s => /%$/.test(s.trim()));
+    check('显示占全部新闻的百分比', pcts.length > 0, pcts.slice(0, 3).join(','));
+
+    // 位置关系：右栏在同一行的重合榜右侧
+    const boxL = await page.locator('.ht-split-left .overlap-list').boundingBox();
+    const boxR = await page.locator('.theme-stats').boundingBox();
+    check('主题统计面板位于跨站重合榜右侧', !!boxL && !!boxR && boxR.x > boxL.x + 50,
+      `L.x=${boxL && Math.round(boxL.x)} R.x=${boxR && Math.round(boxR.x)}`);
+    check('两栏顶部对齐（同一行并排）', !!boxL && !!boxR && Math.abs(boxL.y - boxR.y) < 80,
+      `Δy=${boxL && boxR ? Math.abs(Math.round(boxL.y - boxR.y)) : 'n/a'}`);
+
+    // 折叠交互
+    await page.locator('.theme-dim-head').first().click();
+    await page.waitForTimeout(250);
+    const afterCollapse = await page.locator('.theme-topics').count();
+    check('点击维度标题可折叠', afterCollapse === dims - 1, `之前=${dims} 之后=${afterCollapse}`);
+    await page.locator('.theme-dim-head').first().click();
+    await page.waitForTimeout(250);
+    check('再次点击可展开', (await page.locator('.theme-topics').count()) === dims);
+
+    check('页面无 JS 报错', errors.length === 0, errors.join(' | '));
+    await ctx.close();
+  }
+
+  // ---------------- 场景 6：当日无快照 → 回退前一可用日 ----------------
+  console.log('6) 当日无快照：应自动回退到「前一个可用日期」的快照');
   {
     const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'htn-'));
     fs.cpSync(ROOT, tmp, { recursive: true, filter: (src) => !src.includes('_repo_tmp') && !src.includes('.git') });
