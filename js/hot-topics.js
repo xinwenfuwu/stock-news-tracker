@@ -41,10 +41,10 @@
    *  html_<key>  -> 经 Worker /proxy 返回的 HTML，用正则/DOMParser 抽取
    */
   const SOURCE_ORDER = [
-    { rank: 1, key: 'gelonghui', name: '格隆汇', color: '#c8102e', parse: 'json_gelonghui', endpoint: 'https://www.gelonghui.com/api/live?page=1&per_page=20' },
+    { rank: 1, key: 'gelonghui', name: '格隆汇', color: '#c8102e', parse: 'html_gelonghui', endpoint: 'https://www.gelonghui.com/', base: 'https://www.gelonghui.com' },
     { rank: 2, key: 'toutiao', name: '今日头条', color: '#2a6cff', parse: 'json_toutiao', endpoint: 'https://www.toutiao.com/hot-event/hot-board/?origin=toutiao_pc' },
-    { rank: 3, key: 'ths', name: '同花顺', color: '#0a7d3e', parse: 'html_ths', endpoint: 'https://stock.10jqka.com.cn/', base: 'https://stock.10jqka.com.cn' },
-    { rank: 4, key: 'eastmoney', name: '东方财富', color: '#e63525', parse: 'news_eastmoney', endpoint: '' },
+    { rank: 3, key: 'ths', name: '同花顺', color: '#0a7d3e', parse: 'html_ths', endpoint: 'https://news.10jqka.com.cn/realtimenews.html', base: 'https://news.10jqka.com.cn' },
+    { rank: 4, key: 'eastmoney', name: '东方财富', color: '#e63525', parse: 'news_eastmoney', endpoint: '', fallback: 'https://finance.eastmoney.com/', base: 'https://finance.eastmoney.com' },
     { rank: 5, key: 'cailian', name: '财联社', color: '#d92121', parse: 'json_cailian', endpoint: 'https://www.cailianpress.com/v2/articles/telegraph?last_time=0' },
     { rank: 6, key: 'kaipanla', name: '开盘啦', color: '#f59e0b', parse: 'html_kaipanla', endpoint: 'https://www.kaipanla.com/', base: 'https://www.kaipanla.com' },
     { rank: 7, key: 'xueqiu', name: '雪球', color: '#cc3333', parse: 'json_xueqiu', endpoint: 'https://xueqiu.com/statuses/topic/today.json' },
@@ -55,6 +55,103 @@
 
   const SOURCE_BY_KEY = {};
   SOURCE_ORDER.forEach(s => { SOURCE_BY_KEY[s.key] = s; });
+
+  /* ---------- 标题净化（Node 抓取脚本与浏览器共用同一套规则） ---------- */
+
+  /** 解码常见 HTML 实体（&gt; &amp; &#39; 等） */
+  function decodeEntities(s) {
+    return String(s == null ? '' : s)
+      .replace(/&nbsp;/gi, ' ')
+      .replace(/&lt;/gi, '<')
+      .replace(/&gt;/gi, '>')
+      .replace(/&quot;/gi, '"')
+      .replace(/&apos;/gi, "'")
+      .replace(/&#39;/g, "'")
+      .replace(/&#(\d+);/g, (m, d) => String.fromCharCode(+d))
+      .replace(/&#x([0-9a-f]+);/gi, (m, h) => String.fromCharCode(parseInt(h, 16)))
+      .replace(/&amp;/gi, '&');
+  }
+
+  /** 精确匹配的导航/栏目词，一律丢弃 */
+  const JUNK_EXACT = new Set([
+    '查看更多', '更多', '查看更多>', '更多>', '首页', '登录', '注册', '下一页', '上一页',
+    '返回', '全部', '详情', '阅读全文', '点击查看', '快讯', '要闻', '热点', '推荐',
+    '专题', '视频', '图片', '评论', '分享', '设为首页', '加入收藏', '联系我们'
+  ]);
+
+  /** 正则黑名单：模板残留、纯符号、导航短语、站点工具入口 */
+  const JUNK_RES = [
+    /^\$\{/,            // JS 模板串 ${title}
+    /^\{\{/,            // 模板占位
+    /^<!--/,            // 注释残留
+    /^#/,               // 话题标签 #xxx
+    /^7[xX×]24/,        // "7x24小时" 等栏目
+    /^(更多|查看|点击|了解|展开|收起)\S{0,4}$/,
+    /^(登录|注册|下载|客服|帮助|设置|反馈|订阅)/,
+    /版本过低|请升[级至]|浏览器.*(过低|升级)/,     // "您的IE版本过低…"
+    /^今日(利好|必读|要闻|公告|焦点)/,             // "今日利好公告" 等栏目
+    /(免费版|软件下载|模拟炒股)/,                  // 客户端推广入口
+    /(问财|智能选股)/,                             // 同花顺工具入口
+    /(公众号矩阵|搜索结果|申请认证)/,
+    /^[>\u00bb\u203a<\u00ab\u2039\u300a\u300b|\uFF5C\u00b7\u3001,\uFF0C.\u3002:\uFF1A;\uFF1B!！?？\-—_~…\s]+$/
+  ];
+
+  /* 站点栏目/导航标签词：这些词互相拼接成的短串（如「财经要闻 宏观经济」）不是新闻 */
+  const NAV_LABELS = [
+    '财经要闻', '宏观经济', '产经新闻', '国际财经', '区域经济', '财经评论', '国内经济', '国际经济',
+    '产经资讯', '热点扫描', '纵深调查', '市场数据', '基金数据', '经济时评', '股市评论', '证券要闻',
+    '港股公告摘要', 'A股公告摘要', '大行评级', '业绩直击', '港股异动', '公司信息', '市场综述',
+    '新股掘金', '个股聚焦', '公司新闻', '公司研究', '机构评级', '模拟炒股', '软件下载', '股民学校',
+    '关于我们', '联系我们', '用户反馈', '设为首页', '加入收藏', '网站地图', '免责声明', '意见反馈',
+    '友情链接', '商务合作', '申请认证', '加入我们', '版权所有', '搜索结果', '公众号矩阵',
+    '首页', '要闻', '快讯', '直播', '视频', '专题', '评论', '行情', '自选股', '沪深', '港股',
+    '美股', '基金', '期货', '外汇', '债券', '理财', '银行', '保险', '专栏', '研究院', '社区',
+    '财富号', '下载', '客户端', '登录', '注册', '手机版', '无障碍', '繁体', '全部', '更多',
+    '同花顺免费版', '免费版', '财富先锋', '问财', '智能选股', '利好公告', '今日利好', '数据', '指数'
+  ];
+
+  /** 是否由栏目词拼成的导航串（完全拼接、且至少 2 个词） */
+  function isLabelCombo(compact) {
+    if (compact.length < 4 || compact.length > 18) return false;
+    let rest = compact, hit = 0;
+    while (rest) {
+      const w = NAV_LABELS.find(x => x.length >= 2 && rest.indexOf(x) === 0);
+      if (!w) return false;
+      rest = rest.slice(w.length);
+      hit++;
+      if (hit > 6) return false;
+    }
+    return hit >= 2;
+  }
+
+  /** 判定是否为无效/垃圾标题（导航链接、栏目拼盘、模板残留、乱码等） */
+  function isJunkTitle(text) {
+    const raw = String(text == null ? '' : text).replace(/\s+/g, ' ').trim();
+    const t = raw.replace(/\s+/g, '');
+    if (t.length < 6) return true;                        // 太短：多为栏目名
+    if (!/[\u4e00-\u9fa5A-Za-z]/.test(t)) return true;    // 无中英文字符
+    if (t.indexOf('\uFFFD') >= 0) return true;            // 含乱码替换字符（编码错误）
+    if (JUNK_EXACT.has(t) || JUNK_EXACT.has(raw)) return true;
+    for (const re of JUNK_RES) if (re.test(t) || re.test(raw)) return true;
+    if (isLabelCombo(t)) return true;                     // 栏目拼盘
+    // 多段短词拼接（"首页 关于我们"）也是导航
+    const parts = raw.split(' ');
+    if (parts.length >= 2 && parts.every(p => p.length <= 6)) return true;
+    // 纯 ASCII 短串：工具入口 / 代码残留（如 "level-2"）
+    if (/^[\x20-\x7E]+$/.test(t) && t.length < 16) return true;
+    // 无中文且无足够长的英文单词 → 代码/符号残留
+    const cn = (t.match(/[\u4e00-\u9fa5]/g) || []).length;
+    if (cn === 0 && !/[A-Za-z]{4,}/.test(t)) return true;
+    return false;
+  }
+
+  /** 清洗标题：去标签 → 解实体 → 压空白 → 截断 → 校验。无效返回 '' */
+  function cleanTitle(text) {
+    let t = String(text == null ? '' : text).replace(/<[^>]*>/g, '');
+    t = decodeEntities(t).replace(/\s+/g, ' ').trim().slice(0, 90);
+    if (isJunkTitle(t)) return '';
+    return t;
+  }
 
   /* ---------- 分类 ---------- */
   function classify(text) {
@@ -185,7 +282,8 @@
   global.HotTopics = {
     CATEGORIES, CATEGORY_COLORS, SOURCE_ORDER, SOURCE_BY_KEY,
     classify, normalizeTitle, bigrams, jaccard, signalTokens, isSameTopic,
-    clusterItems, siteCategoryStats
+    clusterItems, siteCategoryStats,
+    decodeEntities, isJunkTitle, cleanTitle
   };
   if (typeof module !== 'undefined' && module.exports) module.exports = global.HotTopics;
 })(typeof window !== 'undefined' ? window : globalThis);
