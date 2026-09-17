@@ -1081,13 +1081,24 @@ body {
 .sector-pick-toolbar {
   display: flex;
   align-items: center;
-  gap: 16px;
-  padding: 10px 14px;
+  gap: 8px 14px;
+  padding: 7px 12px;
   background: var(--surface-alt);
   border-radius: 8px;
-  margin-bottom: 12px;
+  margin-bottom: 8px;
   flex-wrap: wrap;
 }
+/* 去除301/688/北交所/ST 这一行：显式 flex 排成一行，间距统一，省下高度多显示股票 */
+.sector-pick-filter {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px 16px;
+  margin-bottom: 8px;
+}
+.sector-pick-filter .checkbox-label { font-size: 12.5px; }
+.sector-pick-toolbar .checkbox-label { font-size: 12.5px; }
+.sector-pick-toolbar .btn-sm { padding: 3px 8px; font-size: 11.5px; }
 /* 行业筛选（弹窗上部右侧） */
 .sector-pick-industry {
   display: inline-flex;
@@ -1113,13 +1124,13 @@ body {
   font-size: 13px;
 }
 .sector-pick-list {
-  max-height: 52vh;
+  max-height: 62vh;
   overflow-y: auto;
   border: 1px solid var(--border);
   border-radius: 8px;
 }
 .sector-pick-item {
-  padding: 8px 14px;
+  padding: 6px 14px;
   border-bottom: 1px solid #f0f2f5;
 }
 .sector-pick-item:last-child { border-bottom: none; }
@@ -1132,10 +1143,13 @@ body {
 /* ---- 成分股勾选弹窗：产品业务（相关度）输入 ---- */
 .sector-pick-biz {
   display: inline-flex;
+  flex-direction: row;
   align-items: center;
   gap: 6px;
   white-space: nowrap;
 }
+/* `.cell-input` 的 max-width:110px 会把行内 style 的 width:200px 压掉，放宽到 200px 才不挤 */
+.sector-pick-biz input.cell-input { max-width: 200px; }
 /* ---- 成分股勾选弹窗：列式明细（现价/涨跌幅/总市值/相关度/命中主营业务/行业） ---- */
 /* 用一套共享的 grid 列宽，保证表头与数据行严格对齐 */
 .sector-pick-head,
@@ -1199,9 +1213,14 @@ body {
   border-radius: 8px;
 }
 
-/* ---- 筛选栏：产品业务（相关度）字段 ---- */
-.biz-field { display: inline-flex; align-items: center; gap: 6px; }
+/* ---- 筛选栏：产品业务（相关度）字段 ----
+   ⚠️ 必须写 flex-direction: row —— 只设 display 不会改掉 `.filter-field` 的
+   flex-direction: column，结果就是「标签 / 输入框 / 算相关度按钮」上下三行。
+   另外 `.cell-input` 带 max-width: 110px，会把行内 style 的 width 也压到 110px，
+   故此处放宽 max-width（要让「算相关度」与输入框左右并排，输入框必须有足够宽度）。 */
+.biz-field { display: inline-flex; flex-direction: row; align-items: center; gap: 6px; }
 .biz-field input { flex: 0 0 auto; }
+.biz-field input.cell-input { max-width: 150px; }
 .modal-footer-actions {
   display: flex;
   justify-content: flex-end;
@@ -1497,6 +1516,46 @@ body {
   overflow: auto;
 }
 .sector-detail-modal .info-box { flex: 0 0 auto; margin-top: 12px; }
+
+/* ===== 板块详情筛选栏：单行紧凑（标签在左、控件在右），省出高度多显示股票 =====
+   ⚠️ 这里必须显式写 flex-direction: row：
+   `.filter-field` 设了 flex-direction: column，而 `.biz-field` 只覆盖了 display，
+   flex-direction 没被覆盖 → 于是「产品业务」标签仍在上、输入框与「算相关度」按钮仍在下（上下排列）。
+   同时把每个字段压成一行（原来是「标签一行 + 控件一行」两行高），筛选栏高度约降到原来一半。 */
+.sector-detail-modal .filter-bar.sector-filter-bar {
+  padding: 6px 10px;
+  gap: 7px 12px;
+  margin-bottom: 8px;
+  align-items: center;
+}
+.sector-detail-modal .sector-filter-bar .filter-field {
+  flex-direction: row;
+  align-items: center;
+  gap: 5px;
+}
+.sector-detail-modal .sector-filter-bar .filter-field > label {
+  font-size: 11.5px;
+  line-height: 1.2;
+  font-weight: 600;
+  color: var(--text-secondary);
+  white-space: nowrap;
+}
+.sector-detail-modal .sector-filter-bar .filter-field select {
+  min-width: 104px;
+  padding: 3px 6px;
+  font-size: 12px;
+}
+.sector-detail-modal .sector-filter-bar .filter-field .range { gap: 3px; }
+.sector-detail-modal .sector-filter-bar .filter-field .range input[type="number"] {
+  width: 56px; padding: 3px 6px; font-size: 12px;
+}
+.sector-detail-modal .sector-filter-bar .btn-sm { padding: 3px 8px; font-size: 11.5px; }
+.sector-detail-modal .sector-filter-bar .industry-dropdown-field { align-self: center; }
+.sector-detail-modal .sector-filter-bar .industry-dropdown-toggle { padding: 3px 8px; font-size: 12px; }
+.sector-detail-modal .sector-filter-bar .biz-field { gap: 6px; }
+.sector-detail-modal .sector-filter-bar .biz-field input.cell-input {
+  width: 150px; max-width: 150px; padding: 3px 7px;
+}
 
 /* ===== 财经推送独立页面（位于新闻追踪与股票池之间） ===== */
 .finance-layout {

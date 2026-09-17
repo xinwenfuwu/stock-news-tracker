@@ -20,7 +20,7 @@
   'use strict';
 
   // 与 index.html 中静态资源版本号保持一致，避免升级后命中旧缓存
-  var ASSET_V = '20260917i';
+  var ASSET_V = '20260917j';
 
   // 业务脚本装载顺序（Vue 已在 <head> 静态加载，不在此列）
   var APP_SCRIPTS = [
