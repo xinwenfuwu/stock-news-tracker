@@ -4,12 +4,12 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>股市信息分析系统</title>
-  <link rel="stylesheet" href="css/style.css?v=20260917m">
+  <link rel="stylesheet" href="css/style.css?v=20260917n">
   <!-- Vue 3 全局构建版（v3.4.21 · 自托管）
        原先走 unpkg.com CDN：国内网络对 unpkg 的连通性不稳定，一旦该请求长时间挂起，
        <head> 里的阻塞脚本会让整页停在白屏、后续 auth-boot.js 根本不会执行。
        改为同源托管后，启动链路不再依赖任何第三方 CDN。 -->
-  <script src="js/vue.global.prod.js?v=20260917m"></script>
+  <script src="js/vue.global.prod.js?v=20260917n"></script>
 </head>
 <body class="auth-locked">
   <!-- ===== 登录关卡：登录通过前业务脚本不会被加载 ===== -->
@@ -83,8 +83,106 @@
       <button class="auth-retry" id="auth-retry" type="button" hidden>点击重试</button>
 
       <div class="auth-foot">未登录无法使用本系统 · 新账号可自助注册，需管理员审核通过</div>
+
+      <!-- 关闭按钮：不登录也能「先看看界面」。见下方 #guest-view -->
+      <button class="auth-close" id="auth-close" type="button" title="先看看界面（游客预览，不含任何数据）" aria-label="关闭登录卡片，进入游客预览">✕</button>
     </div>
   </div>
+
+  <!-- ===== 游客预览模板：点登录卡片的 ✕ 时才由 auth-boot.js 克隆进 <body> =====
+       为什么用 <template>：<template> 的内容是「惰性」的，不算 document 的一部分，
+       所以它里面的 .page-toolbar / .toolbar-right / .news-table 等 class
+       **不会**被任何选择器或 E2E 断言误命中（复用这些 class 才拿得到像素级一致的观感）。
+       同时它是纯静态的——不加载任何业务脚本，保住「未登录时业务 JS 不下载」的隔离约定。 -->
+  <template id="guest-tpl">
+    <div id="guest-view" class="guest-view">
+      <div class="guest-banner">
+        <span class="guest-banner-text">👀 <b>游客预览</b>：下面是界面骨架，不含任何真实数据，也不会加载业务脚本</span>
+        <button type="button" class="btn btn-primary btn-sm guest-login-btn">🔑 登录 / 注册</button>
+      </div>
+
+      <header class="app-header">
+        <div class="header-inner">
+          <div class="brand">
+            <span class="brand-icon">📈</span>
+            <span class="brand-title"><span>股市信息</span><span>分析系统</span></span>
+          </div>
+          <nav class="main-nav">
+            <a class="nav-item" data-need-login><span class="nav-icon">👤</span><span>用户</span></a>
+            <a class="nav-item active" data-need-login><span class="nav-icon">📰</span><span>新闻追踪</span></a>
+            <a class="nav-item" data-need-login><span class="nav-icon">🌐</span><span>全球信息</span></a>
+            <a class="nav-item" data-need-login><span class="nav-icon">📅</span><span>股票池</span></a>
+            <a class="nav-item" data-need-login><span class="nav-icon">🧭</span><span>选股</span></a>
+            <a class="nav-item" data-need-login><span class="nav-icon">🎯</span><span>筛选板块</span></a>
+            <a class="nav-item" data-need-login><span class="nav-icon">🔥</span><span>热门板块</span></a>
+          </nav>
+          <div class="header-actions">
+            <button class="btn-icon" data-need-login title="暂停数据自动刷新">⏸</button>
+            <button class="btn-icon" data-need-login title="云端登录同步">☁️</button>
+            <button class="btn-icon" data-need-login title="设置">⚙️</button>
+            <button class="btn-icon" data-need-login title="导出数据">⬇️</button>
+            <span class="guest-userchip" data-need-login>🔑 未登录</span>
+          </div>
+        </div>
+      </header>
+
+      <main class="app-main">
+        <section class="page">
+          <div class="page-toolbar">
+            <div class="toolbar-left">
+              <div class="date-picker">
+                <label>选择日期</label>
+                <input type="date" disabled>
+                <button class="btn btn-sm" disabled>全部</button>
+              </div>
+              <input class="search-input" placeholder="搜索新闻内容/股票..." disabled>
+              <select class="select" disabled><option>全部分类</option></select>
+            </div>
+            <div class="toolbar-right">
+              <button class="btn btn-primary" disabled>📥 导入新闻</button>
+              <button class="btn btn-primary" disabled>➕ 手动添加</button>
+              <button class="btn" disabled>🔄 刷新股价</button>
+            </div>
+          </div>
+
+          <div class="table-wrap">
+            <table class="data-table news-table">
+              <thead>
+                <tr>
+                  <th class="col-check"><input type="checkbox" disabled></th>
+                  <th class="col-owner">用户</th>
+                  <th class="col-date">日期</th>
+                  <th class="col-news">新闻</th>
+                  <th>新闻解读参考</th>
+                  <th>利好利空</th>
+                  <th>散户参考</th>
+                  <th class="col-stock">股票名称</th>
+                  <th>新闻当天股价</th>
+                  <th>今日股价</th>
+                  <th>今日涨跌幅</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td colspan="11" class="guest-empty">
+                    <div class="guest-empty-icon">🔒</div>
+                    <div class="guest-empty-title">登录后这里会显示你的新闻数据</div>
+                    <div class="guest-empty-sub">
+                      现在是游客预览：界面骨架可见，但一条数据都没有。<br>
+                      未登录时业务脚本根本不会被下载，所以这里连数据接口都不会请求。
+                    </div>
+                    <button type="button" class="btn btn-primary guest-login-btn">🔑 立即登录 / 注册</button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+      </main>
+
+      <div id="guest-hint" class="guest-hint" hidden></div>
+    </div>
+  </template>
 
   <div id="app">
     <!-- 顶部导航 -->
@@ -2535,8 +2633,20 @@
             <p><b>合规免费模式（推荐，开箱即用）：</b>「全球信息」的火热话题与格隆汇快讯由 GitHub Action 每 2 小时在服务端自动抓取并随站点发布（同源 GitHub Pages 直出，<b>不依赖任何代理</b>）。点「刷新热门话题」会重新拉取最新快照，最快 2 小时更新一次。</p>
             <p><b>想要浏览器端真·实时抓取？</b>部署一个 Cloudflare Worker 代理（免费 10 万次/天，代码在仓库 <code>worker/news-proxy.js</code>，详见导入页步骤）。填入地址后刷新即走实时链路。若 <code>*.workers.dev</code> 在国内被拦截，可在 Cloudflare 给 Worker 绑定自有域名；不配也完全可用（走上面的自动快照）。</p>
           </div>
+          <div class="info-box small">
+            <p><b>AI 解读接口（可选 · OpenAI 兼容）</b>「新闻追踪」页的「🤖 AI 生成解读」按钮会调用此接口，自动生成「新闻解读参考 / 利好利空 / 散户参考」三段内容，需自备 LLM API Key。</p>
+            <p><b>先选一家（一键填地址，只需再补自己的 Key）：</b></p>
+            <div class="ai-presets">
+              <button type="button" class="ai-preset" v-for="p in AI_PRESETS" :key="p.name"
+                      :title="p.tip + '\n' + p.endpoint + '\n模型：' + p.model"
+                      @click="applyAiPreset(p)">
+                <span class="ai-preset-name">{{ p.name }}</span>
+                <span class="ai-preset-tip">{{ p.tip }}</span>
+              </button>
+            </div>
+          </div>
           <div class="form-row">
-            <label>AI 解读接口（可选 · OpenAI 兼容）「新闻追踪」页的「🤖 AI 生成解读」按钮会调用此接口，自动生成「新闻解读参考 / 利好利空 / 散户参考」三段内容。需自备 LLM API Key（如 DeepSeek / OpenAI）。</label>
+            <label>API 地址（OpenAI 兼容）请填到 <code>/v1/chat/completions</code> 这一级，不要只填域名。国内推荐 <b>DeepSeek / 硅基流动 / 智谱 GLM / 阿里百炼 / Kimi</b>——这五家浏览器可以直连，无需任何代理。</label>
             <input v-model="aiEndpoint" placeholder="https://api.deepseek.com/v1/chat/completions">
           </div>
           <div class="form-row-3">
@@ -2544,9 +2654,18 @@
             <div><label>模型名</label><input v-model="aiModel" placeholder="如 deepseek-chat"></div>
             <div><label>状态</label><span :class="['ai-state', aiConfigured ? 'ok' : 'warn']">{{ aiConfigured ? '✅ 已配置' : '⚠️ 未配置' }}</span></div>
           </div>
+          <div class="form-row">
+            <label>连接自检点这里会先探网络连通性、再用你的 Key 真实调用一次，能准确区分「域名被墙」「CORS 拦截」「Key 无效」三种情况。</label>
+            <div class="ai-test-row">
+              <button type="button" class="btn btn-sm" :disabled="aiTesting" @click="aiTestConnection">
+                {{ aiTesting ? '测试中…' : '🧪 测试连接' }}
+              </button>
+              <span class="ai-test-result" :class="aiTestResult.state ? ('is-' + aiTestResult.state) : ''">{{ aiTestResult.text }}</span>
+            </div>
+          </div>
           <div class="info-box small">
             <p><b>密钥安全：</b>Key 仅保存在你本机浏览器的 localStorage，不会上传到本站服务器（本站是纯静态 GitHub Pages，无后端）。多设备需各自配置。</p>
-            <p><b>国内 CORS 问题：</b>若浏览器直接调用官方接口报「跨域/CORS」被拦截，可部署仓库里的 <code>worker/ai-proxy.js</code>（Cloudflare Worker，免费），把 Key 放在 Worker 端、浏览器只调 Worker 地址即可同时规避跨域与密钥暴露。详见该文件注释。</p>
+            <p><b>遇到「连不上 / Failed to fetch」怎么办：</b>先用上面的「🧪 测试连接」看清是哪一步不通。若是<b>境外地址</b>（如 <code>api.openai.com</code>）在国内被拦截，换国内厂商即可，<b>不必</b>部署代理；只有当「网络可达但仍被 CORS 拦截」、或你不想把 Key 放在浏览器里时，才需要 <code>worker/ai-proxy.js</code>（Cloudflare Worker，免费）。</p>
           </div>
           <div class="form-row">
             <label>数据存储</label>
@@ -2777,8 +2896,38 @@
                       <button class="btn btn-sm btn-danger" v-if="u.status === 'pending'" @click="rejectUserByAdmin(u)">驳回</button>
                       <button class="btn btn-sm" v-if="u.status === 'active'" @click="showApproveCode(u)" title="生成准入码，发给他即可在别的设备登录">准入码</button>
                       <button class="btn btn-sm" v-if="u.status === 'active'" @click="toggleUserDisabled(u)">{{ u.disabled ? '启用' : '停用' }}</button>
-                      <button class="btn btn-sm" @click="resetUserPassword(u)">重置密码</button>
+                      <button class="btn btn-sm" :class="{ 'btn-primary': resetPw.show && resetPw.username === u.username }"
+                              @click="openResetPassword(u)"
+                              title="直接为该账号设置一个新密码（无需原密码），新密码会复制到剪贴板方便转达">重置密码</button>
                       <button class="btn btn-sm btn-danger" v-if="u.status !== 'pending'" @click="removeUserByAdmin(u)">删除</button>
+                    </div>
+                  </td>
+                </tr>
+                <!-- 重置密码：行内输入区（batch14 起替换掉 window.prompt） -->
+                <tr v-if="resetPw.show && resetPw.username === u.username" class="um-resetrow">
+                  <td colspan="11">
+                    <div class="um-reset">
+                      <div class="um-reset-head">
+                        <span>🔑 为「<b>{{ u.username }}</b>」设置新密码</span>
+                        <span class="um-reset-tip">密码 8-64 位且须同时包含字母和数字；重置后请把新密码发给本人，本机会自动复制。</span>
+                      </div>
+                      <div class="um-reset-fields">
+                        <!-- 两个输入框必须带可见标签：随机生成后两边是同一串字符串，
+                             紧挨着放会糊成一个框，看不出「新密码 / 确认」是两格 -->
+                        <span class="um-reset-pwpair">
+                          <label class="um-reset-lbl" for="um-reset-new">新密码</label>
+                          <input id="um-reset-new" class="um-input um-reset-pw" :type="resetPw.reveal ? 'text' : 'password'"
+                                 v-model="resetPw.newPassword" placeholder="8-64 位，含字母和数字" maxlength="64">
+                          <label class="um-reset-lbl" for="um-reset-cfm">确认</label>
+                          <input id="um-reset-cfm" class="um-input um-reset-pw" :type="resetPw.reveal ? 'text' : 'password'"
+                                 v-model="resetPw.confirmPassword" placeholder="再输一次" maxlength="64">
+                        </span>
+                        <button class="btn-mini" @click="resetPw.reveal = !resetPw.reveal">{{ resetPw.reveal ? '隐藏' : '显示' }}</button>
+                        <button class="btn-mini" @click="genResetPassword" title="生成 12 位随机密码并复制到剪贴板">🎲 随机</button>
+                        <button class="btn btn-sm btn-primary" @click="submitResetPassword">确认重置</button>
+                        <button class="btn btn-sm" @click="cancelResetPassword">取消</button>
+                      </div>
+                      <div class="um-reset-err" v-if="resetPw.error">⚠️ {{ resetPw.error }}</div>
                     </div>
                   </td>
                 </tr>
@@ -2873,8 +3022,8 @@
     </transition>
   </div>
 
-  <script src="js/auth.js?v=20260917m"></script>
-  <script src="js/auth-boot.js?v=20260917m"></script>
+  <script src="js/auth.js?v=20260917n"></script>
+  <script src="js/auth-boot.js?v=20260917n"></script>
   <!-- store / stock-api / hot-topics / app 由 auth-boot.js 在登录通过后动态装载，
        未登录时它们不会被下载，业务数据也不会进入内存 -->
 </body>

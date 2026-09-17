@@ -27,7 +27,7 @@
   'use strict';
 
   // 与 index.html 中静态资源版本号保持一致，避免升级后命中旧缓存
-  var ASSET_V = '20260917m';
+  var ASSET_V = '20260917n';
 
   // 管理员点开「注册申请导入链接」后，申请码暂存在这里，等业务层（app.js）就绪后取走
   var IMPORT_KEY = 'snt-pending-import-v1';
@@ -355,11 +355,79 @@
 
   function hideGate() {
     if (!elGate) return;
+    // 极端时序：游客预览开着时 Auth.restore() 才异步返回「已登录」，
+    // 若不收起预览层，业务应用会挂载在它下面、看起来像没登录成功。
+    removeGuestView();
+    document.body.classList.remove('guest-mode');
     document.body.classList.remove('auth-locked');
     elGate.classList.add('auth-gate-hide');
     setTimeout(function () {
       if (elGate && elGate.parentNode) elGate.parentNode.removeChild(elGate);
     }, 340);
+  }
+
+  /* ---------------- 游客预览 ----------------
+   * 点登录卡片右上角的 ✕ 进来：**不登录、也不加载任何业务脚本**，
+   * 只把 index.html 里 `<template id="guest-tpl">` 那段纯静态骨架克隆出来。
+   *
+   * 为什么用 <template> + 用完即删，而不是常驻一个 hidden 的 div：
+   *   骨架为了像素级一致复用了 .page-toolbar / .toolbar-right / .news-table 等 app 的 class。
+   *   若它常驻 DOM（哪怕 hidden），这些选择器就会同时命中两处 ——
+   *   不但既有 E2E 会撞 Playwright strict mode，将来做功能验证也容易被假阳性骗到。
+   *   `<template>` 的内容不算 document 的一部分，不进 DOM、不被任何选择器看到。 */
+
+  var guestHintTimer = null;
+
+  function showGuestHint(text) {
+    var box = $('#guest-hint');
+    if (!box) return;
+    box.textContent = text;
+    box.hidden = false;
+    if (guestHintTimer) clearTimeout(guestHintTimer);
+    guestHintTimer = setTimeout(function () { box.hidden = true; guestHintTimer = null; }, 2200);
+  }
+
+  /** 惰性挂载骨架；已挂载则直接返回 */
+  function ensureGuestView() {
+    var g = $('#guest-view');
+    if (g) return g;
+    var tpl = document.getElementById('guest-tpl');
+    if (!tpl || !tpl.content) return null;
+    document.body.appendChild(tpl.content.cloneNode(true));
+    return $('#guest-view');
+  }
+
+  function removeGuestView() {
+    var g = $('#guest-view');
+    if (g && g.parentNode) g.parentNode.removeChild(g);
+    if (guestHintTimer) { clearTimeout(guestHintTimer); guestHintTimer = null; }
+  }
+
+  function enterGuest() {
+    var g = ensureGuestView();
+    if (!g) return;
+    // 关卡只能加 class 淡出——不能用 hideGate，它会把节点删掉，回来就没得用了
+    if (elGate) elGate.classList.add('auth-gate-hide');
+    document.body.classList.remove('auth-locked');
+    // guest-mode 会把「透明度归零的关卡」和「未挂载 Vue 的 #app 原始模板」一起 display:none：
+    // 只靠透明度的话，#app 里那些 position:fixed 的 modal-overlay 会浮上来吃掉所有点击。
+    document.body.classList.add('guest-mode');
+    var back = g.querySelector('.guest-login-btn');
+    if (back) { try { back.focus(); } catch (e) { /* ignore */ } }
+  }
+
+  function leaveGuest() {
+    document.body.classList.add('auth-locked');
+    document.body.classList.remove('guest-mode');
+    removeGuestView();
+    if (elGate) {
+      elGate.classList.remove('auth-gate-hide');
+      // 回到卡片时清掉上一轮残留的报错/忙碌态，免得看到过期提示
+      showMsg('');
+      setBusy('');
+    }
+    var u = elLoginForm && !elLoginForm.hidden ? $('#login-username') : null;
+    if (u) { try { u.focus(); } catch (e) { /* ignore */ } }
   }
 
   function enterApp() {
@@ -519,6 +587,26 @@
       });
     }
 
+    // ---- 游客预览：✕ 进入；骨架里「登录」按钮点回卡片；其余交互只提示 ----
+    var elAuthClose = $('#auth-close');
+    if (elAuthClose) {
+      elAuthClose.addEventListener('click', function () { enterGuest(); });
+    }
+    // 骨架是惰性克隆出来的，绑不到固定节点上，所以在 document 上做事件委托
+    document.addEventListener('click', function (e) {
+      if (!document.getElementById('guest-view')) return;
+      var t = e.target && e.target.closest ? e.target.closest('.guest-login-btn, [data-need-login]') : null;
+      if (!t) return;
+      e.preventDefault();
+      if (t.classList.contains('guest-login-btn')) { leaveGuest(); return; }
+      showGuestHint('请先登录后再使用这个功能');
+    });
+    // Esc 也能从游客预览退回登录卡片
+    global.addEventListener('keydown', function (e) {
+      if (e.key !== 'Escape') return;
+      if (document.getElementById('guest-view')) leaveGuest();
+    });
+
     // 会话在别的标签页被登出时，本页也退回登录界面
     global.addEventListener('storage', function (e) {
       if (e.key === 'snt-auth-session-v1' && !e.newValue && !document.getElementById('auth-gate')) {
@@ -587,6 +675,8 @@
     start: start,
     logout: logout,
     enterApp: enterApp,
+    enterGuest: enterGuest,
+    leaveGuest: leaveGuest,
     showForm: showForm,
     /** 业务层（app.js）在就绪后取走待导入的注册申请码 */
     takePendingImport: takePendingImport,

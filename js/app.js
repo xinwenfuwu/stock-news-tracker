@@ -58,6 +58,9 @@ const app = createApp({
     // 用户管理：哪些账号的密码已展开、哪个账号的登录记录已展开
     const revealedPw = reactive({});
     const expandedUser = ref(null);
+    /* 「重置密码」的行内输入区（batch14 起不再用 window.prompt）：
+       一次只展开一行；error 承载行内校验提示，不弹 alert。 */
+    const resetPw = reactive({ show: false, username: '', newPassword: '', confirmPassword: '', error: '', reveal: false });
 
     /* ===== 注册申请站内提醒（管理员） =====
      * 纯静态站没有服务端推送，所以这里监视「本机账号表」里的待审核记录：
@@ -323,16 +326,65 @@ const app = createApp({
       return today > s;
     }
 
-    function resetUserPassword(u) {
+    /* ---------- 重置密码：行内输入区（batch14 替换掉原来的 window.prompt） ---------- */
+
+    /** 打开某账号的重置面板（已打开同一行则收起，做成开关） */
+    function openResetPassword(u) {
       if (!A) return;
-      const np = prompt(`为「${u.username}」设置新密码（8-64 位，须同时包含字母和数字）：`);
-      if (np == null) return;
-      A.changePassword(u.username, null, np).then(r => {
-        if (!r.ok) { showToast(r.error, 'error'); return; }
-        delete revealedPw[u.username];
-        showToast(`「${u.username}」的密码已重置`, 'success');
+      if (resetPw.show && resetPw.username === u.username) { cancelResetPassword(); return; }
+      resetPw.show = true;
+      resetPw.username = u.username;
+      resetPw.newPassword = '';
+      resetPw.confirmPassword = '';
+      resetPw.reveal = false;
+      resetPw.error = '';
+    }
+
+    function cancelResetPassword() {
+      resetPw.show = false;
+      resetPw.username = '';
+      resetPw.newPassword = '';
+      resetPw.confirmPassword = '';
+      resetPw.reveal = false;
+      resetPw.error = '';
+    }
+
+    /** 生成 12 位随机密码（含大小写字母与数字，去掉 0/O/1/l/I 等易混字符）并复制 */
+    function genResetPassword() {
+      const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789';
+      const n = 12;
+      let pw = '';
+      try {
+        const buf = new Uint32Array(n);
+        (window.crypto && crypto.getRandomValues) ? crypto.getRandomValues(buf)
+          : buf.forEach((_, i) => { buf[i] = Math.floor(Math.random() * 4294967296); });
+        for (let i = 0; i < n; i++) pw += chars[buf[i] % chars.length];
+      } catch (e) {
+        for (let i = 0; i < n; i++) pw += chars[Math.floor(Math.random() * chars.length)];
+      }
+      resetPw.newPassword = pw;
+      resetPw.confirmPassword = pw;
+      resetPw.reveal = true;      // 随机密码直接明文显示，方便核对/抄给用户
+      resetPw.error = '';
+      copyText(pw, '已生成随机密码并复制到剪贴板');
+    }
+
+    function submitResetPassword() {
+      if (!A) return;
+      const who = resetPw.username;
+      if (!who) return;
+      const v = A.validatePassword(resetPw.newPassword || '', resetPw.confirmPassword || '');
+      if (!v.ok) { resetPw.error = v.error; return; }
+      const np = resetPw.newPassword;
+      resetPw.error = '';
+      A.changePassword(who, null, np).then(r => {
+        if (!r.ok) { resetPw.error = r.error; return; }
+        // 密文里带有可显示用的封装，改完要清掉旧的「已展开」状态
+        delete revealedPw[who];
+        cancelResetPassword();
         refreshUserList();
-      }).catch(e => showToast('重置失败：' + e.message, 'error'));
+        copyText(np, `已重置「${who}」的密码，新密码已复制到剪贴板`);
+      }).catch(e => { resetPw.error = '重置失败：' + (e && e.message ? e.message : e); });
     }
 
     /* ---------- 注册审核 ---------- */
@@ -1250,37 +1302,125 @@ const app = createApp({
       !!(D.settings.aiModel && D.settings.aiModel.trim())
     );
 
-    // 通用 OpenAI 兼容调用；返回 { ok, content } 或 { ok:false, error }
-    async function callOpenAICompat(messages) {
-      const endpoint = (D.settings.aiEndpoint || '').trim();
-      const key = (D.settings.aiKey || '').trim();
-      const model = (D.settings.aiModel || '').trim();
+    /**
+     * 网络层探针：`mode: 'no-cors'` 的请求不发 CORS 预检、也不校验响应头，
+     * 因此「能拿到 opaque 响应」= 网络层通（问题只可能在 CORS 或业务层）；
+     * 「超时 / 直接 reject」= 网络层根本不通（域名被拦截、DNS 失败、断网）。
+     *
+     * 这是浏览器里唯一能区分「被墙」与「真 CORS」的办法——
+     * 两种情况下正式 fetch 都只抛一个笼统的 `TypeError: Failed to fetch`。
+     * 实测见 `_repo_tmp/probe-nocors.mjs`：DeepSeek/硅基流动 → resolved(139~934ms)；
+     * api.openai.com → 8s 超时；不存在的域名 → 281ms reject。
+     */
+    async function probeEndpointReachable(url, timeoutMs) {
+      const ms = timeoutMs || 8000;
+      try {
+        const ctrl = new AbortController();
+        const timer = setTimeout(() => ctrl.abort(), ms);
+        try {
+          await fetch(url, { method: 'GET', mode: 'no-cors', cache: 'no-store', signal: ctrl.signal });
+          return { ok: true };
+        } finally { clearTimeout(timer); }
+      } catch (e) {
+        const msg = (e && e.message) ? e.message : String(e);
+        const aborted = (e && e.name === 'AbortError') || /abort/i.test(msg);
+        return { ok: false, timeout: aborted, error: msg };
+      }
+    }
+
+    /** 把 HTTP 状态码翻译成一句人话提示 */
+    function aiStatusHint(code) {
+      if (code === 401 || code === 403) return '（密钥无效或无权限：核对 API Key，并确认账号已开通该模型）';
+      if (code === 404) return '（地址写错：要填到 /v1/chat/completions 这一级，不要只填域名）';
+      if (code === 408 || code === 504) return '（对方超时）';
+      if (code === 429) return '（触发限流或余额不足）';
+      if (code >= 500) return '（对方服务端异常，稍后重试）';
+      return '';
+    }
+
+    /**
+     * 正式请求抛 `Failed to fetch` 时再跑一次探针，给出**准确**的原因与对策。
+     * 旧版本不管三七二十一都说「多为 CORS」并把用户推去部署 Worker，
+     * 但实测国内五家（DeepSeek / 硅基流动 / 智谱 / 阿里百炼 / Kimi）浏览器直连全都通，
+     * 真正失败的绝大多数是「填了境外地址、域名被墙」，此时部署代理也未必管用。
+     */
+    async function explainAiFetchFailure(endpoint) {
+      const net = await probeEndpointReachable(endpoint, 8000);
+      if (net.ok) {
+        return '浏览器跨域（CORS）拦截：这个地址能连通，但不允许网页直接调用。'
+          + '办法一：换国内可直连的接口（DeepSeek / 硅基流动 / 智谱 GLM / 阿里百炼 / Kimi 均可浏览器直连）；'
+          + '办法二：部署 worker/ai-proxy.js 用代理转发（顺带把 Key 藏到服务端）。';
+      }
+      if (net.timeout) {
+        return '连不上这个地址（8 秒内无任何响应），该域名在当前网络多半被拦截。'
+          + '这不是 CORS 问题，部署代理也未必能解决——请改用国内可直连的接口'
+          + '（DeepSeek / 硅基流动 / 智谱 GLM / 阿里百炼 / Kimi）。';
+      }
+      return '这个地址解析不到，或当前网络已断开（' + net.error + '）：请检查地址是否拼错、网络是否正常。';
+    }
+
+    /** 通用 OpenAI 兼容调用；返回 { ok, content } 或 { ok:false, error }
+     *  opts: { timeoutMs, maxTokens, cfg:{endpoint,key,model} } —— cfg 用于「测试连接」时不落库地试算 */
+    async function callOpenAICompat(messages, opts) {
+      const o = opts || {};
+      const c = o.cfg || {};
+      const pick = (k, fallback) => (c[k] != null ? String(c[k]) : fallback);
+      const endpoint = pick('endpoint', D.settings.aiEndpoint || '').trim();
+      const key = pick('key', D.settings.aiKey || '').trim();
+      const model = pick('model', D.settings.aiModel || '').trim();
       if (!endpoint || !key || !model) {
         return { ok: false, error: '未配置 AI 接口（设置 → AI 解读：需填写 API 地址、密钥、模型）' };
       }
+      const timeoutMs = o.timeoutMs || 60000;
+      const body = { model, messages, temperature: 0.6, stream: false };
+      if (o.maxTokens) body.max_tokens = o.maxTokens;
+      // 慢响应兜底：15 秒还没动静就先并行探一次网络层。
+      // 若探针判定「根本连不上」，立刻中止请求 —— 被墙的地址不必让用户干等满 60 秒。
+      let netVerdict = '';
       try {
         const ctrl = new AbortController();
-        const timer = setTimeout(() => ctrl.abort(), 60000);
-        const r = await fetch(endpoint, {
-          method: 'POST',
-          signal: ctrl.signal,
-          headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + key },
-          body: JSON.stringify({ model, messages, temperature: 0.6, stream: false })
-        });
-        clearTimeout(timer);
+        const timer = setTimeout(() => ctrl.abort(), timeoutMs);
+        const slowTimer = setTimeout(function () {
+          probeEndpointReachable(endpoint, 6000).then(function (net) {
+            if (net.ok) return;
+            netVerdict = net.timeout
+              ? '连不上这个地址（无任何响应），该域名在当前网络多半被拦截。'
+                + '这不是 CORS 问题，部署代理也未必能解决——请改用国内可直连的接口'
+                + '（DeepSeek / 硅基流动 / 智谱 GLM / 阿里百炼 / Kimi）。'
+              : '这个地址解析不到，或当前网络已断开（' + net.error + '）：请检查地址是否拼错、网络是否正常。';
+            try { ctrl.abort(); } catch (e) { /* ignore */ }
+          }).catch(function () { /* 探针自身失败不影响主流程 */ });
+        }, 15000);
+        let r;
+        try {
+          r = await fetch(endpoint, {
+            method: 'POST',
+            signal: ctrl.signal,
+            headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + key },
+            body: JSON.stringify(body)
+          });
+        } finally { clearTimeout(timer); clearTimeout(slowTimer); }
         if (!r.ok) {
           let detail = '';
           try { detail = (await r.text()).slice(0, 200); } catch (e) {}
-          return { ok: false, error: 'AI 接口返回 ' + r.status + (detail ? '：' + detail : '') };
+          return {
+            ok: false, status: r.status,
+            error: 'AI 接口返回 ' + r.status + aiStatusHint(r.status) + (detail ? '：' + detail : '')
+          };
         }
         const j = await r.json();
         const content = j && j.choices && j.choices[0] && j.choices[0].message && j.choices[0].message.content;
-        if (!content) return { ok: false, error: 'AI 返回内容为空' };
+        if (!content) return { ok: false, error: 'AI 返回内容为空（模型名可能写错，或该 Key 无权访问此模型）' };
         return { ok: true, content: String(content) };
       } catch (e) {
+        // 探针已经给出了明确结论时，直接用它的（比 catch 里那句笼统的 TypeError 有用得多）
+        if (netVerdict) return { ok: false, error: netVerdict };
         let msg = (e && e.message) ? e.message : String(e);
-        if (/abort|timeout/i.test(msg)) msg = 'AI 请求超时（60s），请检查网络或接口地址';
-        else if (/Failed to fetch|CORS|NetworkError|跨域/i.test(msg)) msg = 'AI 请求被拦截（多为 CORS/网络）：建议把接口地址指向你的 Cloudflare Worker 代理（见设置说明）';
+        if (/abort|timeout/i.test(msg)) {
+          msg = 'AI 请求超时（' + Math.round(timeoutMs / 1000) + 's 内无响应）：检查网络，或换国内可直连的接口';
+        } else if (/Failed to fetch|CORS|NetworkError|跨域|Load failed/i.test(msg)) {
+          msg = await explainAiFetchFailure(endpoint);
+        }
         return { ok: false, error: msg };
       }
     }
@@ -5588,6 +5728,79 @@ const app = createApp({
     const aiEndpoint = ref('');
     const aiKey = ref('');
     const aiModel = ref('');
+
+    /* ---------- AI 解读：常见厂商一键预设 + 连接测试 ----------
+     * 下列五家国内厂商的接口**允许浏览器直连**（经真实浏览器实测：CORS 预检通过、
+     * 带 Authorization 的 POST 能拿到可读响应体），所以在国内无需任何代理即可用。
+     * OpenAI 则被拦截（8s 无响应），列出来只为提示风险，模型名用户可以自己改。 */
+    const AI_PRESETS = [
+      { name: 'DeepSeek', endpoint: 'https://api.deepseek.com/v1/chat/completions', model: 'deepseek-chat', tip: '国内可直连 · 站长常用' },
+      { name: '硅基流动', endpoint: 'https://api.siliconflow.cn/v1/chat/completions', model: 'Qwen/Qwen2.5-7B-Instruct', tip: '国内可直连 · 注册有免费额度' },
+      { name: '智谱 GLM', endpoint: 'https://open.bigmodel.cn/api/paas/v4/chat/completions', model: 'glm-4-flash', tip: '国内可直连 · glm-4-flash 免费' },
+      { name: '阿里百炼', endpoint: 'https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions', model: 'qwen-plus', tip: '国内可直连' },
+      { name: 'Kimi', endpoint: 'https://api.moonshot.cn/v1/chat/completions', model: 'moonshot-v1-8k', tip: '国内可直连' },
+      { name: 'OpenAI', endpoint: 'https://api.openai.com/v1/chat/completions', model: 'gpt-4o-mini', tip: '⚠️ 国内无法直连，需自备代理' }
+    ];
+    const aiTesting = ref(false);
+    const aiTestResult = reactive({ state: '', text: '' });
+
+    /** 点厂商名 → 填入接口地址与模型名（Key 必须用户自己填，不能代填） */
+    function applyAiPreset(p) {
+      aiEndpoint.value = p.endpoint;
+      aiModel.value = p.model;
+      aiTestResult.state = '';
+      aiTestResult.text = '';
+      showToast('已填入「' + p.name + '」的接口地址与模型名，请再填你自己的 API Key', 'success');
+    }
+
+    /**
+     * 「🧪 测试连接」：分两步定位问题，而不是笼统报「失败」。
+     *   第 1 步 no-cors 探针 → 判网络层通不通（被墙/DNS 失败在这一步就会被抓出来）
+     *   第 2 步 真实最小调用 → 判 Key / 模型 / 额度（能拿到状态码就说明 CORS 是通的）
+     */
+    async function aiTestConnection() {
+      const ep = (aiEndpoint.value || '').trim();
+      const key = (aiKey.value || '').trim();
+      const model = (aiModel.value || '').trim();
+      if (!ep || !key || !model) {
+        aiTestResult.state = 'fail';
+        aiTestResult.text = '请先把「API 地址 / API Key / 模型名」三项都填上，再点测试。';
+        return;
+      }
+      aiTesting.value = true;
+      aiTestResult.state = '';
+      aiTestResult.text = '第 1 步：检查网络能否连通该地址…';
+      try {
+        const net = await probeEndpointReachable(ep, 8000);
+        if (!net.ok) {
+          aiTestResult.state = 'fail';
+          aiTestResult.text = net.timeout
+            ? '❌ 第 1 步不通过：8 秒内没有任何响应，该域名在当前网络多半被拦截。'
+              + '这不是 CORS 问题——请换国内可直连的厂商（点上方的厂商按钮即可），或自备代理地址。'
+            : '❌ 第 1 步不通过：地址解析不到或网络已断开（' + net.error + '）。请检查地址是否拼错、网络是否正常。';
+          return;
+        }
+        aiTestResult.text = '✅ 第 1 步通过：网络可达。第 2 步：用你的 Key 真实调用一次…';
+        const t0 = Date.now();
+        const res = await callOpenAICompat(
+          [{ role: 'user', content: '只回复两个字：收到' }],
+          { maxTokens: 16, timeoutMs: 30000, cfg: { endpoint: ep, key, model } }
+        );
+        const ms = Date.now() - t0;
+        if (res.ok) {
+          const changed = ep !== (D.settings.aiEndpoint || '') || model !== (D.settings.aiModel || '') || key !== (D.settings.aiKey || '');
+          aiTestResult.state = 'ok';
+          aiTestResult.text = '🎉 全部通过（' + ms + 'ms）。模型回复：' + res.content.trim().slice(0, 40)
+            + (changed ? '　——注意：改动还没保存，记得点右下角「保存设置」。' : '');
+        } else {
+          aiTestResult.state = 'fail';
+          aiTestResult.text = '❌ 第 1 步网络可达（说明 CORS 是通的），但第 2 步调用失败：' + res.error;
+        }
+      } finally {
+        aiTesting.value = false;
+      }
+    }
+
     watch(showSettings, v => {
       if (v) {
         settingsText.value = (D.settings.categories || []).join('\n');
@@ -5595,6 +5808,9 @@ const app = createApp({
         aiEndpoint.value = D.settings.aiEndpoint || '';
         aiKey.value = D.settings.aiKey || '';
         aiModel.value = D.settings.aiModel || '';
+        aiTesting.value = false;
+        aiTestResult.state = '';
+        aiTestResult.text = '';
       }
     });
     const dataStats = computed(() => ({
@@ -5823,6 +6039,7 @@ const app = createApp({
       fmtYi, sRatio,
       showSettings, settingsText, proxyUrl, saveSettings, clearAllData, dataStats,
       aiEndpoint, aiKey, aiModel, aiConfigured, aiGenerating, callOpenAICompat, generateNewsInterpretation,
+      AI_PRESETS, applyAiPreset, aiTesting, aiTestResult, aiTestConnection,
       exportData, importData,
       // 云端同步
       cloud, cloudModal, openCloudModal, cloudLogin, syncToCloud, syncFromCloud, cloudLogout, toggleAutoSync,
@@ -5929,7 +6146,8 @@ const app = createApp({
       // 登录账号与权限
       authUser, authInitial, authExpiryText, can, fmtDateTime, doLogout, userMenuOpen,
       userModal, userList, openUserManage, addUserByAdmin, changeUserRole,
-      toggleUserDisabled, removeUserByAdmin, resetUserPassword,
+      toggleUserDisabled, removeUserByAdmin,
+      resetPw, openResetPassword, cancelResetPassword, genResetPassword, submitResetPassword,
       setUserRegisterDate, setUserQuota, isExpiredDate,
       trialDayOptions, grantUserTrial, revokeUserTrial,
       exportUsersTable, importUsersTable,
