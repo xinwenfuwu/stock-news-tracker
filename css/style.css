@@ -2526,6 +2526,14 @@ body.auth-locked { overflow: hidden; }
   background: var(--surface-alt); border: 1px solid var(--border); border-radius: 8px;
   padding: 8px 12px; margin-bottom: 10px; font-size: 13px; color: var(--text-secondary); }
 .ld-usage b { color: var(--text); font-size: 14px; }
+/* 当前账号的数据挂在哪个 localStorage 键上（账号隔离是否生效，看这一行） */
+.ld-keyline { margin: -2px 0 10px; font-size: 12px; line-height: 1.5; }
+.ld-keyline code {
+  padding: 1px 6px; border-radius: 5px;
+  background: var(--surface-alt); border: 1px solid var(--border);
+  font-family: ui-monospace, Menlo, Consolas, monospace; font-size: 11.5px;
+  color: var(--text-secondary); word-break: break-all;
+}
 .ld-body { display: flex; gap: 12px; align-items: flex-start; max-height: 58vh; }
 .ld-list { flex: 1 1 auto; min-width: 0; overflow-y: auto; max-height: 58vh; padding-right: 4px; }
 .ld-preview { flex: 0 0 340px; max-width: 42vw; display: flex; flex-direction: column;

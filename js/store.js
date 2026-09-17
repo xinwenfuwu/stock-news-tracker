@@ -3,7 +3,19 @@
  * 管理新闻、股票池、每日数据、设置
  */
 const Store = {
-  STORAGE_KEY: 'stock-news-tracker-v1',
+  // ===== 存储隔离：一个账号一份数据 =====
+  // 早期只用一个键，同一浏览器上所有账号共用同一份数据 —— 换账号等于换了个门牌，
+  // 数据还是同一批（管理员的新闻/股票池会出现在普通用户眼前）。
+  // 现在改成「一个账号一个键」：`stock-news-tracker-v1::<username>`。
+  // BASE_KEY 保留为「升级前的共享数据」，只允许管理员接管一次，之后可由管理员手动清理。
+  STORAGE_KEY: 'stock-news-tracker-v1',    // 当前账号实际使用的键（init 时解析，见 resolveKey）
+  BASE_KEY: 'stock-news-tracker-v1',
+  ACCOUNT_SEP: '::',
+  LEGACY_OWNER_KEY: 'snt-store-owner-v1',  // 记录旧共享数据被哪个账号接管
+  account: '',                             // 当前登录账号（统一小写）
+  legacyClaimed: false,                    // 本次登录是否刚完成了旧数据接管
+  migratedHoldings: 0,                     // 本次登录从旧共享数据里搬过来的「本账号持仓」条数
+
   DEFAULT_CATEGORIES: [
     '主线实体', '个股实体', '主线概念', '个股概念', '利空概念',
     '行业动态', '政策利好', '政策利空', '业绩预告', '业绩快报',
@@ -41,8 +53,102 @@ const Store = {
 
   data: null,
 
-  /** 初始化（需传入 Vue 以建立响应式） */
-  init(Vue) {
+  /** 账号 → 该账号专属的存储键。未登录（理论上不会发生）时退回共享键 */
+  _keyFor(username) {
+    const u = String(username || '').trim().toLowerCase();
+    return u ? this.BASE_KEY + this.ACCOUNT_SEP + u : this.BASE_KEY;
+  },
+
+  _rawGet(key) {
+    try { return localStorage.getItem(key); } catch (e) { return null; }
+  },
+
+  _rawSet(key, val) {
+    try {
+      localStorage.setItem(key, val);
+      return true;
+    } catch (e) {
+      console.error('保存失败（可能超出存储上限）', e);
+      return false;
+    }
+  },
+
+  /**
+   * 解析当前账号应该使用哪个存储键。
+   * 升级前的数据全堆在 BASE_KEY 里（当时所有账号共用一份），那份数据属于「这台设备原来的主人」，
+   * 所以只允许**管理员**接管，并且只接管一次；普通账号一律从空数据开始，
+   * 这样即便在同一台电脑、同一个浏览器上，账号之间也互不可见。
+   */
+  resolveKey(username, role) {
+    const mine = this._keyFor(username);
+    if (!username) return mine;
+    if (this._rawGet(mine) !== null) return mine;      // 本账号已有自己的数据
+    const legacy = this._rawGet(this.BASE_KEY);
+    if (legacy === null) return mine;                  // 没有旧数据可接管
+    if (role === 'admin' && !this._rawGet(this.LEGACY_OWNER_KEY)) {
+      if (this._rawSet(mine, legacy)) {
+        this._rawSet(this.LEGACY_OWNER_KEY, String(username).trim().toLowerCase());
+        this.legacyClaimed = true;
+      }
+    }
+    return mine;
+  },
+
+  /** 「升级前的共享数据」现状（供「本地数据」面板展示与清理） */
+  legacyInfo() {
+    const raw = this._rawGet(this.BASE_KEY);
+    return {
+      key: this.BASE_KEY,
+      exists: raw !== null,
+      size: raw ? raw.length : 0,
+      owner: this._rawGet(this.LEGACY_OWNER_KEY) || '',
+      isCurrent: this.STORAGE_KEY === this.BASE_KEY
+    };
+  },
+
+  /** 删除升级前的共享数据。当前账号正使用它时拒绝执行（防止把自己正在用的数据删掉） */
+  clearLegacy() {
+    if (this.STORAGE_KEY === this.BASE_KEY) return false;
+    try {
+      localStorage.removeItem(this.BASE_KEY);
+      localStorage.removeItem(this.LEGACY_OWNER_KEY);
+      return true;
+    } catch (e) { return false; }
+  },
+
+  /**
+   * 从「升级前的共享数据」里，把**本账号自己的持仓**搬到新命名空间。
+   * 旧版本里所有业务数据都是共用的，只有 holdings 是按用户名分开存的（D.holdings[username]），
+   * 所以那部分确实属于这个账号自己 —— 不搬的话，普通账号升级后会凭空少掉自己的持仓。
+   * 其余字段一概不碰（那些属于设备原来的主人/管理员）。
+   * @returns {number} 实际搬过来的持仓条数
+   */
+  adoptLegacyHoldings() {
+    let n = 0;
+    try {
+      const raw = this._rawGet(this.BASE_KEY);
+      if (!raw) return 0;
+      const legacy = JSON.parse(raw);
+      const all = (legacy && legacy.holdings) || {};
+      // 旧数据里的用户名大小写不一定和现在的账号一致，忽略大小写匹配
+      const key = Object.keys(all).find(k => String(k).toLowerCase() === this.account);
+      const list = key ? all[key] : null;
+      if (Array.isArray(list) && list.length) {
+        this.data.holdings = this.data.holdings || {};
+        this.data.holdings[this.account] = list;
+        n = list.length;
+        this.saveNow();
+      }
+    } catch (e) { /* 旧数据坏了就安静跳过，不影响登录 */ }
+    return n;
+  },
+
+  /** 初始化（需传入 Vue 以建立响应式；account = { username, role }） */
+  init(Vue, account) {
+    const username = (account && account.username) || '';
+    const role = (account && account.role) || '';
+    this.account = String(username).trim().toLowerCase();
+    this.STORAGE_KEY = this.resolveKey(username, role);   // 每个账号读自己的那份
     let saved = null;
     try {
       const raw = localStorage.getItem(this.STORAGE_KEY);
@@ -99,6 +205,13 @@ const Store = {
     }
     if (typeof this.data.holdingColWidths !== 'object' || this.data.holdingColWidths === null) {
       this.data.holdingColWidths = {};
+    }
+
+    // 升级兼容：本账号是全新命名空间（saved 为空）时，从旧共享数据里认领「自己的持仓」。
+    // 管理员那次已经整份接管了旧数据（legacyClaimed），不需要再单独搬。
+    this.migratedHoldings = 0;
+    if (username && !saved && !this.legacyClaimed) {
+      this.migratedHoldings = this.adoptLegacyHoldings();
     }
 
     // 自动保存

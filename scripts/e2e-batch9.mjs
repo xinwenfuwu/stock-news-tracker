@@ -191,6 +191,12 @@ const main = async () => {
     check('显示本机存储实际占用（带单位）', /本机存储占用/.test(usage) && /\d+(\.\d+)?\s*(B|KB|MB)/.test(usage), usage);
     check('提示浏览器上限约 5 MB', /5\s*MB/.test(usage), usage);
 
+    // 账号隔离后新增：面板要写明「这份数据挂在哪个键上」
+    const keyline = await page.locator('#ld-keyline').innerText();
+    check('显示本账号的数据存储键（按账号隔离）',
+      /stock-news-tracker-v1::admin/.test(keyline), keyline);
+    check('存储键行写明是哪个账号', /当前账号：admin/.test(keyline), keyline);
+
     const rows = await readRows(page);
     check('清单至少 12 类数据', rows.length >= 12, 'rows=' + rows.length);
     const expect = [
@@ -213,6 +219,13 @@ const main = async () => {
     check('「本机账号表」显示🔒受保护', !!usersRow && usersRow.locked, usersRow ? String(usersRow.locked) : 'missing');
     check('「本机账号表」不提供「删除」按钮（避免把本机所有账号锁死）',
       !!usersRow && !usersRow.btns.includes('删除'), usersRow ? usersRow.btns.join(',') : 'missing');
+
+    // 账号隔离后新增：升级前的旧共享数据留作备份，管理员可确认后清理
+    const legacyRow = rows.find(r => r.name === '升级前的旧共享数据');
+    check('列出「升级前的旧共享数据」（留作备份）', !!legacyRow, rows.map(r => r.name).join(' | '));
+    check('「升级前的旧共享数据」标为谨慎、可删除',
+      !!legacyRow && legacyRow.danger && legacyRow.btns.includes('删除'),
+      legacyRow ? JSON.stringify(legacyRow) : 'missing');
 
     /* ---- 查看：JSON 预览 + 密钥打码 ---- */
     await ldRow(page, '新闻数据').locator('.ld-ops button:has-text("查看")').click();
@@ -267,10 +280,16 @@ const main = async () => {
     const other = await rowData(page, '股票池');
     check('其它行不受影响（股票池仍 1 组）', other && other.count === '1 组', other ? other.count : 'missing');
 
-    const saved = await page.evaluate(k => {
-      try { return JSON.parse(localStorage.getItem(k)).news.length; } catch (e) { return -1; }
-    }, STORE_KEY);
-    check('已落盘 localStorage（news 长度为 0）', saved === 0, 'len=' + saved);
+    // 账号隔离后：数据存在「本账号的键」上，旧键 `stock-news-tracker-v1` 只是升级前的备份。
+    // 所以这里必须读应用当前实际使用的键，不能写死旧键（写死会读到备份里的旧数据）。
+    const saved = await page.evaluate(() => {
+      try {
+        const k = (typeof Store !== 'undefined' && Store.STORAGE_KEY) ? Store.STORAGE_KEY : 'stock-news-tracker-v1';
+        return { key: k, len: JSON.parse(localStorage.getItem(k)).news.length };
+      } catch (e) { return { key: '', len: -1 }; }
+    });
+    check('已落盘到本账号的数据键', saved.key === STORE_KEY + '::admin', saved.key);
+    check('已落盘 localStorage（news 长度为 0）', saved.len === 0, JSON.stringify(saved));
 
     // 2.3 刷新后仍是 0（证明不是只改了内存）
     await page.reload({ waitUntil: 'load' });
@@ -304,7 +323,7 @@ const main = async () => {
   }
 
   /* ================= 3. 权限：普通用户看不到账号表 ================= */
-  console.log('\n3) 权限：普通用户的面板里没有「本机账号表」');
+  console.log('\n3) 权限：普通用户完全进不了「本地数据」面板（入口都不显示）');
   {
     const { ctx, page, errors } = await newPage(browser, A.port, '#news');
     await page.evaluate(async ([pw, upw]) => {
@@ -320,18 +339,23 @@ const main = async () => {
 
     const who = await page.evaluate(() => Auth.user && Auth.user.username);
     check('已切换到普通用户 user1', who === 'user1', String(who));
-    await openPanel(page);
-    const rows = await readRows(page);
-    check('普通用户看不到「本机账号表」', !rows.some(r => r.name === '本机账号表'),
-      rows.map(r => r.name).join(','));
-    const hold = rows.find(r => r.name === '我的持仓');
-    check('普通用户也能看到「我的持仓」一行', !!hold, rows.map(r => r.name).join(','));
-    const holdDesc = await page.evaluate(() => {
-      const el = Array.from(document.querySelectorAll('.ld-row')).find(r => /我的持仓/.test(r.textContent));
-      return el ? el.querySelector('.ld-desc').textContent : '';
-    });
-    check('持仓描述指出是当前账号的记录（其它账号不受影响）',
-      /user1/.test(holdDesc) && /不受影响/.test(holdDesc), holdDesc);
+
+    // 诉求：管理员在本机数据里看到的东西，绝对不能出现在普通用户那里。
+    // 收口方式是把整个面板对普通用户关闭（不只是藏掉「本机账号表」一行）。
+    const gate = await page.evaluate(() => ({
+      canClear: Auth.can('data.clear'),
+      hasBtn: !!document.querySelector('.btn-data'),
+      hasModal: !!document.querySelector('.ld-modal')
+    }));
+    check('普通用户 can(data.clear) = false', gate.canClear === false);
+    check('普通用户看不到「🗄 本地数据」按钮', gate.hasBtn === false);
+    check('面板 DOM 根本没渲染（不是仅隐藏）', gate.hasModal === false);
+
+    // 按钮不存在 → 点不到；顺带确认「用户须知 / 会员服务」这些还照常可用
+    check('「用户须知」入口仍对普通用户开放',
+      await page.locator(USER_TOOLBAR + ' button:has-text("用户须知")').count() === 1);
+    check('「会员服务」入口仍对普通用户开放',
+      await page.locator(USER_TOOLBAR + ' button:has-text("会员服务")').count() === 1);
     check('页面无 JS 报错', errors.length === 0, errors.join(' | '));
     await ctx.close();
   }
@@ -362,8 +386,10 @@ const main = async () => {
     await page.waitForSelector(USER_TOOLBAR, { timeout: 20000 });
     // 启动时若 localStorage 已有 token，会去校验 GitHub 并（在此环境下）把它清掉；
     // 所以登录完成后再写入，专门验证「单独删这一项」这条路。
+    // 注意：凭据键已按账号隔离，写的是 admin 自己的那个键（不是升级前的旧键）。
+    const CLOUD_KEY_ADMIN = CLOUD_KEY + '::admin';
     await page.evaluate(([k, v]) => localStorage.setItem(k, JSON.stringify(v)),
-      [CLOUD_KEY, { token: 'ghp_fake_token_for_test', login: 'tester' }]);
+      [CLOUD_KEY_ADMIN, { token: 'ghp_fake_token_for_test', login: 'tester' }]);
     await page.click(USER_TOOLBAR + ' button:has-text("本地数据")');
     await page.waitForSelector('.ld-modal', { timeout: 15000 });
     await page.waitForFunction(() => document.querySelectorAll('.ld-row').length > 0, null, { timeout: 15000 });
@@ -377,7 +403,7 @@ const main = async () => {
     }, null, { timeout: 15000 });
     const after = await rowData(page, '云同步凭据');
     check('删除后「云同步凭据」=0 项', after && after.count === '0 项', after ? after.count : 'missing');
-    check('localStorage 里该键确实没了', !(await page.evaluate(k => localStorage.getItem(k), CLOUD_KEY)), 'still there');
+    check('localStorage 里该键确实没了', !(await page.evaluate(k => localStorage.getItem(k), CLOUD_KEY_ADMIN)), 'still there');
     check('新闻数据未受影响（仍 3 条）',
       (await rowData(page, '新闻数据')).count === '3 条', (await rowData(page, '新闻数据')).count);
     check('页面无 JS 报错', errors.length === 0, errors.join(' | '));

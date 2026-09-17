@@ -314,12 +314,19 @@ const main = async () => {
   /* ========== 3b. 切回本站时立即补扫（不依赖会被节流的定时器） ========== */
   console.log('\n3b) 切回本站（focus / visibilitychange）立即补扫');
   {
-    const rrF = await adminPage.evaluate(async (pw) => (await Auth.register('focususer', pw)).ok, 'Passw0rd9');
-    check('同页面写入一条新申请', rrF === true);
-    // 不派发任何事件时，定时器可能被浏览器节流，界面不应立刻变化
-    await adminPage.waitForTimeout(300);
-    const before = await adminPage.evaluate(ALERT_STATE);
-    check('未收到 focus/visibility 事件时不抢先刷新（角标仍是 3）', before.chipText === '3', JSON.stringify(before));
+    // 应用里有一条 8 秒的兜底轮询。这一步要断言「没派发事件时界面不会自己刷新」，
+    // 而轮询相位在跑了十来秒之后是完全未知的 —— 观测窗随时可能正好跨过一次轮询，
+    // 断言就会偶发失败（实测三次里抖一次）。先重载把相位钉在挂载时刻，
+    // 后面「注册 + 读角标」又放在同一次 evaluate 里完成，判定才是确定的。
+    await adminPage.reload({ waitUntil: 'load', timeout: 40000 });
+    await waitAppReady(adminPage);
+    const reg = await adminPage.evaluate(async (pw) => {
+      const r = await Auth.register('focususer', pw);
+      const chip = document.querySelector('.user-chip-badge');
+      return { ok: !!(r && r.ok), chipText: chip ? chip.textContent.trim() : '' };
+    }, 'Passw0rd9');
+    check('同页面写入一条新申请', reg.ok === true);
+    check('未收到 focus/visibility 事件时不抢先刷新（角标仍是 3）', reg.chipText === '3', 'chip=' + reg.chipText);
 
     // 模拟「管理员从微信切回浏览器」→ 应当立刻补扫
     await adminPage.evaluate(() => window.dispatchEvent(new Event('focus')));

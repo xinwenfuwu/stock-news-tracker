@@ -4,12 +4,12 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>股市信息分析系统</title>
-  <link rel="stylesheet" href="css/style.css?v=20260917l">
+  <link rel="stylesheet" href="css/style.css?v=20260917m">
   <!-- Vue 3 全局构建版（v3.4.21 · 自托管）
        原先走 unpkg.com CDN：国内网络对 unpkg 的连通性不稳定，一旦该请求长时间挂起，
        <head> 里的阻塞脚本会让整页停在白屏、后续 auth-boot.js 根本不会执行。
        改为同源托管后，启动链路不再依赖任何第三方 CDN。 -->
-  <script src="js/vue.global.prod.js?v=20260917l"></script>
+  <script src="js/vue.global.prod.js?v=20260917m"></script>
 </head>
 <body class="auth-locked">
   <!-- ===== 登录关卡：登录通过前业务脚本不会被加载 ===== -->
@@ -400,7 +400,7 @@
             <span class="muted small" v-if="authUser">（{{ authUser.username }} 的持仓，仅你自己可见）</span>
           </div>
           <div class="toolbar-right">
-            <button class="btn btn-data" @click="openLocalData">🗄 本地数据</button>
+            <button class="btn btn-data" v-if="can('data.clear')" @click="openLocalData">🗄 本地数据</button>
             <button class="btn btn-notice" @click="openUserNotice">📋 用户须知</button>
             <button class="btn btn-vip" @click="openMembershipService">👑 会员服务</button>
             <button class="btn btn-primary" @click="openAddHolding">➕ 添加持仓</button>
@@ -634,6 +634,10 @@
             <div class="ld-usage">
               <span>本机存储占用：<b>{{ localDataUsageText }}</b></span>
               <span class="muted small">浏览器上限约 5 MB，接近上限会导致保存失败</span>
+            </div>
+            <!-- 用独立类名，别复用 .ld-usage，避免与既有选择器和测试断言撞车 -->
+            <div class="ld-keyline" id="ld-keyline">
+              <span class="muted small">本账号数据所在存储键：<code>{{ localDataKeyText }}</code></span>
             </div>
 
             <div class="ld-body">
@@ -2869,8 +2873,8 @@
     </transition>
   </div>
 
-  <script src="js/auth.js?v=20260917l"></script>
-  <script src="js/auth-boot.js?v=20260917l"></script>
+  <script src="js/auth.js?v=20260917m"></script>
+  <script src="js/auth-boot.js?v=20260917m"></script>
   <!-- store / stock-api / hot-topics / app 由 auth-boot.js 在登录通过后动态装载，
        未登录时它们不会被下载，业务数据也不会进入内存 -->
 </body>

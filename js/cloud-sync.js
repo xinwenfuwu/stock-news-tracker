@@ -5,24 +5,59 @@
 const CloudSync = {
   API: 'https://api.github.com',
   GIST_FILENAME: 'stock-news-data.json',
-  CREDS_KEY: 'cloud-creds-v1',
+  // 云同步凭据也按账号隔离：否则同一浏览器上换成普通账号登录，
+  // 会直接继承管理员的 GitHub Token，能读写管理员的私有 Gist 备份。
+  CREDS_KEY: 'cloud-creds-v1',        // 兼容保留：升级前所有账号共用这一个键
+  ACCOUNT_SEP: '::',
+  LEGACY_CREDS_OWNER_KEY: 'snt-cloud-creds-owner-v1',
+  account: '',
 
-  /** 读取本地保存的登录凭证 */
+  /** 由 app.js 在初始化时告知当前账号 */
+  setAccount(username) {
+    this.account = String(username || '').trim().toLowerCase();
+  },
+
+  /** 当前账号专属的凭据键 */
+  credsKey() {
+    return this.account ? this.CREDS_KEY + this.ACCOUNT_SEP + this.account : this.CREDS_KEY;
+  },
+
+  /**
+   * 接管升级前的旧凭据：只允许管理员、只接管一次。
+   * 普通账号继承不到，自然也就碰不到管理员的云端备份。
+   */
+  adoptLegacyCreds(role) {
+    if (!this.account) return false;
+    let mine = '', legacy = '';
+    try {
+      mine = this.credsKey();
+      if (localStorage.getItem(mine) !== null) return false;
+      legacy = localStorage.getItem(this.CREDS_KEY);
+      if (legacy === null) return false;
+      if (role !== 'admin') return false;
+      if (localStorage.getItem(this.LEGACY_CREDS_OWNER_KEY)) return false;
+      localStorage.setItem(mine, legacy);
+      localStorage.setItem(this.LEGACY_CREDS_OWNER_KEY, this.account);
+      return true;
+    } catch (e) { return false; }
+  },
+
+  /** 读取当前账号本地保存的登录凭证 */
   getCreds() {
     try {
-      const raw = localStorage.getItem(this.CREDS_KEY);
+      const raw = localStorage.getItem(this.credsKey());
       return raw ? JSON.parse(raw) : null;
     } catch { return null; }
   },
 
-  /** 保存登录凭证 */
+  /** 保存当前账号的登录凭证 */
   setCreds(creds) {
-    localStorage.setItem(this.CREDS_KEY, JSON.stringify(creds));
+    localStorage.setItem(this.credsKey(), JSON.stringify(creds));
   },
 
-  /** 清除登录凭证 */
+  /** 清除当前账号的登录凭证 */
   clearCreds() {
-    localStorage.removeItem(this.CREDS_KEY);
+    localStorage.removeItem(this.credsKey());
   },
 
   /** 验证 Token 是否有效 */

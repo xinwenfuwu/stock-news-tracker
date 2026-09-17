@@ -6,7 +6,11 @@ const { createApp, ref, reactive, computed, onMounted, watch, nextTick } = Vue;
 
 const app = createApp({
   setup() {
-    Store.init(Vue);
+    // 每个账号读自己的那份数据（同一浏览器上切账号互不可见），
+    // 所以必须把当前账号传进去 —— 详见 store.js 的 resolveKey()
+    Store.init(Vue, (typeof Auth !== 'undefined' && Auth && Auth.user)
+      ? { username: Auth.user.username, role: Auth.user.role }
+      : null);
     const D = Store.data;
 
     // ===== 数据迁移：relatedStocks 字符串 → 数组 =====
@@ -1352,9 +1356,14 @@ const app = createApp({
      * 这里把「本机到底存了什么 / 占多大 / 能不能删」透明地摆出来，并逐项提供删除。
      * 删除只影响这台设备的界面：官方快照（GitHub Action 抓的）在服务器上，不受影响。
      * ============================================================== */
-    const LD_KEY_USERS = 'snt-auth-users-v1';
+    const LD_KEY_USERS = 'snt-auth-users-v1';   // 账号表：同一浏览器上共用（否则没法登录）
     const LD_KEY_SESSION = 'snt-auth-session-v1';
-    const LD_KEY_CLOUD = 'cloud-creds-v1';
+    const LD_KEY_CLOUD = 'cloud-creds-v1';      // 升级前的共用旧键；现在按账号隔离，见 ldCloudKey()
+
+    /** 本账号的云同步凭据键（按账号隔离，普通账号拿不到管理员的 Token） */
+    function ldCloudKey() {
+      return (typeof CloudSync !== 'undefined' && CloudSync.credsKey) ? CloudSync.credsKey() : LD_KEY_CLOUD;
+    }
 
     const localDataModal = reactive({
       show: false,
@@ -1364,6 +1373,7 @@ const app = createApp({
     });
     const localDataRows = ref([]);
     const localDataUsageText = ref('0 B');
+    const localDataKeyText = ref('');   // 当前账号的数据存在哪个键上
 
     function ldBytes(v) {
       const s = typeof v === 'string' ? v : JSON.stringify(v === undefined ? null : v);
@@ -1460,12 +1470,19 @@ const app = createApp({
           danger: true,
           clear: () => { try { localStorage.removeItem(LD_KEY_SESSION); } catch (e) { /* ignore */ } } },
         { id: 'cloudCreds', name: '云同步凭据', icon: '☁️', unit: '项',
-          count: () => (ldHasKey(LD_KEY_CLOUD) ? 1 : 0),
-          desc: 'GitHub Gist 同步用的 Token；删除后需重新填写才能同步',
-          raw: () => ldReadRaw(LD_KEY_CLOUD) || {},
+          count: () => (ldHasKey(ldCloudKey()) ? 1 : 0),
+          desc: '本账号（' + (me || '未登录') + '）的 GitHub Gist 同步 Token；删除后需重新填写才能同步',
+          raw: () => ldReadRaw(ldCloudKey()) || {},
           danger: true,
-          clear: () => { try { localStorage.removeItem(LD_KEY_CLOUD); } catch (e) { /* ignore */ } } }
-      ].filter(b => !b.adminOnly || isAdmin);
+          clear: () => { try { localStorage.removeItem(ldCloudKey()); } catch (e) { /* ignore */ } } },
+        { id: 'legacyStore', name: '升级前的旧共享数据', icon: '🗃️', unit: '项',
+          count: () => (Store.legacyInfo().exists ? 1 : 0),
+          desc: '旧版本所有账号共用一份数据时留下的那份记录（已迁移到管理员账号）。确认数据没问题后可删除，普通账号读不到它',
+          adminOnly: true, danger: true,
+          showIf: () => Store.legacyInfo().exists,
+          raw: () => ldReadRaw(Store.legacyInfo().key) || {},
+          clear: () => { Store.clearLegacy(); } }
+      ].filter(b => (!b.adminOnly || isAdmin) && (!b.showIf || b.showIf()));
     }
 
     /** localStorage 实际占用（含所有键名与键值，比上面各项相加更准确） */
@@ -1496,10 +1513,15 @@ const app = createApp({
       });
       localDataRows.value = rows;
       localDataUsageText.value = ldSizeText(ldStorageUsage());
+      // 让管理员一眼确认「这份数据挂在哪个键上」——账号隔离是否生效看这里
+      const who = (authUser.value && authUser.value.username) || '';
+      localDataKeyText.value = Store.STORAGE_KEY + '（当前账号：' + (who || '未登录') + '）';
       return rows;
     }
 
     function openLocalData() {
+      // 双保险：入口按钮已按权限隐藏，这里再挡一次（旧缓存 / 控制台调用都拦得住）
+      if (!can('data.clear')) { showToast('本机数据管理仅管理员可用', 'error'); return; }
       localDataModal.previewId = '';
       localDataModal.previewTitle = '';
       localDataModal.previewText = '';
@@ -5331,6 +5353,11 @@ const app = createApp({
     onMounted(() => {
       // 进入系统后补写本次登录的 IP / 归属地 / 设备（异步、失败不影响使用）
       syncLoginMeta();
+      // 账号隔离上线后，本账号的持仓若是从旧共享数据里认领过来的，明确告知一声
+      // （旧版本所有账号共用一份数据，只有持仓本来就是按用户名分开存的）
+      if (Store.migratedHoldings) {
+        showToast('已把你在旧版本的 ' + Store.migratedHoldings + ' 条持仓搬到本账号；其他数据属于各自账号，不会互相继承', 'info');
+      }
       nextTick(() => {
         initGhostHScroll();
         initResizeFor('.filter-scroll table', 'filterColWidths', FILTER_DEFAULT_COL_WIDTHS);
@@ -5641,6 +5668,9 @@ const app = createApp({
 
     // 初始化：恢复登录状态
     (function initCloud() {
+      // 云同步凭据同样按账号隔离（普通账号拿不到管理员的 Token）
+      CloudSync.setAccount(A && A.user ? A.user.username : '');
+      CloudSync.adoptLegacyCreds(A && A.user ? A.user.role : '');
       const creds = CloudSync.getCreds();
       if (creds && creds.token) {
         cloud.token = creds.token;
@@ -5891,7 +5921,7 @@ const app = createApp({
       userNoticeModal, openUserNotice
       ,
       // 本地数据管理
-      localDataModal, localDataRows, localDataUsageText,
+      localDataModal, localDataRows, localDataUsageText, localDataKeyText,
       openLocalData, previewLocalData, closeLocalDataPreview,
       askDeleteLocalData, cancelDeleteLocalData, doDeleteLocalData,
       askClearLocalBusinessData, doClearLocalBusinessData
