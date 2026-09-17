@@ -4,12 +4,12 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>股市信息分析系统</title>
-  <link rel="stylesheet" href="css/style.css?v=20260917q">
+  <link rel="stylesheet" href="css/style.css?v=20260918a">
   <!-- Vue 3 全局构建版（v3.4.21 · 自托管）
        原先走 unpkg.com CDN：国内网络对 unpkg 的连通性不稳定，一旦该请求长时间挂起，
        <head> 里的阻塞脚本会让整页停在白屏、后续 auth-boot.js 根本不会执行。
        改为同源托管后，启动链路不再依赖任何第三方 CDN。 -->
-  <script src="js/vue.global.prod.js?v=20260917q"></script>
+  <script src="js/vue.global.prod.js?v=20260918a"></script>
 </head>
 <body class="auth-locked">
   <!-- ===== 登录关卡：登录通过前业务脚本不会被加载 ===== -->
@@ -2743,6 +2743,18 @@
             <p><b>密钥安全：</b>Key 仅保存在你本机浏览器的 localStorage，不会上传到本站服务器（本站是纯静态 GitHub Pages，无后端）。多设备需各自配置。</p>
             <p><b>遇到「连不上 / Failed to fetch」怎么办：</b>先用上面的「🧪 测试连接」看清是哪一步不通。若是<b>境外地址</b>（如 <code>api.openai.com</code>）在国内被拦截，换国内厂商即可，<b>不必</b>部署代理；只有当「网络可达但仍被 CORS 拦截」、或你不想把 Key 放在浏览器里时，才需要 <code>worker/ai-proxy.js</code>（Cloudflare Worker，免费）。</p>
           </div>
+          <div class="info-box small">
+            <p><b>跨设备免码登录（可选 · 需 Cloudflare Worker）</b>开启后，用户在他自己设备注册，你（管理员）在「用户管理」里点通过，对方<b>无需再粘贴准入码</b>就能直接登录——彻底去掉「发申请码 / 发准入码」两轮手动转发。代码在仓库 <code>worker/auth-worker.js</code>，部署见文件内注释。</p>
+            <p>普通用户只需填「鉴权后端地址」；<b>管理员密钥仅管理员设备填</b>（与 Worker 的 ADMIN_TOKEN 一致，才能调用通过/驳回）。这两项存于独立本地键，<b>不会</b>随「设置」导出泄露。</p>
+          </div>
+          <div class="form-row">
+            <label>鉴权后端地址（可选 · 开启免码登录才填）部署 auth-worker 后得到的地址，形如 https://snt-auth-worker.你的子域.workers.dev。留空则维持原「申请码 / 准入码」流程。</label>
+            <input v-model="authWorkerUrl" placeholder="https://snt-auth-worker.你的子域.workers.dev">
+          </div>
+          <div class="form-row" v-if="authUser && authUser.role === 'admin'">
+            <label>管理员密钥（仅管理员 · 与 Worker 的 ADMIN_TOKEN 一致）用于「用户管理」里拉待审 + 一键通过。普通用户无需填写。</label>
+            <input type="password" v-model="authAdminToken" placeholder="与 auth-worker 部署时设的 ADMIN_TOKEN 一致">
+          </div>
           <div class="form-row">
             <label>数据存储</label>
             <div class="storage-info">
@@ -2852,6 +2864,32 @@
                 <button class="btn btn-sm btn-danger" @click="rejectUserByAdmin(p)">驳回</button>
                 <button class="btn btn-sm" @click="revealPendingPassword(p)" :title="'查看该申请设置的密码'">看密码</button>
               </div>
+            </div>
+          </div>
+
+          <!-- ===== 跨设备待审（来自鉴权后端，免码登录） ===== -->
+          <div class="um-pending" v-if="authWorkerUrl && authWorkerUrl.trim()">
+            <div class="um-pending-head">
+              <span>🌐 跨设备待审（鉴权后端）</span>
+              <span class="um-pending-count" v-if="remotePendingLoading">加载中…</span>
+              <span class="um-pending-count" v-else-if="remotePending.length">{{ remotePending.length }} 人</span>
+              <span class="um-pending-count" v-else>无</span>
+            </div>
+            <div class="um-pending-item" v-for="p in remotePending" :key="'r-' + p.username">
+              <div class="um-pending-main">
+                <span class="um-name">{{ p.username }}</span>
+                <span class="um-pending-meta">提交于 {{ fmtDateTime(p.createdAt) }}</span>
+              </div>
+              <div class="um-actions">
+                <button class="btn btn-sm btn-primary" @click="approveRemoteByAdmin(p)">通过</button>
+                <button class="btn btn-sm btn-danger" @click="rejectRemoteByAdmin(p)">驳回</button>
+              </div>
+            </div>
+            <div class="um-hint" v-if="!remotePending.length && !remotePendingLoading && authAdminToken && authAdminToken.trim()">
+              已开启免码登录，鉴权后端暂无待审。若用户已注册却看不到，请确认对方设备填了同一个「鉴权后端地址」。
+            </div>
+            <div class="um-hint" v-if="!remotePending.length && !remotePendingLoading && !(authAdminToken && authAdminToken.trim())">
+              需要先在「设置 → 管理员密钥」填写与 Worker 一致的密钥，才能拉取跨设备待审名单。
             </div>
           </div>
 
@@ -3102,8 +3140,9 @@
     </transition>
   </div>
 
-  <script src="js/auth.js?v=20260917q"></script>
-  <script src="js/auth-boot.js?v=20260917q"></script>
+  <script src="js/auth.js?v=20260918a"></script>
+  <script src="js/auth-sync.js?v=20260918a"></script>
+  <script src="js/auth-boot.js?v=20260918a"></script>
   <!-- store / stock-api / hot-topics / app 由 auth-boot.js 在登录通过后动态装载，
        未登录时它们不会被下载，业务数据也不会进入内存 -->
 </body>

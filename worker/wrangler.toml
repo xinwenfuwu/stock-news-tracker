@@ -1,0 +1,28 @@
+# 股市信息分析系统 · 跨设备账号鉴权 Worker
+# 部署步骤（需你自己的 Cloudflare 账户，免费）：
+#   1) 安装 wrangler：npm i -g wrangler  （或 npx wrangler）
+#   2) 登录：wrangler login
+#   3) 建 KV 命名空间（账号表持久化）：wrangler kv namespace create SNT_ACCOUNTS
+#      → 把返回的 id 填到下面 [[kv_namespaces]] 的 id 处
+#   4) 设管理员密钥（务必用 secret，勿写进本文件）：wrangler secret put ADMIN_TOKEN
+#      → 这个值同时要在站点「设置 → 管理员密钥」里填一遍，管理员设备才能调用通过/驳回
+#   5) 部署：wrangler deploy
+#   6) 把部署得到的地址（形如 https://snt-auth-worker.<你的子域>.workers.dev）
+#      填到站点「设置 → 鉴权后端地址」；并在「设置 → 管理员密钥」填同一个 ADMIN_TOKEN
+#
+# 可选：把站点来源固定进 CORS（更安全，避免任意站点调用本 Worker）
+#   [vars]
+#   ALLOW_ORIGIN = "https://xinwenfuwu.github.io/stock-news-tracker"
+
+name = "snt-auth-worker"
+main = "auth-worker.js"
+compatibility_date = "2024-09-23"
+
+# 账号表 KV（持久化，跨请求/跨实例共享）。把 id 换成第 3 步得到的值。
+[[kv_namespaces]]
+binding = "SNT_ACCOUNTS"
+id = "REPLACE_WITH_YOUR_KV_NAMESPACE_ID"
+
+# 以下变量可选，按上面注释解开即可
+# [vars]
+# ALLOW_ORIGIN = "https://xinwenfuwu.github.io/stock-news-tracker"

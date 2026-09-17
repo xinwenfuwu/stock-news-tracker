@@ -847,6 +847,11 @@
       }
       return makePasswordHash(v.password).then(function (hash) {
         var now = Date.now();
+        // 跨设备免码：把注册写进鉴权后端（pending），管理员面板即可自动看到、一键通过。
+        // 失败不阻塞本地注册——用户仍可手动复制申请码走旧的码流程兜底。
+        if (typeof Auth !== 'undefined' && Auth.Sync && Auth.Sync.isConfigured && Auth.Sync.isConfigured()) {
+          Auth.Sync.registerRemote(v.username, v.password).catch(function () { /* 离线兜底 */ });
+        }
         // batch16：本机已有同名「待审核」记录时不再报错——换设备 / 忘记自己提交过的情况下
         // 用户会反复注册，每次都以为要重新申请。密码一致就直接把同一个申请码再给他一次。
         if (exist && statusOf(exist) === STATUS.PENDING) {
@@ -887,12 +892,42 @@
       });
     },
 
+    /**
+     * 登录：优先走鉴权后端（Worker）实现「跨设备免码」。
+     * 配置了后端且可达时，由服务端校验密码 + 读取审核状态；通过后直接登录，
+     * 用户无需粘贴准入码。网络不可达自动回落本地校验（离线兜底）。
+     */
     login: function (username, password, remember) {
       var self = this;
       var uname = String(username == null ? '' : username).trim();
       if (!uname || !password) return Promise.resolve({ ok: false, error: '请输入用户名和密码' });
+      if (typeof Auth !== 'undefined' && Auth.Sync && Auth.Sync.isConfigured && Auth.Sync.isConfigured()) {
+        return Promise.resolve(Auth.Sync.loginRemote(uname, password)).then(function (r) {
+          if (r && r.ok && r.grant) return self._applyRemoteGrantAndLogin(uname, password, r.grant, remember);
+          if (r && (r.status === 'pending' || r.status === 'disabled')) {
+            return {
+              ok: false, status: r.status,
+              error: r.error || (r.status === 'pending'
+                ? '该账号正在等待管理员审核，通过后即可直接登录（已开启免码登录）'
+                : '该账号已被停用，请联系管理员')
+            };
+          }
+          if (r && r.error) return { ok: false, error: r.error };
+          return self._localLogin(username, password, remember);   // 后端无明确结论 → 本地兜底
+        }).catch(function () {
+          return self._localLogin(username, password, remember);   // 网络抖动 → 本地兜底
+        });
+      }
+      return self._localLogin(username, password, remember);
+    },
 
-      // 第二阶段：远端校验优先
+    /** 本地登录（离线兜底）：校验本机账号表的密码与审核状态 */
+    _localLogin: function (username, password, remember) {
+      var self = this;
+      var uname = String(username == null ? '' : username).trim();
+      if (!uname || !password) return Promise.resolve({ ok: false, error: '请输入用户名和密码' });
+
+      // 第二阶段：完整远端模式（未启用时跳过）
       if (this.remote && typeof this.remote.login === 'function') {
         return Promise.resolve(this.remote.login(uname, password)).then(function (r) {
           if (!r || !r.ok) return { ok: false, error: (r && r.error) || '用户名或密码不正确' };
@@ -941,6 +976,37 @@
         return issueSession(u, ttl, rec.at).then(function () {
           self.user = publicUser(u);
           return { ok: true, user: self.user, loginAt: rec.at, trial: tr.active };
+        });
+      });
+    },
+
+    /**
+     * 用 Worker 返回的授权信息在本机落地并签发会话（跨设备免码登录的核心）。
+     * 本机会用「本机盐」重算一份哈希仅供离线校验；在线状态一律以服务端为准。
+     */
+    _applyRemoteGrantAndLogin: function (username, password, grant, remember) {
+      var self = this;
+      self.users = loadUsers();
+      var u = findUser(self.users, username);
+      if (!u) {
+        u = { username: username, role: ROLE.USER, disabled: false, status: STATUS.PENDING, createdAt: Date.now(), updatedAt: Date.now(), logins: [] };
+        self.users.push(u);
+      }
+      return makePasswordHash(password).then(function (hash) {
+        u.hash = hash;                 // 本机盐，仅供本机离线校验
+        u.role = ROLE.USER;
+        u.status = STATUS.ACTIVE;
+        u.disabled = false;
+        applyGrant(u, grant);         // 同步服务端授权（试用 / 会员额度）
+        u.updatedAt = Date.now();
+        if (!saveUsers(self.users)) return { ok: false, error: '保存失败：浏览器本地存储不可用' };
+        var ttl = remember ? TTL_REMEMBER : TTL_DEFAULT;
+        var rec = pushLoginRecord(u, { ua: localUA() });
+        u.lastLoginAt = rec.at;
+        saveUsers(self.users);
+        return issueSession(u, ttl, rec.at).then(function () {
+          self.user = publicUser(u);
+          return { ok: true, user: self.user, loginAt: rec.at, trial: trialState(u).active, remote: true };
         });
       });
     },

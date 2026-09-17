@@ -229,6 +229,10 @@ const app = createApp({
       expandedUser.value = null;
       Object.keys(revealedPw).forEach(k => delete revealedPw[k]);
       refreshUserList();
+      // 跨设备免码：管理员已配密钥时，自动从鉴权后端拉待审名单
+      if (A && A.Sync && A.Sync.isConfigured && A.Sync.isConfigured() && A.Sync.adminToken && A.Sync.adminToken()) {
+        loadRemotePending();
+      }
       userModal.show = true;
       markPendingSeen();   // 打开面板即视为已查看，收起提醒条、角标转已读
     }
@@ -444,6 +448,50 @@ const app = createApp({
       userModal.reqCode = '';
       refreshUserList();
       showToast(`已导入「${r.user.username}」的注册申请，请审核`, 'success');
+    }
+
+    /* ---------- 跨设备免码：鉴权后端待审（Worker） ---------- */
+
+    /** 从鉴权后端拉待审名单（需管理员密钥）。失败静默，保留空列表走本地兜底。 */
+    async function loadRemotePending() {
+      remotePending.value = [];
+      if (!A || !A.Sync || !A.Sync.isConfigured || !A.Sync.isConfigured()) return;
+      const token = A.Sync.adminToken();
+      if (!token) return;
+      remotePendingLoading.value = true;
+      try {
+        const r = await A.Sync.fetchPending(token);
+        if (r && r.ok && Array.isArray(r.list)) {
+          remotePending.value = r.list.map(x => ({ username: x.username, createdAt: x.createdAt || 0 }));
+        }
+      } catch (e) { /* 网络问题忽略 */ }
+      finally { remotePendingLoading.value = false; }
+    }
+
+    /** 管理员在后端一键通过：对方设备登录时直接读取 approved 状态，无需粘贴准入码 */
+    async function approveRemoteByAdmin(item) {
+      if (!A || !A.Sync) return;
+      const token = A.Sync.adminToken();
+      if (!token) { showToast('请先在「设置 → 管理员密钥」填写与 Worker 一致的密钥', 'error'); return; }
+      const r = await A.Sync.approveRemote(item.username, { trialDays: 0, quotaMonths: 0, disableDate: '', registerDate: '' }, token);
+      if (!r || !r.ok) { showToast((r && r.error) || '通过失败', 'error'); return; }
+      showToast(`已通过「${item.username}」，对方现在可直接登录（免准入码）`, 'success');
+      // 同步本机账号表，让管理员视图一致（用户实际登录时仍以 Worker 为准）
+      if (typeof A.approveUser === 'function') { try { A.approveUser(item.username, 'user'); } catch (e) {} }
+      await loadRemotePending();
+      refreshUserList();
+    }
+
+    /** 管理员在后端驳回 */
+    async function rejectRemoteByAdmin(item) {
+      if (!A || !A.Sync) return;
+      const token = A.Sync.adminToken();
+      if (!token) { showToast('请先在「设置 → 管理员密钥」填写与 Worker 一致的密钥', 'error'); return; }
+      const r = await A.Sync.rejectRemote(item.username, token);
+      if (!r || !r.ok) { showToast((r && r.error) || '驳回失败', 'error'); return; }
+      showToast(`已驳回「${item.username}」`, 'success');
+      await loadRemotePending();
+      refreshUserList();
     }
 
     function showApproveCode(u) {
@@ -5905,6 +5953,11 @@ const app = createApp({
     const aiEndpoint = ref('');
     const aiKey = ref('');
     const aiModel = ref('');
+    // 跨设备免码登录（鉴权后端）配置：独立本地键，不进 D.settings（避免随设置导出泄露）
+    const authWorkerUrl = ref('');
+    const authAdminToken = ref('');
+    const remotePending = ref([]);
+    const remotePendingLoading = ref(false);
 
     /* ---------- AI 解读：常见厂商一键预设 + 连接测试 ----------
      * 下列五家国内厂商的接口**允许浏览器直连**（经真实浏览器实测：CORS 预检通过、
@@ -5986,6 +6039,10 @@ const app = createApp({
         aiKey.value = D.settings.aiKey || '';
         aiModel.value = D.settings.aiModel || '';
         aiTesting.value = false;
+        try {
+          authWorkerUrl.value = (localStorage.getItem('snt-auth-worker-url') || '').trim();
+          authAdminToken.value = (localStorage.getItem('snt-auth-admin-token') || '').trim();
+        } catch (e) { /* ignore */ }
         aiTestResult.state = '';
         aiTestResult.text = '';
       }
@@ -6007,6 +6064,11 @@ const app = createApp({
       D.settings.aiEndpoint = (aiEndpoint.value || '').trim();
       D.settings.aiKey = (aiKey.value || '').trim();
       D.settings.aiModel = (aiModel.value || '').trim();
+      // 保存鉴权后端配置（独立键，不进 D.settings）
+      try {
+        localStorage.setItem('snt-auth-worker-url', (authWorkerUrl.value || '').trim().replace(/\/+$/, ''));
+        localStorage.setItem('snt-auth-admin-token', (authAdminToken.value || '').trim());
+      } catch (e) { /* ignore */ }
       showToast('设置已保存', 'success');
       showSettings.value = false;
     }
@@ -6339,6 +6401,9 @@ const app = createApp({
       // 登录档案与注册审核
       fmtDuration, badgeClass, passwordText, revealedPw, expandedUser,
       approveUserByAdmin, rejectUserByAdmin, importRequestCode,
+      // 跨设备免码登录（鉴权后端）
+      authWorkerUrl, authAdminToken, remotePending, remotePendingLoading,
+      loadRemotePending, approveRemoteByAdmin, rejectRemoteByAdmin,
       showApproveCode, toggleRevealPassword, revealPendingPassword,
       copyPassword, toggleLoginLog,
       // batch16：准入码面板（管理员把授权转达给用户）
