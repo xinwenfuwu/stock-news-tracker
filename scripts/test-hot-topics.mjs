@@ -44,17 +44,21 @@ assert('站点1(格隆汇) 总数为 2', a && a.total === 2, a && a.total);
 assert('站点1 财经=1 政治政策=1', a && a.byCat['财经'] === 1 && a.byCat['政治政策'] === 1, a && JSON.stringify(a.byCat));
 assert('输出 10 个站点占位', stats.length === 10, stats.length);
 
-console.log('4) 真实种子数据（2026-09-15 + 2026-09-16）端到端');
+console.log('4) 真实种子数据（仓库内最新的两个快照）端到端');
 function load(date) {
   try { return JSON.parse(readFileSync(new URL(`../data/hot-topics/${date}.json`, import.meta.url), 'utf8')); }
   catch (e) { return null; }
 }
-const snap15 = load('2026-09-15'), snap16 = load('2026-09-16');
-assert('读取到 09-15 快照', !!snap15, snap15 && 'no');
-assert('读取到 09-16 快照', !!snap16);
-if (snap15 && snap16) {
+// ⚠️ 不要写死日期：快照按天滚动保留（60 天）且会被清理（如线上造假的 09-15 已删除），
+//    写死会在轮换后必然失败。改为从 index.json.dates 取最近两个真实存在的快照。
+const SNAP_IDX = JSON.parse(readFileSync(new URL('../data/hot-topics/index.json', import.meta.url), 'utf8'));
+const SNAP_DATES = (SNAP_IDX.dates || []).slice(0, 2);
+const snapA = load(SNAP_DATES[0]), snapB = load(SNAP_DATES[1]);
+assert(`读取到快照 ${SNAP_DATES[0]}`, !!snapA, snapA && 'no');
+assert(`读取到快照 ${SNAP_DATES[1]}`, !!snapB);
+if (snapA && snapB) {
   const flat = [];
-  for (const snap of [snap15, snap16]) {
+  for (const snap of [snapA, snapB]) {
     for (const s of snap.sources) for (const it of (s.items || [])) {
       flat.push({ sourceRank: s.rank, sourceKey: s.key, sourceName: s.name, text: it.text, time: it.time, url: it.url, cat: it.cat || '财经', date: snap.date });
     }
@@ -172,9 +176,9 @@ assert('每个主题都带完整命中新闻列表 news', th.every(d => d.topics
 assert('news 保留原条目对象（含 text 字段）', thPro.topics.find(t => t.name === '芯片').news.every(n => typeof n.text === 'string' && n.text.length > 0));
 assert('无命中维度 topics 为空且 news 不残留', ht.themeStats([{ text: '天气不错' }]).find(d => d.key === 'chain').topics.length === 0);
 
-if (snap15 && snap16) {
+if (snapA && snapB) {
   const flatTheme = [];
-  for (const snap of [snap15, snap16]) for (const s of snap.sources) for (const it of (s.items || [])) flatTheme.push({ text: it.text, date: snap.date, sourceRank: s.rank, sourceKey: s.key, sourceName: s.name, time: it.time, url: it.url });
+  for (const snap of [snapA, snapB]) for (const s of snap.sources) for (const it of (s.items || [])) flatTheme.push({ text: it.text, date: snap.date, sourceRank: s.rank, sourceKey: s.key, sourceName: s.name, time: it.time, url: it.url });
   const ts = ht.themeStats(flatTheme);
   console.log(`    真实快照 ${flatTheme.length} 条的维度命中情况：`);
   ts.forEach(d => console.log('      ' + d.name + '：命中 ' + d.total + ' 条 → ' + d.topics.slice(0, 6).map(t => t.name + '(' + t.count + ')').join(' ')));
@@ -266,13 +270,20 @@ console.log('10) 真实格隆汇快讯数据（briefs-*.json）上的分类质�
   const idxP = new URL('../data/hot-topics/index.json', import.meta.url);
   if (existsSync(idxP)) {
     const idx = JSON.parse(readFileSync(idxP, 'utf8'));
-    const date = (idx.briefsDates || [])[0];
+    // 当天那份 briefs-*.json 会随每 2 小时的抓取逐条增长（到晚间才完整），
+    // 拿它断言「>=300 条」「13 类都有命中」会随抓取时间早晚时红时绿（实测 15:20 只有 266 条、3 类为 0）。
+    // 改用最近一份「已完整」的（非今天）快照；若只有今天那份，则只做基础校验。
+    const today = ht.fmtLocalDate(new Date());
+    const allBriefs = idx.briefsDates || [];
+    const date = allBriefs.find(d => d !== today) || allBriefs[0];
+    const isToday = date === today;
     const fp = new URL(`../data/hot-topics/briefs-${date}.json`, import.meta.url);
     if (existsSync(fp)) {
       const j = JSON.parse(readFileSync(fp, 'utf8'));
       const items = j.items || [];
-      console.log(`    数据集：${date}，共 ${items.length} 条快讯`);
-      assert('真实快讯数据量充足（>=300 条）', items.length >= 300, String(items.length));
+      console.log(`    数据集：${date}${isToday ? '（当天，仍在增长）' : '（已完整）'}，共 ${items.length} 条快讯`);
+      assert(isToday ? '真实快讯数据量 > 0（当天文件仍在增长，宽松断言）' : '真实快讯数据量充足（>=300 条）',
+        isToday ? items.length > 0 : items.length >= 300, String(items.length));
       assert('每条快讯都有正文与时间', items.every(it => it.text && it.text.length > 4 && /^\d{4}-\d{2}-\d{2}/.test(it.time || '')));
       assert('每条快讯有唯一 id', new Set(items.map(it => it.id)).size === items.length);
       const st = ht.briefStats(items);

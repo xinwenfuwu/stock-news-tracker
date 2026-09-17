@@ -1250,6 +1250,9 @@ const app = createApp({
     const holdingRefreshing = ref(false);
     const membershipModal = reactive({ show: false });
     function openMembershipService() { membershipModal.show = true; }
+    // 用户须知（入口在「会员服务」左侧）
+    const userNoticeModal = reactive({ show: false });
+    function openUserNotice() { userNoticeModal.show = true; }
 
     const myHoldings = computed(() => {
       const u = authUser.value && authUser.value.username;
@@ -3780,6 +3783,8 @@ const app = createApp({
     // 火热话题：每日话题 / 统计分析
     const htTab = ref('daily');                 // 'daily' | 'analysis'
     const htMode = ref('live');                 // 'live' | 'history'
+    // 点「实时」但实时增强源（代理）不可达时的常驻说明（非错误，仅为解释当前展示的是快照）
+    const htLiveNote = ref('');
     const hotTopicDate = ref(fmtDate(new Date()));
     const hotTopicDateHasData = ref(false);
     const htCatFilter = ref('');
@@ -4004,13 +4009,20 @@ const app = createApp({
               saveLocalHotTopicSnapshot(ht.sources);
               hotTopicsUpdated.value = new Date().toLocaleString('zh-CN', { hour12: false }) + '（实时）';
               htMode.value = 'live';
+              htLiveNote.value = '';
               showToast(`已更新为最新实时抓取（${ht.sources.filter(s => s.items.length).length} 个来源）`, 'success');
               return;
             }
           }
           if (usedSnapshot) {
-            showToast(`实时抓取暂不可用（代理不可达），已展示最新自动抓取快照（${fb.date}）`, 'info');
+            // 这是**正常回退**而非故障：主路径本来就是「服务端每 2 小时自动抓取的快照」，
+            // 代理只是可选的真·实时增强。文案不写「不可用/失败」，避免被误读成功能坏了。
+            htMode.value = 'history';
+            htLiveNote.value = `实时增强源（代理）当前未连通，已展示最新自动抓取快照（${fb.date}，2 小时内自动更新）。`
+              + '国内 *.workers.dev 常被拦截，可在「设置 → 新闻代理地址」换成自有域名；不配置也不影响使用。';
+            showToast(`已展示最新自动抓取快照（${fb.date}）· 实时增强源（代理）未连通，不影响使用`, 'info');
           } else {
+            htLiveNote.value = '';
             showToast('实时抓取不可用，且暂无可展示的快照；请检查代理地址或稍后重试', 'error');
           }
           return;
@@ -4018,10 +4030,12 @@ const app = createApp({
 
         // 3) 未配置代理：快照即最终结果（合规免费，每 2 小时自动更新）
         if (usedSnapshot) {
+          htLiveNote.value = '';
           showToast(`已加载最新自动抓取快照（${fb.date}，每 2 小时自动更新）`, 'success');
         } else {
           hotTopicsSources.value = (typeof HotTopics !== 'undefined' ? HotTopics.SOURCE_ORDER : [])
             .map(s => ({ ...s, items: [], loading: false, error: null }));
+          htLiveNote.value = '';
           showToast('暂无可展示的快照；请稍后重试或配置代理', 'error');
         }
       } catch (e) {
@@ -4266,8 +4280,10 @@ const app = createApp({
 
     function setHtMode(m) {
       htMode.value = m;
-      if (m === 'history') loadHotTopicHistory(hotTopicDate.value);
-      else refreshHotTopics();
+      if (m === 'history') {
+        htLiveNote.value = '';          // 用户明确要看历史，无需再解释「实时源不可达」
+        loadHotTopicHistory(hotTopicDate.value);
+      } else refreshHotTopics();
     }
     function onHotTopicDateChange() {
       if (htMode.value === 'history') loadHotTopicHistory(hotTopicDate.value);
@@ -5497,7 +5513,7 @@ const app = createApp({
       briefFiltered, briefSearching, briefStatsList, briefBase,
       briefWindow, briefWindowItems, refreshBriefCloseWindow, clearBriefWindow,
       onBriefDateChange, toggleBriefCat, moreBriefNews, hlBrief, autoLoadBriefs, loadBriefsNow,
-      htTab, htMode, hotTopicDate, hotTopicDateHasData, htCatFilter, htCategories, htRangeOptions, localSnapshotDates,
+      htTab, htMode, htLiveNote, hotTopicDate, hotTopicDateHasData, htCatFilter, htCategories, htRangeOptions, localSnapshotDates,
       analysisRange, analysisLoading, analysisResult, filteredHotSources,
       catColor, htSourceColor, htSourceName, ratioClass, setHtMode, onHotTopicDateChange, runAnalysis,
       toggleThemeTopic, moreThemeNews,
@@ -5525,6 +5541,9 @@ const app = createApp({
       holdingDays, holdingCost, holdingMarketValue, holdingChangePct, holdingProfit, holdingProfitPct,
       // 会员服务
       membershipModal, openMembershipService
+      ,
+      // 用户须知
+      userNoticeModal, openUserNotice
       ,
       // 登录账号与权限
       authUser, authInitial, authExpiryText, can, fmtDateTime, doLogout, userMenuOpen,

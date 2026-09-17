@@ -15,6 +15,12 @@
   --up: #dc2626;       /* 红涨 */
   --down: #16a34a;     /* 绿跌 */
   --flat: #909399;
+  /* ⚠️ 下面两个变量此前被大量引用（--accent 8 处、--muted 20 处）但**从未定义**：
+     `background: var(--accent)` 在未定义时按「计算值无效」处理 → 退回初始值 transparent，
+     于是 `.ht-tab.active` / `.seg button.active` / `.snap-date.active` 变成**白字透明底**（等于看不见）。
+     这里补齐定义，与 --primary / --text-placeholder 取同色。 */
+  --accent: #2563eb;   /* 与 --primary 同色，用于强调色背景/文字 */
+  --muted: #909399;    /* 与 --text-placeholder 同色，用于次要说明文字 */
   --shadow: 0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.04);
   --shadow-lg: 0 10px 25px rgba(0,0,0,0.12);
   --radius: 8px;
@@ -1779,11 +1785,17 @@ a.brief-text:hover { color: var(--primary); text-decoration: underline; }
 /* ===== 火热话题：Tab / 控件 / 分类筛选 / 站点序号 / 分类标签 ===== */
 .panel-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 10px; flex-wrap: wrap; }
 .ht-tabs { display: inline-flex; background: var(--surface-alt); border: 1px solid var(--border); border-radius: 8px; padding: 2px; }
-.ht-tab { border: none; background: transparent; color: var(--muted); padding: 5px 14px; border-radius: 6px; cursor: pointer; font-size: 13px; }
-.ht-tab.active { background: var(--accent); color: #fff; }
+/* 两个页签文字统一用红色（用户指定）：未选中=红字，选中=浅红底 + 深红字，两种状态文字都是红的且都可读 */
+.ht-tab { border: none; background: transparent; color: var(--danger); font-weight: 600; padding: 5px 14px; border-radius: 6px; cursor: pointer; font-size: 13px; }
+.ht-tab:hover { background: #fee2e2; }
+.ht-tab.active { background: #fee2e2; color: var(--danger-hover); box-shadow: inset 0 0 0 1px #fca5a5; }
 .ht-controls { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 10px; }
 .ht-label { font-size: 13px; color: var(--muted); }
 .ht-date { padding: 5px 8px; border: 1px solid var(--border); border-radius: 6px; background: var(--surface); color: var(--text); }
+/* 「实时」回退到服务端快照时的解释条（正常回退，非报错，所以用平静的蓝色信息样式） */
+.ht-live-note { display: flex; align-items: flex-start; gap: 6px; margin: 0 0 10px; padding: 7px 10px;
+  border-radius: 6px; background: #eef4ff; border: 1px solid #cfdffb; color: #1e40af; font-size: 12px; line-height: 1.5; }
+.ht-live-note .htln-icon { flex: 0 0 auto; }
 .seg { display: inline-flex; border: 1px solid var(--border); border-radius: 6px; overflow: hidden; }
 .seg button { border: none; background: var(--surface); color: var(--muted); padding: 5px 12px; cursor: pointer; font-size: 13px; }
 .seg button + button { border-left: 1px solid var(--border); }
@@ -2365,6 +2377,21 @@ body.auth-locked { overflow: hidden; }
   display: inline-block; margin-left: 6px; padding: 1px 6px; border-radius: 6px;
   font-size: 11px; line-height: 1.5; color: #b42318; background: #fee4e2; border: 1px solid #fda29b;
 }
+
+/* 用户须知（入口在「会员服务」左侧） */
+.btn-notice { background: linear-gradient(135deg, #eef2ff, #dbeafe); border: 1px solid #bfdbfe; color: #1e40af; font-weight: 600; }
+.btn-notice:hover { background: linear-gradient(135deg, #e0e7ff, #bfdbfe); }
+.notice-modal { width: 620px; max-width: 94vw; text-align: left; }
+.notice-sub { color: var(--text-placeholder); font-size: 12.5px; line-height: 1.6; margin: 2px 0 14px; }
+.notice-body { max-height: 64vh; overflow-y: auto; padding-right: 4px; }
+.notice-item { display: flex; gap: 10px; padding: 10px 0; border-top: 1px dashed var(--border); }
+.notice-item:first-child { border-top: none; padding-top: 2px; }
+.notice-idx { flex: 0 0 auto; width: 22px; height: 22px; border-radius: 50%; background: #fee2e2; color: var(--danger);
+  font-size: 12px; font-weight: 700; display: flex; align-items: center; justify-content: center; margin-top: 2px; }
+.notice-text { flex: 1 1 auto; font-size: 13.5px; line-height: 1.75; color: var(--text-secondary); }
+.notice-text p + p { margin-top: 6px; }
+.notice-text .notice-strong { color: var(--text); font-weight: 600; }
+.notice-modal .modal-actions { position: sticky; bottom: 0; background: var(--surface); padding-top: 12px; }
 
 /* ===== 新闻 AI 解读字段 ===== */
 .news-ai-bar {

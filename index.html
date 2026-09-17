@@ -4,12 +4,12 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>股市信息分析系统</title>
-  <link rel="stylesheet" href="css/style.css?v=20260917g">
+  <link rel="stylesheet" href="css/style.css?v=20260917h">
   <!-- Vue 3 全局构建版（v3.4.21 · 自托管）
        原先走 unpkg.com CDN：国内网络对 unpkg 的连通性不稳定，一旦该请求长时间挂起，
        <head> 里的阻塞脚本会让整页停在白屏、后续 auth-boot.js 根本不会执行。
        改为同源托管后，启动链路不再依赖任何第三方 CDN。 -->
-  <script src="js/vue.global.prod.js?v=20260917g"></script>
+  <script src="js/vue.global.prod.js?v=20260917h"></script>
 </head>
 <body class="auth-locked">
   <!-- ===== 登录关卡：登录通过前业务脚本不会被加载 ===== -->
@@ -387,6 +387,7 @@
             <span class="muted small" v-if="authUser">（{{ authUser.username }} 的持仓，仅你自己可见）</span>
           </div>
           <div class="toolbar-right">
+            <button class="btn btn-notice" @click="openUserNotice">📋 用户须知</button>
             <button class="btn btn-vip" @click="openMembershipService">👑 会员服务</button>
             <button class="btn btn-primary" @click="openAddHolding">➕ 添加持仓</button>
             <button class="btn" @click="refreshHoldingPrices" :disabled="holdingRefreshing">
@@ -552,6 +553,60 @@
             </div>
           </div>
         </div>
+
+        <!-- 用户须知弹窗（入口在「会员服务」左侧） -->
+        <div class="modal-overlay" v-if="userNoticeModal.show" @click.self="userNoticeModal.show = false">
+          <div class="modal notice-modal">
+            <h3>📋 用户须知</h3>
+            <p class="notice-sub">使用前请先阅读。以下为操作提示与风险提示，仅供参考，不构成任何投资建议。</p>
+            <div class="notice-body">
+              <div class="notice-item">
+                <span class="notice-idx">一</span>
+                <div class="notice-text">
+                  <p class="notice-strong">股市有风险，投资需谨慎。</p>
+                  <p>价值作用超过 50%，是炒股的价值；资金作用大于 50%，是赌博的概念。两者都有可能赚钱，但我们建议按照国家的政策来。</p>
+                </div>
+              </div>
+
+              <div class="notice-item">
+                <span class="notice-idx">二</span>
+                <div class="notice-text">
+                  <p>股票上涨赚钱，不是某一个指标促成的。就像盖房子，分为地基、框架、梁板、装修、家电，才能建成一个好房子。股票收获也是如此：</p>
+                  <p>第一点，一个向上、等待轮动风口的板块，是上涨的前提；第二点，一个板块里基本面好的股票，是上涨后守住利益的前提；第三点，一个等待风口轮动的时机；第四点，驾驭数据的能力和不断积累的经验。</p>
+                  <p class="notice-strong">满足这四点，是股票价值投资获取收益的前提。</p>
+                </div>
+              </div>
+
+              <div class="notice-item">
+                <span class="notice-idx">三</span>
+                <div class="notice-text">
+                  <p>一个好的软件，不会告诉你哪只股票会涨。如果有，那一定是骗局，你只会成为接盘侠。</p>
+                  <p>好的软件只会告诉你：这些数据都是真的。你用好这些数据，去参考判断、取长补短、综合分析、态势感知。</p>
+                </div>
+              </div>
+
+              <div class="notice-item">
+                <span class="notice-idx">四</span>
+                <div class="notice-text">
+                  <p class="notice-strong">注意事项</p>
+                  <p>建立板块、选择刷新股票数据的时候，请对股票进行精确筛选，这对数据的参考判断非常准确。请去除无用的股票，使数据刷新的股票尽量不要超过 30 个，同时也能减轻服务器的压力。</p>
+                </div>
+              </div>
+
+              <div class="notice-item">
+                <span class="notice-idx">五</span>
+                <div class="notice-text">
+                  <p>自己使用的软件不要告诉任何人；使用者之间可以进行共同学习和交流。</p>
+                  <p class="notice-strong">限时优惠活动</p>
+                  <p>介绍新增股友，可获得新股友 10% 费用的优惠奖励，直至新股友退出为止。</p>
+                </div>
+              </div>
+            </div>
+            <div class="modal-actions">
+              <button class="btn btn-primary" @click="userNoticeModal.show = false">我已阅读</button>
+            </div>
+          </div>
+        </div>
       </section>
 
       <!-- ===== 页面（全球信息：左=火热话题 / 右=格隆汇每日快讯） ===== -->
@@ -591,6 +646,10 @@
                 </div>
                 <span class="muted small" v-if="htMode === 'history' && !hotTopicDateHasData">该日暂无历史快照</span>
                 <span class="muted small" v-else-if="htMode === 'history'">已加载历史快照</span>
+              </div>
+              <!-- 点「实时」但实时增强源（代理）不可达时的解释条：这是正常回退（主路径本就是服务端快照），不是故障 -->
+              <div class="ht-live-note" v-if="htLiveNote">
+                <span class="htln-icon">ℹ️</span><span class="htln-text">{{ htLiveNote }}</span>
               </div>
               <div class="snapshot-dates" v-if="localSnapshotDates.length">
                 <span class="muted small">本地已有快照：</span>
@@ -2713,8 +2772,8 @@
     </transition>
   </div>
 
-  <script src="js/auth.js?v=20260917g"></script>
-  <script src="js/auth-boot.js?v=20260917g"></script>
+  <script src="js/auth.js?v=20260917h"></script>
+  <script src="js/auth-boot.js?v=20260917h"></script>
   <!-- store / stock-api / hot-topics / app 由 auth-boot.js 在登录通过后动态装载，
        未登录时它们不会被下载，业务数据也不会进入内存 -->
 </body>

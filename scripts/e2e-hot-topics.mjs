@@ -100,9 +100,9 @@ const waitItems = (page) =>
 
 const main = async () => {
   // 防呆：运行前确认已生成快照与清单
-  for (const f of ['data/hot-topics/index.json', 'data/hot-topics/2026-09-16.json']) {
+  for (const f of ['data/hot-topics/index.json', 'data/hot-topics/2026-09-17.json']) {
     if (!fs.existsSync(path.join(ROOT, f))) {
-      console.log('缺少前置文件 ' + f + '，请先运行 node scripts/fetch-hot-topics.mjs 2026-09-16');
+      console.log('缺少前置文件 ' + f + '，请先运行 node scripts/fetch-hot-topics.mjs');
       process.exit(1);
     }
   }
@@ -129,8 +129,27 @@ const main = async () => {
     await ctx.close();
   }
 
+  // ---------------- 场景 1.5：未配置代理，点「刷新热门话题」应加载今日快照（合规免费主路径） ----------------
+  console.log('1.5) 未配置代理：点「刷新热门话题」应加载最新自动抓取快照（今日），而非报错');
+  {
+    const { ctx, page, errors } = await openApp(browser, A.port, '');
+    await waitItems(page);
+    await page.locator(FIN_TOOLBAR + ' button').first().click();
+    await page.waitForSelector('.toast', { timeout: 30000 });
+    const toast = (await page.locator('.toast').innerText()).replace(/\s+/g, ' ');
+    check('提示已加载最新自动抓取快照（非「不可用/回退」）',
+      /已加载最新自动抓取快照|已展示最新自动抓取快照/.test(toast) && !/不可用/.test(toast), toast);
+    check('提示里带上了最新日期（今日快照）', /2026-09-17/.test(toast), toast);
+    const n = await page.locator('.source-card .source-items li').count();
+    check('刷新后仍有新闻条目（来源含真实数据）', n > 0, 'items=' + n);
+    const upd = (await page.locator(FIN_TOOLBAR).innerText()).replace(/\s+/g, ' ');
+    check('更新时间标注为自动抓取快照', /自动抓取快照/.test(upd), upd);
+    check('页面无 JS 报错', errors.length === 0, errors.join(' | '));
+    await ctx.close();
+  }
+
   // ---------------- 场景 2：代理不可达 → 点刷新应回退 ----------------
-  console.log('2) 代理不可达（模拟 workers.dev 被拦截）：点「刷新热门话题」应回退到快照');
+  console.log('2) 代理不可达（模拟 workers.dev 被拦截）：点「刷新热门话题」应展示快照并给友好提示');
   {
     // 127.0.0.1:65500 无监听，连接被拒，等价于「代理不可达」
     const { ctx, page, errors } = await openApp(browser, A.port, 'http://127.0.0.1:65500');
@@ -139,13 +158,23 @@ const main = async () => {
     // 等 toast 出现
     await page.waitForSelector('.toast', { timeout: 30000 });
     const toast = (await page.locator('.toast').innerText()).replace(/\s+/g, ' ');
-    check('提示已回退到自动抓取快照（不再报「各金融源暂未取到数据」）',
-      /回退到自动抓取的快照/.test(toast) && !/各金融源暂未取到数据/.test(toast), toast);
-    check('提示里给出了失败原因（代理不可达）', /代理不可达|未配置/.test(toast), toast);
+    check('代理不可达时仍展示快照并给友好提示（不再报「各金融源暂未取到数据」）',
+      /已展示最新自动抓取快照/.test(toast) && !/各金融源暂未取到数据/.test(toast), toast);
+    check('提示改为「正常回退」口径，不再出现「不可用/失败」这类报错措辞',
+      !/不可用|失败/.test(toast), toast);
+    // 常驻解释条：比 toast 更持久，讲清楚「为什么现在看到的是快照、想真·实时该怎么办」
+    const liveNote = (await page.locator('#ht-daily .ht-live-note').innerText()).replace(/\s+/g, ' ');
+    check('展示常驻说明条并解释原因（实时增强源未连通 → 仍为最新快照）',
+      /实时增强源/.test(liveNote) && /自动抓取快照/.test(liveNote) && /不影响使用/.test(liveNote), liveNote);
     const n = await page.locator('.source-card .source-items li').count();
     check('回退后仍有新闻条目可看', n > 0, 'items=' + n);
     const segActive = (await page.locator('#ht-daily .ht-controls .seg button.active').innerText()).trim();
     check('模式自动切到「历史」（因为展示的是快照）', segActive === '历史', segActive);
+    // 切到「历史」应把解释条清掉（用户已明确要看历史，不必再解释实时）
+    await page.locator('#ht-daily .ht-controls .seg button', { hasText: '历史' }).click();
+    await page.waitForTimeout(300);
+    check('用户显式点「历史」后解释条消失',
+      await page.locator('#ht-daily .ht-live-note').count() === 0, 'note=' + await page.locator('#ht-daily .ht-live-note').count());
     check('页面无 JS 报错', errors.length === 0, errors.join(' | '));
     await ctx.close();
   }
@@ -277,17 +306,17 @@ const main = async () => {
     const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'htn-'));
     fs.cpSync(ROOT, tmp, { recursive: true, filter: (src) => !src.includes('_repo_tmp') && !src.includes('.git') });
     const dir = path.join(tmp, 'data', 'hot-topics');
-    // 删掉最新一天，只留 09-15，并同步更新清单
-    fs.rmSync(path.join(dir, '2026-09-16.json'), { force: true });
+    // 删掉「今天」09-17，只留 09-16，并同步更新清单 → 自动回退到前一个可用日 09-16
+    fs.rmSync(path.join(dir, '2026-09-17.json'), { force: true });
     fs.writeFileSync(path.join(dir, 'index.json'),
-      JSON.stringify({ updatedAt: new Date().toISOString(), latest: '2026-09-15', dates: ['2026-09-15'] }, null, 2));
+      JSON.stringify({ updatedAt: new Date().toISOString(), latest: '2026-09-16', dates: ['2026-09-16'] }, null, 2));
     const B = await serveStatic(tmp);
     const { ctx, page } = await openApp(browser, B.port, '');
     await waitItems(page);
     const upd = (await page.locator(FIN_TOOLBAR).innerText()).replace(/\s+/g, ' ');
-    check('回退到前一个可用日期 2026-09-15', /2026-09-15/.test(upd), upd);
+    check('回退到前一个可用日期 2026-09-16', /2026-09-16/.test(upd), upd);
     const dateVal = await page.locator('.ht-date').inputValue();
-    check('日期控件同步为 2026-09-15', dateVal === '2026-09-15', dateVal);
+    check('日期控件同步为 2026-09-16', dateVal === '2026-09-16', dateVal);
     await ctx.close();
     B.srv.close();
     fs.rmSync(tmp, { recursive: true, force: true });
