@@ -897,7 +897,7 @@
             <!-- ===== 统计分析：跨站重合 + 各站分类 ===== -->
             <div v-show="htTab === 'analysis'" id="ht-analysis">
               <!-- 统计时间窗口（batch16：以每天 15:00 为换日节点，起止可改，与快讯板块统一口径） -->
-              <div class="stat-win">
+              <div class="stat-win" id="analysis-stat-win">
                 <span class="sw-label">新闻统计开始时间</span>
                 <input type="datetime-local" class="sw-input" v-model="analysisWinStart" :disabled="analysisLoading"
                        title="统计开始时间（默认昨天 15:00，可修改）">
