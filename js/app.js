@@ -443,6 +443,13 @@ const app = createApp({
     function toggleRevealPassword(u) {
       if (!A) return;
       if (revealedPw[u.username]) { delete revealedPw[u.username]; delete u._plain; return; }
+      // batch15：改造前创建 / 由账号表导入的账号没有 pwSeal，明文根本不存在。
+      // 这时不能只是干瞪眼——说明原因 + 直接把该行的「重置密码」面板展开，管理员设个新密码就能看了。
+      if (!u.hasPassword) {
+        showToast('「' + u.username + '」是改造前创建或由账号表导入的账号，系统里没有保存可显示的密码。已为你打开「重置密码」，设一个新密码后即可显示。', 'info', 6000);
+        openResetPassword(u);
+        return;
+      }
       const r = A.revealPassword(u.username);
       if (!r.ok) { showToast(r.error, 'error'); return; }
       u._plain = r.password;
@@ -578,12 +585,12 @@ const app = createApp({
 
     // ===== Toast =====
     const toast = reactive({ show: false, msg: '', type: 'info', _t: null });
-    function showToast(msg, type = 'info') {
+    function showToast(msg, type = 'info', ms = 2800) {
       toast.msg = msg;
       toast.type = type;
       toast.show = true;
       clearTimeout(toast._t);
-      toast._t = setTimeout(() => (toast.show = false), 2800);
+      toast._t = setTimeout(() => (toast.show = false), ms);
     }
 
     // ===== 数据刷新总开关（顶部「暂停」按钮） =====
@@ -4267,6 +4274,69 @@ const app = createApp({
     const briefPaused = ref(false);    // 顶部「暂停」生效时不自动去读快讯文件，改为按钮手动加载
     const briefUi = reactive({ open: {}, limit: {} });   // 展开状态与「展开更多」条数（与统计解耦，重算不丢）
     let _briefLoaded = false;          // 已初始化过就不再自动请求（避免每次切页都拉）
+
+    // ===== 快讯来源名（batch15：界面上可改，下拉选预设或自己写）=====
+    const BRIEF_SOURCE_PRESETS = ['格隆汇', '今日头条', '财联社', '东方财富', '同花顺', '新浪财经', '路透社', '彭博', '华尔街见闻', '金十数据'];
+    const briefSourceName = ref('格隆汇');
+    const briefSourceInput = ref('格隆汇');
+    const briefSourceCustom = ref(false);
+    const briefSourcePresets = BRIEF_SOURCE_PRESETS;
+
+    // ===== 快讯分类维度（batch15）：题材归类 / 概念分类 / 行业分类 =====
+    const briefDimModes = (typeof HotTopics !== 'undefined' && Array.isArray(HotTopics.BRIEF_MODES))
+      ? HotTopics.BRIEF_MODES.map(m => ({ key: m.key, name: m.name }))
+      : [{ key: 'theme', name: '题材归类' }];
+    const briefDimMode = ref('theme');
+
+    /** 从设置里恢复来源名与分类维度（设置项缺省时给默认值，老数据不受影响） */
+    function initBriefPrefs() {
+      const s = D.settings || {};
+      const src = (typeof s.briefSource === 'string' && s.briefSource.trim()) ? s.briefSource.trim() : '格隆汇';
+      briefSourceName.value = src;
+      briefSourceInput.value = src;
+      briefSourceCustom.value = BRIEF_SOURCE_PRESETS.indexOf(src) < 0;
+      const mode = String(s.briefDimMode || '');
+      if (briefDimModes.some(m => m.key === mode)) briefDimMode.value = mode;
+    }
+    initBriefPrefs();
+
+    /** 写入来源名：立即落盘，标题/原文链接文案/前缀剥离都跟着这个名字走 */
+    function setBriefSource(name) {
+      const n = String(name || '').trim() || '格隆汇';
+      briefSourceName.value = n;
+      briefSourceInput.value = n;
+      briefSourceCustom.value = BRIEF_SOURCE_PRESETS.indexOf(n) < 0;
+      D.settings.briefSource = n;
+      Store.saveNow();
+    }
+    function onBriefSourcePick(v) {
+      if (v === '__custom__') {
+        briefSourceCustom.value = true;
+        nextTick(() => {
+          const el = document.querySelector('.brief-source-input');
+          if (el) { el.focus(); el.select(); }
+        });
+        return;
+      }
+      setBriefSource(v);
+      showToast('快讯来源已改为「' + v + '」', 'success');
+    }
+    function commitBriefSource() {
+      setBriefSource(briefSourceInput.value);
+      showToast('快讯来源已改为「' + briefSourceName.value + '」', 'success');
+    }
+    /** 切换分类维度：换维度后原展开项已不属于当前维度，收起更干净 */
+    function setBriefDim(mode) {
+      if (briefDimMode.value === mode) return;
+      briefDimMode.value = mode;
+      D.settings.briefDimMode = mode;
+      Object.keys(briefUi.open).forEach(k => { briefUi.open[k] = false; });
+      Store.saveNow();
+    }
+    const briefDimLabel = computed(() => {
+      const m = briefDimModes.filter(x => x.key === briefDimMode.value)[0];
+      return m ? m.name : '题材归类';
+    });
     // 火热话题：每日话题 / 统计分析
     const htTab = ref('daily');                 // 'daily' | 'analysis'
     const htMode = ref('live');                 // 'live' | 'history'
@@ -4708,11 +4778,12 @@ const app = createApp({
         (it.subjects || []).some(s => String(s).toLowerCase().includes(k)));
     });
     const briefSearching = computed(() => !!briefKeyword.value.trim());
-    /** 13 分类统计（在关键词过滤后的集合上统计） */
+    /** 分类统计（在关键词过滤后的集合上统计；维度 = 题材归类 / 概念分类 / 行业分类） */
     const briefStatsList = computed(() => {
       if (typeof HotTopics === 'undefined' || !HotTopics.briefStats) return [];
-      return HotTopics.briefStats(briefFiltered.value);
+      return HotTopics.briefStats(briefFiltered.value, briefDimMode.value);
     });
+    const briefDimCount = computed(() => briefStatsList.value.length);
 
     function autoLoadHotTopics() {
       if (hotTopicsSources.value.length || hotTopicsLoading.value) return;
@@ -6103,6 +6174,9 @@ const app = createApp({
       hotTopicsSources, hotTopicsMerged, hotTopicsLoading, hotTopicsUpdated, refreshHotTopics,
       briefDates, briefDate, briefItems, briefKeyword, briefLoading, briefError, briefUi, briefPaused,
       briefFiltered, briefSearching, briefStatsList, briefBase,
+      briefSourceName, briefSourceInput, briefSourceCustom, briefSourcePresets,
+      onBriefSourcePick, commitBriefSource,
+      briefDimMode, briefDimModes, setBriefDim, briefDimLabel, briefDimCount,
       briefWindow, briefWindowItems, refreshBriefCloseWindow, clearBriefWindow,
       onBriefDateChange, toggleBriefCat, moreBriefNews, hlBrief, autoLoadBriefs, loadBriefsNow,
       htTab, htMode, htLiveNote, hotTopicDate, hotTopicDateHasData, htCatFilter, htCategories, htRangeOptions, localSnapshotDates,

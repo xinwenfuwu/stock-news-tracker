@@ -4,12 +4,12 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>股市信息分析系统</title>
-  <link rel="stylesheet" href="css/style.css?v=20260917n">
+  <link rel="stylesheet" href="css/style.css?v=20260917o">
   <!-- Vue 3 全局构建版（v3.4.21 · 自托管）
        原先走 unpkg.com CDN：国内网络对 unpkg 的连通性不稳定，一旦该请求长时间挂起，
        <head> 里的阻塞脚本会让整页停在白屏、后续 auth-boot.js 根本不会执行。
        改为同源托管后，启动链路不再依赖任何第三方 CDN。 -->
-  <script src="js/vue.global.prod.js?v=20260917n"></script>
+  <script src="js/vue.global.prod.js?v=20260917o"></script>
 </head>
 <body class="auth-locked">
   <!-- ===== 登录关卡：登录通过前业务脚本不会被加载 ===== -->
@@ -56,7 +56,7 @@
         <p class="auth-tip" id="reg-code-hint"></p>
         <button class="auth-btn" type="button" id="auth-reg-send">📨 复制申请信息，发给管理员</button>
         <button class="auth-btn auth-btn-ghost" type="button" id="auth-reg-copy">只复制申请码</button>
-        <p class="auth-tip">申请信息里带了一个链接，管理员点开就会自动填好申请码，不必手动粘贴这一长串。他审核通过后会把一串「准入码」发回给你。</p>
+        <p class="auth-tip">把上面的申请码整段（或只复制那一长串码）发给管理员即可，他粘进「用户管理 → 待审核注册申请」审核；通过后会把一串「准入码」发回给你。</p>
         <p class="auth-tip">管理员与你在同一台设备时，直接用他账号进「用户管理 → 待审核注册申请」点通过即可，不必转发申请码。</p>
         <div class="auth-links">
           <button type="button" class="auth-link" id="auth-reg-done-back">返回登录</button>
@@ -992,7 +992,19 @@
           <!-- 右：格隆汇每日快讯（全部消息 · 13 分类统计 · 日期与关键词搜索） -->
           <aside class="brief-panel">
             <div class="brief-head">
-              <h3 class="panel-title" style="margin:0">📰 格隆汇每日快讯</h3>
+              <h3 class="panel-title" style="margin:0">📰
+                <!-- 来源名可改：下拉选预设，或选「自定义…」自己写（存到本机设置，刷新后保留） -->
+                <select class="brief-source" @change="onBriefSourcePick($event.target.value)"
+                        :value="briefSourcePresets.indexOf(briefSourceName) >= 0 ? briefSourceName : '__custom__'"
+                        title="切换快讯来源名称（如改成「今日头条」），也可选「自定义…」自己写">
+                  <option v-for="s in briefSourcePresets" :key="s" :value="s">{{ s }}</option>
+                  <option value="__custom__">自定义…</option>
+                </select>
+                <input v-if="briefSourceCustom" class="brief-source-input" v-model="briefSourceInput"
+                       @change="commitBriefSource" @keyup.enter="commitBriefSource"
+                       placeholder="来源名称，如：今日头条" maxlength="12">
+                每日快讯
+              </h3>
               <span class="muted small" v-if="briefBase.length">
                 共 {{ briefBase.length }} 条<span v-if="briefSearching"> · 匹配 {{ briefFiltered.length }} 条</span>
               </span>
@@ -1017,6 +1029,13 @@
               </div>
             </div>
 
+            <!-- 分类维度：题材归类 / 概念分类 / 行业分类（全部消息按所选维度全部分类，点分类展开） -->
+            <div class="brief-dim-seg">
+              <button v-for="m in briefDimModes" :key="m.key" type="button" class="bd-seg"
+                      :class="{ active: briefDimMode === m.key }" @click="setBriefDim(m.key)"
+                      :title="'全部消息按「' + m.name + '」归类，点某个分类即可展开该类全部消息'">{{ m.name }}</button>
+            </div>
+
             <!-- 闭市周期窗口说明（点「刷新（闭市周期）」后出现） -->
             <div class="brief-window" v-if="briefWindow.on"
                  :data-start="briefWindow.start" :data-end="briefWindow.end">
@@ -1030,7 +1049,7 @@
             <div class="brief-tip muted small" v-else-if="briefError">{{ briefError }}</div>
             <div class="brief-tip muted small" v-else-if="briefSearching && !briefFiltered.length">没有匹配「{{ briefKeyword }}」的快讯</div>
             <div class="brief-tip muted small" v-else-if="briefBase.length">
-              全部消息按 13 个题材归类（一条可属多类），点分类即可展开该类全部消息
+              全部消息按「{{ briefDimLabel }}」共 {{ briefDimCount }} 类（一条可属多类），点分类即可展开该类全部消息
             </div>
             <div class="brief-tip muted small" v-else-if="briefPaused">
               ⏸ 自动加载已暂停（顶部「暂停」开关生效）
@@ -1051,7 +1070,7 @@
                 <div class="brief-news" v-if="briefUi.open[c.key]">
                   <div class="brief-news-head">
                     <span class="brief-news-title" :style="{ color: c.color }">{{ c.icon }} {{ c.name }} · {{ c.count }} 条</span>
-                    <span class="muted small">点标题跳格隆汇原文</span>
+                    <span class="muted small">点标题跳{{ briefSourceName }}原文</span>
                   </div>
                   <div class="brief-item" v-for="(n, k) in c.news.slice(0, briefUi.limit[c.key] || 30)" :key="n.id || k">
                     <div class="brief-item-meta">
@@ -2850,12 +2869,16 @@
                   </td>
                   <td>
                     <div class="um-pw">
+                      <!-- batch15：管理员自己这行（以及任何「改造前创建 / 账号表导入」、没有保存明文的账号）
+                           也要有「显示」按钮——点了会说明原因并直接打开重置面板，而不是什么都不给点。 -->
                       <code class="um-pw-text" :class="{ 'is-empty': !u.hasPassword }">{{ passwordText(u) }}</code>
-                      <button class="btn-mini" v-if="u.hasPassword" @click="toggleRevealPassword(u)">
+                      <button class="btn-mini" @click="toggleRevealPassword(u)"
+                              :title="u.hasPassword ? '显示 / 隐藏该账号的密码' : '该账号没有保存可显示的密码，点这里用「重置密码」设一个新密码'">
                         {{ revealedPw[u.username] ? '隐藏' : '显示' }}
                       </button>
-                      <button class="btn-mini" v-if="u.hasPassword" @click="copyPassword(u)" title="复制密码">复制</button>
+                      <button class="btn-mini" @click="copyPassword(u)" title="复制密码">复制</button>
                     </div>
+                    <div class="um-pw-note" v-if="!u.hasPassword">未保存明文，点「显示」去重置</div>
                   </td>
                   <td class="um-trial-cell">
                     <template v-if="u.role === 'user'">
@@ -3022,8 +3045,8 @@
     </transition>
   </div>
 
-  <script src="js/auth.js?v=20260917n"></script>
-  <script src="js/auth-boot.js?v=20260917n"></script>
+  <script src="js/auth.js?v=20260917o"></script>
+  <script src="js/auth-boot.js?v=20260917o"></script>
   <!-- store / stock-api / hot-topics / app 由 auth-boot.js 在登录通过后动态装载，
        未登录时它们不会被下载，业务数据也不会进入内存 -->
 </body>

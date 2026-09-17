@@ -1715,6 +1715,27 @@ body {
   flex-direction: column;
 }
 .brief-head { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; flex-wrap: wrap; }
+/* 来源名下拉（batch15）：看起来像标题的一部分，点开换来源 */
+.brief-source {
+  padding: 1px 4px; margin: 0 1px; font-size: inherit; font-weight: inherit; color: #b91c1c;
+  background: #fff5f5; border: 1px solid #fecaca; border-radius: 6px; cursor: pointer;
+}
+.brief-source:hover { background: #fee2e2; border-color: #fca5a5; }
+.brief-source:focus { outline: 2px solid #fca5a5; outline-offset: 1px; }
+.brief-source-input {
+  width: 104px; padding: 2px 6px; margin: 0 2px; font-size: 12.5px; color: #b91c1c;
+  background: #fff; border: 1px solid #fca5a5; border-radius: 6px;
+}
+/* 分类维度切换：题材归类 / 概念分类 / 行业分类 */
+.brief-dim-seg { display: flex; gap: 0; margin: 0 0 8px; border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
+.bd-seg {
+  flex: 1 1 0; padding: 6px 4px; font-size: 12.5px; white-space: nowrap;
+  color: var(--text-secondary); background: var(--surface-alt);
+  border: 0; border-right: 1px solid var(--border); cursor: pointer;
+}
+.bd-seg:last-child { border-right: 0; }
+.bd-seg:hover { background: #eef2ff; }
+.bd-seg.active { color: #fff; background: #2563eb; font-weight: 600; }
 .brief-controls { display: flex; flex-direction: column; gap: 8px; margin: 10px 0 8px; }
 /* 第一行：日期选择 + 闭市周期刷新按钮（按钮在日期字段右侧） */
 .brief-row { display: flex; align-items: center; gap: 8px; }
@@ -2366,6 +2387,8 @@ body.guest-mode #app { display: none; }
   letter-spacing: 0.5px;
 }
 .um-pw-text.is-empty { color: var(--text-placeholder); letter-spacing: 0; font-family: inherit; font-style: italic; }
+/* 没有保存明文的账号（改造前创建 / 账号表导入）在密码列下方补一行说明 */
+.um-pw-note { margin-top: 3px; font-size: 11px; color: var(--text-placeholder); line-height: 1.3; }
 
 .um-ip { font-family: ui-monospace, Menlo, Consolas, monospace; font-size: 12px; white-space: nowrap; }
 .um-ip-loc { font-size: 11.5px; color: var(--text-placeholder); white-space: nowrap; }

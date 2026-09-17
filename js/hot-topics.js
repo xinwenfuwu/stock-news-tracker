@@ -588,10 +588,160 @@
     ]
   };
 
-  /** 剥掉格隆汇快讯统一前缀与残留的 HTML 标签，便于关键词匹配与展示 */
+  /* ============================================================
+   * 概念分类（batch15）：把全部快讯按「题材概念」归类。
+   * 与上面的题材维度不同——这里只看概念本身（AI / 固态电池 / 机器人…），
+   * 不区分国家、市场、机构，一条快讯可同时命中多个概念。
+   * ============================================================ */
+  const BRIEF_CONCEPT_DIMS = [
+    { key: 'c_ai', name: '人工智能', icon: '🤖', color: '#4f46e5' },
+    { key: 'c_chip', name: '芯片半导体', icon: '🔲', color: '#0f766e' },
+    { key: 'c_robot', name: '机器人', icon: '🦾', color: '#7c3aed' },
+    { key: 'c_ce', name: '消费电子', icon: '📱', color: '#0891b2' },
+    { key: 'c_frontier', name: '前沿科技', icon: '🧬', color: '#6366f1' },
+    { key: 'c_data', name: '数字经济', icon: '💾', color: '#2563eb' },
+    { key: 'c_nev', name: '新能源车', icon: '🚗', color: '#16a34a' },
+    { key: 'c_battery', name: '电池储能', icon: '🔋', color: '#65a30d' },
+    { key: 'c_pv', name: '光伏风电', icon: '☀️', color: '#ca8a04' },
+    { key: 'c_space', name: '商业航天', icon: '🚀', color: '#1d4ed8' },
+    { key: 'c_defense', name: '军工国防', icon: '🛡️', color: '#475569' },
+    { key: 'c_pharma', name: '创新药', icon: '💊', color: '#be185d' },
+    { key: 'c_device', name: '医疗器械', icon: '🩺', color: '#0e7490' },
+    { key: 'c_consume', name: '消费白酒', icon: '🍶', color: '#c2410c' },
+    { key: 'c_rare', name: '稀土小金属', icon: '🧲', color: '#a16207' },
+    { key: 'c_metal', name: '有色金属', icon: '🪙', color: '#b45309' },
+    { key: 'c_energy', name: '煤炭油气', icon: '🛢️', color: '#57534e' },
+    { key: 'c_power', name: '电力电网', icon: '⚡', color: '#0284c7' },
+    { key: 'c_re', name: '地产基建', icon: '🏗️', color: '#92400e' },
+    { key: 'c_fintech', name: '数字货币', icon: '🪪', color: '#7e22ce' }
+  ];
+
+  const BRIEF_CONCEPT_KEYWORDS = {
+    c_ai: ['人工智能', 'AI', 'AIGC', '大模型', '算力', 'GPU', '英伟达', 'OpenAI', 'ChatGPT', '深度学习', '机器学习',
+      '智能体', 'Agent', '昇腾', '训练推理', '多模态', '文生视频', '算法', '智算', '数据中心算力'],
+    c_chip: ['芯片', '半导体', '晶圆', '光刻', '封测', 'IC设计', 'EDA', '存储芯片', 'HBM', 'DRAM', 'NAND',
+      '台积电', '中芯国际', '成熟制程', '先进制程', '第三代半导体', '碳化硅', '氮化镓', 'MCU', '模拟芯片'],
+    c_robot: ['机器人', '人形机器人', '宇树', '减速器', '伺服电机', '机械臂', '具身智能', '灵巧手', '工业机器人'],
+    c_ce: ['手机', '智能手机', 'iPhone', '折叠屏', '耳机', '可穿戴', 'VR', 'AR', 'AI眼镜', '智能眼镜', 'PC',
+      '笔记本', '平板', '面板', '显示面板', '摄像头模组', '智能手表'],
+    c_frontier: ['低空经济', 'eVTOL', '飞行汽车', '量子', '量子计算', '核聚变', '可控核聚变', '超导', '脑机接口',
+      '合成生物', '6G', '基因编辑', '元宇宙', '脑科学'],
+    c_data: ['数字经济', '数据要素', '数据中心', '东数西算', '信创', '国产替代', '操作系统', '数据库', '算力中心',
+      '云计算', '网络安全', '数据交易', '公共数据'],
+    c_nev: ['新能源车', '新能源汽车', '电动车', '电动汽车', '比亚迪', '特斯拉', '充电桩', '动力电池', '整车',
+      '智能驾驶', '自动驾驶', '座舱', '车企', '乘用车', '换电', '汽车销量'],
+    c_battery: ['电池', '锂电池', '固态电池', '储能', '钠离子', '电芯', '正极', '负极', '电解液', '隔膜',
+      '麒麟电池', '4680', '电池回收', '钒电池', '抽水蓄能'],
+    c_pv: ['光伏', '组件', '硅料', '硅片', '逆变器', '风电', '海上风电', '太阳能', 'TOPCON', 'HJT', '钙钛矿',
+      '装机', '绿电', '新能源发电'],
+    c_space: ['商业航天', '卫星', '火箭', '发射', '星链', '低轨', '遥感', '太空', '载人航天', '空间站', '千帆'],
+    c_defense: ['军工', '国防', '军费', '导弹', '战机', '航母', '兵器', '北斗', '军贸', '装备采购', '军品', '舰艇'],
+    c_pharma: ['创新药', '新药', '临床试验', '获批上市', 'FDA', '药审', '生物医药', 'ADC', 'GLP-1', '减肥药',
+      'CAR-T', '疫苗', '原研药', '仿制药', '药企', 'CXO', '医药研发'],
+    c_device: ['医疗器械', '医用', '高值耗材', 'IVD', '影像设备', '手术机器人', '基因测序', '体外诊断', '医疗设备'],
+    c_consume: ['白酒', '茅台', '五粮液', '啤酒', '饮料', '食品', '调味品', '乳制品', '免税', '餐饮', '零食',
+      '消费券', '白酒批价', '猪价'],
+    c_rare: ['稀土', '永磁', '小金属', '钨', '钼', '锑', '钛材', '锆', '稀有金属', '磁材', '稀有资源'],
+    c_metal: ['有色', '电解铝', '铜价', '铝价', '沪铜', '沪铝', '锌', '铅', '镍', '锡', '贵金属', '白银', '黄金',
+      '锂矿', '钴'],
+    c_energy: ['煤炭', '焦煤', '动力煤', '原油', '石油', '天然气', '油服', '油气', '页岩油', '煤矿', '油价'],
+    c_power: ['电力', '电价', '发电', '火电', '水电', '核电', '电网', '特高压', '用电量', '电力体制', '售电', '机组'],
+    c_re: ['房地产', '楼市', '房价', '房企', '保交楼', '基建', '专项债', '商品房', '土地出让', '物业', '购房', '建材'],
+    c_fintech: ['数字货币', '数字人民币', '区块链', '稳定币', '跨境支付', 'Web3', '虚拟资产', '金融科技', '第三方支付']
+  };
+
+  /* ============================================================
+   * 行业分类（batch15）：按「申万一级行业」口径把全部快讯归类。
+   * 关键词刻意用行业用语（银行/信贷/券商/保费…）而不是公司名，
+   * 这样同一条快讯讲的是哪家公司不重要，讲的是哪个行业才重要。
+   * ============================================================ */
+  const BRIEF_INDUSTRY_DIMS = [
+    { key: 'i_bank', name: '银行', icon: '🏦', color: '#1e40af' },
+    { key: 'i_broker', name: '非银金融', icon: '📈', color: '#b91c1c' },
+    { key: 'i_re', name: '房地产', icon: '🏠', color: '#92400e' },
+    { key: 'i_med', name: '医药生物', icon: '💉', color: '#be185d' },
+    { key: 'i_elec', name: '电子', icon: '🔌', color: '#0f766e' },
+    { key: 'i_comp', name: '计算机', icon: '💻', color: '#2563eb' },
+    { key: 'i_tel', name: '通信', icon: '📡', color: '#0891b2' },
+    { key: 'i_media', name: '传媒', icon: '🎬', color: '#db2777' },
+    { key: 'i_power', name: '电力设备', icon: '🔋', color: '#65a30d' },
+    { key: 'i_auto', name: '汽车', icon: '🚙', color: '#16a34a' },
+    { key: 'i_mach', name: '机械设备', icon: '⚙️', color: '#475569' },
+    { key: 'i_def', name: '国防军工', icon: '🛡️', color: '#334155' },
+    { key: 'i_food', name: '食品饮料', icon: '🍶', color: '#c2410c' },
+    { key: 'i_agri', name: '农林牧渔', icon: '🌾', color: '#4d7c0f' },
+    { key: 'i_app', name: '家用电器', icon: '🧊', color: '#0369a1' },
+    { key: 'i_text', name: '纺织服饰', icon: '👕', color: '#a21caf' },
+    { key: 'i_light', name: '轻工制造', icon: '📦', color: '#a16207' },
+    { key: 'i_retail', name: '商贸零售', icon: '🛒', color: '#ea580c' },
+    { key: 'i_social', name: '社会服务', icon: '🎡', color: '#0d9488' },
+    { key: 'i_bmat', name: '建筑材料', icon: '🧱', color: '#78716c' },
+    { key: 'i_const', name: '建筑装饰', icon: '🏗️', color: '#92400e' },
+    { key: 'i_steel', name: '钢铁', icon: '🔩', color: '#57534e' },
+    { key: 'i_nonf', name: '有色金属', icon: '🪙', color: '#b45309' },
+    { key: 'i_coal', name: '煤炭', icon: '⛏️', color: '#44403c' },
+    { key: 'i_petro', name: '石油石化', icon: '🛢️', color: '#7c2d12' },
+    { key: 'i_chem', name: '基础化工', icon: '🧪', color: '#3f6212' },
+    { key: 'i_util', name: '公用事业', icon: '💡', color: '#0284c7' },
+    { key: 'i_trans', name: '交通运输', icon: '🚢', color: '#1d4ed8' },
+    { key: 'i_env', name: '环保', icon: '♻️', color: '#15803d' },
+    { key: 'i_beauty', name: '美容护理', icon: '💄', color: '#db2777' }
+  ];
+
+  const BRIEF_INDUSTRY_KEYWORDS = {
+    i_bank: ['银行', '信贷', '存款', '贷款', '净息差', '不良贷款', '不良率', '信用卡', '理财公司', 'LPR',
+      '国有大行', '股份行', '城商行', '农商行', '存单', '再贷款'],
+    i_broker: ['券商', '证券', '保险', '资管', '基金', '两融', 'IPO', '再融资', '保费', '投行', '营业部',
+      '北交所', '公募', '私募', '信托', '期货公司', '金融监管总局'],
+    i_re: ['房地产', '楼市', '房企', '楼盘', '土地出让', '保交楼', '物业', '租房', '购房', '商品房', '预售', '公积金'],
+    i_med: ['医药', '生物医药', '药品', '疫苗', '医院', '医保', '临床试验', '原料药', '中药', 'CXO', '集采',
+      '医疗服务', '药店', '创新药', 'CDE', '药审'],
+    i_elec: ['电子', '半导体', '芯片', '面板', 'PCB', '被动元件', '消费电子', '元器件', '光刻', '封测', '晶圆', 'LED'],
+    i_comp: ['软件', '信创', '操作系统', '数据库', '信息化', '云计算', 'SaaS', '国产软件', '网络安全',
+      'IT服务', '人工智能应用', '算力租赁'],
+    i_tel: ['通信', '5G', '6G', '运营商', '基站', '光缆', '光模块', '中国移动', '中国电信', '中国联通',
+      '卫星通信', '宽带'],
+    i_media: ['传媒', '影视', '游戏', '版号', '短剧', '广告', '出版', '直播', '短视频', '院线', '文化', 'IP'],
+    i_power: ['光伏', '风电', '储能', '电池', '特高压', '电网设备', '逆变器', '新能源', '充电桩', '电力设备', '输变电'],
+    i_auto: ['汽车', '整车', '车企', '乘用车', '商用车', '零部件', '轮胎', '经销商', '车市', '汽车销量',
+      '重卡', '客车', '产销量'],
+    i_mach: ['机械', '工程机械', '挖掘机', '机床', '自动化', '工控', '减速机', '重工', '装备制造', '机器人设备',
+      '通用设备', '仪器仪表'],
+    i_def: ['军工', '国防', '军品', '兵器', '航空装备', '船舶', '导弹', '军贸', '军费', '军工订单', '航天'],
+    i_food: ['食品', '饮料', '白酒', '啤酒', '乳制品', '调味品', '零食', '餐饮', '酒类', '软饮', '白酒批价', '预制菜'],
+    i_agri: ['农业', '种植', '养殖', '生猪', '种业', '饲料', '渔业', '粮食', '农产品', '猪价', '畜牧', '猪肉', '耕地'],
+    i_app: ['家电', '空调', '冰箱', '洗衣机', '厨电', '小家电', '白电', '黑电', '家电下乡', '以旧换新'],
+    i_text: ['纺织', '服装', '服饰', '鞋', '棉花', '化纤', '家纺', '品牌服装', '时尚', '面料'],
+    i_light: ['轻工', '造纸', '包装', '家具', '家居', '文具', '玩具', '日用', '纸价', '浆价'],
+    i_retail: ['零售', '商超', '电商', '免税', '百货', '便利店', '跨境电商', '消费', '购物', '社零', '线上销售'],
+    i_social: ['旅游', '酒店', '景区', '教育', '培训', '人力资源', '会展', '餐饮住宿', '出行', '免税店'],
+    i_bmat: ['建材', '水泥', '玻璃', '玻纤', '陶瓷', '防水', '管材', '装饰材料', '水泥价格'],
+    i_const: ['建筑', '施工', '基建', '工程', '装饰', '园林', '建筑企业', '新签订单', '专项债', '市政'],
+    i_steel: ['钢铁', '钢价', '钢材', '螺纹钢', '铁矿石', '钢厂', '特钢', '不锈钢', '高炉', '粗钢'],
+    i_nonf: ['有色', '电解铝', '铜', '铝', '锌', '铅', '镍', '锡', '稀土', '黄金', '白银', '贵金属', '锂', '钴', '沪铜'],
+    i_coal: ['煤炭', '焦煤', '动力煤', '焦炭', '煤矿', '煤价', '电煤', '原煤'],
+    i_petro: ['石油', '原油', '石化', '炼化', '成品油', '油服', '天然气', '加油站', 'OPEC', '油气'],
+    i_chem: ['化工', '化学品', '化肥', '农药', '化纤', '橡胶', '塑料', '纯碱', '氯碱', '氟化工', '磷化工', '钛白粉'],
+    i_util: ['电力', '燃气', '水务', '供热', '电价', '自来水', '天然气供应', '发电', '用电', '供水'],
+    i_trans: ['物流', '快递', '航运', '港口', '铁路', '公路', '航空', '机场', '运输', '运费', '集运', '油运', '航班'],
+    i_env: ['环保', '污水处理', '固废', '垃圾', '大气治理', '节能', '碳中和', 'CCER', '碳排放', '环保督察'],
+    i_beauty: ['化妆品', '医美', '美容', '护肤', '个护', '日化', '美妆']
+  };
+
+  /** 三套维度的注册表：题材归类 / 概念分类 / 行业分类 */
+  const BRIEF_MODES = [
+    { key: 'theme', name: '题材归类', dims: BRIEF_DIMENSIONS, dict: BRIEF_KEYWORDS },
+    { key: 'concept', name: '概念分类', dims: BRIEF_CONCEPT_DIMS, dict: BRIEF_CONCEPT_KEYWORDS },
+    { key: 'industry', name: '行业分类', dims: BRIEF_INDUSTRY_DIMS, dict: BRIEF_INDUSTRY_KEYWORDS }
+  ];
+
+  /**
+   * 剥掉快讯统一前缀（"格隆汇9月16日｜"、"今日头条9月16日｜"…）与残留的 HTML 标签。
+   * 来源名可由用户在界面上改，所以这里不再写死「格隆汇」，改成通用的「来源名+月日｜」前缀。
+   */
   function cleanBriefText(text) {
     return decodeEntities(String(text || ''))
-      .replace(/^格隆汇\s*\d+月\d+日\s*[｜|丨]\s*/, '')
+      .replace(/^[\u4e00-\u9fa5A-Za-z0-9]{0,10}\s*\d{1,2}月\d{1,2}日\s*[｜|丨]\s*/, '')
       .replace(/<[^>]+>/g, '')
       .replace(/\s+/g, ' ')
       .trim();
@@ -614,11 +764,17 @@
    * @param {Array<{text:string,time?:string,url?:string,date?:string,stocks?:string[],subjects?:string[]}>} items
    * @returns {Array<{key,name,icon,color,count,pct,width,news:Array}>} 按 BRIEF_DIMENSIONS 顺序返回
    */
-  function briefStats(items) {
+  function briefStats(items, mode) {
+    const m = (function () {
+      for (const x of BRIEF_MODES) { if (x.key === mode) return x; }
+      return BRIEF_MODES[0];
+    })();
+    const dims = m.dims;
+    const dict = m.dict;
     const list = (items || []).filter(it => it && it.text);
     const base = list.length;
-    const raw = BRIEF_DIMENSIONS.map(dim => {
-      const kw = BRIEF_KEYWORDS[dim.key] || [];
+    const raw = dims.map(dim => {
+      const kw = dict[dim.key] || [];
       const news = [];
       for (const it of list) {
         const t = cleanBriefText(it.text);
@@ -643,6 +799,9 @@
     clusterItems, siteCategoryStats,
     THEME_DIMENSIONS, THEME_KEYWORDS, themeStats,
     BRIEF_DIMENSIONS, BRIEF_KEYWORDS, briefStats, cleanBriefText,
+    BRIEF_CONCEPT_DIMS, BRIEF_CONCEPT_KEYWORDS,
+    BRIEF_INDUSTRY_DIMS, BRIEF_INDUSTRY_KEYWORDS,
+    BRIEF_MODES,
     decodeEntities, isJunkTitle, cleanTitle,
     fmtLocalDate, todayStr, snapshotCandidates
   };

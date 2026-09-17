@@ -166,6 +166,13 @@ const Store = {
     if (typeof this.data.settings.aiEndpoint !== 'string') this.data.settings.aiEndpoint = '';
     if (typeof this.data.settings.aiKey !== 'string') this.data.settings.aiKey = '';
     if (typeof this.data.settings.aiModel !== 'string') this.data.settings.aiModel = '';
+    // 快讯来源名（可在「全球信息」页右栏标题上改）与分类维度（题材/概念/行业）
+    if (typeof this.data.settings.briefSource !== 'string' || !this.data.settings.briefSource.trim()) {
+      this.data.settings.briefSource = '格隆汇';
+    }
+    if (['theme', 'concept', 'industry'].indexOf(this.data.settings.briefDimMode) < 0) {
+      this.data.settings.briefDimMode = 'theme';
+    }
     // 兼容迁移：老用户若仍是旧的5项默认分类，自动升级为新的15项默认分类
     const OLD_DEFAULTS = ['主线实体', '个股实体', '主线概念', '个股概念', '利空概念'];
     const cur = this.data.settings.categories || [];
