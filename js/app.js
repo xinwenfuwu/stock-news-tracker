@@ -1254,6 +1254,238 @@ const app = createApp({
     const userNoticeModal = reactive({ show: false });
     function openUserNotice() { userNoticeModal.show = true; }
 
+    /* ============ 本地数据管理（入口在「用户须知」左侧） ============
+     * 纯静态站没有服务端，所有业务数据都存在当前浏览器（localStorage）里。
+     * 这里把「本机到底存了什么 / 占多大 / 能不能删」透明地摆出来，并逐项提供删除。
+     * 删除只影响这台设备的界面：官方快照（GitHub Action 抓的）在服务器上，不受影响。
+     * ============================================================== */
+    const LD_KEY_USERS = 'snt-auth-users-v1';
+    const LD_KEY_SESSION = 'snt-auth-session-v1';
+    const LD_KEY_CLOUD = 'cloud-creds-v1';
+
+    const localDataModal = reactive({
+      show: false,
+      previewId: '', previewTitle: '', previewText: '',
+      confirmId: '',          // 单行「确认删除」的行 id
+      confirmClear: false     // 底部「确认清空业务数据」
+    });
+    const localDataRows = ref([]);
+    const localDataUsageText = ref('0 B');
+
+    function ldBytes(v) {
+      const s = typeof v === 'string' ? v : JSON.stringify(v === undefined ? null : v);
+      try { return new TextEncoder().encode(s).length; } catch (e) { return s.length; }
+    }
+    function ldSizeText(n) {
+      if (n < 1024) return n + ' B';
+      if (n < 1024 * 1024) return (n / 1024).toFixed(1) + ' KB';
+      return (n / 1024 / 1024).toFixed(2) + ' MB';
+    }
+    function ldCountText(n, unit) { return Number(n || 0) + ' ' + unit; }
+    function ldSumLen(obj) {
+      return Object.keys(obj || {}).reduce((s, k) => s + ((obj[k] && obj[k].length) || 0), 0);
+    }
+    function ldReadRaw(key) {
+      try { return JSON.parse(localStorage.getItem(key) || 'null'); } catch (e) { return null; }
+    }
+    function ldHasKey(key) {
+      try { return !!localStorage.getItem(key); } catch (e) { return false; }
+    }
+
+    /** 本机存储的全部数据桶（每次打开弹窗重新计算，保证是最新值） */
+    function ldBuckets() {
+      const me = (authUser.value && authUser.value.username) || '';
+      const isAdmin = can('users.manage');
+      return [
+        { id: 'news', name: '新闻数据', icon: '📰', unit: '条',
+          count: v => (v || []).length,
+          desc: '新闻追踪页的全部新闻（来源、分类、关联股票、AI 解读三字段）',
+          raw: () => D.news || [], clear: () => { D.news = []; } },
+        { id: 'stockPools', name: '股票池', icon: '💹', unit: '组',
+          count: v => (v || []).length,
+          desc: '按日期分组的自选股票池',
+          raw: () => D.stockPools || [], clear: () => { D.stockPools = []; } },
+        { id: 'sectorPools', name: '选股板块', icon: '🧩', unit: '个',
+          count: v => (v || []).length,
+          desc: '自建的概念/行业板块（含成分股与命中主营业务）',
+          raw: () => D.sectorPools || [], clear: () => { D.sectorPools = []; } },
+        { id: 'favorites', name: '收藏股票', icon: '⭐', unit: '只',
+          count: v => (v || []).length,
+          desc: '收藏夹里的股票',
+          raw: () => D.favorites || [], clear: () => { D.favorites = []; } },
+        { id: 'holdings', name: '我的持仓', icon: '💼', unit: '只',
+          count: v => (v || []).length,
+          desc: '当前账号（' + (me || '未登录') + '）的持仓记录，其他账号不受影响',
+          raw: () => (D.holdings && D.holdings[me]) || [],
+          clear: () => { if (D.holdings && me) delete D.holdings[me]; } },
+        { id: 'dailyData', name: '每日行情数据', icon: '📈', unit: '天',
+          count: v => Object.keys(v || {}).length,
+          desc: '按日期缓存的股票行情（刷新现价时产生，删掉后下次刷新会重新取）',
+          raw: () => D.dailyData || {}, clear: () => { D.dailyData = {}; } },
+        { id: 'hotTopicSnapshots', name: '热点快照（本机缓存）', icon: '🌐', unit: '天',
+          count: v => Object.keys(v || {}).length,
+          desc: '「全球信息」页缓存在本机的热点榜单快照',
+          raw: () => D.hotTopicSnapshots || {}, clear: () => { D.hotTopicSnapshots = {}; } },
+        { id: 'hotCache', name: '热门榜缓存', icon: '🔥', unit: '条',
+          count: v => [v.hotBoards, v.hotStocks, v.preMarketBoards, v.amplitudeBoards]
+            .reduce((s, a) => s + ((a && a.length) || 0), 0),
+          desc: '最近一次的热门板块 / 热门股票 / 盘前热点 / 振幅板块',
+          raw: () => ({
+            hotBoards: D.hotBoards, hotStocks: D.hotStocks,
+            preMarketBoards: D.preMarketBoards, amplitudeBoards: D.amplitudeBoards
+          }),
+          clear: () => { D.hotBoards = []; D.hotStocks = []; D.preMarketBoards = []; D.amplitudeBoards = []; } },
+        { id: 'layout', name: '表格列宽', icon: '📐', unit: '列',
+          count: v => Object.keys(v.holdingColWidths || {}).length + Object.keys(v.filterColWidths || {}).length
+            + Object.keys(v.sectorColWidths || {}).length,
+          desc: '你拖动过的列宽记忆（持仓 / 筛选 / 板块详情）',
+          raw: () => ({
+            holdingColWidths: D.holdingColWidths,
+            filterColWidths: D.filterColWidths,
+            sectorColWidths: D.sectorColWidths
+          }),
+          clear: () => { D.holdingColWidths = {}; D.filterColWidths = {}; D.sectorColWidths = {}; } },
+        { id: 'financePush', name: '财经推送网址', icon: '📺', unit: '项',
+          count: v => ((v && v.url) ? 1 : 0),
+          desc: '「财经推送」里嵌入的网址与锁定状态',
+          raw: () => D.financePush || {},
+          clear: () => { D.financePush = { url: '', locked: false }; } },
+        { id: 'settings', name: '系统设置', icon: '⚙️', unit: '项',
+          count: v => Object.keys(v || {}).length,
+          desc: '新闻代理地址、AI 解读接口与密钥、主题分类等（删除后恢复出厂默认）',
+          danger: true, raw: () => D.settings || {},
+          clear: () => { D.settings = Store._default().settings; } },
+        { id: 'authUsers', name: '本机账号表', icon: '👥', unit: '个',
+          count: v => (v || []).length,
+          desc: '存放在这台设备上的账号（密码只存哈希，不存明文）',
+          adminOnly: true, locked: true, danger: true,
+          raw: () => ldReadRaw(LD_KEY_USERS) || [], clear: () => { } },
+        { id: 'session', name: '登录会话', icon: '🔑', unit: '项',
+          count: () => (ldHasKey(LD_KEY_SESSION) ? 1 : 0),
+          desc: '当前设备的登录状态；删除后本页立即退出登录，需重新输入密码',
+          raw: () => ldReadRaw(LD_KEY_SESSION) || {},
+          danger: true,
+          clear: () => { try { localStorage.removeItem(LD_KEY_SESSION); } catch (e) { /* ignore */ } } },
+        { id: 'cloudCreds', name: '云同步凭据', icon: '☁️', unit: '项',
+          count: () => (ldHasKey(LD_KEY_CLOUD) ? 1 : 0),
+          desc: 'GitHub Gist 同步用的 Token；删除后需重新填写才能同步',
+          raw: () => ldReadRaw(LD_KEY_CLOUD) || {},
+          danger: true,
+          clear: () => { try { localStorage.removeItem(LD_KEY_CLOUD); } catch (e) { /* ignore */ } } }
+      ].filter(b => !b.adminOnly || isAdmin);
+    }
+
+    /** localStorage 实际占用（含所有键名与键值，比上面各项相加更准确） */
+    function ldStorageUsage() {
+      let total = 0;
+      try {
+        for (let i = 0; i < localStorage.length; i++) {
+          const k = localStorage.key(i);
+          total += ldBytes(k) + ldBytes(localStorage.getItem(k) || '');
+        }
+      } catch (e) { /* ignore */ }
+      return total;
+    }
+
+    function refreshLocalDataRows() {
+      const rows = ldBuckets().map(b => {
+        const raw = b.raw();
+        const size = ldBytes(raw);
+        return {
+          id: b.id, name: b.name, icon: b.icon, desc: b.desc,
+          countText: ldCountText(b.count ? b.count(raw) : 1, b.unit),
+          sizeText: ldSizeText(size),
+          size: size,
+          isEmpty: size <= 8,        // [] / {} 序列化后只有 2 字节
+          danger: !!b.danger,
+          locked: !!b.locked
+        };
+      });
+      localDataRows.value = rows;
+      localDataUsageText.value = ldSizeText(ldStorageUsage());
+      return rows;
+    }
+
+    function openLocalData() {
+      localDataModal.previewId = '';
+      localDataModal.previewTitle = '';
+      localDataModal.previewText = '';
+      localDataModal.confirmId = '';
+      localDataModal.confirmClear = false;
+      refreshLocalDataRows();
+      localDataModal.show = true;
+    }
+
+    /** 查看原始 JSON（截断到 4000 字符，设置里的 AI Key 做打码） */
+    function previewLocalData(row) {
+      const b = ldBuckets().find(x => x.id === row.id);
+      if (!b) return;
+      let text;
+      try { text = JSON.stringify(b.raw(), null, 2); } catch (e) { text = String(b.raw()); }
+      if (!text) text = '（空）';
+      // 任何形如 token / password / hash / key / secret 的字段一律打码，避免在界面上二次泄露
+      text = text.replace(
+        /"([A-Za-z0-9_]*(?:[Tt]oken|[Pp]assword|[Hh]ash|[Kk]ey|[Ss]ecret)[A-Za-z0-9_]*)"\s*:\s*"[^"]*"/g,
+        '"$1": "*** 已隐藏 ***"'
+      );
+      const LIMIT = 4000;
+      if (text.length > LIMIT) text = text.slice(0, LIMIT) + '\n\n…（内容较长，仅显示前 4000 个字符）';
+      localDataModal.previewId = row.id;
+      localDataModal.previewTitle = row.icon + ' ' + row.name;
+      localDataModal.previewText = text;
+    }
+    function closeLocalDataPreview() {
+      localDataModal.previewId = '';
+      localDataModal.previewTitle = '';
+      localDataModal.previewText = '';
+    }
+
+    function askDeleteLocalData(row) {
+      localDataModal.confirmId = row.id;
+      localDataModal.confirmClear = false;
+    }
+    function cancelDeleteLocalData() { localDataModal.confirmId = ''; }
+
+    function doDeleteLocalData(row) {
+      const b = ldBuckets().find(x => x.id === row.id);
+      localDataModal.confirmId = '';
+      if (!b || b.locked) return;
+      b.clear();
+      if (localDataModal.previewId === b.id) closeLocalDataPreview();
+      if (b.id === 'session') {           // 删掉会话 = 退出登录（由登录关卡接管）
+        try { Store.saveNow(); } catch (e) { /* ignore */ }
+        showToast('已删除登录会话，正在退出登录…', 'info');
+        doLogout();
+        return;
+      }
+      try { Store.saveNow(); } catch (e) { /* ignore */ }
+      refreshLocalDataRows();
+      showToast('已删除「' + b.name + '」', 'success');
+    }
+
+    function askClearLocalBusinessData() {
+      localDataModal.confirmClear = true;
+      localDataModal.confirmId = '';
+    }
+    /** 一键清空业务数据：不动持仓、设置、账号与登录态 */
+    function doClearLocalBusinessData() {
+      localDataModal.confirmClear = false;
+      D.news = [];
+      D.stockPools = [];
+      D.sectorPools = [];
+      D.favorites = [];
+      D.dailyData = {};
+      D.hotTopicSnapshots = {};
+      D.hotBoards = [];
+      D.hotStocks = [];
+      D.preMarketBoards = [];
+      D.amplitudeBoards = [];
+      closeLocalDataPreview();
+      try { Store.saveNow(); } catch (e) { /* ignore */ }
+      refreshLocalDataRows();
+      showToast('已清空业务数据（持仓、设置与账号已保留）', 'success');
+    }
+
     const myHoldings = computed(() => {
       const u = authUser.value && authUser.value.username;
       return u ? Store.getUserHoldings(u) : [];
@@ -5544,6 +5776,12 @@ const app = createApp({
       ,
       // 用户须知
       userNoticeModal, openUserNotice
+      ,
+      // 本地数据管理
+      localDataModal, localDataRows, localDataUsageText,
+      openLocalData, previewLocalData, closeLocalDataPreview,
+      askDeleteLocalData, cancelDeleteLocalData, doDeleteLocalData,
+      askClearLocalBusinessData, doClearLocalBusinessData
       ,
       // 登录账号与权限
       authUser, authInitial, authExpiryText, can, fmtDateTime, doLogout, userMenuOpen,

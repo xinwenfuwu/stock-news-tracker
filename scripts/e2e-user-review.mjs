@@ -251,14 +251,21 @@ const main = async () => {
     await page.waitForSelector('#auth-login-form:not([hidden])', { timeout: 10000 });
 
     // 待审核：密码正确也进不去
+    // 注：本机 6 个 context 连跑时，极少数情况下 fill 之后输入框的值会被还原成空
+    //（表现为「请输入用户名和密码」，与功能无关）。这里填完立刻回读一次并补填，避免误报。
     await page.fill('#login-username', 'zhangsan');
     await page.fill('#login-password', USER_PW);
-    const filled = await page.evaluate(() => ({
-      u: document.getElementById('login-username').value,
-      p: document.getElementById('login-password').value,
-      regHidden: document.getElementById('auth-register-form').hidden,
-      doneHidden: document.getElementById('auth-reg-done').hidden
-    }));
+    const filled = await page.evaluate((pw) => {
+      const u = document.getElementById('login-username');
+      const p = document.getElementById('login-password');
+      if (u.value !== 'zhangsan') { u.value = 'zhangsan'; u.dispatchEvent(new Event('input', { bubbles: true })); }
+      if (p.value !== pw) { p.value = pw; p.dispatchEvent(new Event('input', { bubbles: true })); }
+      return {
+        u: u.value, p: p.value,
+        regHidden: document.getElementById('auth-register-form').hidden,
+        doneHidden: document.getElementById('auth-reg-done').hidden
+      };
+    }, USER_PW);
     await page.click('#auth-login-form .auth-btn');
     await page.waitForSelector('.auth-msg-error', { timeout: 15000 });
     const pendMsg = await page.locator('.auth-msg-error').innerText();

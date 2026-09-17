@@ -4,12 +4,12 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>股市信息分析系统</title>
-  <link rel="stylesheet" href="css/style.css?v=20260917h">
+  <link rel="stylesheet" href="css/style.css?v=20260917i">
   <!-- Vue 3 全局构建版（v3.4.21 · 自托管）
        原先走 unpkg.com CDN：国内网络对 unpkg 的连通性不稳定，一旦该请求长时间挂起，
        <head> 里的阻塞脚本会让整页停在白屏、后续 auth-boot.js 根本不会执行。
        改为同源托管后，启动链路不再依赖任何第三方 CDN。 -->
-  <script src="js/vue.global.prod.js?v=20260917h"></script>
+  <script src="js/vue.global.prod.js?v=20260917i"></script>
 </head>
 <body class="auth-locked">
   <!-- ===== 登录关卡：登录通过前业务脚本不会被加载 ===== -->
@@ -387,6 +387,7 @@
             <span class="muted small" v-if="authUser">（{{ authUser.username }} 的持仓，仅你自己可见）</span>
           </div>
           <div class="toolbar-right">
+            <button class="btn btn-data" @click="openLocalData">🗄 本地数据</button>
             <button class="btn btn-notice" @click="openUserNotice">📋 用户须知</button>
             <button class="btn btn-vip" @click="openMembershipService">👑 会员服务</button>
             <button class="btn btn-primary" @click="openAddHolding">➕ 添加持仓</button>
@@ -604,6 +605,76 @@
             </div>
             <div class="modal-actions">
               <button class="btn btn-primary" @click="userNoticeModal.show = false">我已阅读</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- 本地数据管理弹窗（入口在「用户须知」左侧） -->
+        <div class="modal-overlay" v-if="localDataModal.show" @click.self="localDataModal.show = false">
+          <div class="modal ld-modal">
+            <h3>🗄 本地数据（这台设备）</h3>
+            <p class="notice-sub">
+              本系统是纯静态网页，没有服务端，所有业务数据都保存在<b>当前浏览器</b>里。
+              下面是本机实际存了什么、占多大。删除只影响这台设备，GitHub 上定时抓取的官方快照不受影响。
+            </p>
+
+            <div class="ld-usage">
+              <span>本机存储占用：<b>{{ localDataUsageText }}</b></span>
+              <span class="muted small">浏览器上限约 5 MB，接近上限会导致保存失败</span>
+            </div>
+
+            <div class="ld-body">
+              <div class="ld-list">
+                <div class="ld-row" v-for="row in localDataRows" :key="row.id" :data-ld-id="row.id"
+                     :class="{ 'is-danger': row.danger, 'is-active': localDataModal.previewId === row.id }">
+                  <div class="ld-main">
+                    <div class="ld-name">
+                      <span class="ld-icon">{{ row.icon }}</span>
+                      <span>{{ row.name }}</span>
+                      <span class="ld-lock" v-if="row.locked" title="删除账号表会把本机所有账号一起清掉，为避免把自己锁在外面，这里不提供删除">🔒 受保护</span>
+                      <span class="ld-tag-danger" v-else-if="row.danger">谨慎</span>
+                    </div>
+                    <div class="ld-desc">{{ row.desc }}</div>
+                  </div>
+                  <div class="ld-meta">
+                    <span class="ld-count">{{ row.countText }}</span>
+                    <span class="ld-size">{{ row.sizeText }}</span>
+                  </div>
+                  <div class="ld-ops">
+                    <template v-if="localDataModal.confirmId === row.id">
+                      <span class="ld-confirm-tip">确认删除？</span>
+                      <button class="btn btn-sm btn-danger" @click="doDeleteLocalData(row)">确认</button>
+                      <button class="btn btn-sm" @click="cancelDeleteLocalData">取消</button>
+                    </template>
+                    <template v-else>
+                      <button class="btn btn-sm" @click="previewLocalData(row)">查看</button>
+                      <button class="btn btn-sm" v-if="!row.locked" :disabled="row.isEmpty"
+                              @click="askDeleteLocalData(row)">删除</button>
+                    </template>
+                  </div>
+                </div>
+              </div>
+
+              <div class="ld-preview" v-if="localDataModal.previewId">
+                <div class="ld-preview-head">
+                  <span>{{ localDataModal.previewTitle }}</span>
+                  <button class="btn btn-sm" @click="closeLocalDataPreview">收起</button>
+                </div>
+                <pre class="ld-pre">{{ localDataModal.previewText }}</pre>
+              </div>
+            </div>
+
+            <div class="modal-actions ld-actions">
+              <template v-if="localDataModal.confirmClear">
+                <span class="ld-confirm-tip">确认清空业务数据？</span>
+                <button class="btn btn-danger" @click="doClearLocalBusinessData">确认清空</button>
+                <button class="btn" @click="localDataModal.confirmClear = false">取消</button>
+              </template>
+              <template v-else>
+                <span class="ld-foot-tip">清空只覆盖新闻 / 股票池 / 板块 / 收藏 / 行情缓存 / 热点快照，保留持仓、设置与账号</span>
+                <button class="btn" @click="askClearLocalBusinessData">🧹 清空业务数据</button>
+                <button class="btn btn-primary" @click="localDataModal.show = false">关闭</button>
+              </template>
             </div>
           </div>
         </div>
@@ -2772,8 +2843,8 @@
     </transition>
   </div>
 
-  <script src="js/auth.js?v=20260917h"></script>
-  <script src="js/auth-boot.js?v=20260917h"></script>
+  <script src="js/auth.js?v=20260917i"></script>
+  <script src="js/auth-boot.js?v=20260917i"></script>
   <!-- store / stock-api / hot-topics / app 由 auth-boot.js 在登录通过后动态装载，
        未登录时它们不会被下载，业务数据也不会进入内存 -->
 </body>

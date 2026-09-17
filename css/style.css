@@ -2393,6 +2393,47 @@ body.auth-locked { overflow: hidden; }
 .notice-text .notice-strong { color: var(--text); font-weight: 600; }
 .notice-modal .modal-actions { position: sticky; bottom: 0; background: var(--surface); padding-top: 12px; }
 
+/* ===== 本地数据管理（用户页 → 🗄 本地数据） ===== */
+.btn-data { background: linear-gradient(135deg, #f0fdf4, #dcfce7); border: 1px solid #bbf7d0; color: #166534; font-weight: 600; }
+.btn-data:hover { background: linear-gradient(135deg, #dcfce7, #bbf7d0); }
+.ld-modal { width: 860px; max-width: 96vw; text-align: left; }
+.ld-usage { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap;
+  background: var(--surface-alt); border: 1px solid var(--border); border-radius: 8px;
+  padding: 8px 12px; margin-bottom: 10px; font-size: 13px; color: var(--text-secondary); }
+.ld-usage b { color: var(--text); font-size: 14px; }
+.ld-body { display: flex; gap: 12px; align-items: flex-start; max-height: 58vh; }
+.ld-list { flex: 1 1 auto; min-width: 0; overflow-y: auto; max-height: 58vh; padding-right: 4px; }
+.ld-preview { flex: 0 0 340px; max-width: 42vw; display: flex; flex-direction: column;
+  border: 1px solid var(--border); border-radius: 8px; overflow: hidden; background: var(--surface-alt); }
+.ld-preview-head { display: flex; align-items: center; justify-content: space-between; gap: 8px;
+  padding: 7px 10px; border-bottom: 1px solid var(--border); background: var(--surface);
+  font-size: 13px; font-weight: 600; color: var(--text); }
+.ld-pre { margin: 0; padding: 10px; font-size: 12px; line-height: 1.55; color: var(--text-secondary);
+  white-space: pre-wrap; word-break: break-all; overflow: auto; max-height: calc(58vh - 40px); }
+.ld-row { display: flex; align-items: center; gap: 10px; padding: 9px 10px; border-radius: 8px;
+  border: 1px solid var(--border); background: var(--surface); margin-bottom: 6px; }
+.ld-row.is-active { border-color: var(--primary); box-shadow: 0 0 0 2px rgba(37,99,235,0.12); }
+.ld-row.is-danger { border-left: 3px solid var(--danger); }
+.ld-main { flex: 1 1 auto; min-width: 0; }
+.ld-name { display: flex; align-items: center; gap: 6px; font-size: 13.5px; font-weight: 600; color: var(--text); flex-wrap: wrap; }
+.ld-icon { font-size: 15px; }
+.ld-tag-danger { font-size: 11px; font-weight: 600; color: var(--danger); background: #fee2e2;
+  border-radius: 4px; padding: 1px 6px; }
+.ld-lock { font-size: 11px; font-weight: 600; color: #92400e; background: #fef3c7;
+  border-radius: 4px; padding: 1px 6px; }
+.ld-desc { font-size: 12px; line-height: 1.5; color: var(--text-placeholder); margin-top: 3px; }
+.ld-meta { flex: 0 0 auto; display: flex; flex-direction: column; align-items: flex-end; gap: 2px; min-width: 74px; }
+.ld-count { font-size: 13px; font-weight: 600; color: var(--text); }
+.ld-size { font-size: 11.5px; color: var(--text-placeholder); }
+.ld-ops { flex: 0 0 auto; display: flex; align-items: center; gap: 6px; }
+.ld-confirm-tip { font-size: 12px; font-weight: 600; color: var(--danger); white-space: nowrap; }
+.ld-actions { display: flex; align-items: center; justify-content: flex-end; gap: 8px; flex-wrap: wrap; }
+.ld-foot-tip { flex: 1 1 auto; font-size: 11.5px; line-height: 1.5; color: var(--text-placeholder); text-align: left; }
+@media (max-width: 720px) {
+  .ld-body { flex-direction: column; }
+  .ld-preview { flex: 1 1 auto; width: 100%; max-width: none; }
+}
+
 /* ===== 新闻 AI 解读字段 ===== */
 .news-ai-bar {
   display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
