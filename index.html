@@ -4,9 +4,12 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>股市信息分析系统</title>
-  <link rel="stylesheet" href="css/style.css?v=20260917e">
-  <!-- Vue 3 全局构建版（CDN，无需构建步骤） -->
-  <script src="https://unpkg.com/vue@3.4.21/dist/vue.global.prod.js"></script>
+  <link rel="stylesheet" href="css/style.css?v=20260917f">
+  <!-- Vue 3 全局构建版（v3.4.21 · 自托管）
+       原先走 unpkg.com CDN：国内网络对 unpkg 的连通性不稳定，一旦该请求长时间挂起，
+       <head> 里的阻塞脚本会让整页停在白屏、后续 auth-boot.js 根本不会执行。
+       改为同源托管后，启动链路不再依赖任何第三方 CDN。 -->
+  <script src="js/vue.global.prod.js?v=20260917f"></script>
 </head>
 <body class="auth-locked">
   <!-- ===== 登录关卡：登录通过前业务脚本不会被加载 ===== -->
@@ -146,7 +149,16 @@
               <option value="">全部分类</option>
               <option v-for="c in allCategories" :key="c" :value="c">{{ c }}</option>
             </select>
-            <input class="search-input" v-model="newsFilter.customTag" placeholder="搜索散户参考...">
+            <!-- 联网搜索：左侧「🫘 豆包搜索」按钮 + 关键词输入框。
+                 输入即在本页按「散户参考」筛选；回车或点按钮 = 用该关键词打开豆包联网搜索 -->
+            <span class="web-search">
+              <button type="button" class="btn btn-sm web-search-btn" @click="doubaoSearch()"
+                      title="用输入框里的关键词打开豆包联网搜索（新标签页；关键词会同时复制到剪贴板）">🫘 豆包搜索</button>
+              <input class="search-input web-search-input" v-model="newsFilter.customTag"
+                     placeholder="搜索散户参考 / 联网搜索..."
+                     title="输入即在本页按「散户参考」筛选；按回车或点左侧「豆包搜索」用该关键词联网搜索"
+                     @keyup.enter="doubaoSearch()">
+            </span>
           </div>
           <div class="toolbar-right">
             <button class="btn btn-primary" @click="openImportDialog">📥 导入新闻</button>
@@ -530,7 +542,8 @@
               </div>
               <div class="membership-pay">
                 <div class="pay-title">扫码支付</div>
-                <img src="assets/qr-pay-wechat.jpg" alt="微信支付二维码" class="qr-pay-img">
+                <!-- 懒加载：该图 130KB+，启动期加载会与业务脚本抢占带宽（国内网络下曾导致脚本加载超时） -->
+                <img src="assets/qr-pay-wechat.jpg" alt="微信支付二维码" class="qr-pay-img" loading="lazy" decoding="async">
                 <p class="muted small">请使用微信扫描二维码完成支付，支付后请联系管理员开通权限。</p>
               </div>
             </div>
@@ -1260,7 +1273,7 @@
             <div class="hot-list" v-if="hotBoards.length">
               <div class="hot-item hot-item-click" v-for="(b, i) in hotBoards" :key="i"
                    :class="{ active: hotBoardActive === b.name }"
-                   @click="openHotBoard(b)"
+                   @click="askHotExclude({ type: 'board', board: b })"
                    :title="'点击在下方「当日股票明细」中显示「' + b.name + '」的全部成分股'">
                 <span class="hot-rank">{{ i + 1 }}</span>
                 <span class="hot-name">{{ b.name }}</span>
@@ -1282,7 +1295,7 @@
             <div class="hot-list" v-if="preMarketBoards.length">
               <div class="hot-item hot-item-click" v-for="(b, i) in preMarketBoards" :key="i"
                    :class="{ active: hotBoardActive === b.name }"
-                   @click="openHotBoard(b)"
+                   @click="askHotExclude({ type: 'board', board: b })"
                    :title="'点击在下方「当日股票明细」中显示「' + b.name + '」的全部成分股'">
                 <span class="hot-rank">{{ i + 1 }}</span>
                 <span class="hot-name">{{ b.name }}</span>
@@ -1298,7 +1311,7 @@
             <div class="hot-list" v-if="hotStocks.length">
               <div class="hot-item hot-item-click" v-for="(s, i) in hotStocks" :key="i"
                    :class="{ active: hotBoardActive === s.name && hotDetailIsStock }"
-                   @click="openHotStock(s)"
+                   @click="askHotExclude({ type: 'stock', stock: s })"
                    :title="'点击在下方「当日股票明细」中显示个股「' + s.name + '」的详细信息'">
                 <span class="hot-rank">{{ i + 1 }}</span>
                 <span class="hot-name">{{ s.name }}</span>
@@ -1320,7 +1333,7 @@
             <div class="hot-list" v-if="amplitudeBoards.length">
               <div class="hot-item hot-item-click" v-for="(b, i) in amplitudeBoards" :key="i"
                    :class="{ active: hotBoardActive === b.name }"
-                   @click="openHotBoard(b)"
+                   @click="askHotExclude({ type: 'board', board: b })"
                    :title="'点击在下方「当日股票明细」中显示「' + b.name + '」的全部成分股（按板块振幅突然拉升排名）'">
                 <span class="hot-rank">{{ i + 1 }}</span>
                 <span class="hot-name">{{ b.name }}</span>
@@ -2130,6 +2143,21 @@
               </div>
             </div>
 <!-- /industry-dropdown -->
+            <!-- 产品业务（相关度）：位于「🔄 重置 / 🔓 固定筛选」左侧。
+                 输入用于计算相关度的产品/业务，按「命中主营构成段营收占比之和」算出相关度，
+                 结果写入表格的「相关度」「命中主营业务」两列 -->
+            <div class="filter-field biz-field">
+              <label>产品业务</label>
+              <input class="cell-input" v-model.trim="sectorFilter.bizKeyword" placeholder="如：服务器 / 光模块"
+                     style="width:150px"
+                     title="输入用于计算相关度的产品业务（多个用空格或逗号分隔），点右侧按钮按「命中主营构成段营收占比之和」算相关度"
+                     @keyup.enter="computeSectorDetailRelevance">
+              <button class="btn btn-sm" @click="computeSectorDetailRelevance" :disabled="sectorFilter.bizLoading"
+                      title="按输入的产品业务，用各股最新报告期主营构成计算相关度与命中主营业务">
+                <span v-if="sectorFilter.bizLoading">⏳ 计算中</span>
+                <span v-else>🔗 算相关度</span>
+              </button>
+            </div>
             <button class="btn btn-sm" @click="resetSectorFilter" :disabled="sectorFilter.locked">🔄 重置</button>
             <button class="btn btn-sm" :class="{ 'btn-locked': sectorFilter.locked }" @click="toggleSectorFilterLock">
               <span v-if="sectorFilter.locked">🔒 已固定</span>
@@ -2195,6 +2223,19 @@
             <span class="muted small" v-if="sectorPick.loading">⏳ 正在加载成分股...</span>
             <span class="muted small" v-if="sectorPick.industryLoading">⏳ 正在补全行业（{{ sectorPickIndustryLoaded }}/{{ sectorPick.stocks.length }}）...</span>
             <span style="flex:1"></span>
+            <!-- 产品业务（相关度）：输入用于计算相关度的产品业务，按命中主营构成营收占比之和算相关度 -->
+            <label class="sector-pick-biz" v-if="sectorPick.stocks.length">
+              <span class="muted small">产品业务</span>
+              <input class="cell-input" v-model.trim="sectorPick.filter.biz"
+                     placeholder="如：服务器 / 光模块" style="width:200px"
+                     title="输入用于计算相关度的产品业务（多个用空格或逗号分隔），点右侧按钮按「命中主营构成段营收占比之和」算相关度"
+                     @keyup.enter="computeSectorPickRelevance">
+              <button class="btn btn-sm" @click="computeSectorPickRelevance" :disabled="sectorPick.bizLoading"
+                      title="按输入的产品业务，用各股最新报告期主营构成计算相关度与命中主营业务，并补全现价/涨跌幅/总市值">
+                <span v-if="sectorPick.bizLoading">⏳ 计算中</span>
+                <span v-else>🔗 算相关度</span>
+              </button>
+            </label>
             <!-- 行业筛选（弹窗上部右侧） -->
             <label class="sector-pick-industry" v-if="sectorPick.stocks.length">
               <span class="muted small">行业</span>
@@ -2225,13 +2266,34 @@
             <span class="muted small" v-if="sectorPick.stocks.length - visibleSectorPickStocks.length > 0">（已隐藏 {{ sectorPick.stocks.length - visibleSectorPickStocks.length }} 只）</span>
           </div>
           <div class="sector-pick-list" v-if="visibleSectorPickStocks.length">
-            <div class="sector-pick-item" v-for="s in visibleSectorPickStocks" :key="s.code">
-              <label class="checkbox-label">
+            <!-- 表头：字段口径与「筛选板块 / 概念选股板块详情」完全一致 -->
+            <div class="sector-pick-head">
+              <span class="spc-check"></span>
+              <span class="spc-code">代码</span>
+              <span class="spc-name">股票名称</span>
+              <span class="spc-num">现价</span>
+              <span class="spc-num">涨跌幅</span>
+              <span class="spc-num">总市值</span>
+              <span class="spc-num">相关度</span>
+              <span class="spc-biz">命中主营业务</span>
+              <span class="spc-ind">行业</span>
+            </div>
+            <div class="sector-pick-item" v-for="s in visibleSectorPickStocks" :key="s.code"
+                 :class="{ checked: !!sectorPick.selected[s.code] }">
+              <label class="spc-check">
                 <input type="checkbox" v-model="sectorPick.selected[s.code]">
-                <span class="sector-pick-name">{{ s.name || s.code }}</span>
-                <span class="sector-pick-code">{{ s.code }}</span>
-                <span class="sector-pick-change" :class="pctClass(s.changePercent)">{{ fmtPct(s.changePercent) }}</span>
               </label>
+              <span class="spc-code">{{ pureCode(s.code) || s.code }}</span>
+              <span class="spc-name" :title="s.name || s.code">{{ s.name || s.code }}</span>
+              <span class="spc-num price-red">{{ s.todayPrice != null ? (+s.todayPrice).toFixed(2) : '—' }}</span>
+              <span class="spc-num" :class="pctClass(pickChg(s))">{{ pickChg(s) != null ? fmtPct(pickChg(s)) : '—' }}</span>
+              <span class="spc-num">{{ s.totalMarketCap != null ? (+s.totalMarketCap).toFixed(2) + '亿' : '—' }}</span>
+              <span class="spc-num spc-rel">{{ s.relevance != null ? (+s.relevance).toFixed(1) + '%' : '—' }}</span>
+              <span class="spc-biz" :title="s.hitBusiness || '（点上方「🔗 算相关度」后显示命中明细）'">
+                <template v-if="s.hitBusiness">{{ s.hitBusiness }}</template>
+                <span v-else class="muted small">—</span>
+              </span>
+              <span class="spc-ind" :title="s.industry || '未知'">{{ s.industry || '—' }}</span>
             </div>
           </div>
           <div class="empty-state" v-else-if="!sectorPick.loading">
@@ -2242,6 +2304,45 @@
             <button class="btn btn-primary" @click="confirmSectorPick" :disabled="sectorPickCount === 0">
               ✅ 保存勾选（{{ sectorPickCount }} 只）
             </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== 热门板块：载入前先选「要去除的股票」 ===== -->
+    <!-- 需求：点击四个子版块里的任一内容后，在「筛选板块」出现内容之前先弹出该选项 -->
+    <div class="modal-overlay" v-if="hotExclude.show" @click.self="cancelHotExclude">
+      <div class="modal hot-exclude-modal">
+        <div class="modal-header">
+          <h3>⚙️ 载入前先选择要去除的股票</h3>
+          <button class="btn-icon" @click="cancelHotExclude">✕</button>
+        </div>
+        <div class="modal-body">
+          <p class="muted small" style="margin-top:0">
+            即将载入：<b>{{ hotExclude.label }}</b>
+            <span class="muted">（{{ hotExclude.kind === 'stock' ? '单只个股' : '板块成分股' }}）</span><br>
+            勾选后，这些股票会<b>在「筛选板块」出现内容之前</b>就被剔除，避免逐一删除。
+          </p>
+          <div class="hot-exclude-opts">
+            <label class="checkbox-label" title="剔除股票代码以 301 开头的股票">
+              <input type="checkbox" v-model="hotExclude.no301"> 去除301（301 开头的股票）
+            </label>
+            <label class="checkbox-label" title="剔除股票代码以 688 开头的股票（科创板）">
+              <input type="checkbox" v-model="hotExclude.no688"> 去除688（688 开头的股票）
+            </label>
+            <label class="checkbox-label" title="剔除北交所股票（4 / 8 / 92 开头）">
+              <input type="checkbox" v-model="hotExclude.noBj"> 去除北交所（4/8/92 开头）
+            </label>
+            <label class="checkbox-label" title="剔除股票名称含 ST / *ST 的股票">
+              <input type="checkbox" v-model="hotExclude.noST"> 去除ST（名称含 ST / *ST）
+            </label>
+          </div>
+          <p class="muted tiny" style="margin-bottom:0">
+            规则与「概念选股 → 勾选成分股」弹窗里的同类筛选一致；勾选结果在本次会话内记住，下次点击沿用。
+          </p>
+          <div class="modal-footer-actions">
+            <button class="btn" @click="cancelHotExclude">取消</button>
+            <button class="btn btn-primary" @click="confirmHotExclude">✅ 应用并载入</button>
           </div>
         </div>
       </div>
@@ -2578,8 +2679,8 @@
     </transition>
   </div>
 
-  <script src="js/auth.js?v=20260917e"></script>
-  <script src="js/auth-boot.js?v=20260917e"></script>
+  <script src="js/auth.js?v=20260917f"></script>
+  <script src="js/auth-boot.js?v=20260917f"></script>
   <!-- store / stock-api / hot-topics / app 由 auth-boot.js 在登录通过后动态装载，
        未登录时它们不会被下载，业务数据也不会进入内存 -->
 </body>

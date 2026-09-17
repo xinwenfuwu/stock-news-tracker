@@ -1122,6 +1122,80 @@ body {
 .sector-pick-name { flex: 1; font-weight: 500; }
 .sector-pick-code { color: var(--text-secondary); font-size: 12px; width: 70px; }
 .sector-pick-change { font-size: 12px; width: 70px; text-align: right; }
+
+/* ---- 成分股勾选弹窗：产品业务（相关度）输入 ---- */
+.sector-pick-biz {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+}
+/* ---- 成分股勾选弹窗：列式明细（现价/涨跌幅/总市值/相关度/命中主营业务/行业） ---- */
+/* 用一套共享的 grid 列宽，保证表头与数据行严格对齐 */
+.sector-pick-head,
+.sector-pick-item {
+  display: grid;
+  grid-template-columns: 34px 78px minmax(96px, 1.1fr) 74px 78px 90px 74px minmax(140px, 1.6fr) 88px;
+  align-items: center;
+  gap: 10px;
+}
+.sector-pick-head {
+  padding: 8px 14px;
+  background: var(--surface-alt);
+  border-bottom: 1px solid var(--border);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+.sector-pick-item.checked { background: #fffaf0; }
+.sector-pick-item .spc-check { display: flex; align-items: center; justify-content: center; }
+.sector-pick-item .spc-name { font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.sector-pick-item .spc-code { color: var(--text-secondary); font-size: 12px; }
+.sector-pick-item .spc-ind { color: var(--text-secondary); font-size: 12px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.sector-pick-head .spc-num,
+.sector-pick-head .spc-code { text-align: left; }
+.sector-pick-item .spc-num { font-size: 13px; font-variant-numeric: tabular-nums; }
+.sector-pick-item .spc-biz {
+  font-size: 12px;
+  line-height: 1.35;
+  max-height: 34px;
+  overflow: hidden;
+}
+.sector-pick-item .spc-rel { font-weight: 600; }
+
+/* ---- 新闻追踪：联网搜索（豆包） ---- */
+.web-search {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.web-search-btn {
+  white-space: nowrap;
+  background: linear-gradient(135deg, #3d7eff, #1f6bff);
+  border-color: transparent;
+  color: #fff;
+}
+.web-search-btn:hover { filter: brightness(1.08); color: #fff; }
+.web-search-input { min-width: 190px; }
+
+/* ---- 热门板块：载入前的「去除股票」选项弹窗 ---- */
+.hot-exclude-modal { max-width: 520px; }
+.hot-exclude-opts {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px 14px;
+  margin: 12px 0;
+  padding: 12px 14px;
+  background: var(--surface-alt);
+  border-radius: 8px;
+}
+
+/* ---- 筛选栏：产品业务（相关度）字段 ---- */
+.biz-field { display: inline-flex; align-items: center; gap: 6px; }
+.biz-field input { flex: 0 0 auto; }
 .modal-footer-actions {
   display: flex;
   justify-content: flex-end;

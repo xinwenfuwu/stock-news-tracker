@@ -20,7 +20,7 @@
   'use strict';
 
   // 与 index.html 中静态资源版本号保持一致，避免升级后命中旧缓存
-  var ASSET_V = '20260917e';
+  var ASSET_V = '20260917f';
 
   // 业务脚本装载顺序（Vue 已在 <head> 静态加载，不在此列）
   var APP_SCRIPTS = [
@@ -30,8 +30,6 @@
     'js/hot-topics.js',
     'js/app.js'
   ];
-
-  var LOAD_TIMEOUT = 25000;
 
   function $(sel) { return document.querySelector(sel); }
 
@@ -137,34 +135,84 @@
 
   /* ---------------- 动态装载业务脚本 ---------------- */
 
-  function loadScripts(list) {
+  /**
+   * 单次脚本下载超时。
+   * 注意：定时器是从「元素插入」就开始算的，而请求可能还排在连接队列里没发出去，
+   * 所以它同时兜住了「请求排队」与「连接卡死」两种情况 —— 值不宜过大。
+   */
+  var LOAD_TIMEOUT = 20000;
+  /** 单个脚本的最大尝试次数（含首次） */
+  var LOAD_RETRIES = 3;
+
+  /** 已成功装载的脚本（重试时跳过，避免重复注入触发 “已经声明过” 的语法错误） */
+  var loadedScripts = [];
+
+  /**
+   * 装载单个脚本（一次尝试）。
+   * @param {string} src 形如 js/store.js
+   * @param {number} attempt 第几次尝试（>1 时附加 cache-buster，强制新建连接）
+   */
+  function loadOne(src, attempt) {
+    return new Promise(function (resolve, reject) {
+      var url = src + '?v=' + ASSET_V + (attempt > 1 ? '&_r=' + attempt : '');
+      var s = document.createElement('script');
+      var settled = false;
+      function cleanup() {
+        try { s.onload = null; s.onerror = null; } catch (e) { /* ignore */ }
+        try { if (s.parentNode) s.parentNode.removeChild(s); } catch (e) { /* ignore */ }
+      }
+      var timer = setTimeout(function () {
+        if (settled) return;
+        settled = true;
+        clearTimeout(timer);
+        cleanup();
+        reject(new Error('加载超时：' + src));
+      }, LOAD_TIMEOUT);
+      s.src = url;
+      s.async = false;
+      s.onload = function () {
+        if (settled) return;
+        settled = true;
+        clearTimeout(timer);
+        resolve();
+      };
+      s.onerror = function () {
+        if (settled) return;
+        settled = true;
+        clearTimeout(timer);
+        cleanup();
+        reject(new Error('无法加载 ' + src));
+      };
+      document.body.appendChild(s);
+    });
+  }
+
+  /**
+   * 按顺序装载业务脚本，失败自动重试。
+   * 之所以要重试：国内访问 github.io 偶发「连接建起来但迟迟不返回」，
+   * 这种挂起既不会触发 onerror、也不会自己恢复，只能主动超时后换一条连接重来。
+   * @param {function} [onProgress] (src, index, total, attempt) 进度回调
+   */
+  function loadScripts(list, onProgress) {
     var i = 0;
     return new Promise(function (resolve, reject) {
       (function next() {
         if (i >= list.length) { resolve(); return; }
-        var src = list[i++] + '?v=' + ASSET_V;
-        var s = document.createElement('script');
-        var settled = false;
-        var timer = setTimeout(function () {
-          if (settled) return;
-          settled = true;
-          reject(new Error('加载超时：' + src));
-        }, LOAD_TIMEOUT);
-        s.src = src;
-        s.async = false;
-        s.onload = function () {
-          if (settled) return;
-          settled = true;
-          clearTimeout(timer);
-          next();
-        };
-        s.onerror = function () {
-          if (settled) return;
-          settled = true;
-          clearTimeout(timer);
-          reject(new Error('无法加载 ' + src));
-        };
-        document.body.appendChild(s);
+        var src = list[i++];
+        if (loadedScripts.indexOf(src) >= 0) { next(); return; }
+        var attempt = 0;
+        (function tryOnce() {
+          attempt++;
+          if (onProgress) onProgress(src, i, list.length, attempt);
+          loadOne(src, attempt).then(function () {
+            loadedScripts.push(src);
+            next();
+          }).catch(function (err) {
+            if (attempt < LOAD_RETRIES) { setTimeout(tryOnce, 600 * attempt); return; }
+            var offline = (typeof navigator !== 'undefined' && navigator.onLine === false);
+            reject(new Error(err.message + (offline ? '（当前网络已断开）' : '（已自动重试 ' + LOAD_RETRIES + ' 次仍未成功，多为网络问题）')));
+          });
+        })();
       })();
     });
   }
@@ -181,7 +229,15 @@
   function enterApp() {
     showMsg('');
     setBusy('正在加载数据…');
-    loadScripts(APP_SCRIPTS).then(function () {
+    // 网络慢时把「正在加载第几/共几个脚本」显示出来，避免用户以为卡死
+    var slowHint = setTimeout(function () {
+      if (busy) setBusy('网络较慢，正在重试加载…请稍候');
+    }, 12000);
+    loadScripts(APP_SCRIPTS, function (src, idx, total) {
+      if (!busy) return;
+      setBusy('正在加载数据… (' + idx + '/' + total + ')');
+    }).then(function () {
+      clearTimeout(slowHint);
       setBusy('');
       hideGate();
       // 通知业务层登录成功（app.js 若已就绪可据此刷新界面）
@@ -191,6 +247,7 @@
         }));
       } catch (e) { /* 老浏览器不支持 CustomEvent 构造器时忽略 */ }
       }).catch(function (err) {
+      clearTimeout(slowHint);
       setBusy('');
       showMsg(String(err && err.message ? err.message : err), 'error');
       showForm(Auth.hasUsers() ? 'login' : 'register');

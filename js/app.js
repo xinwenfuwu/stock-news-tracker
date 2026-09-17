@@ -787,6 +787,50 @@ const app = createApp({
     //  页面1：新闻追踪
     // ============================================================
     const newsFilter = reactive({ date: '', keyword: '', category: '', customTag: '' });
+
+    // ---- 联网搜索（豆包） ----
+    // 原「自定义标记 / 散户参考」输入框只能在本页已录入的新闻里筛选，查不到外部信息；
+    // 这里把同一个输入框接上豆包联网搜索：输入关键词后点「🫘 豆包搜索」（或回车）即用该
+    // 关键词打开豆包，同时保留原有的本页筛选行为，不丢能力。
+    const DOUBAO_SEARCH_BASE = 'https://www.doubao.com/chat/?q=';
+    /** 复制文本（优先 clipboard API，失败退回 execCommand），返回是否成功 */
+    function copyPlainText(text) {
+      try {
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          navigator.clipboard.writeText(text).catch(function () { /* 忽略：仅为兜底便利 */ });
+          return true;
+        }
+      } catch (e) { /* 落到 execCommand */ }
+      try {
+        const ta = document.createElement('textarea');
+        ta.value = text;
+        ta.style.cssText = 'position:fixed;left:-9999px;top:0;opacity:0';
+        document.body.appendChild(ta);
+        ta.select();
+        const ok = document.execCommand('copy');
+        document.body.removeChild(ta);
+        return ok;
+      } catch (e) { return false; }
+    }
+    /**
+     * 用关键词打开豆包联网搜索（新标签页）。
+     * 之所以额外复制一遍关键词：豆包是单页应用，若浏览器/豆包版本忽略了 URL 里的 q 参数，
+     * 用户仍可直接粘贴继续搜索，不会白点一次。
+     */
+    function doubaoSearch(keyword) {
+      const q = String(keyword != null ? keyword : newsFilter.customTag || '').trim();
+      if (!q) { showToast('请先输入要联网搜索的关键词', 'error'); return; }
+      const url = DOUBAO_SEARCH_BASE + encodeURIComponent(q);
+      let win = null;
+      try { win = window.open(url, '_blank', 'noopener,noreferrer'); } catch (e) { win = null; }
+      copyPlainText(q);
+      if (!win) {
+        showToast('浏览器拦截了新窗口，关键词已复制，请手动打开豆包粘贴搜索', 'warn');
+        return;
+      }
+      showToast(`已打开豆包搜索「${q}」（关键词也已复制，可直接粘贴）`, 'success');
+    }
+
     // 财经推送：右侧嵌入财经网页（与 Store 数据同源，自动持久化）
     const financePush = Store.data.financePush;
     function toggleFinanceLock() {
@@ -2027,6 +2071,93 @@ const app = createApp({
       if (revShare == null) return null;
       return { revShare: revShare, kcfShare: null };   // kcfShare 缺失 → 单元格显示占比 + "—"
     }
+
+    // ============================================================
+    //  产品业务 → 相关度（命中主营业务营收占比之和）
+    //  与「AI 语义选股」同一口径：相关度 = 命中该产品/业务的主营构成段营收占比之和(%)
+    // ============================================================
+    /** 把「产品业务」输入切成匹配词：空白 / 逗号 / 顿号 / 分号 / 竖线 / 加号 分隔 */
+    function bizKeywords(text) {
+      return String(text == null ? '' : text)
+        .split(/[\s,，、;；/|｜+＋]+/)
+        .map(t => t.trim().toLowerCase())
+        .filter(t => t.length > 0);
+    }
+    /**
+     * 按主营构成计算单只股票相对「产品业务」的相关度。
+     * 口径：遍历该股最新报告期「按产品」的营收占比构成，段名包含任一匹配词即命中，
+     * 命中段的营收占比之和 = 相关度(%)，上限 100；同时给出命中的主营业务文本。
+     * @param {object} s 股票对象（需已有 s.mainBusiness = [{name, ratio(%)}]）
+     * @param {string[]} kws 已小写的匹配词
+     */
+    function bizRelevanceOf(s, kws) {
+      const arr = (s && s.mainBusiness) || [];
+      if (!arr.length || !kws.length) return { relevance: null, hitBusiness: '' };
+      let sum = 0;
+      const hits = [];
+      for (const seg of arr) {
+        const nm = String(seg.name || '').trim();
+        if (!nm) continue;
+        const low = nm.toLowerCase();
+        if (!kws.some(k => low.includes(k))) continue;
+        const r = +(seg.ratio || 0);
+        sum += r;
+        hits.push(nm + ' ' + r.toFixed(1) + '%');
+      }
+      if (!hits.length) return { relevance: 0, hitBusiness: '' };
+      return { relevance: Math.min(100, Math.round(sum * 10) / 10), hitBusiness: hits.join(' · ') };
+    }
+    /**
+     * 对一组股票批量计算「产品业务相关度」，并顺带补全 现价 / 涨跌幅 / 总市值 / 主营构成。
+     * 补全口径与「筛选板块 / 选股板块」的「刷新行情」保持一致，保证同一份数据同一套字段。
+     * @returns {Promise<{ok:boolean, hit?:number, total?:number, error?:string}>}
+     */
+    async function applyBizRelevance(list, keyword, onProgress) {
+      const rows = Array.isArray(list) ? list.filter(Boolean) : [];
+      const kws = bizKeywords(keyword);
+      if (!kws.length) return { ok: false, error: '请先输入用于计算相关度的产品业务' };
+      if (!rows.length) return { ok: false, error: '当前没有可计算的股票' };
+
+      // 1) 行情：现价 / 涨跌幅 / 总市值（腾讯接口，批量一次拿回）
+      try {
+        const codes = rows.map(s => s.code).filter(Boolean);
+        if (codes.length) {
+          const quotes = await StockAPI.getQuotes(codes);
+          rows.forEach(s => {
+            const q = quotes && quotes[s.code];
+            if (!q) return;
+            s.name = s.name || q.name;
+            if (q.price != null) s.todayPrice = q.price;
+            if (q.changePercent != null) s.dailyChange = q.changePercent;
+            if (q.totalMarketCap) s.totalMarketCap = q.totalMarketCap;
+          });
+        }
+      } catch (e) { console.warn('产品业务相关度：行情补全失败', e); }
+
+      // 2) 主营构成（只补缺失的；低并发，避免触发东财限流）
+      const missing = rows.filter(s => !s.mainBusiness || !s.mainBusiness.length);
+      let done = 0;
+      if (missing.length) {
+        await runWithConcurrency(missing, 4, async (s) => {
+          try {
+            const mb = await StockAPI.getMainBusiness(s.code);
+            if (mb && mb.length) s.mainBusiness = mb;
+          } catch (e) { /* 单只失败忽略 */ }
+          done++;
+          if (typeof onProgress === 'function') onProgress(done, missing.length);
+        });
+      }
+
+      // 3) 计算相关度 + 命中主营业务
+      let hit = 0;
+      rows.forEach(s => {
+        const r = bizRelevanceOf(s, kws);
+        s.relevance = r.relevance;
+        s.hitBusiness = r.hitBusiness;
+        if (r.relevance != null && r.relevance > 0) hit++;
+      });
+      return { ok: true, hit: hit, total: rows.length };
+    }
     /** 概念标签：从该股已保存的行业(industry)与主营产品名中，抽取出最多3个中文概念/行业标签（三行展示）。 */
     function stockConcepts(s) {
       const tags = [];
@@ -2071,6 +2202,8 @@ const app = createApp({
       { key: 'netProfit', label: '净利润', width: 100, sortable: true, type: 'money' },
       { key: 'kcfjcxjlr', label: '扣非净利润', width: 100, sortable: true, type: 'money' },
       { key: 'relevance', label: '相关度', width: 88, sortable: true, type: 'relevance' },
+      // 命中主营业务：由筛选栏「产品业务」输入框算出的命中明细（段名 + 营收占比），与相关度成对出现
+      { key: 'hitBusiness', label: '命中主营业务', width: 186, sortable: false, type: 'hitbiz' },
       { key: 'prRatio', label: '市营比', width: 86, sortable: true, type: 'ratio' },
       { key: 'pbRatio', label: '市净比', width: 86, sortable: true, type: 'ratio' },
       { key: 'pkRatio', label: '市扣比', width: 86, sortable: true, type: 'ratio' },
@@ -2193,6 +2326,11 @@ const app = createApp({
         case 'num2': { const val = v(col.key); return (val != null && !isNaN(val)) ? (+val).toFixed(2) : '—'; }
         // 相关度：来自 AI 语义搜索的「营收占比相关度」(命中主营构成段营收占比之和 %)；无语义来源时显示占位
         case 'relevance': { const val = s[col.key]; return (val != null && !isNaN(val)) ? ((+val).toFixed(1) + '%') : '—'; }
+        // 命中主营业务：展示「产品业务」命中的主营构成段与占比，多条换行
+        case 'hitbiz': {
+          const txt = s.hitBusiness;
+          return txt ? esc(txt).split(' · ').join('<br>') : '<span class="muted small">—</span>';
+        }
         case 'num2pct': { const val = s[col.key]; return (val != null && !isNaN(val)) ? (+val).toFixed(2) + '%' : '—'; }
         case 'money': { const val = s[col.key]; return (val != null && !isNaN(val)) ? fmtYi(val) : '—'; }
         // 总市值：单位已是「亿元」，直接保留两位小数展示
@@ -2248,6 +2386,7 @@ const app = createApp({
       // 否则会出现「表头居中、内容靠右」的错位
       if (isNumCol(col)) cls.push('num-cell');
       if (col.type === 'mainbiz') cls.push('mainbiz-cell');
+      if (col.type === 'hitbiz') cls.push('mainbiz-cell');
       if (col.type === 'concept') cls.push('concept-cell');
       if (col.type === 'pct') cls.push(pctClass(poolVal(s, col.key)));
       if (col.type === 'favGain') cls.push(pctClass(favGainPct(s)));
@@ -3195,6 +3334,36 @@ const app = createApp({
     const visibleSectorPickStocks = computed(() => {
       return sectorPick.stocks.filter(s => !sectorPickFiltered(s));
     });
+    /** 成分股行涨跌幅：优先 dailyChange，兼容旧字段 changePercent */
+    function pickChg(s) {
+      if (!s) return null;
+      const v = s.dailyChange != null ? s.dailyChange : s.changePercent;
+      return (v == null || isNaN(v)) ? null : +v;
+    }
+    /**
+     * 成分股勾选弹窗：按「产品业务」计算每只成分股的相关度（命中主营构成段营收占比之和）
+     * 与命中主营业务，并补全 现价 / 涨跌幅 / 总市值 —— 口径与选股（筛选）板块完全一致。
+     */
+    async function computeSectorPickRelevance() {
+      const rows = sectorPick.stocks || [];
+      if (!rows.length) { showToast('当前没有成分股可计算', 'error'); return; }
+      if (!bizKeywords(sectorPick.filter.biz).length) { showToast('请先输入用于计算相关度的产品业务', 'error'); return; }
+      if (sectorPick.bizLoading) return;
+      sectorPick.bizLoading = true;
+      showToast('正在按主营构成计算相关度…', 'info');
+      try {
+        const r = await applyBizRelevance(rows, sectorPick.filter.biz, (done, total) => {
+          if (done % 10 === 0 || done === total) showToast(`正在补全主营构成 ${done}/${total}…`, 'info');
+        });
+        if (!r.ok) { showToast(r.error, 'error'); return; }
+        showToast(`相关度已更新：${r.total} 只中命中 ${r.hit} 只`, 'success');
+      } catch (e) {
+        console.warn('成分股相关度计算失败', e);
+        showToast('计算相关度失败：' + (e && e.message ? e.message : e), 'error');
+      } finally {
+        sectorPick.bizLoading = false;
+      }
+    }
     // 已勾选数量（基于过滤后可见股票）
     const sectorPickCount = computed(() => {
       return visibleSectorPickStocks.value.filter(s => sectorPick.selected[s.code]).length;
@@ -3216,7 +3385,7 @@ const app = createApp({
       Store.addSectorPool(sector);
       recomputePoolAvg(sector);
       sectorPick.show = false;
-      sectorPick.filter = { no301: false, no688: false, noBj: false, noST: false };
+      sectorPick.filter = { no301: false, no688: false, noBj: false, noST: false, industry: '', biz: '' };
       sectorResults.value = [];
       sectorSearch.value = '';
       showToast(`已保存板块「${sectorPick.name}」共 ${selected.length} 只股票`, 'success');
@@ -3344,11 +3513,39 @@ const app = createApp({
       sectorFilter.q24kMin = null; sectorFilter.q24kMax = null;
       sectorFilter.posMin = null; sectorFilter.posMax = null;
       sectorFilter.ratioFilter = false; sectorFilter.industry = ''; sectorFilter.industries = [];
+      sectorFilter.bizKeyword = '';
     }
     function toggleSectorFilterLock() {
       sectorFilter.locked = !sectorFilter.locked;
       showToast(sectorFilter.locked ? '已固定板块详情筛选区间，切换板块/重置将保留' : '已取消固定板块详情筛选区间',
         sectorFilter.locked ? 'success' : 'info');
+    }
+    /**
+     * 板块详情：按筛选栏里的「产品业务」计算每只成分股的相关度（营收占比之和）与命中主营业务。
+     * 计算前会补全行情（现价/涨跌幅/总市值）与主营构成，口径与「筛选板块 → 刷新行情」一致。
+     */
+    async function computeSectorDetailRelevance() {
+      const stocks = (sectorDetail.data && sectorDetail.data.stocks) || [];
+      if (!stocks.length) { showToast('当前板块还没有成分股', 'error'); return; }
+      if (!bizKeywords(sectorFilter.bizKeyword).length) { showToast('请先输入用于计算相关度的产品业务', 'error'); return; }
+      if (sectorFilter.bizLoading) return;
+      sectorFilter.bizLoading = true;
+      showToast('正在按主营构成计算相关度…', 'info');
+      try {
+        const r = await applyBizRelevance(stocks, sectorFilter.bizKeyword, (done, total) => {
+          if (done % 10 === 0 || done === total) showToast(`正在补全主营构成 ${done}/${total}…`, 'info');
+        });
+        if (!r.ok) { showToast(r.error, 'error'); return; }
+        const sector = D.sectorPools.find(p => p.id === (sectorDetail.data && sectorDetail.data.id));
+        if (sector) recomputePoolAvg(sector);
+        Store.saveNow();
+        showToast(`相关度已更新：${r.total} 只中命中 ${r.hit} 只（按相关度可点表头排序）`, 'success');
+      } catch (e) {
+        console.warn('计算相关度失败', e);
+        showToast('计算相关度失败：' + (e && e.message ? e.message : e), 'error');
+      } finally {
+        sectorFilter.bizLoading = false;
+      }
     }
     /** 板块详情内按筛选条件过滤后的成分股 */
     const filteredSectorDetailStocks = computed(() => {
@@ -4125,6 +4322,79 @@ const app = createApp({
     const hotDetailIsStock = ref(false);
 
     /**
+     * 热门板块：点击子版块后的「去除股票」选项弹窗状态。
+     * 四个子版块（当日热门板块 / 盘前热点板块 / 振幅板块 / 当日热门股票）共用这一份勾选，
+     * 勾选结果在本次会话内记住，不必每次重选。
+     */
+    const hotExclude = reactive({
+      show: false,
+      label: '',
+      kind: 'board',                                        // 'board' | 'stock'
+      no301: false, no688: false, noBj: false, noST: false,  // 四种剔除规则
+      pending: null                                         // 待载入的目标 { type, board|stock }
+    });
+
+    /**
+     * 点击「当日热门板块」中的某个板块（入口）：
+     * 先弹出「去除股票」选项，确认后再真正载入 —— 保证剔除发生在「筛选板块」出现内容之前。
+     */
+    function askHotExclude(payload) {
+      if (!payload) return;
+      if (payload.type === 'board' && (!payload.board || !payload.board.bk)) {
+        showToast('该板块缺少板块代码，请重新「获取热门板块」', 'error');
+        return;
+      }
+      if (payload.type === 'stock' && (!payload.stock || !payload.stock.code)) {
+        showToast('该股票缺少代码，请重新「获取热门板块」', 'error');
+        return;
+      }
+      hotExclude.pending = payload;
+      hotExclude.kind = payload.type;
+      hotExclude.label = payload.type === 'stock'
+        ? (payload.stock.name || payload.stock.code)
+        : payload.board.name;
+      hotExclude.show = true;
+    }
+    function cancelHotExclude() {
+      hotExclude.show = false;
+      hotExclude.pending = null;
+    }
+    async function confirmHotExclude() {
+      const p = hotExclude.pending;
+      hotExclude.show = false;
+      hotExclude.pending = null;
+      if (!p) return;
+      // 若上一批成分股仍在补全字段（hotBoardLoading=true），openHotBoard 会直接 return，
+      // 用户会觉得「点了应用并载入却毫无反应」。这里先等它收尾，最多等 30s。
+      var waited = 0;
+      while (hotBoardLoading.value && waited < 30000) {
+        await new Promise(function (r) { setTimeout(r, 200); });
+        waited += 200;
+      }
+      if (hotBoardLoading.value) {
+        showToast('上一批仍在加载中，请稍候再试', 'warn');
+        return;
+      }
+      if (p.type === 'board') await openHotBoard(p.board);
+      else await openHotStock(p.stock);
+    }
+    /**
+     * 热门页「去除股票」规则判定。
+     * 需求口径：去除301 = 代码以 301 开头；去除688 = 代码以 688 开头；
+     * 去除北交所 = 4/8/92 开头；去除ST = 名称含 ST/*ST。
+     */
+    function hotExcluded(s) {
+      if (!s) return false;
+      const code = String(pureCode(s.code) || '');
+      const name = String(s.name || '');
+      if (hotExclude.no301 && /^301/.test(code)) return true;
+      if (hotExclude.no688 && /^688/.test(code)) return true;
+      if (hotExclude.noBj && /^(4|8|92)/.test(code)) return true;
+      if (hotExclude.noST && /ST/i.test(name)) return true;
+      return false;
+    }
+
+    /**
      * 点击「当日热门板块」中的某个板块：
      * 把该板块的全部成分股载入下方「当日股票明细」，字段与格式与筛选板块完全一致。
      */
@@ -4138,9 +4408,16 @@ const app = createApp({
       hotBoardLoading.value = true;
       showToast(`正在获取「${b.name}」成分股...`, 'info');
       try {
-        const list = await StockAPI.getSectorStocks(b.bk);
-        if (!list || !list.length) {
+        const all = await StockAPI.getSectorStocks(b.bk);
+        if (!all || !all.length) {
           showToast('未获取到成分股（可能受网络限制），可稍后重试', 'error');
+          return;
+        }
+        // 载入前先按弹窗勾选的规则剔除，避免先展示再删
+        const list = all.filter(s => !hotExcluded({ code: s.code, name: s.name }));
+        const removed = all.length - list.length;
+        if (!list.length) {
+          showToast('成分股已被所选「去除股票」规则全部剔除，请放宽条件后重试', 'error');
           return;
         }
         const daily = Store.getDailyStocks(hotDate.value);
@@ -4156,7 +4433,8 @@ const app = createApp({
         if (!filterPanel.locked) resetHotFilterRanges();
         filterPanel.poolId = 'hot';
         hotFilterStocks.value = daily.stocks;
-        showToast(`已载入「${b.name}」${daily.stocks.length} 只成分股，正在补全字段...`, 'success');
+        showToast(`已载入「${b.name}」${daily.stocks.length} 只成分股`
+          + (removed ? `（已剔除 ${removed} 只）` : '') + '，正在补全字段...', 'success');
         await refreshHotStocks();
       } catch (e) {
         console.warn('板块成分股获取失败', e);
@@ -4187,6 +4465,11 @@ const app = createApp({
       const code = s.code;
       if (!code) {
         showToast('该股票缺少代码，请重新「获取热门板块」', 'error');
+        return;
+      }
+      // 与板块成分股同一套「去除股票」规则：勾选了规则且该股命中时，直接不载入
+      if (hotExcluded({ code: code, name: s.name })) {
+        showToast(`「${s.name || code}」命中所选「去除股票」规则，已跳过载入`, 'warn');
         return;
       }
       if (hotBoardLoading.value) return;
@@ -5031,6 +5314,7 @@ const app = createApp({
       cloud, cloudModal, openCloudModal, cloudLogin, syncToCloud, syncFromCloud, cloudLogout, toggleAutoSync,
       // 页面1
       newsFilter, selectedNewsIds, sortedNews, filteredNews,
+      doubaoSearch,
       financePush, toggleFinanceLock,
       financePushNews, onFinanceStockSearch, addFinanceStock, removeFinanceStock, pushFinanceNews,
       sortKey, sortDir, sortBy, sortIcon,
@@ -5056,7 +5340,7 @@ const app = createApp({
       quickAdd, quickAddSearch, quickAddBlur, quickAddPick, quickAddSubmit,
     sectorResultsMain, sectorResultsSub, sectorResultsIdx,
       sectorPick, sectorPickCount, toggleSelectAllSector, confirmSectorPick,
-      visibleSectorPickStocks, sectorPickFiltered,
+      visibleSectorPickStocks, sectorPickFiltered, computeSectorPickRelevance, pickChg,
       sectorPickIndustries, sectorPickIndustryLoaded, loadSectorPickIndustries,
       sectorSel, sectorSelCount, sectorSelIntersecting, sectorSelError,
       addSubSector, removeSubSector, clearSectorSel, startIntersectFilter, openSectorSelPick,
@@ -5065,6 +5349,7 @@ const app = createApp({
       sortedSectorDetailStocks, sortSectorDetailBy, sectorSortIcon,
       sectorFilter, sectorDetailIndustries, filteredSectorDetailStocks,
       resetSectorFilter, toggleSectorFilterLock, sectorIndustryOpen,
+      computeSectorDetailRelevance,
       sectorFilterOpen, sectorInfoOpen, favInfoOpen, filterInfoOpen, poolInfoOpen,
       // AI 语义选股（含结果 增删改）
       semantic, semanticSearch, saveSemanticAsPool,
@@ -5077,6 +5362,7 @@ const app = createApp({
       // 页面3
       hotDate, hotLoading, hotBoards, hotStocks, preMarketBoards, amplitudeBoards, conceptFreq,
       hotBoardActive, hotBoardLoading, hotDetailIsStock, openHotBoard, openHotStock, clearHotBoard,
+      hotExclude, askHotExclude, cancelHotExclude, confirmHotExclude,
       hotFilterStocks,
       hotSearchCode, hotSearchName, clearHotSearch,
       sortedHotStocks, sortHotBy, hotSortIcon, removeHotStock,
