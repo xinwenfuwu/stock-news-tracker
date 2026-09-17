@@ -287,17 +287,63 @@
     });
   }
 
-  /** 准入码：管理员审核通过后生成，发给注册者，注册者粘贴后即可登录 */
+  /**
+   * 准入码：管理员审核 / 授权后生成，发给注册者，注册者粘贴后即可登录。
+   *
+   * batch16 重要改造：码里除了身份，还带上「授权信息」——
+   *   status / trialUntil / trialDays / registerDate / quotaMonths / disableDate
+   * 原因：本项目是纯静态站，账号表存在各自设备的 localStorage，管理员的审批与授权
+   * （尤其是「试用三天」）只写在他自己机器上。以前准入码只带身份，用户粘贴后本机
+   * 账号虽变成已通过，但试用期 / 会员额度一概没有，于是仍然登录不了 ——
+   * 这正是「管理员已授权三天，用户却一直提示等待审核」的根因。
+   * 现在无论账号是 active 还是「pending 但已开试用」，都能生成码，且授权随码走。
+   */
   function makeApproveCode(u) {
     return packCode(CODE_TAG_OK, {
-      v: 1,
+      v: 2,
       username: u.username,
       hash: u.hash,
       pwSeal: u.pwSeal || '',
       role: u.role === ROLE.ADMIN ? ROLE.ADMIN : ROLE.USER,
+      status: statusOf(u) === STATUS.ACTIVE ? STATUS.ACTIVE : STATUS.PENDING,
       approvedAt: u.reviewedAt || Date.now(),
-      approvedBy: u.reviewedBy || ''
+      approvedBy: u.reviewedBy || '',
+      /* ---- 授权信息：随码同步到用户设备 ---- */
+      trialUntil: Number(u.trialUntil) || 0,
+      trialDays: Number(u.trialDays) || 0,
+      trialGrantedAt: Number(u.trialGrantedAt) || 0,
+      registerDate: String(u.registerDate || ''),
+      quotaMonths: Number(u.quotaMonths) || 0,
+      disableDate: String(u.disableDate || '')
     });
+  }
+
+  /** 从准入码载荷里读出授权信息（兼容 v1 旧码：无 status → 按已通过、无试用处理） */
+  function readGrantFromCode(d) {
+    return {
+      status: String(d.status || '') === STATUS.PENDING ? STATUS.PENDING : STATUS.ACTIVE,
+      trialUntil: Number(d.trialUntil) || 0,
+      trialDays: Number(d.trialDays) || 0,
+      trialGrantedAt: Number(d.trialGrantedAt) || 0,
+      registerDate: String(d.registerDate || ''),
+      quotaMonths: Number(d.quotaMonths) || 0,
+      disableDate: String(d.disableDate || '')
+    };
+  }
+
+  /** 把授权信息写进本机账号，让管理员那边的审批 / 试用 / 会员额度完整同步过来 */
+  function applyGrant(u, g) {
+    if (g.trialUntil > 0) {
+      u.trialUntil = g.trialUntil;
+      u.trialDays = g.trialDays || u.trialDays || 0;
+      if (g.trialGrantedAt) u.trialGrantedAt = g.trialGrantedAt;
+    } else {
+      u.trialUntil = 0;
+      u.trialDays = 0;
+    }
+    if (g.registerDate) u.registerDate = g.registerDate;
+    if (g.quotaMonths > 0) u.quotaMonths = g.quotaMonths;
+    if (g.disableDate) u.disableDate = g.disableDate;
   }
 
   /* ================= 设备 / 时段 ================= */
@@ -795,17 +841,33 @@
       if (!v.ok) return Promise.resolve(v);
       this.users = loadUsers();
       var exist = findUser(this.users, v.username);
-      if (exist && statusOf(exist) !== STATUS.REJECTED) {
-        var st = statusOf(exist);
-        return Promise.resolve({
-          ok: false,
-          error: st === STATUS.PENDING
-            ? '该用户名已提交注册，正在等待管理员审核'
-            : '该用户名已被使用，请换一个'
-        });
+      // 已通过的账号直接拒绝；待审核的先不拦，等算出哈希确认是同一个人的密码再说
+      if (exist && statusOf(exist) === STATUS.ACTIVE) {
+        return Promise.resolve({ ok: false, error: '该用户名已被使用，请换一个' });
       }
       return makePasswordHash(v.password).then(function (hash) {
         var now = Date.now();
+        // batch16：本机已有同名「待审核」记录时不再报错——换设备 / 忘记自己提交过的情况下
+        // 用户会反复注册，每次都以为要重新申请。密码一致就直接把同一个申请码再给他一次。
+        if (exist && statusOf(exist) === STATUS.PENDING) {
+          // 注意：密码哈希带随机 salt，同一个密码每次算出的 hash 都不一样，
+          // 所以不能拿 hash 字符串直接比，必须用 verifyPassword 真正校验一次。
+          return verifyPassword(v.password, exist.hash).then(function (okPwd) {
+            if (!okPwd) {
+              return {
+                ok: false,
+                error: '该用户名已提交过注册申请。若这是你自己的账号，请用注册时设置的密码重新提交，即可取回同一个申请码'
+              };
+            }
+            if (!exist.pwSeal) exist.pwSeal = sealPassword(v.password);
+            exist.updatedAt = Date.now();
+            saveUsers(self.users);
+            return {
+              ok: true, user: publicUser(exist),
+              requestCode: makeRequestCode(exist), alreadySubmitted: true
+            };
+          });
+        }
         var u = {
           username: v.username, role: ROLE.USER, hash: hash,
           pwSeal: sealPassword(v.password),
@@ -1011,8 +1073,13 @@
       if (!this.isAdmin()) return { ok: false, error: '仅管理员可生成准入码' };
       var u = findUser(loadUsers(), username);
       if (!u) return { ok: false, error: '用户不存在' };
-      if (statusOf(u) !== STATUS.ACTIVE) return { ok: false, error: '该账号尚未通过审核' };
-      return { ok: true, approveCode: makeApproveCode(u) };
+      if (statusOf(u) === STATUS.REJECTED) return { ok: false, error: '该账号已被驳回，无法生成准入码' };
+      if (u.disabled) return { ok: false, error: '该账号已停用，请先「启用」再生成准入码' };
+      // batch16：pending 但已开试用的账号也要能出码，否则「授权三天」传不到用户设备上
+      if (statusOf(u) !== STATUS.ACTIVE && !trialState(u).active) {
+        return { ok: false, error: '该账号既未通过审核也没有试用，请先在「待审核注册申请」里点通过或开通试用' };
+      }
+      return { ok: true, approveCode: makeApproveCode(u), status: statusOf(u), trial: trialState(u) };
     },
 
     /* ---------- 试用：管理员给普通用户开一段试用期 ---------- */
@@ -1040,10 +1107,13 @@
       if (!u.registerDate) u.registerDate = localDateStr(now);
       u.updatedAt = now;
       if (!saveUsers(this.users)) return { ok: false, error: '保存失败：浏览器本地存储不可用' };
+      // batch16：试用只写在本机账号表里，纯静态站没有服务端，不同步给对方设备就永远不生效。
+      // 所以这里一并返回准入码，管理员把它发给用户，用户粘贴后本机才有同一段试用期。
       return {
         ok: true, user: adminUser(u), days: d,
         untilText: localMinStr(u.trialUntil),
-        label: TRIAL_DAY_LABEL[d] || (d + ' 天')
+        label: TRIAL_DAY_LABEL[d] || (d + ' 天'),
+        approveCode: makeApproveCode(u)
       };
     },
 
@@ -1128,35 +1198,45 @@
       }
       this.users = loadUsers();
       var exist = findUser(this.users, v.value);
+      var now = Date.now();
+      /* 授权信息：v1 旧码没有这些字段，一律按「已通过、无试用」处理 */
+      var grant = readGrantFromCode(d);
       if (exist) {
         // 本机已有同名记录：只有哈希一致才允许覆盖，避免用别人的码顶掉本机账号
         if (exist.hash !== d.hash) {
           return { ok: false, error: '本机已存在账号「' + v.value + '」，与准入码不匹配' };
         }
-        exist.status = STATUS.ACTIVE;
+        exist.status = grant.status;
         exist.role = d.role === ROLE.ADMIN ? ROLE.ADMIN : (exist.role || ROLE.USER);
         if (typeof d.pwSeal === 'string' && d.pwSeal) exist.pwSeal = d.pwSeal;
-        exist.reviewedAt = Number(d.approvedAt) || Date.now();
+        exist.reviewedAt = Number(d.approvedAt) || now;
         exist.reviewedBy = String(d.approvedBy || '');
-        exist.updatedAt = Date.now();
+        applyGrant(exist, grant);
+        exist.updatedAt = now;
       } else {
-        var now = Date.now();
         exist = {
           username: v.value,
           role: d.role === ROLE.ADMIN ? ROLE.ADMIN : ROLE.USER,
           hash: d.hash,
           pwSeal: typeof d.pwSeal === 'string' ? d.pwSeal : '',
-          disabled: false, status: STATUS.ACTIVE,
+          disabled: false, status: grant.status,
           createdAt: now, updatedAt: now,
           reviewedAt: Number(d.approvedAt) || now,
           reviewedBy: String(d.approvedBy || ''),
           importedByCode: true, logins: []
         };
+        applyGrant(exist, grant);
         // 用准入码导入的记录必须置顶，否则 hasUsers() 为真时会被误判为「本机已有主账号」
         this.users.push(exist);
       }
       if (!saveUsers(this.users)) return { ok: false, error: '保存失败：浏览器本地存储不可用' };
-      return { ok: true, user: publicUser(exist) };
+      var tr = trialState(exist);
+      return {
+        ok: true, user: publicUser(exist),
+        status: exist.status,
+        trial: tr.active,
+        untilText: tr.until ? localMinStr(tr.until) : ''
+      };
     },
 
     /** 解析一段码，供界面判断是申请码还是准入码（不做任何写入） */
@@ -1171,6 +1251,20 @@
         username: d.username || '',
         createdAt: Number(d.createdAt || d.approvedAt) || null
       };
+    },
+
+    /**
+     * 注册者取回自己的申请码（本机存在待审核记录时可用）。
+     * batch16：换设备或忘了自己提交过的情况下，用户会反复注册；
+     * 这里让他能直接把同一个申请码再发给管理员，而不用重新填一遍。
+     */
+    requestCodeFor: function (username) {
+      var u = findUser(loadUsers(), String(username == null ? '' : username).trim());
+      if (!u) return { ok: false, error: '本机没有该账号的注册记录' };
+      if (statusOf(u) !== STATUS.PENDING) {
+        return { ok: false, error: '该账号已通过审核，无需申请码；若仍无法登录，请向管理员索取准入码' };
+      }
+      return { ok: true, username: u.username, requestCode: makeRequestCode(u) };
     },
 
     /* ---------- 密码查看（仅管理员） ---------- */

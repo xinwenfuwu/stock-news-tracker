@@ -27,7 +27,7 @@
   'use strict';
 
   // 与 index.html 中静态资源版本号保持一致，避免升级后命中旧缓存
-  var ASSET_V = '20260917o';
+  var ASSET_V = '20260917p';
 
   // 管理员点开「注册申请导入链接」后，申请码暂存在这里，等业务层（app.js）就绪后取走
   var IMPORT_KEY = 'snt-pending-import-v1';
@@ -58,6 +58,46 @@
     elMsg.hidden = false;
     elMsg.textContent = text;
     elMsg.className = 'auth-msg auth-msg-' + (type || 'info');
+  }
+
+  function escHtml(s) {
+    return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+    });
+  }
+
+  /** 带按钮的提示（内容由本文件常量拼装，用户名经 escHtml 转义） */
+  function showMsgHtml(html, type) {
+    if (!elMsg) return;
+    if (!html) { showMsg(''); return; }
+    elMsg.hidden = false;
+    elMsg.innerHTML = html;
+    elMsg.className = 'auth-msg auth-msg-' + (type || 'info');
+  }
+
+  /**
+   * batch16：账号停在「待审核」时不能只丢一句「等待管理员审核」就完事。
+   * 管理员那边的通过 / 授权只写在他自己设备上，纯静态站没有服务端同步，
+   * 用户必须拿到「准入码」粘到本机才能登录 —— 这里把这条出路直接摆到他面前。
+   */
+  function showPendingGuide(username) {
+    var html = ''
+      + '<div class="auth-guide-title">⏳ 该账号还需要一步才能登录</div>'
+      + '<div class="auth-guide-text">本系统没有服务端，管理员在他自己设备上「通过审核 / 开通试用」'
+      + '<b>不会自动同步到这台设备</b>。请让管理员把一串「准入码」发给你，粘贴到本机后即可用原密码登录。</div>'
+      + '<div class="auth-msg-actions">'
+      + '<button type="button" class="auth-guide-btn" id="auth-guide-code">📋 我有准入码，去粘贴</button>'
+      + '<button type="button" class="auth-guide-btn auth-guide-btn-ghost" id="auth-guide-resend">📨 复制我的申请码</button>'
+      + '</div>';
+    showMsgHtml(html, 'warn');
+    var b1 = document.getElementById('auth-guide-code');
+    if (b1) b1.addEventListener('click', function () { showMsg(''); showForm('code'); });
+    var b2 = document.getElementById('auth-guide-resend');
+    if (b2) b2.addEventListener('click', function () {
+      var r = Auth.requestCodeFor(username);
+      if (!r || !r.ok) { showMsg((r && r.error) || '取回申请码失败', 'error'); return; }
+      copyText(buildRegMessage(r.username, r.requestCode), '申请信息已复制，发给管理员即可');
+    });
   }
 
   function setBusy(text) {
@@ -470,7 +510,13 @@
         var remember = $('#login-remember') ? $('#login-remember').checked : true;
         setBusy('正在验证…');
         Auth.login(u, p, remember).then(function (r) {
-          if (!r.ok) { setBusy(''); showMsg(r.error, 'error'); return; }
+          if (!r.ok) {
+            setBusy('');
+            // 待审核：给出可操作的下一步（粘贴准入码 / 重新取申请码），而不是干等
+            if (r.status === Auth.STATUS.PENDING) showPendingGuide(u);
+            else showMsg(r.error, 'error');
+            return;
+          }
           setBusy('登录成功，正在进入…');
           enterApp();
         }).catch(function (err) {
@@ -507,6 +553,11 @@
             : '';
           showForm('regdone');
           showMsg('');
+          // batch16：同一台设备重复提交时不再报错，直接把同一个申请码再给一次，并说清楚不用重复申请
+          if (r.alreadySubmitted) {
+            showMsg('这台设备已经提交过「' + ((r.user && r.user.username) || lastReg.username)
+              + '」的注册申请，下面还是同一个申请码，直接发给管理员即可，不必重复提交。', 'warn');
+          }
           // 顺手帮用户把「发给管理员」的消息准备好（静默尝试：注册是异步回调，
           // 已脱离用户手势，剪贴板可能被浏览器拒绝，失败不提示，用户可点按钮手动复制）
           tryCopySilently(code ? buildRegMessage(lastReg.username, code) : '');

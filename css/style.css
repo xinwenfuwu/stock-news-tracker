@@ -2066,8 +2066,59 @@ body.guest-mode #app { display: none; }
   font-size: 13px; font-weight: 500; padding: 9px 16px;
 }
 .auth-btn.auth-btn-ghost:hover:not(:disabled) { color: #fff; background: var(--primary); }
-/* 注册完成页的「请主动通知管理员」提示框 */
-.auth-alert-box {
+/* 注册完成页的「← 返回登录」：与 ghost 同尺寸但用中性色，避免和主操作抢焦点 */
+.auth-btn.auth-btn-back {
+  margin-top: 8px;
+  color: var(--text-secondary); background: #f3f4f6;
+  border: 1px solid var(--border);
+  font-size: 13px; font-weight: 600; padding: 9px 16px;
+}
+.auth-btn.auth-btn-back:hover:not(:disabled) { color: #fff; background: var(--text-secondary); }
+.approve-code-modal { width: 560px; max-width: 94vw; text-align: left; }
+.approve-code-modal .auth-code-lg { width: 100%; margin: 10px 0 4px; }
+.approve-code-modal .modal-actions { display: flex; gap: 8px; justify-content: flex-end; }
+/* 统计时间窗口时间栏（batch16：三板块统一，15:00 换日，可改起止 + 独立刷新） */
+.stat-win {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 6px;
+  margin: 8px 0 6px; padding: 7px 10px;
+  background: #f8fafc; border: 1px solid var(--border); border-radius: 8px;
+}
+.stat-win .sw-label { font-size: 12.5px; font-weight: 600; color: var(--text-secondary); white-space: nowrap; }
+.stat-win .sw-sep { color: var(--text-placeholder); }
+.stat-win .sw-input {
+  padding: 4px 6px; font-size: 12.5px; color: var(--text);
+  background: #fff; border: 1px solid var(--border); border-radius: 5px;
+}
+.stat-win .sw-input:disabled { opacity: 0.6; }
+.stat-win .sw-btn {
+  padding: 5px 10px; font-size: 12.5px; font-weight: 600; cursor: pointer;
+  color: #fff; background: var(--primary); border: 1px solid var(--primary); border-radius: 5px;
+}
+.stat-win .sw-btn:hover:not(:disabled) { background: var(--primary-hover); }
+.stat-win .sw-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+.stat-win .sw-btn.sw-btn-ghost { color: var(--primary); background: #fff; }
+.stat-win .sw-btn.sw-btn-ghost:hover:not(:disabled) { color: #fff; background: var(--primary); }
+/* 板块标题里的小刷新按钮（跨站重合榜 / 主题分类统计各自独立刷新） */
+.sw-btn.sw-inline { padding: 2px 8px; font-size: 11.5px; margin-left: 6px; vertical-align: middle; }
+.stat-win .sw-text { font-size: 12px; color: var(--text-placeholder); white-space: nowrap; }
+/* 在窄屏（手机）里让时间栏换行不挤成一团 */
+@media (max-width: 640px) {
+  .stat-win { gap: 5px; }
+  .stat-win .sw-text { width: 100%; }
+}
+
+/* 登录页「待审核」引导：说明 + 两个操作按钮 */
+.auth-guide-title { font-weight: 700; margin-bottom: 5px; }
+.auth-guide-text { line-height: 1.7; opacity: 0.95; }
+.auth-guide-text b { text-decoration: underline; }
+.auth-msg-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+.auth-guide-btn {
+  padding: 7px 12px; font-size: 12.5px; font-weight: 600; cursor: pointer;
+  color: #fff; background: var(--primary); border: 1px solid var(--primary); border-radius: 6px;
+}
+.auth-guide-btn:hover { background: var(--primary-hover); }
+.auth-guide-btn.auth-guide-btn-ghost { color: var(--primary); background: #fff; }
+.auth-guide-btn.auth-guide-btn-ghost:hover { color: #fff; background: var(--primary); }
   display: flex; flex-direction: column; gap: 4px;
   margin: 10px 0 2px; padding: 10px 12px;
   font-size: 12px; line-height: 1.7; color: #92400e;
@@ -2608,7 +2659,16 @@ body.guest-mode #app { display: none; }
 .btn-notice:hover { background: linear-gradient(135deg, #e0e7ff, #bfdbfe); }
 .notice-modal { width: 620px; max-width: 94vw; text-align: left; }
 .notice-sub { color: var(--text-placeholder); font-size: 12.5px; line-height: 1.6; margin: 2px 0 14px; }
-.notice-body { max-height: 64vh; overflow-y: auto; padding-right: 4px; }
+.notice-body { max-height: 72vh; overflow-y: auto; padding-right: 4px; }
+/* 限时优惠活动：用户要求置于正文上方，醒目展示 */
+.notice-promo {
+  margin: 0 0 12px; padding: 10px 12px; border-radius: 8px;
+  background: linear-gradient(135deg, #fff7ed, #fef3c7);
+  border: 1px solid #fcd34d;
+}
+.notice-promo-title { font-size: 13.5px; font-weight: 700; color: #b45309; margin-bottom: 5px; }
+.notice-promo p { margin: 0; font-size: 13.5px; line-height: 1.75; color: var(--text-secondary); }
+.notice-promo b { color: #b91c1c; font-size: 14.5px; }
 .notice-item { display: flex; gap: 10px; padding: 10px 0; border-top: 1px dashed var(--border); }
 .notice-item:first-child { border-top: none; padding-top: 2px; }
 .notice-idx { flex: 0 0 auto; width: 22px; height: 22px; border-radius: 50%; background: #fee2e2; color: var(--danger);

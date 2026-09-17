@@ -793,6 +793,102 @@
     return raw;
   }
 
+  /* ================= 统计时间窗口（batch16） =================
+   * 需求：跨站重合榜 / 主题分类统计 / 格隆汇每日快讯 三个板块的时间口径统一，
+   * 并且「一天」的分界不是 24:00，而是每天 15:00（A股收盘后换日）。
+   * 于是默认窗口 = 昨天 15:00 → 今天 15:00，用户可自行改成任意区间。
+   */
+
+  /** 一天的分界时点（小时）。15 表示「当天 15:00 之后算第二天」 */
+  var WIN_CUTOFF_HOUR = 15;
+
+  function pad2(n) { return (n < 10 ? '0' : '') + n; }
+
+  /** Date → 'YYYY-MM-DDTHH:mm'，可直接喂给 <input type="datetime-local"> */
+  function toLocalInputValue(d) {
+    return fmtLocalDate(d) + 'T' + pad2(d.getHours()) + ':' + pad2(d.getMinutes());
+  }
+
+  /** 'YYYY-MM-DDTHH:mm' → Date（按本地时间解析；非法返回 null） */
+  function fromLocalInputValue(s) {
+    var m = /^(\d{4})-(\d{2})-(\d{2})[T ](\d{2}):(\d{2})/.exec(String(s || '').trim());
+    if (!m) return null;
+    var d = new Date(+m[1], +m[2] - 1, +m[3], +m[4], +m[5], 0, 0);
+    return isNaN(d.getTime()) ? null : d;
+  }
+
+  /** 默认结束时间：现在（用户要求「默认现在，可修改」） */
+  function defaultWindowEnd(now) {
+    var d = now ? new Date(now.getTime()) : new Date();
+    d.setSeconds(0, 0);
+    return d;
+  }
+
+  /** 默认开始时间：昨天 15:00（收盘换日口径） */
+  function defaultWindowStart(now) {
+    var d = now ? new Date(now.getTime()) : new Date();
+    d.setDate(d.getDate() - 1);
+    d.setHours(WIN_CUTOFF_HOUR, 0, 0, 0);
+    return d;
+  }
+
+  /**
+   * 快速跳到「上一个完整统计日」：以 15:00 为界。
+   * 若现在还没到今天 15:00，上一个完整日 = [前天15:00, 昨天15:00)；
+   * 若已过今天 15:00，则 = [昨天15:00, 今天15:00)。
+   */
+  function lastClosedWindow(now) {
+    var n = now ? new Date(now.getTime()) : new Date();
+    var end = new Date(n.getFullYear(), n.getMonth(), n.getDate(), WIN_CUTOFF_HOUR, 0, 0, 0);
+    if (n.getTime() < end.getTime()) end.setDate(end.getDate() - 1);
+    var start = new Date(end.getTime());
+    start.setDate(start.getDate() - 1);
+    return { start: start, end: end };
+  }
+
+  /** 时间戳 → 'YYYY年M月D日 HH:mm'（展示用，与需求里的格式一致） */
+  function fmtWindowCN(ts) {
+    var d = new Date(Number(ts));
+    if (isNaN(d.getTime())) return '';
+    return d.getFullYear() + '年' + (d.getMonth() + 1) + '月' + d.getDate() + '日 ' + pad2(d.getHours()) + ':' + pad2(d.getMinutes());
+  }
+
+  /** 闭开区间判断：[start, end) */
+  function inWindow(ts, startMs, endMs) {
+    var t = Number(ts);
+    if (!isFinite(t)) return false;
+    return t >= Number(startMs) && t < Number(endMs);
+  }
+
+  /**
+   * 解析快讯的时间字段。briefs 里是 'YYYY-MM-DD HH:mm'（北京时间）。
+   * 统一按「本地时间」解析 —— 与窗口输入的口径保持一致。
+   */
+  function parseBriefTime(s) {
+    var m = /^(\d{4})-(\d{2})-(\d{2})[T ](\d{2}):(\d{2})/.exec(String(s || '').trim());
+    if (!m) return null;
+    return new Date(+m[1], +m[2] - 1, +m[3], +m[4], +m[5], 0, 0).getTime();
+  }
+
+  /**
+   * 统计窗口覆盖到哪些快照日期（自然日）。
+   * 快照每天一份、且历史快照没有逐条时间戳，只能按「日」粒度纳入，
+   * 所以这里把与窗口有交集的自然日全部返回，由调用方再按条级时间戳精筛。
+   */
+  function windowSnapshotDates(startMs, endMs) {
+    var out = [];
+    var s = new Date(Number(startMs)), e = new Date(Number(endMs));
+    if (isNaN(s.getTime()) || isNaN(e.getTime())) return out;
+    var cur = new Date(s.getFullYear(), s.getMonth(), s.getDate());
+    var last = new Date(e.getFullYear(), e.getMonth(), e.getDate());
+    var guard = 0;
+    while (cur.getTime() <= last.getTime() && guard++ < 400) {
+      out.push(fmtLocalDate(cur));
+      cur.setDate(cur.getDate() + 1);
+    }
+    return out;
+  }
+
   global.HotTopics = {
     CATEGORIES, CATEGORY_COLORS, SOURCE_ORDER, SOURCE_BY_KEY,
     classify, normalizeTitle, bigrams, jaccard, signalTokens, isSameTopic,
@@ -803,7 +899,12 @@
     BRIEF_INDUSTRY_DIMS, BRIEF_INDUSTRY_KEYWORDS,
     BRIEF_MODES,
     decodeEntities, isJunkTitle, cleanTitle,
-    fmtLocalDate, todayStr, snapshotCandidates
+    fmtLocalDate, todayStr, snapshotCandidates,
+    /* 统计时间窗口（15:00 换日口径） */
+    WIN_CUTOFF_HOUR,
+    toLocalInputValue, fromLocalInputValue,
+    defaultWindowStart, defaultWindowEnd, lastClosedWindow,
+    fmtWindowCN, inWindow, parseBriefTime, windowSnapshotDates
   };
   if (typeof module !== 'undefined' && module.exports) module.exports = global.HotTopics;
 })(typeof window !== 'undefined' ? window : globalThis);

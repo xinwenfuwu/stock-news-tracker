@@ -322,7 +322,14 @@ assert('注册后状态为待审核', reg1.user.status === 'pending', reg1.user 
 assert('注册不会自动登录', Auth.isLoggedIn() === true && Auth.user.username === 'admin');
 const regDup = await Auth.register('zhangsan', 'Zhangsan2');
 assert('重复账号被拒（已提交待审核）', regDup.ok === false, regDup.error);
-assert('重复提示说明在等审核', /正在等待管理员审核/.test(regDup.error), regDup.error);
+/* batch16：密码不一致时的提示改为「引导取回申请码」，比原来的「等待审核」更有 actionable */
+assert('重复提示引导用原密码取回申请码', /已提交过注册申请/.test(regDup.error) && /取回同一个申请码/.test(regDup.error), regDup.error);
+/* batch16：同一个人用**同一个密码**重复提交，应直接复用并把同一个申请码再给一次（不再报错） */
+const regSame = await Auth.register('zhangsan', 'Zhangsan1');
+assert('同密码重复注册：直接复用成功', regSame.ok === true, regSame.error);
+assert('同密码重复注册：标记 alreadySubmitted', regSame.alreadySubmitted === true, JSON.stringify(regSame.alreadySubmitted));
+assert('同密码重复注册：返回同一个申请码', regSame.requestCode === reg1.requestCode, regSame.requestCode);
+assert('同密码重复注册：账号仍是待审核', regSame.user.status === 'pending', regSame.user && regSame.user.status);
 const regDupCase = await Auth.register('ZhangSan', 'Zhangsan2');
 assert('账号判重不区分大小写', regDupCase.ok === false, regDupCase.error);
 const regWeak = await Auth.register('wangwu', 'abcdefgh');

@@ -15,6 +15,12 @@ const ROOT = join(__dirname, '..');
 const HT_SNAPSHOT_KEEP_DAYS = 60;
 /** 格隆汇快讯保留天数：单日约 0.45MB，比热点快照大，单独控制以约束仓库体积 */
 const BRIEF_KEEP_DAYS = 30;
+/** 每个站点抓取并保留的热点条数。
+ * batch16：以前固定 10 条，用户反馈「统计的还是前 10 个」；
+ * 现在提高到 50 条，让跨站重合榜 / 主题分类统计能覆盖时间段内的更多实时快讯。
+ */
+const HOT_TOPN = 50;
+
 /** 单条快讯正文最大保留字符数（快讯正文通常在 100~300 字，超长多为转载长文） */
 const BRIEF_TEXT_MAX = 500;
 
@@ -98,26 +104,26 @@ function parseSource(parse, key, payload) {
     if (Array.isArray(payload)) list = payload;
     else if (payload && payload.r) list = payload.r;
     else if (payload && payload.data && payload.data.list) list = payload.data.list;
-    for (const it of (list || []).slice(0, 10)) push([it.title, it.summary].filter(Boolean).join('：'), it.showTime, it.uniqueUrl || '');
+    for (const it of (list || []).slice(0, HOT_TOPN)) push([it.title, it.summary].filter(Boolean).join('：'), it.showTime, it.uniqueUrl || '');
   } else if (parse === 'json_toutiao') {
     const arr = (payload && payload.data) || [];
-    for (const it of arr.slice(0, 10)) {
+    for (const it of arr.slice(0, HOT_TOPN)) {
       let u = it.Url || '';
       if (u && !/^https?:/i.test(u)) u = 'https://www.toutiao.com/' + u.replace(/^\//, '');
       push(it.Title || it.title, '', u);
     }
   } else if (parse === 'json_wscn') {
     const arr = (payload && payload.data && payload.data.items) || [];
-    for (const it of arr.slice(0, 10)) push(it.content_text || it.content, it.display_time, it.uri ? 'https://wallstreetcn.com/' + it.uri : '');
+    for (const it of arr.slice(0, HOT_TOPN)) push(it.content_text || it.content, it.display_time, it.uri ? 'https://wallstreetcn.com/' + it.uri : '');
   } else if (parse === 'json_cailian') {
     const arr = Array.isArray(payload && payload.data) ? payload.data : ((payload && payload.data && payload.data.data) || []);
-    for (const it of arr.slice(0, 10)) push(it.content || it.title, it.publish_time || it.ctime, 'https://www.cailianpress.com/');
+    for (const it of arr.slice(0, HOT_TOPN)) push(it.content || it.title, it.publish_time || it.ctime, 'https://www.cailianpress.com/');
   } else if (parse === 'json_xueqiu') {
     const arr = (payload && payload.items) || (payload && payload.list) || [];
-    for (const it of arr.slice(0, 10)) push(it.title || it.description || it.text, '', it.target ? ('https://xueqiu.com' + it.target) : '');
+    for (const it of arr.slice(0, HOT_TOPN)) push(it.title || it.description || it.text, '', it.target ? ('https://xueqiu.com' + it.target) : '');
   } else if (parse === 'json_gelonghui') {
     const arr = (payload && payload.result && payload.result.data) || (payload && payload.data) || [];
-    for (const it of arr.slice(0, 10)) push(it.content || it.title || it.text, it.created_at || it.time, 'https://www.gelonghui.com/');
+    for (const it of arr.slice(0, HOT_TOPN)) push(it.content || it.title || it.text, it.created_at || it.time, 'https://www.gelonghui.com/');
   } else if (parse && parse.startsWith('html_')) {
     // HTML 兜底：剥离脚本/样式/注释后，正则抽取正文标题链接
     const html = String(payload || '')
@@ -136,7 +142,7 @@ function parseSource(parse, key, payload) {
     const re = /<a[^>]*href=["']([^"']*)["'][^>]*>([\s\S]{6,160}?)<\/a>/gi;
     let m; const seen = new Set(); let scanned = 0;
     while ((m = re.exec(html))) {
-      if (out.length >= 10 || ++scanned > 600) break;   // 扫描全页候选，过滤后取前 10
+      if (out.length >= HOT_TOPN || ++scanned > 600) break;   // 扫描全页候选，过滤后取前 10
       const t = ht.cleanTitle(m[2]);
       if (!t || seen.has(t)) continue;
       seen.add(t);
@@ -145,7 +151,7 @@ function parseSource(parse, key, payload) {
   } else if (payload && typeof payload === 'object') {
     const arr = payload.data || payload.result || payload.list || payload.items || (payload.data && payload.data.list) || [];
     if (Array.isArray(arr)) {
-      for (const it of arr.slice(0, 10)) {
+      for (const it of arr.slice(0, HOT_TOPN)) {
         if (typeof it === 'string') push(it);
         else push(it.title || it.text || it.content || it.summary || it.subject || it.digest || it.intro, it.time || it.ctime || it.created_at, it.url || it.link || it.uri);
       }

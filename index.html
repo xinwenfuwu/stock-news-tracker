@@ -4,12 +4,12 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>股市信息分析系统</title>
-  <link rel="stylesheet" href="css/style.css?v=20260917o">
+  <link rel="stylesheet" href="css/style.css?v=20260917p">
   <!-- Vue 3 全局构建版（v3.4.21 · 自托管）
        原先走 unpkg.com CDN：国内网络对 unpkg 的连通性不稳定，一旦该请求长时间挂起，
        <head> 里的阻塞脚本会让整页停在白屏、后续 auth-boot.js 根本不会执行。
        改为同源托管后，启动链路不再依赖任何第三方 CDN。 -->
-  <script src="js/vue.global.prod.js?v=20260917o"></script>
+  <script src="js/vue.global.prod.js?v=20260917p"></script>
 </head>
 <body class="auth-locked">
   <!-- ===== 登录关卡：登录通过前业务脚本不会被加载 ===== -->
@@ -55,12 +55,11 @@
         <textarea class="auth-code auth-code-lg" id="reg-code" rows="8" readonly spellcheck="false"></textarea>
         <p class="auth-tip" id="reg-code-hint"></p>
         <button class="auth-btn" type="button" id="auth-reg-send">📨 复制申请信息，发给管理员</button>
-        <button class="auth-btn auth-btn-ghost" type="button" id="auth-reg-copy">只复制申请码</button>
+        <button class="auth-btn" type="button" id="auth-reg-copy">只复制申请码</button>
+        <button class="auth-btn auth-btn-back" type="button" id="auth-reg-done-back">← 返回登录</button>
         <p class="auth-tip">把上面的申请码整段（或只复制那一长串码）发给管理员即可，他粘进「用户管理 → 待审核注册申请」审核；通过后会把一串「准入码」发回给你。</p>
         <p class="auth-tip">管理员与你在同一台设备时，直接用他账号进「用户管理 → 待审核注册申请」点通过即可，不必转发申请码。</p>
-        <div class="auth-links">
-          <button type="button" class="auth-link" id="auth-reg-done-back">返回登录</button>
-        </div>
+        <p class="auth-tip"><b>拿到管理员回传的「准入码」后</b>，回到登录页点「已通过审核？粘贴准入码」，写入本机即可登录。</p>
       </div>
 
       <!-- 粘贴准入码 -->
@@ -666,11 +665,31 @@
           </div>
         </div>
 
+        <!-- 准入码面板（batch16：管理员把审批 / 试用授权转达给用户） -->
+        <div class="modal-overlay" v-if="approveCodeModal.show" @click.self="approveCodeModal.show = false">
+          <div class="modal approve-code-modal">
+            <h3>🔑 {{ approveCodeModal.title }}</h3>
+            <p class="notice-sub" v-if="approveCodeModal.desc">{{ approveCodeModal.desc }}</p>
+            <textarea class="auth-code auth-code-lg" :value="approveCodeModal.code" rows="6" readonly spellcheck="false"></textarea>
+            <div class="modal-actions">
+              <button class="btn btn-primary" @click="copyApproveCode()">📋 复制准入码</button>
+              <button class="btn" @click="approveCodeModal.show = false">关闭</button>
+            </div>
+          </div>
+        </div>
+
         <!-- 用户须知弹窗（入口在「会员服务」左侧） -->
         <div class="modal-overlay" v-if="userNoticeModal.show" @click.self="userNoticeModal.show = false">
           <div class="modal notice-modal">
             <h3>📋 用户须知</h3>
             <p class="notice-sub">使用前请先阅读。以下为操作提示与风险提示，仅供参考，不构成任何投资建议。</p>
+
+            <!-- 限时优惠活动：按用户要求置于正文上方 -->
+            <div class="notice-promo">
+              <div class="notice-promo-title">🎁 限时优惠活动</div>
+              <p>介绍新增股友，可获得新股友 <b>10%</b> 费用的优惠奖励，直至新股友退出为止。</p>
+            </div>
+
             <div class="notice-body">
               <div class="notice-item">
                 <span class="notice-idx">一</span>
@@ -708,9 +727,7 @@
               <div class="notice-item">
                 <span class="notice-idx">五</span>
                 <div class="notice-text">
-                  <p>自己使用的软件不要告诉任何人；使用者之间可以进行共同学习和交流。</p>
-                  <p class="notice-strong">限时优惠活动</p>
-                  <p>介绍新增股友，可获得新股友 10% 费用的优惠奖励，直至新股友退出为止。</p>
+                  <p>悟道以后，请帮助更多需要帮助的人，股友之间相互学习参悟，愿诸君早日悟道。</p>
                 </div>
               </div>
             </div>
@@ -879,6 +896,23 @@
 
             <!-- ===== 统计分析：跨站重合 + 各站分类 ===== -->
             <div v-show="htTab === 'analysis'" id="ht-analysis">
+              <!-- 统计时间窗口（batch16：以每天 15:00 为换日节点，起止可改，与快讯板块统一口径） -->
+              <div class="stat-win">
+                <span class="sw-label">新闻统计开始时间</span>
+                <input type="datetime-local" class="sw-input" v-model="analysisWinStart" :disabled="analysisLoading"
+                       title="统计开始时间（默认昨天 15:00，可修改）">
+                <span class="sw-sep">-</span>
+                <input type="datetime-local" class="sw-input" v-model="analysisWinEnd" :disabled="analysisLoading"
+                       title="统计结束时间（默认现在，可修改）">
+                <button class="sw-btn" :disabled="analysisLoading" @click="runAnalysis"
+                        title="按上面这段时间重新统计两个板块">
+                  🔄 {{ analysisLoading ? '刷新中…' : '刷新' }}
+                </button>
+                <button class="sw-btn sw-btn-ghost" :disabled="analysisLoading" @click="resetAnalysisWin"
+                        title="恢复默认：昨天 15:00 → 现在">重置</button>
+                <span class="sw-text" v-if="analysisWinText">{{ analysisWinText }}</span>
+              </div>
+
               <div class="ht-controls">
                 <label class="ht-label">时间段</label>
                 <div class="seg">
@@ -892,7 +926,10 @@
               <template v-else-if="analysisResult">
                 <div class="ht-split">
                   <div class="ht-split-left">
-                    <h4 class="sub-title">跨站重合榜 <span class="muted small">（同一话题在 N/10 个站点出现，点「展开」看具体站点）</span></h4>
+                    <h4 class="sub-title">跨站重合榜 <span class="muted small">（同一话题在 N/10 个站点出现，点「展开」看具体站点）</span>
+                      <button class="sw-btn sw-inline" :disabled="analysisLoading" @click="runAnalysis"
+                              title="按上方时间窗口单独刷新本板块">🔄 刷新</button>
+                    </h4>
                     <div class="overlap-list">
                       <div class="overlap-item" v-for="(c, i) in analysisResult.clusters" :key="i">
                         <div class="ov-head">
@@ -917,7 +954,10 @@
                   </div>
 
                   <aside class="ht-split-right">
-                    <h4 class="sub-title">主题分类统计 <span class="muted small">（行业 / 概念 / 产品 / 产业 / 科技，一条新闻可命中多个）</span></h4>
+                    <h4 class="sub-title">主题分类统计 <span class="muted small">（行业 / 概念 / 产品 / 产业 / 科技，一条新闻可命中多个）</span>
+                      <button class="sw-btn sw-inline" :disabled="analysisLoading" @click="runAnalysis"
+                              title="按上方时间窗口单独刷新本板块">🔄 刷新</button>
+                    </h4>
                     <div class="theme-stats">
                       <div class="theme-dim" v-for="d in analysisResult.themeStats" :key="d.key">
                         <div class="theme-dim-head" @click="d._open = !d._open">
@@ -1010,6 +1050,23 @@
               </span>
             </div>
 
+            <!-- 统计时间窗口（batch16：以每天 15:00 为换日节点，起止可改，本板块独立刷新） -->
+            <div class="stat-win" id="brief-stat-win">
+              <span class="sw-label">新闻统计开始时间</span>
+              <input type="datetime-local" class="sw-input" v-model="briefWinStart" :disabled="briefLoading"
+                     title="统计开始时间（默认昨天 15:00，可修改）">
+              <span class="sw-sep">-</span>
+              <input type="datetime-local" class="sw-input" v-model="briefWinEnd" :disabled="briefLoading"
+                     title="统计结束时间（默认现在，可修改）">
+              <button class="sw-btn" :disabled="briefLoading" @click="refreshBriefCloseWindow"
+                      title="按上面这段时间重新统计（本板块独立刷新，不影响其他板块）">
+                🔄 {{ briefLoading ? '刷新中…' : '刷新' }}
+              </button>
+              <button class="sw-btn sw-btn-ghost" :disabled="briefLoading" @click="resetBriefWin"
+                      title="恢复默认：昨天 15:00 → 现在">重置</button>
+              <span class="sw-text" v-if="briefWinText">{{ briefWinText }}</span>
+            </div>
+
             <div class="brief-controls">
               <div class="brief-row">
                 <select class="brief-date" v-model="briefDate" @change="onBriefDateChange" :disabled="briefLoading || !briefDates.length">
@@ -1019,8 +1076,8 @@
                 <!-- 独立刷新按钮：按「股票闭市周期」重新统计，不按自然日 -->
                 <button class="btn btn-sm brief-refresh" :disabled="briefLoading"
                         @click="refreshBriefCloseWindow"
-                        title="按股票闭市周期刷新：15:00 前刷新统计「昨天 15:00 → 现在」，15:00 后刷新统计「今天 15:00 → 现在」">
-                  🔄 {{ briefLoading ? '刷新中…' : '刷新（闭市周期）' }}
+                        title="按上方时间窗口刷新；默认「昨天 15:00 → 现在」，以每天 15:00 为换日节点">
+                  🔄 {{ briefLoading ? '刷新中…' : '刷新（按时间）' }}
                 </button>
               </div>
               <div class="brief-search-wrap">
@@ -3045,8 +3102,8 @@
     </transition>
   </div>
 
-  <script src="js/auth.js?v=20260917o"></script>
-  <script src="js/auth-boot.js?v=20260917o"></script>
+  <script src="js/auth.js?v=20260917p"></script>
+  <script src="js/auth-boot.js?v=20260917p"></script>
   <!-- store / stock-api / hot-topics / app 由 auth-boot.js 在登录通过后动态装载，
        未登录时它们不会被下载，业务数据也不会进入内存 -->
 </body>

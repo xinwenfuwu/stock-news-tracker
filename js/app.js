@@ -285,8 +285,19 @@ const app = createApp({
       if (!A) return;
       const r = A.grantTrial(u.username, days);
       if (!r.ok) { showToast(r.error, 'error'); refreshUserList(); return; }
-      showToast(`已给「${u.username}」开通${r.label}试用（至 ${r.untilText}），他可以直接登录了`, 'success');
+      showToast(`已给「${u.username}」开通${r.label}试用（至 ${r.untilText}）`, 'success');
       refreshUserList();
+      /* batch16：试用只落在这台设备的账号表里。不把准入码转给对方，
+       * 他那边就没有这段试用期，登录时依旧提示「等待管理员审核」。 */
+      if (r.approveCode) {
+        showApproveCodePanel({
+          title: `「${u.username}」已开通${r.label}试用（至 ${r.untilText}）`,
+          desc: '试用期目前只写在这台设备上。如果对方用别的手机 / 电脑登录，'
+            + '必须把这串准入码发给他，他在登录页粘贴后，本机才会有同一段试用期。'
+            + '不转发的话，他那边仍然会提示「等待管理员审核」。',
+          code: r.approveCode
+        });
+      }
     }
 
     function revokeUserTrial(u) {
@@ -434,9 +445,13 @@ const app = createApp({
       if (!A) return;
       const r = A.approveCodeFor(u.username);
       if (!r.ok) { showToast(r.error, 'error'); return; }
-      if (confirm(`「${u.username}」的准入码（发给对方粘贴即可登录）：\n\n${r.approveCode}\n\n现在复制到剪贴板吗？`)) {
-        copyText(r.approveCode, '准入码已复制');
-      }
+      copyText(r.approveCode, '准入码已复制到剪贴板');
+      showApproveCodePanel({
+        title: `「${u.username}」的准入码`,
+        desc: '把这串码发给对方，他在登录页点「已通过审核？粘贴准入码」粘贴后即可用注册时设置的密码登录。'
+          + '码里同时带了他当前的审核状态、试用期与会员额度，粘贴后两边授权保持一致。',
+        code: r.approveCode
+      });
     }
 
     /** 管理员查看密码：按需从混淆存储还原，只放在内存里 */
@@ -1497,6 +1512,24 @@ const app = createApp({
     // 用户须知（入口在「会员服务」左侧）
     const userNoticeModal = reactive({ show: false });
     function openUserNotice() { userNoticeModal.show = true; }
+
+    /* batch16：准入码展示面板。
+     * 以前用 prompt() 弹长串码，很多浏览器（尤其移动端 / 微信内置）会拦或截断，
+     * 管理员复制不到，用户就拿不到授权 —— 这是「已授权三天却登不进」的关键一环。
+     * 现在统一用这个面板：完整展示 + 一键复制。 */
+    const approveCodeModal = reactive({ show: false, title: '', desc: '', code: '' });
+    function showApproveCodePanel(opts) {
+      const o = opts || {};
+      approveCodeModal.title = o.title || '准入码';
+      approveCodeModal.desc = o.desc || '';
+      approveCodeModal.code = String(o.code || '');
+      approveCodeModal.show = true;
+    }
+    function copyApproveCode() {
+      const code = approveCodeModal.code;
+      if (!code) return;
+      copyText(code, '准入码已复制，发给对方即可');
+    }
 
     /* ============ 本地数据管理（入口在「用户须知」左侧） ============
      * 纯静态站没有服务端，所有业务数据都存在当前浏览器（localStorage）里。
@@ -4268,6 +4301,27 @@ const app = createApp({
     // 窗口 = [最近一个已过去的 15:00, 现在]，即按股票收盘时刻切分，而不是按自然日。
     const briefWindowItems = ref([]);  // 窗口内的快讯（跨天合并、按时间倒序）
     const briefWindow = reactive({ on: false, start: '', end: '' });
+    /* batch16：可编辑的统计时间窗口（三板块统一口径，默认「昨天 15:00 → 现在」）。
+     * 以前闭市周期是写死计算的，用户没法改；现在起止都能改，改完点刷新即时重算。 */
+    const briefWinStart = ref('');
+    const briefWinEnd = ref('');
+    function ht_() { return (typeof HotTopics !== 'undefined') ? HotTopics : null; }
+    function resetBriefWin() {
+      const HT = ht_();
+      if (!HT || !HT.defaultWindowStart) return;
+      briefWinStart.value = HT.toLocalInputValue(HT.defaultWindowStart());
+      briefWinEnd.value = HT.toLocalInputValue(HT.defaultWindowEnd());
+    }
+    resetBriefWin();
+    /** 时间栏文案：'2026年9月16日 15:00 - 2026年9月17日 15:00' */
+    const briefWinText = computed(() => {
+      const HT = ht_();
+      if (!HT || !HT.fromLocalInputValue || !HT.fmtWindowCN) return '';
+      const s = HT.fromLocalInputValue(briefWinStart.value);
+      const e = HT.fromLocalInputValue(briefWinEnd.value);
+      if (!s || !e) return '';
+      return HT.fmtWindowCN(s.getTime()) + ' - ' + HT.fmtWindowCN(e.getTime());
+    });
     const briefKeyword = ref('');      // 关键词
     const briefLoading = ref(false);
     const briefError = ref('');
@@ -4356,6 +4410,25 @@ const app = createApp({
     const analysisRange = ref('3d');
     const analysisLoading = ref(false);
     const analysisResult = ref(null);
+    /* batch16：统计分析（跨站重合榜 / 主题分类统计）的统计时间窗口。
+     * 与快讯板块同口径：以每天 15:00 换日，默认「昨天 15:00 → 现在」，可改。 */
+    const analysisWinStart = ref('');
+    const analysisWinEnd = ref('');
+    function resetAnalysisWin() {
+      const HT = ht_();
+      if (!HT || !HT.defaultWindowStart) return;
+      analysisWinStart.value = HT.toLocalInputValue(HT.defaultWindowStart());
+      analysisWinEnd.value = HT.toLocalInputValue(HT.defaultWindowEnd());
+    }
+    resetAnalysisWin();
+    const analysisWinText = computed(() => {
+      const HT = ht_();
+      if (!HT || !HT.fromLocalInputValue || !HT.fmtWindowCN) return '';
+      const s = HT.fromLocalInputValue(analysisWinStart.value);
+      const e = HT.fromLocalInputValue(analysisWinEnd.value);
+      if (!s || !e) return '';
+      return HT.fmtWindowCN(s.getTime()) + ' - ' + HT.fmtWindowCN(e.getTime());
+    });
 
     function catColor(c) {
       return (typeof HotTopics !== 'undefined' && HotTopics.CATEGORY_COLORS[c]) || '#6b7280';
@@ -4700,12 +4773,22 @@ const app = createApp({
      */
     async function refreshBriefCloseWindow() {
       if (briefLoading.value) return;
-      const w = briefCloseWindow();
+      // batch16：起止时间改为可编辑；没填 / 填错时给出明确提示，不再悄悄用默认值
+      const HT = ht_();
+      let s = HT && HT.fromLocalInputValue ? HT.fromLocalInputValue(briefWinStart.value) : null;
+      let e = HT && HT.fromLocalInputValue ? HT.fromLocalInputValue(briefWinEnd.value) : null;
+      if (!s || !e) { showToast('请先填写完整的统计开始时间与结束时间', 'error'); return; }
+      if (s.getTime() >= e.getTime()) { showToast('统计开始时间必须早于结束时间', 'error'); return; }
+      const w = { start: s, end: e };
       const startStr = fmtDateTime(w.start);   // 'YYYY-MM-DD HH:mm'，与快讯 time 字段同格式
       const endStr = fmtDateTime(w.end);
-      const days = [fmtDate(w.start)];
-      const endDay = fmtDate(w.end);
-      if (days.indexOf(endDay) < 0) days.push(endDay);
+      // 以 15:00 换日后窗口可能跨自然日，把覆盖到的每一天都拉来再按时间戳精筛
+      const days = (HT && HT.windowSnapshotDates) ? HT.windowSnapshotDates(s.getTime(), e.getTime()) : [];
+      if (!days.length) {
+        days.push(fmtDate(w.start));
+        const endDay = fmtDate(w.end);
+        if (days.indexOf(endDay) < 0) days.push(endDay);
+      }
 
       briefLoading.value = true;
       briefError.value = '';
@@ -4853,9 +4936,22 @@ const app = createApp({
       analysisLoading.value = true;
       analysisResult.value = null;
       try {
-        const today = hotTopicDate.value || fmtDate(new Date());
-        const dates = [];
-        for (let i = 0; i < opt.days; i++) dates.push(dateMinusDays(today, i));
+        // batch16：时间口径改为「统计窗口」（15:00 换日、起止可改）；
+        // 窗口没填或填错时才回退到原来的「近 N 天」。
+        const HT = ht_();
+        const ws = (HT && HT.fromLocalInputValue) ? HT.fromLocalInputValue(analysisWinStart.value) : null;
+        const we = (HT && HT.fromLocalInputValue) ? HT.fromLocalInputValue(analysisWinEnd.value) : null;
+        let dates = [];
+        let winStartMs = null, winEndMs = null;
+        if (ws && we && ws.getTime() < we.getTime()) {
+          winStartMs = ws.getTime();
+          winEndMs = we.getTime();
+          dates = HT.windowSnapshotDates(winStartMs, winEndMs);
+        } else {
+          const today = hotTopicDate.value || fmtDate(new Date());
+          for (let i = 0; i < opt.days; i++) dates.push(dateMinusDays(today, i));
+        }
+        if (!dates.length) dates.push(fmtDate(new Date()));
         const snapshots = await Promise.all(dates.map(async d => {
           const local = getLocalHotTopicSnapshot(d);
           if (local) return local;
@@ -4872,6 +4968,11 @@ const app = createApp({
           dayCount++;
           for (const s of snap.sources) {
             for (const it of (s.items || [])) {
+              // batch16：有逐条时间戳的按窗口精筛；历史快照没有 time，只能整日纳入（避免丢数据）
+              if (winStartMs != null && it.time && HT && HT.parseBriefTime && HT.inWindow) {
+                const ts = HT.parseBriefTime(it.time);
+                if (ts != null && !HT.inWindow(ts, winStartMs, winEndMs)) continue;
+              }
               flat.push({
                 sourceRank: s.rank, sourceKey: s.key, sourceName: s.name,
                 text: it.text, time: it.time, url: it.url, cat: it.cat || '财经', date: snap.date
@@ -6178,9 +6279,13 @@ const app = createApp({
       onBriefSourcePick, commitBriefSource,
       briefDimMode, briefDimModes, setBriefDim, briefDimLabel, briefDimCount,
       briefWindow, briefWindowItems, refreshBriefCloseWindow, clearBriefWindow,
+      // batch16：可编辑统计时间窗口（15:00 换日，三板块统一）
+      briefWinStart, briefWinEnd, briefWinText, resetBriefWin,
       onBriefDateChange, toggleBriefCat, moreBriefNews, hlBrief, autoLoadBriefs, loadBriefsNow,
       htTab, htMode, htLiveNote, hotTopicDate, hotTopicDateHasData, htCatFilter, htCategories, htRangeOptions, localSnapshotDates,
       analysisRange, analysisLoading, analysisResult, filteredHotSources,
+      // batch16：统计分析的统计时间窗口（15:00 换日，与快讯板块同口径）
+      analysisWinStart, analysisWinEnd, analysisWinText, resetAnalysisWin,
       catColor, htSourceColor, htSourceName, ratioClass, setHtMode, onHotTopicDateChange, runAnalysis,
       toggleThemeTopic, moreThemeNews,
       // 筛选板块
@@ -6231,6 +6336,8 @@ const app = createApp({
       approveUserByAdmin, rejectUserByAdmin, importRequestCode,
       showApproveCode, toggleRevealPassword, revealPendingPassword,
       copyPassword, toggleLoginLog,
+      // batch16：准入码面板（管理员把授权转达给用户）
+      approveCodeModal, copyApproveCode,
       // 注册申请站内提醒
       pendingCount, pendingNewCount, adminAlert, dismissAdminAlert, goReviewPending
     };
