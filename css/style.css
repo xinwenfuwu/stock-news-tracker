@@ -2250,3 +2250,20 @@ body.auth-locked { overflow: hidden; }
   display: inline-block; margin-left: 6px; padding: 1px 6px; border-radius: 6px;
   font-size: 11px; line-height: 1.5; color: #b42318; background: #fee4e2; border: 1px solid #fda29b;
 }
+
+/* ===== 新闻 AI 解读字段 ===== */
+.news-ai-bar {
+  display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+  padding: 8px 10px; margin-bottom: 6px;
+  background: linear-gradient(135deg, rgba(106,92,255,.08), rgba(155,92,255,.08));
+  border: 1px solid rgba(106,92,255,.25); border-radius: 8px;
+}
+.news-ai-bar .muted { color: var(--muted, #888); }
+.news-table .cell-ai { min-width: 200px; max-width: 320px; vertical-align: top; }
+.ai-text {
+  max-height: 88px; overflow: auto; line-height: 1.45; font-size: 12px;
+  white-space: pre-wrap; word-break: break-word; color: var(--text, #222);
+}
+.ai-state { font-size: 13px; font-weight: 600; align-self: center; }
+.ai-state.ok { color: #16a34a; }
+.ai-state.warn { color: #d97706; }

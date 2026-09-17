@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>股市信息分析系统</title>
-  <link rel="stylesheet" href="css/style.css?v=20260917d">
+  <link rel="stylesheet" href="css/style.css?v=20260917e">
   <!-- Vue 3 全局构建版（CDN，无需构建步骤） -->
   <script src="https://unpkg.com/vue@3.4.21/dist/vue.global.prod.js"></script>
 </head>
@@ -146,7 +146,7 @@
               <option value="">全部分类</option>
               <option v-for="c in allCategories" :key="c" :value="c">{{ c }}</option>
             </select>
-            <input class="search-input" v-model="newsFilter.customTag" placeholder="搜索自定义标记...">
+            <input class="search-input" v-model="newsFilter.customTag" placeholder="搜索散户参考...">
           </div>
           <div class="toolbar-right">
             <button class="btn btn-primary" @click="openImportDialog">📥 导入新闻</button>
@@ -174,9 +174,9 @@
                 <th class="col-owner">用户</th>
                 <th class="col-date">日期</th>
                 <th class="col-news">新闻</th>
-                <th>概念分类</th>
-                <th>行业分类</th>
-                <th>自定义标记</th>
+                <th>新闻解读参考</th>
+                <th>利好利空</th>
+                <th>散户参考</th>
                 <th class="col-stock">股票名称</th>
                 <th>新闻当天股价</th>
                 <th>924股价</th>
@@ -206,14 +206,14 @@
                 <td class="cell-news" :title="item.content">
                   <div class="news-text">{{ item.content }}</div>
                 </td>
-                <td>
-                  <input class="cell-input" v-model="item.conceptCategory" placeholder="—">
+                <td class="cell-ai">
+                  <div class="ai-text" :title="item.conceptCategory">{{ item.conceptCategory || '—' }}</div>
                 </td>
-                <td>
-                  <input class="cell-input" v-model="item.industryCategory" placeholder="—">
+                <td class="cell-ai">
+                  <div class="ai-text" :title="item.industryCategory">{{ item.industryCategory || '—' }}</div>
                 </td>
-                <td>
-                  <input class="cell-input" v-model="item.customTag" placeholder="—">
+                <td class="cell-ai">
+                  <div class="ai-text" :title="item.customTag">{{ item.customTag || '—' }}</div>
                 </td>
                 <td class="cell-stock">
                   <span class="stock-badge" v-for="(s, i) in parseStocks(item.relatedStocks)" :key="i"
@@ -1780,10 +1780,25 @@
             <label>新闻内容</label>
             <textarea v-model="newsModal.data.content" rows="4" placeholder="输入或粘贴新闻内容"></textarea>
           </div>
-          <div class="form-row-3">
-            <div><label>概念分类</label><input v-model="newsModal.data.conceptCategory"></div>
-            <div><label>行业分类</label><input v-model="newsModal.data.industryCategory"></div>
-            <div><label>自定义标记</label><input v-model="newsModal.data.customTag"></div>
+          <div class="news-ai-bar">
+            <button class="btn btn-ai" @click="generateNewsInterpretation" :disabled="aiGenerating || !newsModal.data.content || !newsModal.data.content.trim()">
+              <span v-if="aiGenerating">⏳ AI 生成中...</span>
+              <span v-else>🤖 AI 生成解读</span>
+            </button>
+            <span class="muted small" v-if="!aiConfigured">未配置 AI 接口（设置 → AI 解读）</span>
+            <span class="muted small" v-else>将依据新闻内容+关联股票生成三段解读，可手动微调</span>
+          </div>
+          <div class="form-row">
+            <label>新闻解读参考（AI：此新闻意味着什么 / 利好什么 / 利空什么）</label>
+            <textarea v-model="newsModal.data.conceptCategory" rows="3" placeholder="点击「🤖 AI 生成解读」自动填充，或手动填写"></textarea>
+          </div>
+          <div class="form-row">
+            <label>利好利空（AI：利好概念/行业、利空概念/行业）</label>
+            <textarea v-model="newsModal.data.industryCategory" rows="3" placeholder="如：利好概念：AI芯片、算力｜利好行业：半导体｜利空概念：…｜利空行业：…"></textarea>
+          </div>
+          <div class="form-row">
+            <label>散户参考（AI：如果你是散户应如何操作，仅供参考）</label>
+            <textarea v-model="newsModal.data.customTag" rows="3" placeholder="点击「🤖 AI 生成解读」自动填充，或手动填写"></textarea>
           </div>
           <div class="form-row">
             <label>股票名称/代码（输入名称自动联想代码，可添加多只）</label>
@@ -2256,6 +2271,19 @@
             <p><b>想要浏览器端真·实时抓取？</b>部署一个 Cloudflare Worker 代理（免费 10 万次/天，代码在仓库 <code>worker/news-proxy.js</code>，详见导入页步骤）。填入地址后刷新即走实时链路。若 <code>*.workers.dev</code> 在国内被拦截，可在 Cloudflare 给 Worker 绑定自有域名；不配也完全可用（走上面的自动快照）。</p>
           </div>
           <div class="form-row">
+            <label>AI 解读接口（可选 · OpenAI 兼容）「新闻追踪」页的「🤖 AI 生成解读」按钮会调用此接口，自动生成「新闻解读参考 / 利好利空 / 散户参考」三段内容。需自备 LLM API Key（如 DeepSeek / OpenAI）。</label>
+            <input v-model="aiEndpoint" placeholder="https://api.deepseek.com/v1/chat/completions">
+          </div>
+          <div class="form-row-3">
+            <div><label>API Key</label><input type="password" v-model="aiKey" placeholder="sk-...（仅存本地浏览器）"></div>
+            <div><label>模型名</label><input v-model="aiModel" placeholder="如 deepseek-chat"></div>
+            <div><label>状态</label><span :class="['ai-state', aiConfigured ? 'ok' : 'warn']">{{ aiConfigured ? '✅ 已配置' : '⚠️ 未配置' }}</span></div>
+          </div>
+          <div class="info-box small">
+            <p><b>密钥安全：</b>Key 仅保存在你本机浏览器的 localStorage，不会上传到本站服务器（本站是纯静态 GitHub Pages，无后端）。多设备需各自配置。</p>
+            <p><b>国内 CORS 问题：</b>若浏览器直接调用官方接口报「跨域/CORS」被拦截，可部署仓库里的 <code>worker/ai-proxy.js</code>（Cloudflare Worker，免费），把 Key 放在 Worker 端、浏览器只调 Worker 地址即可同时规避跨域与密钥暴露。详见该文件注释。</p>
+          </div>
+          <div class="form-row">
             <label>数据存储</label>
             <div class="storage-info">
               <span>当前数据量：{{ dataStats.news }} 条新闻，{{ dataStats.pools }} 个股票池</span>
@@ -2550,8 +2578,8 @@
     </transition>
   </div>
 
-  <script src="js/auth.js?v=20260917d"></script>
-  <script src="js/auth-boot.js?v=20260917d"></script>
+  <script src="js/auth.js?v=20260917e"></script>
+  <script src="js/auth-boot.js?v=20260917e"></script>
   <!-- store / stock-api / hot-topics / app 由 auth-boot.js 在登录通过后动态装载，
        未登录时它们不会被下载，业务数据也不会进入内存 -->
 </body>

@@ -1073,6 +1073,97 @@ const app = createApp({
       showToast('已删除', 'success');
     }
 
+    // ---------- AI 新闻解读（OpenAI 兼容，浏览器端调用用户自己的 Key）----------
+    const aiGenerating = ref(false);
+    const aiConfigured = computed(() =>
+      !!(D.settings.aiEndpoint && D.settings.aiEndpoint.trim()) &&
+      !!(D.settings.aiKey && D.settings.aiKey.trim()) &&
+      !!(D.settings.aiModel && D.settings.aiModel.trim())
+    );
+
+    // 通用 OpenAI 兼容调用；返回 { ok, content } 或 { ok:false, error }
+    async function callOpenAICompat(messages) {
+      const endpoint = (D.settings.aiEndpoint || '').trim();
+      const key = (D.settings.aiKey || '').trim();
+      const model = (D.settings.aiModel || '').trim();
+      if (!endpoint || !key || !model) {
+        return { ok: false, error: '未配置 AI 接口（设置 → AI 解读：需填写 API 地址、密钥、模型）' };
+      }
+      try {
+        const ctrl = new AbortController();
+        const timer = setTimeout(() => ctrl.abort(), 60000);
+        const r = await fetch(endpoint, {
+          method: 'POST',
+          signal: ctrl.signal,
+          headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + key },
+          body: JSON.stringify({ model, messages, temperature: 0.6, stream: false })
+        });
+        clearTimeout(timer);
+        if (!r.ok) {
+          let detail = '';
+          try { detail = (await r.text()).slice(0, 200); } catch (e) {}
+          return { ok: false, error: 'AI 接口返回 ' + r.status + (detail ? '：' + detail : '') };
+        }
+        const j = await r.json();
+        const content = j && j.choices && j.choices[0] && j.choices[0].message && j.choices[0].message.content;
+        if (!content) return { ok: false, error: 'AI 返回内容为空' };
+        return { ok: true, content: String(content) };
+      } catch (e) {
+        let msg = (e && e.message) ? e.message : String(e);
+        if (/abort|timeout/i.test(msg)) msg = 'AI 请求超时（60s），请检查网络或接口地址';
+        else if (/Failed to fetch|CORS|NetworkError|跨域/i.test(msg)) msg = 'AI 请求被拦截（多为 CORS/网络）：建议把接口地址指向你的 Cloudflare Worker 代理（见设置说明）';
+        return { ok: false, error: msg };
+      }
+    }
+
+    // 把 AI 返回文本解析成三段：新闻解读参考 / 利好利空 / 散户参考
+    function parseInterpretation(text) {
+      const out = { ref: '', bull: '', retail: '' };
+      const mRef = text.match(/【?\s*新闻解读参考\s*】?([\s\S]*?)(?=【?\s*利好利空\s*】?|$)/);
+      const mBull = text.match(/【?\s*利好利空\s*】?([\s\S]*?)(?=【?\s*散户参考\s*】?|$)/);
+      const mRetail = text.match(/【?\s*散户参考\s*】?([\s\S]*?)$/);
+      if (mRef) out.ref = mRef[1].trim();
+      if (mBull) out.bull = mBull[1].trim();
+      if (mRetail) out.retail = mRetail[1].trim();
+      if (!out.ref && !out.bull && !out.retail) out.ref = text.trim();
+      return out;
+    }
+
+    // 依据当前新闻内容+关联股票，调用 AI 生成三段解读并写回三个字段
+    async function generateNewsInterpretation() {
+      const d = newsModal.data;
+      if (!d || !d.content || !d.content.trim()) {
+        showToast('请先填写新闻内容再生成 AI 解读', 'error');
+        return;
+      }
+      if (!aiConfigured.value) {
+        showToast('请先在「设置 → AI 解读」填写 API 地址、密钥、模型', 'error');
+        return;
+      }
+      aiGenerating.value = true;
+      try {
+        const stocks = (parseStocks(d.relatedStocks) || []).map(s => s.name || pureCode(s.code)).filter(Boolean);
+        const stockLine = stocks.length ? ('关联股票：' + stocks.join('、')) : '关联股票：无';
+        const sys = '你是资深 A 股财经分析师，语言精炼、专业、客观，不夸大、不喊单。';
+        const user = '请解读以下财经新闻，并严格按下面三段格式输出（保留【】标记，不要加额外前后缀、不要使用 Markdown 代码块）：\n\n新闻内容：' + d.content + '\n' + stockLine + '\n\n【新闻解读参考】\n（用 2-4 句话说明这条新闻意味着什么、对市场预期的影响；并简要说明利好什么、利空什么）\n\n【利好利空】\n利好概念：…（用顿号分隔的关键概念，可空）\n利好行业：…（用顿号分隔的行业，可空）\n利空概念：…（用顿号分隔的关键概念，可空）\n利空行业：…（用顿号分隔的行业，可空）\n\n【散户参考】\n（站在散户视角，给出 1-3 条可操作建议：关注时机、仓位、风险控制；结尾注明「仅供参考，不构成投资建议」）';
+        const res = await callOpenAICompat([
+          { role: 'system', content: sys },
+          { role: 'user', content: user }
+        ]);
+        if (!res.ok) {
+          showToast('AI 解读失败：' + res.error, 'error');
+          return;
+        }
+        const p = parseInterpretation(res.content);
+        d.conceptCategory = p.ref;
+        d.industryCategory = p.bull;
+        d.customTag = p.retail;
+        showToast('AI 解读已生成（可手动微调后保存）', 'success');
+      } finally {
+        aiGenerating.value = false;
+      }
+    }
+
     // ============================================================
     // 页面：用户持仓（各登录用户只看自己的持仓，按用户名隔离）
     // ============================================================
@@ -4700,10 +4791,16 @@ const app = createApp({
     const showSettings = ref(false);
     const settingsText = ref('');
     const proxyUrl = ref('');
+    const aiEndpoint = ref('');
+    const aiKey = ref('');
+    const aiModel = ref('');
     watch(showSettings, v => {
       if (v) {
         settingsText.value = (D.settings.categories || []).join('\n');
         proxyUrl.value = D.settings.proxyUrl || '';
+        aiEndpoint.value = D.settings.aiEndpoint || '';
+        aiKey.value = D.settings.aiKey || '';
+        aiModel.value = D.settings.aiModel || '';
       }
     });
     const dataStats = computed(() => ({
@@ -4719,6 +4816,10 @@ const app = createApp({
       Store.setCategories(cats);
       // 保存代理地址（去除末尾斜杠）
       D.settings.proxyUrl = (proxyUrl.value || '').trim().replace(/\/+$/, '');
+      // 保存 AI 解读配置
+      D.settings.aiEndpoint = (aiEndpoint.value || '').trim();
+      D.settings.aiKey = (aiKey.value || '').trim();
+      D.settings.aiModel = (aiModel.value || '').trim();
       showToast('设置已保存', 'success');
       showSettings.value = false;
     }
@@ -4924,6 +5025,7 @@ const app = createApp({
       allCategories, fmt, fmtPct, fmtSigned, fmtDateCN, numClass, pctClass, parseStocks, stocksText, pureCode,
       fmtYi, sRatio,
       showSettings, settingsText, proxyUrl, saveSettings, clearAllData, dataStats,
+      aiEndpoint, aiKey, aiModel, aiConfigured, aiGenerating, callOpenAICompat, generateNewsInterpretation,
       exportData, importData,
       // 云端同步
       cloud, cloudModal, openCloudModal, cloudLogin, syncToCloud, syncFromCloud, cloudLogout, toggleAutoSync,

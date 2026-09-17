@@ -30,7 +30,11 @@ const Store = {
       amplitudeBoards: [],    // 缓存最近一次振幅板块
       settings: {
         categories: [...this.DEFAULT_CATEGORIES],
-        proxyUrl: ''             // Cloudflare Worker 代理地址，用于一键抓取新闻
+        proxyUrl: '',            // Cloudflare Worker 代理地址，用于一键抓取新闻
+        // AI 解读（可选）：OpenAI 兼容接口，浏览器端调用，密钥仅存本地
+        aiEndpoint: '',          // 如 https://api.deepseek.com/v1/chat/completions
+        aiKey: '',               // 用户自己的 LLM API Key（仅存本地 localStorage）
+        aiModel: ''              // 模型名，如 deepseek-chat
       }
     };
   },
@@ -53,6 +57,9 @@ const Store = {
       this.data.settings = { categories: [...this.DEFAULT_CATEGORIES], proxyUrl: '' };
     }
     if (!this.data.settings.proxyUrl) this.data.settings.proxyUrl = '';
+    if (typeof this.data.settings.aiEndpoint !== 'string') this.data.settings.aiEndpoint = '';
+    if (typeof this.data.settings.aiKey !== 'string') this.data.settings.aiKey = '';
+    if (typeof this.data.settings.aiModel !== 'string') this.data.settings.aiModel = '';
     // 兼容迁移：老用户若仍是旧的5项默认分类，自动升级为新的15项默认分类
     const OLD_DEFAULTS = ['主线实体', '个股实体', '主线概念', '个股概念', '利空概念'];
     const cur = this.data.settings.categories || [];
