@@ -785,6 +785,8 @@
       news.sort((a, b) => String(b.time || '').localeCompare(String(a.time || '')));
       return { key: dim.key, name: dim.name, icon: dim.icon, color: dim.color, count: news.length, news };
     });
+    // 自动按归类条数（比例）从大到小排序，便于一眼看到占比最高的分类
+    raw.sort((a, b) => b.count - a.count);
     const max = raw.reduce((m, d) => Math.max(m, d.count), 1);
     raw.forEach(d => {
       d.pct = base ? Math.round((d.count / base) * 100) : 0;

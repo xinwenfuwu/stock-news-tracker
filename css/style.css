@@ -704,6 +704,24 @@ body {
 @media (max-width: 1100px) { .hot-layout-2 { grid-template-columns: repeat(2, 1fr); } }
 @media (max-width: 560px) { .hot-layout-2 { grid-template-columns: 1fr; } }
 
+/* 热门板块页新版式：顶行（当日热门板块 | 注意事项 | 当日热门股票）+ 三并排（盘前热点板块 | 尾盘买入法 | 振幅板块） */
+.hot-stack { display: flex; flex-direction: column; gap: 14px; margin-bottom: 20px; }
+.hot-top-row { display: grid; grid-template-columns: minmax(0, 1fr) 190px minmax(0, 1fr); gap: 14px; }
+.hot-row-3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
+.tail-buy-rubric { display: grid; grid-template-columns: 1fr 1fr; gap: 5px 12px; margin: 8px 0 6px; font-size: 12px; color: #6b7280; }
+.tail-buy-rubric .tb-rule b { color: #111827; font-weight: 700; margin-right: 2px; }
+.tail-buy-sum { font-size: 13px; margin: 4px 0 6px; }
+.tail-buy-sum b { color: #b45309; }
+.tail-buy-list { max-height: 300px; }
+@media (max-width: 1100px) {
+  .hot-top-row { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .hot-top-row .hot-notice { grid-column: 1 / -1; order: 99; }
+  .hot-row-3 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 560px) {
+  .hot-top-row, .hot-row-3 { grid-template-columns: 1fr; }
+}
+
 /* 热门板块页：向下滚动时，顶部工具栏（含「选择日期」）固定不动 */
 .hot-toolbar {
   position: sticky;
@@ -1797,6 +1815,10 @@ body {
 .brief-news-title { font-size: 12.5px; font-weight: 700; }
 .brief-item { padding: 6px 0; border-bottom: 1px dashed var(--border); }
 .brief-item:last-of-type { border-bottom: none; }
+/* 每日快讯：题材 / 概念 / 行业 三维度并排，各自按占比从大到小 */
+.brief-dims { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+.bcg-head { font-size: 13px; font-weight: 700; margin: 6px 0 4px; padding-bottom: 4px; border-bottom: 2px solid var(--border); }
+@media (max-width: 900px) { .brief-dims { grid-template-columns: 1fr; } }
 .brief-item-meta { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; margin-bottom: 3px; }
 .brief-time { font-size: 11.5px; color: var(--text-placeholder); font-variant-numeric: tabular-nums; }
 .brief-tag { font-size: 11px; padding: 1px 5px; border-radius: 4px; }

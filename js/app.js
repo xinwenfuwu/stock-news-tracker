@@ -4879,11 +4879,15 @@ const app = createApp({
       }
     }
 
-    function toggleBriefCat(key) {
-      briefUi.open[key] = !briefUi.open[key];
-      if (briefUi.open[key] && !briefUi.limit[key]) briefUi.limit[key] = 30;
+    function toggleBriefCat(key, mode) {
+      const k = (mode ? mode + '::' : '') + key;
+      briefUi.open[k] = !briefUi.open[k];
+      if (briefUi.open[k] && !briefUi.limit[k]) briefUi.limit[k] = 30;
     }
-    function moreBriefNews(key) { briefUi.limit[key] = (briefUi.limit[key] || 30) + 50; }
+    function moreBriefNews(key, mode) {
+      const k = (mode ? mode + '::' : '') + key;
+      briefUi.limit[k] = (briefUi.limit[k] || 30) + 50;
+    }
     /** 关键词高亮：先转义再包 <mark>，避免把外部快讯正文当 HTML 执行 */
     function escapeHtml(s) {
       return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({
@@ -4914,12 +4918,16 @@ const app = createApp({
         (it.subjects || []).some(s => String(s).toLowerCase().includes(k)));
     });
     const briefSearching = computed(() => !!briefKeyword.value.trim());
-    /** 分类统计（在关键词过滤后的集合上统计；维度 = 题材归类 / 概念分类 / 行业分类） */
-    const briefStatsList = computed(() => {
-      if (typeof HotTopics === 'undefined' || !HotTopics.briefStats) return [];
-      return HotTopics.briefStats(briefFiltered.value, briefDimMode.value);
-    });
-    const briefDimCount = computed(() => briefStatsList.value.length);
+    /** 分类统计（在关键词过滤后的集合上统计；三维度各自独立，内部已按占比从大到小排序） */
+    const briefThemeStats = computed(() =>
+      (typeof HotTopics !== 'undefined' && HotTopics.briefStats) ? HotTopics.briefStats(briefFiltered.value, 'theme') : []);
+    const briefConceptStats = computed(() =>
+      (typeof HotTopics !== 'undefined' && HotTopics.briefStats) ? HotTopics.briefStats(briefFiltered.value, 'concept') : []);
+    const briefIndustryStats = computed(() =>
+      (typeof HotTopics !== 'undefined' && HotTopics.briefStats) ? HotTopics.briefStats(briefFiltered.value, 'industry') : []);
+    // 兼容旧引用（统计面板标题等）
+    const briefStatsList = briefThemeStats;
+    const briefDimCount = computed(() => briefThemeStats.value.length);
 
     function autoLoadHotTopics() {
       if (hotTopicsSources.value.length || hotTopicsLoading.value) return;
@@ -5353,6 +5361,101 @@ const app = createApp({
     if (D.hotStocks && D.hotStocks.length) hotStocks.value = D.hotStocks;
     if (D.preMarketBoards && D.preMarketBoards.length) preMarketBoards.value = D.preMarketBoards;
     if (D.amplitudeBoards && D.amplitudeBoards.length) amplitudeBoards.value = D.amplitudeBoards;
+
+    // ===== 尾盘买入法筛选（batch19）：对当前「当日股票明细」按 8 项条件筛选 =====
+    // 条件：涨幅 3%-5% / 换手率 5%-10% / 量比 1.5-2.5 / 市值 50亿-200亿 /
+    //       20日线以上 / 成交量持续放大 / 分时图在黄色均价线上方 / 尾盘回抽均价线
+    // 数据口径：涨幅/换手率/市值/分时与尾盘用实时行情（均价代理）；均线与成交量用 20 日K线；
+    // 量比用「今日量 / 交易分钟 ÷ 近5日均量 / 240」代理（软条件，仅展示不硬筛）。
+    const tailBuyList = ref([]);
+    const tailBuyLoading = ref(false);
+    const tailBuyTotal = ref(0);
+    const tailBuyNote = ref('');
+    async function runTailBuyFilter() {
+      if (tailBuyLoading.value) return;
+      const pool = (hotFilterStocks.value || []).slice();
+      if (!pool.length) {
+        tailBuyList.value = []; tailBuyTotal.value = 0; tailBuyNote.value = '';
+        showToast('请先在上方点击板块 / 个股加载成分股，或点「加载当日数据」，再开始筛选', 'error');
+        return;
+      }
+      tailBuyLoading.value = true;
+      tailBuyList.value = []; tailBuyNote.value = '';
+      showToast('尾盘买入法：正在联网取实时行情与 20 日K线…', 'info');
+      try {
+        const norm = (s) => StockAPI.inferPrefix(String((s && s.code) || ''));
+        const codes = pool.map(norm).filter(Boolean);
+        let qmap = {};
+        try { qmap = await StockAPI.getQuotes(codes); } catch (e) { qmap = {}; }
+        // 1) 实时行情硬筛：涨幅 / 换手率 / 市值 / 分时均价线上方 / 尾盘回抽
+        const survivors = [];
+        for (const s of pool) {
+          const ncode = norm(s);
+          const q = (qmap && qmap[ncode]) || s;
+          const change = Number(q.changePercent != null ? q.changePercent : s.dailyChange);
+          const turnover = Number(q.turnover != null ? q.turnover : (s.turnover || NaN));
+          const cap = Number(q.totalMarketCap != null ? q.totalMarketCap : (s.totalMarketCap || NaN)); // 亿
+          const price = Number(q.price != null ? q.price : s.todayPrice);
+          const amount = Number(q.amount || 0);   // 万
+          const vol = Number(q.volume || 0);       // 手
+          const low = Number(q.low || 0);
+          const avg = (amount > 0 && vol > 0) ? (amount * 100 / vol) : 0;  // 当日均价（元）
+          const aboveAvg = avg > 0 && price > avg;                  // 分时图在黄色均价线上方
+          const pullback = avg > 0 && low < avg && price >= avg;    // 尾盘回抽均价线
+          const okChange = change >= 3 && change <= 5;
+          const okTurn = turnover >= 5 && turnover <= 10;
+          const okCap = cap >= 50 && cap <= 200;
+          if (!(okChange && okTurn && okCap && aboveAvg && pullback)) continue;
+          survivors.push({ code: ncode, name: s.name || q.name || ncode, price, change, turnover, cap });
+        }
+        tailBuyTotal.value = pool.length;
+        if (!survivors.length) {
+          tailBuyNote.value = '实时行情条件（涨幅3-5% / 换手率5-10% / 市值50-200亿 / 分时均价线上方 / 尾盘回抽）无命中';
+          showToast('尾盘买入法：实时行情条件无命中', 'info');
+          return;
+        }
+        // 2) 20 日K线硬筛：20日线以上 / 成交量持续放大（量比作软条件展示）
+        const end = fmtDate(new Date());
+        const start = fmtDate(new Date(Date.now() - 40 * 86400000));
+        const results = [];
+        let noKline = 0;
+        for (const sv of survivors) {
+          let kline = [];
+          try { kline = await StockAPI.getKline(sv.code, start, end, 30); } catch (e) { kline = []; }
+          if (!kline || kline.length < 20) { noKline++; continue; }
+          const closes = kline.map(k => Number(k.close));
+          const vols = kline.map(k => Number(k.volume));
+          const ma20 = closes.slice(-20).reduce((a, b) => a + b, 0) / 20;
+          const aboveMa = sv.price > ma20;                       // 20日线以上
+          const vN = vols[vols.length - 1], v1 = vols[vols.length - 2], v2 = vols[vols.length - 3];
+          const volRising = vN > v1 && v1 > v2;                  // 成交量持续放大（近 3 日递增）
+          if (!(aboveMa && volRising)) continue;
+          let vr = null;
+          try {
+            const now = new Date();
+            let mins = now.getHours() * 60 + now.getMinutes() - (9 * 60 + 30);
+            if (now.getHours() >= 12) mins -= 60;                // 扣除午休
+            mins = Math.max(1, mins);
+            const avg5 = vols.slice(-6, -1).reduce((a, b) => a + b, 0) / 5;
+            if (avg5 > 0) vr = (vN / mins) / (avg5 / 240);       // 量比代理
+          } catch (e) {}
+          results.push({
+            code: sv.code, name: sv.name, changePercent: sv.change,
+            tip: `涨幅 ${sv.change.toFixed(2)}% · 换手 ${sv.turnover.toFixed(2)}% · 市值 ${sv.cap.toFixed(0)}亿` +
+                 (vr != null ? ` · 量比 ${vr.toFixed(2)}` : '') + ` · 现价 ${sv.price} / 20日线 ${ma20.toFixed(2)}`
+          });
+        }
+        tailBuyList.value = results;
+        if (noKline) tailBuyNote.value = `${noKline} 只因K线不足 20 日跳过（上市未满 20 日）`;
+        else if (!results.length) tailBuyNote.value = '均线 / 成交量条件无命中';
+        showToast(`尾盘买入法：命中 ${results.length} 只`, results.length ? 'success' : 'info');
+      } catch (e) {
+        console.warn('尾盘买入法筛选失败', e);
+        showToast('尾盘买入法筛选失败：' + (e && e.message ? e.message : e), 'error');
+      } finally {
+        tailBuyLoading.value = false;
+      }
+    }
 
     // ============================================================
     //  筛选板块（热门板块页 · 板块筛选 + 市值比区间筛选）
@@ -6334,6 +6437,7 @@ const app = createApp({
       hotBoardActive, hotBoardLoading, hotDetailIsStock, openHotBoard, openHotStock, clearHotBoard,
       hotExclude, askHotExclude, cancelHotExclude, confirmHotExclude,
       hotFilterStocks,
+      tailBuyList, tailBuyLoading, tailBuyTotal, tailBuyNote, runTailBuyFilter,
       hotSearchCode, hotSearchName, clearHotSearch,
       sortedHotStocks, sortHotBy, hotSortIcon, removeHotStock,
       loadHotData, fetchHotBoards, refreshHotStocks,
@@ -6342,6 +6446,7 @@ const app = createApp({
       hotTopicsSources, hotTopicsMerged, hotTopicsLoading, hotTopicsUpdated, refreshHotTopics,
       briefDates, briefDate, briefItems, briefKeyword, briefLoading, briefError, briefUi, briefPaused,
       briefFiltered, briefSearching, briefStatsList, briefBase,
+      briefThemeStats, briefConceptStats, briefIndustryStats,
       briefSourceName, briefSourceInput, briefSourceCustom, briefSourcePresets,
       onBriefSourcePick, commitBriefSource,
       briefDimMode, briefDimModes, setBriefDim, briefDimLabel, briefDimCount,

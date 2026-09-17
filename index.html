@@ -4,12 +4,12 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>股市信息分析系统</title>
-  <link rel="stylesheet" href="css/style.css?v=20260918a">
+  <link rel="stylesheet" href="css/style.css?v=20260918b">
   <!-- Vue 3 全局构建版（v3.4.21 · 自托管）
        原先走 unpkg.com CDN：国内网络对 unpkg 的连通性不稳定，一旦该请求长时间挂起，
        <head> 里的阻塞脚本会让整页停在白屏、后续 auth-boot.js 根本不会执行。
        改为同源托管后，启动链路不再依赖任何第三方 CDN。 -->
-  <script src="js/vue.global.prod.js?v=20260918a"></script>
+  <script src="js/vue.global.prod.js?v=20260918b"></script>
 </head>
 <body class="auth-locked">
   <!-- ===== 登录关卡：登录通过前业务脚本不会被加载 ===== -->
@@ -1086,12 +1086,7 @@
               </div>
             </div>
 
-            <!-- 分类维度：题材归类 / 概念分类 / 行业分类（全部消息按所选维度全部分类，点分类展开） -->
-            <div class="brief-dim-seg">
-              <button v-for="m in briefDimModes" :key="m.key" type="button" class="bd-seg"
-                      :class="{ active: briefDimMode === m.key }" @click="setBriefDim(m.key)"
-                      :title="'全部消息按「' + m.name + '」归类，点某个分类即可展开该类全部消息'">{{ m.name }}</button>
-            </div>
+            <!-- 三类维度并排：题材归类 / 概念归类 / 行业归类（各自按占比从大到小排序，点分类展开） -->
 
             <!-- 闭市周期窗口说明（点「刷新（闭市周期）」后出现） -->
             <div class="brief-window" v-if="briefWindow.on"
@@ -1106,43 +1101,126 @@
             <div class="brief-tip muted small" v-else-if="briefError">{{ briefError }}</div>
             <div class="brief-tip muted small" v-else-if="briefSearching && !briefFiltered.length">没有匹配「{{ briefKeyword }}」的快讯</div>
             <div class="brief-tip muted small" v-else-if="briefBase.length">
-              全部消息按「{{ briefDimLabel }}」共 {{ briefDimCount }} 类（一条可属多类），点分类即可展开该类全部消息
+              全部消息按「题材 / 概念 / 行业」三类维度归类（一条可属多类），各自占比从大到小排序，点分类即可展开该类全部消息
             </div>
             <div class="brief-tip muted small" v-else-if="briefPaused">
               ⏸ 自动加载已暂停（顶部「暂停」开关生效）
               <button class="btn btn-sm" style="margin-left:6px" @click="loadBriefsNow">📥 加载该日快讯</button>
             </div>
 
-            <div class="brief-cats" v-if="briefFiltered.length">
-              <div class="brief-cat" v-for="c in briefStatsList" :key="c.key">
-                <div class="brief-cat-head" :class="{ active: briefUi.open[c.key] }" @click="toggleBriefCat(c.key)"
-                     :title="'点击查看「' + c.name + '」相关的 ' + c.count + ' 条快讯'">
-                  <span class="bc-caret">{{ briefUi.open[c.key] ? '▾' : '▸' }}</span>
-                  <span class="bc-icon">{{ c.icon }}</span>
-                  <span class="bc-name">{{ c.name }}</span>
-                  <span class="bc-track"><span class="bc-fill" :style="{ width: c.width + '%', background: c.color }"></span></span>
-                  <span class="bc-count">{{ c.count }}</span>
-                  <span class="bc-pct">{{ c.pct }}%</span>
-                </div>
-                <div class="brief-news" v-if="briefUi.open[c.key]">
-                  <div class="brief-news-head">
-                    <span class="brief-news-title" :style="{ color: c.color }">{{ c.icon }} {{ c.name }} · {{ c.count }} 条</span>
-                    <span class="muted small">点标题跳{{ briefSourceName }}原文</span>
-                  </div>
-                  <div class="brief-item" v-for="(n, k) in c.news.slice(0, briefUi.limit[c.key] || 30)" :key="n.id || k">
-                    <div class="brief-item-meta">
-                      <span class="brief-time">{{ (n.time || '').slice(5) }}</span>
-                      <span class="brief-tag stock" v-for="s in (n.stocks || []).slice(0, 3)" :key="s">{{ s }}</span>
-                      <span class="brief-tag subject" v-for="s in (n.subjects || []).slice(0, 3)" :key="s">{{ s }}</span>
+            <div class="brief-dims" v-if="briefFiltered.length">
+              <!-- 题材归类 -->
+              <div class="brief-cat-group">
+                <div class="bcg-head">🧩 题材归类 <span class="muted small">{{ briefThemeStats.length }} 类</span></div>
+                <div class="brief-cats" v-if="briefThemeStats.length">
+                  <div class="brief-cat" v-for="c in briefThemeStats" :key="c.key">
+                    <div class="brief-cat-head" :class="{ active: briefUi.open['theme::' + c.key] }" @click="toggleBriefCat(c.key, 'theme')"
+                         :title="'点击查看「' + c.name + '」相关的 ' + c.count + ' 条快讯'">
+                      <span class="bc-caret">{{ briefUi.open['theme::' + c.key] ? '▾' : '▸' }}</span>
+                      <span class="bc-icon">{{ c.icon }}</span>
+                      <span class="bc-name">{{ c.name }}</span>
+                      <span class="bc-track"><span class="bc-fill" :style="{ width: c.width + '%', background: c.color }"></span></span>
+                      <span class="bc-count">{{ c.count }}</span>
+                      <span class="bc-pct">{{ c.pct }}%</span>
                     </div>
-                    <a v-if="n.url" :href="n.url" target="_blank" rel="noopener" class="brief-text" v-html="hlBrief(n.text)"></a>
-                    <span v-else class="brief-text" v-html="hlBrief(n.text)"></span>
+                    <div class="brief-news" v-if="briefUi.open['theme::' + c.key]">
+                      <div class="brief-news-head">
+                        <span class="brief-news-title" :style="{ color: c.color }">{{ c.icon }} {{ c.name }} · {{ c.count }} 条</span>
+                        <span class="muted small">点标题跳{{ briefSourceName }}原文</span>
+                      </div>
+                      <div class="brief-item" v-for="(n, k) in c.news.slice(0, briefUi.limit['theme::' + c.key] || 30)" :key="n.id || k">
+                        <div class="brief-item-meta">
+                          <span class="brief-time">{{ (n.time || '').slice(5) }}</span>
+                          <span class="brief-tag stock" v-for="s in (n.stocks || []).slice(0, 3)" :key="s">{{ s }}</span>
+                          <span class="brief-tag subject" v-for="s in (n.subjects || []).slice(0, 3)" :key="s">{{ s }}</span>
+                        </div>
+                        <a v-if="n.url" :href="n.url" target="_blank" rel="noopener" class="brief-text" v-html="hlBrief(n.text)"></a>
+                        <span v-else class="brief-text" v-html="hlBrief(n.text)"></span>
+                      </div>
+                      <button class="theme-more" v-if="c.news.length > (briefUi.limit['theme::' + c.key] || 30)" @click.stop="moreBriefNews(c.key, 'theme')">
+                        还有 {{ c.news.length - (briefUi.limit['theme::' + c.key] || 30) }} 条，点击展开更多
+                      </button>
+                      <div class="muted small" v-if="!c.news.length">该类暂无匹配快讯</div>
+                    </div>
                   </div>
-                  <button class="theme-more" v-if="c.news.length > (briefUi.limit[c.key] || 30)" @click.stop="moreBriefNews(c.key)">
-                    还有 {{ c.news.length - (briefUi.limit[c.key] || 30) }} 条，点击展开更多
-                  </button>
-                  <div class="muted small" v-if="!c.news.length">该类暂无匹配快讯</div>
                 </div>
+                <div class="muted small" v-else>暂无归类</div>
+              </div>
+
+              <!-- 概念归类 -->
+              <div class="brief-cat-group">
+                <div class="bcg-head">💡 概念归类 <span class="muted small">{{ briefConceptStats.length }} 类</span></div>
+                <div class="brief-cats" v-if="briefConceptStats.length">
+                  <div class="brief-cat" v-for="c in briefConceptStats" :key="c.key">
+                    <div class="brief-cat-head" :class="{ active: briefUi.open['concept::' + c.key] }" @click="toggleBriefCat(c.key, 'concept')"
+                         :title="'点击查看「' + c.name + '」相关的 ' + c.count + ' 条快讯'">
+                      <span class="bc-caret">{{ briefUi.open['concept::' + c.key] ? '▾' : '▸' }}</span>
+                      <span class="bc-icon">{{ c.icon }}</span>
+                      <span class="bc-name">{{ c.name }}</span>
+                      <span class="bc-track"><span class="bc-fill" :style="{ width: c.width + '%', background: c.color }"></span></span>
+                      <span class="bc-count">{{ c.count }}</span>
+                      <span class="bc-pct">{{ c.pct }}%</span>
+                    </div>
+                    <div class="brief-news" v-if="briefUi.open['concept::' + c.key]">
+                      <div class="brief-news-head">
+                        <span class="brief-news-title" :style="{ color: c.color }">{{ c.icon }} {{ c.name }} · {{ c.count }} 条</span>
+                        <span class="muted small">点标题跳{{ briefSourceName }}原文</span>
+                      </div>
+                      <div class="brief-item" v-for="(n, k) in c.news.slice(0, briefUi.limit['concept::' + c.key] || 30)" :key="n.id || k">
+                        <div class="brief-item-meta">
+                          <span class="brief-time">{{ (n.time || '').slice(5) }}</span>
+                          <span class="brief-tag stock" v-for="s in (n.stocks || []).slice(0, 3)" :key="s">{{ s }}</span>
+                          <span class="brief-tag subject" v-for="s in (n.subjects || []).slice(0, 3)" :key="s">{{ s }}</span>
+                        </div>
+                        <a v-if="n.url" :href="n.url" target="_blank" rel="noopener" class="brief-text" v-html="hlBrief(n.text)"></a>
+                        <span v-else class="brief-text" v-html="hlBrief(n.text)"></span>
+                      </div>
+                      <button class="theme-more" v-if="c.news.length > (briefUi.limit['concept::' + c.key] || 30)" @click.stop="moreBriefNews(c.key, 'concept')">
+                        还有 {{ c.news.length - (briefUi.limit['concept::' + c.key] || 30) }} 条，点击展开更多
+                      </button>
+                      <div class="muted small" v-if="!c.news.length">该类暂无匹配快讯</div>
+                    </div>
+                  </div>
+                </div>
+                <div class="muted small" v-else>暂无归类</div>
+              </div>
+
+              <!-- 行业归类 -->
+              <div class="brief-cat-group">
+                <div class="bcg-head">🏭 行业归类 <span class="muted small">{{ briefIndustryStats.length }} 类</span></div>
+                <div class="brief-cats" v-if="briefIndustryStats.length">
+                  <div class="brief-cat" v-for="c in briefIndustryStats" :key="c.key">
+                    <div class="brief-cat-head" :class="{ active: briefUi.open['industry::' + c.key] }" @click="toggleBriefCat(c.key, 'industry')"
+                         :title="'点击查看「' + c.name + '」相关的 ' + c.count + ' 条快讯'">
+                      <span class="bc-caret">{{ briefUi.open['industry::' + c.key] ? '▾' : '▸' }}</span>
+                      <span class="bc-icon">{{ c.icon }}</span>
+                      <span class="bc-name">{{ c.name }}</span>
+                      <span class="bc-track"><span class="bc-fill" :style="{ width: c.width + '%', background: c.color }"></span></span>
+                      <span class="bc-count">{{ c.count }}</span>
+                      <span class="bc-pct">{{ c.pct }}%</span>
+                    </div>
+                    <div class="brief-news" v-if="briefUi.open['industry::' + c.key]">
+                      <div class="brief-news-head">
+                        <span class="brief-news-title" :style="{ color: c.color }">{{ c.icon }} {{ c.name }} · {{ c.count }} 条</span>
+                        <span class="muted small">点标题跳{{ briefSourceName }}原文</span>
+                      </div>
+                      <div class="brief-item" v-for="(n, k) in c.news.slice(0, briefUi.limit['industry::' + c.key] || 30)" :key="n.id || k">
+                        <div class="brief-item-meta">
+                          <span class="brief-time">{{ (n.time || '').slice(5) }}</span>
+                          <span class="brief-tag stock" v-for="s in (n.stocks || []).slice(0, 3)" :key="s">{{ s }}</span>
+                          <span class="brief-tag subject" v-for="s in (n.subjects || []).slice(0, 3)" :key="s">{{ s }}</span>
+                        </div>
+                        <a v-if="n.url" :href="n.url" target="_blank" rel="noopener" class="brief-text" v-html="hlBrief(n.text)"></a>
+                        <span v-else class="brief-text" v-html="hlBrief(n.text)"></span>
+                      </div>
+                      <button class="theme-more" v-if="c.news.length > (briefUi.limit['industry::' + c.key] || 30)" @click.stop="moreBriefNews(c.key, 'industry')">
+                        还有 {{ c.news.length - (briefUi.limit['industry::' + c.key] || 30) }} 条，点击展开更多
+                      </button>
+                      <div class="muted small" v-if="!c.news.length">该类暂无匹配快讯</div>
+                    </div>
+                  </div>
+                </div>
+                <div class="muted small" v-else>暂无归类</div>
               </div>
             </div>
             <div class="muted small" v-else-if="!briefLoading && !briefError && !briefPaused">暂无快讯数据，等待服务端定时抓取（每 2 小时一次）。</div>
@@ -1598,87 +1676,123 @@
             </button>
           </div>
           <div class="toolbar-right">
-            <button class="btn" @click="hotPanelsHidden = !hotPanelsHidden" :title="hotPanelsHidden ? '显示下方 4 个子板块' : '一键隐藏下方 4 个子板块'">{{ hotPanelsHidden ? '👁 显示板块' : '🙈 隐藏板块' }}</button>
+            <button class="btn" @click="hotPanelsHidden = !hotPanelsHidden" :title="hotPanelsHidden ? '显示下方板块' : '一键隐藏下方板块'">{{ hotPanelsHidden ? '👁 显示板块' : '🙈 隐藏板块' }}</button>
             <button class="btn" @click="fetchHotBoards" :disabled="hotLoading">📊 获取热门板块</button>
             <button class="btn" @click="refreshHotStocks" :disabled="hotLoading">🔄 刷新股票行情</button>
           </div>
         </div>
 
-        <div class="hot-layout hot-layout-2 with-notice" v-show="!hotPanelsHidden">
-          <!-- 热门板块 -->
-          <div class="hot-panel">
-            <h3 class="panel-title">🔥 当日热门板块</h3>
-            <div class="hot-list" v-if="hotBoards.length">
-              <div class="hot-item hot-item-click" v-for="(b, i) in hotBoards" :key="i"
-                   :class="{ active: hotBoardActive === b.name }"
-                   @click="askHotExclude({ type: 'board', board: b })"
-                   :title="'点击在下方「当日股票明细」中显示「' + b.name + '」的全部成分股'">
-                <span class="hot-rank">{{ i + 1 }}</span>
-                <span class="hot-name">{{ b.name }}</span>
-                <span class="hot-val" :class="pctClass(b.change)">{{ fmtPct(b.change) }}</span>
+        <div class="hot-stack" v-show="!hotPanelsHidden">
+          <!-- 顶行：当日热门板块 | 注意事项 | 当日热门股票（当日热门股票已与盘前热点板块互换位置） -->
+          <div class="hot-top-row">
+            <div class="hot-panel">
+              <h3 class="panel-title">🔥 当日热门板块</h3>
+              <div class="hot-list" v-if="hotBoards.length">
+                <div class="hot-item hot-item-click" v-for="(b, i) in hotBoards" :key="i"
+                     :class="{ active: hotBoardActive === b.name }"
+                     @click="askHotExclude({ type: 'board', board: b })"
+                     :title="'点击在下方「当日股票明细」中显示「' + b.name + '」的全部成分股'">
+                  <span class="hot-rank">{{ i + 1 }}</span>
+                  <span class="hot-name">{{ b.name }}</span>
+                  <span class="hot-val" :class="pctClass(b.change)">{{ fmtPct(b.change) }}</span>
+                </div>
               </div>
+              <div class="muted small" v-else>点击「获取热门板块」加载</div>
             </div>
-            <div class="muted small" v-else>点击「获取热门板块」加载</div>
+
+            <div class="hot-notice" title="服务器资源有限，单个板块的股票数量建议不超过 30 只">
+              <div class="hot-notice-title">⚠️ 注意事项</div>
+              <p>添加股票信息时，股票数量最好不要超过 <b>30</b> 个，服务器有限。</p>
+            </div>
+
+            <!-- 当日热门股票（已与盘前热点板块互换，上移至此） -->
+            <div class="hot-panel">
+              <h3 class="panel-title">⭐ 当日热门股票</h3>
+              <div class="hot-list" v-if="hotStocks.length">
+                <div class="hot-item hot-item-click" v-for="(s, i) in hotStocks" :key="i"
+                     :class="{ active: hotBoardActive === s.name && hotDetailIsStock }"
+                     @click="askHotExclude({ type: 'stock', stock: s })"
+                     :title="'点击在下方「当日股票明细」中显示个股「' + s.name + '」的详细信息'">
+                  <span class="hot-rank">{{ i + 1 }}</span>
+                  <span class="hot-name">{{ s.name }}</span>
+                  <span class="hot-val" :class="pctClass(s.change)">{{ fmtPct(s.change) }}</span>
+                </div>
+              </div>
+              <div class="muted small" v-else>点击「获取热门板块」加载</div>
+            </div>
           </div>
 
-          <!-- 注意事项：与「当日热门板块」同排，紧贴其右侧 -->
-          <div class="hot-notice" title="服务器资源有限，单个板块的股票数量建议不超过 30 只">
-            <div class="hot-notice-title">⚠️ 注意事项</div>
-            <p>添加股票信息时，股票数量最好不要超过 <b>30</b> 个，服务器有限。</p>
-          </div>
+          <!-- 三并排：盘前热点板块 | 尾盘买入法（筛选） | 振幅板块 -->
+          <div class="hot-row-3">
+            <!-- 盘前热点板块 -->
+            <div class="hot-panel">
+              <h3 class="panel-title">🌅 盘前热点板块</h3>
+              <div class="hot-list" v-if="preMarketBoards.length">
+                <div class="hot-item hot-item-click" v-for="(b, i) in preMarketBoards" :key="i"
+                     :class="{ active: hotBoardActive === b.name }"
+                     @click="askHotExclude({ type: 'board', board: b })"
+                     :title="'点击在下方「当日股票明细」中显示「' + b.name + '」的全部成分股'">
+                  <span class="hot-rank">{{ i + 1 }}</span>
+                  <span class="hot-name">{{ b.name }}</span>
+                  <span class="hot-val" :class="pctClass(b.change)">{{ fmtPct(b.change) }}</span>
+                </div>
+              </div>
+              <div class="muted small" v-else>点击「获取热门板块」加载</div>
+            </div>
 
-          <!-- 盘前热点板块 -->
-          <div class="hot-panel">
-            <h3 class="panel-title">🌅 盘前热点板块</h3>
-            <div class="hot-list" v-if="preMarketBoards.length">
-              <div class="hot-item hot-item-click" v-for="(b, i) in preMarketBoards" :key="i"
-                   :class="{ active: hotBoardActive === b.name }"
-                   @click="askHotExclude({ type: 'board', board: b })"
-                   :title="'点击在下方「当日股票明细」中显示「' + b.name + '」的全部成分股'">
-                <span class="hot-rank">{{ i + 1 }}</span>
-                <span class="hot-name">{{ b.name }}</span>
-                <span class="hot-val" :class="pctClass(b.change)">{{ fmtPct(b.change) }}</span>
+            <!-- 尾盘买入法（按 8 项条件筛选当前「当日股票明细」） -->
+            <div class="hot-panel tail-buy-panel">
+              <div class="panel-title-row">
+                <h3 class="panel-title" style="margin:0">📌 尾盘买入法</h3>
+                <button class="btn btn-sm" @click="runTailBuyFilter" :disabled="tailBuyLoading"
+                        title="按下方 8 项条件，从当前「当日股票明细」中筛选符合条件的个股（需联网取实时行情与 20 日K线）">
+                  <span v-if="tailBuyLoading">⏳ 筛选中...</span>
+                  <span v-else>📌 开始筛选</span>
+                </button>
+              </div>
+              <div class="tail-buy-rubric">
+                <div class="tb-rule"><b>涨幅</b> 3%–5%</div>
+                <div class="tb-rule"><b>换手率</b> 5%–10%</div>
+                <div class="tb-rule"><b>量比</b> 1.5–2.5</div>
+                <div class="tb-rule"><b>市值</b> 50亿–200亿</div>
+                <div class="tb-rule"><b>均线</b> 20日线以上</div>
+                <div class="tb-rule"><b>成交量</b> 持续放大</div>
+                <div class="tb-rule"><b>分时</b> 均价线上方</div>
+                <div class="tb-rule"><b>尾盘</b> 回抽均价线</div>
+              </div>
+              <div class="muted small" v-if="!tailBuyList.length && !tailBuyLoading">点「开始筛选」按上面 8 项条件，从当前「当日股票明细」中挑出符合条件的个股。</div>
+              <div class="muted small" v-else-if="tailBuyLoading">⏳ 正在联网筛选（实时行情 + 20日K线）…</div>
+              <div class="tail-buy-sum" v-else>命中 <b>{{ tailBuyList.length }}</b> / {{ tailBuyTotal }} 只<span v-if="tailBuyNote" class="muted small"> · {{ tailBuyNote }}</span></div>
+              <div class="hot-list tail-buy-list" v-if="tailBuyList.length">
+                <div class="hot-item" v-for="(t, i) in tailBuyList" :key="i" :title="t.tip">
+                  <span class="hot-rank">{{ i + 1 }}</span>
+                  <span class="hot-name">{{ t.name }}<span class="muted small"> {{ t.code }}</span></span>
+                  <span class="hot-val" :class="pctClass(t.changePercent)">{{ fmtPct(t.changePercent) }}</span>
+                </div>
               </div>
             </div>
-            <div class="muted small" v-else>点击「获取热门板块」加载</div>
-          </div>
 
-          <!-- 热门股票 -->
-          <div class="hot-panel">
-            <h3 class="panel-title">⭐ 当日热门股票</h3>
-            <div class="hot-list" v-if="hotStocks.length">
-              <div class="hot-item hot-item-click" v-for="(s, i) in hotStocks" :key="i"
-                   :class="{ active: hotBoardActive === s.name && hotDetailIsStock }"
-                   @click="askHotExclude({ type: 'stock', stock: s })"
-                   :title="'点击在下方「当日股票明细」中显示个股「' + s.name + '」的详细信息'">
-                <span class="hot-rank">{{ i + 1 }}</span>
-                <span class="hot-name">{{ s.name }}</span>
-                <span class="hot-val" :class="pctClass(s.change)">{{ fmtPct(s.change) }}</span>
+            <!-- 振幅板块（按板块振幅突然拉升排名） -->
+            <div class="hot-panel">
+              <div class="panel-title-row">
+                <h3 class="panel-title" style="margin:0">📈 振幅板块</h3>
+                <button class="btn btn-sm" @click="refreshAmplitudeBoards" :disabled="ampLoading" title="单独刷新振幅板块数据">
+                  <span v-if="ampLoading">⏳ 刷新中...</span>
+                  <span v-else>🔄 刷新数据</span>
+                </button>
               </div>
-            </div>
-            <div class="muted small" v-else>点击「获取热门板块」加载</div>
-          </div>
-
-          <!-- 振幅板块（按板块振幅突然拉升排名） -->
-          <div class="hot-panel">
-            <div class="panel-title-row">
-              <h3 class="panel-title" style="margin:0">📈 振幅板块</h3>
-              <button class="btn btn-sm" @click="refreshAmplitudeBoards" :disabled="ampLoading" title="单独刷新振幅板块数据">
-                <span v-if="ampLoading">⏳ 刷新中...</span>
-                <span v-else>🔄 刷新数据</span>
-              </button>
-            </div>
-            <div class="hot-list" v-if="amplitudeBoards.length">
-              <div class="hot-item hot-item-click" v-for="(b, i) in amplitudeBoards" :key="i"
-                   :class="{ active: hotBoardActive === b.name }"
-                   @click="askHotExclude({ type: 'board', board: b })"
-                   :title="'点击在下方「当日股票明细」中显示「' + b.name + '」的全部成分股（按板块振幅突然拉升排名）'">
-                <span class="hot-rank">{{ i + 1 }}</span>
-                <span class="hot-name">{{ b.name }}</span>
-                <span class="hot-val" :class="pctClass(b.change)">{{ fmtPct(b.change) }}</span>
+              <div class="hot-list" v-if="amplitudeBoards.length">
+                <div class="hot-item hot-item-click" v-for="(b, i) in amplitudeBoards" :key="i"
+                     :class="{ active: hotBoardActive === b.name }"
+                     @click="askHotExclude({ type: 'board', board: b })"
+                     :title="'点击在下方「当日股票明细」中显示「' + b.name + '」的全部成分股（按板块振幅突然拉升排名）'">
+                  <span class="hot-rank">{{ i + 1 }}</span>
+                  <span class="hot-name">{{ b.name }}</span>
+                  <span class="hot-val" :class="pctClass(b.change)">{{ fmtPct(b.change) }}</span>
+                </div>
               </div>
+              <div class="muted small" v-else>点击「获取热门板块」或右侧「刷新数据」加载</div>
             </div>
-            <div class="muted small" v-else>点击「获取热门板块」或右侧「刷新数据」加载</div>
           </div>
         </div>
 
@@ -3140,9 +3254,9 @@
     </transition>
   </div>
 
-  <script src="js/auth.js?v=20260918a"></script>
-  <script src="js/auth-sync.js?v=20260918a"></script>
-  <script src="js/auth-boot.js?v=20260918a"></script>
+  <script src="js/auth.js?v=20260918b"></script>
+  <script src="js/auth-sync.js?v=20260918b"></script>
+  <script src="js/auth-boot.js?v=20260918b"></script>
   <!-- store / stock-api / hot-topics / app 由 auth-boot.js 在登录通过后动态装载，
        未登录时它们不会被下载，业务数据也不会进入内存 -->
 </body>
