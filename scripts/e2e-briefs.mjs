@@ -178,11 +178,14 @@ async function main() {
       await page.locator('.brief-cat').nth(bigIdx).locator('.brief-cat-head').click();
       await page.waitForTimeout(300);
     }
+    const catTotal = Number((await page.locator('.brief-cat').nth(bigIdx).locator('.bc-count').innerText()).trim());
     const before = await page.locator('.brief-cat').nth(bigIdx).locator('.brief-item').count();
     await page.locator('.brief-cat').nth(bigIdx).locator('.theme-more').click();
     await page.waitForTimeout(300);
     const after = await page.locator('.brief-cat').nth(bigIdx).locator('.brief-item').count();
-    check('「展开更多」增加 50 条', after === before + 50, `${before} → ${after}`);
+    // 每次递增 50；若该类总数不足，则展示全部（数据量相关，避免写死 +50）
+    const expectAfter = Math.min(before + 50, catTotal);
+    check('「展开更多」按每次 50 条递增（不足则展示该类全部）', after === expectAfter, `${before} → ${after}（该类共 ${catTotal} 条）`);
   }
 
   console.log('8) 关键词搜索');
@@ -197,6 +200,16 @@ async function main() {
   check('搜索后显示「共 N 条 · 匹配 M 条」', searched.total === totalAll && searched.matched >= 0, searched.headText.trim());
   check('匹配条数少于总条数（过滤生效）', searched.matched > 0 && searched.matched < totalAll,
     `${searched.matched} / ${totalAll}`);
+  // 搜索后分类默认全部收起；先展开一个「有命中」的分类，才能渲染出正文与高亮
+  const hitCatIdx = await page.$$eval('.brief-cat', els =>
+    els.findIndex(e => Number((e.querySelector('.bc-count') || {}).textContent.trim()) > 0));
+  if (hitCatIdx >= 0) {
+    const opened = await page.locator('.brief-cat').nth(hitCatIdx).locator('.brief-news').count();
+    if (!opened) {
+      await page.locator('.brief-cat').nth(hitCatIdx).locator('.brief-cat-head').click();
+      await page.waitForTimeout(400);
+    }
+  }
   check('搜索关键词出现在匹配到的正文里',
     await page.evaluate(() => {
       const t = document.querySelector('.brief-text');
