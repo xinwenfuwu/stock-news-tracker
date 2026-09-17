@@ -1202,9 +1202,20 @@
       /* 授权信息：v1 旧码没有这些字段，一律按「已通过、无试用」处理 */
       var grant = readGrantFromCode(d);
       if (exist) {
-        // 本机已有同名记录：只有哈希一致才允许覆盖，避免用别人的码顶掉本机账号
+        // 多设备场景：用户在每台设备注册都会算出不同 hash（PBKDF2 随机盐），
+        // 而准入码只带一份 hash。若「本机已有同名待审核账号、且从未登录过」，
+        // 直接用码里的权威 hash 覆盖本机账号，用户用原密码即可登录
+        // （verifyPassword 对相同密码必为真，与本地注册用的盐无关）。
+        // 这样「手机上搞定的准入码」也能在电脑上直接粘贴生效，
+        // 不必为每台设备都重新走一遍申请→审核。
+        // 已通过 / 已启用的账号不覆盖，避免误改正常账号的密码。
         if (exist.hash !== d.hash) {
-          return { ok: false, error: '本机已存在账号「' + v.value + '」，与准入码不匹配' };
+          if (statusOf(exist) === STATUS.PENDING && !trialState(exist).active) {
+            exist.hash = d.hash;
+            if (typeof d.pwSeal === 'string' && d.pwSeal) exist.pwSeal = d.pwSeal;
+          } else {
+            return { ok: false, error: '本机已存在账号「' + v.value + '」，与准入码不匹配（该账号已是正常状态，请直接用原密码登录）' };
+          }
         }
         exist.status = grant.status;
         exist.role = d.role === ROLE.ADMIN ? ROLE.ADMIN : (exist.role || ROLE.USER);

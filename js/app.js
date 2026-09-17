@@ -290,6 +290,7 @@ const app = createApp({
       /* batch16：试用只落在这台设备的账号表里。不把准入码转给对方，
        * 他那边就没有这段试用期，登录时依旧提示「等待管理员审核」。 */
       if (r.approveCode) {
+        copyText(r.approveCode, `已开通试用，准入码已复制到剪贴板`);
         showApproveCodePanel({
           title: `「${u.username}」已开通${r.label}试用（至 ${r.untilText}）`,
           desc: '试用期目前只写在这台设备上。如果对方用别的手机 / 电脑登录，'
@@ -408,15 +409,19 @@ const app = createApp({
       refreshUserList();
       const code = r.approveCode || '';
       if (code) {
+        // 同一台设备上对方本机记录已被改，不需要码；换设备才需要转达。
+        // batch16 前这里用 prompt() 弹码，在手机 / 微信里容易被忽略或截断，
+        // 管理员以为「点通过就完事」、其实码没发出去，对方永远登不进。
+        // 改用醒目面板，并明确提示「务必把这串码发给对方」。
         copyText(code, `已通过「${u.username}」，准入码已复制到剪贴板`);
-        // 同一台设备上对方本机记录已被改，不需要码；换设备才需要转达，所以把码摆出来方便复制转发
-        prompt(
-          `已通过「${u.username}」的注册申请。\n\n`
-          + '准入码（已同时复制到剪贴板，也可以在这里手动选中复制）：\n\n'
-          + code + '\n\n'
-          + '如果这位用户和你不在一台设备上，请把上面这串码发给他，他在登录页「粘贴准入码」后即可用自己的密码登录。',
-          code
-        );
+        showApproveCodePanel({
+          title: `已通过「${u.username}」的注册申请`,
+          desc: '本账号在这台设备上已直接生效。\n\n'
+            + '⚠️ 如果对方用的是别的手机 / 电脑，他那边并不会自动通过——'
+            + '请务必把这串「准入码」发给他，他在登录页点「已通过审核？粘贴准入码」粘贴后，'
+            + '用注册时设置的密码即可登录。不转发的话，他那边会一直提示「等待管理员审核」。',
+          code: code
+        });
       } else {
         showToast(`已通过「${u.username}」`, 'success');
       }
