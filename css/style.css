@@ -1621,13 +1621,32 @@ body {
   flex-direction: column;
 }
 .brief-head { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; flex-wrap: wrap; }
-.brief-controls { display: flex; gap: 8px; margin: 10px 0 8px; }
+.brief-controls { display: flex; flex-direction: column; gap: 8px; margin: 10px 0 8px; }
+/* 第一行：日期选择 + 闭市周期刷新按钮（按钮在日期字段右侧） */
+.brief-row { display: flex; align-items: center; gap: 8px; }
 .brief-date {
-  flex: 0 0 130px; padding: 6px 8px; font-size: 12.5px;
+  flex: 1 1 auto; min-width: 0; padding: 6px 8px; font-size: 12.5px;
   color: var(--text); background: var(--surface-alt);
   border: 1px solid var(--border); border-radius: 7px;
 }
-.brief-search-wrap { position: relative; flex: 1 1 auto; min-width: 0; }
+.brief-refresh { flex: 0 0 auto; white-space: nowrap; }
+.brief-refresh:disabled { opacity: .6; cursor: default; }
+/* 闭市周期窗口说明条 */
+.brief-window {
+  display: flex; align-items: center; gap: 7px; flex-wrap: wrap;
+  margin: 0 0 8px; padding: 6px 9px; font-size: 12px; line-height: 1.4;
+  background: var(--primary-light); border: 1px solid #bfdbfe; border-radius: 7px;
+  color: var(--text-secondary);
+}
+.brief-window .bw-icon { flex: 0 0 auto; }
+.brief-window .bw-label { color: var(--primary); font-weight: 500; }
+.brief-window .bw-count { color: var(--text-secondary); }
+.brief-window .bw-off {
+  margin-left: auto; padding: 2px 8px; font-size: 11.5px; cursor: pointer;
+  background: #fff; color: var(--primary); border: 1px solid #bfdbfe; border-radius: 6px;
+}
+.brief-window .bw-off:hover { background: var(--primary); color: #fff; border-color: var(--primary); }
+.brief-search-wrap { position: relative; }
 .brief-search {
   width: 100%; padding: 6px 26px 6px 10px; font-size: 12.5px;
   color: var(--text); background: var(--surface-alt);
@@ -2091,7 +2110,7 @@ body.auth-locked { overflow: hidden; }
 .um-table td:nth-child(1) { white-space: nowrap; }
 .um-table td:nth-child(4) { min-width: 132px; }
 .um-table td:nth-child(5) { min-width: 138px; }
-.um-table td:nth-child(8) { min-width: 250px; }
+.um-table td:nth-child(8) { min-width: 238px; }   /* 试用列（三层按钮 + 状态） */
 
 .um-pending {
   margin-bottom: 14px;
@@ -2159,6 +2178,28 @@ body.auth-locked { overflow: hidden; }
 
 .um-ip { font-family: ui-monospace, Menlo, Consolas, monospace; font-size: 12px; white-space: nowrap; }
 .um-ip-loc { font-size: 11.5px; color: var(--text-placeholder); white-space: nowrap; }
+
+/* ===== 用户管理「试用」列（三层：一天 / 三天 / 一周） ===== */
+.um-trial-cell { min-width: 238px; }
+.um-trial-btns { display: flex; gap: 5px; flex-wrap: wrap; }
+.btn-trial { white-space: nowrap; }
+.btn-trial.is-on {
+  background: var(--primary-light);
+  border-color: var(--primary);
+  color: var(--primary);
+  font-weight: 600;
+}
+.um-trial-state {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 5px;
+  font-size: 11.5px;
+  line-height: 1.35;
+}
+.um-trial-on { color: var(--primary); font-weight: 500; }
+.um-trial-off { color: var(--danger); }
+.um-trial-left { color: var(--text-placeholder); }
 
 .um-usage { color: var(--text); }
 .um-usage-sub { font-size: 11.5px; color: var(--text-placeholder); }

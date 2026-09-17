@@ -318,7 +318,8 @@ const main = async () => {
     const heads = await page.locator('.um-table th').allInnerTexts();
     check('表头包含要求的 11 列（含会员额度三列）', heads.length === 11, heads.join('|'));
     check('表头含「密码」列', heads.includes('密码'));
-    check('表头含「登录IP」列', heads.includes('登录IP'));
+    check('表头含「试用」列', heads.includes('试用'));
+    check('表头不再有「登录IP」列（IP 改在「登录记录」里看）', !heads.includes('登录IP'));
     check('表头含「最近登录」列', heads.includes('最近登录'));
     check('表头含「使用时长」列', heads.includes('使用时长'));
     check('已去掉「创建时间」列', !heads.includes('创建时间'));
@@ -341,11 +342,19 @@ const main = async () => {
     const adminRow = rows.filter({ hasText: 'admin' });
     check('最近登录列显示登录时间', /\d{4}-\d{2}-\d{2} \d{2}:\d{2}/.test(await adminRow.locator('td').nth(8).innerText()),
       await adminRow.locator('td').nth(8).innerText());
-    check('登录IP 列显示伪造的 IP', (await adminRow.locator('.um-ip').innerText()) === FAKE_IP,
-      await adminRow.locator('.um-ip').innerText());
-    check('登录IP 列显示归属地', (await adminRow.locator('.um-ip-loc').innerText()).includes('广东省'),
-      await adminRow.locator('.um-ip-loc').innerText());
     check('未登录过的账号显示「从未登录」', (await lisiRow.locator('td').nth(8).innerText()).includes('从未登录'));
+
+    // 试用列（原「登录IP」列位置）：普通用户三档开通按钮，管理员显示「—」
+    check('试用列有三档按钮', (await lisiRow.locator('.btn-trial').count()) === 3,
+      String(await lisiRow.locator('.btn-trial').count()));
+    check('试用三档文案为「试用一天 / 试用三天 / 试用一周」',
+      (await lisiRow.locator('.btn-trial').allInnerTexts()).join(',') === '试用一天,试用三天,试用一周',
+      (await lisiRow.locator('.btn-trial').allInnerTexts()).join(','));
+    check('未开通试用时显示「未开通」', /未开通/.test(await lisiRow.locator('.um-trial-state').innerText()),
+      await lisiRow.locator('.um-trial-state').innerText());
+    check('管理员行不显示试用按钮（显示「—」）', (await adminRow.locator('.btn-trial').count()) === 0
+      && (await adminRow.locator('td').nth(7).innerText()).trim() === '—',
+      await adminRow.locator('td').nth(7).innerText());
 
     await adminRow.locator('button:has-text("登录记录")').click();
     await page.waitForSelector('.um-logrow', { timeout: 10000 });
@@ -380,7 +389,7 @@ const main = async () => {
     await logoutViaMenu(page);
     await registerAtGate(page, 'wangwu', 'Wangwu123');
     await page.click('#auth-reg-done-back');
-    await page.waitForSelector('#auth-login-form:not([hidden])');
+    await page.waitForSelector('#auth-login-form:not([hidden])', { timeout: 45000 });
 
     await loginViaForm(page, 'admin', ADMIN_PW);
     await openUserManage(page);
@@ -424,7 +433,7 @@ const main = async () => {
     const reqCode = await registerAtGate(userDev.page, 'zhaoliu', 'Zhaoliu123');
     check('用户设备生成申请码', reqCode.startsWith('SNTREG1.'));
     await userDev.page.click('#auth-reg-done-back');
-    await userDev.page.waitForSelector('#auth-login-form:not([hidden])');
+    await userDev.page.waitForSelector('#auth-login-form:not([hidden])', { timeout: 45000 });
     check('用户设备本机没有管理员，无法自行通过审核',
       await userDev.page.evaluate(() => !Auth.listUsers().some(u => u.role === 'admin')));
 

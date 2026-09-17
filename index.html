@@ -4,12 +4,12 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>股市信息分析系统</title>
-  <link rel="stylesheet" href="css/style.css?v=20260917f">
+  <link rel="stylesheet" href="css/style.css?v=20260917g">
   <!-- Vue 3 全局构建版（v3.4.21 · 自托管）
        原先走 unpkg.com CDN：国内网络对 unpkg 的连通性不稳定，一旦该请求长时间挂起，
        <head> 里的阻塞脚本会让整页停在白屏、后续 auth-boot.js 根本不会执行。
        改为同源托管后，启动链路不再依赖任何第三方 CDN。 -->
-  <script src="js/vue.global.prod.js?v=20260917f"></script>
+  <script src="js/vue.global.prod.js?v=20260917g"></script>
 </head>
 <body class="auth-locked">
   <!-- ===== 登录关卡：登录通过前业务脚本不会被加载 ===== -->
@@ -748,26 +748,43 @@
           <aside class="brief-panel">
             <div class="brief-head">
               <h3 class="panel-title" style="margin:0">📰 格隆汇每日快讯</h3>
-              <span class="muted small" v-if="briefItems.length">
-                共 {{ briefItems.length }} 条<span v-if="briefSearching"> · 匹配 {{ briefFiltered.length }} 条</span>
+              <span class="muted small" v-if="briefBase.length">
+                共 {{ briefBase.length }} 条<span v-if="briefSearching"> · 匹配 {{ briefFiltered.length }} 条</span>
               </span>
             </div>
 
             <div class="brief-controls">
-              <select class="brief-date" v-model="briefDate" @change="onBriefDateChange" :disabled="briefLoading || !briefDates.length">
-                <option v-for="d in briefDates" :key="d" :value="d">{{ d }}</option>
-                <option v-if="!briefDates.length" value="">暂无快讯日期</option>
-              </select>
+              <div class="brief-row">
+                <select class="brief-date" v-model="briefDate" @change="onBriefDateChange" :disabled="briefLoading || !briefDates.length">
+                  <option v-for="d in briefDates" :key="d" :value="d">{{ d }}</option>
+                  <option v-if="!briefDates.length" value="">暂无快讯日期</option>
+                </select>
+                <!-- 独立刷新按钮：按「股票闭市周期」重新统计，不按自然日 -->
+                <button class="btn btn-sm brief-refresh" :disabled="briefLoading"
+                        @click="refreshBriefCloseWindow"
+                        title="按股票闭市周期刷新：15:00 前刷新统计「昨天 15:00 → 现在」，15:00 后刷新统计「今天 15:00 → 现在」">
+                  🔄 {{ briefLoading ? '刷新中…' : '刷新（闭市周期）' }}
+                </button>
+              </div>
               <div class="brief-search-wrap">
                 <input class="brief-search" v-model="briefKeyword" type="search" placeholder="关键词搜索（如：英伟达 / 降息 / 原油）">
                 <button class="brief-search-clear" v-if="briefKeyword" @click="briefKeyword = ''" title="清空关键词">✕</button>
               </div>
             </div>
 
+            <!-- 闭市周期窗口说明（点「刷新（闭市周期）」后出现） -->
+            <div class="brief-window" v-if="briefWindow.on"
+                 :data-start="briefWindow.start" :data-end="briefWindow.end">
+              <span class="bw-icon">🕒</span>
+              <span class="bw-label">闭市周期：{{ briefWindow.start.slice(5) }} → {{ briefWindow.end.slice(5) }}</span>
+              <span class="bw-count">共 {{ briefWindowItems.length }} 条</span>
+              <button class="bw-off" @click="clearBriefWindow" title="退出闭市周期视图，回到所选日期的全部快讯">✕ 回到当日全部</button>
+            </div>
+
             <div class="brief-tip muted small" v-if="briefLoading">⏳ 正在加载该日快讯...</div>
             <div class="brief-tip muted small" v-else-if="briefError">{{ briefError }}</div>
             <div class="brief-tip muted small" v-else-if="briefSearching && !briefFiltered.length">没有匹配「{{ briefKeyword }}」的快讯</div>
-            <div class="brief-tip muted small" v-else-if="briefItems.length">
+            <div class="brief-tip muted small" v-else-if="briefBase.length">
               全部消息按 13 个题材归类（一条可属多类），点分类即可展开该类全部消息
             </div>
             <div class="brief-tip muted small" v-else-if="briefPaused">
@@ -2525,7 +2542,7 @@
                 <th>用户名</th><th>角色</th><th>状态</th>
                 <th>注册日期</th><th>额度(月)</th><th>停用日期</th>
                 <th>密码</th>
-                <th>登录IP</th><th>最近登录</th><th>使用时长</th><th>操作</th>
+                <th>试用</th><th>最近登录</th><th>使用时长</th><th>操作</th>
               </tr>
             </thead>
             <tbody>
@@ -2574,10 +2591,27 @@
                       <button class="btn-mini" v-if="u.hasPassword" @click="copyPassword(u)" title="复制密码">复制</button>
                     </div>
                   </td>
-                  <td class="muted">
-                    <div v-if="u.lastIp" class="um-ip">{{ u.lastIp }}</div>
-                    <div v-if="u.lastIp" class="um-ip-loc">{{ u.lastLoc || '—' }}</div>
-                    <span v-else class="muted">未获取到</span>
+                  <td class="um-trial-cell">
+                    <template v-if="u.role === 'user'">
+                      <!-- 三层试用：点一下即开通，期间该用户（哪怕还在待审核）可以用自己的密码登录 -->
+                      <div class="um-trial-btns">
+                        <button v-for="d in trialDayOptions" :key="d.days"
+                                class="btn-mini btn-trial"
+                                :class="{ 'is-on': u.trialActive && u.trialDays === d.days }"
+                                :title="'给「' + u.username + '」开通' + d.label + '试用，试用期内他可直接登录（普通用户权限）'"
+                                @click="grantUserTrial(u, d.days)">试用{{ d.label }}</button>
+                      </div>
+                      <div class="um-trial-state">
+                        <span v-if="u.trialActive" class="um-trial-on">
+                          试用中 · 至 {{ u.trialUntilText }}<span class="um-trial-left">（剩 {{ u.trialLeftText }}）</span>
+                        </span>
+                        <span v-else-if="u.trialExpired" class="um-trial-off">试用已结束</span>
+                        <span v-else class="muted">未开通</span>
+                        <button class="btn-mini" v-if="u.trialActive" @click="revokeUserTrial(u)"
+                                title="立即结束试用，账号回到待审核">结束</button>
+                      </div>
+                    </template>
+                    <span v-else class="muted">—</span>
                   </td>
                   <td class="muted">
                     <div v-if="u.lastLoginAt">{{ fmtDateTime(u.lastLoginAt) }}</div>
@@ -2679,8 +2713,8 @@
     </transition>
   </div>
 
-  <script src="js/auth.js?v=20260917f"></script>
-  <script src="js/auth-boot.js?v=20260917f"></script>
+  <script src="js/auth.js?v=20260917g"></script>
+  <script src="js/auth-boot.js?v=20260917g"></script>
   <!-- store / stock-api / hot-topics / app 由 auth-boot.js 在登录通过后动态装载，
        未登录时它们不会被下载，业务数据也不会进入内存 -->
 </body>

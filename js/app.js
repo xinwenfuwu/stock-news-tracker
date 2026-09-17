@@ -168,6 +168,35 @@ const app = createApp({
       refreshUserList();
     }
 
+    /* ---------- 试用（三层：一天 / 三天 / 一周） ---------- */
+    /** 三档试用时长；label 用于按钮文案「试用一天 / 试用三天 / 试用一周」 */
+    const trialDayOptions = [
+      { days: 1, label: '一天' },
+      { days: 3, label: '三天' },
+      { days: 7, label: '一周' }
+    ];
+
+    /**
+     * 给某个普通用户开通试用。
+     * 开通后即便账号还在「待审核」，该用户也能用自己的密码登录（按普通用户对待）；
+     * 试用到期后登录与已发出的会话立即失效，账号回到待审核。
+     */
+    function grantUserTrial(u, days) {
+      if (!A) return;
+      const r = A.grantTrial(u.username, days);
+      if (!r.ok) { showToast(r.error, 'error'); refreshUserList(); return; }
+      showToast(`已给「${u.username}」开通${r.label}试用（至 ${r.untilText}），他可以直接登录了`, 'success');
+      refreshUserList();
+    }
+
+    function revokeUserTrial(u) {
+      if (!A) return;
+      const r = A.revokeTrial(u.username);
+      if (!r.ok) { showToast(r.error, 'error'); refreshUserList(); return; }
+      showToast(`已结束「${u.username}」的试用，账号回到待审核`, 'success');
+      refreshUserList();
+    }
+
     /* ---------- 会员额度（注册日期 / 额度 / 停用日期） ---------- */
     function setUserRegisterDate(u, val) {
       if (!A) return;
@@ -189,8 +218,7 @@ const app = createApp({
       refreshUserList();
     }
 
-    /** 停用日期是否已超过今天（'YYYY-MM-DD' 字符串比较） */
-    function isExpiredDate(s) {
+    /** 停用日期是否已超过今天（'YYYY-MM-DD' 字符串比较） */    function isExpiredDate(s) {
       if (!s) return false;
       const d = new Date();
       const p = n => String(n).padStart(2, '0');
@@ -3739,6 +3767,10 @@ const app = createApp({
     const briefDates = ref([]);        // 有快讯数据的日期（来自仓库 index.json 的 briefsDates）
     const briefDate = ref('');         // 当前查看日期
     const briefItems = ref([]);        // 当日全部快讯
+    // 闭市周期刷新（日期字段右侧的独立按钮）：
+    // 窗口 = [最近一个已过去的 15:00, 现在]，即按股票收盘时刻切分，而不是按自然日。
+    const briefWindowItems = ref([]);  // 窗口内的快讯（跨天合并、按时间倒序）
+    const briefWindow = reactive({ on: false, start: '', end: '' });
     const briefKeyword = ref('');      // 关键词
     const briefLoading = ref(false);
     const briefError = ref('');
@@ -4050,7 +4082,96 @@ const app = createApp({
         briefLoading.value = false;
       }
     }
-    function onBriefDateChange() { loadBriefs(briefDate.value); }
+    function onBriefDateChange() {
+      clearBriefWindow();                 // 手动选日期 = 回到「该日全部」，退出闭市周期视图
+      loadBriefs(briefDate.value);
+    }
+
+    /* ---------- 闭市周期刷新（按股票收盘时刻切分，不按自然日） ----------
+     * 口径（用户指定）：
+     *   · 当天 15:00 以前刷新 → 统计 [昨天 15:00, 今天 15:00] 区间（此刻尚未到 15:00，
+     *     实际可见数据即 [昨天 15:00, 现在]）
+     *   · 当天 15:00 以后刷新 → 统计 [今天 15:00, 刷新时刻]
+     * 统一表述：窗口起点 = 最近一个「已经过去」的 15:00（收盘时刻），窗口终点 = 现在。
+     * 这样 15:00 之后刷新拿到的是「今日收盘以来」的消息，15:00 之前刷新拿到的是
+     * 「昨日收盘以来」的消息（含隔夜与盘前），严格贴合 15:00 闭市 → 次日 9:26 开市的节奏。
+     */
+    /** 计算闭市周期窗口；返回 { start, end } 两个 Date（可注入 now 便于测试） */
+    function briefCloseWindow(now) {
+      const n = now ? new Date(now) : new Date();
+      const start = new Date(n.getFullYear(), n.getMonth(), n.getDate(), 15, 0, 0, 0);
+      // 今天 15:00 还没到 → 上一个周期从昨天 15:00 起算
+      if (n.getTime() < start.getTime()) start.setDate(start.getDate() - 1);
+      return { start: start, end: n };
+    }
+    /** 退出闭市周期视图，回到「按日」查看 */
+    function clearBriefWindow() {
+      briefWindow.on = false;
+      briefWindow.start = '';
+      briefWindow.end = '';
+      briefWindowItems.value = [];
+    }
+    /** 拉取某日快讯文件；文件不存在或拉取失败都返回空数组（跨天合并时允许缺一天） */
+    async function fetchBriefsFile(date) {
+      try {
+        const r = await fetch(`./data/hot-topics/briefs-${date}.json`, { cache: 'no-store' });
+        if (!r.ok) return [];
+        const j = await r.json();
+        return Array.isArray(j.items) ? j.items : [];
+      } catch (e) {
+        return [];
+      }
+    }
+    /**
+     * 用户主动「刷新（闭市周期）」：重新拉取窗口跨越的那几天快讯（绕开浏览器缓存），
+     * 合并后按时间过滤，只保留 [最近一个 15:00, 现在] 的新闻。
+     * 属于用户主动触发，因此顶部「暂停自动刷新」开关生效时依然可用（与「📥 加载该日快讯」同理）。
+     */
+    async function refreshBriefCloseWindow() {
+      if (briefLoading.value) return;
+      const w = briefCloseWindow();
+      const startStr = fmtDateTime(w.start);   // 'YYYY-MM-DD HH:mm'，与快讯 time 字段同格式
+      const endStr = fmtDateTime(w.end);
+      const days = [fmtDate(w.start)];
+      const endDay = fmtDate(w.end);
+      if (days.indexOf(endDay) < 0) days.push(endDay);
+
+      briefLoading.value = true;
+      briefError.value = '';
+      briefPaused.value = false;
+      _briefLoaded = true;
+      try {
+        const chunks = await Promise.all(days.map(d => fetchBriefsFile(d)));
+        if (!briefDates.value.length) {            // 顺手同步一下日期清单，便于「回到当日全部」
+          briefDates.value = days.slice().reverse();
+        }
+        const merged = [];
+        chunks.forEach(list => list.forEach(it => { if (it && it.time) merged.push(it); }));
+        const inWin = merged
+          .filter(it => {
+            const t = String(it.time);
+            return t >= startStr && t <= endStr;
+          })
+          .sort((a, b) => String(b.time).localeCompare(String(a.time)));
+        briefWindowItems.value = inWin;
+        briefWindow.on = true;
+        briefWindow.start = startStr;
+        briefWindow.end = endStr;
+        Object.keys(briefUi.open).forEach(k => { briefUi.open[k] = false; });   // 换窗口后分类先收起
+        if (!inWin.length) {
+          briefError.value = `闭市周期（${startStr} → ${endStr}）内没有快讯；可换用上方日期查看整日快讯`;
+        } else {
+          const hrs = (w.end - w.start) / 3600000;
+          showToast(`已刷新：${startStr} → ${endStr}（约 ${hrs.toFixed(1)} 小时）共 ${inWin.length} 条`, 'success');
+        }
+      } catch (e) {
+        briefWindowItems.value = [];
+        briefError.value = '闭市周期刷新失败：' + (e && e.message ? e.message : e);
+      } finally {
+        briefLoading.value = false;
+      }
+    }
+
     function toggleBriefCat(key) {
       briefUi.open[key] = !briefUi.open[key];
       if (briefUi.open[key] && !briefUi.limit[key]) briefUi.limit[key] = 30;
@@ -4073,12 +4194,14 @@ const app = createApp({
       try { return safe.replace(new RegExp(esc, 'gi'), m => `<mark>${m}</mark>`); }
       catch (e) { return safe; }
     }
+    /** 当前展示的数据源：闭市周期窗口优先（跨天合并），否则为所选那天的全部快讯 */
+    const briefBase = computed(() => (briefWindow.on ? briefWindowItems.value : briefItems.value));
     /** 关键词过滤（正文 / 关联股票 / 关联主题都参与匹配） */
     const briefFiltered = computed(() => {
       const kw = briefKeyword.value.trim();
-      if (!kw) return briefItems.value;
+      if (!kw) return briefBase.value;
       const k = kw.toLowerCase();
-      return briefItems.value.filter(it =>
+      return briefBase.value.filter(it =>
         String(it.text || '').toLowerCase().includes(k) ||
         (it.stocks || []).some(s => String(s).toLowerCase().includes(k)) ||
         (it.subjects || []).some(s => String(s).toLowerCase().includes(k)));
@@ -5371,7 +5494,8 @@ const app = createApp({
       // 全球信息页：火热话题 + 格隆汇每日快讯
       hotTopicsSources, hotTopicsMerged, hotTopicsLoading, hotTopicsUpdated, refreshHotTopics,
       briefDates, briefDate, briefItems, briefKeyword, briefLoading, briefError, briefUi, briefPaused,
-      briefFiltered, briefSearching, briefStatsList,
+      briefFiltered, briefSearching, briefStatsList, briefBase,
+      briefWindow, briefWindowItems, refreshBriefCloseWindow, clearBriefWindow,
       onBriefDateChange, toggleBriefCat, moreBriefNews, hlBrief, autoLoadBriefs, loadBriefsNow,
       htTab, htMode, hotTopicDate, hotTopicDateHasData, htCatFilter, htCategories, htRangeOptions, localSnapshotDates,
       analysisRange, analysisLoading, analysisResult, filteredHotSources,
@@ -5407,6 +5531,7 @@ const app = createApp({
       userModal, userList, openUserManage, addUserByAdmin, changeUserRole,
       toggleUserDisabled, removeUserByAdmin, resetUserPassword,
       setUserRegisterDate, setUserQuota, isExpiredDate,
+      trialDayOptions, grantUserTrial, revokeUserTrial,
       exportUsersTable, importUsersTable,
       pwModal, openChangePassword, submitChangePassword,
       // 登录档案与注册审核

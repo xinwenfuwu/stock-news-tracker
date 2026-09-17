@@ -36,7 +36,7 @@
 
   // 账号状态：pending=待审核（可登录前必须由管理员通过）, active=正常, rejected=已驳回
   var STATUS = { PENDING: 'pending', ACTIVE: 'active', REJECTED: 'rejected' };
-  var STATUS_NAME = { pending: '待审核', active: '已通过', rejected: '已驳回', disabled: '已停用' };
+  var STATUS_NAME = { pending: '待审核', active: '已通过', rejected: '已驳回', disabled: '已停用', trial: '试用中' };
 
   var MAX_LOGIN_RECORDS = 20;   // 每人最多保留的登录记录条数
   var MAX_CODE_LEN = 8192;      // 申请码/准入码长度上限，防粘贴超大内容
@@ -383,9 +383,11 @@
     return STATUS.ACTIVE;   // 老数据没有 status 字段，一律视为已通过
   }
 
-  /** 账号状态展示名：停用优先于审核状态 */
+  /** 账号状态展示名：停用优先于审核状态；试用中的待审核账号显示「试用中」 */
   function statusName(u) {
     if (u && u.disabled && statusOf(u) === STATUS.ACTIVE) return STATUS_NAME.disabled;
+    var tr = trialState(u);
+    if (tr.active) return STATUS_NAME.trial;
     return STATUS_NAME[statusOf(u)];
   }
 
@@ -420,6 +422,57 @@
     var dd = disableDateOf(u);
     if (!dd) return false;
     return localDateStr(now) > dd;
+  }
+
+  /* ============ 试用（普通用户可先试用、后审核） ============
+   * 语义：管理员在「用户管理 → 试用」点一下，给这个普通用户开一段试用期；
+   * 试用期内即使账号还停在「待审核」，也能用他自己的密码登录；
+   * 试用一到期，登录与已持有的会话立即失效，账号回到原来的待审核状态。
+   * 试用账号一律按「普通用户」对待，不继承管理员权限。
+   */
+
+  /** 可选试用时长（天）：一天 / 三天 / 一周 */
+  var TRIAL_DAYS = [1, 3, 7];
+  var TRIAL_DAY_LABEL = { 1: '一天', 3: '三天', 7: '一周' };
+
+  /** 'YYYY-MM-DD HH:mm'（本地时区；本项目日期语义统一按北京时间） */
+  function localMinStr(ts) {
+    var d = new Date(Number(ts) || Date.now());
+    return localDateStr(d.getTime()) + ' ' + pad2(d.getHours()) + ':' + pad2(d.getMinutes());
+  }
+
+  /** 试用到期时间戳（ms）；未开通或已清空返回 null */
+  function trialUntilOf(u) {
+    var t = u ? Number(u.trialUntil) : 0;
+    return (t && t > 0) ? t : null;
+  }
+
+  /**
+   * 试用派生状态。
+   * granted=false → 从未开通；active=true → 试用中（可登录）；expired=true → 开通过但已结束
+   */
+  function trialState(u, now) {
+    var until = trialUntilOf(u);
+    var t = Number(now) || Date.now();
+    if (!until) {
+      return { granted: false, active: false, expired: false, until: null, days: 0, leftMs: 0, label: '未开通' };
+    }
+    var days = Number(u.trialDays) || 0;
+    var left = until - t;
+    if (left <= 0) {
+      return { granted: true, active: false, expired: true, until: until, days: days, leftMs: 0, label: '试用已结束' };
+    }
+    return { granted: true, active: true, expired: false, until: until, days: days, leftMs: left, label: '试用中' };
+  }
+
+  /** 试用剩余时长文案：不足 1 小时按分钟，不足 1 天按小时，其余按「x 天 y 小时」 */
+  function trialLeftText(ms) {
+    var m = Math.floor((Number(ms) || 0) / 60000);
+    if (m <= 0) return '';
+    if (m < 60) return m + ' 分钟';
+    var h = Math.floor(m / 60);
+    if (h < 24) return h + ' 小时';
+    return Math.floor(h / 24) + ' 天 ' + (h % 24) + ' 小时';
   }
 
   function loginList(u) {
@@ -531,6 +584,7 @@
 
   function publicUser(u) {
     var last = lastLogin(u);
+    var tr = trialState(u);
     return {
       username: u.username,
       role: u.role,
@@ -543,7 +597,18 @@
       updatedAt: u.updatedAt || null,
       lastLoginAt: last ? last.at : null,
       usageSec: totalUsageSec(u),
-      loginCount: loginList(u).length
+      loginCount: loginList(u).length,
+      // 试用（管理员在用户管理页按「一天 / 三天 / 一周」开通）
+      trialActive: tr.active,
+      trialExpired: tr.expired,
+      trialGranted: tr.granted,
+      trialDays: tr.days,
+      trialUntil: tr.until,
+      trialUntilText: tr.until ? localMinStr(tr.until) : '',
+      trialLeftMs: tr.leftMs,
+      trialLeftText: trialLeftText(tr.leftMs),
+      trialLabel: tr.label,
+      trialGrantedBy: u.trialGrantedBy || ''
     };
   }
 
@@ -615,8 +680,17 @@
     var list = users || loadUsers();
     var u = findUser(list, sess.username);
     if (!u) return Promise.resolve({ ok: false, error: '账号不存在或已被移除' });
-    if (statusOf(u) === STATUS.PENDING) return Promise.resolve({ ok: false, error: '账号待管理员审核通过后才能使用' });
-    if (statusOf(u) === STATUS.REJECTED) return Promise.resolve({ ok: false, error: '注册申请未通过审核' });
+    // 「试用中」的普通账号持有会话也放行；试用一结束立刻拦下（会话随即失效）
+    var tr = trialState(u);
+    if (statusOf(u) === STATUS.PENDING && !tr.active) {
+      return Promise.resolve({
+        ok: false,
+        error: tr.expired ? '试用已结束，账号已回到待审核状态' : '账号待管理员审核通过后才能使用'
+      });
+    }
+    if (statusOf(u) === STATUS.REJECTED && !tr.active) {
+      return Promise.resolve({ ok: false, error: '注册申请未通过审核' });
+    }
     // 会员额度到期：后台自动停用，持有旧会话也会被踢回登录页
     if (!u.disabled && isMembershipExpired(u)) {
       u.disabled = true; u.autoDisabled = true; u.disabledAt = Date.now(); u.updatedAt = Date.now();
@@ -645,6 +719,8 @@
     TTL_REMEMBER: TTL_REMEMBER,
     PASSWORD_MIN: PASSWORD_MIN,
     PASSWORD_MAX: PASSWORD_MAX,
+    TRIAL_DAYS: TRIAL_DAYS,
+    TRIAL_DAY_LABEL: TRIAL_DAY_LABEL,
 
     /** 可注入的存储实现（测试用） */
     storage: null,
@@ -771,28 +847,38 @@
       var stored = u ? u.hash : DUMMY_HASH;
       return verifyPassword(password, stored).then(function (okPwd) {
         if (!u || !okPwd) return { ok: false, error: '用户名或密码不正确' };
-        // 审核门禁：密码对也不行，必须已通过审核
+        // 审核门禁：密码对也不行，必须已通过审核 —— 但「试用中」的普通用户可直接登录
         var st = statusOf(u);
-        if (st === STATUS.PENDING) {
-          return { ok: false, error: '该账号正在等待管理员审核，通过后即可登录', status: STATUS.PENDING };
+        var tr = trialState(u);
+        if (st === STATUS.PENDING && !tr.active) {
+          return {
+            ok: false, status: STATUS.PENDING,
+            error: tr.expired ? '试用已结束，请等待管理员审核通过后再登录' : '该账号正在等待管理员审核，通过后即可登录'
+          };
         }
-        if (st === STATUS.REJECTED) {
+        if (st === STATUS.REJECTED && !tr.active) {
           return { ok: false, error: '该注册申请未通过审核，请联系管理员', status: STATUS.REJECTED };
         }
-        // 会员额度到期：后台自动停用，无法登录
+        // 会员额度到期：后台自动停用，无法登录（试用中的账号还没走会员额度，不受影响）
         if (!u.disabled && isMembershipExpired(u)) {
           u.disabled = true; u.autoDisabled = true; u.disabledAt = Date.now(); u.updatedAt = Date.now();
           saveUsers(self.users);
           return { ok: false, error: '会员已到期（停用日期 ' + disableDateOf(u) + '），无法登录，请联系管理员', status: 'expired' };
         }
         if (u.disabled) return { ok: false, error: '该账号已被停用，请联系管理员' };
+        // 试用中的账号一律按普通用户放行，避免「待审核 + 管理员角色」这种组合直接拿到后台权限
+        if (tr.active && st !== STATUS.ACTIVE && u.role !== ROLE.USER) {
+          u.role = ROLE.USER;
+          u.updatedAt = Date.now();
+          saveUsers(self.users);
+        }
         var ttl = remember ? TTL_REMEMBER : TTL_DEFAULT;
         var rec = pushLoginRecord(u, { ua: localUA() });
         u.lastLoginAt = rec.at;
         saveUsers(self.users);
         return issueSession(u, ttl, rec.at).then(function () {
           self.user = publicUser(u);
-          return { ok: true, user: self.user, loginAt: rec.at };
+          return { ok: true, user: self.user, loginAt: rec.at, trial: tr.active };
         });
       });
     },
@@ -927,6 +1013,64 @@
       if (!u) return { ok: false, error: '用户不存在' };
       if (statusOf(u) !== STATUS.ACTIVE) return { ok: false, error: '该账号尚未通过审核' };
       return { ok: true, approveCode: makeApproveCode(u) };
+    },
+
+    /* ---------- 试用：管理员给普通用户开一段试用期 ---------- */
+
+    /**
+     * 开通 / 续期试用。days 只接受 1 / 3 / 7（一天 / 三天 / 一周）。
+     * 试用期内，即使账号还停在「待审核」，该用户也能用自己的密码登录（按普通用户对待）；
+     * 到期后登录与已发出的会话都会立即失效，账号回到原来的待审核状态。
+     * 再次点击 = 从「现在」重新起算，便于续期。
+     */
+    grantTrial: function (username, days) {
+      if (!this.isAdmin()) return { ok: false, error: '仅管理员可开通试用' };
+      var d = parseInt(days, 10);
+      if (TRIAL_DAYS.indexOf(d) < 0) return { ok: false, error: '试用时长只支持 一天 / 三天 / 一周' };
+      this.users = loadUsers();
+      var u = findUser(this.users, username);
+      if (!u) return { ok: false, error: '用户不存在' };
+      if (u.role === ROLE.ADMIN) return { ok: false, error: '管理员账号无需试用' };
+      if (u.disabled) return { ok: false, error: '该账号已被停用，请先「启用」再开通试用' };
+      var now = Date.now();
+      u.trialUntil = now + d * 24 * 60 * 60 * 1000;
+      u.trialDays = d;
+      u.trialGrantedAt = now;
+      u.trialGrantedBy = (this.user && this.user.username) || '';
+      if (!u.registerDate) u.registerDate = localDateStr(now);
+      u.updatedAt = now;
+      if (!saveUsers(this.users)) return { ok: false, error: '保存失败：浏览器本地存储不可用' };
+      return {
+        ok: true, user: adminUser(u), days: d,
+        untilText: localMinStr(u.trialUntil),
+        label: TRIAL_DAY_LABEL[d] || (d + ' 天')
+      };
+    },
+
+    /** 立即结束试用：清掉试用期，账号回到原状态（通常仍是待审核） */
+    revokeTrial: function (username) {
+      if (!this.isAdmin()) return { ok: false, error: '仅管理员可结束试用' };
+      this.users = loadUsers();
+      var u = findUser(this.users, username);
+      if (!u) return { ok: false, error: '用户不存在' };
+      if (!trialUntilOf(u)) return { ok: false, error: '该账号当前没有试用' };
+      u.trialUntil = 0;
+      u.trialDays = 0;
+      u.trialRevokedAt = Date.now();
+      u.trialRevokedBy = (this.user && this.user.username) || '';
+      u.updatedAt = Date.now();
+      if (!saveUsers(this.users)) return { ok: false, error: '保存失败：浏览器本地存储不可用' };
+      return { ok: true, user: adminUser(u) };
+    },
+
+    /** 试用状态查询（管理员列表与界面提示共用） */
+    trialState: function (username) {
+      var u = findUser(loadUsers(), username);
+      if (!u) return null;
+      var tr = trialState(u);
+      tr.untilText = tr.until ? localMinStr(tr.until) : '';
+      tr.leftText = trialLeftText(tr.leftMs);
+      return tr;
     },
 
     /**
