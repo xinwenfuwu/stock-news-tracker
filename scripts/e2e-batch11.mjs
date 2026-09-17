@@ -128,6 +128,18 @@ const ALERT_STATE = () => {
   };
 };
 
+/**
+ * 等提醒条真正从 DOM 移除。
+ * 坑：`.adminalert-leave-active` 有 0.3s 离场动画，元素在过渡期间**仍留在 DOM 里**
+ * （`document.querySelector('.admin-alert')` 依然命中、文本内容也还在）。
+ * 只 `waitForTimeout(400)` 会在机器负载高时踩进过渡中间态，读出「提醒条还在」的假失败。
+ * 判据应看「元素是否还在」而不是「等了多久」。
+ */
+async function waitAlertGone(page) {
+  await page.waitForFunction(() => !document.querySelector('.admin-alert'), null, { timeout: 6000 })
+    .catch(() => { /* 超时交给断言暴露 */ });
+}
+
 /* ============================================================ */
 const main = async () => {
   const A = await serveStatic(ROOT);
@@ -238,7 +250,7 @@ const main = async () => {
 
     // 关掉面板，检查角标（已读语义：数字在、不为红色未读）
     await adminPage.click('.modal-um .modal-header .btn-icon');
-    await adminPage.waitForTimeout(400);
+    await waitAlertGone(adminPage);
     st = await adminPage.evaluate(ALERT_STATE);
     check('关闭面板后角标显示待审核人数', st.chipExists && st.chipText === '1', JSON.stringify(st));
     check('刚看过的申请不算「未读」→ 角标不是红色呼吸态', st.chipIsNew === false, JSON.stringify(st));
@@ -278,7 +290,7 @@ const main = async () => {
     // 点「去审核」→ 打开用户管理，提醒条收起、角标转已读
     await adminPage.click('.admin-alert .btn-primary');
     await adminPage.waitForSelector('.modal-um', { timeout: 20000 });
-    await adminPage.waitForTimeout(400);
+    await waitAlertGone(adminPage);
     const st2 = await adminPage.evaluate(ALERT_STATE);
     check('「去审核」直接打开用户管理', (await adminPage.locator('.um-pending-item').count()) === 2);
     check('查看后提醒条收起', st2.alertVisible === false, JSON.stringify(st2));

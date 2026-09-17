@@ -27,7 +27,7 @@
   'use strict';
 
   // 与 index.html 中静态资源版本号保持一致，避免升级后命中旧缓存
-  var ASSET_V = '20260917k';
+  var ASSET_V = '20260917l';
 
   // 管理员点开「注册申请导入链接」后，申请码暂存在这里，等业务层（app.js）就绪后取走
   var IMPORT_KEY = 'snt-pending-import-v1';
@@ -208,6 +208,26 @@
     return req;
   }
 
+  /**
+   * 普通用户的「注册直达链接」：`#register`（兼容 `#signup`）。
+   * 用途：管理员把这一条链接发给要用工具的人，对方点开就是注册表单，
+   *       不用先看登录页再自己找「注册新账号」——少一步就少一批人卡住。
+   */
+  function wantsRegister() {
+    var h = String(location.hash || '').toLowerCase();
+    return h === '#register' || h === '#signup';
+  }
+
+  /**
+   * 离开注册表单时把 `#register` 从地址栏抹掉。
+   * 不抹的话，用户点了「返回登录」以后再刷新页面又会被弹回注册表单，
+   * 表现成「我想登录却一直让我注册」。
+   */
+  function clearRegisterHash() {
+    if (!wantsRegister()) return;
+    try { history.replaceState(null, '', location.pathname + location.search); } catch (e) { /* ignore */ }
+  }
+
   /** 业务层取走待导入的申请码（取一次即清，避免重复弹窗） */
   function takePendingImport() {
     var v = '';
@@ -232,12 +252,20 @@
    */
   function onHashChange() {
     var req = captureImportLink();
-    if (!req) return;
-    if (importHandler) { importHandler(); return; }
-    // 业务层还没就绪：多半停在登录页（注意 elGate 在进入应用后会被移出 DOM，
-    // 这里必须查一次真实 DOM，否则提示会写进一个已脱离文档的节点、用户看不到）
-    if (document.getElementById('auth-gate')) {
-      showMsg('已收到用户发来的注册申请，请先用管理员账号登录，登录后会自动打开用户管理并填好申请码', 'warn');
+    if (req) {
+      if (importHandler) { importHandler(); return; }
+      // 业务层还没就绪：多半停在登录页（注意 elGate 在进入应用后会被移出 DOM，
+      // 这里必须查一次真实 DOM，否则提示会写进一个已脱离文档的节点、用户看不到）
+      if (document.getElementById('auth-gate')) {
+        showMsg('已收到用户发来的注册申请，请先用管理员账号登录，登录后会自动打开用户管理并填好申请码', 'warn');
+      }
+      return;
+    }
+    // 站点已经开着，有人把注册链接粘进地址栏 / 点了链接 → 直接切到注册表单，不必刷新
+    // （登录成功后 auth-gate 会被移出 DOM，此时不该再动，交给业务层自己的路由）
+    if (wantsRegister() && document.getElementById('auth-gate')) {
+      showMsg('');
+      showForm('register');
     }
   }
 
@@ -460,7 +488,13 @@
     });
     ['#auth-reg-back', '#auth-reg-done-back', '#auth-code-back'].forEach(function (sel) {
       var btn = $(sel);
-      if (btn) btn.addEventListener('click', function () { showMsg(''); showForm(Auth.hasUsers() ? 'login' : 'register'); });
+      if (btn) btn.addEventListener('click', function () {
+        showMsg('');
+        // 用户是点 #register 直达链接进来的，离开注册表单就把 hash 清掉，
+        // 否则他下次刷新又被弹回注册页（想登录却一直被要求注册）
+        clearRegisterHash();
+        showForm(Auth.hasUsers() ? 'login' : 'register');
+      });
     });
     var sendBtn = $('#auth-reg-send');
     if (sendBtn) sendBtn.addEventListener('click', function () {
@@ -514,6 +548,8 @@
 
     // 管理员点开「注册申请导入链接」时，先把申请码收好、把地址栏 hash 清掉
     var importCode = captureImportLink();
+    // 用户点开管理员发的「注册直达链接」(#register) 时，直接落在注册表单
+    var askRegister = wantsRegister();
     // 页面已经开着时点链接只换 hash、不会重载页面，靠这个监听补上
     global.addEventListener('hashchange', onHashChange);
 
@@ -530,7 +566,8 @@
     Auth.restore().then(function (r) {
       if (r.ok) { enterApp(); return; }
       var hint = (r.error && r.error !== '未登录') ? r.error : '';
-      showForm('login');
+      // 带 #register 链接进来的（多半是管理员发给新用户的）优先显示注册表单
+      showForm(askRegister ? 'register' : 'login');
       if (importCode) showMsg('已收到用户发来的注册申请，请先用管理员账号登录，登录后会自动打开用户管理并填好申请码', 'warn');
       else if (hint) showMsg(hint, 'warn');
     }).catch(function (err) {
