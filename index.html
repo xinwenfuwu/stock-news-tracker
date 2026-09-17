@@ -4,12 +4,12 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>股市信息分析系统</title>
-  <link rel="stylesheet" href="css/style.css?v=20260917j">
+  <link rel="stylesheet" href="css/style.css?v=20260917k">
   <!-- Vue 3 全局构建版（v3.4.21 · 自托管）
        原先走 unpkg.com CDN：国内网络对 unpkg 的连通性不稳定，一旦该请求长时间挂起，
        <head> 里的阻塞脚本会让整页停在白屏、后续 auth-boot.js 根本不会执行。
        改为同源托管后，启动链路不再依赖任何第三方 CDN。 -->
-  <script src="js/vue.global.prod.js?v=20260917j"></script>
+  <script src="js/vue.global.prod.js?v=20260917k"></script>
 </head>
 <body class="auth-locked">
   <!-- ===== 登录关卡：登录通过前业务脚本不会被加载 ===== -->
@@ -39,7 +39,7 @@
         <input class="auth-input" type="password" id="reg-confirm" placeholder="再输入一次密码" maxlength="64" autocomplete="new-password">
         <div class="auth-strength" id="reg-strength" hidden><em><i></i></em><span></span></div>
         <button class="auth-btn" type="submit">提交注册申请</button>
-        <p class="auth-tip">密码须为 8-64 位且同时包含字母和数字。提交后需管理员审核，审核通过才能登录。</p>
+        <p class="auth-tip">密码须为 8-64 位且同时包含字母和数字。<b>本系统不会自动通知管理员</b>，提交后请把生成的申请信息发给他，审核通过才能登录。</p>
         <div class="auth-links">
           <button type="button" class="auth-link" id="auth-reg-back">返回登录</button>
         </div>
@@ -48,10 +48,15 @@
       <!-- 注册完成：展示申请码 -->
       <div class="auth-form" id="auth-reg-done" hidden>
         <div class="auth-done-title">✅ 注册申请已提交，等待管理员审核</div>
-        <p class="auth-done-sub">管理员通过后才能登录。如果你和管理员不在同一台设备上，请把下面的「申请码」完整发给他；他审核通过后会把一串「准入码」发回给你。</p>
+        <div class="auth-alert-box">
+          <b>⚠️ 还有一步：请主动通知管理员</b>
+          <span>本系统没有服务端，<b>不会自动给管理员发通知</b>。请点下面的按钮，把申请信息复制后发给管理员（微信 / QQ 都可以）。</span>
+        </div>
         <textarea class="auth-code auth-code-lg" id="reg-code" rows="8" readonly spellcheck="false"></textarea>
         <p class="auth-tip" id="reg-code-hint"></p>
-        <button class="auth-btn" type="button" id="auth-reg-copy">复制申请码</button>
+        <button class="auth-btn" type="button" id="auth-reg-send">📨 复制申请信息，发给管理员</button>
+        <button class="auth-btn auth-btn-ghost" type="button" id="auth-reg-copy">只复制申请码</button>
+        <p class="auth-tip">申请信息里带了一个链接，管理员点开就会自动填好申请码，不必手动粘贴这一长串。他审核通过后会把一串「准入码」发回给你。</p>
         <p class="auth-tip">管理员与你在同一台设备时，直接用他账号进「用户管理 → 待审核注册申请」点通过即可，不必转发申请码。</p>
         <div class="auth-links">
           <button type="button" class="auth-link" id="auth-reg-done-back">返回登录</button>
@@ -114,10 +119,15 @@
             ⬆️<input type="file" accept=".json" @change="importData" hidden>
           </label>
           <div class="user-menu-wrap" v-if="authUser">
-            <button class="user-chip" @click.stop="userMenuOpen = !userMenuOpen" :title="'当前登录：' + authUser.username">
+            <button class="user-chip" @click.stop="userMenuOpen = !userMenuOpen"
+                    :class="{ 'has-pending': pendingCount > 0 }"
+                    :title="'当前登录：' + authUser.username + (pendingCount > 0 ? '（有 ' + pendingCount + ' 份注册申请待审核）' : '')">
               <span class="user-avatar">{{ authInitial }}</span>
               <span class="user-name">{{ authUser.username }}</span>
               <span class="user-role-tag" :class="{ 'is-admin': authUser.role === 'admin' }">{{ authUser.roleName }}</span>
+              <span class="user-chip-badge" v-if="pendingCount > 0"
+                    :class="{ 'is-new': pendingNewCount > 0 }"
+                    :title="pendingCount + ' 份注册申请待审核'">{{ pendingCount }}</span>
             </button>
             <div class="user-dropdown" v-if="userMenuOpen" @click.stop>
               <div class="user-dd-head">
@@ -125,7 +135,10 @@
                 <div class="user-dd-meta">{{ authUser.roleName }} · {{ authExpiryText }}</div>
               </div>
               <button class="user-dd-item" @click="openChangePassword">修改密码</button>
-              <button class="user-dd-item" v-if="can('users.manage')" @click="openUserManage">用户管理</button>
+              <button class="user-dd-item" v-if="can('users.manage')" @click="openUserManage">
+                <span>用户管理</span>
+                <span class="user-dd-badge" v-if="pendingCount > 0">{{ pendingCount }} 份待审</span>
+              </button>
               <button class="user-dd-item is-danger" @click="doLogout">退出登录</button>
             </div>
           </div>
@@ -2837,14 +2850,27 @@
       </div>
     </div>
 
+    <!-- ===== 管理员：待审核注册申请站内提醒 ===== -->
+    <transition name="adminalert">
+      <div class="admin-alert" v-if="adminAlert.show">
+        <span class="admin-alert-icon">🔔</span>
+        <div class="admin-alert-body">
+          <b>有 {{ adminAlert.count }} 份新的注册申请待审核</b>
+          <span>{{ adminAlert.names }}</span>
+        </div>
+        <button class="btn btn-sm btn-primary" @click="goReviewPending">去审核</button>
+        <button class="admin-alert-x" @click="dismissAdminAlert" title="稍后再说">✕</button>
+      </div>
+    </transition>
+
     <!-- ===== Toast 提示 ===== -->
     <transition name="toast">
       <div class="toast" v-if="toast.show" :class="toast.type">{{ toast.msg }}</div>
     </transition>
   </div>
 
-  <script src="js/auth.js?v=20260917j"></script>
-  <script src="js/auth-boot.js?v=20260917j"></script>
+  <script src="js/auth.js?v=20260917k"></script>
+  <script src="js/auth-boot.js?v=20260917k"></script>
   <!-- store / stock-api / hot-topics / app 由 auth-boot.js 在登录通过后动态装载，
        未登录时它们不会被下载，业务数据也不会进入内存 -->
 </body>

@@ -1414,6 +1414,35 @@ body {
 .toast-enter-active, .toast-leave-active { transition: all 0.3s; }
 .toast-enter-from, .toast-leave-to { opacity: 0; transform: translate(-50%, 20px); }
 
+/* ===== 管理员站内提醒：有新的注册申请待审核 ===== */
+.admin-alert {
+  position: fixed; right: 20px; bottom: 20px; z-index: 1900;
+  display: flex; align-items: center; gap: 10px;
+  width: 370px; max-width: calc(100vw - 32px);
+  padding: 12px 12px 12px 14px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--danger);
+  border-radius: 10px;
+  box-shadow: var(--shadow-lg);
+}
+.admin-alert-icon { flex: 0 0 auto; font-size: 20px; line-height: 1; }
+.admin-alert-body { flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.admin-alert-body b { font-size: 13px; color: var(--text); }
+.admin-alert-body span {
+  font-size: 12px; color: var(--text-placeholder);
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.admin-alert .btn { flex: 0 0 auto; }
+.admin-alert-x {
+  flex: 0 0 auto; width: 22px; height: 22px; padding: 0;
+  font-size: 12px; line-height: 1; color: var(--text-placeholder);
+  background: none; border: none; border-radius: 5px; cursor: pointer;
+}
+.admin-alert-x:hover { color: var(--text); background: var(--surface-alt); }
+.adminalert-enter-active, .adminalert-leave-active { transition: all 0.3s; }
+.adminalert-enter-from, .adminalert-leave-to { opacity: 0; transform: translateY(12px); }
+
 /* 滚动条美化 */
 ::-webkit-scrollbar { width: 8px; height: 8px; }
 ::-webkit-scrollbar-track { background: transparent; }
@@ -2000,6 +2029,23 @@ body.auth-locked { overflow: hidden; }
 }
 .auth-btn:hover:not(:disabled) { background: var(--primary-hover); }
 .auth-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+/* 次要按钮（注册完成页的「只复制申请码」） */
+.auth-btn.auth-btn-ghost {
+  margin-top: 8px;
+  color: var(--primary); background: transparent;
+  border: 1px solid var(--primary);
+  font-size: 13px; font-weight: 500; padding: 9px 16px;
+}
+.auth-btn.auth-btn-ghost:hover:not(:disabled) { color: #fff; background: var(--primary); }
+/* 注册完成页的「请主动通知管理员」提示框 */
+.auth-alert-box {
+  display: flex; flex-direction: column; gap: 4px;
+  margin: 10px 0 2px; padding: 10px 12px;
+  font-size: 12px; line-height: 1.7; color: #92400e;
+  background: #fffbeb; border: 1px solid #fde68a; border-radius: 8px;
+}
+.auth-alert-box > b { font-size: 12.5px; color: #b45309; }
+.auth-alert-box span b { font-weight: 700; color: #b45309; }
 .auth-tip { margin-top: 2px; font-size: 12px; line-height: 1.6; color: var(--text-placeholder); }
 .auth-remember {
   display: flex; align-items: center; gap: 6px;
@@ -2059,6 +2105,21 @@ body.auth-locked { overflow: hidden; }
   background: rgba(255, 255, 255, 0.28);
 }
 .user-role-tag.is-admin { background: #fbbf24; color: #78350f; }
+/* 待审核注册申请角标：有未读（上次查看后新增）时为红底并轻微呼吸，已读后转为灰底 */
+.user-chip.has-pending { background: rgba(255, 255, 255, 0.28); }
+.user-chip-badge {
+  flex: 0 0 auto; min-width: 18px; height: 18px; padding: 0 5px;
+  display: inline-flex; align-items: center; justify-content: center;
+  font-size: 11px; font-weight: 700; line-height: 1;
+  color: #fff; background: rgba(255, 255, 255, 0.35);
+  border-radius: 9px;
+}
+.user-chip-badge.is-new { background: #dc2626; box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.6); animation: chipPulse 1.6s ease-out infinite; }
+@keyframes chipPulse {
+  0%   { box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.6); }
+  70%  { box-shadow: 0 0 0 7px rgba(220, 38, 38, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(220, 38, 38, 0); }
+}
 
 .user-dropdown {
   position: absolute; right: 0; top: 40px; z-index: 300;
@@ -2070,13 +2131,18 @@ body.auth-locked { overflow: hidden; }
 .user-dd-name { font-size: 13px; font-weight: 600; color: var(--text); }
 .user-dd-meta { margin-top: 3px; font-size: 11.5px; color: var(--text-placeholder); }
 .user-dd-item {
-  display: block; width: 100%; padding: 8px 10px;
+  display: flex; align-items: center; justify-content: space-between; gap: 8px;
+  width: 100%; padding: 8px 10px;
   font-size: 13px; color: var(--text); text-align: left;
   background: transparent; border: none; border-radius: 6px; cursor: pointer;
 }
 .user-dd-item:hover { background: var(--surface-alt); }
 .user-dd-item.is-danger { color: var(--danger); }
 .user-dd-item.is-danger:hover { background: #fef2f2; }
+.user-dd-badge {
+  flex: 0 0 auto; padding: 1px 7px; font-size: 11px; font-weight: 600;
+  color: #fff; background: var(--danger); border-radius: 9px;
+}
 
 @media (max-width: 900px) {
   .user-chip .user-name, .user-chip .user-role-tag { display: none; }

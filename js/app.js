@@ -55,6 +55,96 @@ const app = createApp({
     const revealedPw = reactive({});
     const expandedUser = ref(null);
 
+    /* ===== 注册申请站内提醒（管理员） =====
+     * 纯静态站没有服务端推送，所以这里监视「本机账号表」里的待审核记录：
+     *   · 同一台设备上有人注册 → 账号表本机写入 → 角标/提醒条立刻出现
+     *   · 跨设备 → 管理员粘贴「申请码」导入本机后，同样立刻出现
+     * 因此提醒的准确含义是「有多少申请已经到了你本机、还没处理」，
+     * 它不能替代注册者把申请发给管理员这一步（注册完成页已做一键转发）。 */
+    const ADMIN_SEEN_KEY = 'snt-admin-pending-seen-v1';
+    const pendingCount = ref(0);      // 待审核总数 → 角标数字
+    const pendingNewCount = ref(0);   // 其中「上次查看之后新增」的数量 → 红色高亮
+    const adminAlert = reactive({ show: false, count: 0, names: '' });
+    // 用户点过「稍后再说」时记住当时未读的条数：只有**又来了更多**申请才再次弹出，
+    // 否则同一批申请会被反复打扰
+    const adminAlertMutedAt = ref(0);
+
+    function readAdminSeen() {
+      const v = Number(localStorage.getItem(ADMIN_SEEN_KEY) || 0);
+      return isFinite(v) && v > 0 ? v : 0;
+    }
+
+    /** 扫描本机账号表的待审核申请，刷新角标与提醒条（只读 localStorage，不发任何网络请求） */
+    function scanPending() {
+      if (!can('users.manage') || !A || typeof A.pendingUsers !== 'function') {
+        pendingCount.value = 0; pendingNewCount.value = 0; adminAlert.show = false; return;
+      }
+      let list = [];
+      try { list = A.pendingUsers() || []; } catch (e) { list = []; }
+      pendingCount.value = list.length;
+      const seen = readAdminSeen();
+      const fresh = list.filter(p => Number(p.createdAt || 0) > seen);
+      pendingNewCount.value = fresh.length;
+      if (!fresh.length) { adminAlert.show = false; return; }
+      adminAlert.count = fresh.length;
+      const names = fresh.slice(0, 3).map(p => p.username).join('、');
+      adminAlert.names = fresh.length > 3
+        ? `${names} 等 ${fresh.length} 人提交了注册申请`
+        : `${names} 提交了注册申请`;
+      // 用户点过「稍后再说」就不再自动弹出，但角标仍在；
+      // 一旦又来了新的申请（未读条数增加），重新弹出提醒
+      if (fresh.length > adminAlertMutedAt.value) adminAlert.show = true;
+    }
+
+    /** 打开用户管理即视为「已查看」，角标转为已读（数字仍保留，提醒条收起） */
+    function markPendingSeen() {
+      try { localStorage.setItem(ADMIN_SEEN_KEY, String(Date.now())); } catch (e) { /* ignore */ }
+      pendingNewCount.value = 0;
+      adminAlert.show = false;
+      adminAlertMutedAt.value = 0;
+    }
+
+    function dismissAdminAlert() {
+      adminAlert.show = false;
+      adminAlertMutedAt.value = pendingNewCount.value;
+    }
+
+    /** 点提醒条上的「去审核」：打开用户管理并定位到待审核区 */
+    function goReviewPending() {
+      adminAlert.show = false;
+      openUserManage();
+    }
+
+    /**
+     * 管理员点开注册者发来的「导入链接」（#admin-import?req=…）时：
+     * 自动打开用户管理并把申请码填好，管理员只需再点一下「导入申请」。
+     */
+    function consumeImportLink() {
+      const code = (typeof AuthUI !== 'undefined' && AuthUI.takePendingImport)
+        ? AuthUI.takePendingImport() : '';
+      if (!code) return;
+      if (!can('users.manage')) {
+        showToast('这个链接需要管理员账号才能导入注册申请', 'error');
+        return;
+      }
+      openUserManage();           // 内部会把 reqCode 清空，所以赋值必须放在它后面
+      userModal.reqCode = code;
+      showToast('已自动填好用户发来的申请码，点「导入申请」即可', 'success');
+      nextTick(() => {
+        const bar = document.querySelector('.um-code-bar');
+        if (!bar) return;
+        try { bar.scrollIntoView({ block: 'center' }); } catch (e) { /* ignore */ }
+        const input = bar.querySelector('input');
+        if (input) {
+          try {
+            input.focus();
+            // 申请码很长，输入框会自动滚到末尾；移回开头便于确认收到的是 SNTREG1. 申请码
+            if (input.setSelectionRange) input.setSelectionRange(0, 0);
+          } catch (e) { /* ignore */ }
+        }
+      });
+    }
+
     const authInitial = computed(() => {
       const n = (authUser.value && authUser.value.username) ? authUser.value.username : '?';
       return n.slice(0, 1).toUpperCase();
@@ -113,13 +203,15 @@ const app = createApp({
 
     /** 刷新账号列表：管理员看到明细（含登录档案），其他情况只有公开字段 */
     function refreshUserList() {
-      if (!A) { userList.value = []; userModal.pending = []; return; }
+      if (!A) { userList.value = []; userModal.pending = []; scanPending(); return; }
       const all = (typeof A.listUsersDetail === 'function') ? A.listUsersDetail() : A.listUsers();
       userList.value = all;
       userModal.pending = all.filter(u => u.status === 'pending');
       userModal.pending.forEach(p => {
         if (!userModal.pendingRole[p.username]) userModal.pendingRole[p.username] = 'user';
       });
+      // 新增/导入/通过/驳回 都会走到这里，顺带同步角标
+      scanPending();
     }
 
     function openUserManage() {
@@ -131,6 +223,7 @@ const app = createApp({
       Object.keys(revealedPw).forEach(k => delete revealedPw[k]);
       refreshUserList();
       userModal.show = true;
+      markPendingSeen();   // 打开面板即视为已查看，收起提醒条、角标转已读
     }
 
     function addUserByAdmin() {
@@ -5253,6 +5346,26 @@ const app = createApp({
       document.addEventListener('keydown', (e) => {
         if (e.key === 'Escape') userMenuOpen.value = false;
       });
+
+      // ===== 注册申请提醒 =====
+      // 初次扫描（例如刷新页面后发现有待审核）＋ 消费注册者发来的导入链接
+      scanPending();
+      // 页面已经开着时点导入链接只换 hash、浏览器不会重载，交给这个回调处理
+      if (typeof AuthUI !== 'undefined' && AuthUI.setImportHandler) {
+        AuthUI.setImportHandler(consumeImportLink);
+      }
+      consumeImportLink();
+      // 同一浏览器其他标签页写入账号表（同设备另开窗口注册）时立即刷新
+      window.addEventListener('storage', (e) => {
+        if (e.key === 'snt-auth-users-v1') scanPending();
+      });
+      // 兜底轮询：**只读 localStorage，不产生任何网络请求**，因此与
+      // 「暂停数据刷新」的约定（进入页面不自动抓取数据）不冲突
+      setInterval(scanPending, 8000);
+      // 浏览器会把后台标签页的定时器节流（可能拖到每分钟一次），
+      // 所以「切回本站 / 重新聚焦窗口」时立刻补扫一次——管理员从微信点完链接切回来就能看到
+      document.addEventListener('visibilitychange', () => { if (!document.hidden) scanPending(); });
+      window.addEventListener('focus', scanPending);
     });
     watch(currentPage, (k) => {
       if (k === 'finance') { autoLoadHotTopics(); autoLoadBriefs(); }
@@ -5795,7 +5908,9 @@ const app = createApp({
       fmtDuration, badgeClass, passwordText, revealedPw, expandedUser,
       approveUserByAdmin, rejectUserByAdmin, importRequestCode,
       showApproveCode, toggleRevealPassword, revealPendingPassword,
-      copyPassword, toggleLoginLog
+      copyPassword, toggleLoginLog,
+      // 注册申请站内提醒
+      pendingCount, pendingNewCount, adminAlert, dismissAdminAlert, goReviewPending
     };
   }
 });

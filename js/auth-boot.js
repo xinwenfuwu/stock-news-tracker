@@ -13,6 +13,13 @@
  *   · 不同设备：注册者把生成的「申请码」发给管理员 → 管理员粘贴导入并审核
  *     → 把系统生成的「准入码」发回 → 注册者粘贴后即可用自己的密码登录。
  *
+ *   ⚠️ 因为「不同设备」时数据不会自己跑到管理员那边，注册完成页特意做了两件事：
+ *   1) 「📨 复制申请信息，发给管理员」——复制出的是一段**人话消息 + 申请码 + 导入链接**，
+ *      注册者直接粘到微信/QQ 发给管理员即可；
+ *   2) 导入链接形如 `#admin-import?req=<申请码>`，管理员点开会被自动识别，
+ *      登录后自动打开「用户管理」并把申请码填好，只需再点一下「导入申请」。
+ *   本文件负责生成消息与捕获该链接（captureImportLink / takePendingImport）。
+ *
  * 之所以「放行后才加载」，是因为纯静态站点没有服务端可以做重定向，
  * 用运行时按需注入脚本是最接近「未授权就拿不到」的做法。
  * ============================================================ */
@@ -20,7 +27,10 @@
   'use strict';
 
   // 与 index.html 中静态资源版本号保持一致，避免升级后命中旧缓存
-  var ASSET_V = '20260917j';
+  var ASSET_V = '20260917k';
+
+  // 管理员点开「注册申请导入链接」后，申请码暂存在这里，等业务层（app.js）就绪后取走
+  var IMPORT_KEY = 'snt-pending-import-v1';
 
   // 业务脚本装载顺序（Vue 已在 <head> 静态加载，不在此列）
   var APP_SCRIPTS = [
@@ -37,6 +47,8 @@
   var elLoginForm, elRegisterForm, elRegDone, elCodePanel;
   var elRegCode, elCodeInput, elStrength;
   var busy = false;
+  // 最近一次注册成功的信息，供「📨 复制申请信息」按钮使用
+  var lastReg = { username: '', code: '' };
 
   /* ---------------- 界面状态 ---------------- */
 
@@ -131,6 +143,102 @@
       }
     } catch (e) { /* 落到 fallback */ }
     fallback();
+  }
+
+  /** 静默复制：成功不提示、失败也不提示（用在脱离用户手势的自动复制场景） */
+  function tryCopySilently(text) {
+    if (!text) return;
+    try {
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).catch(function () { /* 被浏览器拒绝，忽略 */ });
+      }
+    } catch (e) { /* ignore */ }
+  }
+
+  /* ---------------- 注册申请：生成「发给管理员」的消息与导入链接 ---------------- */
+
+  /** 当前时间（本地/北京时间，形如 2026-09-17 17:20）。不能用 toISOString，UTC+8 凌晨会差一天 */
+  function nowText() {
+    var d = new Date();
+    var p = function (n) { return String(n).padStart(2, '0'); };
+    return d.getFullYear() + '-' + p(d.getMonth() + 1) + '-' + p(d.getDate())
+      + ' ' + p(d.getHours()) + ':' + p(d.getMinutes());
+  }
+
+  /** 管理员一键导入的链接：打开后自动填好申请码 */
+  function buildImportLink(code) {
+    return location.origin + location.pathname + '#admin-import?req=' + encodeURIComponent(code);
+  }
+
+  /**
+   * 组装完整申请信息（纯文本，直接粘到微信/QQ 即可）。
+   * 既包含人能看懂的用户名/时间，也包含管理员需要的申请码与导入链接。
+   */
+  function buildRegMessage(username, code) {
+    return '【股市信息分析系统】注册申请\n'
+      + '用户名：' + username + '\n'
+      + '提交时间：' + nowText() + '\n'
+      + '——————\n'
+      + '申请码（请完整转给管理员，勿增删字符，共 ' + code.length + ' 字符）：\n'
+      + code + '\n'
+      + '——————\n'
+      + '管理员点开下面的链接会自动填好申请码，直接点「导入申请」即可：\n'
+      + buildImportLink(code);
+  }
+
+  /**
+   * 捕获地址栏里的管理员导入链接（`#admin-import?req=<申请码>`）。
+   * 命中后立刻把 hash 清掉（避免刷新重复触发、也不把长串留在地址栏），
+   * 申请码转存 sessionStorage，等业务层就绪后由 takePendingImport() 取走。
+   */
+  function captureImportLink() {
+    var h = String(location.hash || '');
+    if (h.indexOf('#admin-import') !== 0) return '';
+    var req = '';
+    var q = h.indexOf('?');
+    if (q >= 0) {
+      try {
+        req = new URLSearchParams(h.slice(q + 1)).get('req') || '';
+      } catch (e) { req = ''; }
+    }
+    try { history.replaceState(null, '', location.pathname + location.search); } catch (e) { /* ignore */ }
+    if (req) {
+      try { sessionStorage.setItem(IMPORT_KEY, req); } catch (e) { /* ignore */ }
+    }
+    return req;
+  }
+
+  /** 业务层取走待导入的申请码（取一次即清，避免重复弹窗） */
+  function takePendingImport() {
+    var v = '';
+    try {
+      v = sessionStorage.getItem(IMPORT_KEY) || '';
+      if (v) sessionStorage.removeItem(IMPORT_KEY);
+    } catch (e) { v = ''; }
+    return v;
+  }
+
+  /* 业务层（app.js）就绪后会注册下面的回调，用于「页面已经打开、只是 hash 变了」的场景 */
+  var importHandler = null;
+  function setImportHandler(fn) { importHandler = typeof fn === 'function' ? fn : null; }
+
+  /**
+   * 处理地址栏里的导入链接，两个入口都要覆盖：
+   *   ① 冷加载（浏览器此前没打开本站）→ start() 里捕获，申请码存进 sessionStorage，
+   *      随后 app.js 挂载时 takePendingImport() 取走；
+   *   ② 热导航（本站已经开着，管理员只是点了条链接）→ 浏览器只换 hash、
+   *      **不会重新加载页面**，必须靠 hashchange 事件在这里接住，直接回调业务层。
+   *      漏掉 ② 会出现「点了链接却没反应」——这正是微信里点链接最常见的路径。
+   */
+  function onHashChange() {
+    var req = captureImportLink();
+    if (!req) return;
+    if (importHandler) { importHandler(); return; }
+    // 业务层还没就绪：多半停在登录页（注意 elGate 在进入应用后会被移出 DOM，
+    // 这里必须查一次真实 DOM，否则提示会写进一个已脱离文档的节点、用户看不到）
+    if (document.getElementById('auth-gate')) {
+      showMsg('已收到用户发来的注册申请，请先用管理员账号登录，登录后会自动打开用户管理并填好申请码', 'warn');
+    }
   }
 
   /* ---------------- 动态装载业务脚本 ---------------- */
@@ -297,13 +405,17 @@
           setBusy('');
           if (!r.ok) { showMsg(r.error, 'error'); return; }
           var code = r.requestCode || '';
+          lastReg = { username: (r.user && r.user.username) || '', code: code };
           if (elRegCode) elRegCode.value = code;
           var hint = $('#reg-code-hint');
           if (hint) hint.textContent = code
             ? '申请码共 ' + code.length + ' 个字符，请完整复制（漏掉一段会校验失败）'
             : '';
           showForm('regdone');
-          showMsg('');   // 面板本身已说明状态，这里不再重复提示
+          showMsg('');
+          // 顺手帮用户把「发给管理员」的消息准备好（静默尝试：注册是异步回调，
+          // 已脱离用户手势，剪贴板可能被浏览器拒绝，失败不提示，用户可点按钮手动复制）
+          tryCopySilently(code ? buildRegMessage(lastReg.username, code) : '');
           // 记录注册来源（异步，失败不影响注册结果）
           try {
             Auth.resolveIp().then(function (got) {
@@ -350,6 +462,13 @@
       var btn = $(sel);
       if (btn) btn.addEventListener('click', function () { showMsg(''); showForm(Auth.hasUsers() ? 'login' : 'register'); });
     });
+    var sendBtn = $('#auth-reg-send');
+    if (sendBtn) sendBtn.addEventListener('click', function () {
+      var code = elRegCode ? elRegCode.value : lastReg.code;
+      var name = lastReg.username || ($('#reg-username') ? $('#reg-username').value.trim() : '');
+      if (!code) { showMsg('请先提交注册申请', 'error'); return; }
+      copyText(buildRegMessage(name, code), '申请信息已复制，粘到微信 / QQ 发给管理员即可');
+    });
     var copyBtn = $('#auth-reg-copy');
     if (copyBtn) copyBtn.addEventListener('click', function () {
       var text = elRegCode ? elRegCode.value : '';
@@ -393,6 +512,11 @@
 
     if (!elGate) return; // 没有关卡节点（例如被裁剪过的页面）时不做任何拦截
 
+    // 管理员点开「注册申请导入链接」时，先把申请码收好、把地址栏 hash 清掉
+    var importCode = captureImportLink();
+    // 页面已经开着时点链接只换 hash、不会重载页面，靠这个监听补上
+    global.addEventListener('hashchange', onHashChange);
+
     bind();
     Auth.init();
 
@@ -407,7 +531,8 @@
       if (r.ok) { enterApp(); return; }
       var hint = (r.error && r.error !== '未登录') ? r.error : '';
       showForm('login');
-      if (hint) showMsg(hint, 'warn');
+      if (importCode) showMsg('已收到用户发来的注册申请，请先用管理员账号登录，登录后会自动打开用户管理并填好申请码', 'warn');
+      else if (hint) showMsg(hint, 'warn');
     }).catch(function (err) {
       showForm('login');
       showMsg('初始化失败：' + (err && err.message ? err.message : err), 'error');
@@ -426,6 +551,10 @@
     logout: logout,
     enterApp: enterApp,
     showForm: showForm,
+    /** 业务层（app.js）在就绪后取走待导入的注册申请码 */
+    takePendingImport: takePendingImport,
+    /** 业务层在就绪后注册「收到导入链接」的回调（页面未重载时走这条路） */
+    setImportHandler: setImportHandler,
     ASSET_V: ASSET_V,
     APP_SCRIPTS: APP_SCRIPTS
   };
