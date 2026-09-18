@@ -4,12 +4,12 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>股市信息分析系统</title>
-  <link rel="stylesheet" href="css/style.css?v=20260918g">
+  <link rel="stylesheet" href="css/style.css?v=20260918h">
   <!-- Vue 3 全局构建版（v3.4.21 · 自托管）
        原先走 unpkg.com CDN：国内网络对 unpkg 的连通性不稳定，一旦该请求长时间挂起，
        <head> 里的阻塞脚本会让整页停在白屏、后续 auth-boot.js 根本不会执行。
        改为同源托管后，启动链路不再依赖任何第三方 CDN。 -->
-  <script src="js/vue.global.prod.js?v=20260918g"></script>
+  <script src="js/vue.global.prod.js?v=20260918h"></script>
 </head>
 <body class="auth-locked">
   <!-- ===== 登录关卡：登录通过前业务脚本不会被加载 ===== -->
@@ -1102,9 +1102,6 @@
             <div class="brief-tip muted small" v-if="briefLoading">⏳ 正在加载该日快讯...</div>
             <div class="brief-tip muted small" v-else-if="briefError">{{ briefError }}</div>
             <div class="brief-tip muted small" v-else-if="briefSearching && !briefFiltered.length">没有匹配「{{ briefKeyword }}」的快讯</div>
-            <div class="brief-tip muted small" v-else-if="briefBase.length">
-              全部消息按「题材 / 概念 / 行业」三类维度归类（一条可属多类），各自占比从大到小排序，点分类即可展开该类全部消息
-            </div>
             <div class="brief-tip muted small" v-else-if="briefPaused">
               ⏸ 自动加载已暂停（顶部「暂停」开关生效）
               <button class="btn btn-sm" style="margin-left:6px" @click="loadBriefsNow">📥 加载该日快讯</button>
@@ -3268,9 +3265,9 @@
     </transition>
   </div>
 
-  <script src="js/auth.js?v=20260918g"></script>
-  <script src="js/auth-sync.js?v=20260918g"></script>
-  <script src="js/auth-boot.js?v=20260918g"></script>
+  <script src="js/auth.js?v=20260918h"></script>
+  <script src="js/auth-sync.js?v=20260918h"></script>
+  <script src="js/auth-boot.js?v=20260918h"></script>
   <!-- store / stock-api / hot-topics / app 由 auth-boot.js 在登录通过后动态装载，
        未登录时它们不会被下载，业务数据也不会进入内存 -->
 </body>

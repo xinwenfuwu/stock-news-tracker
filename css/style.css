@@ -1720,8 +1720,8 @@ body {
 .hot-topics-panel { flex: 1 1 auto; min-width: 0; }
 /* 右栏：格隆汇每日快讯（13 分类统计 + 日期 + 关键词搜索） */
 .brief-panel {
-  flex: 0 0 516px;
-  width: 516px;
+  flex: 0 0 600px;
+  width: 600px;
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: 10px;
