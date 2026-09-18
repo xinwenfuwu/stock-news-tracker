@@ -283,6 +283,95 @@ async function fetchGelonghuiBriefs(date, knownMaxId) {
   return out;
 }
 
+/** 今日头条热榜（实时热榜，无历史回溯，仅当天有意义）。
+ *  接口：https://www.toutiao.com/hot-event/hot-board/?origin=toutiao_pc
+ *  返回 data[].Title / data[].Url；无时间戳，落库时用北京时间"现在"作为 time。 */
+const TT_HOT_URL = 'https://www.toutiao.com/hot-event/hot-board/?origin=toutiao_pc';
+const TT_SOURCE = 'toutiao';
+const TT_SOURCE_NAME = '今日头条';
+async function fetchToutiaoBriefs() {
+  let r;
+  try {
+    r = await withTimeout(fetch(TT_HOT_URL, {
+      headers: {
+        'User-Agent': UA,
+        'Accept': 'application/json, text/plain, */*',
+        'Referer': 'https://www.toutiao.com/',
+        'Accept-Language': 'zh-CN,zh;q=0.9'
+      }
+    }), 10000, TT_HOT_URL);
+  } catch (e) {
+    throw new Error((e && e.message) || 'fetch failed');
+  }
+  if (!r.ok) throw new Error('HTTP ' + r.status);
+  const j = await r.json();
+  const arr = (j && j.data) || [];
+  const nowBj = bjStr(Math.floor(Date.now() / 1000));
+  const out = [];
+  arr.forEach((it, idx) => {
+    const title = ht.cleanTitle(it.Title || it.title || '');
+    if (!title) return;
+    const u = String(it.Url || it.url || '').trim();
+    const url = /^https?:/i.test(u) ? u : '';
+    const m = url.match(/trending\/(\d+)/);
+    const id = m ? ('tt-' + m[1]) : ('tt-' + idx + '-' + Date.now());
+    out.push({
+      id,
+      time: nowBj,
+      text: title.slice(0, BRIEF_TEXT_MAX),
+      url,
+      stocks: [],
+      subjects: [],
+      cat: (ht.classify ? ht.classify(title) : '')
+    });
+  });
+  return out;
+}
+
+/** 新浪财经 7×24 滚动快讯（带真实发布时间戳，可按时间段精确过滤）。
+ *  接口：https://feed.mix.sina.com.cn/api/roll/get?pageid=153&lid=2516&num=50
+ *  返回 result.data[].title / .ctime(Unix秒) / .url / .wapurl / .media_name。 */
+const SINA_BRIEF_URL = 'https://feed.mix.sina.com.cn/api/roll/get?pageid=153&lid=2516&num=50&k=&r=';
+const SINA_SOURCE = 'sina';
+const SINA_SOURCE_NAME = '新浪财经';
+async function fetchSinaBriefs() {
+  let r;
+  try {
+    r = await withTimeout(fetch(SINA_BRIEF_URL, {
+      headers: {
+        'User-Agent': UA,
+        'Accept': 'application/json, text/plain, */*',
+        'Referer': 'https://finance.sina.com.cn/',
+        'Accept-Language': 'zh-CN,zh;q=0.9'
+      }
+    }), 10000, SINA_BRIEF_URL);
+  } catch (e) {
+    throw new Error((e && e.message) || 'fetch failed');
+  }
+  if (!r.ok) throw new Error('HTTP ' + r.status);
+  const j = await r.json();
+  const arr = (j && j.result && Array.isArray(j.result.data)) ? j.result.data : [];
+  const out = [];
+  arr.forEach((it, idx) => {
+    const title = ht.cleanTitle(it.title || it.stitle || '');
+    if (!title) return;
+    const u = String(it.url || it.wapurl || '').trim();
+    const url = /^https?:/i.test(u) ? u : '';
+    const ts = Number(it.ctime || it.intime || 0);
+    const id = 'sina-' + (it.docid || it.oid || (idx + '-' + Date.now()));
+    out.push({
+      id,
+      time: ts ? bjStr(ts) : '',
+      text: title.slice(0, BRIEF_TEXT_MAX),
+      url,
+      stocks: [],
+      subjects: [],
+      cat: (ht.classify ? ht.classify(title) : '')
+    });
+  });
+  return out;
+}
+
 async function main() {
   const isToday = DATE === todayStr();
   const dir = join(ROOT, 'data', 'hot-topics');
@@ -336,6 +425,62 @@ async function main() {
   const briefMB = (Buffer.byteLength(JSON.stringify(briefs)) / 1048576).toFixed(2);
   console.log(`已写入 ${briefsFile}（本次新增 ${fresh.length} 条，累计 ${briefs.length} 条 / ${briefMB}MB）`);
 
+  // ===== 今日头条 热榜（实时热榜，无历史回溯；仅当天有意义）=====
+  if (isToday) {
+    const ttFile = join(dir, `briefs-${TT_SOURCE_NAME}-${DATE}.json`);
+    let prevTt = [];
+    try {
+      const p = JSON.parse(readFileSync(ttFile, 'utf8'));
+      if (p && Array.isArray(p.items)) prevTt = p.items;
+    } catch (e) { /* 首次生成 */ }
+    console.log(`抓取今日头条热榜（目标日 ${DATE}）...`);
+    let ttItems = [];
+    try { ttItems = await fetchToutiaoBriefs(); }
+    catch (e) { console.warn(`  [今日头条] 抓取失败: ${e.message}`); }
+    const ttMap = new Map();
+    for (const b of [...ttItems, ...prevTt]) { if (b && b.id && !ttMap.has(b.id)) ttMap.set(b.id, b); }
+    const ttBriefs = [...ttMap.values()].sort((a, b) => String(b.time).localeCompare(String(a.time)));
+    writeFileSync(ttFile, JSON.stringify({
+      date: DATE,
+      source: TT_SOURCE,
+      sourceName: TT_SOURCE_NAME,
+      generatedAt: new Date().toISOString(),
+      total: ttBriefs.length,
+      items: ttBriefs
+    }), 'utf8');
+    console.log(`已写入 ${ttFile}（本次 ${ttItems.length} 条，累计 ${ttBriefs.length} 条）`);
+  } else {
+    console.log(`跳过「今日头条热榜」：目标日 ${DATE} 不是今天（热榜无历史回溯）。`);
+  }
+
+  // ===== 新浪财经 滚动快讯（带真实时间戳，可按时间段精确过滤；仅当天抓取）=====
+  if (isToday) {
+    const sinaFile = join(dir, `briefs-${SINA_SOURCE_NAME}-${DATE}.json`);
+    let prevSina = [];
+    try {
+      const p = JSON.parse(readFileSync(sinaFile, 'utf8'));
+      if (p && Array.isArray(p.items)) prevSina = p.items;
+    } catch (e) { /* 首次生成 */ }
+    console.log(`抓取新浪财经快讯（目标日 ${DATE}）...`);
+    let sinaItems = [];
+    try { sinaItems = await fetchSinaBriefs(); }
+    catch (e) { console.warn(`  [新浪财经] 抓取失败: ${e.message}`); }
+    const sinaMap = new Map();
+    for (const b of [...sinaItems, ...prevSina]) { if (b && b.id && !sinaMap.has(b.id)) sinaMap.set(b.id, b); }
+    const sinaBriefs = [...sinaMap.values()].sort((a, b) => String(b.time).localeCompare(String(a.time)));
+    writeFileSync(sinaFile, JSON.stringify({
+      date: DATE,
+      source: SINA_SOURCE,
+      sourceName: SINA_SOURCE_NAME,
+      generatedAt: new Date().toISOString(),
+      total: sinaBriefs.length,
+      items: sinaBriefs
+    }), 'utf8');
+    console.log(`已写入 ${sinaFile}（本次 ${sinaItems.length} 条，累计 ${sinaBriefs.length} 条）`);
+  } else {
+    console.log(`跳过「新浪财经快讯」：目标日 ${DATE} 不是今天。`);
+  }
+
   // 维护日期清单 index.json：供前端在没有代理时定位「最近可用快照」
   const idxPath = join(dir, 'index.json');
   let dates = [], briefsDates = [];
@@ -374,6 +519,10 @@ async function main() {
   for (const d of briefsDates.slice(BRIEF_KEEP_DAYS)) {
     const f = join(dir, `briefs-${d}.json`);
     if (existsSync(f)) { try { unlinkSync(f); console.log(`  清理过期快讯 briefs-${d}.json`); } catch (e) { /* ignore */ } }
+    const tf = join(dir, `briefs-${TT_SOURCE_NAME}-${d}.json`);
+    if (existsSync(tf)) { try { unlinkSync(tf); console.log(`  清理过期快讯 briefs-${TT_SOURCE_NAME}-${d}.json`); } catch (e) { /* ignore */ } }
+    const sf = join(dir, `briefs-${SINA_SOURCE_NAME}-${d}.json`);
+    if (existsSync(sf)) { try { unlinkSync(sf); console.log(`  清理过期快讯 briefs-${SINA_SOURCE_NAME}-${d}.json`); } catch (e) { /* ignore */ } }
   }
 }
 
