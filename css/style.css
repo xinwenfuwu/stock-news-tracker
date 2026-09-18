@@ -706,7 +706,7 @@ body {
 
 /* 热门板块页新版式：顶行（当日热门板块 | 注意事项 | 当日热门股票）+ 三并排（盘前热点板块 | 尾盘买入法 | 振幅板块） */
 .hot-stack { display: flex; flex-direction: column; gap: 14px; margin-bottom: 20px; }
-.hot-top-row { display: grid; grid-template-columns: minmax(0, 1fr) 190px minmax(0, 1fr); gap: 14px; }
+.hot-top-row { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 3fr); gap: 14px; }
 .hot-row-3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
 .tail-buy-rubric { display: grid; grid-template-columns: 1fr 1fr; gap: 5px 12px; margin: 8px 0 6px; font-size: 12px; color: #6b7280; }
 .tail-buy-rubric .tb-rule b { color: #111827; font-weight: 700; margin-right: 2px; }
@@ -715,8 +715,7 @@ body {
 /* 尾盘买入法：筛选结果不再限高，填充面板空白区（用 .hot-panel 前缀压过 .hot-list 的 360px） */
 .hot-panel .tail-buy-list { max-height: none; }
 @media (max-width: 1100px) {
-  .hot-top-row { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .hot-top-row .hot-notice { grid-column: 1 / -1; order: 99; }
+  .hot-top-row { grid-template-columns: 1fr; }
   .hot-row-3 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 @media (max-width: 560px) {
