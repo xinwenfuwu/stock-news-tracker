@@ -847,7 +847,7 @@
       }
       return makePasswordHash(v.password).then(function (hash) {
         var now = Date.now();
-        // 跨设备免码：把注册写进鉴权后端（pending），管理员面板即可自动看到、一键通过。
+        // 跨设备免码：管理员设备（已配令牌）会把注册写进云端注册表（pending），其面板即可看到、一键通过。
         // 失败不阻塞本地注册——用户仍可手动复制申请码走旧的码流程兜底。
         if (typeof Auth !== 'undefined' && Auth.Sync && Auth.Sync.isConfigured && Auth.Sync.isConfigured()) {
           Auth.Sync.registerRemote(v.username, v.password).catch(function () { /* 离线兜底 */ });
@@ -893,9 +893,9 @@
     },
 
     /**
-     * 登录：优先走鉴权后端（Worker）实现「跨设备免码」。
-     * 配置了后端且可达时，由服务端校验密码 + 读取审核状态；通过后直接登录，
-     * 用户无需粘贴准入码。网络不可达自动回落本地校验（离线兜底）。
+     * 登录：优先走云端注册表实现「跨设备免码」。
+     * 读取注册表（同源公开文件）校验密码 + 读取审核状态；通过后直接登录，
+     * 用户无需粘贴准入码。注册表读不到 / 无该账号时自动回落本地校验（离线兜底）。
      */
     login: function (username, password, remember) {
       var self = this;
@@ -1116,6 +1116,7 @@
       u.reviewedBy = (this.user && this.user.username) || '';
       u.updatedAt = now;
       saveUsers(this.users);
+      this._syncUserToRegistry(u);
       return { ok: true, user: publicUser(u), approveCode: makeApproveCode(u) };
     },
 
@@ -1131,6 +1132,7 @@
       u.reviewedBy = (this.user && this.user.username) || '';
       u.updatedAt = Date.now();
       saveUsers(this.users);
+      this._syncUserToRegistry(u);
       return { ok: true, user: publicUser(u) };
     },
 
@@ -1473,6 +1475,7 @@
         };
         self.users.push(u);
         if (!saveUsers(self.users)) return { ok: false, error: '保存失败：浏览器本地存储不可用' };
+        self._syncUserToRegistry(u);
         return { ok: true, user: publicUser(u) };
       });
     },
@@ -1531,6 +1534,7 @@
       u.disabledAt = off ? (u.disabledAt || Date.now()) : null;
       u.updatedAt = Date.now();
       saveUsers(this.users);
+      this._syncUserToRegistry(u);
       return { ok: true, user: publicUser(u) };
     },
 
@@ -1556,6 +1560,7 @@
         u.disabled = false; u.autoDisabled = false; u.disabledAt = null;
       }
       saveUsers(this.users);
+      this._syncUserToRegistry(u);
       return { ok: true, user: adminUser(u) };
     },
 
@@ -1591,6 +1596,7 @@
           u2.pwSeal = sealPassword(pc.value);   // 同步更新可显示密码，避免「显示的是旧密码」
           u2.updatedAt = Date.now();
           if (!saveUsers(self.users)) return { ok: false, error: '保存失败：浏览器本地存储不可用' };
+          self._syncUserToRegistry(u2);
           if (isSelf) {
             // 会话签名绑定密码哈希，改完必须重签，否则自己会被立刻踢下线
             var rec = currentRecord(u2, self.session && self.session.loginAt);
@@ -1651,6 +1657,53 @@
       this.user = null;
       clearSession();
       return { ok: true };
+    },
+
+    /**
+     * 把单个本地账号同步进 GitHub 注册表（跨设备免码登录的写入侧）。
+     * 仅管理员设备、且已配置 GitHub 令牌时才真正写入；其余情况静默跳过。
+     * 失败不抛异常、不影响本地业务——注册表只是「跨设备同步」的辅助通道。
+     */
+    _syncUserToRegistry: function (u) {
+      try {
+        if (!u || !u.hash || u.hash.indexOf('pbkdf2$') !== 0) return Promise.resolve({ ok: false, skip: true });
+        if (typeof Auth === 'undefined' || !Auth.Sync || !Auth.Sync.writeUser) return Promise.resolve({ ok: false, skip: true });
+        if (!Auth.Sync.isAdminConfigured || !Auth.Sync.isAdminConfigured()) return Promise.resolve({ ok: false, skip: true });
+        var rec = {
+          username: u.username,
+          hash: u.hash,
+          role: u.role || ROLE.USER,
+          status: statusOf(u),
+          disabled: !!u.disabled,
+          trialUntil: u.trialUntil || 0,
+          quotaMonths: u.quotaMonths || 0,
+          disableDate: u.disableDate || '',
+          registerDate: u.registerDate || '',
+          createdAt: u.createdAt || Date.now(),
+          updatedAt: Date.now()
+        };
+        return Promise.resolve(Auth.Sync.writeUser(rec));
+      } catch (e) { return Promise.resolve({ ok: false, error: String(e && e.message || e) }); }
+    },
+
+    /** 管理员把自己的账号同步进注册表（登录后自动调用，确保管理员也能跨设备登录） */
+    syncSelfToRegistry: function () {
+      if (!this.isAdmin()) return Promise.resolve({ ok: false, error: '仅管理员可同步' });
+      var u = findUser(loadUsers(), this.user && this.user.username);
+      if (!u) return Promise.resolve({ ok: false, error: '未登录' });
+      return this._syncUserToRegistry(u);
+    },
+
+    /** 管理员手动把本机全部账号同步进注册表（用户管理面板的「📡 同步到云端注册表」按钮） */
+    syncAllToRegistry: function () {
+      if (!this.isAdmin()) return Promise.resolve({ ok: false, error: '仅管理员可同步' });
+      var self = this;
+      this.users = loadUsers();
+      var list = this.users.filter(function (x) { return x.hash && x.hash.indexOf('pbkdf2$') === 0; });
+      // 顺序写入，避免并发 PUT 触发 409 sha 冲突
+      return list.reduce(function (p, u) {
+        return p.then(function () { return Promise.resolve(self._syncUserToRegistry(u)); });
+      }, Promise.resolve()).then(function () { return { ok: true, count: list.length }; });
     },
 
     /* ---------- 底层原语，供外部复用 ---------- */
