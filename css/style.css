@@ -1720,15 +1720,12 @@ body {
 .hot-topics-panel { flex: 1 1 auto; min-width: 0; }
 /* 右栏：格隆汇每日快讯（13 分类统计 + 日期 + 关键词搜索） */
 .brief-panel {
-  flex: 0 0 430px;
-  width: 430px;
+  flex: 0 0 516px;
+  width: 516px;
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: 10px;
   padding: 14px 16px;
-  position: sticky;
-  top: 76px;
-  max-height: calc(100vh - 96px);
   display: flex;
   flex-direction: column;
 }
@@ -1972,7 +1969,7 @@ a.brief-text:hover { color: var(--primary); text-decoration: underline; }
 .sc-bar-fill { display: block; height: 100%; border-radius: 4px; }
 .sc-bar-val { flex: 0 0 auto; font-variant-numeric: tabular-nums; }
 /* 统计双栏：左=跨站重合榜，右=主题维度统计 */
-.ht-split { display: grid; grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr); gap: 16px; align-items: start; }
+.ht-split { display: grid; grid-template-columns: minmax(0, 1.08fr) minmax(0, 1fr); gap: 16px; align-items: start; }
 .ht-split-left, .ht-split-right { min-width: 0; }
 .ht-split-left > .sub-title, .ht-split-right > .sub-title { margin-top: 0; }
 .ht-split-left .overlap-list { max-height: 780px; overflow-y: auto; padding-right: 4px; }
@@ -2072,6 +2069,16 @@ body.guest-mode #app { display: none; }
   border-color: var(--primary); box-shadow: 0 0 0 3px var(--primary-light);
 }
 .auth-input:disabled { opacity: 0.6; cursor: not-allowed; }
+.auth-pw-wrap { position: relative; display: flex; align-items: center; }
+.auth-pw-wrap .auth-input { padding-right: 42px; }
+.auth-pw-toggle {
+  position: absolute; right: 6px; top: 50%; transform: translateY(-50%);
+  width: 32px; height: 30px; padding: 0; border: none; background: transparent;
+  font-size: 16px; line-height: 1; cursor: pointer; color: var(--text-secondary);
+  border-radius: 6px; display: flex; align-items: center; justify-content: center;
+}
+.auth-pw-toggle:hover { background: var(--surface-hover, rgba(127,127,127,0.12)); color: var(--text); }
+.auth-pw-toggle.is-on { color: var(--primary); }
 .auth-btn {
   margin-top: 4px; padding: 11px 16px;
   font-size: 14px; font-weight: 600; color: #fff;

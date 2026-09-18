@@ -988,13 +988,18 @@
       var self = this;
       self.users = loadUsers();
       var u = findUser(self.users, username);
+      var isNew = !u;  // 本机是否已有该账号
       if (!u) {
-        u = { username: username, role: ROLE.USER, disabled: false, status: STATUS.PENDING, createdAt: Date.now(), updatedAt: Date.now(), logins: [] };
+        u = { username: username, role: (grant && grant.role) || ROLE.USER, disabled: false, status: STATUS.PENDING, createdAt: Date.now(), updatedAt: Date.now(), logins: [] };
         self.users.push(u);
       }
       return makePasswordHash(password).then(function (hash) {
         u.hash = hash;                 // 本机盐，仅供本机离线校验
-        u.role = ROLE.USER;
+        if (isNew) {
+          // 跨设备首次落地：角色以注册表为准（保证在别的设备被设为管理员，本机也是管理员）
+          u.role = (grant && grant.role) || u.role || ROLE.USER;
+        }
+        // 否则：本机已有该账号 —— 角色以「本机」为准，注册表绝不覆盖（保证同一浏览器账户独立性）
         u.status = STATUS.ACTIVE;
         u.disabled = false;
         applyGrant(u, grant);         // 同步服务端授权（试用 / 会员额度）
@@ -1060,11 +1065,13 @@
     isLoggedIn: function () { return !!this.user; },
     isAdmin: function () { return !!this.user && this.user.role === ROLE.ADMIN; },
 
-    /** 权限判定：未声明的权限点按最高要求（管理员）处理 */
-    can: function (perm) {
-      if (!this.user) return false;
+    /** 权限判定：未声明的权限点按最高要求（管理员）处理。
+     *  可传入 user 显式判定（UI 用响应式 authUser 调用，避免依赖非响应式的 this.user）。 */
+    can: function (perm, user) {
+      var u = user || this.user;
+      if (!u) return false;
       var need = PERMISSIONS[perm] || ROLE.ADMIN;
-      return (ROLE_RANK[this.user.role] || 0) >= (ROLE_RANK[need] || 99);
+      return (ROLE_RANK[u.role] || 0) >= (ROLE_RANK[need] || 99);
     },
 
     roleName: function (role) { return ROLE_NAME[role] || role || ''; },

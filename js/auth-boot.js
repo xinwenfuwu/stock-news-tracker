@@ -27,7 +27,7 @@
   'use strict';
 
   // 与 index.html 中静态资源版本号保持一致，避免升级后命中旧缓存
-  var ASSET_V = '20260918c';
+  var ASSET_V = '20260918g';
 
   // 管理员点开「注册申请导入链接」后，申请码暂存在这里，等业务层（app.js）就绪后取走
   var IMPORT_KEY = 'snt-pending-import-v1';
@@ -54,6 +54,9 @@
 
   function showMsg(text, type) {
     if (!elMsg) return;
+    // 防御：错误可能传来对象/undefined，避免页面出现 [object Object] 这类“乱码”
+    if (text && typeof text === 'object') text = text.error || text.message || JSON.stringify(text);
+    if (typeof text !== 'string') text = (text == null ? '' : String(text));
     if (!text) { elMsg.hidden = true; elMsg.textContent = ''; elMsg.className = 'auth-msg'; return; }
     elMsg.hidden = false;
     elMsg.textContent = text;
@@ -636,6 +639,19 @@
       });
     }
 
+    /* ----- 显示 / 隐藏密码（登录 + 注册） ----- */
+    Array.prototype.forEach.call(document.querySelectorAll('.auth-pw-toggle'), function (btn) {
+      btn.addEventListener('click', function () {
+        var input = document.getElementById(btn.getAttribute('data-pw'));
+        if (!input) return;
+        var show = input.type === 'password';
+        input.type = show ? 'text' : 'password';
+        btn.classList.toggle('is-on', show);
+        btn.textContent = show ? '🙈' : '👁️';
+        try { input.focus(); } catch (e) { /* ignore */ }
+      });
+    });
+
     // ---- 游客预览：✕ 进入；骨架里「登录」按钮点回卡片；其余交互只提示 ----
     var elAuthClose = $('#auth-close');
     if (elAuthClose) {
@@ -656,10 +672,17 @@
       if (document.getElementById('guest-view')) leaveGuest();
     });
 
-    // 会话在别的标签页被登出时，本页也退回登录界面
+    // 会话在别的标签页被变更时，本页同步：登出或切换到其他账号都应即时生效，
+    // 保证「同一浏览器多标签页」下每个账户的登录态互相独立、刷新/切换后保持一致。
     global.addEventListener('storage', function (e) {
-      if (e.key === 'snt-auth-session-v1' && !e.newValue && !document.getElementById('auth-gate')) {
-        location.reload();
+      if (e.key !== 'snt-auth-session-v1') return;
+      if (!document.getElementById('auth-gate')) {
+        if (!e.newValue) { location.reload(); return; }   // 被登出
+        var cur = Auth.session && Auth.session.username;
+        try {
+          var nv = e.newValue ? JSON.parse(e.newValue) : null;
+          if (!nv || !nv.username || nv.username !== cur) location.reload();  // 切换了账号
+        } catch (e2) { location.reload(); }
       }
     });
   }

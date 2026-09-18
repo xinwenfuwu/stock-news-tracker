@@ -42,12 +42,26 @@ const app = createApp({
     // 初始化路由
     const hash = location.hash.replace('#', '');
     if (['news', 'holdings', 'finance', 'pools', 'sector', 'filter', 'hot'].includes(hash)) currentPage.value = hash;
+    // 监听 hashchange：支持通过 URL 锚点直接跳转页面（如 index.html#finance），
+    // 否则仅靠 goPage 点击切换，外部改 location.hash 不会更新 currentPage。
+    // 这里只同步 currentPage，具体的「进入页面加载」交给已有的 watch(currentPage)。
+    window.addEventListener('hashchange', function () {
+      var h = (location.hash || '').replace('#', '');
+      if (['news', 'holdings', 'finance', 'pools', 'sector', 'filter', 'hot'].includes(h)) {
+        if (currentPage.value !== h) currentPage.value = h;
+      }
+    });
 
     // ===== 登录账号与权限 =====
     // Auth 由 js/auth.js 提供；auth-boot.js 只在登录通过后才加载本文件，
     // 因此正常情况下这里一定拿得到已登录用户。
     const A = (typeof Auth !== 'undefined' && Auth) ? Auth : null;
     const authUser = ref(A && A.user ? A.user : null);
+    // 登录 / 切换账号后，auth-boot 的 enterApp 会派发 auth:ready；据此把响应式 authUser 同步成最新登录用户。
+    // 否则切换账号后模板（如 v-if="can('settings.write')"）不会重渲染，齿轮/管理员入口会停留在上一次登录的角色。
+    document.addEventListener('auth:ready', function () {
+      authUser.value = (A && A.user) ? A.user : null;
+    });
     const userMenuOpen = ref(false);
     const userList = ref([]);
     const userModal = reactive({
@@ -165,8 +179,9 @@ const app = createApp({
       return '有效期至 ' + Store.fmtDate(d) + ' ' + p(d.getHours()) + ':' + p(d.getMinutes());
     });
 
-    /** 权限判定：UI 只是把入口藏起来，真正的拦截在 Auth 的方法内部再做一次 */
-    function can(perm) { return !!(A && A.can(perm)); }
+    /** 权限判定：UI 只是把入口藏起来，真正的拦截在 Auth 的方法内部再做一次。
+     *  必须用响应式的 authUser.value，否则切换账号后模板不会重渲染（Auth.user 非响应式）。 */
+    function can(perm) { return !!(A && A.can(perm, authUser.value)); }
 
     function fmtDateTime(ts) {
       if (!ts) return '—';
@@ -1374,7 +1389,13 @@ const app = createApp({
         const item = Store.addNews(d);
         // 异步补全股价
         fillPriceForNews(item, true);
-        showToast('已添加', 'success');
+        // 手动添加：若已配置 AI 且四字段为空，自动请 AI 填写「新闻解读参考/利好利空/散户参考/核心股票」
+        if (aiConfigured.value && !d.conceptCategory && !d.industryCategory && !d.customTag) {
+          autoInterpretAfterAdd(item);
+          showToast('已添加，AI 正在生成解读…', 'success');
+        } else {
+          showToast('已添加', 'success');
+        }
       }
       newsModal.show = false;
     }
@@ -1515,20 +1536,70 @@ const app = createApp({
       }
     }
 
-    // 把 AI 返回文本解析成三段：新闻解读参考 / 利好利空 / 散户参考
+    // 把 AI 返回文本解析成四段：新闻解读参考 / 利好利空 / 散户参考 / 核心股票
     function parseInterpretation(text) {
-      const out = { ref: '', bull: '', retail: '' };
+      const out = { ref: '', bull: '', retail: '', core: [] };
       const mRef = text.match(/【?\s*新闻解读参考\s*】?([\s\S]*?)(?=【?\s*利好利空\s*】?|$)/);
       const mBull = text.match(/【?\s*利好利空\s*】?([\s\S]*?)(?=【?\s*散户参考\s*】?|$)/);
-      const mRetail = text.match(/【?\s*散户参考\s*】?([\s\S]*?)$/);
+      const mRetail = text.match(/【?\s*散户参考\s*】?([\s\S]*?)(?=【?\s*核心股票\s*】?|$)/);
+      const mCore = text.match(/【?\s*核心股票\s*】?([\s\S]*?)$/);
       if (mRef) out.ref = mRef[1].trim();
       if (mBull) out.bull = mBull[1].trim();
       if (mRetail) out.retail = mRetail[1].trim();
+      if (mCore) {
+        out.core = mCore[1].split(/[\n，,，、；;]+/).map(s => s.replace(/[【】\s.。]/g, '').trim())
+          .filter(s => s && !/^(无|none|na|无核心股票)$/i.test(s)).slice(0, 5);
+      }
       if (!out.ref && !out.bull && !out.retail) out.ref = text.trim();
       return out;
     }
 
-    // 依据当前新闻内容+关联股票，调用 AI 生成三段解读并写回三个字段
+    /** 把 AI 提炼的核心股票名（简称）解析成 {name, code}，尽量用搜索接口补全代码 */
+    async function resolveCoreStocks(names) {
+      const list = [];
+      if (!Array.isArray(names) || !names.length) return list;
+      for (const nm of names) {
+        let code = '';
+        let name = nm;
+        try {
+          const r = await StockAPI.searchStocks(nm);
+          if (r && r.length) { code = r[0].code || ''; name = r[0].name || nm; }
+        } catch (e) { /* 解析失败就只存简称 */ }
+        list.push({ name, code });
+      }
+      return list;
+    }
+
+    /** 核心 AI 解读：返回 { ref, bull, retail, core:[名称] }，供手动按钮与「手动添加后自动填充」复用 */
+    async function callAIForNewsInterpretation(content, stocks) {
+      if (!aiConfigured.value) return { ok: false, error: '未配置 AI 接口（偏好设置 → AI 解读：需填写 API 地址、密钥、模型）' };
+      if (!content || !content.trim()) return { ok: false, error: '新闻内容为空' };
+      const stockLine = stocks.length ? ('关联股票：' + stocks.join('、')) : '关联股票：无';
+      const sys = '你是资深 A 股财经分析师，语言精炼、专业、客观，不夸大、不喊单。';
+      const user = '请解读以下财经新闻，并严格按下面四段格式输出（保留【】标记，不要加额外前后缀、不要使用 Markdown 代码块）：\n\n新闻内容：' + content + '\n' + stockLine + '\n\n【新闻解读参考】\n（用 2-4 句话说明这条新闻意味着什么、对市场预期的影响；并简要说明利好什么、利空什么）\n\n【利好利空】\n利好概念：…（用顿号分隔的关键概念，可空）\n利好行业：…（用顿号分隔的行业，可空）\n利空概念：…（用顿号分隔的关键概念，可空）\n利空行业：…（用顿号分隔的行业，可空）\n\n【散户参考】\n（站在散户视角，给出 1-3 条可操作建议：关注时机、仓位、风险控制；结尾注明「仅供参考，不构成投资建议」）\n\n【核心股票】\n（提炼这条新闻最核心的 1-5 只 A 股上市公司，每行一只，只写股票简称，不要代码、不要解释；若确实没有相关上市公司，写「无」）';
+      const res = await callOpenAICompat([
+        { role: 'system', content: sys },
+        { role: 'user', content: user }
+      ]);
+      if (!res.ok) return res;
+      return { ok: true, ...parseInterpretation(res.content) };
+    }
+
+    /** 把解读结果（含核心股票）写回某个新闻对象（弹窗或已存记录皆可） */
+    async function applyInterpretation(target, res) {
+      target.conceptCategory = res.ref;
+      target.industryCategory = res.bull;
+      target.customTag = res.retail;
+      if (res.core && res.core.length) {
+        const exist = new Set((parseStocks(target.relatedStocks) || []).map(s => s.name));
+        const add = (await resolveCoreStocks(res.core)).filter(x => !exist.has(x.name));
+        if (add.length) {
+          target.relatedStocks = (target.relatedStocks || []).concat(add);
+        }
+      }
+    }
+
+    // 依据当前新闻内容+关联股票，调用 AI 生成四段解读并写回（弹窗里的「🤖 AI 生成解读」按钮）
     async function generateNewsInterpretation() {
       const d = newsModal.data;
       if (!d || !d.content || !d.content.trim()) {
@@ -1536,30 +1607,39 @@ const app = createApp({
         return;
       }
       if (!aiConfigured.value) {
-        showToast('请先在「设置 → AI 解读」填写 API 地址、密钥、模型', 'error');
+        showToast('请先在「偏好设置 → AI 解读」填写 API 地址、密钥、模型', 'error');
         return;
       }
       aiGenerating.value = true;
       try {
         const stocks = (parseStocks(d.relatedStocks) || []).map(s => s.name || pureCode(s.code)).filter(Boolean);
-        const stockLine = stocks.length ? ('关联股票：' + stocks.join('、')) : '关联股票：无';
-        const sys = '你是资深 A 股财经分析师，语言精炼、专业、客观，不夸大、不喊单。';
-        const user = '请解读以下财经新闻，并严格按下面三段格式输出（保留【】标记，不要加额外前后缀、不要使用 Markdown 代码块）：\n\n新闻内容：' + d.content + '\n' + stockLine + '\n\n【新闻解读参考】\n（用 2-4 句话说明这条新闻意味着什么、对市场预期的影响；并简要说明利好什么、利空什么）\n\n【利好利空】\n利好概念：…（用顿号分隔的关键概念，可空）\n利好行业：…（用顿号分隔的行业，可空）\n利空概念：…（用顿号分隔的关键概念，可空）\n利空行业：…（用顿号分隔的行业，可空）\n\n【散户参考】\n（站在散户视角，给出 1-3 条可操作建议：关注时机、仓位、风险控制；结尾注明「仅供参考，不构成投资建议」）';
-        const res = await callOpenAICompat([
-          { role: 'system', content: sys },
-          { role: 'user', content: user }
-        ]);
+        const res = await callAIForNewsInterpretation(d.content, stocks);
         if (!res.ok) {
           showToast('AI 解读失败：' + res.error, 'error');
           return;
         }
-        const p = parseInterpretation(res.content);
-        d.conceptCategory = p.ref;
-        d.industryCategory = p.bull;
-        d.customTag = p.retail;
+        await applyInterpretation(d, res);
         showToast('AI 解读已生成（可手动微调后保存）', 'success');
       } finally {
         aiGenerating.value = false;
+      }
+    }
+
+    /** 手动添加新闻后：若已配置 AI 且四字段为空，静默调用 AI 自动填写四字段 + 核心股票 */
+    async function autoInterpretAfterAdd(item) {
+      const stocks = (parseStocks(item.relatedStocks) || []).map(s => s.name || pureCode(s.code)).filter(Boolean);
+      const res = await callAIForNewsInterpretation(item.content, stocks);
+      if (!res.ok) return; // 静默失败：用户仍可手动点「🤖 AI 生成解读」
+      const patch = { conceptCategory: res.ref, industryCategory: res.bull, customTag: res.retail };
+      if (res.core && res.core.length) {
+        const exist = new Set((parseStocks(item.relatedStocks) || []).map(s => s.name));
+        const add = (await resolveCoreStocks(res.core)).filter(x => !exist.has(x.name));
+        if (add.length) patch.relatedStocks = (item.relatedStocks || []).concat(add);
+      }
+      Store.updateNews(item.id, patch);
+      if (patch.relatedStocks) {
+        const updated = D.news.find(n => n.id === item.id);
+        if (updated) fillPriceForNews(updated, true);
       }
     }
 
@@ -4442,10 +4522,12 @@ const app = createApp({
       }
       setBriefSource(v);
       showToast('快讯来源已改为「' + v + '」', 'success');
+      if (briefDate.value) loadBriefs(briefDate.value, v);   // 切换来源立即加载对应平台数据
     }
     function commitBriefSource() {
       setBriefSource(briefSourceInput.value);
       showToast('快讯来源已改为「' + briefSourceName.value + '」', 'success');
+      if (briefDate.value) loadBriefs(briefDate.value, briefSourceName.value);
     }
     /** 切换分类维度：换维度后原展开项已不属于当前维度，收起更干净 */
     function setBriefDim(mode) {
@@ -4494,6 +4576,27 @@ const app = createApp({
       if (!HT || !HT.fromLocalInputValue || !HT.fmtWindowCN) return '';
       const s = HT.fromLocalInputValue(analysisWinStart.value);
       const e = HT.fromLocalInputValue(analysisWinEnd.value);
+      if (!s || !e) return '';
+      return HT.fmtWindowCN(s.getTime()) + ' - ' + HT.fmtWindowCN(e.getTime());
+    });
+
+    /* batch22：每日话题（「每日话题」页签）改用「统计时间段」模式（与快讯 / 统计分析同口径）：
+     * 以每天 15:00 换日，起止可改；刷新加载该时间段内跨天合并的火热话题（按源聚合、按窗口时间戳精筛）。 */
+    const dailyWinStart = ref('');
+    const dailyWinEnd = ref('');
+    let _hotTopicsLoaded = false;
+    function resetDailyWin() {
+      const HT = ht_();
+      if (!HT || !HT.defaultWindowStart) return;
+      dailyWinStart.value = HT.toLocalInputValue(HT.defaultWindowStart());
+      dailyWinEnd.value = HT.toLocalInputValue(HT.defaultWindowEnd());
+    }
+    resetDailyWin();
+    const dailyWinText = computed(() => {
+      const HT = ht_();
+      if (!HT || !HT.fromLocalInputValue || !HT.fmtWindowCN) return '';
+      const s = HT.fromLocalInputValue(dailyWinStart.value);
+      const e = HT.fromLocalInputValue(dailyWinEnd.value);
       if (!s || !e) return '';
       return HT.fmtWindowCN(s.getTime()) + ' - ' + HT.fmtWindowCN(e.getTime());
     });
@@ -4744,6 +4847,71 @@ const app = createApp({
     }
 
     /**
+     * 每日话题（时间段模式）：加载该时间段内跨天合并的火热话题。
+     * 与统计分析同口径（15:00 换日、起止可改）：按窗口覆盖的日期逐个读快照，
+     * 按源聚合、按条目时间戳精筛落在区间内的新闻，最后按源展示（每个源区间内按时间倒序）。
+     * 未配置代理时纯读同源仓库快照；不依赖任何实时增强，合规免费。
+     */
+    async function refreshDailyTopics() {
+      const HT = ht_();
+      const ws = HT && HT.fromLocalInputValue ? HT.fromLocalInputValue(dailyWinStart.value) : null;
+      const we = HT && HT.fromLocalInputValue ? HT.fromLocalInputValue(dailyWinEnd.value) : null;
+      if (!ws || !we || ws.getTime() >= we.getTime()) {
+        showToast('请先填写完整的统计开始时间与结束时间，且开始必须早于结束', 'error');
+        return;
+      }
+      hotTopicsLoading.value = true;
+      try {
+        const dates = HT.windowSnapshotDates(ws.getTime(), we.getTime());
+        const bySource = new Map();
+        let dayCount = 0;
+        for (const d of dates) {
+          const local = getLocalHotTopicSnapshot(d);
+          let snap = local;
+          if (!snap) {
+            try {
+              const r = await fetch(`./data/hot-topics/${d}.json`, { cache: 'no-store' });
+              if (!r.ok) continue;
+              snap = await r.json();
+            } catch (e) { continue; }
+          }
+          if (!snap || !snap.sources) continue;
+          dayCount++;
+          for (const s of snap.sources) {
+            if (!bySource.has(s.rank)) bySource.set(s.rank, { rank: s.rank, key: s.key, name: s.name, color: s.color, items: [] });
+            const items = (s.items || []).filter(it => {
+              if (it.time && HT.parseBriefTime && HT.inWindow) {
+                const ts = HT.parseBriefTime(it.time);
+                if (ts != null && !HT.inWindow(ts, ws.getTime(), we.getTime())) return false;
+              }
+              return true;
+            });
+            bySource.get(s.rank).items.push(...items);
+          }
+        }
+        const list = [...bySource.values()].sort((a, b) => a.rank - b.rank);
+        list.forEach(s => {
+          s.items.sort((a, b) => (b.time || '').localeCompare(a.time || ''));
+          s.loading = false;
+          s.error = s.items.length ? null : '该时间段内无数据';
+        });
+        hotTopicsSources.value = list;
+        hotTopicsMerged.value = buildMergedList(list);
+        const startStr = HT.fmtWindowCN(ws.getTime());
+        const endStr = HT.fmtWindowCN(we.getTime());
+        hotTopicsUpdated.value = `${startStr} - ${endStr}（覆盖 ${dayCount} 天，按时间段合并）`;
+        _hotTopicsLoaded = true;
+        const total = list.reduce((n, s) => n + s.items.length, 0);
+        if (!total) showToast(`时间段（${startStr} - ${endStr}）内没有火热话题数据`, 'info');
+        else showToast(`已加载 ${startStr} - ${endStr} 的火热话题（${total} 条）`, 'success');
+      } catch (e) {
+        showToast('每日话题刷新失败：' + (e && e.message ? e.message : e), 'error');
+      } finally {
+        hotTopicsLoading.value = false;
+      }
+    }
+
+    /**
      * 进入「全球信息」页时自动加载（幂等）。
      * 顺序：本地快照 → 仓库内置最新快照（同源，不依赖代理）→ 已配代理才实时抓取。
      */
@@ -4761,7 +4929,7 @@ const app = createApp({
       _briefLoaded = true;
       briefPaused.value = false;
       await loadBriefDates();
-      if (briefDate.value) await loadBriefs(briefDate.value);
+      if (briefDate.value) await loadBriefs(briefDate.value, briefSourceName.value);
     }
     async function loadBriefDates() {
       try {
@@ -4777,19 +4945,35 @@ const app = createApp({
         briefError.value = '快讯日期清单加载失败：' + (e && e.message ? e.message : e);
       }
     }
-    async function loadBriefs(date) {
+    /** 按来源选择快讯数据文件：格隆汇沿用历史遗留文件名 briefs-日期.json；
+     *  其它来源（今日头条 / 财联社 …）各自独立成文件 briefs-来源-日期.json，
+     *  这样切换来源真正加载对应平台的数据，而不是永远显示格隆汇。 */
+    function briefFileForSource(source, date) {
+      const s = String(source || '').trim();
+      if (!s || s === '格隆汇') return `./data/hot-topics/briefs-${date}.json`;
+      return `./data/hot-topics/briefs-${encodeURIComponent(s)}-${date}.json`;
+    }
+    async function loadBriefs(date, source) {
       if (!date) return;
+      const src = String(source || briefSourceName.value || '格隆汇');
       briefLoading.value = true;
       briefError.value = '';
       try {
-        const r = await fetch(`./data/hot-topics/briefs-${date}.json`, { cache: 'no-store' });
+        const r = await fetch(briefFileForSource(src, date), { cache: 'no-store' });
         if (!r.ok) throw new Error('HTTP ' + r.status);
         const j = await r.json();
         briefItems.value = Array.isArray(j.items) ? j.items : [];
-        if (!briefItems.value.length) briefError.value = `${date} 暂无快讯数据`;
+        if (!briefItems.value.length) {
+          // 该来源当天无数据：明确告知，而不是默默回退到格隆汇
+          briefError.value = src === '格隆汇'
+            ? `${date} 暂无快讯数据`
+            : `「${src}」快讯数据源暂未接入（已提交定时抓取，换个日期或稍后重试）`;
+        }
       } catch (e) {
         briefItems.value = [];
-        briefError.value = `${date} 快讯加载失败：` + (e && e.message ? e.message : e);
+        briefError.value = src === '格隆汇'
+          ? `${date} 快讯加载失败：` + (e && e.message ? e.message : e)
+          : `「${src}」快讯数据源暂未接入（已提交定时抓取，换个日期或稍后重试）`;
       } finally {
         briefLoading.value = false;
       }
@@ -4824,9 +5008,9 @@ const app = createApp({
       briefWindowItems.value = [];
     }
     /** 拉取某日快讯文件；文件不存在或拉取失败都返回空数组（跨天合并时允许缺一天） */
-    async function fetchBriefsFile(date) {
+    async function fetchBriefsFile(date, source) {
       try {
-        const r = await fetch(`./data/hot-topics/briefs-${date}.json`, { cache: 'no-store' });
+        const r = await fetch(briefFileForSource(source, date), { cache: 'no-store' });
         if (!r.ok) return [];
         const j = await r.json();
         return Array.isArray(j.items) ? j.items : [];
@@ -4863,7 +5047,7 @@ const app = createApp({
       briefPaused.value = false;
       _briefLoaded = true;
       try {
-        const chunks = await Promise.all(days.map(d => fetchBriefsFile(d)));
+        const chunks = await Promise.all(days.map(d => fetchBriefsFile(d, briefSourceName.value)));
         if (!briefDates.value.length) {            // 顺手同步一下日期清单，便于「回到当日全部」
           briefDates.value = days.slice().reverse();
         }
@@ -4945,24 +5129,10 @@ const app = createApp({
     const briefDimCount = computed(() => briefThemeStats.value.length);
 
     function autoLoadHotTopics() {
-      if (hotTopicsSources.value.length || hotTopicsLoading.value) return;
+      if (_hotTopicsLoaded || hotTopicsSources.value.length || hotTopicsLoading.value) return;
       // 顶部「暂停」生效时，不发起任何自动抓取（含仓库快照请求）
       if (autoRefreshPaused()) { pauseHint('自动加载热门话题'); return; }
-      htMode.value = 'history';
-      loadHotTopicHistory(hotTopicDate.value).then(async () => {
-        if (hotTopicDateHasData.value) return;
-        const fb = await loadLatestRepoSnapshot();
-        if (fb) {
-          hotTopicsSources.value = fb.sources;
-          hotTopicsMerged.value = buildMergedList(fb.sources);
-          hotTopicDate.value = fb.date;
-          hotTopicDateHasData.value = true;
-          const when = fb.generatedAt ? new Date(fb.generatedAt).toLocaleString('zh-CN', { hour12: false }) : fb.date;
-          hotTopicsUpdated.value = `${when}（自动抓取快照 ${fb.date}）`;
-          return;
-        }
-        if ((D.settings.proxyUrl || '').trim()) refreshHotTopics();
-      });
+      refreshDailyTopics();
     }
 
     /** 加载某日历史快照（优先本地快照，回退到仓库内置 data/hot-topics/YYYY-MM-DD.json） */
@@ -5377,11 +5547,13 @@ const app = createApp({
     if (D.preMarketBoards && D.preMarketBoards.length) preMarketBoards.value = D.preMarketBoards;
     if (D.amplitudeBoards && D.amplitudeBoards.length) amplitudeBoards.value = D.amplitudeBoards;
 
-    // ===== 尾盘买入法筛选（batch19）：对当前「当日股票明细」按 8 项条件筛选 =====
+    // ===== 尾盘买入法筛选（batch19 + batch22）：对当前「当日股票明细」按 8 项条件筛选 =====
     // 条件：涨幅 3%-5% / 换手率 5%-10% / 量比 1.5-2.5 / 市值 50亿-200亿 /
     //       20日线以上 / 成交量持续放大 / 分时图在黄色均价线上方 / 尾盘回抽均价线
     // 数据口径：涨幅/换手率/市值/分时与尾盘用实时行情（均价代理）；均线与成交量用 20 日K线；
     // 量比用「今日量 / 交易分钟 ÷ 近5日均量 / 240」代理（软条件，仅展示不硬筛）。
+    // batch22：已配置 AI 接口时，先算好每只候选的实时特征，交给 AI 按 8 项条件精准判定；
+    //         未配置或 AI 不可用时，回退到上面的规则硬筛（逻辑不变）。
     const tailBuyList = ref([]);
     const tailBuyLoading = ref(false);
     const tailBuyTotal = ref(0);
@@ -5402,8 +5574,10 @@ const app = createApp({
         const codes = pool.map(norm).filter(Boolean);
         let qmap = {};
         try { qmap = await StockAPI.getQuotes(codes); } catch (e) { qmap = {}; }
-        // 1) 实时行情硬筛：涨幅 / 换手率 / 市值 / 分时均价线上方 / 尾盘回抽
-        const survivors = [];
+        // 1) 给每只候选计算 8 项实时特征向量（与规则法同口径，一次性算好，AI 与规则法共用）
+        const end = fmtDate(new Date());
+        const start = fmtDate(new Date(Date.now() - 40 * 86400000));
+        const feats = [];
         for (const s of pool) {
           const ncode = norm(s);
           const q = (qmap && qmap[ncode]) || s;
@@ -5417,47 +5591,87 @@ const app = createApp({
           const avg = (amount > 0 && vol > 0) ? (amount * 100 / vol) : 0;  // 当日均价（元）
           const aboveAvg = avg > 0 && price > avg;                  // 分时图在黄色均价线上方
           const pullback = avg > 0 && low < avg && price >= avg;    // 尾盘回抽均价线
-          const okChange = change >= 3 && change <= 5;
-          const okTurn = turnover >= 5 && turnover <= 10;
-          const okCap = cap >= 50 && cap <= 200;
-          if (!(okChange && okTurn && okCap && aboveAvg && pullback)) continue;
-          survivors.push({ code: ncode, name: s.name || q.name || ncode, price, change, turnover, cap });
+          let aboveMa = false, volRising = false, ma20 = NaN, vr = null, klineOk = true;
+          let kline = [];
+          try { kline = await StockAPI.getKline(ncode, start, end, 30); } catch (e) { kline = []; }
+          if (!kline || kline.length < 20) { klineOk = false; }
+          else {
+            const closes = kline.map(k => Number(k.close));
+            const vols = kline.map(k => Number(k.volume));
+            ma20 = closes.slice(-20).reduce((a, b) => a + b, 0) / 20;
+            aboveMa = price > ma20;                       // 20日线以上
+            const vN = vols[vols.length - 1], v1 = vols[vols.length - 2], v2 = vols[vols.length - 3];
+            volRising = vN > v1 && v1 > v2;               // 成交量持续放大（近 3 日递增）
+            try {
+              const now = new Date();
+              let mins = now.getHours() * 60 + now.getMinutes() - (9 * 60 + 30);
+              if (now.getHours() >= 12) mins -= 60;       // 扣除午休
+              mins = Math.max(1, mins);
+              const avg5 = vols.slice(-6, -1).reduce((a, b) => a + b, 0) / 5;
+              if (avg5 > 0) vr = (vN / mins) / (avg5 / 240);  // 量比代理
+            } catch (e) {}
+          }
+          feats.push({ code: ncode, name: s.name || q.name || ncode, change, turnover, cap, price, ma20, aboveAvg, pullback, aboveMa, volRising, vr, klineOk });
         }
         tailBuyTotal.value = pool.length;
-        if (!survivors.length) {
+        const fmtN = (x, d) => (isFinite(x) ? x.toFixed(d) : 'NA');
+        // 2) 已配置 AI 接口 → 交 AI 按 8 项条件精准判定
+        if (aiConfigured.value) {
+          const pick = feats.slice(0, 50);
+          const usedCap = feats.length > 50;
+          const table = pick.map(f =>
+            `${f.code} ${f.name} 涨幅=${fmtN(f.change, 2)}% 换手=${fmtN(f.turnover, 2)}% 市值=${fmtN(f.cap, 0)}亿 均价线上方=${f.aboveAvg ? '是' : '否'} 尾盘回抽=${f.pullback ? '是' : '否'} 20日线上方=${f.aboveMa ? '是' : '否'} 量能递增=${f.volRising ? '是' : '否'} 量比=${fmtN(f.vr, 2)}`
+          ).join('\n');
+          const sys = '你是资深 A 股量化选股助手，只依据下面给定的实时特征严格判定，不臆造数据、不列出特征表以外的股票。';
+          const user = '尾盘买入法 8 项条件：①涨幅 3%-5% ②换手率 5%-10% ③市值 50亿-200亿 ④分时图在黄色均价线上方 ⑤尾盘回抽均价线 ⑥股价在 20 日线以上 ⑦近 3 日成交量持续放大 ⑧量比 1.5-2.5（量比仅供参考，不硬筛）。\n\n下面是候选股票的实时特征（已算好），请只保留**同时满足 ①②④⑤⑥⑦** 的股票（③市值若轻微超范围可放宽到 40亿-220亿，但需在 reason 里说明；⑧量比仅参考）：\n\n' + table + '\n\n请严格只输出一个 JSON 对象：{"pass":["股票代码",...],"reason":"一句话说明筛选口径与放宽项"}。不要输出 JSON 以外的任何内容。';
+          const res = await callOpenAICompat([
+            { role: 'system', content: sys },
+            { role: 'user', content: user }
+          ], { timeoutMs: 60000, maxTokens: 500 });
+          const byCode = {};
+          feats.forEach(f => { byCode[f.code] = f; });
+          let passCodes = [];
+          if (res.ok) {
+            try {
+              const m = res.content.match(/\{[\s\S]*\}/);
+              const o = m ? JSON.parse(m[0]) : null;
+              passCodes = (o && Array.isArray(o.pass)) ? o.pass.map(String) : [];
+              tailBuyNote.value = (o && o.reason ? o.reason : 'AI 精准筛选')
+                + (usedCap ? '（候选超 50 只，已对前 50 只精筛）' : '');
+            } catch (e) {
+              passCodes = [];
+              tailBuyNote.value = 'AI 返回解析失败，已回退规则筛选';
+            }
+          } else {
+            tailBuyNote.value = 'AI 筛选不可用（' + res.error + '），已回退规则筛选';
+          }
+          const results = passCodes.map(c => byCode[c]).filter(Boolean).map(f => ({
+            code: f.code, name: f.name, changePercent: f.change,
+            tip: `涨幅 ${fmtN(f.change, 2)}% · 换手 ${fmtN(f.turnover, 2)}% · 市值 ${fmtN(f.cap, 0)}亿`
+              + (f.vr != null ? ` · 量比 ${fmtN(f.vr, 2)}` : '') + ` · 现价 ${fmtN(f.price, 2)} / 20日线 ${fmtN(f.ma20, 2)}`
+          }));
+          tailBuyList.value = results;
+          showToast(`AI 精准筛选命中 ${results.length} 只`, results.length ? 'success' : 'info');
+          return;
+        }
+        // 3) 规则法（未配置 AI 时回退，与 batch19 原逻辑一致）
+        const realtime = feats.filter(f =>
+          f.change >= 3 && f.change <= 5 && f.turnover >= 5 && f.turnover <= 10
+          && f.cap >= 50 && f.cap <= 200 && f.aboveAvg && f.pullback);
+        if (!realtime.length) {
           tailBuyNote.value = '实时行情条件（涨幅3-5% / 换手率5-10% / 市值50-200亿 / 分时均价线上方 / 尾盘回抽）无命中';
           showToast('尾盘买入法：实时行情条件无命中', 'info');
           return;
         }
-        // 2) 20 日K线硬筛：20日线以上 / 成交量持续放大（量比作软条件展示）
-        const end = fmtDate(new Date());
-        const start = fmtDate(new Date(Date.now() - 40 * 86400000));
         const results = [];
         let noKline = 0;
-        for (const sv of survivors) {
-          let kline = [];
-          try { kline = await StockAPI.getKline(sv.code, start, end, 30); } catch (e) { kline = []; }
-          if (!kline || kline.length < 20) { noKline++; continue; }
-          const closes = kline.map(k => Number(k.close));
-          const vols = kline.map(k => Number(k.volume));
-          const ma20 = closes.slice(-20).reduce((a, b) => a + b, 0) / 20;
-          const aboveMa = sv.price > ma20;                       // 20日线以上
-          const vN = vols[vols.length - 1], v1 = vols[vols.length - 2], v2 = vols[vols.length - 3];
-          const volRising = vN > v1 && v1 > v2;                  // 成交量持续放大（近 3 日递增）
-          if (!(aboveMa && volRising)) continue;
-          let vr = null;
-          try {
-            const now = new Date();
-            let mins = now.getHours() * 60 + now.getMinutes() - (9 * 60 + 30);
-            if (now.getHours() >= 12) mins -= 60;                // 扣除午休
-            mins = Math.max(1, mins);
-            const avg5 = vols.slice(-6, -1).reduce((a, b) => a + b, 0) / 5;
-            if (avg5 > 0) vr = (vN / mins) / (avg5 / 240);       // 量比代理
-          } catch (e) {}
+        for (const f of realtime) {
+          if (!f.klineOk) { noKline++; continue; }
+          if (!(f.aboveMa && f.volRising)) continue;
           results.push({
-            code: sv.code, name: sv.name, changePercent: sv.change,
-            tip: `涨幅 ${sv.change.toFixed(2)}% · 换手 ${sv.turnover.toFixed(2)}% · 市值 ${sv.cap.toFixed(0)}亿` +
-                 (vr != null ? ` · 量比 ${vr.toFixed(2)}` : '') + ` · 现价 ${sv.price} / 20日线 ${ma20.toFixed(2)}`
+            code: f.code, name: f.name, changePercent: f.change,
+            tip: `涨幅 ${fmtN(f.change, 2)}% · 换手 ${fmtN(f.turnover, 2)}% · 市值 ${fmtN(f.cap, 0)}亿`
+              + (f.vr != null ? ` · 量比 ${fmtN(f.vr, 2)}` : '') + ` · 现价 ${fmtN(f.price, 2)} / 20日线 ${fmtN(f.ma20, 2)}`
           });
         }
         tailBuyList.value = results;
@@ -6066,6 +6280,7 @@ const app = createApp({
     //  设置 / 导入导出
     // ============================================================
     const showSettings = ref(false);
+    const showPrefs = ref(false);
     const settingsText = ref('');
     const proxyUrl = ref('');
     const aiEndpoint = ref('');
@@ -6391,7 +6606,7 @@ const app = createApp({
       dataPaused, autoRefreshPaused, toggleDataPause,
       allCategories, fmt, fmtPct, fmtSigned, fmtDateCN, numClass, pctClass, parseStocks, stocksText, pureCode,
       fmtYi, sRatio,
-      showSettings, settingsText, proxyUrl, saveSettings, clearAllData, dataStats,
+      showSettings, showPrefs, settingsText, proxyUrl, saveSettings, clearAllData, dataStats,
       aiEndpoint, aiKey, aiModel, aiConfigured, aiGenerating, callOpenAICompat, generateNewsInterpretation,
       AI_PRESETS, applyAiPreset, aiTesting, aiTestResult, aiTestConnection,
       exportData, importData,
@@ -6456,6 +6671,7 @@ const app = createApp({
       refreshAmplitudeBoards, ampLoading, hotPanelsHidden, financePushHidden,
       // 全球信息页：火热话题 + 格隆汇每日快讯
       hotTopicsSources, hotTopicsMerged, hotTopicsLoading, hotTopicsUpdated, refreshHotTopics,
+      dailyWinStart, dailyWinEnd, dailyWinText, refreshDailyTopics, resetDailyWin,
       briefDates, briefDate, briefItems, briefKeyword, briefLoading, briefError, briefUi, briefPaused,
       briefFiltered, briefSearching, briefStatsList, briefBase,
       briefThemeStats, briefConceptStats, briefIndustryStats,

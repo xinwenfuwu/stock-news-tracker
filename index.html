@@ -4,12 +4,12 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>股市信息分析系统</title>
-  <link rel="stylesheet" href="css/style.css?v=20260918c">
+  <link rel="stylesheet" href="css/style.css?v=20260918g">
   <!-- Vue 3 全局构建版（v3.4.21 · 自托管）
        原先走 unpkg.com CDN：国内网络对 unpkg 的连通性不稳定，一旦该请求长时间挂起，
        <head> 里的阻塞脚本会让整页停在白屏、后续 auth-boot.js 根本不会执行。
        改为同源托管后，启动链路不再依赖任何第三方 CDN。 -->
-  <script src="js/vue.global.prod.js?v=20260918c"></script>
+  <script src="js/vue.global.prod.js?v=20260918g"></script>
 </head>
 <body class="auth-locked">
   <!-- ===== 登录关卡：登录通过前业务脚本不会被加载 ===== -->
@@ -23,7 +23,10 @@
 
       <form class="auth-form" id="auth-login-form" hidden autocomplete="off">
         <input class="auth-input" type="text" id="login-username" placeholder="用户名" maxlength="20" autocomplete="username">
-        <input class="auth-input" type="password" id="login-password" placeholder="密码" maxlength="64" autocomplete="current-password">
+        <div class="auth-pw-wrap">
+          <input class="auth-input" type="password" id="login-password" placeholder="密码" maxlength="64" autocomplete="current-password">
+          <button type="button" class="auth-pw-toggle" data-pw="login-password" title="显示/隐藏密码" aria-label="显示或隐藏密码">👁️</button>
+        </div>
         <label class="auth-remember"><input type="checkbox" id="login-remember" checked> 记住我（30 天）</label>
         <button class="auth-btn" type="submit">登录</button>
         <div class="auth-links">
@@ -35,8 +38,14 @@
       <!-- 自助注册：提交后进入待审核，需管理员通过 -->
       <form class="auth-form" id="auth-register-form" hidden autocomplete="off">
         <input class="auth-input" type="text" id="reg-username" placeholder="用户名（2-20 位）" maxlength="20" autocomplete="username">
-        <input class="auth-input" type="password" id="reg-password" placeholder="密码（8-64 位，含字母和数字）" maxlength="64" autocomplete="new-password">
-        <input class="auth-input" type="password" id="reg-confirm" placeholder="再输入一次密码" maxlength="64" autocomplete="new-password">
+        <div class="auth-pw-wrap">
+          <input class="auth-input" type="password" id="reg-password" placeholder="密码（8-64 位，含字母和数字）" maxlength="64" autocomplete="new-password">
+          <button type="button" class="auth-pw-toggle" data-pw="reg-password" title="显示/隐藏密码" aria-label="显示或隐藏密码">👁️</button>
+        </div>
+        <div class="auth-pw-wrap">
+          <input class="auth-input" type="password" id="reg-confirm" placeholder="再输入一次密码" maxlength="64" autocomplete="new-password">
+          <button type="button" class="auth-pw-toggle" data-pw="reg-confirm" title="显示/隐藏密码" aria-label="显示或隐藏密码">👁️</button>
+        </div>
         <div class="auth-strength" id="reg-strength" hidden><em><i></i></em><span></span></div>
         <button class="auth-btn" type="submit">提交注册申请</button>
         <p class="auth-tip">密码须为 8-64 位且同时包含字母和数字。<b>本系统不会自动通知管理员</b>，提交后请把生成的申请信息发给他，审核通过才能登录。</p>
@@ -232,6 +241,7 @@
                 <div class="user-dd-meta">{{ authUser.roleName }} · {{ authExpiryText }}</div>
               </div>
               <button class="user-dd-item" @click="openChangePassword">修改密码</button>
+              <button class="user-dd-item" @click="showPrefs = true">⚙️ 偏好设置</button>
               <button class="user-dd-item" v-if="can('users.manage')" @click="openUserManage">
                 <span>用户管理</span>
                 <span class="user-dd-badge" v-if="pendingCount > 0">{{ pendingCount }} 份待审</span>
@@ -820,7 +830,7 @@
           </div>
           <div class="toolbar-right">
             <span class="muted small" v-if="hotTopicsUpdated">更新于 {{ hotTopicsUpdated }}</span>
-            <button class="btn btn-primary" @click="refreshHotTopics" :disabled="hotTopicsLoading" title="重新拉取 GitHub Action 每 2 小时自动抓取的服务端快照（同源免费、合规、无需代理）；若已配置代理则叠加浏览器端实时抓取">
+            <button class="btn btn-primary" @click="refreshDailyTopics" :disabled="hotTopicsLoading" title="按下方时间段（默认昨天 15:00 → 现在）重新统计每日话题；同源仓库快照，免费合规，无需代理">
               <span v-if="hotTopicsLoading">⏳ 抓取中...</span>
               <span v-else>🔄 刷新热门话题</span>
             </button>
@@ -840,25 +850,17 @@
 
             <!-- ===== 每日话题：10 个软件按序各 Top10 ===== -->
             <div v-show="htTab === 'daily'" id="ht-daily">
+              <!-- batch22：每日话题改用「统计时间段」模式（与快讯/统计分析同口径：15:00 换日、起止可改）+ 独立刷新 -->
               <div class="ht-controls">
-                <label class="ht-label">日期</label>
-                <input type="date" v-model="hotTopicDate" class="ht-date" @change="onHotTopicDateChange">
-                <div class="seg">
-                  <button :class="{ active: htMode === 'live' }" @click="setHtMode('live')">实时</button>
-                  <button :class="{ active: htMode === 'history' }" @click="setHtMode('history')">历史</button>
+                <div class="stat-win" id="daily-stat-win">
+                  <span class="sw-label">新闻统计开始时间</span>
+                  <input type="datetime-local" class="sw-input" v-model="dailyWinStart" :disabled="hotTopicsLoading" title="统计开始时间（默认昨天 15:00，可修改）">
+                  <span class="sw-sep">-</span>
+                  <input type="datetime-local" class="sw-input" v-model="dailyWinEnd" :disabled="hotTopicsLoading" title="统计结束时间（默认现在，可修改）">
+                  <button class="sw-btn" :disabled="hotTopicsLoading" @click="refreshDailyTopics" title="按上面这段时间重新统计每日话题（该时间段内的新闻）">🔄 {{ hotTopicsLoading ? '刷新中…' : '刷新' }}</button>
+                  <button class="sw-btn sw-btn-ghost" :disabled="hotTopicsLoading" @click="resetDailyWin" title="恢复默认：昨天 15:00 → 现在">重置</button>
+                  <span class="sw-text" v-if="dailyWinText">{{ dailyWinText }}</span>
                 </div>
-                <span class="muted small" v-if="htMode === 'history' && !hotTopicDateHasData">该日暂无历史快照</span>
-                <span class="muted small" v-else-if="htMode === 'history'">已加载历史快照</span>
-              </div>
-              <!-- 点「实时」但实时增强源（代理）不可达时的解释条：这是正常回退（主路径本就是服务端快照），不是故障 -->
-              <div class="ht-live-note" v-if="htLiveNote">
-                <span class="htln-icon">ℹ️</span><span class="htln-text">{{ htLiveNote }}</span>
-              </div>
-              <div class="snapshot-dates" v-if="localSnapshotDates.length">
-                <span class="muted small">本地已有快照：</span>
-                <button v-for="d in localSnapshotDates.slice(0, 14)" :key="d"
-                        :class="['snap-date', { active: hotTopicDate === d }]"
-                        @click="hotTopicDate = d; setHtMode('history')">{{ d.slice(5) }}</button>
               </div>
 
               <div class="cat-filter">
@@ -1760,6 +1762,8 @@
                 <div class="tb-rule"><b>分时</b> 均价线上方</div>
                 <div class="tb-rule"><b>尾盘</b> 回抽均价线</div>
               </div>
+              <div class="muted small" v-if="aiConfigured" title="已在「偏好设置 → AI 解读」配置接口：点击「开始筛选」会把候选股的实时特征交给 AI，按上面 8 项条件精准判定">🤖 已启用 AI 精准筛选（需联网取实时行情与 20 日K线）</div>
+              <div class="muted small" v-else title="未配置 AI 接口时使用规则硬筛；在「偏好设置 → AI 解读」填写 API 地址、密钥、模型后即可 AI 精准筛选">未配置 AI 接口，使用规则筛选；配置后可 🤖 AI 精准筛选</div>
               <div class="muted small" v-if="!tailBuyList.length && !tailBuyLoading">点「开始筛选」按上面 8 项条件，从当前「当日股票明细」中挑出符合条件的个股。</div>
               <div class="muted small" v-else-if="tailBuyLoading">⏳ 正在联网筛选（实时行情 + 20日K线）…</div>
               <div class="tail-buy-sum" v-else>命中 <b>{{ tailBuyList.length }}</b> / {{ tailBuyTotal }} 只<span v-if="tailBuyNote" class="muted small"> · {{ tailBuyNote }}</span></div>
@@ -2808,6 +2812,37 @@
           <button class="btn-icon" @click="showSettings = false">✕</button>
         </div>
         <div class="modal-body">
+          <div class="info-box small">
+            <p><b>跨设备免码登录（可选 · 无需服务器）</b>共享账号表存为仓库里的公开文件 <code>data/accounts/registry.json</code>，由 GitHub Pages 直接托管。管理员在「用户管理」里通过 / 添加的账号会自动写进注册表；对方在自己设备上<b>只输入用户名和密码</b>即可登录，无需再粘贴准入码。</p>
+            <p><b>安全：</b>注册表是公开文件，含「用户名 + PBKDF2 密码哈希(带随机盐)」，离线爆破成本很高（与准入码同级别）。写入用的 GitHub 令牌只存在你本机浏览器，<b>不会</b>进注册表。下方字段仅管理员设备需要填写。</p>
+          </div>
+          <div class="form-row" v-if="authUser && authUser.role === 'admin'">
+            <label>GitHub 令牌（仅管理员 · 用于把账号写入云端注册表）细粒度令牌，仅授权本仓库 <code>xinwenfuwu/stock-news-tracker</code> 的 Contents 读写即可。普通用户无需填写——他们只需在登录页输入账号密码。</label>
+            <input type="password" v-model="authAdminToken" placeholder="ghp_... 或 github_pat_...">
+          </div>
+          <div class="form-row">
+            <label>数据存储</label>
+            <div class="storage-info">
+              <span>当前数据量：{{ dataStats.news }} 条新闻，{{ dataStats.pools }} 个股票池</span>
+              <button class="btn btn-sm btn-danger" @click="clearAllData">🗑 清空全部数据</button>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn" @click="showSettings = false">取消</button>
+          <button class="btn btn-primary" @click="saveSettings">保存设置</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== 个人偏好模态框（所有登录用户可用：AI 解读 / 分类标签 / 新闻代理） ===== -->
+    <div class="modal-overlay" v-if="showPrefs" @click.self="showPrefs = false">
+      <div class="modal">
+        <div class="modal-header">
+          <h3>⚙️ 偏好设置</h3>
+          <button class="btn-icon" @click="showPrefs = false">✕</button>
+        </div>
+        <div class="modal-body">
           <div class="form-row">
             <label>分类标签管理（每行一个，默认15项可增删）</label>
             <textarea v-model="settingsText" rows="7"></textarea>
@@ -2828,7 +2863,7 @@
             <p><b>先选一家（一键填地址，只需再补自己的 Key）：</b></p>
             <div class="ai-presets">
               <button type="button" class="ai-preset" v-for="p in AI_PRESETS" :key="p.name"
-                      :title="p.tip + '\n' + p.endpoint + '\n模型：' + p.model"
+                      :title="p.tip + ' · ' + p.endpoint + ' · 模型：' + p.model"
                       @click="applyAiPreset(p)">
                 <span class="ai-preset-name">{{ p.name }}</span>
                 <span class="ai-preset-tip">{{ p.tip }}</span>
@@ -2857,24 +2892,9 @@
             <p><b>密钥安全：</b>Key 仅保存在你本机浏览器的 localStorage，不会上传到本站服务器（本站是纯静态 GitHub Pages，无后端）。多设备需各自配置。</p>
             <p><b>遇到「连不上 / Failed to fetch」怎么办：</b>先用上面的「🧪 测试连接」看清是哪一步不通。若是<b>境外地址</b>（如 <code>api.openai.com</code>）在国内被拦截，换国内厂商即可，<b>不必</b>部署代理；只有当「网络可达但仍被 CORS 拦截」、或你不想把 Key 放在浏览器里时，才需要 <code>worker/ai-proxy.js</code>（Cloudflare Worker，免费）。</p>
           </div>
-          <div class="info-box small">
-            <p><b>跨设备免码登录（可选 · 无需服务器）</b>共享账号表存为仓库里的公开文件 <code>data/accounts/registry.json</code>，由 GitHub Pages 直接托管。管理员在「用户管理」里通过 / 添加的账号会自动写进注册表；对方在自己设备上<b>只输入用户名和密码</b>即可登录，无需再粘贴准入码。</p>
-            <p><b>安全：</b>注册表是公开文件，含「用户名 + PBKDF2 密码哈希(带随机盐)」，离线爆破成本很高（与准入码同级别）。写入用的 GitHub 令牌只存在你本机浏览器，<b>不会</b>进注册表。下方字段仅管理员设备需要填写。</p>
-          </div>
-          <div class="form-row" v-if="authUser && authUser.role === 'admin'">
-            <label>GitHub 令牌（仅管理员 · 用于把账号写入云端注册表）细粒度令牌，仅授权本仓库 <code>xinwenfuwu/stock-news-tracker</code> 的 Contents 读写即可。普通用户无需填写——他们只需在登录页输入账号密码。</label>
-            <input type="password" v-model="authAdminToken" placeholder="ghp_... 或 github_pat_...">
-          </div>
-          <div class="form-row">
-            <label>数据存储</label>
-            <div class="storage-info">
-              <span>当前数据量：{{ dataStats.news }} 条新闻，{{ dataStats.pools }} 个股票池</span>
-              <button class="btn btn-sm btn-danger" @click="clearAllData">🗑 清空全部数据</button>
-            </div>
-          </div>
         </div>
         <div class="modal-footer">
-          <button class="btn" @click="showSettings = false">取消</button>
+          <button class="btn" @click="showPrefs = false">取消</button>
           <button class="btn btn-primary" @click="saveSettings">保存设置</button>
         </div>
       </div>
@@ -3248,9 +3268,9 @@
     </transition>
   </div>
 
-  <script src="js/auth.js?v=20260918c"></script>
-  <script src="js/auth-sync.js?v=20260918c"></script>
-  <script src="js/auth-boot.js?v=20260918c"></script>
+  <script src="js/auth.js?v=20260918g"></script>
+  <script src="js/auth-sync.js?v=20260918g"></script>
+  <script src="js/auth-boot.js?v=20260918g"></script>
   <!-- store / stock-api / hot-topics / app 由 auth-boot.js 在登录通过后动态装载，
        未登录时它们不会被下载，业务数据也不会进入内存 -->
 </body>
