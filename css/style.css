@@ -1803,7 +1803,7 @@ body {
 .brief-cat-head.active { background: var(--primary-light); }
 .bc-caret { flex: 0 0 10px; color: var(--text-placeholder); font-size: 11px; }
 .bc-icon { flex: 0 0 auto; font-size: 13px; }
-.bc-name { flex: 0 0 106px; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.bc-name { flex: 1 1 auto; min-width: 0; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .bc-track { flex: 1 1 auto; height: 8px; background: var(--surface-alt); border-radius: 4px; overflow: hidden; }
 .bc-fill { display: block; height: 100%; border-radius: 4px; }
 .bc-count { flex: 0 0 34px; text-align: right; font-weight: 600; font-variant-numeric: tabular-nums; }

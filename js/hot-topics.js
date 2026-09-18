@@ -509,11 +509,11 @@
    * ============================================================ */
   const BRIEF_DIMENSIONS = [
     { key: 'policy', name: '国家政策类', icon: '🏛️', color: '#9b2fb5' },
-    { key: 'fortune500', name: '世界500强领导者', icon: '🌍', color: '#b45309' },
+    { key: 'fortune500', name: '世界500强', icon: '🌍', color: '#b45309' },
     { key: 'society', name: '社会热点', icon: '🔥', color: '#db2777' },
     { key: 'southbound', name: '南下资金', icon: '💧', color: '#0a7d3e' },
     { key: 'tech', name: '科技突破', icon: '🔬', color: '#2563eb' },
-    { key: 'leader', name: '行业标杆上市公司', icon: '🏆', color: '#0369a1' },
+    { key: 'leader', name: '行业标杆', icon: '🏆', color: '#0369a1' },
     { key: 'institution', name: '大行机构', icon: '🏦', color: '#7c3aed' },
     { key: 'ust', name: '美债', icon: '📉', color: '#334155' },
     { key: 'usstock', name: '美股', icon: '🇺🇸', color: '#e63525' },
