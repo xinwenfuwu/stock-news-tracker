@@ -4,12 +4,12 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>股市信息分析系统</title>
-  <link rel="stylesheet" href="css/style.css?v=20260918j">
+  <link rel="stylesheet" href="css/style.css?v=20260918k">
   <!-- Vue 3 全局构建版（v3.4.21 · 自托管）
        原先走 unpkg.com CDN：国内网络对 unpkg 的连通性不稳定，一旦该请求长时间挂起，
        <head> 里的阻塞脚本会让整页停在白屏、后续 auth-boot.js 根本不会执行。
        改为同源托管后，启动链路不再依赖任何第三方 CDN。 -->
-  <script src="js/vue.global.prod.js?v=20260918j"></script>
+  <script src="js/vue.global.prod.js?v=20260918k"></script>
 </head>
 <body class="auth-locked">
   <!-- ===== 登录关卡：登录通过前业务脚本不会被加载 ===== -->
@@ -65,6 +65,7 @@
         <p class="auth-tip" id="reg-code-hint"></p>
         <button class="auth-btn" type="button" id="auth-reg-send">📨 复制申请信息，发给管理员</button>
         <button class="auth-btn" type="button" id="auth-reg-copy">只复制申请码</button>
+        <button class="auth-btn auth-btn-primary" type="button" id="auth-reg-done-code">📋 我已拿到准入码，去登录</button>
         <button class="auth-btn auth-btn-back" type="button" id="auth-reg-done-back">← 返回登录</button>
         <p class="auth-tip">把上面的申请码整段（或只复制那一长串码）发给管理员即可，他粘进「用户管理 → 待审核注册申请」审核；通过后会把一串「准入码」发回给你。</p>
         <p class="auth-tip">管理员与你在同一台设备时，直接用他账号进「用户管理 → 待审核注册申请」点通过即可，不必转发申请码。</p>
@@ -3265,9 +3266,9 @@
     </transition>
   </div>
 
-  <script src="js/auth.js?v=20260918j"></script>
-  <script src="js/auth-sync.js?v=20260918j"></script>
-  <script src="js/auth-boot.js?v=20260918j"></script>
+  <script src="js/auth.js?v=20260918k"></script>
+  <script src="js/auth-sync.js?v=20260918k"></script>
+  <script src="js/auth-boot.js?v=20260918k"></script>
   <!-- store / stock-api / hot-topics / app 由 auth-boot.js 在登录通过后动态装载，
        未登录时它们不会被下载，业务数据也不会进入内存 -->
 </body>

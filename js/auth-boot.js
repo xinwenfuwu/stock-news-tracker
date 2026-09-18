@@ -27,7 +27,7 @@
   'use strict';
 
   // 与 index.html 中静态资源版本号保持一致，避免升级后命中旧缓存
-  var ASSET_V = '20260918j';
+  var ASSET_V = '20260918k';
 
   // 管理员点开「注册申请导入链接」后，申请码暂存在这里，等业务层（app.js）就绪后取走
   var IMPORT_KEY = 'snt-pending-import-v1';
@@ -613,7 +613,9 @@
         // 用户是点 #register 直达链接进来的，离开注册表单就把 hash 清掉，
         // 否则他下次刷新又被弹回注册页（想登录却一直被要求注册）
         clearRegisterHash();
-        showForm(Auth.hasUsers() ? 'login' : 'register');
+        // 恒回到登录表单：即使本机还没有任何账号（跨设备 / 已拿准入码的场景），
+        // 「返回登录」也必须能落到登录页，而不是再弹回注册表单卡死。
+        showForm('login');
       });
     });
     var sendBtn = $('#auth-reg-send');
@@ -628,6 +630,13 @@
       var text = elRegCode ? elRegCode.value : '';
       if (!text) return;
       copyText(text, '申请码已复制，发给管理员即可');
+    });
+    // 注册完成屏：等待审核的用户拿到管理员回传的「准入码」后，一条直达粘贴准入码，
+    // 不必先点「返回登录」再找「已通过审核？粘贴准入码」（initial 反馈里缺这条路径）。
+    var regDoneCodeBtn = $('#auth-reg-done-code');
+    if (regDoneCodeBtn) regDoneCodeBtn.addEventListener('click', function () {
+      showMsg('');
+      showForm('code');
     });
 
     if (elRetry) {
@@ -717,9 +726,11 @@
     Auth.init();
 
     if (!Auth.hasUsers()) {
-      // 首次使用：登录页不再提供「创建管理员」入口，直接展示注册表单。
-      // 首个管理员由后台（Auth.setup，开发者在控制台调用）创建，符合「管理员创建功能后台分配」。
-      showForm('register');
+      // 首次使用：直接展示「登录」表单（含「注册新账号」「已通过审核？粘贴准入码」两个入口）。
+      // 不再强制注册表单——否则本机还没有任何账号的用户（例如跨设备免码登录、
+      // 或已拿到管理员准入码的人）会被困在注册页，点「返回登录」也回不去，
+      // 表现成「初次登录没有准入码入口」。注册入口仍在登录表单内，新用户点一下即可。
+      showForm('login');
       return;
     }
 
