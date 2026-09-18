@@ -329,46 +329,61 @@ async function fetchToutiaoBriefs() {
 }
 
 /** 新浪财经 7×24 滚动快讯（带真实发布时间戳，可按时间段精确过滤）。
- *  接口：https://feed.mix.sina.com.cn/api/roll/get?pageid=153&lid=2516&num=50
- *  返回 result.data[].title / .ctime(Unix秒) / .url / .wapurl / .media_name。 */
-const SINA_BRIEF_URL = 'https://feed.mix.sina.com.cn/api/roll/get?pageid=153&lid=2516&num=50&k=&r=';
+ *  接口：https://feed.mix.sina.com.cn/api/roll/get?pageid=153&lid=2516&num=50&page=N
+ *  返回 result.data[].title / .ctime(Unix秒) / .url / .wapurl / .media_name。
+ *  分页抓取：每页 num=50，page 递增直到末页（返回不足 num 即末页），
+ *  去掉原先"只取一页 50 条"的人为上限，使「按时间段统计」能覆盖全天滚动快讯。 */
+const SINA_BRIEF_BASE = 'https://feed.mix.sina.com.cn/api/roll/get?pageid=153&lid=2516&num=50';
+const SINA_BRIEF_MAX_PAGES = 24;   // 24 页 × 50 = 最多 1200 条，足够覆盖全天
 const SINA_SOURCE = 'sina';
 const SINA_SOURCE_NAME = '新浪财经';
 async function fetchSinaBriefs() {
-  let r;
-  try {
-    r = await withTimeout(fetch(SINA_BRIEF_URL, {
-      headers: {
-        'User-Agent': UA,
-        'Accept': 'application/json, text/plain, */*',
-        'Referer': 'https://finance.sina.com.cn/',
-        'Accept-Language': 'zh-CN,zh;q=0.9'
-      }
-    }), 10000, SINA_BRIEF_URL);
-  } catch (e) {
-    throw new Error((e && e.message) || 'fetch failed');
-  }
-  if (!r.ok) throw new Error('HTTP ' + r.status);
-  const j = await r.json();
-  const arr = (j && j.result && Array.isArray(j.result.data)) ? j.result.data : [];
   const out = [];
-  arr.forEach((it, idx) => {
-    const title = ht.cleanTitle(it.title || it.stitle || '');
-    if (!title) return;
-    const u = String(it.url || it.wapurl || '').trim();
-    const url = /^https?:/i.test(u) ? u : '';
-    const ts = Number(it.ctime || it.intime || 0);
-    const id = 'sina-' + (it.docid || it.oid || (idx + '-' + Date.now()));
-    out.push({
-      id,
-      time: ts ? bjStr(ts) : '',
-      text: title.slice(0, BRIEF_TEXT_MAX),
-      url,
-      stocks: [],
-      subjects: [],
-      cat: (ht.classify ? ht.classify(title) : '')
+  const seen = new Set();
+  for (let page = 1; page <= SINA_BRIEF_MAX_PAGES; page++) {
+    const url = `${SINA_BRIEF_BASE}&page=${page}&k=&r=${Date.now()}`;
+    let r;
+    try {
+      r = await withTimeout(fetch(url, {
+        headers: {
+          'User-Agent': UA,
+          'Accept': 'application/json, text/plain, */*',
+          'Referer': 'https://finance.sina.com.cn/',
+          'Accept-Language': 'zh-CN,zh;q=0.9'
+        }
+      }), 10000, url);
+    } catch (e) {
+      console.warn(`  [新浪财经] 第 ${page} 页失败: ${(e && e.message) || 'fetch failed'}`);
+      break;
+    }
+    if (!r.ok) { console.warn(`  [新浪财经] 第 ${page} 页 HTTP ${r.status}`); break; }
+    const j = await r.json();
+    const arr = (j && j.result && Array.isArray(j.result.data)) ? j.result.data : [];
+    if (!arr.length) break;
+    let added = 0;
+    arr.forEach((it, idx) => {
+      const title = ht.cleanTitle(it.title || it.stitle || '');
+      if (!title) return;
+      const u = String(it.url || it.wapurl || '').trim();
+      const url2 = /^https?:/i.test(u) ? u : '';
+      const ts = Number(it.ctime || it.intime || 0);
+      const id = 'sina-' + (it.docid || it.oid || (ts + '-' + idx));
+      if (seen.has(id)) return;
+      seen.add(id);
+      out.push({
+        id,
+        time: ts ? bjStr(ts) : '',
+        text: title.slice(0, BRIEF_TEXT_MAX),
+        url: url2,
+        stocks: [],
+        subjects: [],
+        cat: (ht.classify ? ht.classify(title) : '')
+      });
+      added++;
     });
-  });
+    if (arr.length < 50) break;   // 已是最后一页
+    await new Promise(res => setTimeout(res, 120));
+  }
   return out;
 }
 
