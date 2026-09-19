@@ -1,5 +1,18 @@
 {
   "version": 1,
-  "updatedAt": null,
-  "accounts": {}
+  "updatedAt": 1789786961297,
+  "accounts": {
+    "__cloud_sync_test__": {
+      "hash": "pbkdf2$__test__",
+      "role": "user",
+      "status": "active",
+      "disabled": false,
+      "trialUntil": 0,
+      "quotaMonths": 0,
+      "disableDate": "",
+      "registerDate": "",
+      "createdAt": 1789786961297,
+      "updatedAt": 1789786961297
+    }
+  }
 }
