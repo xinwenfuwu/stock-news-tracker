@@ -1,19 +1,7 @@
 {
   "version": 1,
-  "updatedAt": 1789790848451,
+  "updatedAt": 1789790850643,
   "accounts": {
-    "181": {
-      "hash": "pbkdf2$150000$KjYyYMWup5jVGwvFBcCcOQ==$3U/UO6mfq2XHtEoimjRCc/0rz4seqfPAhnrte+JrXlw=",
-      "role": "user",
-      "status": "active",
-      "disabled": false,
-      "trialUntil": 1789779663780,
-      "quotaMonths": 1,
-      "disableDate": "",
-      "registerDate": "2026-09-17",
-      "createdAt": 1789659809331,
-      "updatedAt": 1789790848451
-    },
     "789": {
       "hash": "pbkdf2$150000$Ekk0dlJppCZxXb/2RxUN/w==$tjExSgfWL9xjHVlZtVuYbjkWXh0uBrqk63oMkrh5rFc=",
       "role": "user",
@@ -37,6 +25,18 @@
       "registerDate": "",
       "createdAt": 1789540967533,
       "updatedAt": 1789790807564
+    },
+    "cp130855": {
+      "hash": "pbkdf2$150000$zh/EECdscvG5O8TyQTLpIA==$maJFyXOZGpEtN3D4FnO0Oovz6n5eceQp/Qn+JSHv/Rc=",
+      "role": "user",
+      "status": "active",
+      "disabled": false,
+      "trialUntil": 1789957264355,
+      "quotaMonths": 0,
+      "disableDate": "",
+      "registerDate": "2026-09-18",
+      "createdAt": 1789697954397,
+      "updatedAt": 1789790850643
     }
   }
 }
