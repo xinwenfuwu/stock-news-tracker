@@ -1,5 +1,18 @@
 {
   "version": 1,
-  "updatedAt": null,
-  "accounts": {}
+  "updatedAt": 1789790807564,
+  "accounts": {
+    "huyun": {
+      "hash": "pbkdf2$150000$2U78TImuWTnQP2S6OfqV8w==$WKk/lcaAOHBMYwQlwQCh96dsWAs4HUc46/CgIbvbWp0=",
+      "role": "admin",
+      "status": "active",
+      "disabled": false,
+      "trialUntil": 0,
+      "quotaMonths": 0,
+      "disableDate": "",
+      "registerDate": "",
+      "createdAt": 1789540967533,
+      "updatedAt": 1789790807564
+    }
+  }
 }
