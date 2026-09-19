@@ -6671,7 +6671,7 @@ const app = createApp({
       // 反推业务
       reverse, reverseSorted, reverseSort, setReverseSort, reverseBusiness, reverseSortIcon,
       // 页面3
-      hotDate, hotLoading, hotBoards, hotStocks, preMarketBoards, amplitudeBoards, conceptFreq,
+      hotDate, hotLoading, hotBoards, hotStocks, newListedStocks, preMarketBoards, amplitudeBoards, conceptFreq,
       hotBoardActive, hotBoardLoading, hotDetailIsStock, openHotBoard, openHotStock, clearHotBoard,
       hotExclude, askHotExclude, cancelHotExclude, confirmHotExclude,
       hotFilterStocks,
