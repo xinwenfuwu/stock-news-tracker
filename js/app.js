@@ -2332,7 +2332,7 @@ const app = createApp({
     //  页面2：股票池
     // ============================================================
     const poolLoading = ref(false);
-    const poolModal = reactive({ show: false, isEdit: false, data: {} });
+    const poolModal = reactive({ show: false, isEdit: false, saving: false, data: {} });
     const poolDetail = reactive({ show: false, data: { stocks: [] }, nameEdit: false, nameDraft: '', addText: '' });
     const poolDetailSort = reactive({ key: 'dailyChange', dir: 'desc' });
 
@@ -2351,6 +2351,7 @@ const app = createApp({
     }
     function openEditPool(pool) {
       poolModal.isEdit = true;
+      poolModal.saving = false;
       poolModal.data = {
         id: pool.id,
         date: pool.date,
@@ -2396,10 +2397,39 @@ const app = createApp({
       };
     }
 
-    function savePool() {
-      const stocks = StockAPI.parseStockInput(poolModal.data.stockText);
-      if (!stocks.length) {
+    /** 把「只有名称」的条目先弹出生成算一部分：先给提示，再走三级降级补代码 */
+    async function savePool() {
+      if (poolModal.saving) return;
+      const parsed = StockAPI.parseStockInput(poolModal.data.stockText);
+      if (!parsed.length) {
         showToast('请输入至少一只股票', 'error');
+        return;
+      }
+
+      // 只写了名称（没带代码）的先反查成代码，否则后面行情/财务一律拉不到
+      const needName = parsed.filter(s => s.name && !s.code);
+      if (needName.length) {
+        poolModal.saving = true;
+        showToast(`正在识别 ${needName.length} 个股票名称...`, 'info');
+        try {
+          const failed = await StockAPI.resolveStockNames(parsed);
+          if (failed.length) {
+            const shown = failed.map(s => s.name).filter(Boolean).slice(0, 5).join('、');
+            const more = failed.length > 5 ? ` 等 ${failed.length} 个` : '';
+            if (failed.length >= parsed.length) {
+              showToast(`未能找到「${shown}」${more}对应的股票，请检查名称或改用 6 位代码`, 'error');
+              return;
+            }
+            showToast(`以下名称未识别已跳过：${shown}${more}，其余股票已保存`, 'error');
+          }
+        } finally {
+          poolModal.saving = false;
+        }
+      }
+
+      const stocks = parsed.filter(s => s.code);
+      if (!stocks.length) {
+        showToast('未识别到有效股票，请输入 6 位代码或正确的股票名称', 'error');
         return;
       }
       const stockList = stocks.map(s => _newStock(s));
@@ -4491,19 +4521,15 @@ const app = createApp({
       const needResolve = parsed.filter(p => !p.code);
       if (needResolve.length) {
         showToast(`正在按名称匹配「${needResolve.map(p => p.name).join('、')}」...`, 'info');
-        for (const p of needResolve) {
-          try {
-            const hints = await StockAPI.searchStocks(p.name);
-            const hit = (hints || []).find(h => h.name === p.name) || (hints || [])[0];
-            if (hit) { p.code = hit.code; p.name = hit.name; }
-          } catch (e) { /* 忽略单只失败 */ }
-        }
-        const rest = parsed.filter(p => p.code);
-        if (!rest.length) {
+        // 复用统一的名称反查：本机字典 → 全A名单 → 联网联想，比逐只串行快得多
+        const failed = await StockAPI.resolveStockNames(parsed);
+        const good = parsed.filter(p => p.code);
+        if (!good.length) {
           showToast(`未找到股票「${needResolve.map(p => p.name).join('、')}」，请检查名称或直接输入代码`, 'error');
           return;
         }
-        await quickAddCommit(scope, rest);
+        if (failed.length) showToast(`部分名称未识别：${failed.map(p => p.name).join('、')}`, 'error');
+        await quickAddCommit(scope, good);
         return;
       }
       await quickAddCommit(scope, parsed);

@@ -701,6 +701,12 @@ const StockAPI = {
   // ============ 股票搜索联想 ============
 
   _searchSeq: 0,
+  /**
+   * 联想请求必须串行：腾讯 smartbox 靠全局变量 window.v_hint 回传结果，
+   * 并发发起时后返回的脚本会覆盖先返回的那份数据，表现为「多个名称只有一部分被识别」。
+   * 这里用一条 Promise 尾巴把请求排队，彻底消除覆盖。
+   */
+  _searchTail: null,
 
   /**
    * 搜索股票（腾讯 smartbox 接口，通过 script 标签加载，绕过 CORS）
@@ -710,8 +716,15 @@ const StockAPI = {
   searchStocks(keyword) {
     const kw = (keyword || '').trim();
     if (!kw) return Promise.resolve([]);
-    const mySeq = ++this._searchSeq;
-    return new Promise((resolve) => {
+    const run = () => new Promise((resolve) => {
+      const mySeq = ++this._searchSeq;
+      let done = false;
+      const finish = (val) => { if (done) return; done = true; clearTimeout(timer); resolve(val); };
+      // 兜底：脚本既没有 onload 也没有 onerror 时，不能把整条队列永久堵死
+      const timer = setTimeout(() => {
+        try { if (script.parentNode) script.parentNode.removeChild(script); } catch (e) { /* 已卸载 */ }
+        finish([]);
+      }, 8000);
       const script = document.createElement('script');
       script.charset = 'utf-8';
       script.src = `https://smartbox.gtimg.cn/s3/?t=all&q=${encodeURIComponent(kw)}`;
@@ -721,14 +734,18 @@ const StockAPI = {
       };
       script.onload = () => {
         // 只处理最新一次请求，避免快速输入时旧结果覆盖新结果
-        if (mySeq !== this._searchSeq) { cleanup(); resolve([]); return; }
+        if (mySeq !== this._searchSeq) { cleanup(); finish([]); return; }
         const raw = window.v_hint;
         cleanup();
-        resolve(this._parseHints(raw));
+        finish(this._parseHints(raw));
       };
-      script.onerror = () => { cleanup(); resolve([]); };
+      script.onerror = () => { cleanup(); finish([]); };
       document.body.appendChild(script);
     });
+    const tail = this._searchTail || Promise.resolve();
+    const queued = tail.then(run, run);
+    this._searchTail = queued.then(() => { }, () => { });
+    return queued;
   },
 
   _parseHints(raw) {
@@ -749,6 +766,228 @@ const StockAPI = {
       }
     }
     return results;
+  },
+
+  // ============ 股票名称 → 代码 反查 ============
+  //
+  // 背景：parseStockInput 会把「宁德时代」这种纯名称解析成 { name:'宁德时代', code:'' }。
+  // 没有 code，后面的行情 / K线 / 财务全都拉不到，表现就是「新建子版块后刷新不出数据」。
+  // 这里补齐这一层，三级降级，前两级零请求：
+  //   ① 本机已解析字典（localStorage） —— 用过的名称下次秒出，随用随积累
+  //   ② 全 A 名单离线匹配              —— 复用 batch29 的名单（静态 JSON / 本机缓存）
+  //   ③ 腾讯 smartbox 联网联想          —— 兜底，只有上面两级都没命中时才发请求
+
+  NAME_MAP_LS_KEY: 'snt.name2code.v1',
+  NAME_MAP_MAX: 4000,
+  /** 本次会话已学会的名称表 { 归一化名称: 'sh600519' }，懒加载 */
+  _nameMap: null,
+  _nameMapDirty: false,
+  _nameMapTimer: null,
+
+  /** 名称归一化：全角转半角、去括号后缀、去空格、去星号、全大写 */
+  _nameKey(name) {
+    let s = String(name === undefined || name === null ? '' : name).trim();
+    // 全角 → 半角，避免 "ＳＴ"、"１２３" 这类输入漏匹配
+    s = s.replace(/[\uFF01-\uFF5E]/g, ch => String.fromCharCode(ch.charCodeAt(0) - 0xFEE0));
+    s = s.replace(/[（(][^（()）]*[)）]/g, '');   // 去掉尾部的 (300750)
+    s = s.replace(/\s+/g, '');
+    s = s.replace(/[*＊]/g, '');                  // *ST → ST
+    return s.toUpperCase();
+  },
+
+  /** 去掉风险警示前缀：ST / SST / *ST（星号已在 _nameKey 里去除） */
+  _stripST(k) {
+    return String(k || '').replace(/^S?ST/, '');
+  },
+
+  _loadNameMap() {
+    const map = {};
+    try {
+      const raw = this._lsGetItem(this.NAME_MAP_LS_KEY);
+      const j = raw ? JSON.parse(raw) : null;
+      if (j && typeof j === 'object') {
+        for (const k of Object.keys(j)) {
+          if (typeof j[k] === 'string' && /^(sh|sz|bj)\d{6}$/i.test(j[k])) map[k] = String(j[k]).toLowerCase();
+        }
+      }
+    } catch (e) { /* 数据损坏就当没有字典 */ }
+    return map;
+  },
+
+  _nameMapEnsure() {
+    if (!this._nameMap) this._nameMap = this._loadNameMap();
+    return this._nameMap;
+  },
+
+  /** 记住一个 name→code。写盘做 1.5s 节流，避免行情刷新频繁触发 localStorage 写入 */
+  _learnName(name, code) {
+    const k = this._nameKey(name);
+    const c = String(code || '').toLowerCase();
+    if (!k || !/^(sh|sz|bj)\d{6}$/.test(c)) return;
+    const map = this._nameMapEnsure();
+    if (map[k] === c) return;
+    map[k] = c;
+    this._nameMapDirty = true;
+    if (this._nameMapTimer) return;
+    this._nameMapTimer = setTimeout(() => {
+      this._nameMapTimer = null;
+      if (!this._nameMapDirty) return;
+      this._nameMapDirty = false;
+      try {
+        let keys = Object.keys(map);
+        if (keys.length > this.NAME_MAP_MAX) {
+          // 超出上限就丢掉最早学会的一批（对象对字符串键保持插入顺序）
+          keys.slice(0, keys.length - this.NAME_MAP_MAX).forEach(kk => { delete map[kk]; });
+        }
+        this._lsSetItem(this.NAME_MAP_LS_KEY, JSON.stringify(map));
+      } catch (e) { /* 配额满 / 隐私模式：忽略，不影响任何功能 */ }
+    }, 1500);
+  },
+
+  /** 名称索引的会话级缓存（正负结果都缓存 60 秒，避免每次解析都去请求静态名单） */
+  _nameDictCache: null,
+
+  async _nameDict() {
+    const c = this._nameDictCache;
+    if (c && (Date.now() - c.t) < 60000) return c.dict;
+    let dict = null;
+    try { dict = await this._buildNameDict(); } catch (e) { dict = null; }
+    this._nameDictCache = { t: Date.now(), dict: dict };
+    return dict;
+  },
+
+  async _buildNameDict() {
+    const list = await this._getAllANames();
+    if (!list || !list.length) return null;
+    const exact = new Map();
+    for (const it of list) {
+      if (!it || !it.name || !it.code) continue;
+      const k = this._nameKey(it.name);
+      if (!k) continue;
+      if (!exact.has(k)) exact.set(k, it);
+    }
+    return exact.size ? { list: list, exact: exact } : null;
+  },
+
+  /** 在名单里匹配一个名称：精确 → 去ST → 唯一前缀 → 唯一包含；有歧义返回 null（交给联网兜底） */
+  _nameDictHit(dict, name) {
+    if (!dict) return null;
+    const k = this._nameKey(name);
+    if (!k) return null;
+
+    const direct = dict.exact.get(k);
+    if (direct) return direct;
+
+    const q = this._stripST(k);
+    if (q && q !== k) {
+      const d2 = dict.exact.get(q);
+      if (d2) return d2;
+    }
+
+    const key = q || k;
+    if (key.length < 2) return null;   // 单字不猜，太容易错配
+
+    const starts = [];
+    const inc = [];
+    for (const it of dict.list) {
+      const nk = this._stripST(this._nameKey(it.name));
+      if (!nk) continue;
+      if (nk.indexOf(key) === 0) starts.push(it);
+      else if (nk.indexOf(key) >= 0) inc.push(it);
+    }
+    if (starts.length === 1) return starts[0];
+    if (starts.length > 1) return null;   // 多个前缀命中 → 歧义，不猜
+    if (inc.length === 1) return inc[0];
+    return null;
+  },
+
+  /** 联网兜底：腾讯 smartbox 联想，只接受 A 股 / 北交所结果（过滤指数、基金、港美股） */
+  async _nameResolveOnline(name) {
+    let hints = [];
+    try { hints = await this.searchStocks(name); } catch (e) { return null; }
+    if (!Array.isArray(hints) || !hints.length) return null;
+
+    const isA = h => !!h && /^(sh|sz|bj)$/i.test(String(h.market || ''))
+      && /^(sh|sz|bj)\d{6}$/i.test(String(h.code || ''));
+    const k = this._nameKey(name);
+    const q = this._stripST(k);
+
+    let hit = hints.find(h => h && this._nameKey(h.name) === k)
+      || hints.find(h => h && this._stripST(this._nameKey(h.name)) === q && q)
+      || null;
+    if (hit && !isA(hit)) hit = null;
+    if (!hit) hit = hints.find(isA) || null;
+    if (!hit) return null;
+    return { name: hit.name || name, code: String(hit.code).toLowerCase() };
+  },
+
+  /**
+   * 把「只有名称、没有代码」的条目补全代码（原地修改数组元素）。
+   * 另外支持空格连写：整段没命中时按空格再切一次逐个试（要么全中，要么保留原样）。
+   *
+   * @param {Array<{name,code}>} list  parseStockInput 的输出，会被原地补全 code
+   * @returns {Promise<Array<{name,code}>>} 仍未能识别的条目（空数组表示全部成功）
+   */
+  async resolveStockNames(list) {
+    const arr = Array.isArray(list) ? list : [];
+    let pend = arr.filter(s => s && s.name && !s.code);
+    if (!pend.length) return [];
+
+    // ① 本机字典，零请求
+    const map = this._nameMapEnsure();
+    pend = pend.filter(s => {
+      const c = map[this._nameKey(s.name)];
+      if (c) { s.code = c; return false; }
+      return true;
+    });
+    if (!pend.length) return [];
+
+    // ② 全 A 名单离线匹配，零请求
+    const dict = await this._nameDict();
+    if (dict) {
+      // 倒序遍历：命中空格连写时会把 1 条原地替换成多条
+      for (let i = arr.length - 1; i >= 0; i--) {
+        const it = arr[i];
+        if (!it || it.code || !it.name) continue;
+        const hit = this._nameDictHit(dict, it.name);
+        if (hit) {
+          it.code = hit.code;
+          it.name = hit.name || it.name;
+          continue;
+        }
+        if (!/\s/.test(it.name)) continue;
+        const tokens = it.name.split(/\s+/).filter(Boolean);
+        if (tokens.length < 2) continue;
+        const hits = [];
+        let allHit = true;
+        for (const t of tokens) {
+          const h = this._nameDictHit(dict, t);
+          if (h) hits.push(h); else { allHit = false; break; }
+        }
+        if (allHit) arr.splice(i, 1, ...tokens.map((t, n) => ({ name: hits[n].name || t, code: hits[n].code })));
+      }
+      pend = arr.filter(s => s && s.name && !s.code);
+    }
+    if (!pend.length) return [];
+
+    // ③ 联网兜底：4 路并发，只有离线都没命中才会走到这里
+    const CONC = 4;
+    let cursor = 0;
+    const runner = async () => {
+      for (;;) {
+        const it = pend[cursor++];
+        if (!it) return;
+        const hit = await this._nameResolveOnline(it.name);
+        if (hit) {
+          it.code = hit.code;
+          it.name = hit.name || it.name;
+          this._learnName(it.name, hit.code);
+        }
+      }
+    };
+    await Promise.all(Array.from({ length: Math.min(CONC, pend.length) }, runner));
+
+    return arr.filter(s => s && s.name && !s.code);
   },
 
   /** 从 code 提取纯数字 */
@@ -902,6 +1141,8 @@ const StockAPI = {
       const code = m[1];
       const fields = m[2].split('~');
       result[code] = this._buildQuote(code, fields);
+      // 顺手沉淀 name→code：下次用户直接输名称就能匹配上，不用再查接口
+      if (result[code] && result[code].name) this._learnName(result[code].name, code);
     }
     return result;
   },
@@ -2125,6 +2366,8 @@ const StockAPI = {
     const slim = list.map(s => ({ code: s.code, pureCode: s.pureCode, name: s.name }))
       .filter(s => s.pureCode && s.name);
     if (slim.length < this.ALL_A_MIN_SIZE) return;
+    // 名单更新了，会话级的名称索引要失效（否则 60 秒内用的还是旧字典）
+    this._nameDictCache = null;
     try { this._lsSetItem(this.ALL_A_LS_KEY, JSON.stringify({ t: Date.now(), n: slim.length, list: slim })); }
     catch (e) { /* 序列化失败（超配额）时忽略 */ }
   },
@@ -2368,7 +2611,12 @@ const StockAPI = {
   async getSimilarByBusiness({ code, minRatio = 0, sort = 'ratio', limit = 200 } = {}) {
     const empty = { ok: false, error: '请输入有效的股票代码/名称', seed: null, segments: [], stocks: [] };
     const parsed = this.parseStockInput ? this.parseStockInput(String(code || '')) : [];
-    const seedPure = (parsed && parsed.length && parsed[0].code) ? parsed[0].code : '';
+    let seedPure = (parsed && parsed.length && parsed[0].code) ? parsed[0].code : '';
+    if (!seedPure && parsed && parsed.length && this.resolveStockNames) {
+      // 输入的是纯名称：走统一的「名称 → 代码」反查补出代码，让用户不必先查代码
+      try { await this.resolveStockNames(parsed.slice(0, 1)); } catch (e) { /* 反查失败就走原来的提示 */ }
+      seedPure = (parsed[0] && parsed[0].code) ? parsed[0].code : '';
+    }
     const full = seedPure || (this.inferPrefix ? this.inferPrefix(String(code || '')) : String(code || ''));
     if (!full || !/^(sh|sz|bj)\d{4,8}$/i.test(full)) return empty;
     try {

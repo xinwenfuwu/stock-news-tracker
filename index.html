@@ -4,12 +4,12 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>股市信息分析系统</title>
-  <link rel="stylesheet" href="css/style.css?v=20260919z">
+  <link rel="stylesheet" href="css/style.css?v=20260920a">
   <!-- Vue 3 全局构建版（v3.4.21 · 自托管）
        原先走 unpkg.com CDN：国内网络对 unpkg 的连通性不稳定，一旦该请求长时间挂起，
        <head> 里的阻塞脚本会让整页停在白屏、后续 auth-boot.js 根本不会执行。
        改为同源托管后，启动链路不再依赖任何第三方 CDN。 -->
-  <script src="js/vue.global.prod.js?v=20260919z"></script>
+  <script src="js/vue.global.prod.js?v=20260920a"></script>
 </head>
 <body class="auth-locked">
   <!-- ===== 登录关卡：登录通过前业务脚本不会被加载 ===== -->
@@ -2557,13 +2557,18 @@
               <span class="muted small" style="margin-left:8px">从所选日期新闻中已关联的股票自动填入</span>
             </div>
           </div>
+          <div class="info-box">
+            <p>只写名称也可以：<b>宁德时代</b>、<b>贵州茅台</b> 这类简称会在点保存时自动匹配出代码，再去刷新行情；一行里多个名称用空格隔开（或用逗号、顿号）都能自动拆开。<span class="muted">识别优先走本机缓存，不额外增加请求。</span></p>
+          </div>
           <div class="info-box" v-if="poolModal.isEdit">
             <p>编辑后将重新解析股票列表。已有股票的手动数据（资金流、财务等）如代码匹配会保留。</p>
           </div>
         </div>
         <div class="modal-footer">
           <button class="btn" @click="poolModal.show = false">取消</button>
-          <button class="btn btn-primary" @click="savePool">保存</button>
+          <button class="btn btn-primary" @click="savePool" :disabled="poolModal.saving">
+            {{ poolModal.saving ? '正在识别名称...' : '保存' }}
+          </button>
         </div>
       </div>
     </div>
@@ -3481,9 +3486,9 @@
     </transition>
   </div>
 
-  <script src="js/auth.js?v=20260919z"></script>
-  <script src="js/auth-sync.js?v=20260919z"></script>
-  <script src="js/auth-boot.js?v=20260919z"></script>
+  <script src="js/auth.js?v=20260920a"></script>
+  <script src="js/auth-sync.js?v=20260920a"></script>
+  <script src="js/auth-boot.js?v=20260920a"></script>
   <!-- store / stock-api / hot-topics / app 由 auth-boot.js 在登录通过后动态装载，
        未登录时它们不会被下载，业务数据也不会进入内存 -->
 </body>
