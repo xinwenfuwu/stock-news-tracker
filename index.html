@@ -2546,9 +2546,9 @@
             <input v-model="poolModal.data.name" placeholder="如：924主线池 / 算力方向" style="width:100%">
           </div>
           <div class="form-row">
-            <label>股票列表（每行一个，格式：代码 或 名称(代码)，如 600519 或 贵州茅台(600519)）</label>
+            <label>股票列表（每行一个：<b>6 位代码</b> 或 <b>股票名称</b> 或 <b>名称(代码)</b>，三者可混写）</label>
             <textarea v-model="poolModal.data.stockText" rows="8"
-              placeholder="600519&#10;000001&#10;宁德时代(300750)"></textarea>
+              placeholder="600519&#10;000001&#10;宁德时代&#10;贵州茅台(600519)"></textarea>
           </div>
           <div class="form-row" style="align-items:flex-start">
             <span style="padding-top:8px"></span>
