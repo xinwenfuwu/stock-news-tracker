@@ -5528,6 +5528,27 @@ const app = createApp({
     }
 
     /**
+     * 退市 / 已进入退市整理期股票的判定（尾盘买入法筛选前剔除）。
+     * 口径：
+     *   ① 名称含「退」——A 股退市整理期与已退市股票的标准标记（如「退市XX」「XX退」「XX退1」）；
+     *   ② 名称/行情无有效价格（现价为空或 ≤0）且无有效涨跌幅——退市股通常已无心价数据。
+     * 命中任一条即视为退市股，在筛选时剔除。
+     * @param {object} s 股票对象（需含 name / code，可选 todayPrice / price / dailyChange）
+     * @returns {boolean}
+     */
+    function isDelistedStock(s) {
+      if (!s) return false;
+      const name = String(s.name || '').trim();
+      // ① 名称含「退」（退市/退市整理期标准标记）
+      if (/退/.test(name)) return true;
+      // ② 无有效价格：现价缺失或 ≤0，且涨跌幅也无效 → 视为已无行情的退市股
+      const price = Number(s.todayPrice != null ? s.todayPrice : (s.price != null ? s.price : NaN));
+      const chg = Number(s.dailyChange != null ? s.dailyChange : (s.changePercent != null ? s.changePercent : NaN));
+      if ((!isFinite(price) || price <= 0) && !isFinite(chg)) return true;
+      return false;
+    }
+
+    /**
      * 点击「当日热门板块」中的某个板块：
      * 把该板块的全部成分股载入下方「当日股票明细」，字段与格式与筛选板块完全一致。
      */
@@ -5649,15 +5670,21 @@ const app = createApp({
     const tailBuyNote = ref('');
     async function runTailBuyFilter() {
       if (tailBuyLoading.value) return;
-      const pool = (hotFilterStocks.value || []).slice();
+      // 筛选前先剔除退市股票（名称含「退」或已无有效行情），避免退市股进入候选
+      const rawPool = (hotFilterStocks.value || []).slice();
+      const pool = rawPool.filter(s => !isDelistedStock(s));
+      const delistedCnt = rawPool.length - pool.length;
       if (!pool.length) {
         tailBuyList.value = []; tailBuyTotal.value = 0; tailBuyNote.value = '';
-        showToast('请先在上方点击板块 / 个股加载成分股，或点「加载当日数据」，再开始筛选', 'error');
+        showToast(rawPool.length
+          ? `候选股票均为退市股（已剔除 ${delistedCnt} 只），无可筛选标的`
+          : '请先在上方点击板块 / 个股加载成分股，或点「加载当日数据」，再开始筛选', 'error');
         return;
       }
       tailBuyLoading.value = true;
       tailBuyList.value = []; tailBuyNote.value = '';
-      showToast('尾盘买入法：正在联网取实时行情与 20 日K线…', 'info');
+      showToast('尾盘买入法：正在联网取实时行情与 20 日K线…'
+        + (delistedCnt ? `（已先剔除 ${delistedCnt} 只退市股）` : ''), 'info');
       try {
         const norm = (s) => StockAPI.inferPrefix(String((s && s.code) || ''));
         const codes = pool.map(norm).filter(Boolean);
@@ -5764,9 +5791,11 @@ const app = createApp({
           });
         }
         tailBuyList.value = results;
-        if (noKline) tailBuyNote.value = `${noKline} 只因K线不足 20 日跳过（上市未满 20 日）`;
-        else if (!results.length) tailBuyNote.value = '均线 / 成交量条件无命中';
-        showToast(`尾盘买入法：命中 ${results.length} 只`, results.length ? 'success' : 'info');
+        const delistedTag = delistedCnt ? `已剔除 ${delistedCnt} 只退市股 · ` : '';
+        if (noKline) tailBuyNote.value = delistedTag + `${noKline} 只因K线不足 20 日跳过（上市未满 20 日）`;
+        else if (!results.length) tailBuyNote.value = delistedTag + '均线 / 成交量条件无命中';
+        else tailBuyNote.value = delistedCnt ? `已剔除 ${delistedCnt} 只退市股` : '';
+        showToast(`尾盘买入法：命中 ${results.length} 只${delistedCnt ? `（已剔除 ${delistedCnt} 只退市股）` : ''}`, results.length ? 'success' : 'info');
       } catch (e) {
         console.warn('尾盘买入法筛选失败', e);
         showToast('尾盘买入法筛选失败：' + (e && e.message ? e.message : e), 'error');
@@ -5815,10 +5844,11 @@ const app = createApp({
           showToast('未获取到 A 股行情（可能受网络/接口限流），请稍后重试', 'error');
           return;
         }
-        // 剔除规则判定（代码前缀 + 名称）
+        // 剔除规则判定（代码前缀 + 名称 + 退市）
         const excluded = (s) => {
           const pure = String(pureCode(s.code) || '');
           const name = String(s.name || '');
+          if (isDelistedStock({ name: name, code: s.code, price: s.price, changePercent: s.changePercent })) return true; // 退市股始终剔除
           if (allAFilter.noBj && /^(4|8|92)/.test(pure)) return true;
           if (allAFilter.noStar && /^(688|689)/.test(pure)) return true;
           if (allAFilter.no688 && /^688/.test(pure)) return true;

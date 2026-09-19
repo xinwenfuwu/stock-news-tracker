@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>股市信息分析系统</title>
-  <link rel="stylesheet" href="css/style.css?v=20260919q">
+  <link rel="stylesheet" href="css/style.css?v=20260919r">
   <!-- Vue 3 全局构建版（v3.4.21 · 自托管）
        原先走 unpkg.com CDN：国内网络对 unpkg 的连通性不稳定，一旦该请求长时间挂起，
        <head> 里的阻塞脚本会让整页停在白屏、后续 auth-boot.js 根本不会执行。
@@ -1877,7 +1877,9 @@
                 <div class="tb-rule"><b>成交量</b> 持续放大</div>
                 <div class="tb-rule"><b>分时</b> 均价线上方</div>
                 <div class="tb-rule"><b>尾盘</b> 回抽均价线</div>
+                <div class="tb-rule tb-rule-exclude"><b>剔除</b> 退市股</div>
               </div>
+              <div class="muted small" style="margin:-2px 0 4px">🚫 筛选前自动剔除<b>退市股票</b>（名称含「退」或已无有效行情），避免退市股进入结果。</div>
               <div class="muted small" v-if="aiConfigured" title="已在「偏好设置 → AI 解读」配置接口：点击「开始筛选」会把候选股的实时特征交给 AI，按上面 8 项条件精准判定">🤖 已启用 AI 精准筛选（需联网取实时行情与 20 日K线）</div>
               <div class="muted small" v-else title="未配置 AI 接口时使用规则硬筛；在「偏好设置 → AI 解读」填写 API 地址、密钥、模型后即可 AI 精准筛选">未配置 AI 接口，使用规则筛选；配置后可 🤖 AI 精准筛选</div>
               <div class="muted small" v-if="!tailBuyList.length && !tailBuyLoading">点「开始筛选」按上面 8 项条件，从当前「当日股票明细」中挑出符合条件的个股。</div>
@@ -2951,7 +2953,7 @@
             </label>
           </div>
           <p class="muted tiny" style="margin-bottom:0">
-            提示：拉取全市场约 5000+ 只股票行情需联网，耗时约 10–30 秒；勾选结果在本次会话内记住。
+            提示：<b>退市股票会自动剔除</b>（名称含「退」或已无有效行情）；拉取全市场约 5000+ 只股票行情需联网，耗时约 10–30 秒；勾选结果在本次会话内记住。
           </p>
           <div class="modal-footer-actions">
             <button class="btn" @click="cancelAllAFilter">取消</button>
@@ -3427,7 +3429,7 @@
 
   <script src="js/auth.js?v=20260918l"></script>
   <script src="js/auth-sync.js?v=20260918l"></script>
-  <script src="js/auth-boot.js?v=20260919q"></script>
+  <script src="js/auth-boot.js?v=20260919r"></script>
   <!-- store / stock-api / hot-topics / app 由 auth-boot.js 在登录通过后动态装载，
        未登录时它们不会被下载，业务数据也不会进入内存 -->
 </body>

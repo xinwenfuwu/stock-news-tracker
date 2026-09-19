@@ -710,6 +710,9 @@ body {
 .hot-row-3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
 .tail-buy-rubric { display: grid; grid-template-columns: 1fr 1fr; gap: 5px 12px; margin: 8px 0 6px; font-size: 12px; color: #6b7280; }
 .tail-buy-rubric .tb-rule b { color: #111827; font-weight: 700; margin-right: 2px; }
+/* 尾盘买入法：退市股剔除规则标签（红色高亮，提示筛选前会剔除退市股） */
+.tail-buy-rubric .tb-rule-exclude { color: #c0392b; }
+.tail-buy-rubric .tb-rule-exclude b { color: #c0392b; }
 .tail-buy-sum { font-size: 13px; margin: 4px 0 6px; }
 .tail-buy-sum b { color: #b45309; }
 /* 尾盘买入法：筛选结果不再限高，填充面板空白区（用 .hot-panel 前缀压过 .hot-list 的 360px） */
