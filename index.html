@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>股市信息分析系统</title>
-  <link rel="stylesheet" href="css/style.css?v=20260919m">
+  <link rel="stylesheet" href="css/style.css?v=20260919n">
   <!-- Vue 3 全局构建版（v3.4.21 · 自托管）
        原先走 unpkg.com CDN：国内网络对 unpkg 的连通性不稳定，一旦该请求长时间挂起，
        <head> 里的阻塞脚本会让整页停在白屏、后续 auth-boot.js 根本不会执行。
@@ -1700,6 +1700,23 @@
               <div class="muted small" v-else>点击「获取热门板块」加载</div>
             </div>
 
+            <!-- 新上市股票（按上市天数升序，取前 50） -->
+            <div class="hot-panel">
+              <h3 class="panel-title">🆕 新上市股票</h3>
+              <div class="hot-list" v-if="newListedStocks.length">
+                <div class="hot-item" v-for="(s, i) in newListedStocks" :key="i"
+                     :title="s.name + ' · 上市 ' + s.listingDays + ' 天（' + s.listingDate + '）| 当日涨幅 ' + fmtPct(s.change)">
+                  <span class="hot-rank">{{ i + 1 }}</span>
+                  <span class="hot-name">{{ s.name }}<span class="muted small"> {{ s.pureCode }}</span></span>
+                  <span class="hot-val" style="display:flex; flex-direction:column; align-items:flex-end; line-height:1.25;">
+                    <span class="muted small" style="font-weight:400;">上市{{ s.listingDays }}天</span>
+                    <span :class="pctClass(s.change)">{{ fmtPct(s.change) }}</span>
+                  </span>
+                </div>
+              </div>
+              <div class="muted small" v-else>点击「获取热门板块」加载</div>
+            </div>
+
             <!-- 当日热门股票（已与盘前热点板块互换，上移至此） -->
             <div class="hot-panel">
               <h3 class="panel-title">⭐ 当日热门股票</h3>
@@ -3268,7 +3285,7 @@
 
   <script src="js/auth.js?v=20260918l"></script>
   <script src="js/auth-sync.js?v=20260918l"></script>
-  <script src="js/auth-boot.js?v=20260918l"></script>
+  <script src="js/auth-boot.js?v=20260919n"></script>
   <!-- store / stock-api / hot-topics / app 由 auth-boot.js 在登录通过后动态装载，
        未登录时它们不会被下载，业务数据也不会进入内存 -->
 </body>

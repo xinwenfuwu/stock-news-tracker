@@ -1851,6 +1851,53 @@ const StockAPI = {
     return results;
   },
 
+  /**
+   * 获取新上市股票（东财「新股/次新股」板块），按上市天数升序取前 50。
+   * 数据源：东财行情 clist，板块筛选 fs=m:0+f:8,m:1+f:8（新股/次新股），
+   * 上市日期取自字段 f26；上市天数 = 今日 − 上市日期。
+   * @returns {Array<{name, code, pureCode, change, listingDate, listingDays}>}
+   */
+  async getNewListedStocks() {
+    const results = [];
+    try {
+      const url = `https://push2.eastmoney.com/api/qt/clist/get?pn=1&pz=1000&po=1&np=1&fltt=2&invt=2&fid=f26&fs=m:0+f:8,m:1+f:8&fields=f3,f12,f13,f14,f26`;
+      const json = await this._eastGet(url);
+      for (const item of this._diffArray(json)) {
+        // f26：上市日期，形态可能是 "2024-01-15" / 20240115 / 时间戳
+        let listDate = null;
+        const raw = item.f26;
+        if (raw != null && String(raw).trim() !== '') {
+          const s = String(raw).trim();
+          if (/^\d{13}$/.test(s)) listDate = new Date(parseInt(s));
+          else if (/^\d{10}$/.test(s)) listDate = new Date(parseInt(s) * 1000);
+          else if (/^\d{8}$/.test(s)) listDate = new Date(+s.slice(0, 4), +s.slice(4, 6) - 1, +s.slice(6, 8));
+          else if (/^\d{4}[-/]\d{1,2}[-/]\d{1,2}/.test(s)) listDate = new Date(s.replace(/\//g, '-'));
+        }
+        let listingDays = null;
+        if (listDate && !isNaN(listDate.getTime())) {
+          listingDays = Math.floor((Date.now() - listDate.getTime()) / 86400000);
+        }
+        // f13：市场 1=沪 0=深；prefix 仅用于展示/后续点选
+        const m = String(item.f13);
+        const prefix = m === '1' ? 'sh' : (m === '0' ? 'sz' : (String(item.f12).startsWith('6') ? 'sh' : 'sz'));
+        results.push({
+          name: item.f14,
+          code: prefix + item.f12,
+          pureCode: item.f12,
+          change: parseFloat(item.f3),
+          listingDate: listDate && !isNaN(listDate.getTime()) ? this.fmtDate(listDate) : '',
+          listingDays
+        });
+      }
+    } catch (e) {
+      console.debug('新上市股票获取失败', e);
+    }
+    // 按上市天数升序（天数越少 = 越新上市），剔除无上市日期 / 未上市（负数）的，取前 50
+    const valid = results.filter(r => r.listingDays != null && !isNaN(r.listingDays) && r.listingDays >= 0);
+    valid.sort((a, b) => a.listingDays - b.listingDays);
+    return valid.slice(0, 50);
+  },
+
   // ============ 概念/行业板块选股 ============
 
   /**

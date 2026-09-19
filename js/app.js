@@ -1764,14 +1764,15 @@ const app = createApp({
           desc: '「全球信息」页缓存在本机的热点榜单快照',
           raw: () => D.hotTopicSnapshots || {}, clear: () => { D.hotTopicSnapshots = {}; } },
         { id: 'hotCache', name: '热门榜缓存', icon: '🔥', unit: '条',
-          count: v => [v.hotBoards, v.hotStocks, v.preMarketBoards, v.amplitudeBoards]
+          count: v => [v.hotBoards, v.hotStocks, v.preMarketBoards, v.amplitudeBoards, v.newListedStocks]
             .reduce((s, a) => s + ((a && a.length) || 0), 0),
-          desc: '最近一次的热门板块 / 热门股票 / 盘前热点 / 振幅板块',
+          desc: '最近一次的热门板块 / 热门股票 / 盘前热点 / 振幅板块 / 新上市股票',
           raw: () => ({
             hotBoards: D.hotBoards, hotStocks: D.hotStocks,
-            preMarketBoards: D.preMarketBoards, amplitudeBoards: D.amplitudeBoards
+            preMarketBoards: D.preMarketBoards, amplitudeBoards: D.amplitudeBoards,
+            newListedStocks: D.newListedStocks
           }),
-          clear: () => { D.hotBoards = []; D.hotStocks = []; D.preMarketBoards = []; D.amplitudeBoards = []; } },
+          clear: () => { D.hotBoards = []; D.hotStocks = []; D.preMarketBoards = []; D.amplitudeBoards = []; D.newListedStocks = []; } },
         { id: 'layout', name: '表格列宽', icon: '📐', unit: '列',
           count: v => Object.keys(v.holdingColWidths || {}).length + Object.keys(v.filterColWidths || {}).length
             + Object.keys(v.sectorColWidths || {}).length,
@@ -4435,6 +4436,7 @@ const app = createApp({
     const hotLoading = ref(false);
     const hotBoards = ref([]);
     const hotStocks = ref([]);
+    const newListedStocks = ref([]);
     const preMarketBoards = ref([]);
     const amplitudeBoards = ref([]);
     const ampLoading = ref(false);
@@ -5256,22 +5258,25 @@ const app = createApp({
       hotLoading.value = true;
       showToast('正在获取热门板块...', 'info');
       try {
-        const [boards, stocks, preBoards, ampBoards] = await Promise.all([
+        const [boards, stocks, preBoards, ampBoards, newListed] = await Promise.all([
           StockAPI.getBoardRanking(),
           StockAPI.getStockRanking(),
           StockAPI.getPreMarketBoards(),
-          StockAPI.getAmplitudeBoards()
+          StockAPI.getAmplitudeBoards(),
+          StockAPI.getNewListedStocks()
         ]);
         hotBoards.value = boards;
         hotStocks.value = stocks;
         preMarketBoards.value = preBoards;
         amplitudeBoards.value = ampBoards;
+        newListedStocks.value = newListed;
         D.hotBoards = boards;
         D.hotStocks = stocks;
         D.preMarketBoards = preBoards;
         D.amplitudeBoards = ampBoards;
-        const ok = boards.length || stocks.length || preBoards.length || ampBoards.length;
-        showToast(ok ? `获取到 ${boards.length} 个当日板块、${preBoards.length} 个盘前热点、${ampBoards.length} 个振幅板块、${stocks.length} 只热门股票` : '获取失败：跨域/网络受限（已自动尝试 JSONP 兜底仍失败），请检查网络后重试', ok ? 'success' : 'error');
+        D.newListedStocks = newListed;
+        const ok = boards.length || stocks.length || preBoards.length || ampBoards.length || newListed.length;
+        showToast(ok ? `获取到 ${boards.length} 个当日板块、${preBoards.length} 个盘前热点、${ampBoards.length} 个振幅板块、${stocks.length} 只热门股票、${newListed.length} 只新上市股票` : '获取失败：跨域/网络受限（已自动尝试 JSONP 兜底仍失败），请检查网络后重试', ok ? 'success' : 'error');
       } catch (e) {
         showToast('获取失败', 'error');
       } finally {
