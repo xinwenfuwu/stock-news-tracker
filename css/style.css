@@ -1875,13 +1875,21 @@ body {
 .brief-cat-head.active { background: var(--primary-light); }
 .bc-caret { flex: 0 0 10px; color: var(--text-placeholder); font-size: 11px; }
 .bc-icon { flex: 0 0 auto; font-size: 13px; }
-/* batch26：子类名称去加粗（600 → 400），并把 min-width 提高以便完整显示较长的子类名 */
-.bc-name { flex: 1 1 auto; min-width: 0; font-weight: 400; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.bc-track { flex: 0 0 46px; height: 8px; background: var(--surface-alt); border-radius: 4px; overflow: hidden; }
+/* batch27②：子类名称完整显示，不再用省略号。
+ * 根因：.brief-dims 是三列网格，每列仅 ~220px；行内 caret(10)+icon(16)+track(46)+count(34)+pct(36)+间距(30)
+ * ≈172px 被固定占用，留给 .bc-name 的只有 ~40px，导致 ≥4 字的子类名（科技突破/人工智能/非银金融…）全被截成
+ * 「前2字 + …」。修法：名称改为「不压缩、按内容自然宽度完整显示」，把可伸缩空间让给装饰性的进度条 .bc-track，
+ * 并适当收窄 track/count/pct 的固定宽度。元素与交互完全不变。 */
+.bc-name {
+  flex: 0 0 auto; min-width: max-content; font-weight: 400;
+  overflow: visible; text-overflow: clip; white-space: nowrap;
+  padding-right: 2px;
+}
+.bc-track { flex: 1 1 24px; min-width: 0; height: 8px; background: var(--surface-alt); border-radius: 4px; overflow: hidden; }
 .bc-fill { display: block; height: 100%; border-radius: 4px; }
-/* batch26：计数/占比去加粗（600 → 400） */
-.bc-count { flex: 0 0 34px; text-align: right; font-weight: 400; font-variant-numeric: tabular-nums; }
-.bc-pct { flex: 0 0 36px; text-align: right; color: var(--text-placeholder); font-variant-numeric: tabular-nums; }
+/* batch27②：计数/占比固定宽度收窄，把空间让给子类名称 */
+.bc-count { flex: 0 0 26px; text-align: right; font-weight: 400; font-variant-numeric: tabular-nums; }
+.bc-pct { flex: 0 0 32px; text-align: right; color: var(--text-placeholder); font-variant-numeric: tabular-nums; }
 .brief-news { padding: 6px 0 10px 10px; border-left: 2px solid var(--border); margin: 0 0 6px 4px; }
 .brief-news-head { display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; margin-bottom: 6px; }
 .brief-news-title { font-size: 12.5px; font-weight: 700; }
