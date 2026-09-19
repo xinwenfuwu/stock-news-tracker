@@ -5775,6 +5775,89 @@ const app = createApp({
       }
     }
 
+    // ===== 尾盘买入法 · 对 A 股全部股票筛选（先弹窗选剔除规则，再全网拉取并载入「筛选板块」） =====
+    // 需求：对 A 股所有股票进行筛选，筛选前弹窗提示，可去除①北交所 ②688开头 ③科创板 ④创业板 ⑤ST股；
+    // 符合条件的股票放进下方「筛选板块（当日股票明细）」显示。
+    const allAFilter = reactive({
+      show: false,
+      loading: false,
+      // 剔除规则（默认全部勾选，符合「先剔除」的诉求；会话内记住）
+      noBj: true,        // 去除北交所（4/8/92 开头）
+      no688: true,       // 去除 688 开头
+      noStar: true,      // 去除科创板（688/689）
+      noChiNext: true,   // 去除创业板（300/301）
+      noST: true         // 去除 ST/*ST
+    });
+    /** 打开「对 A 股全部股票筛选」弹窗（筛选前提示） */
+    function askAllAFilter() {
+      if (allAFilter.loading) return;
+      allAFilter.show = true;
+    }
+    function cancelAllAFilter() { allAFilter.show = false; }
+    /**
+     * A 股全网筛选：拉取全部 A 股 → 按弹窗勾选的规则剔除 → 载入下方「筛选板块（当日股票明细）」。
+     * 与「热门板块」载入成分股同一套写入路径（hotFilterStocks + Store daily stocks），
+     * 保证字段与格式完全一致。
+     */
+    async function confirmAllAFilter() {
+      allAFilter.show = false;
+      if (allAFilter.loading) return;
+      allAFilter.loading = true;
+      tailBuyLoading.value = true;   // 复用尾盘面板的 loading 展示
+      hotFilterStocks.value = [];
+      tailBuyList.value = []; tailBuyTotal.value = 0; tailBuyNote.value = '';
+      showToast('正在拉取 A 股全部股票行情…', 'info');
+      try {
+        const all = await StockAPI.getAllAStocks((done, total) => {
+          if (done % 500 === 0) showToast(`正在拉取 A 股全部股票… ${done}/${total}`, 'info');
+        });
+        if (!all || !all.length) {
+          showToast('未获取到 A 股行情（可能受网络/接口限流），请稍后重试', 'error');
+          return;
+        }
+        // 剔除规则判定（代码前缀 + 名称）
+        const excluded = (s) => {
+          const pure = String(pureCode(s.code) || '');
+          const name = String(s.name || '');
+          if (allAFilter.noBj && /^(4|8|92)/.test(pure)) return true;
+          if (allAFilter.noStar && /^(688|689)/.test(pure)) return true;
+          if (allAFilter.no688 && /^688/.test(pure)) return true;
+          if (allAFilter.noChiNext && /^(300|301)/.test(pure)) return true;
+          if (allAFilter.noST && /ST/i.test(name)) return true;
+          return false;
+        };
+        const list = all.filter(s => !excluded(s));
+        const removed = all.length - list.length;
+        if (!list.length) {
+          showToast('全部股票均被所选规则剔除，请放宽条件后重试', 'error');
+          return;
+        }
+        // 载入「筛选板块（当日股票明细）」，字段与热门板块成分股一致
+        const daily = Store.getDailyStocks(hotDate.value);
+        daily.stocks = list.map(s => {
+          const ns = _newStock(s);
+          ns.dailyChange = s.changePercent;
+          ns.todayPrice = s.price;
+          if (s.marketCap != null) ns.totalMarketCap = s.marketCap;
+          return ns;
+        });
+        hotBoardActive.value = `A股全部（剔除后 ${list.length} 只）`;
+        hotDetailIsStock.value = false;
+        if (!filterPanel.locked) resetHotFilterRanges();
+        filterPanel.poolId = 'hot';
+        hotFilterStocks.value = daily.stocks;
+        showToast(`A 股全部筛选完成：保留 ${list.length} 只（已剔除 ${removed} 只），已载入「筛选板块」`, 'success');
+        // 复用既有补全逻辑刷新字段
+        await refreshHotStocks();
+      } catch (e) {
+        console.warn('A 股全部筛选失败', e);
+        showToast('A 股全部筛选失败：' + (e && e.message ? e.message : e), 'error');
+      } finally {
+        allAFilter.loading = false;
+        tailBuyLoading.value = false;
+      }
+    }
+
     // ============================================================
     //  筛选板块（热门板块页 · 板块筛选 + 市值比区间筛选）
     // ============================================================
@@ -6757,6 +6840,7 @@ const app = createApp({
       hotExclude, askHotExclude, cancelHotExclude, confirmHotExclude,
       hotFilterStocks,
       tailBuyList, tailBuyLoading, tailBuyTotal, tailBuyNote, runTailBuyFilter,
+      allAFilter, askAllAFilter, cancelAllAFilter, confirmAllAFilter,
       hotSearchCode, hotSearchName, clearHotSearch,
       sortedHotStocks, sortHotBy, hotSortIcon, removeHotStock,
       loadHotData, fetchHotBoards, refreshHotStocks,

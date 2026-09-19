@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>股市信息分析系统</title>
-  <link rel="stylesheet" href="css/style.css?v=20260919p">
+  <link rel="stylesheet" href="css/style.css?v=20260919q">
   <!-- Vue 3 全局构建版（v3.4.21 · 自托管）
        原先走 unpkg.com CDN：国内网络对 unpkg 的连通性不稳定，一旦该请求长时间挂起，
        <head> 里的阻塞脚本会让整页停在白屏、后续 auth-boot.js 根本不会执行。
@@ -1862,6 +1862,11 @@
                   <span v-if="tailBuyLoading">⏳ 筛选中...</span>
                   <span v-else>📌 开始筛选</span>
                 </button>
+                <button class="btn btn-sm btn-similar" @click="askAllAFilter" :disabled="allAFilter.loading || tailBuyLoading"
+                        title="对 A 股所有股票进行筛选：先弹窗选择要去除的股票（北交所/688/科创板/创业板/ST），再把符合条件的股票载入下方「筛选板块（当日股票明细）」">
+                  <span v-if="allAFilter.loading">⏳ 全市场筛选中...</span>
+                  <span v-else>🌐 对A股全部股票筛选</span>
+                </button>
               </div>
               <div class="tail-buy-rubric">
                 <div class="tb-rule"><b>涨幅</b> 3%–5%</div>
@@ -2915,6 +2920,47 @@
       </div>
     </div>
 
+    <!-- ===== 尾盘买入法：对 A 股全部股票筛选（筛选前弹窗提示 + 剔除规则） ===== -->
+    <div class="modal-overlay" v-if="allAFilter.show" @click.self="cancelAllAFilter">
+      <div class="modal hot-exclude-modal">
+        <div class="modal-header">
+          <h3>🌐 对 A 股全部股票筛选</h3>
+          <button class="btn-icon" @click="cancelAllAFilter">✕</button>
+        </div>
+        <div class="modal-body">
+          <p class="muted small" style="margin-top:0">
+            将对 <b>A 股全部股票</b>（沪深主板 + 创业板 + 科创板 + 北交所）进行筛选；
+            勾选下列规则后，命中的股票会被<b>剔除</b>，其余股票将载入下方
+            <b>「筛选板块（当日股票明细）」</b>显示。
+          </p>
+          <div class="hot-exclude-opts">
+            <label class="checkbox-label" title="剔除北交所股票（4 / 8 / 92 开头）">
+              <input type="checkbox" v-model="allAFilter.noBj"> 去除北交所（4/8/92 开头）
+            </label>
+            <label class="checkbox-label" title="剔除股票代码以 688 开头的股票">
+              <input type="checkbox" v-model="allAFilter.no688"> 去除 688 开头的股票
+            </label>
+            <label class="checkbox-label" title="剔除科创板股票（688 / 689 开头）">
+              <input type="checkbox" v-model="allAFilter.noStar"> 去除科创板（688/689 开头）
+            </label>
+            <label class="checkbox-label" title="剔除创业板股票（300 / 301 开头）">
+              <input type="checkbox" v-model="allAFilter.noChiNext"> 去除创业板（300/301 开头）
+            </label>
+            <label class="checkbox-label" title="剔除股票名称含 ST / *ST 的股票">
+              <input type="checkbox" v-model="allAFilter.noST"> 去除ST（名称含 ST / *ST）
+            </label>
+          </div>
+          <p class="muted tiny" style="margin-bottom:0">
+            提示：拉取全市场约 5000+ 只股票行情需联网，耗时约 10–30 秒；勾选结果在本次会话内记住。
+          </p>
+          <div class="modal-footer-actions">
+            <button class="btn" @click="cancelAllAFilter">取消</button>
+            <button class="btn btn-primary" @click="confirmAllAFilter">✅ 开始筛选</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- ===== 设置模态框 ===== -->
     <div class="modal-overlay" v-if="showSettings" @click.self="showSettings = false">
       <div class="modal">
@@ -3381,7 +3427,7 @@
 
   <script src="js/auth.js?v=20260918l"></script>
   <script src="js/auth-sync.js?v=20260918l"></script>
-  <script src="js/auth-boot.js?v=20260919p"></script>
+  <script src="js/auth-boot.js?v=20260919q"></script>
   <!-- store / stock-api / hot-topics / app 由 auth-boot.js 在登录通过后动态装载，
        未登录时它们不会被下载，业务数据也不会进入内存 -->
 </body>

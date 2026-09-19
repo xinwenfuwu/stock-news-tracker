@@ -1828,6 +1828,47 @@ const StockAPI = {
   },
 
   /**
+   * 获取全部 A 股列表（沪深主板 + 创业板 + 科创板），供「尾盘买入法 → 对 A 股全部股票筛选」使用。
+   * 数据源：东财行情 clist，板块筛选 fs=m:0+t:6,m:0+t:80,m:1+t:2,m:1+t:23（全 A），
+   * 分页拉取（单页 100，最多 60 页 ≈ 6000 只，覆盖当前全市场规模）。
+   * @param {(done:number,total:number)=>void} [onProgress] 进度回调（已拉取只数 / 预估总数）
+   * @returns {Promise<Array<{name, code, price, changePercent, marketCap}>>}
+   */
+  async getAllAStocks(onProgress) {
+    const all = [];
+    const seen = new Set();
+    const pz = 100;
+    let total = null;
+    for (let pn = 1; pn <= 60; pn++) {
+      const url = `https://push2.eastmoney.com/api/qt/clist/get?pn=${pn}&pz=${pz}&po=1&np=1&fltt=2&invt=2&fid=f12`
+        + `&fs=m:0+t:6,m:0+t:80,m:1+t:2,m:1+t:23&fields=f2,f3,f12,f14,f20`;
+      let json = null;
+      try { json = await this._eastGet(url); } catch (e) { json = null; }
+      const diff = this._diffArray(json);
+      if (!diff.length) break;
+      if (total == null && json && json.data && json.data.total) total = json.data.total;
+      for (const it of diff) {
+        const pure = String(it.f12);
+        if (!pure || seen.has(pure)) continue;
+        seen.add(pure);
+        const prefix = /^(6|9|4|8)/.test(pure) ? 'sh' : 'sz';
+        all.push({
+          code: prefix + pure,
+          pureCode: pure,
+          name: it.f14 || '',
+          price: it.f2 != null ? parseFloat(it.f2) : null,
+          changePercent: it.f3 != null ? parseFloat(it.f3) : null,
+          marketCap: it.f20 != null ? parseFloat(it.f20) : null
+        });
+      }
+      if (typeof onProgress === 'function') onProgress(all.length, total || all.length);
+      if (total != null && all.length >= total) break;
+      await new Promise(r => setTimeout(r, 150));
+    }
+    return all;
+  },
+
+  /**
    * 获取个股涨幅排行（热门股票）
    * @returns {Array<{name, code, change}>}
    */
