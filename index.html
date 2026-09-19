@@ -4,12 +4,12 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>股市信息分析系统</title>
-  <link rel="stylesheet" href="css/style.css?v=20260919x">
+  <link rel="stylesheet" href="css/style.css?v=20260919z">
   <!-- Vue 3 全局构建版（v3.4.21 · 自托管）
        原先走 unpkg.com CDN：国内网络对 unpkg 的连通性不稳定，一旦该请求长时间挂起，
        <head> 里的阻塞脚本会让整页停在白屏、后续 auth-boot.js 根本不会执行。
        改为同源托管后，启动链路不再依赖任何第三方 CDN。 -->
-  <script src="js/vue.global.prod.js?v=20260918l"></script>
+  <script src="js/vue.global.prod.js?v=20260919z"></script>
 </head>
 <body class="auth-locked">
   <!-- ===== 登录关卡：登录通过前业务脚本不会被加载 ===== -->
@@ -3060,6 +3060,13 @@
             <label>新闻代理地址（可选 · 真·实时增强）「全球信息」页默认展示 GitHub Action 每 2 小时服务端自动抓取的快照（同源免费、合规、无需代理）；填此地址可让「刷新热门话题」走浏览器端实时链路。可填多个，用空格或逗号分隔，依次尝试。</label>
             <input v-model="proxyUrl" placeholder="https://news-proxy.你的子域.workers.dev（留空也能用）">
           </div>
+          <div class="form-row">
+            <label>行情加速地址（可选 · 上千人同时刷新也不卡）部署「边缘加速 Worker」后填入地址，行情/K线/板块/全A筛选的请求会先经过 Cloudflare 边缘节点缓存：同一个数据在 30~60 秒内只回源一次，回源次数只跟「请求种类」有关、跟「在线人数」无关。留空则完全走原来的直连线路，行为不变。</label>
+            <input v-model="accelBase" placeholder="https://stock-cache.你的子域.workers.dev（留空也能用）">
+          </div>
+          <div class="info-box">
+            <p><b>和「新闻代理地址」的区别：</b>新闻代理只处理新闻抓取；行情加速负责股票行情、K线、板块成分股、A股筛选这些高频请求。两者可以是<b>同一个 Worker 地址</b>（本仓库的 <code>cloudflare-worker/worker.js</code> 两条路由都支持），也可以完全不填——不填就是现在的行为。</p>
+          </div>
           <div class="info-box">
             <p><b>合规免费模式（推荐，开箱即用）：</b>「全球信息」的火热话题与格隆汇快讯由 GitHub Action 每 2 小时在服务端自动抓取并随站点发布（同源 GitHub Pages 直出，<b>不依赖任何代理</b>）。点「刷新热门话题」会重新拉取最新快照，最快 2 小时更新一次。</p>
             <p><b>想要浏览器端真·实时抓取？</b>部署一个 Cloudflare Worker 代理（免费 10 万次/天，代码在仓库 <code>worker/news-proxy.js</code>，详见导入页步骤）。填入地址后刷新即走实时链路。若 <code>*.workers.dev</code> 在国内被拦截，可在 Cloudflare 给 Worker 绑定自有域名；不配也完全可用（走上面的自动快照）。</p>
@@ -3474,9 +3481,9 @@
     </transition>
   </div>
 
-  <script src="js/auth.js?v=20260918l"></script>
-  <script src="js/auth-sync.js?v=20260918l"></script>
-  <script src="js/auth-boot.js?v=20260919x"></script>
+  <script src="js/auth.js?v=20260919z"></script>
+  <script src="js/auth-sync.js?v=20260919z"></script>
+  <script src="js/auth-boot.js?v=20260919z"></script>
   <!-- store / stock-api / hot-topics / app 由 auth-boot.js 在登录通过后动态装载，
        未登录时它们不会被下载，业务数据也不会进入内存 -->
 </body>

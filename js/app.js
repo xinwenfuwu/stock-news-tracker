@@ -6790,6 +6790,8 @@ const app = createApp({
     const showPrefs = ref(false);
     const settingsText = ref('');
     const proxyUrl = ref('');
+    // batch29：行情加速站点地址（可选，留空即完全走原直连线路）
+    const accelBase = ref('');
     const aiEndpoint = ref('');
     const aiKey = ref('');
     const aiModel = ref('');
@@ -6874,6 +6876,8 @@ const app = createApp({
       if (v) {
         settingsText.value = (D.settings.categories || []).join('\n');
         proxyUrl.value = D.settings.proxyUrl || '';
+        accelBase.value = (typeof StockAPI !== 'undefined' && StockAPI && StockAPI.getAccelBase)
+          ? StockAPI.getAccelBase() : '';
         aiEndpoint.value = D.settings.aiEndpoint || '';
         aiKey.value = D.settings.aiKey || '';
         aiModel.value = D.settings.aiModel || '';
@@ -6898,6 +6902,12 @@ const app = createApp({
       Store.setCategories(cats);
       // 保存代理地址（去除末尾斜杠）
       D.settings.proxyUrl = (proxyUrl.value || '').trim().replace(/\/+$/, '');
+      // 保存行情加速站点（可选；存独立本地键，不进 D.settings）
+      try {
+        if (typeof StockAPI !== 'undefined' && StockAPI && StockAPI.setAccelBase) {
+          StockAPI.setAccelBase((accelBase.value || '').trim().replace(/\/+$/, ''));
+        }
+      } catch (e) { console.warn('保存行情加速地址失败', e); }
       // 保存 AI 解读配置
       D.settings.aiEndpoint = (aiEndpoint.value || '').trim();
       D.settings.aiKey = (aiKey.value || '').trim();
@@ -7115,7 +7125,7 @@ const app = createApp({
       dataPaused, autoRefreshPaused, toggleDataPause,
       allCategories, fmt, fmtPct, fmtSigned, fmtDateCN, numClass, pctClass, parseStocks, stocksText, pureCode,
       fmtYi, sRatio,
-      showSettings, showPrefs, settingsText, proxyUrl, saveSettings, clearAllData, dataStats,
+      showSettings, showPrefs, settingsText, proxyUrl, accelBase, saveSettings, clearAllData, dataStats,
       aiEndpoint, aiKey, aiModel, aiConfigured, aiGenerating, callOpenAICompat, generateNewsInterpretation,
       AI_PRESETS, applyAiPreset, aiTesting, aiTestResult, aiTestConnection,
       exportData, importData,

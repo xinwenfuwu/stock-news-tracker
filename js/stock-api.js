@@ -592,7 +592,60 @@ function matchProduct(ql) {
   return null;
 }
 
+/** 行情类接口本地缓存 TTL（毫秒）—— 30 秒内同一请求直接复用，显著降低对外部接口的压力 */
+const API_TTL = {
+  QUOTE: 30 * 1000,        // 实时行情（腾讯 qt.gtimg.cn）
+  KLINE: 5 * 60 * 1000,    // 日K线（历史数据当天不变）
+  SECTOR: 60 * 1000,       // 板块列表/成分股/排行（分钟级够用）
+  NEWS: 60 * 1000          // 热点/快讯
+};
+
 const StockAPI = {
+
+  // ============ 缓存与请求合并（性能层，不改动任何接口语义） ============
+  //
+  // 目的：同一浏览器内，多个组件/多次刷新常在同一时刻请求同一份数据（例如行情表同时
+  // 拉 50 只股票、切页回来又拉一次）。这里统一做两件事：
+  //   1) 结果缓存 —— key 命中且未过期则直接返回，不再打外部接口；
+  //   2) 并发去重 —— 同一 key 的请求正在飞行中时，复用同一个 Promise，避免重复请求。
+  // 所有对外方法签名、返回结构完全不变，调用方无需任何改动。
+  _cache: new Map(),   // key -> { t, v }  已成功返回的结果
+  _pending: new Map(), // key -> Promise   飞行中的请求
+
+  /**
+   * 带缓存 + 并发去重的执行包装。
+   * @param {string} key 缓存键
+   * @param {number} ttl 过期时间（毫秒）
+   * @param {() => Promise<any>} loader 真正取数的函数
+   * @param {(v:any)=>boolean} [ok] 结果有效性判定，默认「非空即有效」；无效不写缓存
+   */
+  _withCache(key, ttl, loader, ok) {
+    const now = Date.now();
+    const hit = this._cache.get(key);
+    if (hit && now - hit.t < ttl) return Promise.resolve(hit.v);
+    const flying = this._pending.get(key);
+    if (flying) return flying;
+    const p = Promise.resolve()
+      .then(loader)
+      .then(v => {
+        const valid = ok ? !!ok(v) : (v != null);
+        if (valid) this._cache.set(key, { t: Date.now(), v: v });
+        this._pending.delete(key);
+        return v;
+      })
+      .catch(e => {
+        this._pending.delete(key);
+        throw e;
+      });
+    this._pending.set(key, p);
+    return p;
+  },
+
+  /** 清空缓存（仅供需要强制刷新的场景调用；正常调用方无需使用） */
+  clearCache(prefix) {
+    if (!prefix) { this._cache.clear(); this._pending.clear(); return; }
+    for (const k of Array.from(this._cache.keys())) if (k.indexOf(prefix) === 0) this._cache.delete(k);
+  },
 
   // ============ 代码解析 ============
 
@@ -713,8 +766,96 @@ const StockAPI = {
 
   // ============ 实时行情 ============
 
+  // ============ 边缘加速（batch29 第3项，可选） ============
+  // 只有在「设置」里填了加速站点地址时才会生效；没填时下面的 _accelBases() 返回空数组，
+  // 所有接口走的还是原来的直连路径，行为与启用前完全一致。
+  ACCEL_LS_KEY: 'snt.accel.base',
+
+  /** 取已配置的边缘加速站点列表（可能为空 → 未启用） */
+  _accelBases() {
+    const out = [];
+    const push = (s) => {
+      String(s || '').split(/[\s,;]+/).forEach(x => {
+        const b = x.trim().replace(/\/+$/, '');
+        if (b && out.indexOf(b) < 0) out.push(b);
+      });
+    };
+    try {
+      if (typeof localStorage !== 'undefined' && localStorage) push(localStorage.getItem(this.ACCEL_LS_KEY));
+    } catch (e) { /* 隐私模式：忽略 */ }
+    try {
+      if (typeof window !== 'undefined' && window.__SNT_ACCEL__) push(window.__SNT_ACCEL__);
+    } catch (e) { /* ignore */ }
+    return out;
+  },
+
+  /** 取当前加速站点地址（空字符串表示未启用） */
+  getAccelBase() {
+    try {
+      if (typeof localStorage !== 'undefined' && localStorage) return localStorage.getItem(this.ACCEL_LS_KEY) || '';
+    } catch (e) { /* ignore */ }
+    return '';
+  },
+
+  /** 设置/清除加速站点地址 */
+  setAccelBase(url) {
+    const v = String(url == null ? '' : url).trim().replace(/\/+$/, '');
+    try {
+      if (typeof localStorage !== 'undefined' && localStorage) {
+        if (v) localStorage.setItem(this.ACCEL_LS_KEY, v);
+        else localStorage.removeItem(this.ACCEL_LS_KEY);
+      }
+    } catch (e) { /* ignore */ }
+    return v;
+  },
+
   /**
-   * 批量获取实时行情（腾讯接口）
+   * 限时抓取字节（失败抛错，由调用方决定回退）。
+   * ⚠️ 这里刻意**不使用** cache:'no-store'：
+   *   加速站点返回的响应带 `Cache-Control: public, max-age=<ttl>`，与本地 cached TTL 同的长度。
+   *   用默认策略时，浏览器会在 max-age 内直接复用本地 HTTP 副本，**连 Worker 都不会请求** ——
+   *   这才是「省 Cloudflare 免费额度（10 万次/天）」的关键。若改成 no-store，
+   *   每次调用都会实打实算进 Worker 请求数，上万人刷新时很容易把额度打爆。
+   */
+  async _fetchBytes(url, timeoutMs) {
+    let timer = null;
+    let ctrl = null;
+    let opts = {};
+    // 有 AbortController 才用超时中断，没有就裸 fetch（老浏览器/受限环境也能跑）
+    if (typeof AbortController !== 'undefined') {
+      ctrl = new AbortController();
+      timer = setTimeout(() => { try { ctrl.abort(); } catch (e) {} }, timeoutMs || 8000);
+      opts.signal = ctrl.signal;
+    }
+    try {
+      const resp = await fetch(url, opts);
+      if (!resp || !resp.ok) throw new Error('HTTP ' + (resp && resp.status));
+      return await resp.arrayBuffer();
+    } finally {
+      if (timer) clearTimeout(timer);
+    }
+  },
+
+  /**
+   * 经边缘站点取 GBK 文本（腾讯行情回包是 GBK）。
+   * @returns {Promise<string|null>} 取到返回文本；任一站点失败返回 null
+   */
+  async _fetchQuoteTextViaAccel(pathSuffix) {
+    const bases = this._accelBases();
+    for (const base of bases) {
+      try {
+        const buf = await this._fetchBytes(base + pathSuffix, 6000);
+        const txt = new TextDecoder('gbk').decode(buf);
+        if (txt && txt.indexOf('v_') >= 0) return txt;
+      } catch (e) {
+        console.debug('[accel] 行情加速站点不可用，回退直连:', base, e && e.message);
+      }
+    }
+    return null;
+  },
+
+  /**
+   * 批量获取实时行情（腾讯接口 / 边缘加速站点）
    * @param {string[]} codes  ['sh600519','sz000001']
    * @returns {Object} { 'sh600519': { name, code, price, ... } }
    */
@@ -722,16 +863,28 @@ const StockAPI = {
     if (!codes || !codes.length) return {};
     const valid = codes.filter(c => c);
     if (!valid.length) return {};
-    const query = valid.join(',');
-    try {
-      const resp = await fetch(`https://qt.gtimg.cn/q=${query}`, { cache: 'no-store' });
-      const buffer = await resp.arrayBuffer();
-      const text = new TextDecoder('gbk').decode(buffer);
-      return this._parseQuotes(text);
-    } catch (e) {
-      console.error('获取行情失败', e);
-      return {};
-    }
+    // 排序 + 去重，让「同一批股票、不同书写顺序」共享同一份缓存
+    const uniq = Array.from(new Set(valid)).sort();
+    const query = uniq.join(',');
+    return this._withCache('q:' + query, API_TTL.QUOTE, async () => {
+      // 与原实现一致：任何网络/解析异常都吞掉并返回 {}，绝不向上抛出
+      try {
+        // ① 边缘加速（已配置时）——Cloudflare 边缘节点在 TTL 内直接应答，回源次数与在线人数解耦
+        const viaAccel = await this._fetchQuoteTextViaAccel('/q/' + query);
+        if (viaAccel) {
+          const parsed = this._parseQuotes(viaAccel);
+          if (parsed && Object.keys(parsed).length) return parsed;
+        }
+        // ② 直连（原路径）
+        const resp = await fetch(`https://qt.gtimg.cn/q=${query}`, { cache: 'no-store' });
+        const buffer = await resp.arrayBuffer();
+        const text = new TextDecoder('gbk').decode(buffer);
+        return this._parseQuotes(text) || {};
+      } catch (e) {
+        console.error('获取行情失败', e);
+        return {};
+      }
+    }, v => !!(v && Object.keys(v).length)); // 空对象不写缓存，避免把失败固化 30 秒
   },
 
   /** 获取单只股票行情 */
@@ -911,6 +1064,11 @@ const StockAPI = {
    * @returns {Array<{date,open,close,high,low,volume}>}
    */
   async getKline(code, startDate, endDate, count) {
+    const _ck = 'k:' + code + ':' + (startDate || '') + ':' + (endDate || '') + ':' + (count || '');
+    return this._withCache(_ck, API_TTL.KLINE, () => this._getKlineRaw(code, startDate, endDate, count), v => !!(v && v.length));
+  },
+
+  async _getKlineRaw(code, startDate, endDate, count) {
     // 1) 腾讯历史日K线（免费、CORS 开放、浏览器直连）
     try {
       const bars = await this._tencentKline(code, startDate, endDate, count);
@@ -1163,6 +1321,11 @@ const StockAPI = {
    * @returns {Promise<number>}
    */
   async getSectorStockCount(bk) {
+    const code = this._normalizeBoardCode(bk);
+    return this._withCache('sc:' + code, API_TTL.SECTOR, () => this._getSectorStockCountRaw(code), v => v != null);
+  },
+
+  async _getSectorStockCountRaw(bk) {
     try {
       const code = this._normalizeBoardCode(bk);
       // 指数板块：数据中心成分股数量（push2 fs=b:code 对指数返回 0）
@@ -1584,6 +1747,16 @@ const StockAPI = {
    * @returns {Promise<{yearStartPrice,price924,yearHighPrice,yearLowPrice,yearHighDate,yearLowDate}>} 取不到的项为 null
    */
   async getHistoryBundle(code) {
+    if (!code) return {
+      yearStartPrice: null, price924: null, yearHighPrice: null, yearLowPrice: null,
+      yearHighDate: null, yearLowDate: null, weekAgoClose: null, monthAgoClose: null
+    };
+    return this._withCache('hb:' + code + ':' + this._todayStr(), API_TTL.KLINE,
+      () => this._getHistoryBundleRaw(code),
+      v => !!(v && (v.yearStartPrice != null || v.price924 != null)));
+  },
+
+  async _getHistoryBundleRaw(code) {
     const out = {
       yearStartPrice: null, price924: null, yearHighPrice: null, yearLowPrice: null,
       yearHighDate: null, yearLowDate: null,
@@ -1716,10 +1889,42 @@ const StockAPI = {
    * 2) 失败则降级 JSONP —— 完全绕过 CORS。
    * @returns {object|null}
    */
+  /**
+   * 东财请求的可选边缘加速路径：经 `${base}/proxy?url=<原URL>` 取 JSON。
+   * 只有在设置了加速站点时才发起；未设置时立即返回 null，**完全不触碰原有链路**。
+   * @returns {Promise<object|null>} 拿到有效 JSON 返回它；任一环节失败返回 null（调用方继续走原逻辑）
+   */
+  async _eastGetViaAccel(url) {
+    const bases = this._accelBases();
+    if (!bases.length) return null;
+    for (const base of bases) {
+      try {
+        const buf = await this._fetchBytes(base + '/proxy?url=' + encodeURIComponent(url), 7000);
+        const txt = new TextDecoder('utf-8').decode(buf);
+        const j = JSON.parse(txt);
+        if (j && j.data != null) return j;
+      } catch (e) {
+        console.debug('[accel] 东财加速不可用，回退直连:', base, e && e.message);
+      }
+    }
+    return null;
+  },
+
   async _eastGet(url) {
     let u = null;
     try { u = new URL(url); } catch (e) { u = null; }
     const isKline = !!(u && u.pathname.indexOf('/kline/') >= 0);
+
+    // 0) 边缘加速（可选）：仅在设置了加速站点时启用。
+    //    这是「锦上添花」路径——失败、超时、未配置都不改变后续行为，一律回落到原来的多节点直连。
+    try {
+      const acc = await this._eastGetViaAccel(url);
+      if (acc) {
+        if (isKline) { if (acc.data.klines && acc.data.klines.length) return acc; }
+        else return acc;
+      }
+    } catch (e) { /* 加速链路异常：忽略，走原逻辑 */ }
+
     let hosts;
     if (u && u.hostname.indexOf('push2') === 0) {
       // K 线只有 push2his / push2delay 提供真实数据；push2 主节点对 kline 接口返回
@@ -1770,6 +1975,10 @@ const StockAPI = {
    * @returns {Array<{bk, name, change}>}
    */
   async getBoardRanking() {
+    return this._withCache('br:industry15', API_TTL.SECTOR, () => this._getBoardRankingRaw(), v => !!(v && v.length));
+  },
+
+  async _getBoardRankingRaw() {
     // 行业板块 fs=m:90+t:2  概念板块 fs=m:90+t:3
     const results = [];
     try {
@@ -1791,6 +2000,10 @@ const StockAPI = {
    * @returns {Array<{bk, name, change}>} change 为振幅(%)
    */
   async getAmplitudeBoards() {
+    return this._withCache('br:amp15', API_TTL.SECTOR, () => this._getAmplitudeBoardsRaw(), v => !!(v && v.length));
+  },
+
+  async _getAmplitudeBoardsRaw() {
     const results = [];
     try {
       // 概念板块 fs=m:90+t:3，按振幅(f7)降序取前 15
@@ -1813,6 +2026,10 @@ const StockAPI = {
    * @returns {Array<{bk, name, change}>}
    */
   async getPreMarketBoards() {
+    return this._withCache('br:premarket15', API_TTL.SECTOR, () => this._getPreMarketBoardsRaw(), v => !!(v && v.length));
+  },
+
+  async _getPreMarketBoardsRaw() {
     const results = [];
     try {
       // 概念板块 fs=m:90+t:3，按涨幅降序取前 15
@@ -1829,30 +2046,141 @@ const StockAPI = {
 
   /**
    * 获取全部 A 股列表（沪深主板 + 创业板 + 科创板），供「尾盘买入法 → 对 A 股全部股票筛选」使用。
-   * 数据源：东财行情 clist，板块筛选 fs=m:0+t:6,m:0+t:80,m:1+t:2,m:1+t:23（全 A），
-   * 分页拉取（单页 100，最多 60 页 ≈ 6000 只，覆盖当前全市场规模）。
+   * 数据源：东财行情 clist，板块筛选 fs=m:0+t:6,m:0+t:80,m:1+t:2,m:1+t:23（全 A）。
+   *
+   * 提速三件套（batch29）：
+   *   ① 名单静态化：优先读 GitHub Actions 生成的静态名单 data/stocks/all-a.json（一次 CDN 请求），
+   *      其次读本机 localStorage 上次成功拉取的名单（7 天内）。拿到名单即可算出精确页数，
+   *      不再「一页页试探到空页为止」。
+   *   ② 并发分页：批内 6 个并发、批间 40ms 微间隔，取代原来的「串行 + 每页死等 150ms」。
+   *   ③ 失败快速退出：连续两批全空（末页或网络异常）立即停止，避免 60 页空转。
+   * 任一步拿不到数据都会自动降级到「无名单 + 实时分页」，返回结构与旧实现完全一致。
+   *
    * @param {(done:number,total:number)=>void} [onProgress] 进度回调（已拉取只数 / 预估总数）
-   * @returns {Promise<Array<{name, code, price, changePercent, marketCap}>>}
+   * @returns {Promise<Array<{name, code, pureCode, price, changePercent, marketCap}>>}
    */
   async getAllAStocks(onProgress) {
-    const all = [];
-    const seen = new Set();
-    const pz = 100;
-    let total = null;
-    for (let pn = 1; pn <= 60; pn++) {
-      const url = `https://push2.eastmoney.com/api/qt/clist/get?pn=${pn}&pz=${pz}&po=1&np=1&fltt=2&invt=2&fid=f12`
-        + `&fs=m:0+t:6,m:0+t:80,m:1+t:2,m:1+t:23&fields=f2,f3,f12,f14,f20`;
-      let json = null;
-      try { json = await this._eastGet(url); } catch (e) { json = null; }
-      const diff = this._diffArray(json);
-      if (!diff.length) break;
-      if (total == null && json && json.data && json.data.total) total = json.data.total;
+    const _force = new URLSearchParams(location.search).get('allafilter') === '1';
+    if (_force) { this._cache.delete('allA'); this._pending.delete('allA'); }
+    return this._withCache('allA', API_TTL.SECTOR, () => this._getAllAStocksRaw(onProgress), v => !!(v && v.length));
+  },
+
+  /** 静态名单路径（由 scripts/fetch-all-a-stocks.mjs 生成后提交到仓库） */
+  ALL_A_JSON: 'data/stocks/all-a.json',
+  /** 本机名单缓存键；名单（代码+名称）变化极慢，缓存 7 天足够，避免每天重复 mode 探测 */
+  ALL_A_LS_KEY: 'snt.allA.names.v1',
+  ALL_A_LS_DAYS: 7,
+  /** 名单规模不可能低于此值，用于拒绝残缺/异常文件，防止误用空名单把拉取带偏 */
+  ALL_A_MIN_SIZE: 1000,
+
+  _lsGetItem(k) {
+    try { return (typeof localStorage !== 'undefined' && localStorage) ? localStorage.getItem(k) : null; }
+    catch (e) { return null; }
+  },
+  _lsSetItem(k, v) {
+    try { if (typeof localStorage !== 'undefined' && localStorage) localStorage.setItem(k, v); }
+    catch (e) { /* 隐私模式 / 配额已满：忽略，名单拿不到会自动走实时分页，不影响功能 */ }
+  },
+
+  /** 归一化一条名单记录 → {code, pureCode, name} */
+  _normANameItem(it) {
+    if (!it) return null;
+    const raw = String(it.pureCode || it.code || it.c || '').trim();
+    const pure = raw.replace(/^(sh|sz)/i, '');
+    if (!/^\d{6}$/.test(pure)) return null;
+    const prefix = /^(6|9|4|8)/.test(pure) ? 'sh' : 'sz';
+    return { code: prefix + pure, pureCode: pure, name: String(it.name || it.n || '') };
+  },
+
+  /** 读取静态名单 JSON；拿不到返回 null（文件未生成 / 404 / 内容残缺 / 网络异常） */
+  async _fetchAllAStatic() {
+    try {
+      const r = await fetch(this.ALL_A_JSON, { cache: 'no-store' });
+      if (!r || !r.ok) return null;
+      const j = await r.json();
+      const items = j && Array.isArray(j.items) ? j.items : null;
+      if (!items || items.length < this.ALL_A_MIN_SIZE) return null;
+      const out = [];
+      for (const it of items) { const n = this._normANameItem(it); if (n) out.push(n); }
+      return out.length >= this.ALL_A_MIN_SIZE ? out : null;
+    } catch (e) { return null; }
+  },
+
+  _loadAllANames() {
+    const raw = this._lsGetItem(this.ALL_A_LS_KEY);
+    if (!raw) return null;
+    try {
+      const o = JSON.parse(raw);
+      if (!o || !Array.isArray(o.list) || o.list.length < this.ALL_A_MIN_SIZE) return null;
+      if (Date.now() - (o.t || 0) > this.ALL_A_LS_DAYS * 86400000) return null;
+      const out = [];
+      for (const it of o.list) { const n = this._normANameItem(it); if (n) out.push(n); }
+      return out.length >= this.ALL_A_MIN_SIZE ? out : null;
+    } catch (e) { return null; }
+  },
+
+  _saveAllANames(list) {
+    if (!list || list.length < this.ALL_A_MIN_SIZE) return;
+    // 只存代码+名称，不含行情：行情必须实时，存下来会过期误导筛选
+    const slim = list.map(s => ({ code: s.code, pureCode: s.pureCode, name: s.name }))
+      .filter(s => s.pureCode && s.name);
+    if (slim.length < this.ALL_A_MIN_SIZE) return;
+    try { this._lsSetItem(this.ALL_A_LS_KEY, JSON.stringify({ t: Date.now(), n: slim.length, list: slim })); }
+    catch (e) { /* 序列化失败（超配额）时忽略 */ }
+  },
+
+  /** 名单来源优先级：静态 JSON（Actions 生成） > 本机缓存 > null */
+  async _getAllANames() {
+    const s = await this._fetchAllAStatic();
+    if (s) return s;
+    return this._loadAllANames();
+  },
+
+  _allAPageUrl(pn, pz) {
+    return `https://push2.eastmoney.com/api/qt/clist/get?pn=${pn}&pz=${pz}&po=1&np=1&fltt=2&invt=2&fid=f12`
+      + `&fs=m:0+t:6,m:0+t:80,m:1+t:2,m:1+t:23&fields=f2,f3,f12,f14,f20`;
+  },
+
+  /** 单页请求：带超时保护。_eastGet 内部失败会走 JSONP 兜底（默认 9s），
+   *  并发场景下若不加超时，一批失败要串行等到 9 秒才返回。 */
+  async _allAFetchPage(pn, pz, timeoutMs) {
+    let json = null;
+    try {
+      json = await Promise.race([
+        this._eastGet(this._allAPageUrl(pn, pz)),
+        new Promise(r => setTimeout(() => r(null), timeoutMs || 9000))
+      ]);
+    } catch (e) { json = null; }
+    return json || null;
+  },
+
+  /**
+   * 拉取全 A 实时行情行。
+   *
+   * 关键优化「pz 自适应」：先用超大 pz 请求第 1 页，用**实际返回条数**反推服务端真正的
+   * 每页上限，再据此计算总页数。这一步不额外花请求（第 1 页本来就要拉），却能：
+   *   · 服务端支持大页时 → 25+ 次请求骤降到 1~3 次；
+   *   · 服务端仍返回 100 条/页时 → 自动退回常规分页，行为与旧实现一致，无副作用。
+   *
+   * @returns {Promise<{rows:Array, total:(number|null)}>}
+   */
+  async _fetchAllALiveRows(onProgress, knownTotal) {
+    const CONC = 6;        // 批内并发数：够快又不至于触发东财限流
+    const GAP = 40;        // 批间微间隔(ms)
+    const MAX_PAGES = 80;  // 无名单时的最大探测页数（连续两批空会提前退出）
+    const PROBE_PZ = 6000; // 首页试探用的大 pz
+    const rowMap = new Map();
+    let total = knownTotal || null;
+    let emptyBatches = 0;
+
+    const ingest = (j) => {
+      const diff = this._diffArray(j);
+      if (total == null && j && j.data && j.data.total) total = j.data.total;
       for (const it of diff) {
         const pure = String(it.f12);
-        if (!pure || seen.has(pure)) continue;
-        seen.add(pure);
+        if (!pure) continue;
         const prefix = /^(6|9|4|8)/.test(pure) ? 'sh' : 'sz';
-        all.push({
+        rowMap.set(pure, {
           code: prefix + pure,
           pureCode: pure,
           name: it.f14 || '',
@@ -1861,10 +2189,80 @@ const StockAPI = {
           marketCap: it.f20 != null ? parseFloat(it.f20) : null
         });
       }
-      if (typeof onProgress === 'function') onProgress(all.length, total || all.length);
-      if (total != null && all.length >= total) break;
-      await new Promise(r => setTimeout(r, 150));
+      return diff.length;
+    };
+
+    // —— 第 1 页：大 pz 试探，拿服务端真实每页上限 ——
+    const first = await this._allAFetchPage(1, PROBE_PZ, 12000);
+    if (first) ingest(first);
+    let pz = rowMap.size;                                  // 服务端实际生效的每页条数
+    if (!Number.isFinite(pz) || pz < 20) pz = 100;          // 异常/过小 → 保守取 100
+    if (typeof onProgress === 'function') onProgress(rowMap.size, total || rowMap.size);
+    // 首页已取完（服务端支持超大页）或网络已失败
+    if (rowMap.size > 0 && total != null && rowMap.size >= total) {
+      return { rows: Array.from(rowMap.values()), total: total };
     }
+    if (!rowMap.size) emptyBatches = 1;
+
+    const pageCount = total != null ? Math.min(MAX_PAGES, Math.ceil(total / pz)) : MAX_PAGES;
+    for (let start = 2; start <= pageCount; start += CONC) {
+      const pages = [];
+      for (let k = start; k < Math.min(start + CONC, pageCount + 1); k++) pages.push(k);
+      // 用「首页实测到的 pz」而非试探值请求后续页：服务端按什么粒度分页就按什么粒度翻页，语义自洽
+      const res = await Promise.all(pages.map(p => this._allAFetchPage(p, pz, 9000)));
+      let got = 0;
+      for (const j of res) if (j) got += ingest(j);
+      if (typeof onProgress === 'function') onProgress(rowMap.size, total || rowMap.size);
+      if (total != null && rowMap.size >= total) break;
+      if (!got) {
+        emptyBatches++;
+        if (emptyBatches >= 2) break;   // 已到末页，或网络整体异常
+      } else emptyBatches = 0;
+      if (start + CONC <= pageCount) await new Promise(r => setTimeout(r, GAP));
+    }
+
+    // 完整性兜底：万一服务端接受了大 pz 却只部分返回（极罕见），会导致中间段漏拉。
+    // 这里用保守的 100/页补拉一遍，靠 rowMap 去重补齐，仅在确实缺失时才会真正执行。
+    if (total != null && rowMap.size < total && rowMap.size < total * 0.98) {
+      const missPageCount = Math.min(MAX_PAGES, Math.ceil(total / 100));
+      for (let start = 1; start <= missPageCount; start += CONC) {
+        const pages = [];
+        for (let k = start; k < Math.min(start + CONC, missPageCount + 1); k++) pages.push(k);
+        const res = await Promise.all(pages.map(p => this._allAFetchPage(p, 100, 9000)));
+        let got = 0;
+        for (const j of res) if (j) got += ingest(j);
+        if (typeof onProgress === 'function') onProgress(rowMap.size, total || rowMap.size);
+        if (rowMap.size >= total) break;
+        if (!got) break;
+        if (start + CONC <= missPageCount) await new Promise(r => setTimeout(r, GAP));
+      }
+    }
+    return { rows: Array.from(rowMap.values()), total: total };
+  },
+
+  async _getAllAStocksRaw(onProgress) {
+    // ① 名单（可有可无）：拿到就能算出精确页数，省掉多余的翻页探测
+    const names = await this._getAllANames();
+    const nameMap = names ? new Map(names.map(n => [n.pureCode, n])) : null;
+
+    // ② 实时行情：并发分页
+    const { rows } = await this._fetchAllALiveRows(onProgress, nameMap ? nameMap.size : null);
+
+    // ③ 组装：以实时接口为准（它才是当日真实可交易标的），名单仅用于补齐缺失名称
+    const all = [];
+    const seen = new Set();
+    for (const row of rows) {
+      if (!row || !row.pureCode || seen.has(row.pureCode)) continue;
+      seen.add(row.pureCode);
+      if (!row.name && nameMap) {
+        const n = nameMap.get(row.pureCode);
+        if (n && n.name) row.name = n.name;
+      }
+      all.push(row);
+    }
+
+    // ④ 回写本机名单缓存：下次进入即可「名单已知」，页数精确、少发请求
+    if (all.length >= this.ALL_A_MIN_SIZE) this._saveAllANames(all);
     return all;
   },
 
@@ -1873,6 +2271,10 @@ const StockAPI = {
    * @returns {Array<{name, code, change}>}
    */
   async getStockRanking() {
+    return this._withCache('rank:top15', API_TTL.QUOTE, () => this._getStockRankingRaw(), v => !!(v && v.length));
+  },
+
+  async _getStockRankingRaw() {
     const results = [];
     try {
       // 沪深A股，按涨幅降序
@@ -1899,6 +2301,10 @@ const StockAPI = {
    * @returns {Array<{name, code, pureCode, change, listingDate, listingDays}>}
    */
   async getNewListedStocks() {
+    return this._withCache('newlisted', API_TTL.KLINE, () => this._getNewListedStocksRaw(), v => !!(v && v.length));
+  },
+
+  async _getNewListedStocksRaw() {
     const results = [];
     try {
       const url = `https://push2.eastmoney.com/api/qt/clist/get?pn=1&pz=1000&po=1&np=1&fltt=2&invt=2&fid=f26&fs=m:0+f:8,m:1+f:8&fields=f3,f12,f13,f14,f26`;
@@ -2155,6 +2561,13 @@ const StockAPI = {
    * @returns {Promise<Array<{bk, name, type, change}>>} type: '概念'|'行业'
    */
   async getAllSectors(loadAll = false) {
+    // 复用既有 _sectorCache（2 小时，覆盖在 _getAllSectorsRaw 内），外层再加并发去重，
+    // 避免多个面板同时挂载时并发触发 3 组板块分页请求。
+    return this._withCache('sectors:all', 2 * 60 * 60 * 1000,
+      () => this._getAllSectorsRaw(loadAll), v => !!(v && v.length));
+  },
+
+  async _getAllSectorsRaw(loadAll = false) {
     const now = Date.now();
     const cacheTtl = 2 * 60 * 60 * 1000; // 2 小时
     if (this._sectorCache && this._sectorCache._full >= 1 && now - this._sectorCacheAt < cacheTtl) {
@@ -2274,6 +2687,11 @@ const StockAPI = {
    * @returns {Promise<Array<{code, name, price, changePercent}>>} code 为带前缀格式
    */
   async getSectorStocks(bk) {
+    const _bk = this._normalizeBoardCode(bk);
+    return this._withCache('ss:' + _bk, API_TTL.SECTOR, () => this._getSectorStocksRaw(_bk), v => !!(v && v.length));
+  },
+
+  async _getSectorStocksRaw(bk) {
     const code = this._normalizeBoardCode(bk);
     // 指数板块：数据中心成分股 + 批量行情补全名称/价格（push2 fs=b:code 对指数查不到成员）
     if (this._isIndexBoard(code)) {
@@ -2310,6 +2728,12 @@ const StockAPI = {
    * @returns {Promise<Array<{code,name,price,changePercent,marketCap}>>}
    */
   async getSectorStocksMeta(bk, maxPages = 15) {
+    const _bk = this._normalizeBoardCode(bk);
+    return this._withCache('ssm:' + _bk + ':' + maxPages, API_TTL.SECTOR,
+      () => this._getSectorStocksMetaRaw(_bk, maxPages), v => !!(v && v.length));
+  },
+
+  async _getSectorStocksMetaRaw(bk, maxPages = 15) {
     const code = this._normalizeBoardCode(bk);
     // 指数板块：复用指数成分股完整信息（含总市值），与 getSectorStocks 同源
     if (this._isIndexBoard(code)) {
@@ -2739,6 +3163,11 @@ const StockAPI = {
   async fetchHotTopics(proxyUrl) {
     const base = (proxyUrl || '').trim().replace(/\/+$/, '');
     if (!base) return { ok: false, error: '未配置新闻代理地址', sources: [], merged: [] };
+    return this._withCache('hot:' + base, API_TTL.NEWS,
+      () => this._fetchHotTopicsRaw(base), v => !!(v && v.ok !== false));
+  },
+
+  async _fetchHotTopicsRaw(base) {
     const srcList = (typeof HotTopics !== 'undefined' && HotTopics.SOURCE_ORDER) || [];
     const sources = srcList.map(s => ({ ...s, items: [], loading: true, error: null }));
     const today = this._todayStr();
