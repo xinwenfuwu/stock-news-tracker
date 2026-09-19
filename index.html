@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>股市信息分析系统</title>
-  <link rel="stylesheet" href="css/style.css?v=20260918l">
+  <link rel="stylesheet" href="css/style.css?v=20260919m">
   <!-- Vue 3 全局构建版（v3.4.21 · 自托管）
        原先走 unpkg.com CDN：国内网络对 unpkg 的连通性不稳定，一旦该请求长时间挂起，
        <head> 里的阻塞脚本会让整页停在白屏、后续 auth-boot.js 根本不会执行。
@@ -333,42 +333,42 @@
             <tbody>
               <tr v-for="item in sortedNews" :key="item.id"
                   :class="{ selected: selectedNewsIds.includes(item.id) }">
-                <td><input type="checkbox" :value="item.id" v-model="selectedNewsIds"></td>
-                <td class="col-owner">{{ item.owner || '—' }}</td>
-                <td>{{ item.date }}</td>
-                <td class="cell-news" :title="item.content">
+                <td data-label="选择"><input type="checkbox" :value="item.id" v-model="selectedNewsIds"></td>
+                <td class="col-owner" data-label="用户">{{ item.owner || '—' }}</td>
+                <td data-label="日期">{{ item.date }}</td>
+                <td class="cell-news" data-label="新闻" :title="item.content">
                   <div class="news-text">{{ item.content }}</div>
                 </td>
-                <td class="cell-ai">
+                <td class="cell-ai" data-label="新闻解读参考">
                   <div class="ai-text" :title="item.conceptCategory">{{ item.conceptCategory || '—' }}</div>
                 </td>
-                <td class="cell-ai">
+                <td class="cell-ai" data-label="利好利空">
                   <div class="ai-text" :title="item.industryCategory">{{ item.industryCategory || '—' }}</div>
                 </td>
-                <td class="cell-ai">
+                <td class="cell-ai" data-label="散户参考">
                   <div class="ai-text" :title="item.customTag">{{ item.customTag || '—' }}</div>
                 </td>
-                <td class="cell-stock">
+                <td class="cell-stock" data-label="股票名称">
                   <span class="stock-badge" v-for="(s, i) in parseStocks(item.relatedStocks)" :key="i"
                         @click="fillPriceForNews(item)" :title="'点击刷新该新闻股价'">
                     {{ s.name || pureCode(s.code) || '—' }}
                   </span>
                   <span v-if="!parseStocks(item.relatedStocks).length" class="muted">未关联</span>
                 </td>
-                <td :class="numClass(item.newsDayPrice)">{{ fmt(item.newsDayPrice) }}</td>
-                <td :class="numClass(item.price924)">{{ fmt(item.price924) }}</td>
-                <td :class="numClass(item.todayPrice)">{{ fmt(item.todayPrice) }}</td>
-                <td :class="pctClass(item.todayChange)">{{ fmtPct(item.todayChange) }}</td>
-                <td>{{ item.daysSince }}</td>
-                <td :class="pctClass(item.changeSinceNews)">{{ fmtPct(item.changeSinceNews) }}</td>
-                <td :class="pctClass(item.changeSince924)">{{ fmtPct(item.changeSince924) }}</td>
-                <td>
+                <td :class="numClass(item.newsDayPrice)" data-label="新闻当天股价">{{ fmt(item.newsDayPrice) }}</td>
+                <td :class="numClass(item.price924)" data-label="924股价">{{ fmt(item.price924) }}</td>
+                <td :class="numClass(item.todayPrice)" data-label="今日股价">{{ fmt(item.todayPrice) }}</td>
+                <td :class="pctClass(item.todayChange)" data-label="今日涨跌幅">{{ fmtPct(item.todayChange) }}</td>
+                <td data-label="距今(天)">{{ item.daysSince }}</td>
+                <td :class="pctClass(item.changeSinceNews)" data-label="距今幅度">{{ fmtPct(item.changeSinceNews) }}</td>
+                <td :class="pctClass(item.changeSince924)" data-label="924距今">{{ fmtPct(item.changeSince924) }}</td>
+                <td data-label="分类标签">
                   <select class="cell-select" v-model="item.category">
                     <option value="">—</option>
                     <option v-for="c in allCategories" :key="c" :value="c">{{ c }}</option>
                   </select>
                 </td>
-                <td class="col-actions">
+                <td class="col-actions" data-label="操作">
                   <button class="btn-icon-sm" @click="editNews(item)" title="编辑">✏️</button>
                   <button class="btn-icon-sm" @click="deleteNews(item.id)" title="删除">🗑</button>
                 </td>
@@ -487,7 +487,7 @@
             </thead>
             <tbody @click="onTableClick($event, 'hot', sortedHotStocks)" @change="onTableChange($event, 'hot')">
               <tr v-for="(s, idx) in sortedHotStocks" :key="s.code">
-                <td v-for="(col, ci) in getColumns('hot')" :key="ci"
+                <td v-for="(col, ci) in getColumns('hot')" :key="ci" :data-label="col.label"
                     :class="cellClass(col, s, idx, sortedHotStocks, 'hot')"
                     v-html="cellHtml(col, s, idx, sortedHotStocks, 'hot')"></td>
               </tr>
@@ -559,22 +559,22 @@
             </thead>
             <tbody>
               <tr v-for="h in sortedHoldings" :key="h.id">
-                <td class="cell-stock">
+                <td class="cell-stock" data-label="股票">
                   <div class="stock-name">{{ h.name || pureCode(h.code) || '—' }}</div>
                   <div class="stock-code muted small">{{ pureCode(h.code) }}</div>
                 </td>
-                <td>{{ h.entryDate }}</td>
-                <td :class="numClass(h.entryPrice)">{{ fmt(h.entryPrice) }}</td>
-                <td :class="numClass(h.currentPrice)">{{ fmt(h.currentPrice) }}</td>
-                <td class="num-col">{{ fmt(h.shares) }}</td>
-                <td class="num-col">{{ holdingDays(h) }}</td>
-                <td class="num-col" :class="pctClass(holdingChangePct(h))">{{ fmtPct(holdingChangePct(h)) }}</td>
-                <td class="num-col" :class="numClass(holdingMarketValue(h))">{{ fmt(holdingMarketValue(h)) }}</td>
-                <td class="num-col" :class="numClass(holdingProfit(h))">{{ fmtSigned(holdingProfit(h)) }}</td>
-                <td class="num-col" :class="pctClass(holdingProfitPct(h))">{{ fmtPct(holdingProfitPct(h)) }}</td>
-                <td><span class="hold-dir" :class="h.direction === 'short' ? 'is-short' : 'is-long'">{{ h.direction === 'short' ? '空' : '多' }}</span></td>
-                <td class="cell-note" :title="h.note">{{ h.note || '—' }}</td>
-                <td class="col-actions">
+                <td data-label="建仓日期">{{ h.entryDate }}</td>
+                <td data-label="建仓价" :class="numClass(h.entryPrice)">{{ fmt(h.entryPrice) }}</td>
+                <td data-label="现价" :class="numClass(h.currentPrice)">{{ fmt(h.currentPrice) }}</td>
+                <td class="num-col" data-label="数量(股)">{{ fmt(h.shares) }}</td>
+                <td class="num-col" data-label="天数">{{ holdingDays(h) }}</td>
+                <td class="num-col" data-label="持仓涨跌幅" :class="pctClass(holdingChangePct(h))">{{ fmtPct(holdingChangePct(h)) }}</td>
+                <td class="num-col" data-label="市值" :class="numClass(holdingMarketValue(h))">{{ fmt(holdingMarketValue(h)) }}</td>
+                <td class="num-col" data-label="盈亏(元)" :class="numClass(holdingProfit(h))">{{ fmtSigned(holdingProfit(h)) }}</td>
+                <td class="num-col" data-label="盈亏比例" :class="pctClass(holdingProfitPct(h))">{{ fmtPct(holdingProfitPct(h)) }}</td>
+                <td data-label="方向"><span class="hold-dir" :class="h.direction === 'short' ? 'is-short' : 'is-long'">{{ h.direction === 'short' ? '空' : '多' }}</span></td>
+                <td class="cell-note" data-label="备注" :title="h.note">{{ h.note || '—' }}</td>
+                <td class="col-actions" data-label="操作">
                   <button class="btn-icon-sm" @click="editHolding(h)" title="编辑">✏️</button>
                   <button class="btn-icon-sm" @click="deleteHoldingRow(h)" title="删除">🗑</button>
                 </td>
@@ -1961,7 +1961,7 @@
             </thead>
             <tbody @click="onTableClick($event, 'filter', sortedFilterStocks)" @change="onTableChange($event, 'filter')">
               <tr v-for="(s, idx) in sortedFilterStocks" :key="s.code">
-                <td v-for="(col, ci) in getColumns('filter')" :key="ci"
+                <td v-for="(col, ci) in getColumns('filter')" :key="ci" :data-label="col.label"
                     :class="cellClass(col, s, idx, sortedFilterStocks, 'filter')"
                     v-html="cellHtml(col, s, idx, sortedFilterStocks, 'filter')"></td>
               </tr>
@@ -2017,7 +2017,7 @@
               </thead>
               <tbody @click="onTableClick($event, 'fav', sortedFavorites)" @change="onTableChange($event, 'fav')">
                 <tr v-for="(f, idx) in sortedFavorites" :key="f.id">
-                  <td v-for="(col, ci) in getColumns('fav')" :key="ci"
+                  <td v-for="(col, ci) in getColumns('fav')" :key="ci" :data-label="col.label"
                       :class="cellClass(col, f, idx, sortedFavorites, 'fav')"
                       v-html="cellHtml(col, f, idx, sortedFavorites, 'fav')"></td>
                 </tr>
@@ -2205,7 +2205,7 @@
             </thead>
             <tbody @click="onTableClick($event, 'filter', sortedFilterStocks)" @change="onTableChange($event, 'filter')">
               <tr v-for="(s, idx) in sortedFilterStocks" :key="s.code">
-                <td v-for="(col, ci) in getColumns('filter')" :key="ci"
+                <td v-for="(col, ci) in getColumns('filter')" :key="ci" :data-label="col.label"
                     :class="cellClass(col, s, idx, sortedFilterStocks, 'filter')"
                     v-html="cellHtml(col, s, idx, sortedFilterStocks, 'filter')"></td>
               </tr>
@@ -2450,7 +2450,7 @@
               </thead>
               <tbody @click="onTableClick($event, 'pool', sortedPoolDetailStocks)" @change="onTableChange($event, 'pool')">
                 <tr v-for="(s, idx) in sortedPoolDetailStocks" :key="s.code">
-                  <td v-for="(col, ci) in getColumns('pool')" :key="ci"
+                  <td v-for="(col, ci) in getColumns('pool')" :key="ci" :data-label="col.label"
                       :class="cellClass(col, s, idx, sortedPoolDetailStocks, 'pool')"
                       v-html="cellHtml(col, s, idx, sortedPoolDetailStocks, 'pool')"></td>
                 </tr>
@@ -2635,7 +2635,7 @@
               </thead>
               <tbody @click="onTableClick($event, 'sector', sortedSectorDetailStocks)" @change="onTableChange($event, 'sector')">
                 <tr v-for="(s, idx) in sortedSectorDetailStocks" :key="s.code">
-                  <td v-for="(col, ci) in getColumns('sector')" :key="ci"
+                  <td v-for="(col, ci) in getColumns('sector')" :key="ci" :data-label="col.label"
                       :class="cellClass(col, s, idx, sortedSectorDetailStocks, 'sector')"
                       v-html="cellHtml(col, s, idx, sortedSectorDetailStocks, 'sector')"></td>
                 </tr>
@@ -3054,26 +3054,26 @@
             <tbody>
               <template v-for="u in userList" :key="u.username">
                 <tr :class="{ 'um-row-pending': u.status === 'pending', 'um-row-off': u.disabled }">
-                  <td>
+                  <td data-label="用户名">
                     <span class="um-name">{{ u.username }}</span>
                     <span class="um-self" v-if="authUser && u.username === authUser.username">当前登录</span>
                   </td>
-                  <td>
+                  <td data-label="角色">
                     <select class="um-input" :value="u.role" @change="changeUserRole(u, $event.target.value)">
                       <option value="user">普通用户</option>
                       <option value="admin">管理员</option>
                     </select>
                   </td>
-                  <td>
+                  <td data-label="状态">
                     <span class="um-badge" :class="badgeClass(u)">{{ u.statusName }}</span>
                   </td>
-                  <td class="um-membership">
+                  <td class="um-membership" data-label="注册日期">
                     <template v-if="u.role === 'user'">
                       <input type="date" class="um-input um-date" :value="u.registerDate" @change="setUserRegisterDate(u, $event.target.value)" title="会员注册日期">
                     </template>
                     <template v-else>—</template>
                   </td>
-                  <td class="um-membership">
+                  <td class="um-membership" data-label="额度(月)">
                     <template v-if="u.role === 'user'">
                       <div class="um-quota">
                         <input type="number" min="0" step="1" class="um-input um-num" :value="u.quotaMonths" @change="setUserQuota(u, $event.target.value)" title="会员额度（月），0 或留空为长期">
@@ -3082,13 +3082,13 @@
                     </template>
                     <template v-else>—</template>
                   </td>
-                  <td class="um-membership">
+                  <td class="um-membership" data-label="停用日期">
                     <span :class="['um-disable-date', { 'is-expired': u.role === 'user' && u.disableDate && isExpiredDate(u.disableDate) }]">
                       {{ u.disableDate || (u.role === 'user' ? '长期' : '—') }}
                     </span>
                     <span v-if="u.autoDisabled" class="um-auto-tag" title="会员到期后由系统自动停用">已到期停用</span>
                   </td>
-                  <td>
+                  <td data-label="密码">
                     <div class="um-pw">
                       <!-- batch15：管理员自己这行（以及任何「改造前创建 / 账号表导入」、没有保存明文的账号）
                            也要有「显示」按钮——点了会说明原因并直接打开重置面板，而不是什么都不给点。 -->
@@ -3101,7 +3101,7 @@
                     </div>
                     <div class="um-pw-note" v-if="!u.hasPassword">未保存明文，点「显示」去重置</div>
                   </td>
-                  <td class="um-trial-cell">
+                  <td class="um-trial-cell" data-label="试用">
                     <template v-if="u.role === 'user'">
                       <!-- 三层试用：点一下即开通，期间该用户（哪怕还在待审核）可以用自己的密码登录 -->
                       <div class="um-trial-btns">
@@ -3123,18 +3123,18 @@
                     </template>
                     <span v-else class="muted">—</span>
                   </td>
-                  <td class="muted">
+                  <td class="muted" data-label="最近登录">
                     <div v-if="u.lastLoginAt">{{ fmtDateTime(u.lastLoginAt) }}</div>
                     <div v-else>从未登录</div>
                     <button class="btn-mini" v-if="u.loginCount" @click="toggleLoginLog(u)">
                       {{ expandedUser === u.username ? '收起记录' : '登录记录 ' + u.loginCount }}
                     </button>
                   </td>
-                  <td class="muted">
+                  <td class="muted" data-label="使用时长">
                     <div class="um-usage">{{ fmtDuration(u.usageSec) }}</div>
                     <div class="um-usage-sub" v-if="u.lastSessionSec">本次 {{ fmtDuration(u.lastSessionSec) }}</div>
                   </td>
-                  <td>
+                  <td data-label="操作">
                     <div class="um-actions">
                       <button class="btn btn-sm btn-primary" v-if="u.status === 'pending'" @click="approveUserByAdmin(u)">通过</button>
                       <button class="btn btn-sm btn-danger" v-if="u.status === 'pending'" @click="rejectUserByAdmin(u)">驳回</button>
@@ -3184,11 +3184,11 @@
                       </thead>
                       <tbody>
                         <tr v-for="l in u.logins" :key="l.at">
-                          <td>{{ fmtDateTime(l.at) }}</td>
-                          <td><code>{{ l.ip || '未获取到' }}</code></td>
-                          <td>{{ l.loc || '—' }}</td>
-                          <td>{{ l.ua || '—' }}</td>
-                          <td>{{ fmtDuration(l.sec) }}</td>
+                          <td data-label="登录时间">{{ fmtDateTime(l.at) }}</td>
+                          <td data-label="登录 IP"><code>{{ l.ip || '未获取到' }}</code></td>
+                          <td data-label="归属地">{{ l.loc || '—' }}</td>
+                          <td data-label="设备">{{ l.ua || '—' }}</td>
+                          <td data-label="本次在线">{{ fmtDuration(l.sec) }}</td>
                         </tr>
                       </tbody>
                     </table>

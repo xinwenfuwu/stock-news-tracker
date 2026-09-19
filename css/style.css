@@ -2148,6 +2148,7 @@ body.guest-mode #app { display: none; }
 .auth-guide-btn:hover { background: var(--primary-hover); }
 .auth-guide-btn.auth-guide-btn-ghost { color: var(--primary); background: #fff; }
 .auth-guide-btn.auth-guide-btn-ghost:hover { color: #fff; background: var(--primary); }
+.auth-alert-box {
   display: flex; flex-direction: column; gap: 4px;
   margin: 10px 0 2px; padding: 10px 12px;
   font-size: 12px; line-height: 1.7; color: #92400e;
@@ -2790,3 +2791,115 @@ body.guest-mode #app { display: none; }
 .ai-test-result { flex: 1 1 320px; font-size: 12.5px; line-height: 1.55; color: var(--text-secondary); white-space: pre-wrap; word-break: break-word; }
 .ai-test-result.is-ok { color: #16a34a; font-weight: 600; }
 .ai-test-result.is-fail { color: var(--danger); }
+
+/* ============================================================
+   移动端适配（≤768px）：表格转卡片 + 底部固定 Tab 导航 + 全屏弹窗
+   纯展示层，不影响任何 Vue 逻辑 / 排序 / 云端同步 / 免准入码登录。
+   ============================================================ */
+@media (max-width: 768px) {
+  /* ---- 顶部导航 -> 底部固定 Tab 栏 ---- */
+  .header-inner { flex-wrap: wrap; gap: 8px; padding: 0 12px; }
+  .brand-title { display: none; }
+  .brand { flex: 0 0 auto; }
+  .main-nav {
+    position: fixed; left: 0; right: 0; bottom: 0; bottom: env(safe-area-inset-bottom);
+    order: unset; width: 100%; z-index: 200;
+    display: flex; gap: 2px; justify-content: space-around;
+    background: #1e293b; padding: 6px 4px calc(6px + env(safe-area-inset-bottom));
+    box-shadow: 0 -2px 10px rgba(0,0,0,.18); overflow-x: auto;
+  }
+  .nav-item {
+    flex: 1 1 0; min-width: 56px; flex-direction: column; gap: 2px;
+    justify-content: center; align-items: center; padding: 6px 2px;
+    font-size: 11px; border-radius: 8px; white-space: nowrap;
+  }
+  .nav-item .nav-icon { font-size: 18px; }
+  .header-actions { order: 2; width: 100%; justify-content: flex-end; flex-wrap: wrap; gap: 6px; }
+  .app-main { padding: 12px 10px 92px; max-width: 100%; }
+
+  /* ---- 工具条 / 表单 纵向铺满 ---- */
+  .page-toolbar { flex-direction: column; align-items: stretch; gap: 10px; }
+  .toolbar-left, .toolbar-right { width: 100%; flex-wrap: wrap; gap: 8px; }
+  .toolbar-left > *, .toolbar-right > * { margin: 0; }
+  .date-picker { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+  .search-input, .web-search-input, .select, .cell-input, .date-picker input[type=date] { width: 100%; min-width: 0; box-sizing: border-box; }
+  .web-search { display: flex; flex-direction: column; gap: 6px; width: 100%; }
+  .btn { min-height: 38px; }
+  .btn-icon { width: 38px; height: 38px; }
+
+  /* ---- 表格转卡片 ---- */
+  .table-wrap { overflow-x: visible; }
+  .data-table, .semantic-table { width: 100%; border: none; }
+  .data-table thead, .semantic-table thead { display: none; }
+  .data-table tbody, .semantic-table tbody { display: block; }
+  .data-table tr, .semantic-table tr {
+    display: block; background: #fff; border: 1px solid #e5e7eb;
+    border-radius: 12px; margin-bottom: 12px; padding: 4px 10px;
+    box-shadow: 0 1px 3px rgba(15,23,42,.06);
+  }
+  .data-table td, .semantic-table td {
+    display: flex; justify-content: space-between; align-items: flex-start; gap: 12px;
+    padding: 8px 2px; border: none; border-bottom: 1px solid #f1f5f9;
+    text-align: right; white-space: normal; word-break: break-word;
+    overflow: visible; text-overflow: clip;
+  }
+  .data-table td:last-child, .semantic-table td:last-child { border-bottom: none; }
+  .data-table td::before, .semantic-table td::before {
+    content: attr(data-label); flex: 0 0 auto; max-width: 42%;
+    font-weight: 600; color: #475569; text-align: left; white-space: normal;
+  }
+  /* 取消列固定（移动端卡片无意义） */
+  .data-table th[class*="col-sticky"], .data-table td[class*="col-sticky"] { position: static; }
+  /* 解除固定布局表格的裁剪，确保内容完整显示 */
+  .filter-scroll .pool-detail-table, .sector-detail-modal .pool-detail-table,
+  .pool-detail-modal .pool-detail-table, .fav-panel .pool-detail-table,
+  .hot-stock-table { table-layout: auto; }
+  .filter-scroll .pool-detail-table td, .sector-detail-modal .pool-detail-table td,
+  .pool-detail-modal .pool-detail-table td, .fav-panel .pool-detail-table td,
+  .hot-stock-table td { overflow: visible; text-overflow: clip; white-space: normal; }
+
+  /* 选择列 / 操作列：整行按钮区，不显示标签 */
+  .data-table td[data-label="选择"], .data-table td[data-label="操作"] { justify-content: flex-start; flex-wrap: wrap; gap: 8px; }
+  .data-table td[data-label="选择"]::before, .data-table td[data-label="操作"]::before { display: none; }
+
+  /* 语义表（全球信息）用列序补标签 */
+  .semantic-table:not(.reverse) tbody td:nth-child(1)::before { content: "排名"; }
+  .semantic-table:not(.reverse) tbody td:nth-child(2)::before { content: "代码"; }
+  .semantic-table:not(.reverse) tbody td:nth-child(3)::before { content: "名称"; }
+  .semantic-table:not(.reverse) tbody td:nth-child(4)::before { content: "现价"; }
+  .semantic-table:not(.reverse) tbody td:nth-child(5)::before { content: "涨跌幅"; }
+  .semantic-table:not(.reverse) tbody td:nth-child(6)::before { content: "总市值(亿)"; }
+  .semantic-table:not(.reverse) tbody td:nth-child(7)::before { content: "相关度(营收占比)"; }
+  .semantic-table:not(.reverse) tbody td:nth-child(8)::before { content: "命中主营业务(占营收)"; }
+  .semantic-table:not(.reverse) tbody td:nth-child(9)::before { content: "操作"; }
+  .semantic-table.reverse tbody td:nth-child(1)::before { content: "排名"; }
+  .semantic-table.reverse tbody td:nth-child(2)::before { content: "股票名称"; }
+  .semantic-table.reverse tbody td:nth-child(3)::before { content: "代码"; }
+  .semantic-table.reverse tbody td:nth-child(4)::before { content: "所属行业"; }
+  .semantic-table.reverse tbody td:nth-child(5)::before { content: "业务名称"; }
+  .semantic-table.reverse tbody td:nth-child(6)::before { content: "营收占比"; }
+  .semantic-table.reverse tbody td:nth-child(7)::before { content: "相关度/联动"; }
+  .semantic-table.reverse tbody td:nth-child(8)::before { content: "热度(股票数)"; }
+  .semantic-table.reverse tbody td:nth-child(9)::before { content: "对应板块"; }
+
+  /* 持仓汇总卡 2 列 */
+  .hold-summary { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
+  .hold-card { margin: 0; }
+
+  /* ---- 弹窗全屏 ---- */
+  .modal-overlay { padding: 0; align-items: stretch; z-index: 1000; }
+  .modal { width: 100%; max-width: 100%; height: 100%; max-height: 100%; margin: 0; border-radius: 0; display: flex; flex-direction: column; }
+  .modal-header { position: sticky; top: 0; z-index: 2; }
+  .modal-body { overflow-y: auto; flex: 1; -webkit-overflow-scrolling: touch; }
+  .modal-footer { flex-wrap: wrap; }
+
+  .news-text, .ai-text { white-space: pre-wrap; word-break: break-word; }
+  .page-footer { text-align: center; }
+}
+
+/* 极窄屏（≤420px）微调 */
+@media (max-width: 420px) {
+  .nav-item { font-size: 10px; min-width: 48px; }
+  .data-table td { font-size: 13px; }
+  .data-table td::before { max-width: 46%; font-size: 12px; }
+}
