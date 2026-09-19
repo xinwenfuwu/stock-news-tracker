@@ -5926,17 +5926,24 @@ const app = createApp({
 
     async function runTailBuyFilter() {
       if (tailBuyLoading.value) return;
-      // 筛选范围 = 下方「板块成分股」里的股票（hotFilterStocks）。
-      // 说明：不从全 A 股拉取——全市场数据量太大、耗时太长；先在页面上把要看的股票
-      // 载入「筛选板块」，再对它做尾盘买入法筛选，速度快、范围可控。
-      const rawPool = (hotFilterStocks.value || []).slice();
+      // 筛选范围 = 下方「板块成分股」成分表**当前实际显示的**股票。
+      // batch27 修复：原来直接读 hotFilterStocks，只覆盖「热门板块 / 全A筛选」这一条载入路径；
+      // 当用户通过尾盘面板的「筛选板块」下拉选了「我的概念选股板块」（poolId = 's-<id>'）时，
+      // 成分表能显示（filterPoolStocks 的 's-<id>' 分支），但 hotFilterStocks 仍为空 →
+      // 误报「暂无股票」。现改为统一取 filterPoolStocks（已支持 hot / s-<id> / p-<id> 三种来源），
+      // 与成分表所见完全一致。
+      const rawPool = (filterPoolStocks.value || []).slice();
+      // 兜底：若 poolId 未设置但 hotFilterStocks 有数据（历史路径），仍按热门明细筛选
+      if (!rawPool.length && (hotFilterStocks.value || []).length) {
+        rawPool.push(...hotFilterStocks.value);
+      }
       // 筛选前先剔除退市股票（名称含「退」或已无有效行情），避免退市股进入候选
       const pool = rawPool.filter(s => !isDelistedStock(s));
       const delistedCnt = rawPool.length - pool.length;
       clearTailBuyHits();
       if (!rawPool.length) {
         tailBuyList.value = []; tailBuyTotal.value = 0; tailBuyNote.value = '';
-        showToast('「板块成分股」暂无股票：请先在上方点板块 / 个股载入成分股，或点「加载当日数据」，再开始筛选', 'error');
+        showToast('「板块成分股」暂无股票：请先用上方「筛选板块」下拉选择板块（或在热门板块页点板块 / 个股载入成分股），再开始筛选', 'error');
         return;
       }
       if (!pool.length) {
@@ -6090,16 +6097,12 @@ const app = createApp({
     }
     // ===== batch26：尾盘买入法面板内的「筛选板块」下拉 =====
     // 需求：把原「🌐 对A股全部股票筛选」按钮改为下拉菜单；下拉列出「我的概念选股板块」的各板块，
-    // 选中后该板块成分股直接展示在下方成分表（sortedFilterStocks）中；另保留「A股全部股票」项，
-    // 选中它即弹出剔除规则弹窗，走全市场筛选（原按钮行为）。
+    // 选中后该板块成分股直接展示在下方成分表（sortedFilterStocks）中。
+    // batch27：按用户要求去除「全市场」项，下拉只剩「我的概念选股板块」。
+    // （askAllAFilter / confirmAllAFilter 保留为内部能力，当前无 UI 入口调用。）
     const tailPoolPick = ref('');
     function onTailPoolChange() {
       const v = tailPoolPick.value;
-      if (v === '__allA__') {
-        // 全市场筛选：弹窗勾选剔除规则（原「对A股全部股票筛选」按钮行为）
-        askAllAFilter();
-        return;
-      }
       if (!v) {
         // 取消选择：清空成分表
         filterPanel.poolId = '';

@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>股市信息分析系统</title>
-  <link rel="stylesheet" href="css/style.css?v=20260919v">
+  <link rel="stylesheet" href="css/style.css?v=20260919w">
   <!-- Vue 3 全局构建版（v3.4.21 · 自托管）
        原先走 unpkg.com CDN：国内网络对 unpkg 的连通性不稳定，一旦该请求长时间挂起，
        <head> 里的阻塞脚本会让整页停在白屏、后续 auth-boot.js 根本不会执行。
@@ -1891,15 +1891,12 @@
             <div class="hot-panel tail-buy-panel">
               <div class="panel-title-row">
                 <h3 class="panel-title" style="margin:0">📌 尾盘买入法</h3>
-                <!-- batch26：原「🌐 对A股全部股票筛选」按钮 → 改为「筛选板块」下拉（列我的概念选股板块 + 全A） -->
+                <!-- batch27：去除「全市场」项，仅保留「我的概念选股板块」 -->
                 <div class="filter-field tb-pool-pick">
                   <label>筛选板块</label>
                   <select v-model="tailPoolPick" @change="onTailPoolChange" :disabled="tailBuyLoading || allAFilter.loading"
-                          title="选择要展示成分股的板块：选「我的概念选股板块」的某个板块 → 其成分股显示在下方成分表中；选「A股全部股票」则弹窗勾选剔除规则后全市场筛选">
+                          title="选择要展示成分股的板块：选「我的概念选股板块」的某个板块 → 其成分股显示在下方成分表中，再点「🔄 刷新筛选」按 8 项条件筛选">
                     <option value="">— 请选择板块 —</option>
-                    <optgroup label="🌐 全市场">
-                      <option value="__allA__">A股全部股票（全市场筛选）</option>
-                    </optgroup>
                     <optgroup label="🧭 我的概念选股板块">
                       <option v-for="sp in sortedSectorPools" :key="'tb-s-'+sp.id" :value="'s-'+sp.id">{{ sp.name }}（{{ (sp.stocks || []).length }}）</option>
                     </optgroup>
@@ -3479,7 +3476,7 @@
 
   <script src="js/auth.js?v=20260918l"></script>
   <script src="js/auth-sync.js?v=20260918l"></script>
-  <script src="js/auth-boot.js?v=20260919v"></script>
+  <script src="js/auth-boot.js?v=20260919w"></script>
   <!-- store / stock-api / hot-topics / app 由 auth-boot.js 在登录通过后动态装载，
        未登录时它们不会被下载，业务数据也不会进入内存 -->
 </body>
