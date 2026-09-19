@@ -1898,6 +1898,143 @@ const StockAPI = {
     return valid.slice(0, 50);
   },
 
+  // ============ 同类股票（同主营业务/产品的 A 股公司） ============
+  /**
+   * 找出 A 股中与「种子股票」主营业务/产品相同的同类公司。
+   *
+   * 口径与「AI 语义搜索」的营收占比相关度完全一致：
+   *   1) 先拉取种子股票（如 sh600519）的主营构成（东财 F10 按产品/按行业）；
+   *   2) 取其主营段名作为「产品核心词」匹配词（剔除运营/通用词）；
+   *   3) 扫描候选池（种子股票所属行业/概念板块成分股 + 全市场名称命中），逐只拉主营构成；
+   *   4) 段名命中核心词的营收占比之和（min(ratio,1) 累加、封顶 100%）即为「相关度」，
+   *      同时给出「命中主营业务占比之和」用于排序；
+   *   5) 过滤：相关度 < minRatio 阈值的剔除；结果按主营业务占比降序；
+   *   6) 行情（现价/涨跌幅/总市值）来自腾讯免费接口。
+   *
+   * @param {object} opts
+   * @param {string} opts.code        种子股票代码（600519 / sh600519 均可）
+   * @param {number} [opts.minRatio]  主营占比阈值(%)，低于该值的公司不纳入结果，默认 0
+   * @param {string} [opts.sort]      'ratio'（按主营业务占比降序，默认）
+   * @param {number} [opts.limit]     候选池上限（控制请求量），默认 200
+   * @returns {Promise<object>} { ok, seed:{code,name}, segments:[{name,ratio}], stocks:[...] }
+   */
+  async getSimilarByBusiness({ code, minRatio = 0, sort = 'ratio', limit = 200 } = {}) {
+    const empty = { ok: false, error: '请输入有效的股票代码/名称', seed: null, segments: [], stocks: [] };
+    const parsed = this.parseStockInput ? this.parseStockInput(String(code || '')) : [];
+    const seedPure = (parsed && parsed.length && parsed[0].code) ? parsed[0].code : '';
+    const full = seedPure || (this.inferPrefix ? this.inferPrefix(String(code || '')) : String(code || ''));
+    if (!full || !/^(sh|sz|bj)\d{4,8}$/i.test(full)) return empty;
+    try {
+      // 1) 种子股票主营构成
+      const seedBiz = await this.getMainBusiness(full);
+      if (!seedBiz || !seedBiz.length) {
+        return { ok: false, error: `未获取到 ${full.toUpperCase()} 的主营构成（可能刚上市/停牌/数据缺失）`, seed: null, segments: [], stocks: [] };
+      }
+      // 主营段名 → 核心匹配词（剔除运营商标志词之外的通用噪音：仅保留中文≥2 的有效产品短语）
+      const coreArr = [...new Set(
+        seedBiz.map(s => String(s.name || '').trim().toLowerCase())
+          .map(n => n.replace(/[（(].*?[)）]/g, '').trim())
+          .filter(n => n.length >= 2)
+      )];
+      if (!coreArr.length) {
+        return { ok: false, error: '该股票主营构成无有效产品名，无法匹配同类公司', seed: null, segments: [], stocks: [] };
+      }
+
+      // 2) 候选池：种子所属行业/概念板块成分股；再叠加全市场名称含关键词的兜底
+      const candidate = new Map();
+      const seedInfo = { code: full, name: '' };
+      try {
+        const qt = await this.getQuote(full);
+        if (qt && qt.name) seedInfo.name = qt.name;
+      } catch (e) { /* 忽略 */ }
+
+      // 2a) 用主营段名反查板块（东财搜索建议），取成分股作为候选
+      const boards = [];
+      for (const seg of coreArr.slice(0, 8)) {
+        try {
+          const bs = await this.resolveBoardViaSuggest(seg);
+          if (bs && bs.length) bs.slice(0, 2).forEach(b => boards.push({ bk: b.bk || b.code, name: b.name }));
+        } catch (e) { /* 忽略 */ }
+        if (boards.length >= 12) break;
+      }
+      // 2b) 行业板块（东财行业归类）也纳入，提升召回
+      try {
+        const indName = await this.getIndustry(full);   // 返回行业名字符串
+        if (indName) {
+          const ibs = await this.resolveBoardViaSuggest(indName);
+          if (ibs && ibs.length) ibs.slice(0, 2).forEach(b => boards.push({ bk: b.bk || b.code, name: b.name }));
+        }
+      } catch (e) { /* 忽略 */ }
+
+      const uniqBoards = [...new Map(boards.map(b => [b.bk, b])).values()];
+      for (const b of uniqBoards) {
+        try {
+          const list = await this.getSectorStocksMeta(b.bk, 6);
+          for (const s of list) if (!candidate.has(s.code)) candidate.set(s.code, s);
+        } catch (e) { /* 忽略 */ }
+        if (candidate.size >= limit) break;
+      }
+      // 2c) 兜底：全量板块名含主营词的成分股（召回有限但能补足）
+      if (candidate.size < 40) {
+        try {
+          const all = await this.getAllSectors();
+          const extra = all.filter(x => coreArr.some(k => x.name.toLowerCase().includes(k))).slice(0, 6);
+          for (const b of extra) {
+            try {
+              const list = await this.getSectorStocksMeta(b.bk, 4);
+              for (const s of list) if (!candidate.has(s.code)) candidate.set(s.code, s);
+            } catch (e) { /* 忽略 */ }
+          }
+        } catch (e) { /* 忽略 */ }
+      }
+      // 种子本身也纳入（便于展示基准）
+      candidate.set(full, { code: full, name: seedInfo.name || full });
+
+      let codes = [...candidate.keys()].slice(0, limit);
+
+      // 3) 逐只拉主营构成，按收入占比相关度打分
+      const scored = await mapLimit(codes, 6, async (c) => {
+        const info = candidate.get(c) || { code: c, name: c };
+        let mb = null;
+        try { mb = await this.getMainBusiness(c); } catch (e) { mb = null; }
+        if (!mb || !mb.length) return null;
+        // 与语义搜索同口径：段名必含核心词，命中段营收占比之和 = 相关度
+        const { relevance, matched } = revenueRelevance(mb, coreArr, []);
+        if (!matched.length) return null;
+        return { info, relevance, matched };
+      });
+
+      // 4) 过滤阈值 + 归一
+      const threshold = Number(minRatio) || 0;
+      const passed = (scored || []).filter(x => x && x.relevance > 0 && x.relevance >= threshold);
+      const codes2 = passed.map(x => x.info.code);
+      let quotes = {};
+      try { quotes = await this.getQuotes(codes2); } catch (e) { quotes = {}; }
+      let stocks = passed.map(x => {
+        const q = quotes[x.info.code] || {};
+        const mkt = q.totalMarketCap != null ? q.totalMarketCap : (x.info.marketCap || null);
+        return {
+          code: x.info.code,
+          name: q.name || x.info.name || x.info.code,
+          price: q.price != null ? q.price : null,
+          changePercent: q.changePercent != null ? q.changePercent : null,
+          marketCap: mkt,
+          relevance: x.relevance,                       // 相关度（命中主营占比之和 %，与 AI 语义同口径）
+          bizRatio: x.relevance,                        // 主营业务占比排序值
+          matchedSegments: x.matched || [],
+          hitBusiness: (x.matched || []).map(m => m.name + ' ' + m.ratio + '%').join(' · ')
+        };
+      });
+      // 排序：默认按主营业务占比降序
+      if (sort === 'ratio') stocks.sort((a, b) => (b.bizRatio || 0) - (a.bizRatio || 0));
+      else stocks.sort((a, b) => (b.relevance || 0) - (a.relevance || 0));
+
+      return { ok: true, seed: seedInfo, segments: seedBiz, stocks };
+    } catch (e) {
+      return { ok: false, error: '同类股票计算失败：' + (e && e.message ? e.message : e), seed: null, segments: [], stocks: [] };
+    }
+  },
+
   // ============ 概念/行业板块选股 ============
 
   /**

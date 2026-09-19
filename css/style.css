@@ -899,6 +899,44 @@ body {
 }
 .btn-ai:disabled { opacity: .6; cursor: default; box-shadow: none; }
 
+/* 同类股票按钮：青绿渐变，与 AI 语义搜索（紫）区分 */
+.btn-similar {
+  background: linear-gradient(135deg, #12a88a, #2fc4a0);
+  color: #fff;
+  border: none;
+  font-weight: 600;
+  box-shadow: 0 2px 8px rgba(18, 168, 138, .32);
+}
+.btn-similar:hover:not(:disabled) {
+  background: linear-gradient(135deg, #0e9680, #25b894);
+  color: #fff;
+}
+.btn-similar:disabled { opacity: .6; cursor: default; box-shadow: none; }
+
+/* ===== 同类股票结果面板 ===== */
+.similar-result {
+  margin: 6px 0 14px;
+  padding: 14px 16px;
+  background: linear-gradient(180deg, #f7fdfb, #eefaf6);
+  border: 1px solid #cdeee4;
+  border-radius: 10px;
+}
+/* 选项栏：固定项 + 可增删自定义项 */
+.similar-options {
+  display: flex; flex-wrap: wrap; gap: 10px 16px; align-items: center;
+  padding: 10px 12px; margin: 6px 0 4px;
+  background: #ffffff; border: 1px dashed #b9e4d8; border-radius: 8px;
+}
+.similar-opt { display: inline-flex; align-items: center; gap: 6px; }
+.similar-opt-label { font-size: 12px; font-weight: 600; color: #0a7a63; }
+.similar-opt-input {
+  padding: 5px 8px; border: 1px solid #cfe6df; border-radius: 6px;
+  font-size: 13px; background: #fcfffe;
+}
+.similar-opt-input.narrow { width: 78px; }
+.similar-opt-input.narrow2 { width: 140px; }
+.similar-options .muted.tiny { color: #6f8f87; }
+
 /* ===== AI 语义选股结果面板 ===== */
 .semantic-result {
   margin: 6px 0 14px;

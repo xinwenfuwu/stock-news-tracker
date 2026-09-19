@@ -3248,6 +3248,84 @@ const app = createApp({
     const sectorLoadError = ref(false);
     const sectorLoadingAll = ref(false);
 
+    // ===== 同类股票（同主营业务/产品的 A 股公司） =====
+    // 逻辑：以「种子股票」的主营业务/产品为匹配词，扫描 A 股找出经营相同业务的同类公司；
+    //      相关度口径与「AI 语义搜索」完全一致（命中主营段营收占比之和 %）。
+    const similar = reactive({
+      input: '',            // 种子股票代码/名称
+      loading: false,
+      error: '',
+      done: false,
+      seedName: '',
+      seedCode: '',
+      segments: [],         // 种子股票的主营构成（用于展示匹配依据）
+      stocks: [],           // 同类公司结果
+      minRatio: 10,         // 主营占比阈值(%)：低于该值的公司不纳入（可输入百分比）
+      sort: 'ratio',        // 排序方式：'ratio' 按主营业务占比降序
+      options: [            // 选项栏：固定项 + 可增删的自定义项
+        { id: 'sort', fixed: true, type: 'sort', label: '股票排序方式', value: 'ratio', choices: [{ v: 'ratio', t: '主营业务占比 从大到小' }] },
+        { id: 'minRatio', fixed: true, type: 'ratio', label: '主营占比', value: 10 }
+      ]
+    });
+    /** 执行「同类股票」计算 */
+    async function runSimilarBusiness() {
+      const q = String(similar.input || '').trim();
+      if (!q) { showToast('请输入种子股票代码/名称，如 600519 / 贵州茅台', 'error'); return; }
+      similar.loading = true;
+      similar.error = '';
+      similar.done = false;
+      similar.stocks = [];
+      similar.segments = [];
+      try {
+        const res = await StockAPI.getSimilarByBusiness({
+          code: q,
+          minRatio: Number(similar.minRatio) || 0,
+          sort: similar.sort || 'ratio'
+        });
+        if (!res.ok) {
+          similar.error = res.error || '计算失败';
+          showToast(similar.error, 'error');
+        } else {
+          similar.seedName = (res.seed && res.seed.name) || '';
+          similar.seedCode = (res.seed && res.seed.code) || '';
+          similar.segments = res.segments || [];
+          similar.stocks = res.stocks || [];
+          similar.done = true;
+          showToast(`同类股票计算完成：命中 ${similar.stocks.length} 只`, similar.stocks.length ? 'success' : 'info');
+        }
+      } catch (e) {
+        similar.error = '同类股票计算失败：' + (e && e.message ? e.message : e);
+        showToast(similar.error, 'error');
+        console.warn('同类股票计算失败', e);
+      } finally {
+        similar.loading = false;
+      }
+    }
+    /** 按当前阈值/排序重排（不重新请求，仅本地过滤+排序） */
+    function applySimilarOptions() {
+      const th = Number(similar.minRatio) || 0;
+      similar.stocks = similar.stocks
+        .filter(s => (s.bizRatio || 0) >= th)
+        .sort((a, b) => (b.bizRatio || 0) - (a.bizRatio || 0));
+      showToast(`已按阈值 ${th}% 过滤，剩 ${similar.stocks.length} 只`, 'info');
+    }
+    /** 选项栏：新增自定义选项 */
+    const similarNewOption = ref('');
+    function addSimilarOption() {
+      const t = String(similarNewOption.value || '').trim();
+      if (!t) return;
+      similar.options.push({ id: 'opt_' + Date.now(), fixed: false, type: 'custom', label: t, value: '' });
+      similarNewOption.value = '';
+    }
+    /** 选项栏：删除自定义选项（固定项不可删） */
+    function removeSimilarOption(opt) {
+      if (!opt || opt.fixed) return;
+      const i = similar.options.findIndex(o => o.id === opt.id);
+      if (i >= 0) similar.options.splice(i, 1);
+    }
+    /** 选项栏：修改自定义选项值 */
+    function setSimilarOptionValue(opt, v) { if (opt) opt.value = v; }
+
     // ===== AI 语义选股（自然语言 → 概念交叉 → 核心标的） =====
     const semantic = reactive({
       searching: false,
@@ -6642,6 +6720,9 @@ const app = createApp({
       // 页面2.5：选股
       sectorSearch, sectorResults, sectorSearching, sectorLoading,
       sectorLoadError, sectorLoadingAll, reloadSectors, loadAllSectors, refreshSectorData,
+      // 同类股票（同主营业务/产品的 A 股公司）
+      similar, runSimilarBusiness, applySimilarOptions,
+      similarNewOption, addSimilarOption, removeSimilarOption, setSimilarOptionValue,
       sectorDetail, sortedSectorPools, searchSector, addSectorFromSearch,
       sectorSubKeyword, searchSubSectors, clearSubSectorSearch, filteredSectorPools,
       // 板块卡片拖动排序 + 一键刷新（仅日涨跌）

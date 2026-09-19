@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>股市信息分析系统</title>
-  <link rel="stylesheet" href="css/style.css?v=20260919n">
+  <link rel="stylesheet" href="css/style.css?v=20260919p">
   <!-- Vue 3 全局构建版（v3.4.21 · 自托管）
        原先走 unpkg.com CDN：国内网络对 unpkg 的连通性不稳定，一旦该请求长时间挂起，
        <head> 里的阻塞脚本会让整页停在白屏、后续 auth-boot.js 根本不会执行。
@@ -1296,6 +1296,14 @@
             <span v-if="sectorSearching">⏳ 搜索中...</span>
             <span v-else>🔍 搜索板块</span>
           </button>
+          <input v-model="similar.input" placeholder="同类股票：输入种子股票代码/名称，如 600519 / 贵州茅台"
+            style="width:280px;min-width:200px;padding:9px 12px;border:1px solid #d8e0f0;border-radius:8px"
+            @keyup.enter="runSimilarBusiness">
+          <button class="btn btn-similar" @click="runSimilarBusiness" :disabled="similar.loading || sectorSearching"
+            title="输入一只股票，找出 A 股中经营相同主营业务/产品的同类公司（相关度口径与 AI 语义搜索一致：命中主营段营收占比之和）">
+            <span v-if="similar.loading">⏳ 匹配中...</span>
+            <span v-else>🧬 同类股票</span>
+          </button>
           <button class="btn btn-ai" @click="semanticSearch" :disabled="semantic.searching || sectorSearching"
             title="用自然语言描述选股意图：产品级如「生产薄膜铌酸锂的企业」；概念级如「主营为ai安全的核心上市公司」">
             <span v-if="semantic.searching">⏳ 语义理解中...</span>
@@ -1515,6 +1523,94 @@
         </div>
         <div class="semantic-result" v-else-if="semantic.error">
           <p class="semantic-error">⚠️ {{ semantic.error }}</p>
+        </div>
+
+        <!-- 同类股票结果（同主营业务/产品的 A 股公司） -->
+        <div class="similar-result" v-if="similar.loading">
+          <div class="semantic-loading">
+            <span class="ai-spinner">🧬</span>
+            <span>正在解析种子股票主营构成 → 扫描 A 股同类公司 → 计算主营占比相关度…</span>
+          </div>
+        </div>
+        <div class="similar-result" v-else-if="similar.error">
+          <p class="semantic-error">⚠️ {{ similar.error }}</p>
+        </div>
+        <div class="similar-result" v-else-if="similar.done">
+          <div class="semantic-header">
+            <h3>🧬 同类股票：
+              <span v-if="similar.seedName">{{ similar.seedName }}</span>
+              <span class="muted small">{{ similar.seedCode ? similar.seedCode.toUpperCase() : '' }}</span>
+            </h3>
+          </div>
+
+          <!-- 选项栏：固定项（排序方式 / 主营占比阈值）+ 可增删的自定义选项 -->
+          <div class="similar-options">
+            <div class="similar-opt" v-for="opt in similar.options" :key="opt.id">
+              <span class="similar-opt-label">{{ opt.label }}</span>
+              <template v-if="opt.type === 'sort'">
+                <select v-model="similar.sort" @change="applySimilarOptions" class="similar-opt-input">
+                  <option v-for="c in opt.choices" :key="c.v" :value="c.v">{{ c.t }}</option>
+                </select>
+              </template>
+              <template v-else-if="opt.type === 'ratio'">
+                <input type="number" min="0" max="100" step="1" v-model.number="similar.minRatio"
+                  @keyup.enter="applySimilarOptions" class="similar-opt-input narrow" />
+                <span class="muted tiny">%（低于该占比的公司不筛选）</span>
+                <button class="btn btn-xs" @click="applySimilarOptions">应用</button>
+              </template>
+              <template v-else>
+                <input v-model="opt.value" @input="setSimilarOptionValue(opt, opt.value)" placeholder="输入条件"
+                  class="similar-opt-input" />
+                <button class="btn btn-xs" @click="removeSimilarOption(opt)" title="删除该选项">🗑</button>
+              </template>
+            </div>
+            <div class="similar-opt add">
+              <input v-model="similarNewOption" @keyup.enter="addSimilarOption" placeholder="新增选项"
+                class="similar-opt-input narrow2" />
+              <button class="btn btn-xs btn-primary" @click="addSimilarOption">＋ 选项</button>
+            </div>
+          </div>
+
+          <!-- 匹配依据：种子股票主营构成 -->
+          <p class="muted tiny" v-if="similar.segments.length" style="margin:6px 0 10px">
+            <b>匹配依据</b>（{{ similar.seedName || similar.seedCode }} 的主营构成）：
+            <span class="semantic-chip mini seg" v-for="sg in similar.segments.slice(0, 12)" :key="sg.name">{{ sg.name }} <b>{{ (+sg.ratio).toFixed(1) }}%</b></span>
+          </p>
+
+          <div class="semantic-table-wrap" v-if="similar.stocks.length">
+            <table class="semantic-table similar">
+              <thead>
+                <tr>
+                  <th>排名</th>
+                  <th>代码</th>
+                  <th>股票名称</th>
+                  <th>现价</th>
+                  <th>涨跌幅</th>
+                  <th>总市值(亿)</th>
+                  <th title="相关度 = 命中主营段营收占比之和(%)，与 AI 语义搜索同口径">相关度</th>
+                  <th title="按命中主营业务占比之和排序（从大到小）" class="sortable" @click="applySimilarOptions">主营业务占比排序 <span class="sort-caret">⬇️</span></th>
+                  <th>命中主营业务(占营收)</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="(s, i) in similar.stocks" :key="s.code">
+                  <td class="rank">{{ i + 1 }}</td>
+                  <td class="code">{{ s.code.toUpperCase() }}</td>
+                  <td class="name">{{ s.name }}</td>
+                  <td>{{ s.price != null ? s.price.toFixed(2) : '-' }}</td>
+                  <td :class="pctClass(s.changePercent)">{{ fmtPct(s.changePercent) }}</td>
+                  <td>{{ s.marketCap ? (s.marketCap/1e8).toFixed(1) : '-' }}</td>
+                  <td class="relevance">{{ s.relevance != null ? s.relevance + '%' : '—' }}</td>
+                  <td class="relevance">{{ s.bizRatio != null ? s.bizRatio + '%' : '—' }}</td>
+                  <td class="concepts">
+                    <span class="semantic-chip mini seg" v-for="ms in (s.matchedSegments||[])" :key="'ms'+ms.name" :title="ms.name+' 占营收 '+ms.ratio+'%'">{{ ms.name }} <b>{{ ms.ratio }}%</b></span>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <p class="muted small" v-else>未找到同类公司，可尝试降低「主营占比」阈值后点「应用」，或确认种子股票代码是否正确。</p>
+          <p class="muted tiny">说明：同类股票以种子股票的<b>主营业务/产品</b>为匹配词，逐只拉取东财 F10 主营构成，命中主营段营收占比之和即为<b>相关度</b>（口径与「AI 语义搜索」完全一致）；结果按<b>主营业务占比</b>从大到小排序，并可用上方「主营占比」阈值过滤掉占比过低的公司（如相同营收不足 5% 的不计入）。行情数据来自腾讯免费接口。</p>
         </div>
 
         <!-- 反推业务结果 -->
@@ -3285,7 +3381,7 @@
 
   <script src="js/auth.js?v=20260918l"></script>
   <script src="js/auth-sync.js?v=20260918l"></script>
-  <script src="js/auth-boot.js?v=20260919o"></script>
+  <script src="js/auth-boot.js?v=20260919p"></script>
   <!-- store / stock-api / hot-topics / app 由 auth-boot.js 在登录通过后动态装载，
        未登录时它们不会被下载，业务数据也不会进入内存 -->
 </body>
