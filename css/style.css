@@ -717,6 +717,29 @@ body {
 .tail-buy-sum b { color: #b45309; }
 /* 尾盘买入法：筛选结果不再限高，填充面板空白区（用 .hot-panel 前缀压过 .hot-list 的 360px） */
 .hot-panel .tail-buy-list { max-height: none; }
+
+/* ===== 尾盘买入法命中标记：在「筛选板块（当日股票明细）」表里把命中行标红 ===== */
+/* 左侧红边 + 淡红底；整行文字（含单元格内所有内容）用红字，确保一眼可辨 */
+.data-table tbody tr.tail-buy-hit-row > td {
+  color: #d32f2f !important;
+  background: rgba(211, 47, 47, 0.06) !important;
+}
+.data-table tbody tr.tail-buy-hit-row > td,
+.data-table tbody tr.tail-buy-hit-row > td * { color: #d32f2f !important; }
+.data-table tbody tr.tail-buy-hit-row > td:first-child {
+  box-shadow: inset 3px 0 0 0 #d32f2f;
+}
+.data-table tbody tr.tail-buy-hit-row:hover > td { background: rgba(211, 47, 47, 0.12) !important; }
+
+/* batch25：选股页「尾盘选股法」——概念选股勾选弹窗里的命中行标红 */
+.sector-pick-item.tail-buy-hit-item { background: rgba(211, 47, 47, 0.06) !important; box-shadow: inset 3px 0 0 0 #d32f2f; }
+.sector-pick-item.tail-buy-hit-item,
+.sector-pick-item.tail-buy-hit-item * { color: #d32f2f !important; }
+
+/* batch25：「尾盘选股法」按钮（选股页，反推业务右侧） */
+.btn.btn-tail-sector { border-color: #d32f2f; color: #d32f2f; }
+.btn.btn-tail-sector:hover:not(:disabled) { background: rgba(211, 47, 47, 0.08); }
+.btn.btn-tail-sector:disabled { opacity: .6; }
 @media (max-width: 1100px) {
   .hot-top-row { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .hot-row-3 { grid-template-columns: repeat(2, minmax(0, 1fr)); }

@@ -30,7 +30,7 @@ const app = createApp({
       { key: 'finance', label: '全球信息', icon: '🌐' },
       { key: 'pools', label: '股票池', icon: '📅' },
       { key: 'sector', label: '选股', icon: '🧭' },
-      { key: 'filter', label: '筛选板块', icon: '🎯' },
+      { key: 'filter', label: '板块成分股', icon: '🎯' },
       { key: 'hot', label: '热门板块', icon: '🔥' }
     ];
     function goPage(key) {
@@ -4222,6 +4222,8 @@ const app = createApp({
       sectorDetail.nameEdit = false;
       sectorDetail.nameDraft = sector.name || '';
       sectorDetail.show = true;
+      // batch25：切换板块详情时清空「尾盘选股法」的上次结果与标红标记，避免残留到新板块
+      if (typeof clearSectorTailBuy === 'function') clearSectorTailBuy();
       // 打开新板块时重置详情内筛选区间（已固定则保留）
       if (!sectorFilter.locked) resetSectorFilter();
       // 【修复】选股页点击子版块后，「今年高价/距高价/今年低价/距低价/年涨跌/924涨跌」
@@ -5362,6 +5364,98 @@ const app = createApp({
       }
     }
 
+    // ===== batch23（请求F）：热门板块下六个子版块的「独立刷新」按钮 =====
+    // 六个子版块：① 当日热门板块 ② 新上市股票 ③ 当日热门股票 ④ 盘前热点板块 ⑤ 尾盘买入法 ⑥ 振幅板块
+    // 每个子版块各有一个独立刷新按钮，只刷新自己那一路数据，互不影响。
+    const hotBoardsLoading = ref(false);
+    const newListedLoading = ref(false);
+    const hotStocksLoading = ref(false);
+    const preMarketLoading = ref(false);
+
+    /** ① 只刷新「当日热门板块」 */
+    async function refreshHotBoardsOnly() {
+      if (hotBoardsLoading.value) return;
+      hotBoardsLoading.value = true;
+      showToast('正在刷新当日热门板块...', 'info');
+      try {
+        const list = await StockAPI.getBoardRanking();
+        if (list && list.length) {
+          hotBoards.value = list;
+          D.hotBoards = list;
+          showToast(`已刷新 ${list.length} 个当日热门板块`, 'success');
+        } else {
+          showToast('刷新失败（网络/接口限流），已保留上次数据', 'error');
+        }
+      } catch (e) {
+        showToast('刷新失败（网络/接口限流），已保留上次数据', 'error');
+      } finally {
+        hotBoardsLoading.value = false;
+      }
+    }
+
+    /** ② 只刷新「新上市股票」（失败时保留上次数据） */
+    async function refreshNewListedStocks() {
+      if (newListedLoading.value) return;
+      newListedLoading.value = true;
+      showToast('正在刷新新上市股票...', 'info');
+      try {
+        const list = await StockAPI.getNewListedStocks();
+        if (list && list.length) {
+          newListedStocks.value = list;
+          D.newListedStocks = list;
+          showToast(`已刷新 ${list.length} 只新上市股票`, 'success');
+        } else {
+          showToast('刷新失败（网络/接口限流），已保留上次数据', 'error');
+        }
+      } catch (e) {
+        showToast('刷新失败（网络/接口限流），已保留上次数据', 'error');
+      } finally {
+        newListedLoading.value = false;
+      }
+    }
+
+    /** ③ 只刷新「当日热门股票」 */
+    async function refreshHotStocksOnly() {
+      if (hotStocksLoading.value) return;
+      hotStocksLoading.value = true;
+      showToast('正在刷新当日热门股票...', 'info');
+      try {
+        const list = await StockAPI.getStockRanking();
+        if (list && list.length) {
+          hotStocks.value = list;
+          D.hotStocks = list;
+          showToast(`已刷新 ${list.length} 只当日热门股票`, 'success');
+        } else {
+          showToast('刷新失败（网络/接口限流），已保留上次数据', 'error');
+        }
+      } catch (e) {
+        showToast('刷新失败（网络/接口限流），已保留上次数据', 'error');
+      } finally {
+        hotStocksLoading.value = false;
+      }
+    }
+
+    /** ④ 只刷新「盘前热点板块」 */
+    async function refreshPreMarketBoards() {
+      if (preMarketLoading.value) return;
+      preMarketLoading.value = true;
+      showToast('正在刷新盘前热点板块...', 'info');
+      try {
+        const list = await StockAPI.getPreMarketBoards();
+        if (list && list.length) {
+          preMarketBoards.value = list;
+          D.preMarketBoards = list;
+          showToast(`已刷新 ${list.length} 个盘前热点板块`, 'success');
+        } else {
+          showToast('刷新失败（网络/接口限流），已保留上次数据', 'error');
+        }
+      } catch (e) {
+        showToast('刷新失败（网络/接口限流），已保留上次数据', 'error');
+      } finally {
+        preMarketLoading.value = false;
+      }
+    }
+
     async function refreshAmplitudeBoards() {
       ampLoading.value = true;
       showToast('正在刷新振幅板块...', 'info');
@@ -5656,6 +5750,7 @@ const app = createApp({
     if (D.hotStocks && D.hotStocks.length) hotStocks.value = D.hotStocks;
     if (D.preMarketBoards && D.preMarketBoards.length) preMarketBoards.value = D.preMarketBoards;
     if (D.amplitudeBoards && D.amplitudeBoards.length) amplitudeBoards.value = D.amplitudeBoards;
+    if (D.newListedStocks && D.newListedStocks.length) newListedStocks.value = D.newListedStocks;
 
     // ===== 尾盘买入法筛选（batch19 + batch22）：对当前「当日股票明细」按 8 项条件筛选 =====
     // 条件：涨幅 3%-5% / 换手率 5%-10% / 量比 1.5-2.5 / 市值 50亿-200亿 /
@@ -5668,22 +5763,191 @@ const app = createApp({
     const tailBuyLoading = ref(false);
     const tailBuyTotal = ref(0);
     const tailBuyNote = ref('');
-    async function runTailBuyFilter() {
-      if (tailBuyLoading.value) return;
-      // 筛选前先剔除退市股票（名称含「退」或已无有效行情），避免退市股进入候选
-      const rawPool = (hotFilterStocks.value || []).slice();
-      const pool = rawPool.filter(s => !isDelistedStock(s));
+    /** 命中的尾盘买入法股票代码集合（用于在「筛选板块」表里标红命中行） */
+    const tailBuyHit = reactive({ codes: {}, show: false });
+    /** 从结果列表 / 原始对象列表里提取纯代码（去前缀），用于跨表匹配 */
+    function tailBuyPureCode(x) {
+      const c = String((x && (x.code || x)) || '').trim();
+      return String(pureCode(c) || c);
+    }
+    /** 清空命中标记（每次开筛前调用，避免旧结果残留） */
+    function clearTailBuyHits() {
+      Object.keys(tailBuyHit.codes).forEach(k => { delete tailBuyHit.codes[k]; });
+      tailBuyHit.show = false;
+    }
+    /** 把命中结果写入标记，供表格行标红 */
+    function markTailBuyHits(list) {
+      const arr = list || [];
+      arr.forEach(x => { tailBuyHit.codes[tailBuyPureCode(x)] = true; });
+      tailBuyHit.show = arr.length > 0;
+    }
+    /** 该行是否为尾盘买入法命中（供模板 :class 使用） */
+    function isTailBuyHit(s) {
+      if (!tailBuyHit.show || !s) return false;
+      return !!tailBuyHit.codes[tailBuyPureCode(s)];
+    }
+
+    // ===== batch25：选股页「尾盘选股法」——对当前「概念选股板块详情」的成分股跑同一套 8 项条件 =====
+    // 与热门板块页的 runTailBuyFilter 算法完全一致（同一套特征口径、同一套 AI/规则分支），
+    // 只是作用对象不同：这里针对 sectorDetail.data.stocks（选股页当前打开的概念选股板块详情）。
+    const sectorTailBuyList = ref([]);
+    const sectorTailBuyLoading = ref(false);
+    const sectorTailBuyTotal = ref(0);
+    const sectorTailBuyNote = ref('');
+
+    async function runTailBuyForSector() {
+      if (sectorTailBuyLoading.value) return;
+      const rawPool = ((sectorDetail.data && sectorDetail.data.stocks) || []).slice();
+      const pool = rawPool.filter(x => !isDelistedStock(x));
       const delistedCnt = rawPool.length - pool.length;
-      if (!pool.length) {
-        tailBuyList.value = []; tailBuyTotal.value = 0; tailBuyNote.value = '';
-        showToast(rawPool.length
-          ? `候选股票均为退市股（已剔除 ${delistedCnt} 只），无可筛选标的`
-          : '请先在上方点击板块 / 个股加载成分股，或点「加载当日数据」，再开始筛选', 'error');
+      sectorTailBuyList.value = []; sectorTailBuyTotal.value = 0; sectorTailBuyNote.value = '';
+      if (!rawPool.length) {
+        showToast('当前概念选股板块还没有成分股：请先在上方搜索板块 / 语义搜索并打开板块详情，再点「尾盘选股法」', 'error');
         return;
       }
+      if (!pool.length) {
+        showToast(`候选股票均为退市股（已剔除 ${delistedCnt} 只），无可筛选标的`, 'error');
+        return;
+      }
+      sectorTailBuyLoading.value = true;
+      clearTailBuyHits();
+      showToast(`尾盘选股法：范围 = 当前板块 ${rawPool.length} 只，正在联网取实时行情与 20 日K线…`
+        + (delistedCnt ? `（已先剔除 ${delistedCnt} 只退市股）` : ''), 'info');
+      try {
+        const norm = (x) => StockAPI.inferPrefix(String((x && x.code) || ''));
+        const codes = pool.map(norm).filter(Boolean);
+        let qmap = {};
+        try { qmap = await StockAPI.getQuotes(codes); } catch (e) { qmap = {}; }
+        const end = fmtDate(new Date());
+        const start = fmtDate(new Date(Date.now() - 40 * 86400000));
+        const feats = [];
+        for (const x of pool) {
+          const ncode = norm(x);
+          const q = (qmap && qmap[ncode]) || x;
+          const change = Number(q.changePercent != null ? q.changePercent : x.dailyChange);
+          const turnover = Number(q.turnover != null ? q.turnover : (x.turnover || NaN));
+          const cap = Number(q.totalMarketCap != null ? q.totalMarketCap : (x.totalMarketCap || NaN));
+          const price = Number(q.price != null ? q.price : x.todayPrice);
+          const amount = Number(q.amount || 0);
+          const vol = Number(q.volume || 0);
+          const low = Number(q.low || 0);
+          const avg = (amount > 0 && vol > 0) ? (amount * 100 / vol) : 0;
+          const aboveAvg = avg > 0 && price > avg;
+          const pullback = avg > 0 && low < avg && price >= avg;
+          let aboveMa = false, volRising = false, ma20 = NaN, vr = null, klineOk = true;
+          let kline = [];
+          try { kline = await StockAPI.getKline(ncode, start, end, 30); } catch (e) { kline = []; }
+          if (!kline || kline.length < 20) { klineOk = false; }
+          else {
+            const closes = kline.map(k => Number(k.close));
+            const vols = kline.map(k => Number(k.volume));
+            ma20 = closes.slice(-20).reduce((a, b) => a + b, 0) / 20;
+            aboveMa = price > ma20;
+            const vN = vols[vols.length - 1], v1 = vols[vols.length - 2], v2 = vols[vols.length - 3];
+            volRising = vN > v1 && v1 > v2;
+            try {
+              const now = new Date();
+              let mins = now.getHours() * 60 + now.getMinutes() - (9 * 60 + 30);
+              if (now.getHours() >= 12) mins -= 60;
+              mins = Math.max(1, mins);
+              const avg5 = vols.slice(-6, -1).reduce((a, b) => a + b, 0) / 5;
+              if (avg5 > 0) vr = (vN / mins) / (avg5 / 240);
+            } catch (e) {}
+          }
+          feats.push({ code: ncode, name: x.name || q.name || ncode, change, turnover, cap, price, ma20, aboveAvg, pullback, aboveMa, volRising, vr, klineOk });
+        }
+        sectorTailBuyTotal.value = pool.length;
+        const fmtN = (x, d) => (isFinite(x) ? x.toFixed(d) : 'NA');
+        const mkResult = (f) => ({
+          code: f.code, name: f.name, changePercent: f.change,
+          tip: `涨幅 ${fmtN(f.change, 2)}% · 换手 ${fmtN(f.turnover, 2)}% · 市值 ${fmtN(f.cap, 0)}亿`
+            + (f.vr != null ? ` · 量比 ${fmtN(f.vr, 2)}` : '') + ` · 现价 ${fmtN(f.price, 2)} / 20日线 ${fmtN(f.ma20, 2)}`
+        });
+        // ① AI 精准筛选（与热门板块页同一口径）
+        if (aiConfigured.value) {
+          const pick = feats.slice(0, 50);
+          const table = pick.map(f =>
+            `${f.code} ${f.name} 涨幅=${fmtN(f.change, 2)}% 换手=${fmtN(f.turnover, 2)}% 市值=${fmtN(f.cap, 0)}亿 均价线上方=${f.aboveAvg ? '是' : '否'} 尾盘回抽=${f.pullback ? '是' : '否'} 20日线上方=${f.aboveMa ? '是' : '否'} 量能递增=${f.volRising ? '是' : '否'} 量比=${fmtN(f.vr, 2)}`
+          ).join('\n');
+          const sys = '你是资深 A 股量化选股助手，只依据下面给定的实时特征严格判定，不臆造数据、不列出特征表以外的股票。';
+          const user = '尾盘买入法 8 项条件：①涨幅 3%-5% ②换手率 5%-10% ③市值 50亿-200亿 ④分时图在黄色均价线上方 ⑤尾盘回抽均价线 ⑥股价在 20 日线以上 ⑦近 3 日成交量持续放大 ⑧量比 1.5-2.5（量比仅供参考，不硬筛）。\n\n下面是候选股票的实时特征（已算好），请只保留**同时满足 ①②④⑤⑥⑦** 的股票（③市值若轻微超范围可放宽到 40亿-220亿，但需在 reason 里说明；⑧量比仅参考）：\n\n' + table + '\n\n请严格只输出一个 JSON 对象：{"pass":["股票代码",...],"reason":"一句话说明筛选口径与放宽项"}。不要输出 JSON 以外的任何内容。';
+          const res = await callOpenAICompat([{ role: 'system', content: sys }, { role: 'user', content: user }], { timeoutMs: 60000, maxTokens: 500 });
+          const byCode = {}; feats.forEach(f => { byCode[f.code] = f; });
+          let passCodes = [];
+          if (res.ok) {
+            try {
+              const m = res.content.match(/\{[\s\S]*\}/);
+              const o = m ? JSON.parse(m[0]) : null;
+              passCodes = (o && Array.isArray(o.pass)) ? o.pass.map(String) : [];
+              sectorTailBuyNote.value = (o && o.reason ? o.reason : 'AI 精准筛选');
+            } catch (e) { sectorTailBuyNote.value = 'AI 返回解析失败，已回退规则筛选'; }
+          } else { sectorTailBuyNote.value = 'AI 筛选不可用（' + res.error + '），已回退规则筛选'; }
+          const results = passCodes.map(c => byCode[c]).filter(Boolean).map(mkResult);
+          sectorTailBuyList.value = results;
+          markTailBuyHits(results);
+          showToast(`AI 尾盘选股命中 ${results.length} 只（已在板块成分股中标红）`, results.length ? 'success' : 'info');
+          return;
+        }
+        // ② 规则法
+        const realtime = feats.filter(f =>
+          f.change >= 3 && f.change <= 5 && f.turnover >= 5 && f.turnover <= 10
+          && f.cap >= 50 && f.cap <= 200 && f.aboveAvg && f.pullback);
+        if (!realtime.length) {
+          sectorTailBuyNote.value = '实时行情条件（涨幅3-5% / 换手率5-10% / 市值50-200亿 / 分时均价线上方 / 尾盘回抽）无命中';
+          showToast('尾盘选股法：实时行情条件无命中', 'info');
+          return;
+        }
+        const results = [];
+        let noKline = 0;
+        for (const f of realtime) {
+          if (!f.klineOk) { noKline++; continue; }
+          if (!(f.aboveMa && f.volRising)) continue;
+          results.push(mkResult(f));
+        }
+        sectorTailBuyList.value = results;
+        markTailBuyHits(results);
+        const delistedTag = delistedCnt ? `已剔除 ${delistedCnt} 只退市股 · ` : '';
+        if (noKline) sectorTailBuyNote.value = delistedTag + `${noKline} 只因K线不足 20 日跳过（上市未满 20 日）`;
+        else if (!results.length) sectorTailBuyNote.value = delistedTag + '均线 / 成交量条件无命中';
+        else sectorTailBuyNote.value = delistedCnt ? `已剔除 ${delistedCnt} 只退市股` : '';
+        showToast(`尾盘选股法：命中 ${results.length} 只（已在板块成分股中标红）`, results.length ? 'success' : 'info');
+      } catch (e) {
+        console.warn('尾盘选股法筛选失败', e);
+        showToast('尾盘选股法筛选失败：' + (e && e.message ? e.message : e), 'error');
+      } finally {
+        sectorTailBuyLoading.value = false;
+      }
+    }
+    /** 清空选股页尾盘选股法结果（切换板块详情时调用，避免旧结果残留） */
+    function clearSectorTailBuy() {
+      sectorTailBuyList.value = []; sectorTailBuyTotal.value = 0; sectorTailBuyNote.value = '';
+      clearTailBuyHits();
+    }
+
+    async function runTailBuyFilter() {
+      if (tailBuyLoading.value) return;
+      // 筛选范围 = 下方「板块成分股」里的股票（hotFilterStocks）。
+      // 说明：不从全 A 股拉取——全市场数据量太大、耗时太长；先在页面上把要看的股票
+      // 载入「筛选板块」，再对它做尾盘买入法筛选，速度快、范围可控。
+      const rawPool = (hotFilterStocks.value || []).slice();
+      // 筛选前先剔除退市股票（名称含「退」或已无有效行情），避免退市股进入候选
+      const pool = rawPool.filter(s => !isDelistedStock(s));
+      const delistedCnt = rawPool.length - pool.length;
+      clearTailBuyHits();
+      if (!rawPool.length) {
+        tailBuyList.value = []; tailBuyTotal.value = 0; tailBuyNote.value = '';
+        showToast('「板块成分股」暂无股票：请先在上方点板块 / 个股载入成分股，或点「加载当日数据」，再开始筛选', 'error');
+        return;
+      }
+      if (!pool.length) {
+        tailBuyList.value = []; tailBuyTotal.value = 0; tailBuyNote.value = '';
+        showToast(`候选股票均为退市股（已剔除 ${delistedCnt} 只），无可筛选标的`, 'error');
+        return;
+      }
+      const scopeTag = `板块成分股${rawPool.length} 只`;
       tailBuyLoading.value = true;
       tailBuyList.value = []; tailBuyNote.value = '';
-      showToast('尾盘买入法：正在联网取实时行情与 20 日K线…'
+      showToast(`尾盘买入法：范围 = ${scopeTag}，正在联网取实时行情与 20 日K线…`
         + (delistedCnt ? `（已先剔除 ${delistedCnt} 只退市股）` : ''), 'info');
       try {
         const norm = (s) => StockAPI.inferPrefix(String((s && s.code) || ''));
@@ -5752,14 +6016,14 @@ const app = createApp({
               const m = res.content.match(/\{[\s\S]*\}/);
               const o = m ? JSON.parse(m[0]) : null;
               passCodes = (o && Array.isArray(o.pass)) ? o.pass.map(String) : [];
-              tailBuyNote.value = (o && o.reason ? o.reason : 'AI 精准筛选')
+              tailBuyNote.value = `范围：概念选股板块（${scopeTag}） · ` + (o && o.reason ? o.reason : 'AI 精准筛选')
                 + (usedCap ? '（候选超 50 只，已对前 50 只精筛）' : '');
             } catch (e) {
               passCodes = [];
-              tailBuyNote.value = 'AI 返回解析失败，已回退规则筛选';
+              tailBuyNote.value = `范围：概念选股板块（${scopeTag}） · AI 返回解析失败，已回退规则筛选`;
             }
           } else {
-            tailBuyNote.value = 'AI 筛选不可用（' + res.error + '），已回退规则筛选';
+            tailBuyNote.value = `范围：概念选股板块（${scopeTag}） · AI 筛选不可用（` + res.error + '），已回退规则筛选';
           }
           const results = passCodes.map(c => byCode[c]).filter(Boolean).map(f => ({
             code: f.code, name: f.name, changePercent: f.change,
@@ -5767,7 +6031,8 @@ const app = createApp({
               + (f.vr != null ? ` · 量比 ${fmtN(f.vr, 2)}` : '') + ` · 现价 ${fmtN(f.price, 2)} / 20日线 ${fmtN(f.ma20, 2)}`
           }));
           tailBuyList.value = results;
-          showToast(`AI 精准筛选命中 ${results.length} 只`, results.length ? 'success' : 'info');
+          markTailBuyHits(results);
+          showToast(`AI 精准筛选命中 ${results.length} 只（已在下表标红）`, results.length ? 'success' : 'info');
           return;
         }
         // 3) 规则法（未配置 AI 时回退，与 batch19 原逻辑一致）
@@ -5791,7 +6056,8 @@ const app = createApp({
           });
         }
         tailBuyList.value = results;
-        const delistedTag = delistedCnt ? `已剔除 ${delistedCnt} 只退市股 · ` : '';
+        markTailBuyHits(results);
+        const delistedTag = `范围：概念选股板块（${scopeTag}） · ` + (delistedCnt ? `已剔除 ${delistedCnt} 只退市股 · ` : '');
         if (noKline) tailBuyNote.value = delistedTag + `${noKline} 只因K线不足 20 日跳过（上市未满 20 日）`;
         else if (!results.length) tailBuyNote.value = delistedTag + '均线 / 成交量条件无命中';
         else tailBuyNote.value = delistedCnt ? `已剔除 ${delistedCnt} 只退市股` : '';
@@ -5806,7 +6072,7 @@ const app = createApp({
 
     // ===== 尾盘买入法 · 对 A 股全部股票筛选（先弹窗选剔除规则，再全网拉取并载入「筛选板块」） =====
     // 需求：对 A 股所有股票进行筛选，筛选前弹窗提示，可去除①北交所 ②688开头 ③科创板 ④创业板 ⑤ST股；
-    // 符合条件的股票放进下方「筛选板块（当日股票明细）」显示。
+    // 符合条件的股票放进下方「板块成分股」显示。
     const allAFilter = reactive({
       show: false,
       loading: false,
@@ -5824,7 +6090,7 @@ const app = createApp({
     }
     function cancelAllAFilter() { allAFilter.show = false; }
     /**
-     * A 股全网筛选：拉取全部 A 股 → 按弹窗勾选的规则剔除 → 载入下方「筛选板块（当日股票明细）」。
+     * A 股全网筛选：拉取全部 A 股 → 按弹窗勾选的规则剔除 → 载入下方「板块成分股」。
      * 与「热门板块」载入成分股同一套写入路径（hotFilterStocks + Store daily stocks），
      * 保证字段与格式完全一致。
      */
@@ -5862,7 +6128,7 @@ const app = createApp({
           showToast('全部股票均被所选规则剔除，请放宽条件后重试', 'error');
           return;
         }
-        // 载入「筛选板块（当日股票明细）」，字段与热门板块成分股一致
+        // 载入「板块成分股」，字段与热门板块成分股一致
         const daily = Store.getDailyStocks(hotDate.value);
         daily.stocks = list.map(s => {
           const ns = _newStock(s);
@@ -5876,7 +6142,7 @@ const app = createApp({
         if (!filterPanel.locked) resetHotFilterRanges();
         filterPanel.poolId = 'hot';
         hotFilterStocks.value = daily.stocks;
-        showToast(`A 股全部筛选完成：保留 ${list.length} 只（已剔除 ${removed} 只），已载入「筛选板块」`, 'success');
+        showToast(`A 股全部筛选完成：保留 ${list.length} 只（已剔除 ${removed} 只），已载入「板块成分股」`, 'success');
         // 复用既有补全逻辑刷新字段
         await refreshHotStocks();
       } catch (e) {
@@ -6756,6 +7022,8 @@ const app = createApp({
       if (data.hotStocks) D.hotStocks = data.hotStocks;
       if (data.preMarketBoards) D.preMarketBoards = data.preMarketBoards;
       if (data.amplitudeBoards) D.amplitudeBoards = data.amplitudeBoards;
+      // 新上市股票：保留云端最后一次刷新的数据（与热门板块同口径恢复）
+      if (data.newListedStocks) { D.newListedStocks = data.newListedStocks; newListedStocks.value = data.newListedStocks; }
       // 迁移 relatedStocks
       D.news.forEach(n => {
         if (typeof n.relatedStocks === 'string') n.relatedStocks = StockAPI.parseStockInput(n.relatedStocks);
@@ -6870,11 +7138,19 @@ const app = createApp({
       hotExclude, askHotExclude, cancelHotExclude, confirmHotExclude,
       hotFilterStocks,
       tailBuyList, tailBuyLoading, tailBuyTotal, tailBuyNote, runTailBuyFilter,
+      // batch25：选股页「尾盘选股法」（作用于当前概念选股板块详情）
+      sectorTailBuyList, sectorTailBuyLoading, sectorTailBuyTotal, sectorTailBuyNote,
+      runTailBuyForSector, clearSectorTailBuy,
       allAFilter, askAllAFilter, cancelAllAFilter, confirmAllAFilter,
+      // batch24：命中标红（筛选板块表里把尾盘买入法命中的行标红）
+      tailBuyHit, isTailBuyHit, clearTailBuyHits,
       hotSearchCode, hotSearchName, clearHotSearch,
       sortedHotStocks, sortHotBy, hotSortIcon, removeHotStock,
       loadHotData, fetchHotBoards, refreshHotStocks,
       refreshAmplitudeBoards, ampLoading, hotPanelsHidden, financePushHidden,
+      // batch23（请求F）：六个子版块独立刷新按钮
+      refreshHotBoardsOnly, hotBoardsLoading, refreshNewListedStocks, newListedLoading,
+      refreshHotStocksOnly, hotStocksLoading, refreshPreMarketBoards, preMarketLoading,
       // 全球信息页：火热话题 + 格隆汇每日快讯
       hotTopicsSources, hotTopicsMerged, hotTopicsLoading, hotTopicsUpdated, refreshHotTopics,
       dailyWinStart, dailyWinEnd, dailyWinText, refreshDailyTopics, resetDailyWin,

@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>股市信息分析系统</title>
-  <link rel="stylesheet" href="css/style.css?v=20260919r">
+  <link rel="stylesheet" href="css/style.css?v=20260919u">
   <!-- Vue 3 全局构建版（v3.4.21 · 自托管）
        原先走 unpkg.com CDN：国内网络对 unpkg 的连通性不稳定，一旦该请求长时间挂起，
        <head> 里的阻塞脚本会让整页停在白屏、后续 auth-boot.js 根本不会执行。
@@ -122,7 +122,7 @@
             <a class="nav-item" data-need-login><span class="nav-icon">🌐</span><span>全球信息</span></a>
             <a class="nav-item" data-need-login><span class="nav-icon">📅</span><span>股票池</span></a>
             <a class="nav-item" data-need-login><span class="nav-icon">🧭</span><span>选股</span></a>
-            <a class="nav-item" data-need-login><span class="nav-icon">🎯</span><span>筛选板块</span></a>
+            <a class="nav-item" data-need-login><span class="nav-icon">🎯</span><span>板块成分股</span></a>
             <a class="nav-item" data-need-login><span class="nav-icon">🔥</span><span>热门板块</span></a>
           </nav>
           <div class="header-actions">
@@ -1321,6 +1321,16 @@
               <span v-else>🔄 反推业务</span>
             </button>
           </span>
+          <!-- batch25：尾盘选股法（作用于当前概念选股板块详情的成分股，算法与热门板块页「尾盘买入法」完全一致） -->
+          <button class="btn btn-tail-sector" @click="runTailBuyForSector" :disabled="sectorTailBuyLoading"
+            title="按尾盘买入法 8 项条件，对当前「概念选股板块详情」里的成分股筛选（需联网取实时行情与 20 日K线）；命中结果在板块详情表中标红">
+            <span v-if="sectorTailBuyLoading">⏳ 筛选选股中...</span>
+            <span v-else>🎯 尾盘选股法</span>
+          </button>
+          <span class="muted small" v-if="sectorTailBuyTotal">
+            🎯 命中 <b style="color:#d32f2f">{{ sectorTailBuyList.length }}</b> / {{ sectorTailBuyTotal }} 只
+            <span v-if="sectorTailBuyNote" class="muted small"> · {{ sectorTailBuyNote }}</span>
+          </span>
         </div>
         <p class="muted tiny" style="margin:-6px 0 14px">
           产品级语义示例：在上方输入框输入 <b>生产薄膜铌酸锂的企业</b> / <b>HBM核心公司</b> / <b>复合铜箔龙头</b> / <b>人形机器人减速器</b>，点 🤖 AI语义搜索 即可直接得到相关上市公司及产业链定位。
@@ -1782,7 +1792,13 @@
           <!-- 顶行：当日热门板块 | 注意事项 | 当日热门股票（当日热门股票已与盘前热点板块互换位置） -->
           <div class="hot-top-row">
             <div class="hot-panel">
-              <h3 class="panel-title">🔥 当日热门板块</h3>
+              <div class="panel-title-row">
+                <h3 class="panel-title" style="margin:0">🔥 当日热门板块</h3>
+                <button class="btn btn-sm" @click="refreshHotBoardsOnly" :disabled="hotBoardsLoading" title="只刷新「当日热门板块」，不影响其他子版块">
+                  <span v-if="hotBoardsLoading">⏳ 刷新中...</span>
+                  <span v-else>🔄 刷新数据</span>
+                </button>
+              </div>
               <div class="hot-list" v-if="hotBoards.length">
                 <div class="hot-item hot-item-click" v-for="(b, i) in hotBoards" :key="i"
                      :class="{ active: hotBoardActive === b.name }"
@@ -1798,7 +1814,13 @@
 
             <!-- 新上市股票（按上市天数升序，取前 50） -->
             <div class="hot-panel">
-              <h3 class="panel-title">🆕 新上市股票</h3>
+              <div class="panel-title-row">
+                <h3 class="panel-title" style="margin:0">🆕 新上市股票</h3>
+                <button class="btn btn-sm" @click="refreshNewListedStocks" :disabled="newListedLoading" title="只刷新「新上市股票」（按上市天数升序取前 50）；刷新失败会自动保留上次数据">
+                  <span v-if="newListedLoading">⏳ 刷新中...</span>
+                  <span v-else>🔄 刷新数据</span>
+                </button>
+              </div>
               <div class="hot-list" v-if="newListedStocks.length">
                 <div class="hot-item" v-for="(s, i) in newListedStocks" :key="i"
                      :title="s.name + ' · 上市 ' + s.listingDays + ' 天（' + s.listingDate + '）| 当日涨幅 ' + fmtPct(s.change)">
@@ -1815,7 +1837,13 @@
 
             <!-- 当日热门股票（已与盘前热点板块互换，上移至此） -->
             <div class="hot-panel">
-              <h3 class="panel-title">⭐ 当日热门股票</h3>
+              <div class="panel-title-row">
+                <h3 class="panel-title" style="margin:0">⭐ 当日热门股票</h3>
+                <button class="btn btn-sm" @click="refreshHotStocksOnly" :disabled="hotStocksLoading" title="只刷新「当日热门股票」，不影响其他子版块">
+                  <span v-if="hotStocksLoading">⏳ 刷新中...</span>
+                  <span v-else>🔄 刷新数据</span>
+                </button>
+              </div>
               <div class="hot-list" v-if="hotStocks.length">
                 <div class="hot-item hot-item-click" v-for="(s, i) in hotStocks" :key="i"
                      :class="{ active: hotBoardActive === s.name && hotDetailIsStock }"
@@ -1839,7 +1867,13 @@
           <div class="hot-row-3">
             <!-- 盘前热点板块 -->
             <div class="hot-panel">
-              <h3 class="panel-title">🌅 盘前热点板块</h3>
+              <div class="panel-title-row">
+                <h3 class="panel-title" style="margin:0">🌅 盘前热点板块</h3>
+                <button class="btn btn-sm" @click="refreshPreMarketBoards" :disabled="preMarketLoading" title="只刷新「盘前热点板块」，不影响其他子版块">
+                  <span v-if="preMarketLoading">⏳ 刷新中...</span>
+                  <span v-else>🔄 刷新数据</span>
+                </button>
+              </div>
               <div class="hot-list" v-if="preMarketBoards.length">
                 <div class="hot-item hot-item-click" v-for="(b, i) in preMarketBoards" :key="i"
                      :class="{ active: hotBoardActive === b.name }"
@@ -1858,12 +1892,12 @@
               <div class="panel-title-row">
                 <h3 class="panel-title" style="margin:0">📌 尾盘买入法</h3>
                 <button class="btn btn-sm" @click="runTailBuyFilter" :disabled="tailBuyLoading"
-                        title="按下方 8 项条件，从当前「当日股票明细」中筛选符合条件的个股（需联网取实时行情与 20 日K线）">
+                        title="按下方 8 项条件，从「板块成分股」里的股票中筛出符合条件的个股（需联网取实时行情与 20 日K线）">
                   <span v-if="tailBuyLoading">⏳ 筛选中...</span>
-                  <span v-else>📌 开始筛选</span>
+                  <span v-else>🔄 刷新筛选</span>
                 </button>
                 <button class="btn btn-sm btn-similar" @click="askAllAFilter" :disabled="allAFilter.loading || tailBuyLoading"
-                        title="对 A 股所有股票进行筛选：先弹窗选择要去除的股票（北交所/688/科创板/创业板/ST），再把符合条件的股票载入下方「筛选板块（当日股票明细）」">
+                        title="对 A 股所有股票进行筛选：先弹窗选择要去除的股票（北交所/688/科创板/创业板/ST），再把符合条件的股票载入下方「板块成分股」">
                   <span v-if="allAFilter.loading">⏳ 全市场筛选中...</span>
                   <span v-else>🌐 对A股全部股票筛选</span>
                 </button>
@@ -1879,12 +1913,13 @@
                 <div class="tb-rule"><b>尾盘</b> 回抽均价线</div>
                 <div class="tb-rule tb-rule-exclude"><b>剔除</b> 退市股</div>
               </div>
+              <div class="muted small" style="margin:-2px 0 4px">🎯 筛选范围 = 下方<b>「板块成分股」</b>里的股票（不从全 A 股拉取，速度快、范围可控）。命中结果会在该表中<b style="color:#d32f2f">标红</b>。</div>
               <div class="muted small" style="margin:-2px 0 4px">🚫 筛选前自动剔除<b>退市股票</b>（名称含「退」或已无有效行情），避免退市股进入结果。</div>
-              <div class="muted small" v-if="aiConfigured" title="已在「偏好设置 → AI 解读」配置接口：点击「开始筛选」会把候选股的实时特征交给 AI，按上面 8 项条件精准判定">🤖 已启用 AI 精准筛选（需联网取实时行情与 20 日K线）</div>
+              <div class="muted small" v-if="aiConfigured" title="已在「偏好设置 → AI 解读」配置接口：点击「刷新筛选」会把候选股的实时特征交给 AI，按上面 8 项条件精准判定">🤖 已启用 AI 精准筛选（需联网取实时行情与 20 日K线）</div>
               <div class="muted small" v-else title="未配置 AI 接口时使用规则硬筛；在「偏好设置 → AI 解读」填写 API 地址、密钥、模型后即可 AI 精准筛选">未配置 AI 接口，使用规则筛选；配置后可 🤖 AI 精准筛选</div>
-              <div class="muted small" v-if="!tailBuyList.length && !tailBuyLoading">点「开始筛选」按上面 8 项条件，从当前「当日股票明细」中挑出符合条件的个股。</div>
+              <div class="muted small" v-if="!tailBuyList.length && !tailBuyLoading">点「刷新筛选」按上面 8 项条件，从下方「板块成分股」中挑出符合条件的个股（命中后在表中标红）。</div>
               <div class="muted small" v-else-if="tailBuyLoading">⏳ 正在联网筛选（实时行情 + 20日K线）…</div>
-              <div class="tail-buy-sum" v-else>命中 <b>{{ tailBuyList.length }}</b> / {{ tailBuyTotal }} 只<span v-if="tailBuyNote" class="muted small"> · {{ tailBuyNote }}</span></div>
+              <div class="tail-buy-sum" v-else>🎯 命中 <b>{{ tailBuyList.length }}</b> / {{ tailBuyTotal }} 只<span class="muted small">（已在下方「板块成分股」中<b style="color:#d32f2f">标红</b>）</span><span v-if="tailBuyNote" class="muted small"> · {{ tailBuyNote }}</span></div>
               <div class="hot-list tail-buy-list" v-if="tailBuyList.length">
                 <div class="hot-item" v-for="(t, i) in tailBuyList" :key="i" :title="t.tip">
                   <span class="hot-rank">{{ i + 1 }}</span>
@@ -1921,7 +1956,7 @@
         
         <div class="page-toolbar">
           <div class="toolbar-left">
-            <h2 class="page-title" style="margin:0">🎯 筛选板块<span class="muted small" style="font-weight:400">（当日股票明细）</span></h2>
+            <h2 class="page-title" style="margin:0">🎯 板块成分股</h2>
           </div>
           <div class="toolbar-right">
             <button class="btn btn-sm" @click="filterFilterOpen = !filterFilterOpen">{{ filterFilterOpen ? '▴ 收起筛选栏' : '▾ 展开筛选栏' }}</button>
@@ -2080,7 +2115,9 @@
               </tr>
             </thead>
             <tbody @click="onTableClick($event, 'filter', sortedFilterStocks)" @change="onTableChange($event, 'filter')">
-              <tr v-for="(s, idx) in sortedFilterStocks" :key="s.code">
+              <tr v-for="(s, idx) in sortedFilterStocks" :key="s.code"
+                  :class="{ 'tail-buy-hit-row': isTailBuyHit(s) }"
+                  :title="isTailBuyHit(s) ? '🎯 命中尾盘买入法筛选' : ''">
                 <td v-for="(col, ci) in getColumns('filter')" :key="ci" :data-label="col.label"
                     :class="cellClass(col, s, idx, sortedFilterStocks, 'filter')"
                     v-html="cellHtml(col, s, idx, sortedFilterStocks, 'filter')"></td>
@@ -2161,11 +2198,11 @@
       </section>
 
 
-      <!-- ===== 页面4：筛选板块（与热门板块平行） ===== -->
+      <!-- ===== 页面4：板块成分股（与热门板块平行） ===== -->
       <section v-show="currentPage === 'filter'" class="page">
         <div class="page-toolbar">
           <div class="toolbar-left">
-            <h2 class="page-title" style="margin:0">🎯 筛选板块</h2>
+            <h2 class="page-title" style="margin:0">🎯 板块成分股</h2>
           </div>
           <div class="toolbar-right">
             <button class="btn btn-sm" @click="filterFilterOpen = !filterFilterOpen">{{ filterFilterOpen ? '▴ 收起筛选栏' : '▾ 展开筛选栏' }}</button>
@@ -2324,7 +2361,9 @@
               </tr>
             </thead>
             <tbody @click="onTableClick($event, 'filter', sortedFilterStocks)" @change="onTableChange($event, 'filter')">
-              <tr v-for="(s, idx) in sortedFilterStocks" :key="s.code">
+              <tr v-for="(s, idx) in sortedFilterStocks" :key="s.code"
+                  :class="{ 'tail-buy-hit-row': isTailBuyHit(s) }"
+                  :title="isTailBuyHit(s) ? '🎯 命中尾盘买入法筛选' : ''">
                 <td v-for="(col, ci) in getColumns('filter')" :key="ci" :data-label="col.label"
                     :class="cellClass(col, s, idx, sortedFilterStocks, 'filter')"
                     v-html="cellHtml(col, s, idx, sortedFilterStocks, 'filter')"></td>
@@ -2640,7 +2679,7 @@
           <button class="btn-icon" @click="sectorDetail.show = false">✕</button>
         </div>
         <div class="modal-body">
-          <!-- 板块详情筛选栏：功能与「筛选板块」一致（不含板块选择，因详情已锁定在该板块） -->
+          <!-- 板块详情筛选栏：功能与「板块成分股」一致（不含板块选择，因详情已锁定在该板块） -->
           <div class="filter-bar sector-filter-bar" v-show="sectorFilterOpen">
             <div class="filter-field">
               <label>市净比</label>
@@ -2754,7 +2793,9 @@
                 </tr>
               </thead>
               <tbody @click="onTableClick($event, 'sector', sortedSectorDetailStocks)" @change="onTableChange($event, 'sector')">
-                <tr v-for="(s, idx) in sortedSectorDetailStocks" :key="s.code">
+                <tr v-for="(s, idx) in sortedSectorDetailStocks" :key="s.code"
+                    :class="{ 'tail-buy-hit-row': isTailBuyHit(s) }"
+                    :title="isTailBuyHit(s) ? '🎯 命中尾盘选股法筛选' : ''">
                   <td v-for="(col, ci) in getColumns('sector')" :key="ci" :data-label="col.label"
                       :class="cellClass(col, s, idx, sortedSectorDetailStocks, 'sector')"
                       v-html="cellHtml(col, s, idx, sortedSectorDetailStocks, 'sector')"></td>
@@ -2840,7 +2881,7 @@
             <span class="muted small" v-if="sectorPick.stocks.length - visibleSectorPickStocks.length > 0">（已隐藏 {{ sectorPick.stocks.length - visibleSectorPickStocks.length }} 只）</span>
           </div>
           <div class="sector-pick-list" v-if="visibleSectorPickStocks.length">
-            <!-- 表头：字段口径与「筛选板块 / 概念选股板块详情」完全一致 -->
+            <!-- 表头：字段口径与「板块成分股 / 概念选股板块详情」完全一致 -->
             <div class="sector-pick-head">
               <span class="spc-check"></span>
               <span class="spc-code">代码</span>
@@ -2853,7 +2894,7 @@
               <span class="spc-ind">行业</span>
             </div>
             <div class="sector-pick-item" v-for="s in visibleSectorPickStocks" :key="s.code"
-                 :class="{ checked: !!sectorPick.selected[s.code] }">
+                 :class="{ checked: !!sectorPick.selected[s.code], 'tail-buy-hit-item': isTailBuyHit(s) }">
               <label class="spc-check">
                 <input type="checkbox" v-model="sectorPick.selected[s.code]">
               </label>
@@ -2884,7 +2925,7 @@
     </div>
 
     <!-- ===== 热门板块：载入前先选「要去除的股票」 ===== -->
-    <!-- 需求：点击四个子版块里的任一内容后，在「筛选板块」出现内容之前先弹出该选项 -->
+    <!-- 需求：点击四个子版块里的任一内容后，在「板块成分股」出现内容之前先弹出该选项 -->
     <div class="modal-overlay" v-if="hotExclude.show" @click.self="cancelHotExclude">
       <div class="modal hot-exclude-modal">
         <div class="modal-header">
@@ -2895,7 +2936,7 @@
           <p class="muted small" style="margin-top:0">
             即将载入：<b>{{ hotExclude.label }}</b>
             <span class="muted">（{{ hotExclude.kind === 'stock' ? '单只个股' : '板块成分股' }}）</span><br>
-            勾选后，这些股票会<b>在「筛选板块」出现内容之前</b>就被剔除，避免逐一删除。
+            勾选后，这些股票会<b>在「板块成分股」出现内容之前</b>就被剔除，避免逐一删除。
           </p>
           <div class="hot-exclude-opts">
             <label class="checkbox-label" title="剔除股票代码以 301 开头的股票">
@@ -2933,7 +2974,7 @@
           <p class="muted small" style="margin-top:0">
             将对 <b>A 股全部股票</b>（沪深主板 + 创业板 + 科创板 + 北交所）进行筛选；
             勾选下列规则后，命中的股票会被<b>剔除</b>，其余股票将载入下方
-            <b>「筛选板块（当日股票明细）」</b>显示。
+            <b>「板块成分股」</b>显示。
           </p>
           <div class="hot-exclude-opts">
             <label class="checkbox-label" title="剔除北交所股票（4 / 8 / 92 开头）">
@@ -3429,7 +3470,7 @@
 
   <script src="js/auth.js?v=20260918l"></script>
   <script src="js/auth-sync.js?v=20260918l"></script>
-  <script src="js/auth-boot.js?v=20260919r"></script>
+  <script src="js/auth-boot.js?v=20260919u"></script>
   <!-- store / stock-api / hot-topics / app 由 auth-boot.js 在登录通过后动态装载，
        未登录时它们不会被下载，业务数据也不会进入内存 -->
 </body>
