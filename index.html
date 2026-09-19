@@ -48,7 +48,7 @@
         </div>
         <div class="auth-strength" id="reg-strength" hidden><em><i></i></em><span></span></div>
         <button class="auth-btn" type="submit">提交注册申请</button>
-        <p class="auth-tip">密码须为 8-64 位且同时包含字母和数字。<b>本系统不会自动通知管理员</b>，提交后请把生成的申请信息发给他，审核通过才能登录。</p>
+        <p class="auth-tip">密码须为 8-64 位且同时包含字母和数字。<b>本系统不会自动通知管理员</b>，提交后请把生成的申请信息发给他。若管理员已开启云端同步，审核通过后你直接用账号密码登录即可，无需准入码。</p>
         <div class="auth-links">
           <button type="button" class="auth-link" id="auth-reg-back">返回登录</button>
         </div>
@@ -69,7 +69,7 @@
         <button class="auth-btn auth-btn-back" type="button" id="auth-reg-done-back">← 返回登录</button>
         <p class="auth-tip">把上面的申请码整段（或只复制那一长串码）发给管理员即可，他粘进「用户管理 → 待审核注册申请」审核；通过后会把一串「准入码」发回给你。</p>
         <p class="auth-tip">管理员与你在同一台设备时，直接用他账号进「用户管理 → 待审核注册申请」点通过即可，不必转发申请码。</p>
-        <p class="auth-tip"><b>拿到管理员回传的「准入码」后</b>，回到登录页点「已通过审核？粘贴准入码」，写入本机即可登录。</p>
+        <p class="auth-tip">若管理员已开启「云端同步」，审核通过后你<b>直接用账号密码登录即可，无需任何码</b>；仅当登录时仍提示「等待管理员审核」，才需要粘贴管理员发的准入码。</p>
       </div>
 
       <!-- 粘贴准入码 -->
@@ -2999,7 +2999,7 @@
           <div class="um-pending" v-if="authAdminToken && authAdminToken.trim()">
             <div class="um-pending-head">
               <span>🌐 云端注册表待审</span>
-              <button class="btn btn-sm" @click="syncAllToRegistryByAdmin" title="把本机账号写进云端注册表">📡 同步本机账号</button>
+              <button class="btn btn-sm" @click="syncAllToRegistryByAdmin" title="把本机账号同步到云端注册表（公开文件，供对方免码登录）">📡 同步到云端</button>
               <span class="um-pending-count" v-if="remotePendingLoading">加载中…</span>
               <span class="um-pending-count" v-else-if="remotePending.length">{{ remotePending.length }} 人</span>
               <span class="um-pending-count" v-else>无</span>

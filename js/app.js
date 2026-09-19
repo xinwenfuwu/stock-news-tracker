@@ -430,11 +430,17 @@ const app = createApp({
       if (!r.ok) { showToast(r.error, 'error'); refreshUserList(); return; }
       refreshUserList();
       const code = r.approveCode || '';
+      // 是否已配置 GitHub 令牌：决定云端注册表是否可写、对方能否「免准入码」直接登录。
+      // approveUser 内部已自动把该账号同步进云端注册表（_syncUserToRegistry），无需手动再点。
+      const cloudReady = !!(A.Sync && A.Sync.isAdminConfigured && A.Sync.isAdminConfigured());
+      if (cloudReady) {
+        // 审核通过的同时账号已写入云端，对方设备登录时用账号密码直接读取、免准入码。
+        // 不再强制弹准入码面板，避免诱导管理员去发码、用户去抄码。
+        showToast(`已通过「${u.username}」并已同步到云端，对方现在可用账号密码直接登录（免准入码）`, 'success');
+        return;
+      }
+      // 未配置令牌：云端同步不可用，退回准入码流程（与历史行为一致，保证可用）。
       if (code) {
-        // 同一台设备上对方本机记录已被改，不需要码；换设备才需要转达。
-        // batch16 前这里用 prompt() 弹码，在手机 / 微信里容易被忽略或截断，
-        // 管理员以为「点通过就完事」、其实码没发出去，对方永远登不进。
-        // 改用醒目面板，并明确提示「务必把这串码发给对方」。
         copyText(code, `已通过「${u.username}」，准入码已复制到剪贴板`);
         showApproveCodePanel({
           title: `已通过「${u.username}」的注册申请`,
