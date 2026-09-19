@@ -740,6 +740,14 @@ body {
 .btn.btn-tail-sector { border-color: #d32f2f; color: #d32f2f; }
 .btn.btn-tail-sector:hover:not(:disabled) { background: rgba(211, 47, 47, 0.08); }
 .btn.btn-tail-sector:disabled { opacity: .6; }
+
+/* batch26：尾盘买入法面板内的「筛选板块」下拉 */
+/* 说明：.panel-title-row 是 space-between，标题在左、下拉与刷新按钮在右；
+   这里给下拉不加 margin-left:auto，避免和 space-between 打架 */
+.tail-buy-panel .panel-title-row { flex-wrap: wrap; }
+.tail-buy-panel .tb-pool-pick { display: flex; align-items: center; gap: 6px; }
+.tail-buy-panel .tb-pool-pick > label { white-space: nowrap; font-size: 12.5px; }
+.tail-buy-panel .tb-pool-pick > select { max-width: 260px; padding: 5px 8px; font-size: 12.5px; }
 @media (max-width: 1100px) {
   .hot-top-row { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .hot-row-3 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
@@ -1783,9 +1791,10 @@ body {
 }
 .hot-topics-panel { flex: 1 1 auto; min-width: 0; }
 /* 右栏：格隆汇每日快讯（13 分类统计 + 日期 + 关键词搜索） */
+/* batch26：宽度 600px → 720px（+20%），把「主题分类统计」让出的 20% 用于完整显示三维归类的子类名称 */
 .brief-panel {
-  flex: 0 0 600px;
-  width: 600px;
+  flex: 0 0 720px;
+  width: 720px;
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: 10px;
@@ -1866,10 +1875,12 @@ body {
 .brief-cat-head.active { background: var(--primary-light); }
 .bc-caret { flex: 0 0 10px; color: var(--text-placeholder); font-size: 11px; }
 .bc-icon { flex: 0 0 auto; font-size: 13px; }
-.bc-name { flex: 1 1 auto; min-width: 0; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.bc-track { flex: 1 1 auto; height: 8px; background: var(--surface-alt); border-radius: 4px; overflow: hidden; }
+/* batch26：子类名称去加粗（600 → 400），并把 min-width 提高以便完整显示较长的子类名 */
+.bc-name { flex: 1 1 auto; min-width: 0; font-weight: 400; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.bc-track { flex: 0 0 46px; height: 8px; background: var(--surface-alt); border-radius: 4px; overflow: hidden; }
 .bc-fill { display: block; height: 100%; border-radius: 4px; }
-.bc-count { flex: 0 0 34px; text-align: right; font-weight: 600; font-variant-numeric: tabular-nums; }
+/* batch26：计数/占比去加粗（600 → 400） */
+.bc-count { flex: 0 0 34px; text-align: right; font-weight: 400; font-variant-numeric: tabular-nums; }
 .bc-pct { flex: 0 0 36px; text-align: right; color: var(--text-placeholder); font-variant-numeric: tabular-nums; }
 .brief-news { padding: 6px 0 10px 10px; border-left: 2px solid var(--border); margin: 0 0 6px 4px; }
 .brief-news-head { display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; margin-bottom: 6px; }
@@ -1878,7 +1889,8 @@ body {
 .brief-item:last-of-type { border-bottom: none; }
 /* 每日快讯：题材 / 概念 / 行业 三维度并排，各自按占比从大到小 */
 .brief-dims { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
-.bcg-head { font-size: 13px; font-weight: 700; margin: 6px 0 4px; padding-bottom: 4px; border-bottom: 2px solid var(--border); }
+/* batch26：归类表头去加粗（700 → 400） */
+.bcg-head { font-size: 13px; font-weight: 400; margin: 6px 0 4px; padding-bottom: 4px; border-bottom: 2px solid var(--border); }
 @media (max-width: 900px) { .brief-dims { grid-template-columns: 1fr; } }
 .brief-item-meta { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; margin-bottom: 3px; }
 .brief-time { font-size: 11.5px; color: var(--text-placeholder); font-variant-numeric: tabular-nums; }
@@ -2033,7 +2045,8 @@ a.brief-text:hover { color: var(--primary); text-decoration: underline; }
 .sc-bar-fill { display: block; height: 100%; border-radius: 4px; }
 .sc-bar-val { flex: 0 0 auto; font-variant-numeric: tabular-nums; }
 /* 统计双栏：左=跨站重合榜，右=主题维度统计 */
-.ht-split { display: grid; grid-template-columns: minmax(0, 1.08fr) minmax(0, 1fr); gap: 16px; align-items: start; }
+/* batch26：右列（主题分类统计）宽度缩小 20%（1fr → 0.8fr），让出的空间给右侧「每日快讯」（见 .brief-panel 720px） */
+.ht-split { display: grid; grid-template-columns: minmax(0, 1.08fr) minmax(0, 0.8fr); gap: 16px; align-items: start; }
 .ht-split-left, .ht-split-right { min-width: 0; }
 .ht-split-left > .sub-title, .ht-split-right > .sub-title { margin-top: 0; }
 .ht-split-left .overlap-list { max-height: 780px; overflow-y: auto; padding-right: 4px; }

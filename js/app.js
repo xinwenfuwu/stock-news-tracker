@@ -6088,6 +6088,41 @@ const app = createApp({
       if (allAFilter.loading) return;
       allAFilter.show = true;
     }
+    // ===== batch26：尾盘买入法面板内的「筛选板块」下拉 =====
+    // 需求：把原「🌐 对A股全部股票筛选」按钮改为下拉菜单；下拉列出「我的概念选股板块」的各板块，
+    // 选中后该板块成分股直接展示在下方成分表（sortedFilterStocks）中；另保留「A股全部股票」项，
+    // 选中它即弹出剔除规则弹窗，走全市场筛选（原按钮行为）。
+    const tailPoolPick = ref('');
+    function onTailPoolChange() {
+      const v = tailPoolPick.value;
+      if (v === '__allA__') {
+        // 全市场筛选：弹窗勾选剔除规则（原「对A股全部股票筛选」按钮行为）
+        askAllAFilter();
+        return;
+      }
+      if (!v) {
+        // 取消选择：清空成分表
+        filterPanel.poolId = '';
+        hotFilterStocks.value = [];
+        tailBuyList.value = []; tailBuyTotal.value = 0; tailBuyNote.value = '';
+        clearTailBuyHits();
+        return;
+      }
+      // 我的概念选股板块：直接把 poolId 指到该板块，成分表自动渲染其成分股（filterPoolStocks 已支持 's-<id>'）
+      if (!filterPanel.locked) resetHotFilterRanges();
+      filterPanel.poolId = v;
+      const sp = (D.sectorPools || []).find(p => 's-' + p.id === v);
+      const n = sp ? (sp.stocks || []).length : 0;
+      // 让「板块成分股」表所在面板同步滚动可见（与栏目联动）
+      hotBoardActive.value = sp ? sp.name : '';
+      tailBuyList.value = []; tailBuyTotal.value = 0; tailBuyNote.value = '';
+      clearTailBuyHits();
+      if (sp && !n) {
+        showToast(`「${sp.name}」暂无成分股：请到「选股」页打开该板块并补充成分股`, 'error');
+      } else if (sp) {
+        showToast(`已载入「${sp.name}」成分股 ${n} 只，显示在下方成分表`, 'success');
+      }
+    }
     function cancelAllAFilter() { allAFilter.show = false; }
     /**
      * A 股全网筛选：拉取全部 A 股 → 按弹窗勾选的规则剔除 → 载入下方「板块成分股」。
@@ -6141,6 +6176,7 @@ const app = createApp({
         hotDetailIsStock.value = false;
         if (!filterPanel.locked) resetHotFilterRanges();
         filterPanel.poolId = 'hot';
+        tailPoolPick.value = '__allA__';   // batch26：同步尾盘面板下拉显示
         hotFilterStocks.value = daily.stocks;
         showToast(`A 股全部筛选完成：保留 ${list.length} 只（已剔除 ${removed} 只），已载入「板块成分股」`, 'success');
         // 复用既有补全逻辑刷新字段
@@ -7142,6 +7178,8 @@ const app = createApp({
       sectorTailBuyList, sectorTailBuyLoading, sectorTailBuyTotal, sectorTailBuyNote,
       runTailBuyForSector, clearSectorTailBuy,
       allAFilter, askAllAFilter, cancelAllAFilter, confirmAllAFilter,
+      // batch26：尾盘买入法面板「筛选板块」下拉
+      tailPoolPick, onTailPoolChange,
       // batch24：命中标红（筛选板块表里把尾盘买入法命中的行标红）
       tailBuyHit, isTailBuyHit, clearTailBuyHits,
       hotSearchCode, hotSearchName, clearHotSearch,
