@@ -4664,14 +4664,16 @@ const app = createApp({
     const hotTopicDateHasData = ref(false);
     const htCatFilter = ref('');
     const htCategories = (typeof HotTopics !== 'undefined') ? HotTopics.CATEGORIES : [];
+    /* 请求R：原「1天内」改为「时段」——选中时严格统计上方「新闻统计开始时间」起止区间内的新闻；
+     * 其余选项仍是「近 N 天」整日纳入（不套窗口）。 */
     const htRangeOptions = [
-      { key: '1d', label: '1天内', days: 1 },
+      { key: 'win', label: '时段', days: 1 },
       { key: '3d', label: '3天内', days: 3 },
       { key: '5d', label: '5天内', days: 5 },
       { key: '10d', label: '10天内', days: 10 },
       { key: '1m', label: '一月内', days: 30 }
     ];
-    const analysisRange = ref('3d');
+    const analysisRange = ref('win');
     const analysisLoading = ref(false);
     const analysisResult = ref(null);
     /* batch16：统计分析（跨站重合榜 / 主题分类统计）的统计时间窗口。
@@ -5306,20 +5308,28 @@ const app = createApp({
     /** 统计分析：按时间段加载历史快照，跨站聚类 + 各站分类统计 */
     async function runAnalysis() {
       const opt = htRangeOptions.find(r => r.key === analysisRange.value) || htRangeOptions[1];
+      // 请求R：「时段」= 按上方「新闻统计开始时间」窗口统计；其余 = 近 N 天整日纳入
+      const winMode = analysisRange.value === 'win';
       analysisLoading.value = true;
       analysisResult.value = null;
       try {
         // batch16：时间口径改为「统计窗口」（15:00 换日、起止可改）；
-        // 窗口没填或填错时才回退到原来的「近 N 天」。
+        // 请求R：只有选中「时段」时才按窗口精筛，否则按所选「近 N 天」回溯。
         const HT = ht_();
         const ws = (HT && HT.fromLocalInputValue) ? HT.fromLocalInputValue(analysisWinStart.value) : null;
         const we = (HT && HT.fromLocalInputValue) ? HT.fromLocalInputValue(analysisWinEnd.value) : null;
         let dates = [];
         let winStartMs = null, winEndMs = null;
-        if (ws && we && ws.getTime() < we.getTime()) {
-          winStartMs = ws.getTime();
-          winEndMs = we.getTime();
-          dates = HT.windowSnapshotDates(winStartMs, winEndMs);
+        if (winMode) {
+          if (ws && we && ws.getTime() < we.getTime()) {
+            winStartMs = ws.getTime();
+            winEndMs = we.getTime();
+            dates = HT.windowSnapshotDates(winStartMs, winEndMs);
+          } else {
+            // 窗口没填或填错：提示并回退到当天，避免静默给出误导性结果
+            showToast('「时段」需要有效的统计开始/结束时间（开始早于结束），已回退为当天', 'error');
+            dates.push(hotTopicDate.value || fmtDate(new Date()));
+          }
         } else {
           const today = hotTopicDate.value || fmtDate(new Date());
           for (let i = 0; i < opt.days; i++) dates.push(dateMinusDays(today, i));

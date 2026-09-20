@@ -24,7 +24,7 @@ const HOT_TOPN = 50;
 /** 单条快讯正文最大保留字符数（快讯正文通常在 100~300 字，超长多为转载长文） */
 const BRIEF_TEXT_MAX = 500;
 
-/** 取「今天」：一律按北京时间（UTC+8），不跟随运行器本地时区。
+/** 取「今天」：一律��北京时间（UTC+8），不跟随运行器本地时区。
  *  GitHub Actions 运行器是 UTC，而定时任务每 2 小时一次，
  *  其中 UTC 22:00（= 北京时间次日 06:00）那一跑，若按 UTC 判日期会认为"今天"是前一天，
  *  进而把当天早上的实时榜单写进前一天的快照文件，污染历史数据。 */
@@ -50,7 +50,7 @@ function decodeBuffer(buf, enc) {
 const countBad = s => { const m = s.match(/\uFFFD/g); return m ? m.length : 0; };
 
 /** 智能解码：优先 UTF-8，若出现替换字符（乱码）则改用 GBK，取更干净的一版。
- *  国内财经站点（如同花顺）多为 GBK，海外 runner 上必须显式转码。 */
+ *  国内财经站点（如同花顺）多为 GBK，海外 runner ���必须显式转码。 */
 function decodeSmart(buf, encoding) {
   if (encoding) return decodeBuffer(buf, encoding);
   const utf8 = decodeBuffer(buf, 'utf-8');
@@ -68,15 +68,21 @@ function withTimeout(promise, ms, label) {
   ]);
 }
 
-async function fetchText(url, { timeout = 8000, isJson = false, encoding = '' } = {}) {
+/** 请求R：部分源站校验自定义请求头（金十需 x-app-id / x-version），否则直接 403。 */
+const SRC_HEADERS = {
+  json_jin10: { 'x-app-id': 'SO1EJGmNgCtmpcPF', 'x-version': '1.0.0', Referer: 'https://flash.jin10.com/' },
+  json_sina: { Referer: 'https://finance.sina.com.cn/7x24/' }
+};
+
+async function fetchText(url, { timeout = 8000, isJson = false, encoding = '', headers: extraHeaders = null } = {}) {
   let resp;
   try {
     resp = await withTimeout(fetch(url, {
-      headers: {
+      headers: Object.assign({
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36',
         'Accept': 'application/json,text/html,application/xhtml+xml,*/*;q=0.8',
         'Accept-Language': 'zh-CN,zh;q=0.9,en;q=0.8'
-      }
+      }, extraHeaders || {})
     }), timeout, url);
   } catch (e) {
     throw new Error((e && e.message) || 'fetch failed');
@@ -115,12 +121,19 @@ function parseSource(parse, key, payload) {
   } else if (parse === 'json_wscn') {
     const arr = (payload && payload.data && payload.data.items) || [];
     for (const it of arr.slice(0, HOT_TOPN)) push(it.content_text || it.content, it.display_time, it.uri ? 'https://wallstreetcn.com/' + it.uri : '');
-  } else if (parse === 'json_cailian') {
-    const arr = Array.isArray(payload && payload.data) ? payload.data : ((payload && payload.data && payload.data.data) || []);
-    for (const it of arr.slice(0, HOT_TOPN)) push(it.content || it.title, it.publish_time || it.ctime, 'https://www.cailianpress.com/');
-  } else if (parse === 'json_xueqiu') {
-    const arr = (payload && payload.items) || (payload && payload.list) || [];
-    for (const it of arr.slice(0, HOT_TOPN)) push(it.title || it.description || it.text, '', it.target ? ('https://xueqiu.com' + it.target) : '');
+  } else if (parse === 'json_sina') {
+    // 请求R：新浪财经 7x24 实时新闻 → result.data.feed.list[]，字段 rich_text / create_time / docurl
+    let arr = (payload && payload.result && payload.result.data && payload.result.data.feed && payload.result.data.feed.list)
+      || (payload && payload.data && payload.data.feed && payload.data.feed.list)
+      || (payload && payload.data && payload.data.list) || (payload && payload.result && payload.result.list)
+      || (Array.isArray(payload) ? payload : []);
+    if (!Array.isArray(arr)) arr = [];
+    for (const it of arr.slice(0, HOT_TOPN)) push(it.rich_text || it.content || it.title || it.text, it.create_time || it.time || it.ctime, it.docurl || it.url || 'https://finance.sina.com.cn/7x24/');
+  } else if (parse === 'json_jin10') {
+    // 请求R：金十数据实时快讯 → data[]（或 data.items[]），字段 time / data.content / data.title / id
+    let arr = Array.isArray(payload) ? payload : (Array.isArray(payload && payload.data) ? payload.data : ((payload && payload.data && payload.data.items) || []));
+    if (!Array.isArray(arr)) arr = [];
+    for (const it of arr.slice(0, HOT_TOPN)) push((it.data && (it.data.content || it.data.title)) || it.content || it.title, it.time || it.ctime, it.id ? ('https://flash.jin10.com/detail/' + it.id) : 'https://flash.jin10.com/');
   } else if (parse === 'json_gelonghui') {
     const arr = (payload && payload.result && payload.result.data) || (payload && payload.data) || [];
     for (const it of arr.slice(0, HOT_TOPN)) push(it.content || it.title || it.text, it.created_at || it.time, 'https://www.gelonghui.com/');
@@ -166,11 +179,12 @@ function parseSource(parse, key, payload) {
 async function fetchSource(s) {
   const tryEndpoint = async (url, forceHtml) => {
     if (!url) return [];
+    const hdr = SRC_HEADERS[s.parse] || null;
     if (forceHtml || (s.parse && s.parse.startsWith('html_'))) {
-      const html = await fetchText(url);
+      const html = await fetchText(url, { headers: hdr });
       return parseSource('html_body', s.key, html);
     }
-    const j = await fetchText(url, { isJson: true });
+    const j = await fetchText(url, { isJson: true, headers: hdr });
     return parseSource(s.parse, s.key, j);
   };
 
@@ -493,7 +507,7 @@ async function main() {
     }), 'utf8');
     console.log(`已写入 ${sinaFile}（本次 ${sinaItems.length} 条，累计 ${sinaBriefs.length} 条）`);
   } else {
-    console.log(`跳过「新浪财经快讯」：目标日 ${DATE} 不是今天。`);
+    console.log(`跳过「新浪财经快讯」：目标日 ${DATE} 不是今天��`);
   }
 
   // 维护日期清单 index.json：供前端在没有代理时定位「最近可用快照」

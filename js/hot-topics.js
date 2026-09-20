@@ -59,11 +59,14 @@
     { rank: 2, key: 'toutiao', name: '今日头条', color: '#2a6cff', parse: 'json_toutiao', endpoint: 'https://www.toutiao.com/hot-event/hot-board/?origin=toutiao_pc' },
     { rank: 3, key: 'ths', name: '同花顺', color: '#0a7d3e', parse: 'html_ths', endpoint: 'https://news.10jqka.com.cn/realtimenews.html', base: 'https://news.10jqka.com.cn' },
     { rank: 4, key: 'eastmoney', name: '东方财富', color: '#e63525', parse: 'news_eastmoney', endpoint: '', fallback: 'https://finance.eastmoney.com/', base: 'https://finance.eastmoney.com' },
-    { rank: 5, key: 'cailian', name: '财联社', color: '#d92121', parse: 'json_cailian', endpoint: 'https://www.cailianpress.com/v2/articles/telegraph?last_time=0' },
+    // 请求R：财联社 → 新浪财经 7x24 实时新闻（zhibo feed 接口，字段 create_time / rich_text）
+    { rank: 5, key: 'sina', name: '新浪财经', color: '#e60012', parse: 'json_sina', endpoint: 'https://zhibo.sina.com.cn/api/zhibo/feed?page=1&page_size=50&zhibo_id=152&tag_id=0&dire=f&dpc=1', base: 'https://finance.sina.com.cn' },
     { rank: 6, key: 'kaipanla', name: '开盘啦', color: '#f59e0b', parse: 'html_kaipanla', endpoint: 'https://www.kaipanla.com/', base: 'https://www.kaipanla.com' },
-    { rank: 7, key: 'xueqiu', name: '雪球', color: '#cc3333', parse: 'json_xueqiu', endpoint: 'https://xueqiu.com/statuses/topic/today.json' },
+    // 请求R：雪球 → 投实 7*24h 新闻（官网无公开 JSON 接口，走 HTML 抽取兜底）
+    { rank: 7, key: 'toushi', name: '投实', color: '#cc3333', parse: 'html_toushi', endpoint: 'https://www.toushivip.com/', base: 'https://www.toushivip.com' },
     { rank: 8, key: 'wscn', name: '华尔街见闻', color: '#222222', parse: 'json_wscn', endpoint: 'https://api-prod.wallstreetcn.com/apiv1/content/lives?channel=global&client=pc&limit=20' },
-    { rank: 9, key: 'wind', name: '万得', color: '#0f766e', parse: 'html_wind', endpoint: 'https://www.wind.com.cn/', base: 'https://www.wind.com.cn' },
+    // 请求R：万得 → 金十数据实时快讯（字段 time / data.content）
+    { rank: 9, key: 'jin10', name: '金十数据', color: '#1267c7', parse: 'json_jin10', endpoint: 'https://flash-api.jin10.com/get_flash_list?channel=-8200&vip=1', base: 'https://flash.jin10.com' },
     { rank: 10, key: 'cs', name: '中国证券', color: '#b91c1c', parse: 'html_cs', endpoint: 'https://www.cs.com.cn/', base: 'https://www.cs.com.cn' }
   ];
 

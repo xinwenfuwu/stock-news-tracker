@@ -4,12 +4,12 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>股市信息分析系统</title>
-  <link rel="stylesheet" href="css/style.css?v=20260920c">
+  <link rel="stylesheet" href="css/style.css?v=20260920d">
   <!-- Vue 3 全局构建版（v3.4.21 · 自托管）
        原先走 unpkg.com CDN：国内网络对 unpkg 的连通性不稳定，一旦该请求长时间挂起，
        <head> 里的阻塞脚本会让整页停在白屏、后续 auth-boot.js 根本不会执行。
        改为同源托管后，启动链路不再依赖任何第三方 CDN。 -->
-  <script src="js/vue.global.prod.js?v=20260920c"></script>
+  <script src="js/vue.global.prod.js?v=20260920d"></script>
 </head>
 <body class="auth-locked">
   <!-- ===== 登录关卡：登录通过前业务脚本不会被加载 ===== -->
@@ -921,6 +921,8 @@
                 <div class="seg">
                   <button v-for="r in htRangeOptions" :key="r.key" :class="{ active: analysisRange === r.key }" @click="analysisRange = r.key">{{ r.label }}</button>
                 </div>
+                <!-- 请求R：选中「时段」时，明确提示当前统计的就是上方窗口这段时间 -->
+                <span class="muted small" v-if="analysisRange === 'win' && analysisWinText">📌 统计区间 {{ analysisWinText }}</span>
                 <button class="btn btn-primary" @click="runAnalysis" :disabled="analysisLoading">📊 生成统计</button>
                 <span class="muted small" v-if="analysisResult">覆盖 {{ analysisResult.dayCount }} 天 / {{ analysisResult.totalItems }} 条</span>
               </div>
@@ -3514,9 +3516,9 @@
     </transition>
   </div>
 
-  <script src="js/auth.js?v=20260920c"></script>
-  <script src="js/auth-sync.js?v=20260920c"></script>
-  <script src="js/auth-boot.js?v=20260920c"></script>
+  <script src="js/auth.js?v=20260920d"></script>
+  <script src="js/auth-sync.js?v=20260920d"></script>
+  <script src="js/auth-boot.js?v=20260920d"></script>
   <!-- store / stock-api / hot-topics / app 由 auth-boot.js 在登录通过后动态装载，
        未登录时它们不会被下载，业务数据也不会进入内存 -->
 </body>

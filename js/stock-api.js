@@ -3510,12 +3510,23 @@ const StockAPI = {
     } else if (parse === 'json_wscn' && j) {
       const arr = (j.data && j.data.items) || [];
       for (const it of arr) push(it.content_text || it.content, it.display_time, it.uri ? 'https://wallstreetcn.com/' + it.uri : '');
-    } else if (parse === 'json_cailian' && j) {
-      let arr = Array.isArray(j.data) ? j.data : (j.data && j.data.data) || [];
-      for (const it of arr) push(it.content || it.title, it.publish_time || it.ctime, 'https://www.cailianpress.com/');
-    } else if (parse === 'json_xueqiu' && j) {
-      const arr = (j.items || j.list || []);
-      for (const it of arr) push(it.title || it.description || it.text, '', it.target ? ('https://xueqiu.com' + it.target) : '');
+    } else if (parse === 'json_sina' && j) {
+      // 请求R：新浪财经 7x24 实时新闻（zhibo feed）→ result.data.feed.list[]，字段 rich_text / create_time / docurl
+      let arr = (j.result && j.result.data && j.result.data.feed && j.result.data.feed.list)
+        || (j.data && j.data.feed && j.data.feed.list)
+        || (j.data && j.data.list) || (j.result && j.result.list)
+        || (Array.isArray(j) ? j : []);
+      if (!Array.isArray(arr)) arr = [];
+      for (const it of arr) push(it.rich_text || it.content || it.title || it.text,
+        it.create_time || it.time || it.ctime,
+        it.docurl || it.url || 'https://finance.sina.com.cn/7x24/');
+    } else if (parse === 'json_jin10' && j) {
+      // 请求R：金十数据实时快讯 → data[]（或 data.items[]），字段 time / data.content / data.title / id
+      let arr = Array.isArray(j) ? j : (Array.isArray(j.data) ? j.data : ((j.data && j.data.items) || []));
+      if (!Array.isArray(arr)) arr = [];
+      for (const it of arr) push((it.data && (it.data.content || it.data.title)) || it.content || it.title,
+        it.time || it.ctime,
+        it.id ? ('https://flash.jin10.com/detail/' + it.id) : 'https://flash.jin10.com/');
     } else if (parse === 'json_gelonghui' && j) {
       const arr = (j.result && j.result.data) || (j.data && j.data) || [];
       for (const it of arr) push(it.content || it.title || it.text, it.created_at || it.time, 'https://www.gelonghui.com/');
