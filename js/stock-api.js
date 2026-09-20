@@ -3405,7 +3405,7 @@ const StockAPI = {
   /**
    * 抓取「火热话题」：按用户指定排序从 10 个金融软件分别拉取 Top10 影响股市的新闻。
    * 经 Cloudflare Worker 代理（东方财富走 /news，其余走 /proxy?url=）绕过跨域，逐源并行容错。
-   * 每条自动用 HotTopics.classify 打 7 类标签（财经/政治政策/经济/军事/科技/社会热点/世界500强领导者动态）。
+   * 每条自动用 HotTopics.classify 打 7 类标签（财经/政治政策/经济/军事/科技/社会热点/百强企业）。
    * @returns {Promise<{ok:boolean, error?:string, sources:Array, merged:Array}>}
    */
   async fetchHotTopics(proxyUrl) {

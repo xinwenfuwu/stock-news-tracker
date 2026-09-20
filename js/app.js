@@ -4716,7 +4716,17 @@ const app = createApp({
     });
 
     function catColor(c) {
-      return (typeof HotTopics !== 'undefined' && HotTopics.CATEGORY_COLORS[c]) || '#6b7280';
+      // batch32：历史快照里可能还存着旧分类名（如「世界500强领导者动态」），先归一化再取色
+      const HT = (typeof HotTopics !== 'undefined') ? HotTopics : null;
+      if (!HT) return '#6b7280';
+      const key = HT.normalizeCategory ? HT.normalizeCategory(c) : String(c || '');
+      return HT.CATEGORY_COLORS[key] || '#6b7280';
+    }
+    /** batch32：分类标签显示名。历史快照里的旧分类名（如「世界500强领导者动态」）统一显示成新名，
+     *  否则同一份列表里新旧两个名字并存，看起来像改名没生效。只影响显示，不动数据。 */
+    function catLabel(c) {
+      const HT = (typeof HotTopics !== 'undefined') ? HotTopics : null;
+      return (HT && HT.normalizeCategory) ? HT.normalizeCategory(c) : String(c || '');
     }
     function htSourceByRank(rank) {
       const list = (typeof HotTopics !== 'undefined' && HotTopics.SOURCE_ORDER) || [];
@@ -4737,8 +4747,11 @@ const app = createApp({
     const filteredHotSources = computed(() => {
       const list = hotTopicsSources.value || [];
       if (!htCatFilter.value) return list.map(s => ({ ...s, filteredItems: s.items, filteredCount: s.items.length }));
+      // batch32：条目可能带旧分类名，比较前先归一化，否则改名后老数据筛不出来
+      const HT = (typeof HotTopics !== 'undefined') ? HotTopics : null;
+      const norm = c => (HT && HT.normalizeCategory) ? HT.normalizeCategory(c) : String(c || '');
       return list.map(s => {
-        const fi = (s.items || []).filter(it => it.cat === htCatFilter.value);
+        const fi = (s.items || []).filter(it => norm(it.cat) === htCatFilter.value);
         return { ...s, filteredItems: fi, filteredCount: fi.length };
       });
     });
@@ -7245,7 +7258,7 @@ const app = createApp({
       analysisRange, analysisLoading, analysisResult, filteredHotSources,
       // batch16：统计分析的统计时间窗口（15:00 换日，与快讯板块同口径）
       analysisWinStart, analysisWinEnd, analysisWinText, resetAnalysisWin,
-      catColor, htSourceColor, htSourceName, ratioClass, setHtMode, onHotTopicDateChange, runAnalysis,
+      catColor, catLabel, htSourceColor, htSourceName, ratioClass, setHtMode, onHotTopicDateChange, runAnalysis,
       toggleThemeTopic, moreThemeNews,
       // 筛选板块
       filterPanel, openFilterPanel, resetFilter, applyFilterPool, toggleFilterLock,

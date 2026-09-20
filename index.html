@@ -4,12 +4,12 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>股市信息分析系统</title>
-  <link rel="stylesheet" href="css/style.css?v=20260920b">
+  <link rel="stylesheet" href="css/style.css?v=20260920c">
   <!-- Vue 3 全局构建版（v3.4.21 · 自托管）
        原先走 unpkg.com CDN：国内网络对 unpkg 的连通性不稳定，一旦该请求长时间挂起，
        <head> 里的阻塞脚本会让整页停在白屏、后续 auth-boot.js 根本不会执行。
        改为同源托管后，启动链路不再依赖任何第三方 CDN。 -->
-  <script src="js/vue.global.prod.js?v=20260920b"></script>
+  <script src="js/vue.global.prod.js?v=20260920c"></script>
 </head>
 <body class="auth-locked">
   <!-- ===== 登录关卡：登录通过前业务脚本不会被加载 ===== -->
@@ -887,7 +887,7 @@
                       <span class="item-rank">{{ i + 1 }}</span>
                       <a v-if="it.url" :href="it.url" target="_blank" rel="noopener" :title="it.text" class="item-text">{{ it.text }}</a>
                       <span v-else class="item-text" :title="it.text">{{ it.text }}</span>
-                      <span class="cat-tag" :style="{ background: catColor(it.cat) }">{{ it.cat }}</span>
+                      <span class="cat-tag" :style="{ background: catColor(it.cat) }">{{ catLabel(it.cat) }}</span>
                       <span class="item-time" v-if="it.time">{{ it.time }}</span>
                     </li>
                   </ol>
@@ -3514,9 +3514,9 @@
     </transition>
   </div>
 
-  <script src="js/auth.js?v=20260920b"></script>
-  <script src="js/auth-sync.js?v=20260920b"></script>
-  <script src="js/auth-boot.js?v=20260920b"></script>
+  <script src="js/auth.js?v=20260920c"></script>
+  <script src="js/auth-sync.js?v=20260920c"></script>
+  <script src="js/auth-boot.js?v=20260920c"></script>
   <!-- store / stock-api / hot-topics / app 由 auth-boot.js 在登录通过后动态装载，
        未登录时它们不会被下载，业务数据也不会进入内存 -->
 </body>
