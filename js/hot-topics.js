@@ -312,23 +312,73 @@
    */
   function siteCategoryStats(items) {
     const bySource = {};
-    SOURCE_ORDER.forEach(s => { bySource[s.key] = { rank: s.rank, key: s.key, name: s.name, color: s.color, byCat: {}, total: 0 }; });
+    SOURCE_ORDER.forEach(s => { bySource[s.key] = { rank: s.rank, key: s.key, name: s.name, color: s.color, byCat: {}, news: {}, total: 0 }; });
     for (const it of (items || [])) {
       const st = bySource[it.sourceKey];
       if (!st) continue;
       // batch32：历史快照里的旧分类名先归一化，否则改名后这些条目会从分布统计里消失
       const cat = normalizeCategory(it.cat || '财经');
       st.byCat[cat] = (st.byCat[cat] || 0) + 1;
+      // 请求S：dist 每项带上该站该分类的新闻，供点分类弹窗查看
+      if (!st.news[cat]) st.news[cat] = [];
+      st.news[cat].push(it);
       st.total++;
     }
     return SOURCE_ORDER.map(s => {
       const st = bySource[s.key];
-      const dist = CATEGORIES.map(cat => ({ cat, count: st.byCat[cat] || 0 }))
+      const dist = CATEGORIES.map(cat => ({ cat, name: cat, count: st.byCat[cat] || 0, news: st.news[cat] || [] }))
         .filter(d => d.count > 0)
         .sort((a, b) => b.count - a.count);
       const max = dist.length ? dist[0].count : 1;
-      dist.forEach(d => { d.pct = Math.round((d.count / (st.total || 1)) * 100); d.width = Math.max(6, (d.count / max) * 100); });
-      return { rank: st.rank, key: st.key, name: st.name, color: st.color, total: st.total, byCat: st.byCat, dist };
+      dist.forEach(d => {
+        d.pct = Math.round((d.count / (st.total || 1)) * 100);
+        d.width = Math.max(6, (d.count / max) * 100);
+        d.news.sort((a, b) => String(b.date || '').localeCompare(String(a.date || '')) || String(b.time || '').localeCompare(String(a.time || '')));
+      });
+      return { rank: st.rank, key: st.key, name: st.name, color: st.color, total: st.total, hitTotal: st.total, byCat: st.byCat, dist };
+    });
+  }
+
+  /**
+   * 请求S：各站「主题维度」统计（默认概念，也可传 industry/product/chain/tech）。
+   * 与 siteCategoryStats（7 大类，互斥、每条只归 1 类）不同：
+   * 这里是**多标签命中**——一条新闻可同时命中多个概念，回答的是「这个站的新闻涉及哪些概念板块」。
+   * @param {Array} items 扁平新闻（含 sourceKey / text）
+   * @param {string} dimKey THEME_KEYWORDS 的维度键
+   * @returns 与 siteCategoryStats 同构：dist[].news 为该站该主题命中的全部新闻，供点开弹窗
+   */
+  function siteThemeStats(items, dimKey) {
+    const dict = THEME_KEYWORDS[dimKey];
+    const bySource = {};
+    SOURCE_ORDER.forEach(s => {
+      bySource[s.key] = { rank: s.rank, key: s.key, name: s.name, color: s.color, counter: {}, bucket: {}, total: 0, hitTotal: 0 };
+    });
+    for (const it of (items || [])) {
+      const st = bySource[it.sourceKey];
+      if (!st) continue;
+      st.total++;
+      if (!it || !it.text || !dict) continue;
+      const hits = _hitTopics(it.text, dimKey);
+      if (!hits.length) continue;
+      st.hitTotal++;
+      for (const name of hits) {
+        st.counter[name] = (st.counter[name] || 0) + 1;
+        if (!st.bucket[name]) st.bucket[name] = [];
+        st.bucket[name].push(it);
+      }
+    }
+    return SOURCE_ORDER.map(s => {
+      const st = bySource[s.key];
+      const dist = Object.keys(st.counter)
+        .map(name => ({ name: name, cat: name, count: st.counter[name], news: st.bucket[name] || [] }))
+        .sort((a, b) => b.count - a.count || a.name.localeCompare(b.name));
+      const max = dist.length ? dist[0].count : 1;
+      dist.forEach(d => {
+        d.pct = st.total ? Math.round((d.count / st.total) * 100) : 0;
+        d.width = Math.max(6, Math.round((d.count / max) * 100));
+        d.news.sort((a, b) => String(b.date || '').localeCompare(String(a.date || '')) || String(b.time || '').localeCompare(String(a.time || '')));
+      });
+      return { rank: st.rank, key: st.key, name: st.name, color: st.color, total: st.total, hitTotal: st.hitTotal, dist: dist };
     });
   }
 
@@ -1051,7 +1101,7 @@
     CATEGORY_ALIASES, normalizeCategory,
     SOURCE_ORDER, SOURCE_BY_KEY,
     classify, normalizeTitle, bigrams, jaccard, signalTokens, isSameTopic,
-    clusterItems, siteCategoryStats,
+    clusterItems, siteCategoryStats, siteThemeStats,
     THEME_DIMENSIONS, THEME_KEYWORDS, themeStats,
     BRIEF_DIMENSIONS, BRIEF_KEYWORDS, briefStats, cleanBriefText,
     BRIEF_CONCEPT_DIMS, BRIEF_CONCEPT_KEYWORDS,

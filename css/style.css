@@ -2077,6 +2077,34 @@ a.brief-text:hover { color: var(--primary); text-decoration: underline; }
 .sc-bar-track { flex: 1 1 auto; height: 8px; background: var(--surface-alt); border-radius: 4px; overflow: hidden; }
 .sc-bar-fill { display: block; height: 100%; border-radius: 4px; }
 .sc-bar-val { flex: 0 0 auto; font-variant-numeric: tabular-nums; }
+/* === batch34（请求S）：各站分类统计按「概念」归类 + 点概念条弹窗看新闻 === */
+/* 概念条可点击：整行热区，hover 有底色提示 */
+.sc-bar-click { cursor: pointer; border-radius: 5px; padding: 1px 4px; margin: 0 -4px; transition: background .12s ease; }
+.sc-bar-click:hover { background: var(--surface-alt); }
+.sc-bar-click:hover .sc-bar-label { color: var(--text); }
+.sc-bar-click:hover .sc-bar-val { color: var(--accent); font-weight: 700; }
+/* 标题右侧的归类维度下拉（概念/行业/产品/产业/科技/7大类） */
+.sc-dim { margin-left: 6px; padding: 2px 6px; font-size: 12px; font-weight: 500; color: var(--text); background: var(--surface); border: 1px solid var(--border); border-radius: 6px; cursor: pointer; vertical-align: middle; }
+.sc-dim:hover { border-color: var(--accent); }
+.sc-dim:focus { outline: none; border-color: var(--accent); }
+/* 弹窗：该站 + 该概念的新闻明细 */
+.site-stat-modal .modal-body { max-height: 62vh; overflow-y: auto; }
+.ssn-head { display: flex; align-items: baseline; gap: 8px; margin-bottom: 8px; padding-bottom: 6px; border-bottom: 1px dashed var(--border); font-size: 13px; font-weight: 700; }
+.ssn-head .muted { margin-left: auto; font-weight: 400; }
+.ssn-item { display: flex; flex-direction: column; gap: 2px; padding: 6px 4px; border-bottom: 1px solid var(--border-light, var(--border)); }
+.ssn-item:last-child { border-bottom: none; }
+.ssn-meta { display: flex; align-items: center; gap: 8px; font-size: 11px; color: var(--muted); }
+.ssn-date { font-variant-numeric: tabular-nums; }
+.ssn-time { font-variant-numeric: tabular-nums; }
+.ssn-src { padding: 0 6px; border-radius: 4px; background: var(--surface-alt); color: var(--muted); }
+.ssn-text { font-size: 13px; line-height: 1.5; color: var(--text); text-decoration: none; word-break: break-word; }
+a.ssn-text:hover { color: var(--accent); text-decoration: underline; }
+/* 移动端：各站统计改单列，弹窗铺满 */
+@media (max-width: 768px) {
+  .site-cat-stats { grid-template-columns: minmax(0, 1fr); }
+  .sc-bar-label { flex: 0 0 72px; }
+  .site-stat-modal { width: calc(100vw - 24px); max-height: 86vh; }
+}
 /* 统计双栏：左=跨站重合榜，右=主题维度统计 */
 /* batch26：右列（主题分类统计）宽度缩小 20%（1fr → 0.8fr），让出的空间给右侧「每日快讯」（见 .brief-panel 720px） */
 .ht-split { display: grid; grid-template-columns: minmax(0, 1.08fr) minmax(0, 0.8fr); gap: 16px; align-items: start; }

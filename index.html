@@ -4,12 +4,12 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>股市信息分析系统</title>
-  <link rel="stylesheet" href="css/style.css?v=20260920d">
+  <link rel="stylesheet" href="css/style.css?v=20260920e">
   <!-- Vue 3 全局构建版（v3.4.21 · 自托管）
        原先走 unpkg.com CDN：国内网络对 unpkg 的连通性不稳定，一旦该请求长时间挂起，
        <head> 里的阻塞脚本会让整页停在白屏、后续 auth-boot.js 根本不会执行。
        改为同源托管后，启动链路不再依赖任何第三方 CDN。 -->
-  <script src="js/vue.global.prod.js?v=20260920d"></script>
+  <script src="js/vue.global.prod.js?v=20260920e"></script>
 </head>
 <body class="auth-locked">
   <!-- ===== 登录关卡：登录通过前业务脚本不会被加载 ===== -->
@@ -1011,26 +1011,66 @@
                   </aside>
                 </div>
 
-                <h4 class="sub-title">各站分类统计 <span class="muted small">（按 7 大类分布）</span></h4>
+                <h4 class="sub-title">
+                  各站分类统计
+                  <span class="muted small">（按{{ scDimName }}归类，点任一条看该站该{{ scDimName }}的新闻）</span>
+                  <!-- 请求S：分类维度可切换，默认「概念」 -->
+                  <select class="sc-dim" v-model="siteStatsDim" title="切换各站分类统计的归类维度">
+                    <option v-for="o in siteCatDimOptions" :key="o.key" :value="o.key">{{ o.icon }} {{ o.name }}</option>
+                  </select>
+                </h4>
                 <div class="site-cat-stats">
                   <div class="sc-card" v-for="st in analysisResult.siteStats" :key="st.key">
                     <div class="sc-head">
                       <span class="src-rank">{{ st.rank }}</span>
                       <span class="sc-name">{{ st.name }}</span>
-                      <span class="muted small">{{ st.total }} 条</span>
+                      <span class="muted small">{{ st.total }} 条<span v-if="siteStatsDim !== 'cat7' && st.hitTotal != null"> · {{ st.hitTotal }} 条命中</span></span>
                     </div>
                     <div class="sc-bars" v-if="st.dist.length">
-                      <div class="sc-bar" v-for="d in st.dist" :key="d.cat">
-                        <span class="sc-bar-label">{{ d.cat }}</span>
-                        <span class="sc-bar-track"><span class="sc-bar-fill" :style="{ width: d.width + '%', background: catColor(d.cat) }"></span></span>
+                      <div class="sc-bar sc-bar-click" v-for="d in st.dist" :key="st.key + '-' + d.name"
+                           @click="openSiteStatNews(st, d)"
+                           :title="'点击查看「' + d.name + '」在' + st.name + '的 ' + d.count + ' 条新闻'">
+                        <span class="sc-bar-label">{{ d.name }}</span>
+                        <span class="sc-bar-track"><span class="sc-bar-fill" :style="{ width: d.width + '%', background: siteStatsDim === 'cat7' ? catColor(d.name) : scDimColor }"></span></span>
                         <span class="sc-bar-val">{{ d.count }}</span>
                       </div>
                     </div>
-                    <div class="muted small" v-else>无数据</div>
+                    <div class="muted small" v-else>该时段未识别到{{ scDimName }}类主题词</div>
                   </div>
                 </div>
               </template>
               <div v-else class="muted small">选择时间段后点击「生成统计」。统计基于已积累的每日快照（仓库 data/hot-topics/*.json，由每日 GitHub Action 自动生成）。</div>
+            </div>
+
+            <!-- 请求S：点概念 / 分类条弹出的新闻明细（该站 + 该概念） -->
+            <div class="modal-overlay" v-if="siteStatModal.show" @click.self="closeSiteStatNews">
+              <div class="modal modal-lg site-stat-modal">
+                <div class="modal-header">
+                  <h3>{{ siteStatModal.siteName }} · 「{{ siteStatModal.topic }}」
+                    <span class="muted small">（{{ siteStatModal.dimName }} · {{ siteStatModal.items.length }} 条）</span>
+                  </h3>
+                  <button class="btn-icon" @click="closeSiteStatNews">✕</button>
+                </div>
+                <div class="modal-body">
+                  <div class="ssn-head">
+                    <span :style="{ color: siteStatModal.color }">{{ siteStatModal.siteName }} 命中「{{ siteStatModal.topic }}」的新闻</span>
+                    <span class="muted small">点标题跳原文</span>
+                  </div>
+                  <div class="ssn-item" v-for="(n, k) in siteStatModal.items" :key="k">
+                    <div class="ssn-meta">
+                      <span class="ssn-date">{{ (n.date || '').slice(5) }}</span>
+                      <span class="ssn-time" v-if="n.time">{{ n.time }}</span>
+                      <span class="ssn-src">{{ n.sourceName || siteStatModal.siteName }}</span>
+                    </div>
+                    <a v-if="n.url" :href="n.url" target="_blank" rel="noopener" class="ssn-text" :title="n.text">{{ n.text }}</a>
+                    <span v-else class="ssn-text" :title="n.text">{{ n.text }}</span>
+                  </div>
+                  <div class="muted small" v-if="!siteStatModal.items.length">暂无新闻</div>
+                </div>
+                <div class="modal-footer">
+                  <button class="btn" @click="closeSiteStatNews">关闭</button>
+                </div>
+              </div>
             </div>
           </div>
 
@@ -3516,9 +3556,9 @@
     </transition>
   </div>
 
-  <script src="js/auth.js?v=20260920d"></script>
-  <script src="js/auth-sync.js?v=20260920d"></script>
-  <script src="js/auth-boot.js?v=20260920d"></script>
+  <script src="js/auth.js?v=20260920e"></script>
+  <script src="js/auth-sync.js?v=20260920e"></script>
+  <script src="js/auth-boot.js?v=20260920e"></script>
   <!-- store / stock-api / hot-topics / app 由 auth-boot.js 在登录通过后动态装载，
        未登录时它们不会被下载，业务数据也不会进入内存 -->
 </body>

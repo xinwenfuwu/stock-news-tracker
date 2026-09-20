@@ -4676,6 +4676,21 @@ const app = createApp({
     const analysisRange = ref('win');
     const analysisLoading = ref(false);
     const analysisResult = ref(null);
+    /* 请求S：各站分类统计的「分类维度」。默认「概念」——用户要求按概念归类，而不是财经/科技这类 7 大类。
+     * 可切到 行业/产品/产业/科技，也可切回原来的 7 大类。切换时用已有扁平数据即时重算，不重新拉快照。 */
+    const siteCatDimOptions = [
+      { key: 'concept', name: '概念', icon: '💡', color: '#e63525' },
+      { key: 'industry', name: '行业', icon: '🏭', color: '#2563eb' },
+      { key: 'product', name: '产品', icon: '📦', color: '#0a7d3e' },
+      { key: 'chain', name: '产业', icon: '⛓️', color: '#b45309' },
+      { key: 'tech', name: '科技', icon: '🔬', color: '#7c3aed' },
+      { key: 'cat7', name: '7大类', icon: '🗂️', color: '#6b7280' }
+    ];
+    const siteStatsDim = ref('concept');
+    const siteStatModal = reactive({
+      show: false, siteName: '', siteRank: 0, topic: '', dimName: '', color: '#e63525', items: []
+    });
+    let _analysisFlat = [];   // 最近一次统计的扁平数据（不进响应式，避免大数组的代理开销）
     /* batch16：统计分析（跨站重合榜 / 主题分类统计）的统计时间窗口。
      * 与快讯板块同口径：以每天 15:00 换日，默认「昨天 15:00 → 现在」，可改。 */
     const analysisWinStart = ref('');
@@ -4694,6 +4709,16 @@ const app = createApp({
       const e = HT.fromLocalInputValue(analysisWinEnd.value);
       if (!s || !e) return '';
       return HT.fmtWindowCN(s.getTime()) + ' - ' + HT.fmtWindowCN(e.getTime());
+    });
+
+    /** 请求S：当前「各站分类统计」维度的名称与配色（供模板直接取用） */
+    const scDimName = computed(() => {
+      const o = siteCatDimOptions.find(x => x.key === siteStatsDim.value);
+      return o ? o.name : '概念';
+    });
+    const scDimColor = computed(() => {
+      const o = siteCatDimOptions.find(x => x.key === siteStatsDim.value);
+      return o ? o.color : '#e63525';
     });
 
     /* batch22：每日话题（「每日话题」页签）改用「统计时间段」模式（与快讯 / 统计分析同口径）：
@@ -5364,7 +5389,13 @@ const app = createApp({
           }
         }
         const clusters = (typeof HotTopics !== 'undefined' ? HotTopics.clusterItems(flat) : []).map(c => ({ ...c, _open: false }));
-        const siteStats = (typeof HotTopics !== 'undefined' ? HotTopics.siteCategoryStats(flat) : []);
+        _analysisFlat = flat;
+        // 请求S：默认按「概念」维度分站统计；切到「7大类」时走原来的互斥分类
+        const siteStats = (typeof HotTopics !== 'undefined')
+          ? (siteStatsDim.value === 'cat7'
+            ? HotTopics.siteCategoryStats(flat)
+            : HotTopics.siteThemeStats(flat, siteStatsDim.value))
+          : [];
         // 主题维度统计（行业/概念/产品/产业/科技），多标签命中，与跨站重合榜并排展示
         const themeStats = (typeof HotTopics !== 'undefined' && HotTopics.themeStats ? HotTopics.themeStats(flat) : [])
           .map(d => ({ ...d, _open: true, showAll: false, selTopic: null, newsLimit: 30 }));
@@ -5375,6 +5406,30 @@ const app = createApp({
         analysisLoading.value = false;
       }
     }
+
+    /** 请求S：切换「各站分类统计」的维度（概念/行业/产品/产业/科技/7大类）——用已有扁平数据即时重算 */
+    function recomputeSiteStats() {
+      if (!analysisResult.value || !_analysisFlat.length) return;
+      const HT = (typeof HotTopics !== 'undefined') ? HotTopics : null;
+      if (!HT) return;
+      analysisResult.value.siteStats = (siteStatsDim.value === 'cat7')
+        ? HT.siteCategoryStats(_analysisFlat)
+        : HT.siteThemeStats(_analysisFlat, siteStatsDim.value);
+    }
+    watch(siteStatsDim, recomputeSiteStats);
+
+    /** 请求S：点某个概念（或分类）条 —— 弹窗列出「该站 + 该概念」命中的全部新闻 */
+    function openSiteStatNews(st, d) {
+      const dim = siteCatDimOptions.find(o => o.key === siteStatsDim.value) || siteCatDimOptions[0];
+      siteStatModal.show = true;
+      siteStatModal.siteName = (st && st.name) || '';
+      siteStatModal.siteRank = (st && st.rank) || 0;
+      siteStatModal.topic = (d && (d.name || d.cat)) || '';
+      siteStatModal.dimName = dim.name;
+      siteStatModal.color = (siteStatsDim.value === 'cat7') ? ((st && st.color) || dim.color) : dim.color;
+      siteStatModal.items = ((d && d.news) || []).slice(0, 300);
+    }
+    function closeSiteStatNews() { siteStatModal.show = false; }
 
     /** 点击主题词（半导体 / 人工智能 / 医疗器械 …）：就地展开该主题命中的新闻明细；同一维度内一次只看一个主题 */
     function toggleThemeTopic(dim, topic) {
@@ -7266,6 +7321,7 @@ const app = createApp({
       onBriefDateChange, toggleBriefCat, moreBriefNews, hlBrief, autoLoadBriefs, loadBriefsNow,
       htTab, htMode, htLiveNote, hotTopicDate, hotTopicDateHasData, htCatFilter, htCategories, htRangeOptions, localSnapshotDates,
       analysisRange, analysisLoading, analysisResult, filteredHotSources,
+      siteStatsDim, siteCatDimOptions, siteStatModal, openSiteStatNews, closeSiteStatNews, recomputeSiteStats, scDimName, scDimColor,
       // batch16：统计分析的统计时间窗口（15:00 换日，与快讯板块同口径）
       analysisWinStart, analysisWinEnd, analysisWinText, resetAnalysisWin,
       catColor, catLabel, htSourceColor, htSourceName, ratioClass, setHtMode, onHotTopicDateChange, runAnalysis,
