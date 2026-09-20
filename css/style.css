@@ -1902,13 +1902,19 @@ body {
 .proj-box { margin: 6px 0 10px; border: 1px solid var(--border); border-radius: 6px; overflow: hidden; }
 .proj-head { font-size: 12px; font-weight: 400; padding: 5px 8px; background: var(--surface-alt); }
 .proj-scroll { max-height: 320px; overflow: auto; }
-.proj-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+/* 表格用 table-layout:fixed 固定各列宽度：
+ * 否则浏览器按内容自动分配，「项目/事项」那列文本长，会把「省份」列压到只剩 1 个字的宽度，
+ * 于是「广东」被迫竖排成两行、「内蒙古」竖排成三行。 */
+.proj-table { width: 100%; border-collapse: collapse; font-size: 12px; table-layout: fixed; }
 .proj-table th, .proj-table td { padding: 4px 8px; text-align: left; border-top: 1px solid var(--border); vertical-align: top; }
 .proj-table th { color: var(--text-placeholder); font-weight: 400; white-space: nowrap; background: var(--surface); }
+.proj-table col.c-prov { width: 64px; }
+.proj-table col.c-amt { width: 74px; }
+.proj-table col.c-time { width: 62px; }
 .proj-table td.p-prov { white-space: nowrap; color: var(--primary); }
 .proj-table td.p-amt { white-space: nowrap; font-variant-numeric: tabular-nums; color: #b45309; }
 .proj-table td.p-time { white-space: nowrap; color: var(--text-placeholder); font-variant-numeric: tabular-nums; }
-.proj-table td.p-text { line-height: 1.5; }
+.proj-table td.p-text { line-height: 1.5; word-break: break-word; }
 .proj-table td.p-text a { color: var(--text); }
 .proj-table td.p-text a:hover { color: var(--primary); }
 .brief-news-title { font-size: 12.5px; font-weight: 700; }
