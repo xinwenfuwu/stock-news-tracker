@@ -4,12 +4,12 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>股市信息分析系统</title>
-  <link rel="stylesheet" href="css/style.css?v=20260920a">
+  <link rel="stylesheet" href="css/style.css?v=20260920b">
   <!-- Vue 3 全局构建版（v3.4.21 · 自托管）
        原先走 unpkg.com CDN：国内网络对 unpkg 的连通性不稳定，一旦该请求长时间挂起，
        <head> 里的阻塞脚本会让整页停在白屏、后续 auth-boot.js 根本不会执行。
        改为同源托管后，启动链路不再依赖任何第三方 CDN。 -->
-  <script src="js/vue.global.prod.js?v=20260920a"></script>
+  <script src="js/vue.global.prod.js?v=20260920b"></script>
 </head>
 <body class="auth-locked">
   <!-- ===== 登录关卡：登录通过前业务脚本不会被加载 ===== -->
@@ -1127,6 +1127,31 @@
                       <div class="brief-news-head">
                         <span class="brief-news-title" :style="{ color: c.color }">{{ c.icon }} {{ c.name }} · {{ c.count }} 条</span>
                         <span class="muted small">点标题跳{{ briefSourceName }}原文</span>
+                      </div>
+                      <!-- batch31：各省项目 —— 展开时附带「各省市本年度重大项目」清单。
+                           数据来自当日已抓取快讯的本地归纳（省份 + 项目特征词 + 投资额），不额外发请求。 -->
+                      <div class="proj-box" v-if="c.projects && c.projects.length">
+                        <div class="proj-head">📋 各省重大项目清单 · {{ c.projects.length }} 项
+                          <span class="muted small">（按省份聚合，投资额大的在前）</span>
+                        </div>
+                        <div class="proj-scroll">
+                          <table class="proj-table">
+                            <thead>
+                              <tr><th>省份</th><th>项目 / 事项</th><th>投资额</th><th>时间</th></tr>
+                            </thead>
+                            <tbody>
+                              <tr v-for="(p, pi) in c.projects" :key="pi">
+                                <td class="p-prov">{{ p.province }}</td>
+                                <td class="p-text">
+                                  <a v-if="p.url" :href="p.url" target="_blank" rel="noopener">{{ p.title }}</a>
+                                  <span v-else>{{ p.title }}</span>
+                                </td>
+                                <td class="p-amt">{{ p.amount || '—' }}</td>
+                                <td class="p-time">{{ (p.time || '').slice(5) }}</td>
+                              </tr>
+                            </tbody>
+                          </table>
+                        </div>
                       </div>
                       <div class="brief-item" v-for="(n, k) in c.news.slice(0, briefUi.limit['theme::' + c.key] || 30)" :key="n.id || k">
                         <div class="brief-item-meta">
@@ -3486,9 +3511,9 @@
     </transition>
   </div>
 
-  <script src="js/auth.js?v=20260920a"></script>
-  <script src="js/auth-sync.js?v=20260920a"></script>
-  <script src="js/auth-boot.js?v=20260920a"></script>
+  <script src="js/auth.js?v=20260920b"></script>
+  <script src="js/auth-sync.js?v=20260920b"></script>
+  <script src="js/auth-boot.js?v=20260920b"></script>
   <!-- store / stock-api / hot-topics / app 由 auth-boot.js 在登录通过后动态装载，
        未登录时它们不会被下载，业务数据也不会进入内存 -->
 </body>

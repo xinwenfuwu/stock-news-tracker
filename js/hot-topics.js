@@ -508,8 +508,11 @@
    * 同样是多标签命中——一条快讯可同时进入多个分类。
    * ============================================================ */
   const BRIEF_DIMENSIONS = [
-    { key: 'policy', name: '国家政策类', icon: '🏛️', color: '#9b2fb5' },
-    { key: 'fortune500', name: '世界500强', icon: '🌍', color: '#b45309' },
+    // batch31：原名「国家政策类」改为「各省项目」，口径从「国家部委政策」改为「各省市本年度重大项目」，
+    // 并额外产出可展开的项目清单（projectList: true → briefStats 会附 d.projects）。
+    { key: 'policy', name: '各省项目', icon: '🗺️', color: '#9b2fb5', projectList: true },
+    // batch31：原名「世界500强」改为「世界百强」。计算逻辑不变——仍按世界 500 强企业相关新闻归纳统计。
+    { key: 'fortune500', name: '世界百强', icon: '🌍', color: '#b45309' },
     { key: 'society', name: '社会热点', icon: '🔥', color: '#db2777' },
     { key: 'southbound', name: '南下资金', icon: '💧', color: '#0a7d3e' },
     { key: 'tech', name: '科技突破', icon: '🔬', color: '#2563eb' },
@@ -523,17 +526,54 @@
     { key: 'oil', name: '石油', icon: '🛢️', color: '#57534e' }
   ];
 
+  /* ============================================================
+   * batch31：「各省项目」用的省级行政区词表。
+   * 只列省/自治区/直辖市/特别行政区本体（不含地级市），
+   * 因为「本年度重大项目」的发布主体基本都是省级政府/省发改委。
+   * 顺序按「简称短的在后」无关，匹配时取全表命中。
+   * ============================================================ */
+  const PROVINCES = [
+    '北京', '上海', '天津', '重庆',
+    '河北', '山西', '辽宁', '吉林', '黑龙江', '江苏', '浙江', '安徽',
+    '福建', '江西', '山东', '河南', '湖北', '湖南', '广东', '海南',
+    '四川', '贵州', '云南', '陕西', '甘肃', '青海', '台湾',
+    '内蒙古', '广西', '西藏', '宁夏', '新疆',
+    '香港', '澳门'
+  ];
+
+  /* 「重大项目」特征词：与省市名同时出现才算数。
+   * 选词原则——只留「项目 / 投资」语义强的词；并且刻意排除两类：
+   *   ① 裸金额单位（亿元 / 万元 / 万亿）：只是单位，会把「浙江某企业营收突破 100 亿元」误判成重大项目；
+   *   ② 弱动词（投产 / 竣工 / 奠基 / 动工 / 战略合作 / 基础设施 …）：
+   *      配上一个高频城市名就会误伤，例如「特斯拉上海储能工厂正式投产」里的「上海 + 投产」。
+   * 金额只在生成清单时抽取，不参与归类判定。 */
+  const PROJECT_WORDS = [
+    '重大项目', '重点项目', '重大工程', '重点工程', '一号工程',
+    '项目开工', '开工建设', '集中开工', '集中签约', '项目集中开工',
+    '省重点项目', '省级重点项目', '年度重点项目', '重点项目名单', '重大项目清单', '项目清单',
+    '签约仪式', '项目签约', '招商引资', '项目落地', '落地开工',
+    '总投资', '投资额', '投资规模', '项目投资', '拟投资', '计划投资', '年度投资',
+    '百亿级', '十亿级', '亿元级'
+  ];
+
   /* 分类 → 关键词。命中任一即归入该类。
    * 刻意避开「社会」「规划」「监管」「台风」这类过于宽泛或歧义的词：
    * 实测过宽会误伤（如「台风」会命中 F-15「台风」战斗机、「规划」会命中投资者提问）。 */
   const BRIEF_KEYWORDS = {
-    policy: [
-      '国务院', '发改委', '央行', '中国人民银行', '财政部', '证监会', '金融监管总局', '银保监', '国常会', '政治局',
-      '工信部', '商务部', '住建部', '交通运输部', '农业农村部', '水利部', '国家能源局', '国资委', '市场监管总局', '海关总署',
-      '政策', '监管', '印发', '新闻发布会', '国新办', '实施意见', '指导意见', '条例', '法规', '法案', '税收', '关税',
-      '补贴', '试点', '批复', '五年规划', '发展规划', '规划纲要', '部委', '省政府', '市政府', '施政报告',
-      '议会', '国会', '白宫', '内阁', '制裁', '反制', '预算案', '政府', '立法'
-    ],
+    // batch31：口径改为「各省市本年度重大项目」。这里用组合规则而不是纯「命中任一」：
+    //   ① must：必须同时出现「省市名」+「项目/投资特征词」才归入（避免「营收超亿元」这类误伤）；
+    //   ② any ：出现强特征词（集中开工 / 重大项目 / 省重点项目…）直接归入，不要求省市名同时出现。
+    // 二者满足其一即命中。原来的国家级部委词（国务院/央行/财政部…）已移除——那不属于「各省项目」。
+    policy: {
+      must: [PROVINCES, PROJECT_WORDS],
+      any: [
+        '重大项目', '重点项目', '重大工程', '重点工程',
+        '集中开工', '集中签约', '项目集中开工', '开工仪式',
+        '一批重大项目', '重大项目清单', '项目清单',
+        '年度重点项目', '省重点项目', '省级重点项目', '重点项目名单',
+        '省发改委', '省人民政府', '省工信厅', '省政府印发'
+      ]
+    },
     fortune500: [
       '世界500强', '500强', '苹果', '微软', '英伟达', '特斯拉', '亚马逊', '谷歌', 'Meta', '台积电', '三星', '丰田',
       '大众汽车', '宝马', '奔驰', '波音', '可口可乐', '沃尔玛', '强生', '辉瑞', '伯克希尔', '沙特阿美', '壳牌',
@@ -760,6 +800,99 @@
   }
 
   /**
+   * batch31：单条规则命中判断。规则有两种形态，向后兼容：
+   *   ① 数组        —— 旧逻辑：命中任一关键词即算命中；
+   *   ② {must, any} —— 组合逻辑：any 命中任一 → true；否则 must 的每一组都要各命中至少一个 → true。
+   *                    用于「各省项目」这类需要「省市名 + 项目特征词」同时出现的口径。
+   */
+  function _hitRule(text, rule) {
+    if (!rule) return false;
+    if (Array.isArray(rule)) {
+      for (let i = 0; i < rule.length; i++) { if (text.indexOf(rule[i]) >= 0) return true; }
+      return false;
+    }
+    if (rule.any && rule.any.length) {
+      for (let i = 0; i < rule.any.length; i++) { if (text.indexOf(rule.any[i]) >= 0) return true; }
+    }
+    if (rule.must && rule.must.length) {
+      for (let g = 0; g < rule.must.length; g++) {
+        const group = rule.must[g] || [];
+        let ok = false;
+        for (let i = 0; i < group.length; i++) { if (text.indexOf(group[i]) >= 0) { ok = true; break; } }
+        if (!ok) return false;
+      }
+      return true;
+    }
+    return false;
+  }
+
+  /**
+   * batch31：「各省项目」清单抽取。
+   * 从已命中的快讯里归纳出「省份 / 项目事项 / 投资额 / 时间」，供界面上附带展示。
+   * 不新增任何数据源——完全基于当日已抓取的快讯文本做本地归纳，因此不会有额外的网络请求。
+   * @param {Array<{text:string,time?:string,url?:string}>} news
+   * @returns {Array<{province:string,amount:string,title:string,time:string,url:string}>}
+   */
+  function briefProjectList(news) {
+    const out = [];
+    const list = news || [];
+    for (const it of list) {
+      const t = cleanBriefText(it && it.text);
+      if (!t) continue;
+      // 1) 省份：取文本里出现的第一个省级行政区名（能覆盖「广东省」「广东」「粤」之外的常见写法）
+      let province = '';
+      for (const p of PROVINCES) {
+        if (t.indexOf(p) >= 0) { province = p; break; }
+      }
+      // 2) 投资额：优先取带「总投资/投资额/投资」前缀的金额，其次取文中最大的一笔金额
+      let amount = '';
+      const m1 = /(?:总投资|投资额|投资规模|计划投资|拟投资|年度投资)[^0-9]{0,8}(\d+(?:\.\d+)?)\s*(万亿|亿元|万元|亿|万)/.exec(t);
+      if (m1) amount = m1[1] + m1[2];
+      if (!amount) {
+        const all = t.match(/(\d+(?:\.\d+)?)\s*(万亿|亿元|万元)/g) || [];
+        if (all.length) {
+          // 取数值最大的一笔，作为该条快讯的代表投资额
+          let best = '', bestV = -1;
+          for (const s of all) {
+            const mm = /(\d+(?:\.\d+)?)\s*(万亿|亿元|万元)/.exec(s);
+            if (!mm) continue;
+            let v = parseFloat(mm[1]);
+            if (mm[2] === '万亿') v *= 10000; else if (mm[2] === '万元') v /= 10000;
+            if (v > bestV) { bestV = v; best = mm[1] + mm[2]; }
+          }
+          amount = best;
+        }
+      }
+      // 3) 标题：剥掉来源前缀后截取前 46 字作为事项摘要
+      const title = t.length > 46 ? t.slice(0, 46) + '…' : t;
+      out.push({
+        province: province || '未标注省份',
+        amount: amount || '',
+        title,
+        time: String((it && it.time) || ''),
+        url: String((it && it.url) || '')
+      });
+    }
+    // 排序：先按省份（同一省聚在一起），再按投资额从大到小，最后是时间新的在前
+    const unitVal = (s) => {
+      const mm = /(\d+(?:\.\d+)?)\s*(万亿|亿元|万元)/.exec(s || '');
+      if (!mm) return -1;
+      let v = parseFloat(mm[1]);
+      if (mm[2] === '万亿') v *= 10000; else if (mm[2] === '万元') v /= 10000;
+      return v;
+    };
+    out.sort((a, b) => {
+      const pa = a.province === '未标注省份' ? 1 : 0, pb = b.province === '未标注省份' ? 1 : 0;
+      if (pa !== pb) return pa - pb;
+      if (a.province !== b.province) return a.province.localeCompare(b.province, 'zh-Hans-CN');
+      const d = unitVal(b.amount) - unitVal(a.amount);
+      if (d !== 0) return d;
+      return String(b.time).localeCompare(String(a.time));
+    });
+    return out;
+  }
+
+  /**
    * 格隆汇每日快讯分类统计：一层 13 项，每项带该类全部快讯明细。
    * @param {Array<{text:string,time?:string,url?:string,date?:string,stocks?:string[],subjects?:string[]}>} items
    * @returns {Array<{key,name,icon,color,count,pct,width,news:Array}>} 按 BRIEF_DIMENSIONS 顺序返回
@@ -779,11 +912,15 @@
       for (const it of list) {
         const t = cleanBriefText(it.text);
         if (!t) continue;
-        if (kw.some(k => t.indexOf(k) >= 0)) news.push(it);
+        // batch31：走 _hitRule，兼容「纯关键词数组」与「must/any 组合规则」两种形态
+        if (_hitRule(t, kw)) news.push(it);
       }
       // 时间新的在前（快讯本身就是时间倒序，这里再兜一次底）
       news.sort((a, b) => String(b.time || '').localeCompare(String(a.time || '')));
-      return { key: dim.key, name: dim.name, icon: dim.icon, color: dim.color, count: news.length, news };
+      const row = { key: dim.key, name: dim.name, icon: dim.icon, color: dim.color, count: news.length, news };
+      // batch31：标了 projectList 的维度（各省项目）额外产出可展开的项目清单
+      if (dim.projectList) row.projects = briefProjectList(news);
+      return row;
     });
     // 自动按归类条数（比例）从大到小排序，便于一眼看到占比最高的分类
     raw.sort((a, b) => b.count - a.count);
@@ -900,6 +1037,8 @@
     BRIEF_CONCEPT_DIMS, BRIEF_CONCEPT_KEYWORDS,
     BRIEF_INDUSTRY_DIMS, BRIEF_INDUSTRY_KEYWORDS,
     BRIEF_MODES,
+    // batch31：各省项目（省市词表 / 项目特征词 / 组合命中规则 / 项目清单抽取）
+    PROVINCES, PROJECT_WORDS, _hitRule, briefProjectList,
     decodeEntities, isJunkTitle, cleanTitle,
     fmtLocalDate, todayStr, snapshotCandidates,
     /* 统计时间窗口（15:00 换日口径） */
