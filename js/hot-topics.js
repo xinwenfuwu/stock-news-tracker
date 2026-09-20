@@ -66,7 +66,7 @@
      * m. / api. 子域泛解析回同一页，/news 与 /api/telegraph 均 404，HTML 抽取只能抓到页脚备案号。
      * 故换成证券时报（stcn.com）：UTF-8 无编码问题，实测首页可抽到 195 条真实标题，A股/上市公司导向。 */
     { rank: 7, key: 'stcn', name: '证券时报', color: '#c8102e', parse: 'html_stcn', endpoint: 'https://www.stcn.com/', base: 'https://www.stcn.com' },
-    /* 请求T：原 endpoint 用的 api-prod.wallstreetcn.com **已彻底下线**（连接超时），这是该源长期 0 条的根因。
+    /* 请求T：原 endpoint 用的旧 api-prod 域名 **已彻底下线**（连接超时），这是该源长期 0 条的根因。
      * 换成实测可用的 api-one.wallstcn.com + channel=global-channel，一次返回 50 条。 */
     { rank: 8, key: 'wscn', name: '华尔街见闻', color: '#222222', parse: 'json_wscn', endpoint: 'https://api-one.wallstcn.com/apiv1/content/lives?channel=global-channel&client=pc&limit=50' },
     // 请求R：万得 → 金十数据实时快讯（字段 time / data.content）
