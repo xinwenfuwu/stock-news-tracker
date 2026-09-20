@@ -3508,8 +3508,18 @@ const StockAPI = {
         push(it.Title || it.title, '', u);
       }
     } else if (parse === 'json_wscn' && j) {
+      /* 请求T：源站 api-prod.wallstreetcn.com 已下线（连接超时），改用 api-one + channel=global-channel。
+       * ① uri 实测已是完整 https://wallstreetcn.com/livenews/<id>，旧代码又在前面拼了一次域名 → 双重前缀，已修；
+       * ② content 是 HTML 富文本，仅当 content_text / title 都缺失时才兜底，需先去掉标签。 */
       const arr = (j.data && j.data.items) || [];
-      for (const it of arr) push(it.content_text || it.content, it.display_time, it.uri ? 'https://wallstreetcn.com/' + it.uri : '');
+      for (const it of arr) {
+        let u = String(it.uri || '').trim();
+        if (u && !/^https?:/i.test(u)) {
+          u = (u.indexOf('//') === 0) ? ('https:' + u) : ('https://wallstreetcn.com/' + u.replace(/^\//, ''));
+        }
+        const txt = it.content_text || it.title || String(it.content || '').replace(/<[^>]*>/g, '');
+        push(txt, it.display_time, u || 'https://wallstreetcn.com/');
+      }
     } else if (parse === 'json_sina' && j) {
       // 请求R：新浪财经 7x24 实时新闻（zhibo feed）→ result.data.feed.list[]，字段 rich_text / create_time / docurl
       let arr = (j.result && j.result.data && j.result.data.feed && j.result.data.feed.list)

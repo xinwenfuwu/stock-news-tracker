@@ -62,9 +62,13 @@
     // 请求R：财联社 → 新浪财经 7x24 实时新闻（zhibo feed 接口，字段 create_time / rich_text）
     { rank: 5, key: 'sina', name: '新浪财经', color: '#e60012', parse: 'json_sina', endpoint: 'https://zhibo.sina.com.cn/api/zhibo/feed?page=1&page_size=50&zhibo_id=152&tag_id=0&dire=f&dpc=1', base: 'https://finance.sina.com.cn' },
     { rank: 6, key: 'kaipanla', name: '开盘啦', color: '#f59e0b', parse: 'html_kaipanla', endpoint: 'https://www.kaipanla.com/', base: 'https://www.kaipanla.com' },
-    // 请求R：雪球 → 投实 7*24h 新闻（官网无公开 JSON 接口，走 HTML 抽取兜底）
-    { rank: 7, key: 'toushi', name: '投实', color: '#cc3333', parse: 'html_toushi', endpoint: 'https://www.toushivip.com/', base: 'https://www.toushivip.com' },
-    { rank: 8, key: 'wscn', name: '华尔街见闻', color: '#222222', parse: 'json_wscn', endpoint: 'https://api-prod.wallstreetcn.com/apiv1/content/lives?channel=global&client=pc&limit=20' },
+    /* 请求T：投实官网**没有任何公开新闻流**——整站只有一个 App 产品落地页，
+     * m. / api. 子域泛解析回同一页，/news 与 /api/telegraph 均 404，HTML 抽取只能抓到页脚备案号。
+     * 故换成证券时报（stcn.com）：UTF-8 无编码问题，实测首页可抽到 195 条真实标题，A股/上市公司导向。 */
+    { rank: 7, key: 'stcn', name: '证券时报', color: '#c8102e', parse: 'html_stcn', endpoint: 'https://www.stcn.com/', base: 'https://www.stcn.com' },
+    /* 请求T：原 endpoint 用的 api-prod.wallstreetcn.com **已彻底下线**（连接超时），这是该源长期 0 条的根因。
+     * 换成实测可用的 api-one.wallstcn.com + channel=global-channel，一次返回 50 条。 */
+    { rank: 8, key: 'wscn', name: '华尔街见闻', color: '#222222', parse: 'json_wscn', endpoint: 'https://api-one.wallstcn.com/apiv1/content/lives?channel=global-channel&client=pc&limit=50' },
     // 请求R：万得 → 金十数据实时快讯（字段 time / data.content）
     { rank: 9, key: 'jin10', name: '金十数据', color: '#1267c7', parse: 'json_jin10', endpoint: 'https://flash-api.jin10.com/get_flash_list?channel=-8200&vip=1', base: 'https://flash.jin10.com' },
     { rank: 10, key: 'cs', name: '中国证券', color: '#b91c1c', parse: 'html_cs', endpoint: 'https://www.cs.com.cn/', base: 'https://www.cs.com.cn' }
@@ -111,7 +115,18 @@
     /(问财|智能选股)/,                             // 同花顺工具入口
     /(加入我们|极调研|关于格隆汇)/,                // 站点介绍入口
     /(公众号矩阵|搜索结果|申请认证)/,
-    /^[>\u00bb\u203a<\u00ab\u2039\u300a\u300b|\uFF5C\u00b7\u3001,\uFF0C.\u3002:\uFF1A;\uFF1B!！?？\-—_~…\s]+$/
+    /^[>\u00bb\u203a<\u00ab\u2039\u300a\u300b|\uFF5C\u00b7\u3001,\uFF0C.\u3002:\uFF1A;\uFF1B!！?？\-—_~…\s]+$/,
+    /* ↓↓↓ 请求T：网页页脚残留。HTML 抽取源（如证券时报/开盘啦/中国证券）会把页脚的备案号、
+     * 版权声明、邮箱电话一起抽进来，之前没有对应规则，导致「京ICP备20001999号-1」被当成新闻。
+     * 以下都做了防误伤处理：正常新闻标题不会有「备+5位数字+号」、邮箱或 11 位手机号。 */
+    /ICP\s*备?\s*\d|备\s*\d{5,}\s*号|公安?备\s*\d/i,      // 京ICP备20001999号-1 / 京公网安备11010602007270号
+    /beian|miit/i,                                        // 备案查询站（beian.miit.gov.cn）
+    /版权所有|Copyright|©/i,                              // Copyright ©2014- 投实内容科技…
+    /[\w.+-]+@[\w-]+\.[A-Za-z]{2,}/,                      // 邮箱：xxx@example.com / hr@xxx
+    /(?:^|[^\d])1[3-9]\d{9}(?:$|[^\d])/,                  // 手机号（前后不能是数字，避免误伤长数字串）
+    /(电话|手机|热线|客服|传真)[:：]\s*\d/,                  // 联系电话：18701603…
+    /网站地图|站点地图|网站声明|免责声明|隐私(政策|声明)/,     // 页脚导航
+    /(关于我们|关于本站|加入我们|商务合作|友情链接|意见反馈|用户反馈|招聘|诚聘)/
   ];
 
   /* 站点栏目/导航标签词：这些词互相拼接成的短串（如「财经要闻 宏观经济」）不是新闻 */

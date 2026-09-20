@@ -119,8 +119,14 @@ function parseSource(parse, key, payload) {
       push(it.Title || it.title, '', u);
     }
   } else if (parse === 'json_wscn') {
+    // 请求T：华尔街见闻旧接口域名已下线（连接超时），改用 api-one + channel=global-channel（同 js/stock-api.js）
+    // ① uri 已是完整 https://wallstreetcn.com/livenews/<id>，不能再在前面拼域名；② content 是 HTML，兜底时先去标签
     const arr = (payload && payload.data && payload.data.items) || [];
-    for (const it of arr.slice(0, HOT_TOPN)) push(it.content_text || it.content, it.display_time, it.uri ? 'https://wallstreetcn.com/' + it.uri : '');
+    for (const it of arr.slice(0, HOT_TOPN)) {
+      let u = String(it.uri || '').trim();
+      if (u && !/^https?:/i.test(u)) u = (u.indexOf('//') === 0) ? ('https:' + u) : ('https://wallstreetcn.com/' + u.replace(/^\//, ''));
+      push(it.content_text || it.title || String(it.content || '').replace(/<[^>]*>/g, ''), it.display_time, u || 'https://wallstreetcn.com/');
+    }
   } else if (parse === 'json_sina') {
     // 请求R：新浪财经 7x24 实时新闻 → result.data.feed.list[]，字段 rich_text / create_time / docurl
     let arr = (payload && payload.result && payload.result.data && payload.result.data.feed && payload.result.data.feed.list)
