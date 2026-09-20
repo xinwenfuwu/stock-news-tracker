@@ -923,21 +923,44 @@ const app = createApp({
     // 收藏板块手动新增
     const favAddCode = ref('');
     const favAddName = ref('');
-    function addFavoriteManual() {
-      const code = String(favAddCode.value || '').trim();
-      const name = String(favAddName.value || '').trim();
-      if (!code) { showToast('请输入股票代码', 'error'); return; }
-      // 手动添加也用完整字段结构，便于表格展示一致字段
-      const fav = _newStock({ code, name: name || code });
-      fav.favDate = Store.today();
-      fav.note = '';
-      const ok = Store.addFavorite(fav);
-      if (ok) {
-        showToast(`已收藏「${name || code}」`, 'success');
-        favAddCode.value = '';
-        favAddName.value = '';
-      } else {
-        showToast('该股票已在收藏中', 'info');
+    const favAdding = ref(false);   // 请求U：名称反查需要联网，加上按钮 loading 态避免重复点击
+    /* 请求U：以前这里强制「必须有代码」，且代码不经 inferPrefix 规范化（存进去的 '600519'
+     * 没有 sh/sz 前缀 → 行情接口查不到 → 表现同样是「刷新不出数据」）。
+     * 现在：① 只填名称也能加（走三级降级反查代码）；② 只填代码自动补市场前缀；③ 两者都填以代码为准。 */
+    async function addFavoriteManual() {
+      const rawCode = String(favAddCode.value || '').trim();
+      const rawName = String(favAddName.value || '').trim();
+      if (!rawCode && !rawName) { showToast('请输入股票代码或名称', 'error'); return; }
+      favAdding.value = true;
+      try {
+        let code = rawCode ? StockAPI.inferPrefix(rawCode) : '';
+        let name = rawName;
+        if (!code && name) {
+          showToast(`正在识别「${name}」...`, 'info');
+          const pend = [{ name: name, code: '' }];
+          await StockAPI.resolveStockNames(pend);
+          if (pend[0].code) { code = pend[0].code; name = pend[0].name || name; }
+        }
+        if (!code) {
+          showToast(`未能识别「${rawName || rawCode}」，请检查名称或改用 6 位代码`, 'error');
+          return;
+        }
+        // 手动添加也用完整字段结构，便于表格展示一致字段
+        const fav = _newStock({ code, name: name || code });
+        fav.favDate = Store.today();
+        fav.note = '';
+        const ok = Store.addFavorite(fav);
+        if (ok) {
+          showToast(`已收藏「${name || code}」`, 'success');
+          favAddCode.value = '';
+          favAddName.value = '';
+        } else {
+          showToast('该股票已在收藏中', 'info');
+        }
+      } catch (e) {
+        showToast('添加失败：' + (e && e.message ? e.message : e), 'error');
+      } finally {
+        favAdding.value = false;
       }
     }
     /** 补全单只股票的财务/股东/历史价数据（东财，best-effort）。供收藏/股票池/热门表刷新复用。 */
@@ -2333,7 +2356,7 @@ const app = createApp({
     // ============================================================
     const poolLoading = ref(false);
     const poolModal = reactive({ show: false, isEdit: false, saving: false, data: {} });
-    const poolDetail = reactive({ show: false, data: { stocks: [] }, nameEdit: false, nameDraft: '', addText: '' });
+    const poolDetail = reactive({ show: false, data: { stocks: [] }, nameEdit: false, nameDraft: '', addText: '', adding: false });
     const poolDetailSort = reactive({ key: 'dailyChange', dir: 'desc' });
 
     const sortedPools = computed(() => {
@@ -2513,6 +2536,30 @@ const app = createApp({
       showToast(`已填入 ${list.length} 只当日股票，可再手动增删`, 'success');
     }
 
+    /** 请求U：把股票池里「有名称但没代码（或代码残缺）」的条目反查补全。
+     *  resolveStockNames 是原地修改传入对象，所以这里用一层 { name, code: '' } 包装再写回。
+     *  @returns {Promise<number>} 成功补全的条数 */
+    async function healBrokenCodes(pools) {
+      const pend = [];
+      (pools || []).forEach(p => (p.stocks || []).forEach(s => {
+        if (!s || !s.name) return;
+        if (/^(sh|sz|bj)\d{6}$/i.test(String(s.code || ''))) return;   // 正常代码不动
+        const w = { name: s.name, code: '' };
+        pend.push({ s, w });
+      }));
+      if (!pend.length) return 0;
+      showToast(`正在补全 ${pend.length} 只缺少代码的股票...`, 'info');
+      let fixed = 0;
+      try {
+        await StockAPI.resolveStockNames(pend.map(x => x.w));
+        pend.forEach(x => {
+          if (x.w.code) { x.s.code = x.w.code; x.s.name = x.w.name || x.s.name; fixed++; }
+        });
+      } catch (e) { console.warn('补全股票代码失败', e); }
+      if (fixed) showToast(`已补全 ${fixed} 只股票的代码`, 'success');
+      return fixed;
+    }
+
     // 刷新所有股票池涨跌幅
     async function refreshPoolPrices() {
       if (!D.stockPools.length) {
@@ -2522,6 +2569,10 @@ const app = createApp({
       poolLoading.value = true;
       showToast('正在刷新股票池行情...', 'info');
       try {
+        // 请求U 自愈：历史数据里用「名称」添加过的条目 code 为空（或只有 'sz' 这种残缺值），
+        // 行情接口查不到它们 → 这些行永远显示 '-'。每次刷新时用已存的名称反查一次代码，
+        // 补上即可恢复正常；补不上的保持原样，不影响其它股票。
+        await healBrokenCodes(D.stockPools);
         // 收集所有代码
         const allCodes = new Set();
         D.stockPools.forEach(p => p.stocks.forEach(s => { if (s.code) allCodes.add(s.code); }));
@@ -2557,18 +2608,46 @@ const app = createApp({
       poolDetail.show = true;
     }
 
-    /** 在详情弹窗中向当前股票池添加股票（支持多只，用逗号/换行/分号分隔） */
+    /* 在详情弹窗中向当前股票池添加股票（支持多只，用逗号/换行/分号分隔）
+     *
+     * 请求U 修复：以前这里拿到 parseStockInput 的结果就直接用，纯名称那部分 code 是空串，
+     * 于是被当成「新股票」push 进池子（code:''）→ 后面 getQuotes('') 永远拉不到行情，
+     * 表现就是「输名称添加成功但刷新不出数据」。现在补上 resolveStockNames 三级降级反查，
+     * 与新建股票池（savePool）保持同一套行为；反查不到的直接跳过并提示，不再写脏数据。 */
     async function addPoolStocks() {
       const txt = (poolDetail.addText || '').trim();
       if (!txt) { showToast('请输入要添加的股票代码或名称', 'error'); return; }
       const pool = poolDetail.data;
       const parsed = StockAPI.parseStockInput(txt);
       if (!parsed.length) { showToast('未识别到有效股票', 'error'); return; }
+
+      const needName = parsed.filter(s => s.name && !s.code);
+      if (needName.length) {
+        poolDetail.adding = true;
+        showToast(`正在识别 ${needName.length} 个股票名称...`, 'info');
+        try {
+          await StockAPI.resolveStockNames(parsed);
+        } finally {
+          poolDetail.adding = false;
+        }
+      }
+
+      const failed = parsed.filter(s => !s.code);
+      if (failed.length) {
+        const shown = failed.map(s => s.name || s.code).filter(Boolean).slice(0, 5).join('、');
+        const more = failed.length > 5 ? ` 等 ${failed.length} 个` : '';
+        if (failed.length >= parsed.length) {
+          showToast(`未能识别「${shown}」${more}对应的股票，请检查名称或改用 6 位代码`, 'error');
+          return;
+        }
+        showToast(`以下未能识别已跳过：${shown}${more}，其余股票已添加`, 'error');
+      }
+
       const existing = new Set((pool.stocks || []).map(s => s.code));
       let added = 0;
       const newStocks = [];
       for (const p of parsed) {
-        if (existing.has(p.code)) continue;
+        if (!p.code || existing.has(p.code)) continue;
         const ns = _newStock(p);
         newStocks.push(ns);
         existing.add(p.code);
@@ -3700,26 +3779,54 @@ const app = createApp({
       const i = semantic.stocks.findIndex(x => x.code === code);
       if (i >= 0) semantic.stocks.splice(i, 1); markSemanticDirty();
     }
+    /* 请求U：以前这里只跑 StockAPI.inferPrefix(raw)——非数字输入会被 replace(/\D/g,'') 清空，
+     * 所有分支都不匹配，最终落到 return 'sz' + pure，即 code='sz'，行情必然拉不到。
+     * 改成走统一的「名称 / 代码」解析，支持 600519 / sh600519 / 贵州茅台 / 贵州茅台(600519)，
+     * 多只用逗号、分号或空格分隔。 */
     async function addStockByCode() {
       const raw = stockAddCode.value.trim();
-      if (!raw) { showToast('请输入股票代码', 'error'); return; }
-      const code = StockAPI.inferPrefix(raw);
+      if (!raw) { showToast('请输入股票代码或名称', 'error'); return; }
       stockAdding.value = true;
       try {
-        const q = await StockAPI.getQuotes([code]);
-        const info = (q && q[code]) || {};
-        const name = info.name || raw.toUpperCase();
-        semantic.stocks.push({
-          code, name,
-          price: info.price != null ? info.price : null,
-          changePercent: info.changePercent != null ? info.changePercent : null,
-          marketCap: info.totalMarketCap != null ? info.totalMarketCap * 1e8 : null,
-          role: '手动添加',
-          concepts: semantic.concepts.slice(),
-          relevance: null
-        });
+        const parsed = StockAPI.parseStockInput(raw);
+        if (!parsed.length) { showToast('未识别到有效股票', 'error'); return; }
+        const needName = parsed.filter(s => s.name && !s.code);
+        if (needName.length) {
+          showToast(`正在识别 ${needName.length} 个股票名称...`, 'info');
+          await StockAPI.resolveStockNames(parsed);
+        }
+        const list = parsed.filter(s => s.code);
+        if (!list.length) {
+          const names = parsed.map(s => s.name || s.code).slice(0, 3).join('、');
+          showToast(`未能识别「${names}」，请检查名称或改用 6 位代码`, 'error');
+          return;
+        }
+        const exist = new Set(semantic.stocks.map(s => s.code));
+        const targets = [];
+        for (const it of list) {
+          if (exist.has(it.code)) continue;
+          exist.add(it.code);
+          targets.push(it);
+        }
+        if (!targets.length) { showToast('这些股票已在列表中', 'info'); stockAddCode.value = ''; return; }
+        const q = await StockAPI.getQuotes(targets.map(t => t.code)) || {};
+        let firstName = '';
+        for (const it of targets) {
+          const info = q[it.code] || {};
+          const name = info.name || it.name || it.code.toUpperCase();
+          if (!firstName) firstName = name;
+          semantic.stocks.push({
+            code: it.code, name,
+            price: info.price != null ? info.price : null,
+            changePercent: info.changePercent != null ? info.changePercent : null,
+            marketCap: info.totalMarketCap != null ? info.totalMarketCap * 1e8 : null,
+            role: '手动添加',
+            concepts: semantic.concepts.slice(),
+            relevance: null
+          });
+        }
         stockAddCode.value = '';
-        showToast('已添加 ' + name, 'success');
+        showToast(targets.length > 1 ? `已添加 ${targets.length} 只股票，首个：${firstName}` : '已添加 ' + firstName, 'success');
         markSemanticDirty();
       } catch (e) {
         showToast('添加失败：' + (e && e.message ? e.message : e), 'error');
@@ -7339,7 +7446,7 @@ const app = createApp({
       // 通用：收藏
       favorites, sortedFavorites, isFav, toggleFavorite, removeFavorite,
       updateFavNote, favDays,
-      favAddCode, favAddName, addFavoriteManual,
+      favAddCode, favAddName, favAdding, addFavoriteManual,
       favRefreshing, refreshFavorites
       ,
       // 用户持仓

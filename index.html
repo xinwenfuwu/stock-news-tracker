@@ -4,12 +4,12 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>股市信息分析系统</title>
-  <link rel="stylesheet" href="css/style.css?v=20260920f">
+  <link rel="stylesheet" href="css/style.css?v=20260920g">
   <!-- Vue 3 全局构建版（v3.4.21 · 自托管）
        原先走 unpkg.com CDN：国内网络对 unpkg 的连通性不稳定，一旦该请求长时间挂起，
        <head> 里的阻塞脚本会让整页停在白屏、后续 auth-boot.js 根本不会执行。
        改为同源托管后，启动链路不再依赖任何第三方 CDN。 -->
-  <script src="js/vue.global.prod.js?v=20260920f"></script>
+  <script src="js/vue.global.prod.js?v=20260920g"></script>
 </head>
 <body class="auth-locked">
   <!-- ===== 登录关卡：登录通过前业务脚本不会被加载 ===== -->
@@ -1595,7 +1595,7 @@
             </table>
           </div>
           <div class="semantic-add-stock">
-            <input class="inline-input wide" v-model="stockAddCode" @keyup.enter="addStockByCode" placeholder="输入股票代码添加（如 600519 / sh600519）" />
+            <input class="inline-input wide" v-model="stockAddCode" @keyup.enter="addStockByCode" placeholder="输入股票代码或名称添加（如 600519 / 贵州茅台），多只用逗号分隔" />
             <button class="btn btn-xs btn-primary" @click="addStockByCode" :disabled="stockAdding">＋ 添加股票</button>
           </div>
           <p class="muted small" v-if="!semantic.stocks.length">未找到符合条件的上市公司，可尝试调整描述（如去掉"核心"或减少概念），或手动「添加股票」。</p>
@@ -2223,9 +2223,11 @@
           <div class="fav-panel-header">
             <h3 class="panel-title" style="margin:0">⭐ 收藏板块</h3>
             <div class="fav-add-row" style="margin:0">
-              <input v-model="favAddCode" class="cell-input" placeholder="股票代码" style="width:100px">
-              <input v-model="favAddName" class="cell-input" placeholder="股票名称" style="width:160px">
-              <button class="btn btn-sm" @click="addFavoriteManual" title="添加到收藏板块">＋ 添加</button>
+              <input v-model="favAddCode" class="cell-input" placeholder="股票代码（如 600519）" style="width:130px">
+              <input v-model="favAddName" class="cell-input" placeholder="股票名称（如 贵州茅台）" style="width:160px">
+              <button class="btn btn-sm" @click="addFavoriteManual" :disabled="favAdding" title="代码与名称填任意一个即可添加到收藏板块">
+                <span v-if="favAdding">⏳</span>＋ 添加
+              </button>
               <button class="btn btn-sm" @click="favInfoOpen = !favInfoOpen" :title="favInfoOpen ? '隐藏字段含义与计算规则' : '显示字段含义与计算规则'">{{ favInfoOpen ? '🙈 隐藏说明' : '👁 字段含义' }}</button>
               <button class="btn btn-sm" @click="refreshFavorites" :disabled="favRefreshing">
                 <span v-if="favRefreshing">⏳ 刷新中...</span>
@@ -2668,10 +2670,13 @@
             <button class="btn btn-sm" @click="refreshPoolDetail(poolDetail.data)">🔄 刷新行情</button>
           </div>
           <div class="pool-detail-add">
-            <input v-model="poolDetail.addText" placeholder="输入股票代码或名称添加（支持多只，用逗号/分号/换行分隔）"
+            <input v-model="poolDetail.addText" placeholder="输入股票代码或名称添加（支持多只，用逗号/分号/换行分隔；如 600519 / 贵州茅台 / 宁德时代(300750)）"
               style="flex:1;min-width:200px;padding:7px 10px;border:1px solid #d8e0f0;border-radius:6px"
               @keyup.enter="addPoolStocks">
-            <button class="btn btn-sm" @click="addPoolStocks">➕ 添加</button>
+            <button class="btn btn-sm" @click="addPoolStocks" :disabled="poolDetail.adding">
+              <span v-if="poolDetail.adding">⏳ 识别中…</span>
+              <span v-else>➕ 添加</span>
+            </button>
             <span class="muted small">共 {{ poolDetail.data.stocks.length }} 只</span>
           </div>
           <div class="table-wrap table-scroll-x">
@@ -3556,9 +3561,9 @@
     </transition>
   </div>
 
-  <script src="js/auth.js?v=20260920f"></script>
-  <script src="js/auth-sync.js?v=20260920f"></script>
-  <script src="js/auth-boot.js?v=20260920f"></script>
+  <script src="js/auth.js?v=20260920g"></script>
+  <script src="js/auth-sync.js?v=20260920g"></script>
+  <script src="js/auth-boot.js?v=20260920g"></script>
   <!-- store / stock-api / hot-topics / app 由 auth-boot.js 在登录通过后动态装载，
        未登录时它们不会被下载，业务数据也不会进入内存 -->
 </body>
