@@ -5556,18 +5556,17 @@ const app = createApp({
           StockAPI.getAmplitudeBoards(),
           StockAPI.getNewListedStocks()
         ]);
-        hotBoards.value = boards;
-        hotStocks.value = stocks;
-        preMarketBoards.value = preBoards;
-        amplitudeBoards.value = ampBoards;
-        newListedStocks.value = newListed;
-        D.hotBoards = boards;
-        D.hotStocks = stocks;
-        D.preMarketBoards = preBoards;
-        D.amplitudeBoards = ampBoards;
-        D.newListedStocks = newListed;
-        const ok = boards.length || stocks.length || preBoards.length || ampBoards.length || newListed.length;
-        showToast(ok ? `获取到 ${boards.length} 个当日板块、${preBoards.length} 个盘前热点、${ampBoards.length} 个振幅板块、${stocks.length} 只热门股票、${newListed.length} 只新上市股票` : '获取失败：跨域/网络受限（已自动尝试 JSONP 兜底仍失败），请检查网络后重试', ok ? 'success' : 'error');
+        // 各路独立落盘：某一路接口限流返回空时保留旧数据，避免「刷新一次反而清空已有内容」
+        if (boards && boards.length) { hotBoards.value = boards; D.hotBoards = boards; }
+        if (stocks && stocks.length) { hotStocks.value = stocks; D.hotStocks = stocks; }
+        if (preBoards && preBoards.length) { preMarketBoards.value = preBoards; D.preMarketBoards = preBoards; }
+        if (ampBoards && ampBoards.length) { amplitudeBoards.value = ampBoards; D.amplitudeBoards = ampBoards; }
+        if (newListed && newListed.length) { newListedStocks.value = newListed; D.newListedStocks = newListed; }
+        // 任一当前有数据即视为成功（含历史残留），某一路限流不再误报整体失败
+        const nBoards = hotBoards.value.length, nPre = preMarketBoards.value.length,
+              nAmp = amplitudeBoards.value.length, nStocks = hotStocks.value.length, nNew = newListedStocks.value.length;
+        const ok = nBoards || nStocks || nPre || nAmp || nNew;
+        showToast(ok ? `获取到 ${nBoards} 个当日板块、${nPre} 个盘前热点、${nAmp} 个振幅板块、${nStocks} 只热门股票、${nNew} 只新上市股票` : '获取失败：跨域/网络受限（已自动尝试 JSONP 兜底仍失败），请检查网络后重试', ok ? 'success' : 'error');
       } catch (e) {
         showToast('获取失败', 'error');
       } finally {
@@ -5587,6 +5586,7 @@ const app = createApp({
     async function refreshHotBoardsOnly() {
       if (hotBoardsLoading.value) return;
       hotBoardsLoading.value = true;
+      const prevLen = hotBoards.value.length; // 刷新前的旧数据条数，用于区分「沿用」与「真失败」
       showToast('正在刷新当日热门板块...', 'info');
       try {
         const list = await StockAPI.getBoardRanking();
@@ -5594,11 +5594,15 @@ const app = createApp({
           hotBoards.value = list;
           D.hotBoards = list;
           showToast(`已刷新 ${list.length} 个当日热门板块`, 'success');
+        } else if (prevLen) {
+          // 这次没拿到新数据（限流/非交易时段接口空），本地还有上次数据 → 沿用，不算失败
+          showToast(`未获取到新数据，继续沿用上次 ${prevLen} 条`, 'info');
         } else {
-          showToast('刷新失败（网络/接口限流），已保留上次数据', 'error');
+          showToast('刷新失败（网络/接口限流），请稍后重试', 'error');
         }
       } catch (e) {
-        showToast('刷新失败（网络/接口限流），已保留上次数据', 'error');
+        if (prevLen) showToast(`刷新暂未成功，继续沿用上次 ${prevLen} 条`, 'info');
+        else showToast('刷新失败（网络/接口限流），请稍后重试', 'error');
       } finally {
         hotBoardsLoading.value = false;
       }
@@ -5608,6 +5612,7 @@ const app = createApp({
     async function refreshNewListedStocks() {
       if (newListedLoading.value) return;
       newListedLoading.value = true;
+      const prevLen = newListedStocks.value.length; // 刷新前的旧数据条数，用于区分「沿用」与「真失败」
       showToast('正在刷新新上市股票...', 'info');
       try {
         const list = await StockAPI.getNewListedStocks();
@@ -5615,11 +5620,15 @@ const app = createApp({
           newListedStocks.value = list;
           D.newListedStocks = list;
           showToast(`已刷新 ${list.length} 只新上市股票`, 'success');
+        } else if (prevLen) {
+          // 这次没拿到新数据（限流/非交易时段接口空），本地还有上次数据 → 沿用，不算失败
+          showToast(`未获取到新数据，继续沿用上次 ${prevLen} 条`, 'info');
         } else {
-          showToast('刷新失败（网络/接口限流），已保留上次数据', 'error');
+          showToast('刷新失败（网络/接口限流），请稍后重试', 'error');
         }
       } catch (e) {
-        showToast('刷新失败（网络/接口限流），已保留上次数据', 'error');
+        if (prevLen) showToast(`刷新暂未成功，继续沿用上次 ${prevLen} 条`, 'info');
+        else showToast('刷新失败（网络/接口限流），请稍后重试', 'error');
       } finally {
         newListedLoading.value = false;
       }
@@ -5629,6 +5638,7 @@ const app = createApp({
     async function refreshHotStocksOnly() {
       if (hotStocksLoading.value) return;
       hotStocksLoading.value = true;
+      const prevLen = hotStocks.value.length; // 刷新前的旧数据条数，用于区分「沿用」与「真失败」
       showToast('正在刷新当日热门股票...', 'info');
       try {
         const list = await StockAPI.getStockRanking();
@@ -5636,11 +5646,15 @@ const app = createApp({
           hotStocks.value = list;
           D.hotStocks = list;
           showToast(`已刷新 ${list.length} 只当日热门股票`, 'success');
+        } else if (prevLen) {
+          // 这次没拿到新数据（限流/非交易时段接口空），本地还有上次数据 → 沿用，不算失败
+          showToast(`未获取到新数据，继续沿用上次 ${prevLen} 条`, 'info');
         } else {
-          showToast('刷新失败（网络/接口限流），已保留上次数据', 'error');
+          showToast('刷新失败（网络/接口限流），请稍后重试', 'error');
         }
       } catch (e) {
-        showToast('刷新失败（网络/接口限流），已保留上次数据', 'error');
+        if (prevLen) showToast(`刷新暂未成功，继续沿用上次 ${prevLen} 条`, 'info');
+        else showToast('刷新失败（网络/接口限流），请稍后重试', 'error');
       } finally {
         hotStocksLoading.value = false;
       }
@@ -5650,6 +5664,7 @@ const app = createApp({
     async function refreshPreMarketBoards() {
       if (preMarketLoading.value) return;
       preMarketLoading.value = true;
+      const prevLen = preMarketBoards.value.length; // 刷新前的旧数据条数，用于区分「沿用」与「真失败」
       showToast('正在刷新盘前热点板块...', 'info');
       try {
         const list = await StockAPI.getPreMarketBoards();
@@ -5657,11 +5672,15 @@ const app = createApp({
           preMarketBoards.value = list;
           D.preMarketBoards = list;
           showToast(`已刷新 ${list.length} 个盘前热点板块`, 'success');
+        } else if (prevLen) {
+          // 这次没拿到新数据（限流/非交易时段接口空），本地还有上次数据 → 沿用，不算失败
+          showToast(`未获取到新数据，继续沿用上次 ${prevLen} 条`, 'info');
         } else {
-          showToast('刷新失败（网络/接口限流），已保留上次数据', 'error');
+          showToast('刷新失败（网络/接口限流），请稍后重试', 'error');
         }
       } catch (e) {
-        showToast('刷新失败（网络/接口限流），已保留上次数据', 'error');
+        if (prevLen) showToast(`刷新暂未成功，继续沿用上次 ${prevLen} 条`, 'info');
+        else showToast('刷新失败（网络/接口限流），请稍后重试', 'error');
       } finally {
         preMarketLoading.value = false;
       }
@@ -5669,14 +5688,22 @@ const app = createApp({
 
     async function refreshAmplitudeBoards() {
       ampLoading.value = true;
+      const prevLen = amplitudeBoards.value.length;
       showToast('正在刷新振幅板块...', 'info');
       try {
         const list = await StockAPI.getAmplitudeBoards();
-        amplitudeBoards.value = list;
-        D.amplitudeBoards = list;
-        showToast(list.length ? `已刷新 ${list.length} 个振幅板块` : '刷新失败（网络限制），可稍后重试', list.length ? 'success' : 'error');
+        amplitudeBoards.value = list || [];
+        D.amplitudeBoards = list || [];
+        if (list && list.length) {
+          showToast(`已刷新 ${list.length} 个振幅板块`, 'success');
+        } else if (prevLen) {
+          showToast(`未获取到新数据，继续沿用上次 ${prevLen} 条`, 'info');
+        } else {
+          showToast('刷新失败（网络/接口限流），请稍后重试', 'error');
+        }
       } catch (e) {
-        showToast('刷新失败', 'error');
+        if (prevLen) showToast(`刷新暂未成功，继续沿用上次 ${prevLen} 条`, 'info');
+        else showToast('刷新失败', 'error');
       } finally {
         ampLoading.value = false;
       }

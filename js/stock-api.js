@@ -2178,34 +2178,44 @@ const StockAPI = {
     } else {
       hosts = [null];   // 非 push2 域名（如 datacenter-web）不做替换
     }
-    for (const host of hosts) {
-      // 用字符串拼接而非 URL 序列化，避免 searchParams 重新编码把 "fs=m:90+t:2" 的 "+" 变成空格
-      let target = url;
-      if (host && u && u.hostname !== host) {
-        target = u.protocol + '//' + host + u.pathname + (u.search || '');
+
+    // 请求东财（尤其 JSONP 兜底）偶发被接口限流/网络抖动，一次失败即放弃会导致
+    // 热门板块刷新误报「刷新失败」。这里整体重试 2 次（共 3 次尝试），每次重试间隔退避，
+    // 对抗一过性限流；任一次成功立即返回，重试不改变成功路径行为。
+    const MAX_TRIES = 3;
+    for (let attempt = 0; attempt < MAX_TRIES; attempt++) {
+      if (attempt > 0) {
+        await new Promise(r => setTimeout(r, attempt * 600)); // 退避 600ms / 1200ms
       }
-      // 1) 简单请求 fetch（不带任何自定义头，避免 CORS 预检）
-      try {
-        const resp = await fetch(target, { cache: 'no-store' });
-        if (resp.ok) {
-          const j = await resp.json();
+      for (const host of hosts) {
+        // 用字符串拼接而非 URL 序列化，避免 searchParams 重新编码把 "fs=m:90+t:2" 的 "+" 变成空格
+        let target = url;
+        if (host && u && u.hostname !== host) {
+          target = u.protocol + '//' + host + u.pathname + (u.search || '');
+        }
+        // 1) 简单请求 fetch（不带任何自定义头，避免 CORS 预检）
+        try {
+          const resp = await fetch(target, { cache: 'no-store' });
+          if (resp.ok) {
+            const j = await resp.json();
+            if (j && j.data != null) {
+              if (isKline) { if (j.data.klines && j.data.klines.length) return j; }
+              else return j;
+            }
+          }
+        } catch (e) {
+          console.debug('[stock-api] fetch 失败，改用 JSONP 兜底:', e && e.message);
+        }
+        // 2) JSONP：注入 <script> 加载，完全绕过 CORS
+        try {
+          const j = await this._eastJsonp(target, 9000);
           if (j && j.data != null) {
             if (isKline) { if (j.data.klines && j.data.klines.length) return j; }
             else return j;
           }
+        } catch (e) {
+          console.debug('[stock-api] JSONP 亦失败:', e && e.message);
         }
-      } catch (e) {
-        console.debug('[stock-api] fetch 失败，改用 JSONP 兜底:', e && e.message);
-      }
-      // 2) JSONP：注入 <script> 加载，完全绕过 CORS
-      try {
-        const j = await this._eastJsonp(target, 9000);
-        if (j && j.data != null) {
-          if (isKline) { if (j.data.klines && j.data.klines.length) return j; }
-          else return j;
-        }
-      } catch (e) {
-        console.debug('[stock-api] JSONP 亦失败:', e && e.message);
       }
     }
     return null;
