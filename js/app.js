@@ -5551,7 +5551,7 @@ const app = createApp({
       try {
         const [boards, stocks, preBoards, ampBoards, newListed] = await Promise.all([
           StockAPI.getBoardRanking(),
-          StockAPI.getStockRanking(),
+          StockAPI.getLimitUpStreak(),
           StockAPI.getPreMarketBoards(),
           StockAPI.getAmplitudeBoards(),
           StockAPI.getNewListedStocks()
@@ -5565,17 +5565,28 @@ const app = createApp({
         // 任一当前有数据即视为成功（含历史残留），某一路限流不再误报整体失败
         const nBoards = hotBoards.value.length, nPre = preMarketBoards.value.length,
               nAmp = amplitudeBoards.value.length, nStocks = hotStocks.value.length, nNew = newListedStocks.value.length;
-        const ok = nBoards || nStocks || nPre || nAmp || nNew;
-        showToast(ok ? `获取到 ${nBoards} 个当日板块、${nPre} 个盘前热点、${nAmp} 个振幅板块、${nStocks} 只热门股票、${nNew} 只新上市股票` : '获取失败：跨域/网络受限（已自动尝试 JSONP 兜底仍失败），请检查网络后重试', ok ? 'success' : 'error');
+        const gotNew = (boards && boards.length) || (stocks && stocks.length) || (preBoards && preBoards.length)
+                    || (ampBoards && ampBoards.length) || (newListed && newListed.length);
+        const nAll = nBoards + nPre + nAmp + nStocks + nNew;
+        if (nAll) {
+          // 有数据即成功；本轮确实没拿到新数据时补一句「沿用上次」，避免用户误以为刷新没生效
+          showToast(`获取到 ${nBoards} 个当日板块、${nPre} 个盘前热点、${nAmp} 个振幅板块、${nStocks} 只连板股票、${nNew} 只新上市股票`
+            + (gotNew ? '' : '（本轮未获取到新数据，沿用上次结果）'), 'success');
+        } else {
+          // 全空：区分「本轮确实没拉到」与「真的一无所有」，给出可操作提示，不再使用已过时的 JSONP 措辞
+          showToast('暂未获取到数据（接口限流或非交易时段），请稍后重试', 'error');
+        }
       } catch (e) {
-        showToast('获取失败', 'error');
+        const anyData = hotBoards.value.length || hotStocks.value.length || preMarketBoards.value.length
+                     || amplitudeBoards.value.length || newListedStocks.value.length;
+        showToast(anyData ? `获取暂未成功，继续沿用上次 ${anyData} 条数据` : '获取失败（网络异常），请稍后重试', anyData ? 'info' : 'error');
       } finally {
         hotLoading.value = false;
       }
     }
 
     // ===== batch23（请求F）：热门板块下六个子版块的「独立刷新」按钮 =====
-    // 六个子版块：① 当日热门板块 ② 新上市股票 ③ 当日热门股票 ④ 盘前热点板块 ⑤ 尾盘买入法 ⑥ 振幅板块
+    // 六个子版块：① 当日热门板块 ② 新上市股票 ③ 连板股票 ④ 盘前热点板块 ⑤ 尾盘买入法 ⑥ 振幅板块
     // 每个子版块各有一个独立刷新按钮，只刷新自己那一路数据，互不影响。
     const hotBoardsLoading = ref(false);
     const newListedLoading = ref(false);
@@ -5634,18 +5645,18 @@ const app = createApp({
       }
     }
 
-    /** ③ 只刷新「当日热门股票」 */
+    /** ③ 只刷新「连板股票」（近 10 交易日涨停次数降序取前 25） */
     async function refreshHotStocksOnly() {
       if (hotStocksLoading.value) return;
       hotStocksLoading.value = true;
       const prevLen = hotStocks.value.length; // 刷新前的旧数据条数，用于区分「沿用」与「真失败」
-      showToast('正在刷新当日热门股票...', 'info');
+      showToast('正在刷新连板股票...', 'info');
       try {
-        const list = await StockAPI.getStockRanking();
+        const list = await StockAPI.getLimitUpStreak();
         if (list && list.length) {
           hotStocks.value = list;
           D.hotStocks = list;
-          showToast(`已刷新 ${list.length} 只当日热门股票`, 'success');
+          showToast(`已刷新 ${list.length} 只连板股票`, 'success');
         } else if (prevLen) {
           // 这次没拿到新数据（限流/非交易时段接口空），本地还有上次数据 → 沿用，不算失败
           showToast(`未获取到新数据，继续沿用上次 ${prevLen} 条`, 'info');
@@ -5788,7 +5799,7 @@ const app = createApp({
 
     /**
      * 热门板块：点击子版块后的「去除股票」选项弹窗状态。
-     * 四个子版块（当日热门板块 / 盘前热点板块 / 振幅板块 / 当日热门股票）共用这一份勾选，
+     * 四个子版块（当日热门板块 / 盘前热点板块 / 振幅板块 / 连板股票）共用这一份勾选，
      * 勾选结果在本次会话内记住，不必每次重选。
      */
     const hotExclude = reactive({
@@ -5810,7 +5821,7 @@ const app = createApp({
         return;
       }
       if (payload.type === 'stock' && (!payload.stock || !payload.stock.code)) {
-        showToast('该股票缺少代码，请重新「获取热门板块」', 'error');
+        showToast('该股票缺少代码，请点击「获取热门板块」或「刷新数据」重新加载', 'error');
         return;
       }
       hotExclude.pending = payload;
@@ -5942,7 +5953,7 @@ const app = createApp({
     }
 
     /**
-     * 点击「当日热门股票」中的某只个股：
+     * 点击「连板股票」中的某只个股：
      * 把该个股单独载入下方「当日股票明细」，字段与格式与筛选板块完全一致。
      * 与 openHotBoard（板块→成分股）互补：这里展示的是单只个股本身。
      */
@@ -5950,7 +5961,7 @@ const app = createApp({
       if (!s) return;
       const code = s.code;
       if (!code) {
-        showToast('该股票缺少代码，请重新「获取热门板块」', 'error');
+        showToast('该股票缺少代码，请点击「获取热门板块」或「刷新数据」重新加载', 'error');
         return;
       }
       // 与板块成分股同一套「去除股票」规则：勾选了规则且该股命中时，直接不载入

@@ -2598,6 +2598,108 @@ const StockAPI = {
     return valid.slice(0, 50);
   },
 
+  // ============ 连板股票（近 10 个交易日内涨停次数排行） ============
+  /**
+   * 获取「连板股票」排行：近 10 个交易日内涨停板最多的股票，按涨停次数降序取前 25。
+   *
+   * 数据源：东财涨停板池（push2ex.eastmoney.com/getTopicZTPool），单次即返回当日全市场涨停股，
+   * 每只带 lbc（连板数）、zttj.days/ct（统计窗口天数 / 窗口内涨停次数）、hybk（所属行业）。
+   * 交易日为倒序回扫：从今天起最多回扫 14 个自然日凑满 10 个交易日（跳过周末与无数据的节假日；
+   * 「无数据」分两种——非交易日返回 tc=0，或当日尚未收盘/尚未开盘导致池子为空，均回扫跳过）。
+   *
+   * 计算口径（与需求一致）：
+   *   统计窗口 = 近 10 个交易日（含当日）；
+   *   主排序   = 窗口内涨停次数（zttj.ct 为准，缺失时回退 lbc）降序；
+   *   次序     = 连板数（lbc）降序 → 当日涨幅降序 → 行业名 → 代码（保证结果稳定可复现）；
+   *   取前 25 只。
+   *
+   * @returns {Promise<Array<{name,code,pureCode,market,change,boardCount,ztCount,boomCount,days,industry,firstLimitTime}>>}
+   *          boardCount=连板数, ztCount=近10交易日涨停次数, boomCount=炸板次数
+   */
+  async getLimitUpStreak() {
+    return this._withCache('ztpool:10d25', API_TTL.SECTOR, () => this._getLimitUpStreakRaw(), v => !!(v && v.length));
+  },
+
+  /** 涨停池单日抓取：返回 { ok, tc, pool }；ok=false 表示该日无有效数据（非交易日/未开盘/接口失败） */
+  async _fetchZtPool(dateStr) {
+    const url = `https://push2ex.eastmoney.com/getTopicZTPool?ut=7eea3edcaed734bea9cbfc24409ed989&dpt=wz.ztzt&Pageindex=0&pagesize=300&sort=fbt%3Aasc&date=${dateStr}`;
+    try {
+      let json = null;
+      // 涨停池是独立域名（push2ex），Worker 白名单/直连都可能不通，故三条路都试：
+      // ① 边缘加速（Worker 代理）→ ② 直连 fetch → ③ JSONP 兜底（_eastGet 内已含直连+JSONP，此处仅作补位）
+      const viaAccel = await this._eastGetViaAccel(url).catch(() => null);
+      if (viaAccel) json = viaAccel;
+      if (!json) json = await this._eastGet(url);
+      const pool = json && json.data && Array.isArray(json.data.pool) ? json.data.pool : [];
+      const tc = json && json.data && json.data.tc != null ? json.data.tc : pool.length;
+      return { ok: pool.length > 0, tc: tc || 0, pool };
+    } catch (e) {
+      console.debug('涨停池抓取失败', dateStr, e && e.message);
+      return { ok: false, tc: 0, pool: [] };
+    }
+  },
+
+  async _getLimitUpStreakRaw() {
+    // ① 从今日起回扫，最多 20 个自然日，凑满 10 个「有涨停数据」的交易日
+    const collected = new Map(); // pureCode -> 该股最近一次出现的条目（越晚抓到的日期越新，覆盖保留最新）
+    const dates = [];
+    const base = new Date();
+    for (let back = 0; back < 20 && dates.length < 10; back++) {
+      const d = new Date(base.getTime() - back * 86400000);
+      const dow = d.getDay();
+      if (dow === 0 || dow === 6) continue;             // 跳过周末（不消耗接口）
+      const s = d.getFullYear().toString()
+        + String(d.getMonth() + 1).padStart(2, '0')
+        + String(d.getDate()).padStart(2, '0');
+      // 单日抓取失败（网络抖动/限流/被 mock 抛错）绝不能中断整轮回扫，跳过该日继续往前找
+      let r;
+      try { r = await this._fetchZtPool(s); }
+      catch (e) { console.debug('涨停池单日抓取异常，跳过', s, e && e.message); continue; }
+      if (!r || !r.ok) continue;                        // 非交易日 / 未开盘 → 不计入窗口，继续回扫
+      dates.push({ date: s, tc: r.tc });
+      for (const it of r.pool) {
+        const pure = String(it.c || '').trim();
+        if (!pure) continue;
+        // 同一只股可能连续多日涨停，只保留最新一条（连板数/涨停次数已是窗口口径，无需再累加）
+        collected.set(pure, it);
+      }
+      if (dates.length >= 10) break;
+    }
+    if (!dates.length) return [];
+
+    const rows = [];
+    for (const [pure, it] of collected) {
+      // zttj.ct = 统计窗口内涨停次数（东财口径为近 N 日，days 即窗口天数）；缺失则回退连板数
+      const zttj = it.zttj || {};
+      const ct = (zttj.ct != null && !isNaN(Number(zttj.ct))) ? Number(zttj.ct) : null;
+      const lbc = (it.lbc != null && !isNaN(Number(it.lbc))) ? Number(it.lbc) : 1;
+      const ztCount = ct != null ? ct : lbc;
+      const m = String(it.m);
+      const prefix = m === '1' ? 'sh' : (m === '0' ? 'sz' : (pure.startsWith('6') ? 'sh' : 'sz'));
+      rows.push({
+        name: it.n || '',
+        code: prefix + pure,
+        pureCode: pure,
+        market: m,
+        change: it.zdp != null ? parseFloat(it.zdp) : null,
+        boardCount: lbc,                 // 连板数
+        ztCount: ztCount,                // 近 10 交易日涨停次数（主排序键）
+        boomCount: it.zbc != null ? Number(it.zbc) : 0,   // 炸板次数
+        days: zttj.days != null ? Number(zttj.days) : null,
+        industry: it.hybk || '',
+        firstLimitTime: it.fbt != null ? String(it.fbt) : ''
+      });
+    }
+    // ② 排序：涨停次数降序 → 连板数降序 → 当日涨幅降序 → 行业 → 代码（稳定）
+    rows.sort((a, b) =>
+      (b.ztCount - a.ztCount) ||
+      (b.boardCount - a.boardCount) ||
+      ((b.change || 0) - (a.change || 0)) ||
+      String(a.industry).localeCompare(String(b.industry), 'zh') ||
+      String(a.code).localeCompare(String(b.code)));
+    return rows.slice(0, 25);
+  },
+
   // ============ 同类股票（同主营业务/产品的 A 股公司） ============
   /**
    * 找出 A 股中与「种子股票」主营业务/产品相同的同类公司。

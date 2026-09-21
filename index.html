@@ -4,12 +4,12 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>股市信息分析系统</title>
-  <link rel="stylesheet" href="css/style.css?v=20260920i">
+  <link rel="stylesheet" href="css/style.css?v=20260920j">
   <!-- Vue 3 全局构建版（v3.4.21 · 自托管）
        原先走 unpkg.com CDN：国内网络对 unpkg 的连通性不稳定，一旦该请求长时间挂起，
        <head> 里的阻塞脚本会让整页停在白屏、后续 auth-boot.js 根本不会执行。
        改为同源托管后，启动链路不再依赖任何第三方 CDN。 -->
-  <script src="js/vue.global.prod.js?v=20260920i"></script>
+  <script src="js/vue.global.prod.js?v=20260920j"></script>
 </head>
 <body class="auth-locked">
   <!-- ===== 登录关卡：登录通过前业务脚本不会被加载 ===== -->
@@ -492,7 +492,7 @@
                     v-html="cellHtml(col, s, idx, sortedHotStocks, 'hot')"></td>
               </tr>
               <tr v-if="sortedHotStocks.length === 0">
-                <td :colspan="getColumns('hot').length" class="empty-row">点击上方「当日热门板块」「盘前热点板块」「振幅板块」中的任一板块，即可在此显示该板块的全部成分股；点击「当日热门股票」中的个股，则显示该个股信息；或点击「加载当日数据」</td>
+                <td :colspan="getColumns('hot').length" class="empty-row">点击上方「当日热门板块」「盘前热点板块」「振幅板块」中的任一板块，即可在此显示该板块的全部成分股；点击「连板股票」中的个股，则显示该个股信息；或点击「加载当日数据」</td>
               </tr>
             </tbody>
           </table>
@@ -1859,7 +1859,7 @@
         </div>
 
         <div class="hot-stack" v-show="!hotPanelsHidden">
-          <!-- 顶行：当日热门板块 | 注意事项 | 当日热门股票（当日热门股票已与盘前热点板块互换位置） -->
+          <!-- 顶行：当日热门板块 | 新上市股票 | 连板股票（连板股票由原「当日热门股票」改造而来） -->
           <div class="hot-top-row">
             <div class="hot-panel">
               <div class="panel-title-row">
@@ -1905,11 +1905,11 @@
               <div class="muted small" v-else>点击「获取热门板块」加载</div>
             </div>
 
-            <!-- 当日热门股票（已与盘前热点板块互换，上移至此） -->
+            <!-- 连板股票（近 10 个交易日内涨停次数最多的股票，降序取前 25；原「当日热门股票」） -->
             <div class="hot-panel">
               <div class="panel-title-row">
-                <h3 class="panel-title" style="margin:0">⭐ 当日热门股票</h3>
-                <button class="btn btn-sm" @click="refreshHotStocksOnly" :disabled="hotStocksLoading" title="只刷新「当日热门股票」，不影响其他子版块">
+                <h3 class="panel-title" style="margin:0">🚀 连板股票</h3>
+                <button class="btn btn-sm" @click="refreshHotStocksOnly" :disabled="hotStocksLoading" title="只刷新「连板股票」（近 10 个交易日内涨停次数最多的股票，降序取前 25），不影响其他子版块">
                   <span v-if="hotStocksLoading">⏳ 刷新中...</span>
                   <span v-else>🔄 刷新数据</span>
                 </button>
@@ -1918,10 +1918,16 @@
                 <div class="hot-item hot-item-click" v-for="(s, i) in hotStocks" :key="i"
                      :class="{ active: hotBoardActive === s.name && hotDetailIsStock }"
                      @click="askHotExclude({ type: 'stock', stock: s })"
-                     :title="'点击在下方「当日股票明细」中显示个股「' + s.name + '」的详细信息'">
+                     :title="'点击在下方「当日股票明细」中显示个股「' + s.name + '」的详细信息｜近 10 个交易日涨停 ' + (s.ztCount || 1) + ' 次'
+                       + (s.boardCount ? '，当前 ' + s.boardCount + ' 连板' : '')
+                       + (s.industry ? '｜' + s.industry : '')
+                       + (s.boomCount ? '｜炸板 ' + s.boomCount + ' 次' : '')">
                   <span class="hot-rank">{{ i + 1 }}</span>
                   <span class="hot-name">{{ s.name }}</span>
-                  <span class="hot-val" :class="pctClass(s.change)">{{ fmtPct(s.change) }}</span>
+                  <span class="hot-val" style="display:flex; flex-direction:column; align-items:flex-end; line-height:1.25;">
+                    <span style="color:#dc2626; font-weight:700;">{{ s.boardCount || 1 }}板</span>
+                    <span class="muted small" style="font-weight:400;">10日{{ s.ztCount || 1 }}次</span>
+                  </span>
                 </div>
               </div>
               <div class="muted small" v-else>点击「获取热门板块」加载</div>
@@ -3561,12 +3567,12 @@
     </transition>
   </div>
 
-  <script src="js/auth.js?v=20260920i"></script>
-  <script src="js/auth-sync.js?v=20260920i"></script>
+  <script src="js/auth.js?v=20260920j"></script>
+  <script src="js/auth-sync.js?v=20260920j"></script>
   <!-- 边缘加速默认站点（batch37 治本：Cloudflare Worker 代理东财/腾讯，缓解 JSONP 限流误报）。
        若你所在地区 workers.dev 访问慢，可在「设置 → 行情加速地址」清空即恢复纯直连。 -->
   <script>window.__SNT_ACCEL__ = 'https://stock-edge.hui-zhou.workers.dev';</script>
-  <script src="js/auth-boot.js?v=20260920i"></script>
+  <script src="js/auth-boot.js?v=20260920j"></script>
   <!-- store / stock-api / hot-topics / app 由 auth-boot.js 在登录通过后动态装载，
        未登录时它们不会被下载，业务数据也不会进入内存 -->
 </body>
