@@ -884,6 +884,48 @@ const app = createApp({
       Store.updateFavoriteNote(fav.id, note);
       showToast('备注已保存', 'success');
     }
+
+    // ============================================================
+    //  batch41：通用股票备注（所有表格都能填，且跨表共享）
+    //  原先备注只挂在「收藏记录」上：非收藏表（股票池详情 / 概念选股板块详情 / 筛选 / 热门明细）
+    //  的备注列渲染的是只读文本，用户在这些表里根本填不进去 —— 这正是「备注无法填写」的根因。
+    //  现改为按「纯 6 位代码」统一存放在 D.stockNotes，任何表格都可直接编辑，且同一只股票
+    //  在所有表里显示同一条备注；读取时回退老的 fav.note，历史数据不丢。
+    // ============================================================
+    /** 备注键：统一用纯 6 位数字代码，避免 sh600519 / 600519 被当成两只股票 */
+    function _noteKey(code) {
+      try { return StockAPI.pureCode(code) || String(code || ''); }
+      catch (e) { return String(code || ''); }
+    }
+    /** 按代码找收藏记录（兼容带/不带市场前缀两种写法） */
+    function _findFavByCode(code) {
+      const k = _noteKey(code);
+      return (D.favorites || []).find(x => x.code === code || _noteKey(x.code) === k) || null;
+    }
+    /** 读某只股票的备注：优先通用备注表，其次回退到收藏记录上的旧字段 */
+    function stockNoteOf(code) {
+      const k = _noteKey(code);
+      if (!k) return '';
+      const store = D.stockNotes || {};
+      if (store[k] != null) return String(store[k]);
+      if (store[code] != null) return String(store[code]);
+      const f = _findFavByCode(code);
+      return (f && f.note) ? String(f.note) : '';
+    }
+    /**
+     * 写某只股票的备注（空内容 = 删除该备注）。
+     * 同时同步到收藏记录上的 note 字段：老版本的收藏表/云端旧数据仍按该字段读取，保持向后兼容。
+     */
+    function setStockNote(code, text, opts) {
+      const k = _noteKey(code);
+      if (!k) return;
+      const val = String(text == null ? '' : text).trim();
+      if (!D.stockNotes) D.stockNotes = {};
+      if (val) D.stockNotes[k] = val; else delete D.stockNotes[k];
+      const f = _findFavByCode(code);
+      if (f && f.note !== val) f.note = val;
+      if (!opts || opts.quiet !== true) showToast(val ? '备注已保存' : '备注已清空', 'success');
+    }
     /** 收藏距今天数 */
     function favDays(fav) {
       if (!fav.favDate) return null;
@@ -2360,12 +2402,26 @@ const app = createApp({
     const poolDetailSort = reactive({ key: 'dailyChange', dir: 'desc' });
 
     const sortedPools = computed(() => {
-      return [...D.stockPools].sort((a, b) => {
+      const list = [...D.stockPools];
+      list.sort((a, b) => {
         const va = parseFloat(a.avgChange) || -Infinity;
         const vb = parseFloat(b.avgChange) || -Infinity;
         return vb - va; // 降序
       });
+      // batch41：一键置顶的股票池恒排在最前，组内仍按平均涨跌幅降序（取消置顶即回到原位置）
+      return list.filter(p => p.pinned).concat(list.filter(p => !p.pinned));
     });
+
+    /**
+     * 【batch41】一键置顶 / 取消置顶：股票池卡片与「我的概念选股板块」卡片共用（两者数据结构一致）。
+     * 只写一个 pinned 标记，不改动任何股票数据；置顶只影响展示顺序，再次点击即可取消。
+     */
+    function togglePoolPin(pool) {
+      if (!pool || !pool.id) return;
+      pool.pinned = !pool.pinned;
+      const nm = pool.name || '未命名板块';
+      showToast(pool.pinned ? `已置顶「${nm}」` : `已取消置顶「${nm}」`, 'success');
+    }
 
     function openAddPool() {
       poolModal.isEdit = false;
@@ -3173,12 +3229,15 @@ const app = createApp({
         // 距高天 / 距低天：今年最高/最低价当天距今天数（自然日），无数据占位
         case 'days': { const val = poolVal(s, col.key); return (val != null && !isNaN(val)) ? (val + '天') : '—'; }
         case 'note': {
-          if (ctx === 'fav') {
-            return '<input class="fav-note-input" data-action="note" data-id="' + esc(s.id) + '" value="' + esc(s.note || '') + '" placeholder="备注">';
-          }
-          // 非收藏表：显示该股收藏备注（若已收藏），否则占位
-          const f = isFav(s.code) ? (D.favorites || []).find(x => x.code === s.code) : null;
-          return (f && f.note) ? esc(f.note) : '<span class="muted small">—</span>';
+          // batch41：所有表格（收藏 / 股票池详情 / 概念选股板块详情 / 筛选 / 热门明细）都渲染成可编辑输入框。
+          // 用 change 提交（回车或点击别处生效），不在 input 上实时提交 —— v-html 单元格在数据变化时会整段重建，
+          // 边打字边提交会把刚聚焦的输入框重建成新节点，光标直接丢失、字也打不全。
+          const f = _findFavByCode(s.code);
+          const idAttr = (ctx === 'fav') ? (' data-id="' + esc(s.id || (f && f.id) || '') + '"') : '';
+          return '<input class="fav-note-input note-input" type="text" data-action="note"' + idAttr
+            + ' data-code="' + esc(s.code || '') + '"'
+            + ' value="' + esc(stockNoteOf(s.code)) + '"'
+            + ' placeholder="备注" title="填写备注，回车或点击别处保存">';
         }
         case 'fav': {
           const on = isFav(s.code);
@@ -3248,14 +3307,37 @@ const app = createApp({
         else if (ctx === 'hot') removeHotStock(code);
       }
     }
-    /** 表格 change 委托：备注输入 */
+    /**
+     * 表格 change 委托：备注输入。
+     * batch41：收藏表走 data-id（兼容原有 fav.note 写入路径），其余表格按 data-code 写入通用备注表，
+     * 两种路径最终都会把值同步到同一处（收藏记录上的 note 也会一起维护）。
+     */
     function onTableChange(event, ctx) {
       const t = event.target.closest('[data-action="note"]');
       if (!t) return;
-      const id = t.getAttribute('data-id');
       const note = t.value;
+      const code = t.getAttribute('data-code');
+      if (code) {
+        if (stockNoteOf(code) === String(note == null ? '' : note).trim()) return;   // 没改动就不写、不弹提示
+        setStockNote(code, note);
+        return;
+      }
+      const id = t.getAttribute('data-id');
       const fav = (D.favorites || []).find(f => f.id === id);
       if (fav) updateFavNote(fav, note);
+    }
+    /**
+     * batch41：备注输入框回车即保存。
+     * change 只在「失焦」时触发，用户敲完回车以为已经保存、结果还停在输入框里，观感上就像「填不进去」。
+     * 这里做一次全局委托：回车把输入框 blur 掉，自然触发 change 完成保存。
+     */
+    if (typeof document !== 'undefined' && !document.__sntNoteEnterBound) {
+      document.__sntNoteEnterBound = true;
+      document.addEventListener('keydown', function (e) {
+        const t = e.target;
+        if (!t || !t.matches || !t.matches('input[data-action="note"]')) return;
+        if (e.key === 'Enter') { e.preventDefault(); t.blur(); }
+      }, true);
     }
 
     /** 取股票池详情某列的排序值（含计算字段 市净比/市扣比/市营比/同比/环比系列、散户差额、正数统计） */
@@ -3835,14 +3917,17 @@ const app = createApp({
 
     // 已保存板块顺序：一旦用户拖动过卡片（所有板块都有显式 order），就按 order 升序；
     // 否则沿用旧的「按创建时间倒序」（新板块在最前），保证老数据的观感不变。
+    // batch41：无论哪种基准，一键置顶（pinned）的板块都恒排在最前，组内顺序保持基准顺序不变。
     const sortedSectorPools = computed(() => {
       const list = [...D.sectorPools];
       const ordered = list.length > 0 && list.every(p => typeof p.order === 'number' && isFinite(p.order));
-      if (ordered) return list.sort((a, b) => a.order - b.order);
-      return list
-        .map((p, i) => ({ p, i }))
-        .sort((a, b) => ((b.p.createdAt || 0) - (a.p.createdAt || 0)) || (b.i - a.i))
-        .map(x => x.p);
+      const base = ordered
+        ? list.sort((a, b) => a.order - b.order)
+        : list
+            .map((p, i) => ({ p, i }))
+            .sort((a, b) => ((b.p.createdAt || 0) - (a.p.createdAt || 0)) || (b.i - a.i))
+            .map(x => x.p);
+      return base.filter(p => p.pinned).concat(base.filter(p => !p.pinned));
     });
 
     // ===== 板块卡片拖动排序 =====
@@ -3890,8 +3975,10 @@ const app = createApp({
       if (from === -1 || to === -1) return;
       const [moved] = list.splice(from, 1);
       list.splice(to, 0, moved);
-      _writePoolOrder(list);
-      showToast(`已调整顺序：「${moved.name || '未命名板块'}」移到第 ${to + 1} 位`, 'success');
+      // batch41：置顶板块始终固定在最前，不参与拖动换位（拖动只会调整「未置顶」板块之间的相对顺序）
+      const finalList = list.filter(p => p.pinned).concat(list.filter(p => !p.pinned));
+      _writePoolOrder(finalList);
+      showToast(`已调整顺序：「${moved.name || '未命名板块'}」移到第 ${finalList.findIndex(p => p.id === moved.id) + 1} 位`, 'success');
     }
     /** 点击卡片打开详情（拖动后不触发，避免「拖一下就弹窗」） */
     function openPoolCard(pool) {
@@ -5548,13 +5635,21 @@ const app = createApp({
     async function fetchHotBoards() {
       hotLoading.value = true;
       showToast('正在获取热门板块...', 'info');
+      // 每一路单独限时：某一路接口不可用（限流/非交易时段）时不让它拖住整轮刷新。
+      // 典型如「连板股票」要回扫 10 个交易日，东财不可用时每天还要重试 + 退避，
+      // 不设上限会把「点一次刷新」拖成几十秒。超时那一路按空处理，其余数据照常渲染。
+      const HOT_SRC_TIMEOUT = 6000;
+      const withTimeout = (p) => Promise.race([
+        Promise.resolve(p).catch(() => null),
+        new Promise(r => setTimeout(() => r(null), HOT_SRC_TIMEOUT))
+      ]);
       try {
         const [boards, stocks, preBoards, ampBoards, newListed] = await Promise.all([
-          StockAPI.getBoardRanking(),
-          StockAPI.getLimitUpStreak(),
-          StockAPI.getPreMarketBoards(),
-          StockAPI.getAmplitudeBoards(),
-          StockAPI.getNewListedStocks()
+          withTimeout(StockAPI.getBoardRanking()),
+          withTimeout(StockAPI.getLimitUpStreak()),
+          withTimeout(StockAPI.getPreMarketBoards()),
+          withTimeout(StockAPI.getAmplitudeBoards()),
+          withTimeout(StockAPI.getNewListedStocks())
         ]);
         // 各路独立落盘：某一路接口限流返回空时保留旧数据，避免「刷新一次反而清空已有内容」
         if (boards && boards.length) { hotBoards.value = boards; D.hotBoards = boards; }
@@ -7396,6 +7491,8 @@ const app = createApp({
       poolModal, openAddPool, openEditPool, savePool, deletePool, pickDailyStocks,
       poolDetail, openPoolDetail, startEditPoolName, savePoolName, refreshPoolPrices, refreshPoolDetail,
       addPoolStocks, removePoolStock, sortedPoolDetailStocks, sortPoolDetailBy, poolSortIcon,
+      // batch41：各子版块一键置顶 + 通用股票备注（所有表格均可编辑，按代码跨表共享）
+      togglePoolPin, stockNoteOf, setStockNote,
       // 页面2.5：选股
       sectorSearch, sectorResults, sectorSearching, sectorLoading,
       sectorLoadError, sectorLoadingAll, reloadSectors, loadAllSectors, refreshSectorData,

@@ -642,6 +642,17 @@ body {
   box-shadow: var(--shadow-lg);
   border-color: var(--primary-light);
 }
+/* batch41：一键置顶 —— 置顶卡片恒排在最前，边框高亮并显示 📌，再次点击可取消 */
+.pool-pin { color: #d97706; margin-right: 3px; font-size: 12px; }
+.pool-card.is-pinned {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 2px var(--primary-light), var(--shadow);
+}
+.btn-icon-sm.is-on { background: #fff7e6; color: #d97706; }
+/* 触屏设备没有 hover：操作按钮常显，否则手机上看不到置顶/编辑/删除 */
+@media (hover: none) {
+  .pool-card .pool-actions { opacity: 1; }
+}
 .pool-card-header {
   display: flex;
   justify-content: space-between;

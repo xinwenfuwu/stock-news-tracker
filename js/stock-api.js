@@ -2221,8 +2221,208 @@ const StockAPI = {
     return null;
   },
 
+  // ============ 新浪行情源（免费、不限流；<script> 直载，天然绕开 CORS） ============
   /**
-   * 获取板块涨幅排行（东财）
+   * 加载新浪「JS 变量」型接口：响应体形如 `var XXX = {...};` 或 `var _list = ([...]);`。
+   * 顶层 var 会挂到 window 上，因此用 <script> 标签加载即可——**天然不受 CORS 限制**，
+   * 也不必消耗 Worker / JSONP 兜底链路。这才是「免费且几乎不限流」的根本原因：
+   * newSinaHy.php / newFLJK.php 本质是新浪定时刷新的静态快照文件，命中 CDN，
+   * 不像 push2 这类动态查询接口那样按 IP 做频率控制。
+   * 读取后立即清理全局变量与 <script>，避免污染页面 / 变量串号。
+   *
+   * @param {string} url 目标地址
+   * @param {string} varName 期望读到的全局变量名
+   * @param {number} [timeout=8000]
+   * @returns {Promise<object|Array>}
+   */
+  _sinaLoadVar(url, varName, timeout = 8000) {
+    return new Promise((resolve, reject) => {
+      if (typeof document === 'undefined') { reject(new Error('sina: no document')); return; }
+      let script = null, settled = false;
+      const cleanup = () => {
+        try { delete window[varName]; } catch (e) { try { window[varName] = undefined; } catch (e2) {} }
+        if (script && script.parentNode) script.parentNode.removeChild(script);
+      };
+      const timer = setTimeout(() => {
+        if (settled) return;
+        settled = true; cleanup(); reject(new Error('sina timeout'));
+      }, timeout);
+      const done = () => {
+        if (settled) return;
+        settled = true; clearTimeout(timer);
+        let v = null;
+        try { v = window[varName]; } catch (e) { v = null; }
+        cleanup();                                  // 先取值、后清理
+        if (v && typeof v === 'object') resolve(v);
+        else reject(new Error('sina empty'));
+      };
+      try {
+        script = document.createElement('script');
+        // 不设 charset：现代浏览器按「响应头 charset」解码（新浪板块接口为 GBK，由响应头声明），
+        // 显式设 charset 反而会被忽略。解析层另做乱码自愈，双保险。
+        script.onload = done;
+        script.onerror = () => {
+          if (settled) return;
+          settled = true; clearTimeout(timer); cleanup(); reject(new Error('sina error'));
+        };
+        script.src = url;
+        document.head.appendChild(script);
+      } catch (e) {
+        if (settled) return;
+        settled = true; clearTimeout(timer); cleanup(); reject(e);
+      }
+    });
+  },
+
+  /** 新浪固定变量名接口的串行闸门：newSinaHy.php / newFLJK.php 的全局变量名是固定的，
+   *  并发加载会互相覆盖，这里排队执行确保每次读到的是自己那次的结果。 */
+  _sinaGate: null,
+  _sinaSerial(fn) {
+    const run = (this._sinaGate || Promise.resolve()).then(fn, fn);
+    this._sinaGate = run.then(() => {}, () => {});
+    return run;
+  },
+
+  /** 是否为新浪板块代码（行业 new_xxxx / 概念 gn_xxxx） */
+  _isSinaBoard(bk) {
+    return /^(new_|gn_)/i.test(String(bk || ''));
+  },
+
+  /**
+   * 解析新浪板块快照（值为 13 段逗号分隔字符串）：
+   *   0 板块代码 / 1 名称 / 2 成分股家数 / 3 均价 / 4 平均涨跌额 / 5 **平均涨跌幅(%)**
+   *   6 成交量 / 7 成交额 / 8 领涨股代码 / 9 领涨股涨幅 / 10 领涨股价 / 11 领涨股涨跌额 / 12 领涨股名
+   *
+   * 编码自愈分两级，顺序很重要（先判整体、再逐条丢）：
+   *   ① 若**过半**名称不含任何汉字/字母/数字（GBK 被按 UTF-8 解码的典型后果），
+   *      判定整体乱码 → 直接返回 []，由竞速逻辑改走东财，绝不把乱码渲染给用户；
+   *   ② 个别坏条目（名称空/乱码、涨跌幅非数）单独丢弃，不影响同批其它板块。
+   *
+   * @returns {Array<{bk,name,change}>} 按涨跌幅降序、截取 limit 条
+   */
+  _sinaBoardsFromMap(map, limit = 15) {
+    const raw = [];
+    if (map && typeof map === 'object') {
+      for (const k of Object.keys(map)) {
+        const parts = String(map[k] || '').split(',');
+        if (parts.length < 6) continue;              // 结构不合法，直接不进候选
+        raw.push({ key: k, parts });
+      }
+    }
+    if (!raw.length) return [];
+    // ① 整体编码自愈（必须在逐条过滤之前判，否则坏条目已被滤掉、判断形同虚设）
+    const badName = raw.filter(r => !/[\u4e00-\u9fa5A-Za-z0-9]/.test((r.parts[1] || '').trim())).length;
+    if (badName * 2 > raw.length) return [];
+    // ② 逐条解析
+    const list = [];
+    for (const r of raw) {
+      const p = r.parts;
+      const name = (p[1] || '').trim();
+      const change = parseFloat(p[5]);
+      if (!name || !/[\u4e00-\u9fa5A-Za-z0-9]/.test(name)) continue;
+      if (isNaN(change)) continue;
+      list.push({
+        bk: (p[0] || r.key).trim(), name, change,
+        stockCount: parseInt(p[2], 10) || 0,
+        leadCode: (p[8] || '').trim(),
+        leadName: (p[12] || '').trim()
+      });
+    }
+    if (!list.length) return [];
+    list.sort((a, b) => b.change - a.change);
+    return list.slice(0, limit).map(b => ({ bk: b.bk, name: b.name, change: b.change }));
+  },
+
+  /** 新浪行业板块涨幅榜（<script> 直载静态快照） */
+  async _sinaIndustryBoards(limit = 15) {
+    const url = 'https://vip.stock.finance.sina.com.cn/q/view/newSinaHy.php';
+    const map = await this._sinaSerial(() => this._sinaLoadVar(url, 'S_Finance_bankuai_sinaindustry', 8000));
+    return this._sinaBoardsFromMap(map, limit);
+  },
+
+  /** 新浪概念板块涨幅榜（<script> 直载静态快照） */
+  async _sinaConceptBoards(limit = 15) {
+    const url = 'https://vip.stock.finance.sina.com.cn/q/view/newFLJK.php?param=class';
+    const map = await this._sinaSerial(() => this._sinaLoadVar(url, 'S_Finance_bankuai_class', 8000));
+    return this._sinaBoardsFromMap(map, limit);
+  },
+
+  /** 新浪个股涨幅榜（jsonp_v2，变量名唯一化 → 可并发，且响应为 \uXXXX 转义的纯 ASCII，无编码风险） */
+  async _sinaStockRanking(limit = 15) {
+    const varName = '_snt_rk_' + Math.random().toString(36).slice(2, 8);
+    const url = 'https://vip.stock.finance.sina.com.cn/quotes_service/api/jsonp_v2.php/var%20'
+      + varName + '=/Market_Center.getHQNodeData?page=1&num=' + limit
+      + '&sort=changepercent&asc=0&node=hs_a&symbol=&_s_r_a=page';
+    const arr = await this._sinaLoadVar(url, varName, 8000);
+    const out = [];
+    if (Array.isArray(arr)) {
+      for (const it of arr) {
+        if (!it || !it.symbol) continue;
+        const change = parseFloat(it.changepercent);
+        out.push({ name: it.name || '', code: String(it.symbol), change: isNaN(change) ? 0 : change });
+      }
+    }
+    return out;
+  },
+
+  /**
+   * 新浪板块成分股（node = 新浪板块代码，如 new_blhy / gn_hwqc）。
+   * 走 jsonp_v2 且变量名唯一化，既无 CORS 限制，又能安全并发分页。
+   * @returns {Promise<Array<{code,name,price,changePercent}>>} code 为带 sh/sz/bj 前缀格式
+   */
+  async _sinaSectorStocks(node, maxPages = 20) {
+    const all = [];
+    for (let page = 1; page <= maxPages; page++) {
+      const varName = '_snt_ss_' + Math.random().toString(36).slice(2, 8);
+      const url = 'https://vip.stock.finance.sina.com.cn/quotes_service/api/jsonp_v2.php/var%20'
+        + varName + '=/Market_Center.getHQNodeData?page=' + page
+        + '&num=100&sort=symbol&asc=1&node=' + encodeURIComponent(node)
+        + '&symbol=&_s_r_a=page';
+      let arr = null;
+      try { arr = await this._sinaLoadVar(url, varName, 9000); } catch (e) { break; }
+      if (!Array.isArray(arr) || !arr.length) break;
+      for (const it of arr) {
+        if (!it || !it.symbol) continue;
+        const cap = parseFloat(it.mktcap);
+        all.push({
+          code: String(it.symbol),
+          name: it.name || '',
+          price: it.trade != null && it.trade !== '' ? parseFloat(it.trade) : null,
+          changePercent: it.changepercent != null ? parseFloat(it.changepercent) : null,
+          marketCap: isNaN(cap) ? null : cap * 10000   // 新浪 mktcap 单位为万元 → 元
+        });
+      }
+      if (arr.length < 100) break;                 // 不足一页 → 已到末页
+      await new Promise(r => setTimeout(r, 120));
+    }
+    return all;
+  },
+
+  /**
+   * 双源竞速：并发请求多个数据源，返回**最先拿到的非空结果**。
+   * 用于「新浪（免费不限流、<script> 直载）优先 + 东财兜底」：
+   * 某源先返回「空数组」时不立即采用（继续等其它源），只有全部为空才返回 []。
+   * 东财若因限流慢/失败，也不会拖累已就绪的新浪结果。
+   * @param {Array<()=>Promise<Array>>} tasks
+   * @returns {Promise<Array>}
+   */
+  _raceFirstValid(tasks) {
+    return new Promise(resolve => {
+      const list = Array.isArray(tasks) ? tasks : [];
+      if (!list.length) { resolve([]); return; }
+      let pending = list.length, settled = false;
+      for (const t of list) {
+        Promise.resolve().then(t).catch(() => null).then(v => {
+          if (settled) return;
+          if (v && v.length) { settled = true; resolve(v); return; }
+          if (--pending === 0) { settled = true; resolve([]); }
+        });
+      }
+    });
+  },
+
+  /**
+   * 获取板块涨幅排行（新浪优先 + 东财兜底）
    * @returns {Array<{bk, name, change}>}
    */
   async getBoardRanking() {
@@ -2230,7 +2430,14 @@ const StockAPI = {
   },
 
   async _getBoardRankingRaw() {
-    // 行业板块 fs=m:90+t:2  概念板块 fs=m:90+t:3
+    return this._raceFirstValid([
+      () => this._sinaIndustryBoards(15),
+      () => this._eastIndustryBoards(15)
+    ]);
+  },
+
+  /** 东财行业板块涨幅榜（fs=m:90+t:2），作为新浪的兜底源 */
+  async _eastIndustryBoards() {
     const results = [];
     try {
       const url = `https://push2.eastmoney.com/api/qt/clist/get?pn=1&pz=15&po=1&np=1&fltt=2&invt=2&fid=f3&fs=m:90+t:2&fields=f2,f3,f12,f14`;
@@ -2281,6 +2488,15 @@ const StockAPI = {
   },
 
   async _getPreMarketBoardsRaw() {
+    // 新浪概念板块快照（<script> 直载）优先，东财兜底：两者竞速，先到且非空者胜出
+    return this._raceFirstValid([
+      () => this._sinaConceptBoards(15),
+      () => this._eastPreMarketBoards(15)
+    ]);
+  },
+
+  /** 东财概念板块涨幅榜（fs=m:90+t:3），作为新浪的兜底源 */
+  async _eastPreMarketBoards() {
     const results = [];
     try {
       // 概念板块 fs=m:90+t:3，按涨幅降序取前 15
@@ -2528,6 +2744,14 @@ const StockAPI = {
   },
 
   async _getStockRankingRaw() {
+    return this._raceFirstValid([
+      () => this._sinaStockRanking(15),
+      () => this._eastStockRanking(15)
+    ]);
+  },
+
+  /** 东财个股涨幅榜（沪深A股），作为新浪的兜底源 */
+  async _eastStockRanking() {
     const results = [];
     try {
       // 沪深A股，按涨幅降序
@@ -3053,6 +3277,11 @@ const StockAPI = {
 
   async _getSectorStocksRaw(bk) {
     const code = this._normalizeBoardCode(bk);
+    // 新浪板块（行业 new_xxxx / 概念 gn_xxxx）：走新浪成分股接口（<script> 直载，天然无 CORS 限制）
+    if (this._isSinaBoard(code)) {
+      const list = await this._sinaSectorStocks(code);
+      if (list.length) return list;
+    }
     // 指数板块：数据中心成分股 + 批量行情补全名称/价格（push2 fs=b:code 对指数查不到成员）
     if (this._isIndexBoard(code)) {
       return (await this._getIndexConstituents(code)).map(s => ({
@@ -3095,6 +3324,11 @@ const StockAPI = {
 
   async _getSectorStocksMetaRaw(bk, maxPages = 15) {
     const code = this._normalizeBoardCode(bk);
+    // 新浪板块：同源走新浪成分股（含总市值），保证语义搜索的「核心/龙头」排序可用
+    if (this._isSinaBoard(code)) {
+      const list = await this._sinaSectorStocks(code, maxPages);
+      if (list.length) return list;
+    }
     // 指数板块：复用指数成分股完整信息（含总市值），与 getSectorStocks 同源
     if (this._isIndexBoard(code)) {
       return await this._getIndexConstituents(code);
