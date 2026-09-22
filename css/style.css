@@ -1253,7 +1253,7 @@ body {
 }
 /* `.cell-input` 的 max-width:110px 会把行内 style 的 width:200px 压掉，放宽到 200px 才不挤 */
 .sector-pick-biz input.cell-input { max-width: 200px; }
-/* ---- 成分股勾选弹窗：列式明细（现价/涨跌幅/总市值/相关度/命中主营业务/行业） ---- */
+/* ---- 成分股勾选弹窗：列式明细（现价/涨跌幅/总市值/相关度/主营业务/行业） ---- */
 /* 用一套共享的 grid 列宽，保证表头与数据行严格对齐 */
 .sector-pick-head,
 .sector-pick-item {
@@ -3046,7 +3046,7 @@ body.guest-mode #app { display: none; }
   .semantic-table:not(.reverse) tbody td:nth-child(5)::before { content: "涨跌幅"; }
   .semantic-table:not(.reverse) tbody td:nth-child(6)::before { content: "总市值(亿)"; }
   .semantic-table:not(.reverse) tbody td:nth-child(7)::before { content: "相关度(营收占比)"; }
-  .semantic-table:not(.reverse) tbody td:nth-child(8)::before { content: "命中主营业务(占营收)"; }
+  .semantic-table:not(.reverse) tbody td:nth-child(8)::before { content: "主营业务(占营收)"; }
   .semantic-table:not(.reverse) tbody td:nth-child(9)::before { content: "操作"; }
   .semantic-table.reverse tbody td:nth-child(1)::before { content: "排名"; }
   .semantic-table.reverse tbody td:nth-child(2)::before { content: "股票名称"; }

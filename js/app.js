@@ -1809,7 +1809,7 @@ const app = createApp({
           raw: () => D.stockPools || [], clear: () => { D.stockPools = []; } },
         { id: 'sectorPools', name: '选股板块', icon: '🧩', unit: '个',
           count: v => (v || []).length,
-          desc: '自建的概念/行业板块（含成分股与命中主营业务）',
+          desc: '自建的概念/行业板块（含成分股与主营业务）',
           raw: () => D.sectorPools || [], clear: () => { D.sectorPools = []; } },
         { id: 'favorites', name: '收藏股票', icon: '⭐', unit: '只',
           count: v => (v || []).length,
@@ -2925,23 +2925,34 @@ const app = createApp({
     /**
      * 公司主业展示文本：取主营构成中占比最高的前 2 项，格式「名称 占比%」。
      * 仅展示，不参与排序/筛选。
+     *
+     * 🔴 口径（batch46 修正）：mainBusiness[].ratio 是 **0~1 的小数**，不是百分数。
+     *   它是东财 RPT_F10_FN_MAINOP 的 MBI_RATIO 原值，实测：
+     *     600519 贵州茅台 MBI_RATIO=0.856909 → 茅台酒 85.69%
+     *     000001 平安银行 MBI_RATIO=0.461065 → 批发金融业务 46.11%
+     *     300308 中际旭创 MBI_RATIO=0.989305 → 光通信收发模块 98.93%
+     *   （同文件 `bizRelevanceOf`、stock-api 的 `revenueRelevance`/`reverseBusiness` 都是按
+     *    「小数 ×100 得百分数」处理的，只有下面这处老代码误以为「已是百分数」而直接拼 '%'。）
+     *   后果：85.69% 被显示成「0.9%」——所有主营业务占比都被压在 1% 以内，
+     *   即用户反馈的「很多业务占比才 0.9%，是不是少乘 100 了」。这里补上 ×100。
      */
     function mainBusinessText(s) {
       const arr = s && s.mainBusiness;
       if (!arr || !arr.length) return '';
-      // 注意：东财主营构成 MBI_RATIO 已是百分比(如 60.0)，与 mainBizShareRatio 保持一致，直接显示，勿再 ×100
+      // ratio 为 0~1 小数 → ×100 转百分数再显示（勿再按「已是百分数」直接显示）
       return arr.slice(0, 2)
-        .map(it => `${it.name} ${it.ratio != null ? it.ratio.toFixed(1) + '%' : ''}`)
+        .map(it => `${it.name} ${it.ratio != null ? (it.ratio * 100).toFixed(1) + '%' : ''}`)
         .join(' · ');
     }
 
     /** 主营产品（主业）营收占比：取主营构成中占营收比例最高的主营项，返回其占比(%)。
+     *  🔴 ratio 为 0~1 小数（同上），此处统一 ×100 输出百分数。
      *  说明：东财主营构成只提供每项产品的「营收占比(MBI_RATIO/MBR_RATIO)」，无分产品扣非净利润占比。 */
     function mainBizShareRatio(s) {
       const arr = s && s.mainBusiness;
       if (!arr || !arr.length) return null;
       const top = [...arr].sort((a, b) => (b.ratio || 0) - (a.ratio || 0))[0];
-      return top && top.ratio != null ? +top.ratio : null;
+      return top && top.ratio != null ? Number(top.ratio) * 100 : null;
     }
     /** 主营扣占比 = 主业营收占比 / 主营扣非占比。当前仅有营收占比(见 mainBizShareRatio)；
      *  扣非占比暂无数据源，先以占位符返回，公式与文案保留。 */
@@ -2952,7 +2963,7 @@ const app = createApp({
     }
 
     // ============================================================
-    //  产品业务 → 相关度（命中主营业务营收占比之和）
+    //  产品业务 → 相关度（主营业务营收占比之和）
     //  与「AI 语义选股」同一口径：相关度 = 命中该产品/业务的主营构成段营收占比之和(%)
     // ============================================================
     /** 把「产品业务」输入切成匹配词：空白 / 逗号 / 顿号 / 分号 / 竖线 / 加号 分隔 */
@@ -2965,8 +2976,10 @@ const app = createApp({
     /**
      * 按主营构成计算单只股票相对「产品业务」的相关度。
      * 口径：遍历该股最新报告期「按产品」的营收占比构成，段名包含任一匹配词即命中，
-     * 命中段的营收占比之和 = 相关度(%)，上限 100；同时给出命中的主营业务文本。
-     * @param {object} s 股票对象（需已有 s.mainBusiness = [{name, ratio(%)}]）
+     * 命中段的营收占比之和 = 相关度(%)，上限 100；同时给出主营业务命中明细文本。
+     * 🔴 batch46 修正：mainBusiness[].ratio 是 0~1 小数（见 mainBusinessText 口径说明），
+     *   此处必须 ×100 才能得到百分数——否则「茅台酒 85.69%」会被算成相关度 0.9、明细显示「0.9%」。
+     * @param {object} s 股票对象（需已有 s.mainBusiness = [{name, ratio(0~1小数)}]）
      * @param {string[]} kws 已小写的匹配词
      */
     function bizRelevanceOf(s, kws) {
@@ -2979,7 +2992,7 @@ const app = createApp({
         if (!nm) continue;
         const low = nm.toLowerCase();
         if (!kws.some(k => low.includes(k))) continue;
-        const r = +(seg.ratio || 0);
+        const r = Number(seg.ratio || 0) * 100;   // 0~1 小数 → 百分数
         sum += r;
         hits.push(nm + ' ' + r.toFixed(1) + '%');
       }
@@ -3027,7 +3040,7 @@ const app = createApp({
         });
       }
 
-      // 3) 计算相关度 + 命中主营业务
+      // 3) 计算相关度 + 主营业务
       let hit = 0;
       rows.forEach(s => {
         const r = bizRelevanceOf(s, kws);
@@ -3076,13 +3089,15 @@ const app = createApp({
       { key: 'code', label: '代码', fixed: true, fixedIndex: 1, width: 88, sortable: true, type: 'code' },
       { key: 'name', label: '股票名称', fixed: true, fixedIndex: 2, width: 104, sortable: true, type: 'name' },
       { key: 'positiveCount', label: '统计', fixed: true, fixedIndex: 3, width: 60, sortable: true, type: 'pos' },
-      // 财务估值段：净利润 / 扣非净利润 / 相关度 / 市营比 / 市净比 / 市扣比
+      // 财务估值段：净利润 / 扣非 / 相关度 / 市营比 / 市净比 / 市扣比
       // 按需求：24营比、24扣比 紧随「市扣比」之后；「相关度」列位于「市营比」左侧（来自 AI 语义搜索的营收占比相关度）
       { key: 'netProfit', label: '净利润', width: 100, sortable: true, type: 'money' },
-      { key: 'kcfjcxjlr', label: '扣非净利润', width: 100, sortable: true, type: 'money' },
+      // batch46：列名由「扣非净利润」缩短为「扣非」（**仅改显示名**，key=kcfjcxjlr 与取值口径不变）
+      { key: 'kcfjcxjlr', label: '扣非', width: 100, sortable: true, type: 'money' },
       { key: 'relevance', label: '相关度', width: 88, sortable: true, type: 'relevance' },
-      // 命中主营业务：由筛选栏「产品业务」输入框算出的命中明细（段名 + 营收占比），与相关度成对出现
-      { key: 'hitBusiness', label: '命中主营业务', width: 186, sortable: false, type: 'hitbiz' },
+      // 主营业务：由筛选栏「产品业务」输入框算出的命中明细（段名 + 营收占比），与相关度成对出现
+      // batch46：列名由「命中主营业务」改为「主营业务」（**仅改显示名**，key=hitBusiness 与计算逻辑不变）
+      { key: 'hitBusiness', label: '主营业务', width: 186, sortable: false, type: 'hitbiz' },
       { key: 'prRatio', label: '市营比', width: 86, sortable: true, type: 'ratio' },
       { key: 'pbRatio', label: '市净比', width: 86, sortable: true, type: 'ratio' },
       { key: 'pkRatio', label: '市扣比', width: 86, sortable: true, type: 'ratio' },
@@ -3208,7 +3223,7 @@ const app = createApp({
         case 'num2': { const val = v(col.key); return (val != null && !isNaN(val)) ? (+val).toFixed(2) : '—'; }
         // 相关度：来自 AI 语义搜索的「营收占比相关度」(命中主营构成段营收占比之和 %)；无语义来源时显示占位
         case 'relevance': { const val = s[col.key]; return (val != null && !isNaN(val)) ? ((+val).toFixed(1) + '%') : '—'; }
-        // 命中主营业务：展示「产品业务」命中的主营构成段与占比，多条换行
+        // 主营业务：展示「产品业务」命中的主营构成段与占比，多条换行
         case 'hitbiz': {
           const txt = s.hitBusiness;
           return txt ? esc(txt).split(' · ').join('<br>') : '<span class="muted small">—</span>';
@@ -4405,7 +4420,7 @@ const app = createApp({
     }
     /**
      * 成分股勾选弹窗：按「产品业务」计算每只成分股的相关度（命中主营构成段营收占比之和）
-     * 与命中主营业务，并补全 现价 / 涨跌幅 / 总市值 —— 口径与选股（筛选）板块完全一致。
+     * 与主营业务，并补全 现价 / 涨跌幅 / 总市值 —— 口径与选股（筛选）板块完全一致。
      */
     async function computeSectorPickRelevance() {
       const rows = sectorPick.stocks || [];
@@ -4586,7 +4601,7 @@ const app = createApp({
         sectorFilter.locked ? 'success' : 'info');
     }
     /**
-     * 板块详情：按筛选栏里的「产品业务」计算每只成分股的相关度（营收占比之和）与命中主营业务。
+     * 板块详情：按筛选栏里的「产品业务」计算每只成分股的相关度（营收占比之和）与主营业务。
      * 计算前会补全行情（现价/涨跌幅/总市值）与主营构成，口径与「筛选板块 → 刷新行情」一致。
      */
     async function computeSectorDetailRelevance() {
