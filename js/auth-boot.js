@@ -27,7 +27,7 @@
   'use strict';
 
   // 与 index.html 中静态资源版本号保持一致，避免升级后命中旧缓存
-  var ASSET_V = '20260920q';
+  var ASSET_V = '20260920r';
 
   // 管理员点开「注册申请导入链接」后，申请码暂存在这里，等业务层（app.js）就绪后取走
   var IMPORT_KEY = 'snt-pending-import-v1';
@@ -325,6 +325,44 @@
   var loadedScripts = [];
 
   /**
+   * 各业务脚本装载成功的「探针」：脚本顶层声明的全局标识符（或挂到 window 的对象）。
+   *
+   * 为什么必须有（batch45 线上实测到的真实故障）：
+   *   定时器是从「元素插入」开始算的。国内访问 github.io 偶发「下载很慢、20 秒到点才完成」，
+   *   于是出现这种时序 —— 脚本**已经下载并执行完**（顶层 const 已进入全局词法环境），
+   *   但 onload 还没回来 / 或已被 remove 掉，定时器先触发 → 判为失败 → 换一个带 `_r=2` 的 URL
+   *   **再注入一次** → 同一份业务脚本被执行两遍 → 顶层 const 直接抛
+   *   `SyntaxError: Identifier 'SEMANTIC_CONCEPTS' has already been declared`（未捕获异常，白屏风险）。
+   *   loadedScripts 只在 onload 之后才 push，兜不住「执行了但没收到回调」这种时序。
+   * 做法：① 重试前先探针查一次，已存在就直接视为成功，不再注入；
+   *      ② 超时后不立即判失败，先给一个宽限期轮询探针（脚本慢但确实会执行完）。
+   *
+   * 注：顶层 const/let 不挂 window，但能从任意脚本里以裸标识符访问，所以 `typeof X` 可直接判断。
+   *     app.js 用 `app.mount` 二次确认 —— 因为 `<div id="app">` 会天然产生一个名为 app 的全局
+   *     window 属性（命名访问），只判 `typeof app` 会把「还没加载」误判成「已加载」而跳过注入。
+   */
+  var SCRIPT_PROBES = {
+    'js/store.js': function () { return typeof Store !== 'undefined' && !!Store; },
+    'js/cloud-sync.js': function () { return typeof CloudSync !== 'undefined' && !!CloudSync; },
+    'js/stock-api.js': function () { return typeof StockAPI !== 'undefined' && !!StockAPI; },
+    'js/hot-topics.js': function () { return !!(typeof window !== 'undefined' && window.HotTopics); },
+    'js/app.js': function () {
+      return typeof app !== 'undefined' && !!app && typeof app.mount === 'function';
+    }
+  };
+
+  /** 该脚本是否已经成功执行过（探针存在才判定，未登记的脚本一律返回 false） */
+  function probeLoaded(src) {
+    var f = SCRIPT_PROBES[src];
+    if (!f) return false;
+    try { return !!f(); } catch (e) { return false; }
+  }
+
+  /** 超时后的宽限期：不立刻判失败，先轮询探针（脚本可能只是慢，下载完仍会执行） */
+  var LOAD_GRACE = 8000;
+  var GRACE_STEP = 500;
+
+  /**
    * 装载单个脚本（一次尝试）。
    * @param {string} src 形如 js/store.js
    * @param {number} attempt 第几次尝试（>1 时附加 cache-buster，强制新建连接）
@@ -334,31 +372,42 @@
       var url = src + '?v=' + ASSET_V + (attempt > 1 ? '&_r=' + attempt : '');
       var s = document.createElement('script');
       var settled = false;
+      var graceTimer = null;
+      var timer = null;
+      function clearTimers() {
+        if (timer) { clearTimeout(timer); timer = null; }
+        if (graceTimer) { clearTimeout(graceTimer); graceTimer = null; }
+      }
       function cleanup() {
         try { s.onload = null; s.onerror = null; } catch (e) { /* ignore */ }
         try { if (s.parentNode) s.parentNode.removeChild(s); } catch (e) { /* ignore */ }
       }
-      var timer = setTimeout(function () {
+      function done() { if (settled) return; settled = true; clearTimers(); resolve(); }
+      function fail(msg) { if (settled) return; settled = true; clearTimers(); cleanup(); reject(new Error(msg)); }
+
+      // 超时 → 进入宽限期：**保留元素不删**，轮询探针（最多 LOAD_GRACE）。
+      // 探针为真说明脚本其实已经执行成功，直接算成功 —— 这能消除
+      // 「超时→移除→重新注入」导致的同份脚本执行两遍。
+      function pollGrace(deadline) {
         if (settled) return;
-        settled = true;
-        clearTimeout(timer);
-        cleanup();
-        reject(new Error('加载超时：' + src));
+        if (probeLoaded(src)) { done(); return; }
+        if (Date.now() >= deadline) { fail('加载超时：' + src); return; }
+        graceTimer = setTimeout(function () { pollGrace(deadline); }, GRACE_STEP);
+      }
+
+      timer = setTimeout(function () {
+        if (settled) return;
+        clearTimeout(timer); timer = null;
+        pollGrace(Date.now() + LOAD_GRACE);
       }, LOAD_TIMEOUT);
+
       s.src = url;
       s.async = false;
-      s.onload = function () {
-        if (settled) return;
-        settled = true;
-        clearTimeout(timer);
-        resolve();
-      };
+      s.onload = function () { done(); };
       s.onerror = function () {
-        if (settled) return;
-        settled = true;
-        clearTimeout(timer);
-        cleanup();
-        reject(new Error('无法加载 ' + src));
+        // 注意：脚本里出现语法错误（例如重复声明）也会走到这里。
+        // 此时探针通常已为真（上一份已经执行过），上层 tryLoop 会据此停止重试，不会再注入一遍。
+        fail('无法加载 ' + src);
       };
       document.body.appendChild(s);
     });
@@ -387,11 +436,18 @@
         if (i >= list.length) { resolve(); return; }
         var src = list[i++];
         if (loadedScripts.indexOf(src) >= 0) { next(); return; }
+        // 探针兜底：脚本可能「已经执行完但 onload 没回来」（见 SCRIPT_PROBES 注释）——绝不能再注入一次
+        if (probeLoaded(src)) { loadedScripts.push(src); next(); return; }
         var p = loadPromises[src];
         if (!p) {
           var attempt = 0;
           p = (function tryLoop() {
             attempt++;
+            // 上一次尝试可能其实已经执行成功、只是回调没回来：重试前先探针确认，避免重复执行同一份脚本
+            if (attempt > 1 && probeLoaded(src)) {
+              if (loadedScripts.indexOf(src) < 0) loadedScripts.push(src);
+              return Promise.resolve();
+            }
             if (onProgress) onProgress(src, i, list.length, attempt);
             return loadOne(src, attempt).then(function () {
               if (loadedScripts.indexOf(src) < 0) loadedScripts.push(src);
