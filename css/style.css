@@ -882,6 +882,8 @@ body {
   color: var(--text);
 }
 .fav-actions { display: flex; justify-content: flex-end; }
+/* batch42：备注输入框铺满单元格（列宽默认已调到 240px），中文备注一眼能看全，不再被挤成两三个字 */
+.note-input { width: 100%; min-width: 0; box-sizing: border-box; }
 .fav-active { color: #f59e0b; }
 .cell-input {
   padding: 6px 8px;
@@ -1495,6 +1497,31 @@ body {
   border: 1px dashed var(--border);
   border-radius: 6px;
 }
+
+/* 股票池详情-备注搜索（batch42） */
+.pool-detail-search {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 12px;
+  padding: 10px 14px;
+  background: var(--surface-alt);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+}
+.pool-detail-search .pds-label { font-size: 13px; font-weight: 600; white-space: nowrap; }
+.pool-detail-search .pds-input {
+  flex: 1;
+  min-width: 200px;
+  padding: 7px 10px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  font-size: 13px;
+  background: var(--surface);
+  color: var(--text);
+}
+.pool-detail-search .pds-input:focus { outline: none; border-color: var(--primary-light); }
 
 /* ===== Toast ===== */
 .toast {

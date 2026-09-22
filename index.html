@@ -4,12 +4,12 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>股市信息分析系统</title>
-  <link rel="stylesheet" href="css/style.css?v=20260920l">
+  <link rel="stylesheet" href="css/style.css?v=20260920m">
   <!-- Vue 3 全局构建版（v3.4.21 · 自托管）
        原先走 unpkg.com CDN：国内网络对 unpkg 的连通性不稳定，一旦该请求长时间挂起，
        <head> 里的阻塞脚本会让整页停在白屏、后续 auth-boot.js 根本不会执行。
        改为同源托管后，启动链路不再依赖任何第三方 CDN。 -->
-  <script src="js/vue.global.prod.js?v=20260920l"></script>
+  <script src="js/vue.global.prod.js?v=20260920m"></script>
 </head>
 <body class="auth-locked">
   <!-- ===== 登录关卡：登录通过前业务脚本不会被加载 ===== -->
@@ -2690,6 +2690,17 @@
             </button>
             <span class="muted small">共 {{ poolDetail.data.stocks.length }} 只</span>
           </div>
+          <!-- batch42：备注搜索 —— 只按备注文本过滤本池股票，清空即还原 -->
+          <div class="pool-detail-search">
+            <span class="pds-label">🔍 备注搜索</span>
+            <input class="pds-input" type="text" v-model="poolDetail.noteQuery"
+                   placeholder="输入备注关键词（如 低位 / 龙头 / 待观察），只显示备注里含该词的股票；留空显示全部"
+                   title="按备注内容筛选本股票池的股票，不区分大小写"
+                   @keyup.escape="clearPoolNoteQuery">
+            <button class="btn btn-sm" v-if="poolDetail.noteQuery" @click="clearPoolNoteQuery">✕ 清除</button>
+            <span class="muted small" v-if="poolDetail.noteQuery">命中 {{ poolDetailStocksView.length }} 只 / 共 {{ poolDetail.data.stocks.length }} 只</span>
+            <span class="muted small" v-else>已填写备注 {{ poolDetailNoteCount }} 只 / 共 {{ poolDetail.data.stocks.length }} 只</span>
+          </div>
           <div class="table-wrap table-scroll-x">
             <table class="data-table pool-detail-table">
               <colgroup>
@@ -2704,11 +2715,16 @@
                   </th>
                 </tr>
               </thead>
-              <tbody @click="onTableClick($event, 'pool', sortedPoolDetailStocks)" @change="onTableChange($event, 'pool')">
-                <tr v-for="(s, idx) in sortedPoolDetailStocks" :key="s.code">
+              <tbody @click="onTableClick($event, 'pool', poolDetailStocksView)" @change="onTableChange($event, 'pool')">
+                <tr v-if="!poolDetailStocksView.length">
+                  <td :colspan="getColumns('pool').length" class="empty-row">
+                    {{ poolDetail.noteQuery ? ('没有备注包含「' + poolDetail.noteQuery + '」的股票，换个关键词或清空搜索框') : '该股票池还没有股票，可在上方输入代码/名称添加' }}
+                  </td>
+                </tr>
+                <tr v-for="(s, idx) in poolDetailStocksView" :key="s.code">
                   <td v-for="(col, ci) in getColumns('pool')" :key="ci" :data-label="col.label"
-                      :class="cellClass(col, s, idx, sortedPoolDetailStocks, 'pool')"
-                      v-html="cellHtml(col, s, idx, sortedPoolDetailStocks, 'pool')"></td>
+                      :class="cellClass(col, s, idx, poolDetailStocksView, 'pool')"
+                      v-html="cellHtml(col, s, idx, poolDetailStocksView, 'pool')"></td>
                 </tr>
               </tbody>
             </table>
@@ -3572,12 +3588,12 @@
     </transition>
   </div>
 
-  <script src="js/auth.js?v=20260920l"></script>
-  <script src="js/auth-sync.js?v=20260920l"></script>
+  <script src="js/auth.js?v=20260920m"></script>
+  <script src="js/auth-sync.js?v=20260920m"></script>
   <!-- 边缘加速默认站点（batch37 治本：Cloudflare Worker 代理东财/腾讯，缓解 JSONP 限流误报）。
        若你所在地区 workers.dev 访问慢，可在「设置 → 行情加速地址」清空即恢复纯直连。 -->
   <script>window.__SNT_ACCEL__ = 'https://stock-edge.hui-zhou.workers.dev';</script>
-  <script src="js/auth-boot.js?v=20260920l"></script>
+  <script src="js/auth-boot.js?v=20260920m"></script>
   <!-- store / stock-api / hot-topics / app 由 auth-boot.js 在登录通过后动态装载，
        未登录时它们不会被下载，业务数据也不会进入内存 -->
 </body>

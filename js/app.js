@@ -2398,7 +2398,7 @@ const app = createApp({
     // ============================================================
     const poolLoading = ref(false);
     const poolModal = reactive({ show: false, isEdit: false, saving: false, data: {} });
-    const poolDetail = reactive({ show: false, data: { stocks: [] }, nameEdit: false, nameDraft: '', addText: '', adding: false });
+    const poolDetail = reactive({ show: false, data: { stocks: [] }, nameEdit: false, nameDraft: '', addText: '', adding: false, noteQuery: '' });
     const poolDetailSort = reactive({ key: 'dailyChange', dir: 'desc' });
 
     const sortedPools = computed(() => {
@@ -2661,6 +2661,7 @@ const app = createApp({
       poolDetail.nameEdit = false;
       poolDetail.nameDraft = pool.name || '';
       poolDetail.addText = '';
+      poolDetail.noteQuery = '';   // batch42：备注搜索不跨池残留，每次打开都是全量视图
       poolDetail.show = true;
     }
 
@@ -3132,7 +3133,10 @@ const app = createApp({
       { key: 'industry', label: '行业', width: 96, sortable: true, type: 'text' },
       { key: '__fav', label: '收藏', width: 58, sortable: false, type: 'fav' },
       { key: '__action', label: '操作', width: 84, sortable: false, type: 'action' },
-      { key: '__note', label: '备注', width: 132, sortable: false, type: 'note' }
+      // batch42：备注列默认宽度 132 → 240（用户反馈输入框太短，中文备注两三个词就看不全）。
+      // 该宽度是所有股票表（收藏/筛选/股票池详情/概念板块详情/当日明细）的公共默认值；
+      // 用户仍可拖拽列右边缘自行调整，拖过的表以保存值为准。
+      { key: '__note', label: '备注', width: 240, sortable: false, type: 'note' }
     ];
     /**
      * 正数统计所覆盖的字段集合：日涨跌 + 财务/估值 + 涨跌幅 + 今年高低价 + 同比/环比系列。
@@ -3392,6 +3396,22 @@ const app = createApp({
       list.sort((a, b) => compareForSort(a, b, k) * dir);
       return list;
     });
+    /**
+     * batch42：股票池详情表的「备注搜索」。
+     * 只按备注文本过滤（大小写不敏感的子串匹配），不动其他字段 —— 用户要的是"我记过什么"，
+     * 按股票名/代码搜会和已有的「添加股票」框语义打架。
+     * 过滤放在排序之后：命中行的相对顺序与当前排序完全一致，清空关键词即还原全量。
+     */
+    const poolDetailStocksView = computed(() => {
+      const q = String(poolDetail.noteQuery || '').trim().toLowerCase();
+      const list = sortedPoolDetailStocks.value;
+      if (!q) return list;
+      return list.filter(s => String(stockNoteOf(s.code) || '').toLowerCase().indexOf(q) >= 0);
+    });
+    /** 已填写备注的股票数（给搜索框旁边做提示，让用户知道有多少只可被搜到） */
+    const poolDetailNoteCount = computed(() =>
+      (poolDetail.data.stocks || []).filter(s => String(stockNoteOf(s.code) || '').trim()).length);
+    function clearPoolNoteQuery() { poolDetail.noteQuery = ''; }
     function sortPoolDetailBy(key) {
       if (poolDetailSort.key === key) {
         poolDetailSort.dir = poolDetailSort.dir === 'asc' ? 'desc' : 'asc';
@@ -6908,6 +6928,19 @@ const app = createApp({
       }
       nextTick(() => {
         initGhostHScroll();
+        // batch42：备注列默认宽度 132 → 240。若用户曾在旧版拖窄过备注列，Store 里存着的旧宽度会盖掉新默认值，
+        // 表现就是"明明说要加长，怎么没变"。这里一次性清掉五张表里 __note 这一列的旧存值（只清这一列，不动别的），
+        // 用 noteColW2 标记保证只跑一次 —— 之后用户再拖会正常记住，不会被每次刷新重置。
+        // 只清「比新默认值小的」存值：用户要是自己拖得更宽，那是他的选择，保留。
+        try {
+          if (Store.data && !Store.data.noteColW2) {
+            for (const k of ['favColWidths', 'filterColWidths', 'poolColWidths', 'sectorColWidths', 'hotColWidths']) {
+              const m = Store.data[k];
+              if (m && typeof m === 'object' && typeof m.__note === 'number' && m.__note < 240) delete m.__note;
+            }
+            Store.data.noteColW2 = true;
+          }
+        } catch (e) { /* 老数据异常不影响使用 */ }
         initResizeFor('.filter-scroll table', 'filterColWidths', FILTER_DEFAULT_COL_WIDTHS);
         if (currentPage.value === 'filter') {
           initResizeFor('.fav-panel table', 'favColWidths', FAV_DEFAULT_COL_WIDTHS);
@@ -7491,6 +7524,7 @@ const app = createApp({
       poolModal, openAddPool, openEditPool, savePool, deletePool, pickDailyStocks,
       poolDetail, openPoolDetail, startEditPoolName, savePoolName, refreshPoolPrices, refreshPoolDetail,
       addPoolStocks, removePoolStock, sortedPoolDetailStocks, sortPoolDetailBy, poolSortIcon,
+      poolDetailStocksView, poolDetailNoteCount, clearPoolNoteQuery,
       // batch41：各子版块一键置顶 + 通用股票备注（所有表格均可编辑，按代码跨表共享）
       togglePoolPin, stockNoteOf, setStockNote,
       // 页面2.5：选股
