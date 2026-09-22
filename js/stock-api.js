@@ -76,7 +76,7 @@ const SEMANTIC_CONCEPTS = [
   { canonical: '化工', aliases: ['化工', '化学', '化肥', '农药', '塑料', '橡胶', '钛白粉'],
     hints: ['化工', '化肥', '农药'],
     segHints: ['化工', '化肥', '农药', '钛白粉', '化学'] },
-  { canonical: '有色金属', aliases: ['有色', '黄金', '稀土', '铜', '铝', '锂矿', '小金属'],
+  { canonical: '有色金属', aliases: ['有色', '黄金', '稀土', '铜', '铝', '锂矿', '小金属', '贵金属', '基本金属', '有色冶炼', '金属新材料'],
     hints: ['有色', '黄金', '稀土', '小金属'],
     segHints: ['有色', '黄金', '稀土', '铜', '铝', '锂矿', '小金属'] },
   { canonical: '钢铁煤炭', aliases: ['钢铁', '煤炭', '焦炭'],
@@ -294,6 +294,32 @@ const BOARD_NAME_ALIASES = {
   '军工设备': ['军工', '国防军工']
 };
 
+/* ===== 东财业务板块名清单（自动生成，勿手改） =====
+ * 来源：datacenter-web 报表 RPT_F10_CORETHEME_BOARDTYPE 全表去重（1030 个，含非业务类）。
+ * 这里只保留「业务/主题」类 946 个（剔除财报期 / 指数风格 / 资金机构 / 地区板块）。
+ * 用途：语义搜索把用户的词直接匹配到东财板块名，再用同一报表按 NEW_BOARD_CODE 反查成分股，
+ *       完全不经过 push2.eastmoney.com（该域名在浏览器侧会间歇性限流）。
+ * 生成脚本：gen_east_boards.js
+ */
+const EAST_BOARD_LIST = ("3D玻璃:BK0881,3D打印:BK0619,3D摄像头:BK0901,5G概念:BK0714,6G概念:BK0964,阿里概念:BK0689,阿兹海默:BK0894,安防概念:BK0667,安防设备:BK1445,氨纶:BK1412,白酒:BK0896,白酒Ⅱ:BK1277,白酒Ⅲ:BK1575,白色家电:BK1239,白银:BK1616,百度概念:BK0845,百货:BK1551,板材:BK1367,半导体:BK1036,半导体材料:BK1325,半导体概念:BK0917,半导体设备:BK1326,包装材料:BK0733,包装印刷:BK1265,保健品:BK1579,保险Ⅱ:BK0474,保险Ⅲ:BK1358,北交所概念:BK0925,被动元件:BK1339,被动元件概念:BK0976,边缘计算:BK0860,贬值受益:BK0812,滨海新区:BK0566,冰洗:BK1449,冰雪经济:BK1185,并购重组概念:BK1181,病毒防治:BK0675,病原体防治:BK1657,玻璃玻纤:BK0546,玻璃基板:BK1175,玻璃制造:BK1461,玻纤制造:BK1462,财税数字化:BK1176,彩电:BK1453,彩票概念:BK0671,参股保险:BK0604,参股期货:BK0524,参股新三板:BK0600,参股银行:BK0525,餐饮:BK1559,仓储物流:BK1486,草甘膦:BK0950,产业地产:BK1344,超超临界发电:BK1087,超导概念:BK0679,超级电容:BK0703,超级品牌:BK0811,超清视频:BK0859,超市:BK1552,车联网(车路云):BK0920,车身附件及饰件:BK1525,成品家居:BK1537,成渝特区:BK0534,城商行Ⅲ:BK1609,乘用车:BK1262,充电桩:BK0700,宠物经济:BK0993,宠物食品:BK1507,抽水蓄能:BK1003,出版:BK1218,厨房电器:BK1451,厨房小家电:BK1457,厨卫电器:BK1240,储能概念:BK0989,畜禽饲料:BK1508,传感器:BK0905,传媒:BK0486,船舶制造:BK0729,创投:BK0506,创新药:BK1106,创新医疗服务:BK1658,创业板综:BK0742,垂直应用软件:BK1447,纯碱:BK1417,瓷砖地板:BK1538,磁性材料:BK1618,磁悬浮概念:BK0975,存储芯片:BK1137,大飞机:BK0814,大气治理:BK1388,大数据:BK0634,大众出版:BK1289,大宗用纸:BK1544,代糖概念:BK0938,单抗概念:BK0870,氮肥:BK1432,氮化镓:BK0916,刀片电池:BK0951,地面兵装Ⅱ:BK1229,地面兵装Ⅲ:BK1382,地热能:BK0622,地摊经济:BK0924,地下管网:BK1058,低空经济:BK1166,低市净率:BK1723,低碳冶金:BK0979,涤纶:BK1413,底盘与发动机系统:BK1526,第三代半导体:BK0952,第四代半导体:BK1121,电池:BK1033,电池化学品:BK1302,电池技术:BK1648,电动乘用车:BK1519,电工仪器仪表:BK1308,电机Ⅱ:BK1030,电机Ⅲ:BK1307,电力:BK0428,电力设备:BK1200,电能综合服务:BK1373,电商服务:BK1546,电商概念:BK0665,电视广播Ⅱ:BK1219,电视广播Ⅲ:BK1291,电网概念:BK1647,电网设备:BK0457,电网自动化设备:BK1309,电信运营商:BK1587,电子:BK1201,电子车牌:BK0982,电子后视镜:BK1125,电子化学品Ⅱ:BK1039,电子化学品Ⅲ:BK1332,电子竞技:BK0853,电子身份证:BK1075,电子烟:BK0865,电子纸概念:BK1057,调味发酵品Ⅱ:BK1278,调味发酵品Ⅲ:BK1576,调味品概念:BK1026,定制家居:BK1539,东北振兴:BK0838,东方财富热股:BK1637,东数西算:BK1064,动力电池回收:BK1052,动力煤:BK1493,动物保健Ⅱ:BK1254,动物保健Ⅲ:BK1501,抖音概念(字节概念):BK0923,独家药品:BK0676,独角兽:BK0835,端到端供应链服务:BK1491,短剧互动游戏:BK1151,多模态AI:BK1153,多业态零售:BK1553,多元金融:BK0738,发电机概念:BK1014,钒电池:BK1095,反内卷概念:BK1197,反转股:BK1716,防水材料:BK1465,房产租赁经纪:BK1341,房地产:BK1202,房地产服务:BK1045,房地产开发:BK0451,房地产综合服务:BK1342,房屋检测:BK1179,房屋建设Ⅱ:BK1246,房屋建设Ⅲ:BK1470,纺织服饰:BK0436,纺织服装设备:BK1401,纺织化学制品:BK1423,纺织鞋类制造:BK1347,纺织制造:BK1224,飞行汽车(eVTOL):BK1157,非白酒:BK1279,非金属材料Ⅱ:BK1020,非金属材料Ⅲ:BK1411,非银金融:BK1203,非运动服装:BK1352,分立器件:BK1327,风电零部件:BK1313,风电设备:BK1032,风电整机:BK1314,风力发电:BK1374,风能:BK0595,服装家纺:BK1225,氟化工:BK1424,氟化工概念:BK0690,辅料:BK1348,辅助生殖:BK0939,复合肥:BK1433,复合集流体:BK1113,改性塑料:BK1437,钙钛矿电池:BK1094,肝素概念:BK0944,肝炎概念:BK1078,钢结构:BK1474,钢铁:BK0479,钢铁管材:BK1368,港口:BK1481,高成长股:BK1721,高带宽内存:BK1152,高市净率:BK1722,高速公路:BK1483,高压快充:BK1144,个护小家电:BK1458,个护用品:BK1251,工程机械:BK0739,工程机械概念:BK0991,工程机械器件:BK1392,工程机械整机:BK1393,工程建设:BK0425,工程咨询服务Ⅱ:BK0726,工程咨询服务Ⅲ:BK1471,工控设备:BK1407,工业大麻:BK0856,工业互联网:BK0832,工业金属:BK1287,工业母机:BK1004,工业气体:BK0981,公交:BK1484,公路货运:BK1487,公用事业:BK0427,供销社概念:BK1109,共享经济:BK0807,谷子经济:BK1183,股份制银行Ⅲ:BK1610,股权分散:BK1699,股权集中:BK1698,钴:BK1620,固废治理:BK1389,固态电池:BK0968,管材:BK1466,光伏电池组件:BK1315,光伏发电:BK1375,光伏辅材:BK1316,光伏概念:BK0588,光伏加工设备:BK1317,光伏设备:BK1031,光伏主材:BK1318,光刻机:BK0884,光刻胶:BK1753,光通信模块:BK1136,光纤概念:BK1660,光学光电子:BK1038,光学元件:BK1334,广告媒体:BK1292,广告营销:BK1220,硅料硅片:BK1319,轨交设备Ⅱ:BK1236,轨交设备Ⅲ:BK1394,贵金属:BK0732,国产软件:BK0696,国产芯片:BK0891,国防军工:BK1204,国际工程:BK1475,国有大型银行Ⅲ:BK1611,国资云概念:BK1008,果蔬加工:BK1503,海工装备:BK0601,海绵城市:BK0724,海南自贸:BK1193,海洋捕捞:BK1513,海洋经济:BK0623,氦气概念:BK0949,航海装备Ⅱ:BK1230,航海装备Ⅲ:BK1383,航空机场:BK0420,航空运输:BK1479,航空装备Ⅱ:BK1231,航空装备Ⅲ:BK1384,航母概念:BK0715,航天航空:BK0480,航天装备Ⅱ:BK1232,航天装备Ⅲ:BK1385,航运:BK1482,航运港口:BK0450,毫米波概念:BK1124,合成生物:BK1174,合成树脂:BK1438,核力发电:BK1376,核能核电:BK0577,核污染防治:BK0983,黑龙江:BK0146,黑色家电:BK1241,横向通用软件:BK1448,烘焙食品:BK1582,红利股:BK1641,鸿蒙概念:BK0953,湖北自贸:BK0926,互联网电商:BK1268,互联网服务:BK0447,互联网金融:BK0637,互联网医疗:BK0837,户外露营:BK1079,沪企改革:BK0672,华为概念:BK0854,华为海思:BK1180,华为欧拉:BK1013,华为汽车:BK0984,华为昇腾:BK0995,化工原料:BK0512,化学工程:BK1476,化学纤维:BK0471,化学原料:BK1019,化学制剂:BK1594,化学制品:BK0538,化学制药:BK0465,化债(AMC)概念:BK0980,化妆品:BK1252,化妆品概念:BK0974,化妆品制造及其他:BK1497,环保:BK0728,环保设备Ⅱ:BK1234,环保设备Ⅲ:BK1387,环境治理:BK1235,环氧丙烷:BK1011,换电概念:BK0985,黄金:BK1617,黄金概念:BK0547,会展服务:BK1565,混合现实:BK1141,火电设备:BK1321,火力发电:BK1377,机场:BK1480,机床工具:BK1395,机器人:BK1408,机器人概念:BK1090,机器人执行器:BK1145,机器视觉:BK0998,机械设备:BK1205,鸡肉概念:BK0887,基础化工:BK1206,基础建设:BK1247,基建市政工程:BK1472,基因测序:BK0693,激光雷达:BK1002,激光设备:BK1409,集成电路封测:BK1328,集成电路制造:BK1329,计算机:BK1207,计算机设备:BK0735,家电零部件Ⅱ:BK1242,家电零部件Ⅲ:BK1455,家纺:BK1353,家居用品:BK0440,家用电器:BK0456,钾肥:BK1434,价值股:BK1640,减肥药:BK1146,减速器:BK1100,检测服务:BK1566,建筑材料:BK1208,建筑节能:BK1076,建筑装饰:BK1209,降解塑料:BK0909,交通运输:BK1210,交运设备:BK0429,胶黏剂及胶带:BK1425,焦煤:BK1494,焦炭Ⅱ:BK1249,焦炭Ⅲ:BK1492,教育:BK0740,教育出版:BK1290,教育运营及其他:BK1556,节能环保:BK0494,金融地产风格:BK1714,金融控股:BK1359,金融信息服务:BK1360,金属包装:BK1532,金属新材料:BK1288,金属制品:BK1396,锦纶:BK1414,京津冀:BK0684,精准医疗:BK0806,精准诊断:BK1659,净水概念:BK1068,酒店:BK1560,酒店餐饮:BK1271,聚氨酯:BK1426,军工:BK0490,军工电子Ⅱ:BK1233,军工电子Ⅲ:BK1386,军民融合:BK0808,抗菌面料:BK1116,科创板做市股:BK1108,科创板做市商:BK1107,科技风格:BK1713,可控核聚变:BK1163,可燃冰:BK0818,空调:BK1450,空间计算:BK1143,空间站概念:BK0994,空气能热泵:BK1102,跨境电商:BK1547,跨境物流:BK1488,跨境支付:BK1071,快递:BK1489,快递概念:BK0990,快手概念:BK0972,垃圾分类:BK0873,蓝宝石:BK0674,冷链物流:BK0852,锂:BK1621,锂电池:BK1303,锂电池概念:BK0574,锂电专用设备:BK1304,锂矿概念:BK1173,炼化及贸易:BK1274,炼油化工:BK1569,粮食概念:BK1086,粮食种植:BK1515,粮油加工:BK1504,量子科技:BK0710,林业Ⅱ:BK1255,林业Ⅲ:BK1502,磷肥及磷化工:BK1435,磷化工:BK1010,零食:BK1583,零售概念:BK1655,流感:BK0906,楼宇设备:BK1402,旅游概念:BK0692,旅游及景区:BK1272,旅游酒店:BK0485,旅游零售Ⅱ:BK1269,旅游零售Ⅲ:BK1549,旅游综合:BK1561,铝:BK1613,绿色电力:BK1024,氯碱:BK1418,轮毂电机:BK1099,轮胎轮毂:BK1527,裸眼3D:BK1142,蚂蚁金服概念:BK0937,盲盒经济:BK0954,毛发医疗:BK0996,贸易Ⅱ:BK0484,贸易Ⅲ:BK1550,煤化工:BK1419,煤化工概念:BK0492,煤炭:BK0437,煤炭开采:BK1250,美容护理:BK1035,门户网站:BK1294,密集调研:BK1700,棉纺:BK1349,免税概念:BK0927,免疫治疗:BK0698,面板:BK1335,民爆概念:BK1066,民爆制品:BK1427,模拟芯片设计:BK1330,膜材料:BK1439,摩托车:BK1521,摩托车及其他:BK1263,磨具磨料:BK1397,钼:BK1623,纳米银:BK0855,钠离子电池:BK0988,耐火材料:BK1467,脑机接口:BK0706,内贸流通:BK1001,内蒙古:BK0175,能源及重型设备:BK1403,能源金属:BK1015,逆变器:BK1320,酿酒概念:BK0477,镍:BK1622,宁组合:BK1000,农产品加工:BK1256,农化制品:BK0731,农林牧渔:BK0433,农商行Ⅲ:BK1612,农药:BK1436,农药兽药:BK0730,农业种植:BK0888,农业综合Ⅱ:BK1257,农业综合Ⅲ:BK1506,农用机械:BK1404,培训教育:BK1557,培育钻石:BK1023,配电设备:BK1310,啤酒:BK1577,啤酒概念:BK1073,拼多多概念:BK0957,品牌化妆品:BK1498,品牌消费电子:BK1337,苹果概念:BK0666,屏下摄像:BK0947,破增发价股:BK1673,普钢:BK1226,期货:BK1361,其他电源设备Ⅱ:BK1034,其他电源设备Ⅲ:BK1322,其他电子Ⅱ:BK1223,其他电子Ⅲ:BK1336,其他纺织:BK1350,其他黑色家电:BK1454,其他化学纤维:BK1415,其他化学原料:BK1420,其他化学制品:BK1428,其他计算机设备:BK1446,其他家电Ⅱ:BK1243,其他家电Ⅲ:BK1456,其他家居用品:BK1540,其他建材Ⅲ:BK1468,其他金属新材料:BK1619,其他酒类:BK1578,其他能源发电:BK1378,其他农产品加工:BK1505,其他汽车零部件:BK1528,其他生物制品:BK1596,其他石化:BK1570,其他饰品:BK1356,其他数字媒体:BK1295,其他塑料制品:BK1440,其他通信设备:BK1590,其他通用设备:BK1398,其他橡胶制品:BK1441,其他小金属:BK1624,其他养殖:BK1510,其他医疗服务:BK1599,其他运输设备:BK1522,其他种植业:BK1516,其他专业服务:BK1567,其他专业工程:BK1477,其他专用设备:BK1405,其他自动化设备:BK1410,麒麟电池:BK1092,汽车:BK1211,汽车拆解:BK0943,汽车电子电气系统:BK1529,汽车服务:BK1016,汽车经销商:BK1523,汽车零部件:BK0481,汽车热管理:BK1089,汽车芯片:BK0969,汽车一体化压铸:BK1093,汽车整车:BK1029,汽车综合服务:BK1524,铅锌:BK1614,青蒿素:BK0872,氢能源:BK0864,轻工制造:BK1212,清洁小家电:BK1459,区块链:BK0830,趋势股:BK1715,全息技术:BK0699,燃料电池:BK1305,燃料电池概念:BK0682,燃气Ⅱ:BK1028,燃气Ⅲ:BK1381,热力服务:BK1379,人工景区:BK1562,人工智能:BK0800,人力资源服务:BK1568,人形机器人:BK1184,人造肉:BK0866,荣耀概念:BK1177,熔盐储能:BK1103,柔性屏(折叠屏):BK1160,肉鸡养殖:BK1511,肉制品:BK1580,乳品:BK1585,乳业:BK0892,软件开发:BK0737,软饮料:BK1586,商贸零售:BK1213,商业地产:BK1345,商业航天:BK0963,商业物业经营:BK1554,商用车:BK1264,商用载货车:BK1530,商用载客车:BK1531,上海自贸:BK0643,上证180_:BK0612,上证380:BK0705,上证50_:BK0611,社会服务:BK1214,社区团购:BK0965,深成500:BK0568,深圳特区:BK0549,深证100R:BK0743,生活用纸:BK1495,生态农业:BK0669,生物识别:BK0970,生物疫苗:BK0548,生物制品:BK1044,生物质能发电:BK1098,生猪养殖:BK1512,石墨烯:BK0617,石油石化:BK0464,时空大数据:BK1130,食品安全:BK0614,食品及饲料添加剂:BK1429,食品加工:BK1280,食品饮料:BK0438,食用菌:BK1517,视频媒体:BK1296,饰品:BK0734,首发经济:BK1186,输变电设备:BK1311,熟食:BK1584,数据安全:BK1047,数据确权:BK1118,数据要素:BK1135,数据中心:BK0922,数字货币:BK0883,数字经济:BK1061,数字孪生:BK0861,数字媒体:BK1221,数字水印:BK1129,数字芯片设计:BK1331,数字阅读:BK0959,水产概念:BK0967,水产饲料:BK1509,水产养殖:BK1514,水力发电:BK1380,水利建设:BK0597,水泥:BK0424,水泥制品:BK1463,水泥制造:BK1464,水务及水治理:BK1390,饲料:BK1258,塑料:BK0454,塑料包装:BK1533,算力概念:BK1134,胎压监测:BK0898,钛白粉:BK1421,钛白粉概念:BK0805,炭黑:BK1442,碳化硅:BK0977,碳基材料:BK1006,碳交易:BK0966,碳纤维:BK1171,特钢Ⅱ:BK1227,特钢Ⅲ:BK1370,特高压:BK0918,特色药:BK1656,特斯拉概念:BK0644,特种纸:BK1545,腾讯云:BK1189,题材股:BK1717,体外诊断:BK1603,体外诊断概念:BK0841,体育产业:BK0708,体育Ⅱ:BK1273,体育Ⅲ:BK1564,天然气:BK0843,铁矿石:BK1371,铁路公路:BK0421,铁路基建:BK0592,铁路运输:BK1485,通信:BK1215,通信服务:BK0736,通信工程及服务:BK1588,通信技术:BK1650,通信设备:BK0448,通信网络设备及器件:BK1591,通信线缆及配套:BK1592,通信应用增值服务:BK1589,通信终端及配件:BK1593,通用航空:BK0625,通用设备:BK0545,同步磁阻电机:BK1131,铜:BK1615,铜缆高速连接:BK1168,统一大市场:BK1077,图片媒体:BK1297,涂料:BK1469,涂料油墨:BK1430,土地流转:BK0632,土壤修复:BK1070,退税商店:BK0933,托育服务:BK1074,网红经济:BK0940,网络安全:BK0655,网络游戏:BK0509,微利股:BK1642,微盘股:BK1158,微盘精选:BK1644,维生素:BK0895,尾气治理:BK0932,卫星导航:BK0629,卫星互联网:BK0921,卫浴电器:BK1452,卫浴制品:BK1541,味蕾经济:BK1653,文化用品:BK1542,文娱消费:BK1654,文娱用品:BK1266,文字媒体:BK1298,钨:BK1625,无机盐:BK1422,无人机:BK0704,无线充电:BK0960,无线耳机:BK0893,物联网:BK0554,物流:BK0422,物业管理:BK1343,西部大开发:BK0590,稀缺资源:BK0519,稀土:BK1626,稀土永磁:BK0578,洗护用品:BK1496,先进封装:BK1101,先进制造风格:BK1710,显示技术:BK1651,线缆部件及其他:BK1312,线下药店:BK1606,乡村振兴:BK0834,橡胶:BK1018,橡胶助剂:BK1443,消费电子:BK1037,消费电子概念:BK1646,消费电子零部件及组装:BK1338,消费风格:BK1711,小红书概念:BK1187,小家电:BK1244,小金属:BK1027,小金属概念:BK0695,小米概念:BK0833,小米汽车:BK1155,鞋帽及其他:BK1354,新材料:BK0523,新零售:BK0825,新能源:BK0493,新能源车:BK0900,新消费:BK1652,新型城镇化:BK1080,新型工业化:BK1150,信创:BK1104,行业龙头:BK1661,雄安新区:BK0813,休闲食品:BK1281,虚拟电厂:BK0958,虚拟机器人:BK1190,虚拟数字人:BK1055,虚拟现实:BK0722,蓄电池及其他电池:BK1306,学历教育:BK1558,血液制品:BK1597,雅下水电概念:BK1192,央国企改革:BK0683,央视50_:BK0610,养老概念:BK0653,养老金:BK0823,养殖业:BK1259,冶钢辅料:BK1372,冶钢原料:BK1228,页岩气:BK0603,液冷服务器:BK1138,一般零售:BK0482,一带一路:BK0712,医废处理:BK0914,医疗服务:BK0727,医疗耗材:BK1604,医疗美容:BK1253,医疗器械:BK1041,医疗器械概念:BK0668,医疗设备:BK1605,医疗研发外包:BK1600,医美服务:BK1499,医美概念:BK0889,医美耗材:BK1500,医药流通:BK1607,医药商业:BK1042,医药生物:BK1216,医药医疗风格:BK1712,医院:BK1601,仪器仪表:BK0458,移动支付:BK0556,疫苗:BK1598,银行:BK1283,银行Ⅱ:BK0475,饮料乳品:BK1282,印染:BK1351,印刷:BK1534,印刷包装机械:BK1406,印制电路板:BK1340,英伟达概念:BK1161,婴童概念:BK0664,营销代理:BK1293,影视动漫制作:BK1299,影视概念:BK0847,影视院线:BK1222,幽门螺杆菌概念:BK1056,油服工程:BK1275,油品石化贸易:BK1571,油气及炼化工程:BK1572,油气开采Ⅱ:BK1276,油气开采Ⅲ:BK1574,油气设服:BK0606,油气资源:BK1649,油田服务:BK1573,游戏Ⅱ:BK1046,游戏Ⅲ:BK1301,有机硅:BK1431,有机硅概念:BK0961,有色金属:BK0478,娱乐用品:BK1543,渔业:BK1260,预加工食品:BK1581,预制菜概念:BK1025,元件:BK0459,元宇宙概念:BK1009,园林工程:BK1473,原材料供应链服务:BK1490,原料药:BK1595,院线:BK1300,粤港自贸:BK0677,云计算:BK0579,运动服装:BK1355,在线教育:BK0662,造纸:BK1267,造纸印刷:BK0470,噪声防治:BK1082,增强现实:BK0801,粘胶:BK1416,长材:BK1369,长江三角:BK0594,长寿药:BK0936,照明设备Ⅱ:BK1245,照明设备Ⅲ:BK1460,诊断服务:BK1602,证金持股:BK0718,证券Ⅱ:BK0473,证券Ⅲ:BK1366,知识产权:BK0839,职业教育:BK1022,植物照明:BK1007,纸包装:BK1535,制冷空调设备:BK1400,智慧城市:BK0628,智慧灯杆:BK1069,智慧政务:BK0886,智能穿戴:BK0641,智能电视:BK0656,智能电网:BK0581,智能家居:BK0680,智能驾驶:BK0802,智谱AI概念:BK1182,中俄贸易概念:BK1072,中特估:BK1139,中芯概念:BK0935,中药概念:BK0615,中药Ⅱ:BK1040,中药Ⅲ:BK1608,中证500:BK0701,中字头:BK0505,钟表珠宝:BK1357,种植业:BK1261,种子:BK1518,重组蛋白:BK1063,周期股:BK1639,猪肉概念:BK0882,住宅开发:BK1346,专精特新:BK1005,专业服务:BK1043,专业工程:BK1248,专业连锁Ⅱ:BK1270,专业连锁Ⅲ:BK1555,专用设备:BK0910,转基因:BK0907,装配建筑:BK0945,装修建材:BK0476,装修装饰Ⅱ:BK0725,装修装饰Ⅲ:BK1478,资产管理:BK1364,资源开采概念:BK1017,自动化设备:BK1237,自然景区:BK1563,综合:BK1217,综合包装:BK1536,综合乘用车:BK1520,综合电力设备商:BK1323,综合电商:BK1548,综合环境治理:BK1391,综合Ⅱ:BK0539,综合Ⅲ:BK1627,租赁:BK1365,租售同权:BK0822,最近多板:BK1638,昨日触板:BK0817,昨日打二板以上表现:BK1645,昨日高换手:BK1632,昨日高振幅:BK1633,昨日连板:BK0816,昨日连板_含一字:BK1051,昨日首板:BK1630,昨日炸板:BK1631,昨日涨停:BK0815,昨日涨停_含一字:BK1050,AI手机:BK1162,AI芯片:BK1127,AI眼镜:BK1178,AI应用:BK1629,AI语料:BK1172,AI制药（医疗）:BK1170,AI智能体:BK0809,AIGC概念:BK1111,AIPC:BK1164,BC电池:BK1148,C2M概念:BK0955,CAR-T细胞疗法:BK0986,ChatGPT概念:BK1126,CPO概念:BK1128,CRO:BK0899,DeepSeek概念:BK1188,DRG/DIP:BK1054,EDA概念:BK0946,EDR概念:BK1049,ERP概念:BK1133,ETC:BK0875,F5G概念:BK1088,GDR:BK0868,HJT电池:BK0908,HS300_:BK0500,IGBT概念:BK1048,IPO受益:BK0697,IPv6:BK0897,IT服务Ⅱ:BK1238,IT服务Ⅲ:BK1444,Kimi概念:BK1169,LED:BK1333,LED概念:BK0580,MicroLED:BK0948,MiniLED:BK0902,MLCC:BK0890,MLOps概念:BK1132,OLED:BK0840,PCB:BK0877,PEEK材料概念:BK1156,PLC概念:BK1119,PPP模式:BK0721,PVDF概念:BK1012,REITs概念:BK0992,SPD概念:BK1147,ST股:BK0511,TOPCon电池:BK1097,UWB概念:BK0880,VPN:BK0885,Web3.0:BK1110,WiFi:BK0915").split(',');
+
+/**
+ * 东财业务板块名索引（惰性构建）。
+ * 语义搜索的「词 → 板块 → 成分股」全流程都基于它 + 数据中心报表，
+ * 完全不经过 push2.eastmoney.com（该域名在浏览器侧会间歇性限流，是搜索为 0 的根因）。
+ * @returns {Array<{name:string, code:string}>}
+ */
+let _eastBoardIndex = null;
+function eastBoardIndex() {
+  if (!_eastBoardIndex) {
+    _eastBoardIndex = EAST_BOARD_LIST.map(s => {
+      const i = s.lastIndexOf(':');
+      return { name: s.slice(0, i), code: s.slice(i + 1) };
+    });
+  }
+  return _eastBoardIndex;
+}
+
 /** 限制并发的 map（批量拉取板块成分股时避免触发限流） */
 async function mapLimit(items, limit, fn) {
   const results = new Array(items.length);
@@ -377,6 +403,7 @@ const GENERIC_CATEGORY_NOUNS = new Set([
   '设备', '机器', '仪器', '仪表', '装置', '装备', '系统', '材料', '原料', '产品', '部件', '零件',
   '组件', '器件', '模组', '模块', '平台', '技术', '方案', '服务', '业务', '软件', '硬件', '芯片',
   '电池', '电机', '工具', '机构', '结构', '总成', '耗材', '用品',
+  '复合', '新型', '高端', '智能', '数字', '绿色', // 泛化修饰语：单独作匹配词会命中大量无关段名（如「复合」→复合材料/复合肥）
   '电厂', '发电厂' // 宽泛环境词：单独作匹配词会误命中火电/水电运营商（其段名含「火电厂/发电厂」），但厂商段名为「电站设备/发电设备/锅炉」不含
 ]);
 
@@ -514,7 +541,11 @@ function buildMatchers(query) {
   const boardHints = new Set();
   const segHints = new Set();
   for (const c of SEMANTIC_CONCEPTS) {
-    if (c.aliases.some(a => ql.includes(a.toLowerCase()))) {
+    // 🔴 只允许「长度≥2」的别名参与子串匹配。
+    // 否则单字别名会制造荒谬的误判：SEMANTIC_CONCEPTS['有色金属'] 的别名含 `铜`/`铝`，
+    // 于是「复合铜箔」被判定成「有色金属」概念 → 段名匹配词变成 铜/铝/稀土/黄金 →
+    // 搜出来全是铝型材、稀土永磁、黄金公司（batch45 实测复现）。
+    if (c.aliases.some(a => a.length >= 2 && ql.includes(a.toLowerCase()))) {
       concepts.push(c.canonical);
       (c.hints || []).forEach(h => boardHints.add(h.toLowerCase()));
       (c.segHints || []).forEach(h => segHints.add(h.toLowerCase()));
@@ -543,8 +574,8 @@ function segMatches(segName, matchersArr) {
  * @param {string[]} domainArr 领域修饰词（火电/水电…），命中则相关度 ×1.15
  */
 function revenueRelevance(mainBiz, coreArr, domainArr) {
-  if (!mainBiz || !mainBiz.length) return { relevance: 0, matched: [] };
-  if (!coreArr || !coreArr.length) return { relevance: 0, matched: [] };
+  if (!mainBiz || !mainBiz.length) return { relevance: 0, raw: 0, matched: [] };
+  if (!coreArr || !coreArr.length) return { relevance: 0, raw: 0, matched: [] };
   const domainSet = new Set(domainArr || []);
   let rel = 0;
   const matched = [];
@@ -559,8 +590,15 @@ function revenueRelevance(mainBiz, coreArr, domainArr) {
     rel += Math.min(ratio, 1);
     matched.push({ name: seg.name, ratio: Math.round(r * 1000) / 10 });
   }
-  if (rel > 1) rel = 1; // ratio 以小数计，封顶 100%
-  return { relevance: Math.round(rel * 1000) / 10, matched };
+  // relevance：展示值（封顶 100%，即「命中业务占营收比例」）
+  // raw：未封顶的加权和，**专门用于排序**——避免多家都是 100% 时排序退化成都市值排序，
+  //      让「命中占比更高」的公司真正排在前面（用户要求：按所占营收比例排序）。
+  const capped = rel > 1 ? 1 : rel;
+  return {
+    relevance: Math.round(capped * 1000) / 10,
+    raw: Math.round(rel * 1000) / 10,
+    matched
+  };
 }
 
 /** 产品级语义「相关度」评分（产品库兜底：东财未列明细分业务时按产业链角色保底） */
@@ -590,6 +628,48 @@ function matchProduct(ql) {
     }
   }
   return null;
+}
+
+/**
+ * 产品级语义的「段名匹配词」：只取**产品族本身**，不掺入所属概念的泛词。
+ *
+ * 为什么必须这样（batch45 实测）：查询「谐波减速器」会被 SEMANTIC_CONCEPTS['机器人'] 命中
+ * （其别名含「减速器」），于是段名匹配词变成 机器人/电机/伺服/传感器/丝杠/具身 →
+ * 结果被传感器（安培龙 100%）、微电机（晨光电机 98.8%）等「机器人泛产业链」公司占满，
+ * 真正做减速器的公司反而被压到后面。用户要的是**相同业务/相同产品**，不是同属一个赛道。
+ *
+ * 取词规则：整词查询 + 产品库全部别名（整词）+ 查询与产品 key 的 2~3 字窗口
+ * （剔除停用词 / 通用类别词（含「复合/智能/高端」等泛化修饰语）/ 领域修饰词）。
+ * @param {string} query 用户原始查询
+ * @param {object} product SEMANTIC_PRODUCTS 条目
+ * @returns {string[]}
+ */
+function productCoreTerms(query, product) {
+  const out = new Set();
+  const add = (s) => {
+    const t = String(s || '').trim().toLowerCase();
+    if (t.length >= 2) out.add(t);
+  };
+  add(query);
+  if (product) {
+    add(product.key);
+    (product.aliases || []).forEach(add);
+  }
+  // 只对「用户查询本身」切窗口。
+  // 不能对 product.key 切窗口：如查询「谐波减速器」属于产品族 key「人形机器人减速器」，
+  // 若对 key 切窗口会引入「机器人」「人形机」等**赛道泛词**，结果又会被机器人整机厂（瑞松科技、
+  // 宇树科技）占满，真正做减速器的公司（绿的谐波、国茂股份）反被压后 —— 与「同产品」的诉求相悖。
+  for (const src of [query]) {
+    const q = String(src || '').toLowerCase();
+    for (let n = 2; n <= 3; n++) {
+      for (let i = 0; i + n <= q.length; i++) {
+        const g = q.slice(i, i + n);
+        if (SEMANTIC_STOPWORDS.has(g) || GENERIC_CATEGORY_NOUNS.has(g) || DOMAIN_MODIFIERS.has(g)) continue;
+        out.add(g);
+      }
+    }
+  }
+  return [...out];
 }
 
 /** 行情类接口本地缓存 TTL（毫秒）—— 30 秒内同一请求直接复用，显著降低对外部接口的压力 */
@@ -1619,6 +1699,15 @@ const StockAPI = {
   },
 
   async getMainBusiness(code) {
+    const key = String(code || '').toLowerCase();
+    // 0) 本地缓存 / 全市场索引（batch45：语义搜索批量取数会顺手填这两个，命中即零请求）
+    const hit = this._mbCache.get(key);
+    if (hit && Date.now() - hit.t < 6 * 60 * 60 * 1000) return hit.v;
+    const idx = this._allMbIndex;
+    if (idx && idx.size) {
+      const v = this._mbFromIndex(idx, this._dcSecucode(key));
+      if (v) { this._mbCache.set(key, { t: Date.now(), v }); return v; }
+    }
     const secucode = this.toSecucode(code);
     const url = `https://datacenter-web.eastmoney.com/api/data/v1/get?reportName=RPT_F10_FN_MAINOP&columns=ALL&filter=(SECUCODE%3D%22${secucode}%22)&pageNumber=1&pageSize=60&sortColumns=REPORT_DATE&sortTypes=-1`;
     // 1) 优先 fetch（简单请求）
@@ -1626,7 +1715,7 @@ const StockAPI = {
       const resp = await fetch(url, { cache: 'no-store' });
       const json = await resp.json();
       const rows = (json.result && json.result.data) || [];
-      if (rows.length) return this._parseMainBiz(rows);
+      if (rows.length) { const v = this._parseMainBiz(rows); this._mbCache.set(key, { t: Date.now(), v }); return v; }
     } catch (e) {
       console.debug('获取主营构成失败(fetch)，尝试 JSONP 兜底', code);
     }
@@ -1634,10 +1723,11 @@ const StockAPI = {
     try {
       const json = await this._eastJsonp(url, 9000);
       const rows = (json && json.result && json.result.data) || [];
-      if (rows.length) return this._parseMainBiz(rows);
+      if (rows.length) { const v = this._parseMainBiz(rows); this._mbCache.set(key, { t: Date.now(), v }); return v; }
     } catch (e) {
       console.debug('获取主营构成失败(JSONP)', code);
     }
+    this._mbCache.set(key, { t: Date.now(), v: null });
     return null;
   },
 
@@ -2966,8 +3056,305 @@ const StockAPI = {
     // filter 里的 ( ) ' 需原样传给东财，这里手工编码，避免 URLSearchParams 把整段重排
     if (opts.filter) parts.push('filter=' + encodeURIComponent(opts.filter));
     const url = 'https://datacenter-web.eastmoney.com/api/data/v1/get?' + parts.join('&');
-    const j = await this._fetchJson(url, 12000);
+    const j = await this._fetchJson(url, opts.timeoutMs || 12000);
     return (j && j.result && Array.isArray(j.result.data)) ? j.result.data : [];
+  },
+
+  // ==================================================================
+  //  语义搜索取数层：全部走「东财数据中心报表通道」，零 push2 依赖
+  // ==================================================================
+  //
+  // 为什么必须这么做（batch45 实测定位）：
+  //   1) push2.eastmoney.com 在浏览器侧**间歇性限流**（batch44 实测：连测 5 次可用，用户又遇到全灭），
+  //      而 batch44 已把板块清单主源切到新浪（仅 175 概念 + 49 行业）。新浪命名体系与东财不同，
+  //      里面**没有「人工智能」「芯片」「算力」「低空经济」**这些板块 → 语义搜索的「概念→板块」直接落空，
+  //      实测切断东财后 ai / 芯片 / 算力 / 低空经济 一律返回 0 条（低空经济还被错配成「低碳经济」）。
+  //   2) searchapi.eastmoney.com 搜索建议接口**已下线**（fetch 与 JSONP 均失败）。
+  //
+  // 换成的新链路（全部 datacenter-web，实测 200 + CORS + 无限流）：
+  //   查询词 --EAST_BOARD_LIST 本地匹配--> 东财板块名
+  //          --RPT_F10_CORETHEME_BOARDTYPE 反查--> 该板块成分股（实测「人工智能」751 只）
+  //          --RPT_F10_FN_MAINOP 批量 SECUCODE in (...)--> 最新一期「按产品」主营构成
+  //          --> 按「命中主营段营收占比之和」降序 = 用户要的「相同业务/产品，按营收比例排序」
+  //   批量拉主营构成是性能关键：in(80~100) 只一次请求（实测 100 只 / 229ms），
+  //   而旧实现是**逐只**请求 160 次 —— 这正是旧版又慢又容易 0 结果的另一半原因。
+
+  /** SECUCODE('600519.SH') → 带市场前缀代码('sh600519') */
+  _dcPrefix(secucode) {
+    const s = String(secucode || '').toUpperCase();
+    if (s.endsWith('.SH')) return 'sh';
+    if (s.endsWith('.SZ')) return 'sz';
+    if (s.endsWith('.BJ')) return 'bj';
+    return '';
+  },
+
+  /** 带市场前缀代码('sh600519') → SECUCODE('600519.SH') */
+  _dcSecucode(code) {
+    const m = String(code || '').toLowerCase().match(/^(sh|sz|bj)(\d{6})$/);
+    return m ? m[2] + '.' + m[1].toUpperCase() : '';
+  },
+
+  /**
+   * 本地把关键词匹配到东财业务板块名（**零网络请求**）。
+   * 东财板块命名体系本身就承载了「业务/产品」语义（BK0800 人工智能 / BK0891 国产芯片 / BK1166 低空经济…），
+   * 直接本地命中就能绕过已下线的搜索建议接口。
+   * @param {string} kw 关键词
+   * @param {number} limit 最多返回几个板块
+   * @returns {Array<{name:string, code:string, score:number}>}
+   */
+  _dcMatchBoards(kw, limit = 8) {
+    const k = String(kw || '').trim().toLowerCase();
+    if (k.length < 2) return [];
+    const out = [];
+    for (const b of eastBoardIndex()) {
+      const n = b.name.toLowerCase();
+      let score = 0;
+      if (n === k) score = 1000;
+      else if (n.startsWith(k)) score = 900 - Math.min(120, (n.length - k.length) * 10);
+      else if (n.includes(k)) score = 700 - Math.min(120, (n.length - k.length) * 10);
+      else if (k.includes(n) && n.length >= 2) score = 500 - Math.min(120, (k.length - n.length) * 10);
+      if (score > 0) out.push({ name: b.name, code: b.code, score });
+    }
+    out.sort((a, b) => (b.score - a.score) || (a.name.length - b.name.length));
+    return out.slice(0, limit);
+  },
+
+  /**
+   * 用数据中心报表按「板块名 / 板块代码」反查成分股（**完全不经过 push2**）。
+   * 报表：RPT_F10_CORETHEME_BOARDTYPE（全市场 9.4 万行，pageSize 实测支持 5000）。
+   * @param {string} boardOrCode 板块名（如「人工智能」）或板块代码（BK0800）
+   * @returns {Promise<Array<{code,name,secucode,pureCode}>>} code 为带前缀格式
+   */
+  async _dcBoardStocks(boardOrCode, maxCodes = 2000) {
+    const key = String(boardOrCode || '').trim();
+    if (!key) return [];
+    return this._withCache('dcb:' + key, 6 * 60 * 60 * 1000, async () => {
+      const isCode = /^BK\d+$/i.test(key);
+      const filter = isCode
+        ? `(NEW_BOARD_CODE="${key.toUpperCase()}")`
+        : `(BOARD_NAME="${key}")`;
+      const COLS = 'SECUCODE,SECURITY_CODE,SECURITY_NAME_ABBR,NEW_BOARD_CODE,BOARD_NAME';
+      const PS = 5000;
+      const acc = new Map();
+      for (let pn = 1; pn <= 3; pn++) {
+        let rows = [];
+        try {
+          rows = await this._dcGet('RPT_F10_CORETHEME_BOARDTYPE', COLS, {
+            filter, pageSize: PS, pageNumber: pn
+          });
+        } catch (e) { break; }
+        if (!rows.length) break;
+        for (const r of rows) {
+          const sc = String(r.SECUCODE || '');
+          const pre = this._dcPrefix(sc);
+          const pure = String(r.SECURITY_CODE || '').trim();
+          if (!pre || !/^\d{6}$/.test(pure)) continue;
+          const code = pre + pure;
+          if (!acc.has(code)) acc.set(code, { code, name: r.SECURITY_NAME_ABBR || pure, secucode: sc, pureCode: pure });
+        }
+        if (rows.length < PS) break;
+        if (acc.size >= maxCodes) break;
+      }
+      return [...acc.values()].slice(0, maxCodes);
+    }, v => !!(v && v.length));
+  },
+
+  /** 主营构成本地缓存（语义搜索/同类股票/反推业务共用，避免重复请求） */
+  _mbCache: new Map(),   // code -> { t, v: [{name, ratio}] }
+
+  /**
+   * **批量**取多只股票最新一期「按产品」主营构成。
+   * 关键：MAINOP 支持 `(SECUCODE in ("a","b",...))`，一次可带 80~100 只（实测 100 只 / 229ms），
+   * 相比逐只请求（旧实现 160 次）请求数下降两个数量级，是「又快又不 0 结果」的核心。
+   * @param {string[]} codes 带市场前缀的代码数组
+   * @returns {Promise<Map<string, Array<{name:string,ratio:number}>>>} code → 主营构成段
+   */
+  async _dcMainBizBatch(codes) {
+    const uniq = [...new Set((codes || []).map(c => String(c || '').toLowerCase())
+      .filter(c => /^(sh|sz|bj)\d{6}$/.test(c)))];
+    const map = new Map();
+    if (!uniq.length) return map;
+    const now = Date.now();
+    const MB_TTL = 6 * 60 * 60 * 1000;
+    // 先吃本地缓存，只把没缓存的送去请求
+    const need = [];
+    for (const c of uniq) {
+      const hit = this._mbCache.get(c);
+      if (hit && now - hit.t < MB_TTL) { if (hit.v && hit.v.length) map.set(c, hit.v); }
+      else need.push(c);
+    }
+    if (!need.length) return map;
+    const BATCH = 80;                        // 80 只/请求：实测平均 ~4.5 段/只，稳妥落在 500 行/页内
+    const batches = [];
+    for (let i = 0; i < need.length; i += BATCH) batches.push(need.slice(i, i + BATCH));
+    const COLS = 'SECUCODE,SECURITY_CODE,ITEM_NAME,MBI_RATIO';
+    const results = await this._mapLimit(batches, 6, async (group) => {
+      const scl = group.map(c => '"' + this._dcSecucode(c) + '"').join(',');
+      const filter = `(SECUCODE in (${scl}))(IS_NEW=1)(MAINOP_TYPE="2")`;
+      const acc = new Map();
+      for (let pn = 1; pn <= 6; pn++) {
+        let rows = [];
+        try {
+          rows = await this._dcGet('RPT_F10_FN_MAINOP', COLS, {
+            filter, pageSize: 500, pageNumber: pn,
+            sortColumns: 'SECUCODE', sortTypes: 1
+          });
+        } catch (e) { break; }
+        if (!rows.length) break;
+        for (const r of rows) {
+          const pre = this._dcPrefix(r.SECUCODE);
+          const pure = String(r.SECURITY_CODE || '').trim();
+          if (!pre || !/^\d{6}$/.test(pure)) continue;
+          const code = pre + pure;
+          const nm = String(r.ITEM_NAME || '').trim();
+          const ratio = r.MBI_RATIO != null ? +r.MBI_RATIO : null;
+          if (!nm || ratio == null) continue;
+          if (!acc.has(code)) acc.set(code, []);
+          acc.get(code).push({ name: nm, ratio });
+        }
+        if (rows.length < 500) break;
+      }
+      return acc;
+    });
+    for (const m of results) { if (m) for (const [k, v] of m) map.set(k, v); }
+    // 写缓存（取到的与取不到的都记，避免反复打接口）
+    const t = Date.now();
+    for (const c of need) this._mbCache.set(c, { t, v: map.get(c) || null });
+    return map;
+  },
+
+  // ---- 全市场主营构成索引（深度扫描用）----
+  ALL_MB_LS_KEY: 'snt.allMainBiz',
+  _allMbIndex: null,      // Map<secucode, Array<[name, ratioBp]>>
+  _allMbAt: 0,
+  ALL_MB_TTL: 3 * 24 * 60 * 60 * 1000,   // 3 天（季报期内足够新）
+
+  _loadAllMbFromLS() {
+    if (this._allMbIndex) return this._allMbIndex;
+    try {
+      if (typeof localStorage !== 'undefined' && localStorage) {
+        const raw = localStorage.getItem(this.ALL_MB_LS_KEY);
+        if (raw) {
+          const o = JSON.parse(raw);
+          if (o && o.d && Date.now() - (o.t || 0) < this.ALL_MB_TTL) {
+            const m = new Map();
+            for (const line of String(o.d).split('\n')) {
+              if (!line) continue;
+              const seg = line.split('|');
+              const sc = seg[0];
+              if (!sc) continue;
+              const arr = [];
+              for (let i = 1; i < seg.length; i++) {
+                const j = seg[i].lastIndexOf(':');
+                if (j <= 0) continue;
+                arr.push([seg[i].slice(0, j), (+seg[i].slice(j + 1)) / 10000]);
+              }
+              if (arr.length) m.set(sc, arr);
+            }
+            if (m.size) { this._allMbIndex = m; this._allMbAt = o.t || 0; return m; }
+          }
+        }
+      }
+    } catch (e) { /* 解析失败 → 重新构建 */ }
+    return null;
+  },
+
+  _saveAllMbToLS(m) {
+    try {
+      const lines = [];
+      for (const [sc, arr] of m) {
+        let s = sc;
+        for (const [n, r] of arr) s += '|' + n + ':' + Math.round(r * 10000);
+        lines.push(s);
+      }
+      localStorage.setItem(this.ALL_MB_LS_KEY, JSON.stringify({ t: Date.now(), d: lines.join('\n') }));
+    } catch (e) { /* 隐私模式 / 容量超额：仅影响下次是否重扫 */ }
+  },
+
+  /**
+   * 全市场主营构成索引（深度扫描）：
+   * 一次拉齐**全部 A 股**最新一期「按产品」主营构成，之后所有语义搜索都退化成纯本地匹配。
+   * 成本实测：约 103 页 × 94KB ≈ 10MB、并发 8 下 ~3~6s（**一个会话只构建一次**，并持久化 3 天）。
+   * 用于「同业务/同产品」一定要**扫全市场**的场景（板块库里没有对应板块时，如「复合铜箔」「HBM」）。
+   * @param {(done:number,total:number)=>void} [onProgress]
+   */
+  async _allMarketMainBizIndex(onProgress) {
+    const cached = this._loadAllMbFromLS();
+    if (cached) return cached;
+    const COLS = 'SECUCODE,SECURITY_CODE,ITEM_NAME,MBI_RATIO';
+    const FILTER = '(IS_NEW=1)(MAINOP_TYPE="2")';
+    const PS = 500;
+    // 首页 + 总数：一次请求同时拿到 data 与 count（少一次往返）
+    let first = [], pages = 120;
+    try {
+      const j = await this._fetchJson(
+        'https://datacenter-web.eastmoney.com/api/data/v1/get?reportName=RPT_F10_FN_MAINOP'
+        + '&columns=' + encodeURIComponent(COLS)
+        + '&filter=' + encodeURIComponent(FILTER)
+        + '&pageSize=' + PS + '&pageNumber=1&source=WEB&client=WEB'
+        + '&sortColumns=SECUCODE&sortTypes=1', 20000);
+      first = (j && j.result && Array.isArray(j.result.data)) ? j.result.data : [];
+      const cnt = j && j.result && j.result.count;
+      // count 拿不到就按经验值兜底（实测全市场约 5.1 万行 / 500 = 103 页）
+      if (cnt) pages = Math.min(200, Math.ceil(cnt / PS));
+    } catch (e) { return new Map(); }
+    if (!first.length) return new Map();
+    const total = pages;
+    const idx = new Map();
+    const addRows = (rows) => {
+      for (const r of rows) {
+        const sc = String(r.SECUCODE || '').toUpperCase();
+        const nm = String(r.ITEM_NAME || '').trim();
+        const ratio = r.MBI_RATIO != null ? +r.MBI_RATIO : null;
+        if (!sc || !nm || ratio == null) continue;
+        if (!idx.has(sc)) idx.set(sc, []);
+        idx.get(sc).push([nm, ratio]);
+      }
+    };
+    addRows(first);
+    let done = 1;
+    if (onProgress) onProgress(done, total);
+    const queue = [];
+    for (let p = 2; p <= pages; p++) queue.push(p);
+    const CONC = 10;
+    const fetchPage = async (pn) => {
+      for (let attempt = 0; attempt < 3; attempt++) {
+        try {
+          const rows = await this._dcGet('RPT_F10_FN_MAINOP', COLS, {
+            filter: FILTER, pageSize: PS, pageNumber: pn, sortColumns: 'SECUCODE', sortTypes: 1,
+            timeoutMs: 25000
+          });
+          return rows;
+        } catch (e) { /* 失败退避后重试（数据中心偶发抽风/短时限流） */
+          if (attempt < 2) await new Promise(r => setTimeout(r, 400 * (attempt + 1) + Math.random() * 400));
+        }
+      }
+      return [];
+    };
+    const worker = async () => {
+      for (;;) {
+        const pn = queue.shift();
+        if (pn === undefined) return;
+        const rows = await fetchPage(pn);
+        if (rows.length) addRows(rows);
+        done++;
+        if (onProgress) onProgress(done, total);
+      }
+    };
+    await Promise.all(Array.from({ length: CONC }, worker));
+    if (idx.size) {
+      this._allMbIndex = idx;
+      this._allMbAt = Date.now();
+      this._saveAllMbToLS(idx);
+    }
+    return idx;
+  },
+
+  /** 把全市场索引里某只股票的主营构成转成 _parseMainBiz 的同构格式（{name,ratio}，ratio 为小数） */
+  _mbFromIndex(idx, secucode) {
+    const arr = idx.get(String(secucode || '').toUpperCase());
+    if (!arr || !arr.length) return null;
+    return arr.map(([name, ratio]) => ({ name, ratio }));
   },
 
   /** 把 RPTA_APP_IPOAPPLY 的报表行转成股票对象（剔除未上市/超期/非 6 位代码） */
@@ -3683,6 +4070,21 @@ const StockAPI = {
     return s;
   },
 
+  /**
+   * 归一化**股票**代码为带市场前缀的小写格式（'600519' / 'sh600519' / '600519.SH' 均可）。
+   * 语义搜索的候选池来自数据中心报表（SECUCODE 形式），而行情接口要 sh/sz/bj 前缀，
+   * 统一在这里转换，避免后续每一处各自判断市场。
+   * @returns {string} 'sh600519'，非法输入返回 ''
+   */
+  _normalizeCode(code) {
+    const s = String(code || '').trim();
+    if (!s) return '';
+    const m = s.match(/^(\d{6})\.(SH|SZ|BJ)$/i);
+    if (m) return m[2].toLowerCase() + m[1];
+    const c = this.inferPrefix(s);
+    return /^(sh|sz|bj)\d{6}$/.test(c) ? c : '';
+  },
+
   // 东财「搜索建议」熔断器（batch44）
   // 🔴 实测背景：searchapi.eastmoney.com 该接口**已失效**（fetch 与 JSONP 均失败），
   //    而原实现每次搜索都 await 它、超时 9 秒 —— 用户搜一次要转 9 秒才出结果，
@@ -3994,121 +4396,179 @@ const StockAPI = {
   /**
    * 营收占比相关度 语义选股引擎（统一入口）。
    * 核心算法：相关度 = 命中语义描述的主营业务/产品段之「营收占比」之和（%）。
-   *  - 候选池：命中概念的板块成分股（交集优先，否则按覆盖度截断的并集）；或外部显式板块。
-   *  - 逐候选拉取东财 F10 主营构成，命中段营收占比求和即得相关度；相关度=0 的剔除。
-   *  - 按相关度降序排序；修饰词「核心」取前 20，「小市值」取市值最小 20 家。
+   *
+   * batch45 重构：候选池与取数全部改走**东财数据中心报表**，零 push2 依赖。
+   *   查询词 --EAST_BOARD_LIST 本地匹配--> 东财板块名
+   *          --BOARDTYPE 报表反查--> 板块成分股
+   *          --MAINOP 报表批量 SECUCODE in(...)--> 最新一期「按产品」主营构成
+   *          --> 命中段营收占比之和降序
+   * 两条检索档位：
+   *   - 'boards'（默认，快）：板块级候选池（上百~上千只）+ 批量主营构成，约 1~3s；
+   *   - 'deep'（深度）：当板块级召回不足（< DO_NOT_FOUND_MIN）或用户显式要求时，
+   *     启用**全市场主营构成索引**纯本地匹配（一次构建、会话内 + 3 天本地缓存复用）。
+   *
    * @param {object} p
-   *  - query, matchers{buildMatchers 结果}, modifiers, seedCodes, productKey, productDesc, productStocks, explicitBoards
+   *  - query, matchers{buildMatchers 结果}, modifiers, seedCodes, productKey, productDesc, productStocks, explicitBoards, forceDeep
    */
-  async _revenueSearch({ query, matchers, modifiers, seedCodes = [], productKey = '', productDesc = '', productStocks = [], explicitBoards = null }) {
-    const allBoards = await this.getAllSectors();
-    let conceptBoardLists;
-    if (explicitBoards && explicitBoards.length) {
-      conceptBoardLists = [{ canon: '自定义', boards: explicitBoards.map(b => ({ bk: b.bk, name: b.name })) }];
-    } else {
-      const CAP_PER = 6; // 每概念取名称最相关的前 6 个板块，控制候选规模
-      conceptBoardLists = (matchers.concepts || []).map(canon => {
-        const c = SEMANTIC_CONCEPTS.find(x => x.canonical === canon);
-        const hints = (c && c.hints) || [];
-        let boards = allBoards.filter(b => hints.some(h => b.name.toLowerCase().includes(h.toLowerCase())));
-        boards.sort((a, b) => semanticNameScore(b.name, canon) - semanticNameScore(a.name, canon));
-        return { canon, boards: boards.slice(0, CAP_PER) };
-      }).filter(x => x.boards.length);
-      // 通用词兜底：没有任何概念命中时，按用户的「完整本意」匹配板块（绝不拆词曲解）
-      //  - 1) 优先：用「完整查询词」经东财搜索建议 API 直接解析板块（覆盖概念/行业/指数，可靠且不分词）
-      //  - 2) 兜底：完整词无板块时，走产品→板块别名映射（如「发电设备」→「电力设备/风电设备」）
-      //  - 3) 兜底：本地全量板块名包含完整词的
-      //  - 4) 最后兜底：完整词无任何板块命中时，才退化为查询抽取词（已剔除通用类别词碎片）匹配，兼容组合/冷门词
-      if (!conceptBoardLists.length && (matchers.generic || []).length) {
-        const fullQ = (query || '').toLowerCase().trim();
-        let boards = [];
-        if (fullQ) {
-          try {
-            const sug = await this.resolveBoardViaSuggest(query.trim());
-            if (sug && sug.length) boards = sug.map(b => ({ bk: b.bk || b.code, name: b.name }));
-          } catch (e) { /* 忽略 */ }
-        }
-        if (!boards.length && fullQ) {
-          const aliasKey = BOARD_NAME_ALIASES[fullQ] || BOARD_NAME_ALIASES[stripCategorySuffix(fullQ)] || [];
-          for (const a of aliasKey) {
-            try {
-              const sug = await this.resolveBoardViaSuggest(a);
-              if (sug && sug.length) { boards = sug.map(b => ({ bk: b.bk || b.code, name: b.name })); break; }
-            } catch (e) { /* 忽略 */ }
-          }
-        }
-        if (!boards.length && fullQ) boards = allBoards.filter(b => b.name.toLowerCase().includes(fullQ));
-        if (!boards.length) boards = allBoards.filter(b => matchers.generic.some(g => b.name.toLowerCase().includes(g)));
-        boards.sort((a, b) => {
-          const an = a.name.toLowerCase(), bn = b.name.toLowerCase();
-          const aw = fullQ && an.startsWith(fullQ) ? 1 : 0;
-          const bw = fullQ && bn.startsWith(fullQ) ? 1 : 0;
-          if (aw !== bw) return bw - aw;          // 以完整词开头的最贴合，排前
-          return an.length - bn.length;           // 同名长度短（更精确）优先
-        });
-        conceptBoardLists.push({ canon: '通用', boards: boards.slice(0, CAP_PER) });
-      }
-    }
-    const allBoardLists = conceptBoardLists.flatMap(x => x.boards);
-
-    // 1) 拉取成分股，构建候选集合
-    const stockInfo = new Map();
-    const conceptSets = [];
-    for (const { canon, boards } of conceptBoardLists) {
-      const set = new Set();
-      const lists = await mapLimit(boards, 4, b => this.getSectorStocksMeta(b.bk));
-      for (const list of lists) for (const s of list) { set.add(s.code); if (!stockInfo.has(s.code)) stockInfo.set(s.code, s); }
-      conceptSets.push(set);
-    }
-    let resultCodes;
-    const coverage = new Map();
-    if (conceptSets.length === 1) {
-      resultCodes = [...conceptSets[0]];
-    } else {
-      // 交集优先（同时具备多主题），规模合理时使用；否则按覆盖度截断并集
-      let inter = conceptSets[0];
-      for (let i = 1; i < conceptSets.length; i++) inter = new Set([...inter].filter(c => conceptSets[i].has(c)));
-      conceptSets.forEach(set => set.forEach(c => coverage.set(c, (coverage.get(c) || 0) + 1)));
-      if (inter.size >= 5 && inter.size <= 400) {
-        resultCodes = [...inter];
-      } else {
-        resultCodes = [...coverage.keys()].sort((a, b) => (coverage.get(b) || 0) - (coverage.get(a) || 0));
-      }
-    }
-    // 候选截断上限（控制主营构成请求数量）；先截断板块候选，再强制纳入产品种子（避免被裁掉）
-    const CAND_CAP = explicitBoards && explicitBoards.length ? 250 : 160;
-    if (resultCodes.length > CAND_CAP) {
-      if (coverage.size) resultCodes.sort((a, b) => (coverage.get(b) || 0) - (coverage.get(a) || 0));
-      resultCodes = resultCodes.slice(0, CAND_CAP);
-    }
-    resultCodes = [...new Set(resultCodes)];
-    // 产品库种子强制纳入候选（确保用户期望的生产厂商必出现，不被候选截断裁掉）
-    seedCodes.forEach(c => { if (!stockInfo.has(c)) stockInfo.set(c, { code: c, name: c }); if (!resultCodes.includes(c)) resultCodes.push(c); });
-
-    // 2) 逐候选拉取主营构成，计算营收占比相关度
-    // 段名匹配拆分为「产品核心词」与「领域修饰词」：核心词必含，领域词仅加权（避免误匹配运营上市公司）
-    // 核心匹配词额外剔除「长度≤4 且内含领域修饰词的拼接碎片」（火力发/力发电/火电发/火电发电/火力发电…），
-    // 这些短碎片无独立产品意义、只会误命中「火力发电及供热」等运营商段名；完整产品短语（火电发电设备 6字）不受影响。
+  async _revenueSearch({ query, matchers, modifiers, seedCodes = [], productKey = '', productDesc = '', productStocks = [], explicitBoards = null, forceDeep = false, onProgress = null }) {
+    // 0) 段名匹配词：核心词必含、领域词仅加权（避免「火电发电设备」误命中火电运营商）
     const DOMAIN_LIST = [...DOMAIN_MODIFIERS];
     let coreArr = (matchers.segHints || []).map(s => String(s).toLowerCase())
       .filter(t => !DOMAIN_MODIFIERS.has(t))
       .filter(t => !(t.length <= 4 && DOMAIN_LIST.some(d => t.includes(d))));
-    if (!coreArr.length) coreArr = (matchers.segHints || []).map(s => String(s).toLowerCase()); // 回退：纯领域词查询
+    if (!coreArr.length) coreArr = (matchers.segHints || []).map(s => String(s).toLowerCase());
     const domainArr = (matchers.domain || []).map(s => String(s).toLowerCase());
+    if (!coreArr.length) {
+      return {
+        ok: false, query, concepts: (matchers.concepts || []), modifiers,
+        error: '未能从描述里提取到可匹配的业务/产品词，请更具体些，如「谐波减速器」「国产芯片」「储能」'
+      };
+    }
     const roleMap = {};
     productStocks.forEach(s => { roleMap[s.code] = s.role || ''; });
-    const raw = await mapLimit(resultCodes, 6, async (code) => {
-      const info = stockInfo.get(code) || { code, name: code };
-      let mb = null;
-      try { mb = await this.getMainBusiness(code); } catch (e) { mb = null; }
-      const { relevance, matched } = revenueRelevance(mb, coreArr, domainArr);
-      return { info, relevance, matched };
-    });
 
-    // 3) 过滤相关度>0，补齐行情，组装结果
-    const codes2 = raw.filter(x => x.relevance > 0).map(x => x.info.code);
+    // 1) 把「概念 + 查询词」本地匹配到东财板块名（零网络）
+    //  - 有概念命中：用概念的 canonical + hints 各自匹配板块名（hints 本身就是东财板块名，命中率高）
+    //  - 通用兜底：用「完整查询词」优先匹配（整词优先，绝不拆词曲解），再退化为抽取词
+    let boardHits = [];           // [{name, code, score}]
+    const boardSeen = new Set();
+    const pushBoards = (arr) => {
+      for (const b of arr) {
+        if (!b || !b.code || boardSeen.has(b.code)) continue;
+        boardSeen.add(b.code);
+        boardHits.push(b);
+      }
+    };
+    if (explicitBoards && explicitBoards.length) {
+      pushBoards(explicitBoards.map(b => ({
+        name: b.name || b.bk, code: /^BK\d+$/i.test(String(b.bk || b.code || '')) ? String(b.bk || b.code).toUpperCase() : '', score: 1000
+      })).filter(b => b.code));
+      // 显式板块也可能是新浪代码（老数据），保留原始 bk 交给下游兜底
+      for (const b of explicitBoards) {
+        const raw = String(b.bk || b.code || '');
+        if (raw && !/^BK\d+$/i.test(raw) && !boardSeen.has('raw:' + raw)) {
+          boardSeen.add('raw:' + raw);
+          boardHits.push({ name: b.name || raw, code: raw, raw: true, score: 900 });
+        }
+      }
+    } else {
+      const CAP_PER = 4;
+      for (const canon of (matchers.concepts || [])) {
+        const c = SEMANTIC_CONCEPTS.find(x => x.canonical === canon);
+        const keys = [canon].concat((c && c.hints) || []);
+        const one = [];
+        const seen = new Set();
+        for (const k of keys) {
+          for (const b of this._dcMatchBoards(k, CAP_PER)) {
+            if (seen.has(b.code)) continue;
+            seen.add(b.code);
+            one.push(b);
+          }
+          if (one.length >= CAP_PER) break;
+        }
+        pushBoards(one.slice(0, CAP_PER));
+      }
+      // 通用词兜底（完全没有概念命中时）
+      if (!boardHits.length) {
+        const fullQ = String(query || '').trim();
+        const tries = [];
+        if (fullQ) tries.push(fullQ);
+        // 产品库命中 → 产品名本身就是东财板块名时直接命中（如「复合铜箔」→ 产品「复合集流体」→ 板块「复合集流体」）
+        if (productKey) tries.push(productKey);
+        // 产品 → 板块别名（如「发电设备」→「电力设备」）
+        const aliasKey = BOARD_NAME_ALIASES[fullQ.toLowerCase()] || BOARD_NAME_ALIASES[stripCategorySuffix(fullQ.toLowerCase())] || [];
+        aliasKey.forEach(a => tries.push(a));
+        // 抽取词（已剔除通用类别词碎片）
+        (matchers.generic || []).forEach(g => tries.push(g));
+        const seen = new Set();
+        const one = [];
+        for (const t of tries) {
+          for (const b of this._dcMatchBoards(t, 6)) {
+            if (seen.has(b.code)) continue;
+            seen.add(b.code);
+            one.push(b);
+          }
+          if (one.length >= 8) break;
+        }
+        pushBoards(one.slice(0, 8));
+      }
+    }
+    boardHits.sort((a, b) => b.score - a.score);
+    boardHits = boardHits.slice(0, 10);
+
+    // 2) 候选池：并发反查各板块成分股（数据中心报表，不经 push2）
+    const stockInfo = new Map();   // code → { code, name }
+    const lists = await this._mapLimit(boardHits, 6, async (b) => {
+      try {
+        if (b.raw) {
+          const l = await this.getSectorStocksMeta(b.code, 6);
+          return { codes: (l || []).map(s => ({ code: this._normalizeCode(s.code), name: s.name || '' })) };
+        }
+        const l = await this._dcBoardStocks(b.code, 2000);
+        return { codes: (l || []).map(s => ({ code: s.code, name: s.name })) };
+      } catch (e) { return { codes: [] }; }
+    });
+    for (const r of lists) {
+      for (const s of ((r && r.codes) || [])) {
+        if (!s.code || !/^(sh|sz|bj)\d{6}$/.test(s.code)) continue;
+        if (!stockInfo.has(s.code)) stockInfo.set(s.code, s);
+      }
+    }
+    // 产品库种子强制纳入（用户期望的生产厂商必须出现）
+    seedCodes.forEach(c => { const cc = this._normalizeCode(c); if (cc && !stockInfo.has(cc)) stockInfo.set(cc, { code: cc, name: '' }); });
+
+    // 3) 先用「板块级候选池」做一轮：批量取主营构成 → 按命中营收占比打分
+    //    注意 mbMap 只增不减，后面若升级为全市场扫描，直接在上面叠加即可，不重复请求。
+    const mbMap = await this._dcMainBizBatch([...stockInfo.keys()]);
+    const bizOf = async (code) => mbMap.get(code) || (await this.getMainBusiness(code));
+    const scoreAll = async (core) => {
+      const arr = [];
+      for (const [code, info] of stockInfo) {
+        const rr = revenueRelevance(await bizOf(code), core, domainArr);
+        if (rr.relevance > 0) arr.push({ info, relevance: rr.relevance, raw: rr.raw, matched: rr.matched });
+      }
+      return arr;
+    };
+    const scoreWithFallback = async () => {
+      let s = await scoreAll(coreArr);
+      // 产品级严格匹配一无所获 → 用概念泛词兜底重试（宁可召回放宽，也绝不返回 0 结果）
+      if (!s.length && productKey && (matchers.broadSegHints || []).length) {
+        const broad = matchers.broadSegHints.map(t => String(t).toLowerCase());
+        const retry = await scoreAll(broad);
+        if (retry.length) { coreArr = broad; return retry; }
+      }
+      return s;
+    };
+
+    let scored = await scoreWithFallback();
+    let usedDeep = false;
+
+    // 3b) 召回不足（或用户点了「全市场深度扫描」）→ 升级为**全市场主营构成索引**再算一遍。
+    //     阈值 8：板块级只能凑出个位数结果时，基本可以断定「这个业务/产品还有更多公司没被板块库覆盖」。
+    //     索引为一次性成本（约 100+ 页），本会话 + localStorage（3 天）复用，之后同类搜索均为毫秒级。
+    if (forceDeep || scored.length < 8) {
+      const idx = await this._allMarketMainBizIndex(onProgress);
+      if (idx && idx.size) {
+        usedDeep = true;
+        for (const [sc, arr] of idx) {
+          const pre = this._dcPrefix(sc);
+          const pure = sc.split('.')[0];
+          if (!pre || !/^\d{6}$/.test(pure)) continue;
+          const code = pre + pure;
+          if (!stockInfo.has(code)) stockInfo.set(code, { code, name: '' });
+          if (!mbMap.has(code)) mbMap.set(code, arr.map(([name, ratio]) => ({ name, ratio })));
+        }
+        const deepScored = await scoreWithFallback();
+        // 全市场结果必然覆盖板块级结果（是超集）→ 直接用更全的那一份
+        if (deepScored.length >= scored.length) scored = deepScored;
+      }
+    }
+
+    // 4) 补齐行情（腾讯批量；**含产品库种子**，保证种子公司也带名称），组装结果
+    const seedNorm = seedCodes.map(c => this._normalizeCode(c)).filter(Boolean);
+    const quoteCodes = [...new Set([...scored.map(x => x.info.code), ...seedNorm])];
     let quotes = {};
-    try { quotes = await this.getQuotes(codes2); } catch (e) { quotes = {}; }
+    try { quotes = await this.getQuotes(quoteCodes.slice(0, 800)); } catch (e) { quotes = {}; }
     const buildStock = (x) => {
       const q = quotes[x.info.code] || {};
       const mkt = q.totalMarketCap != null ? q.totalMarketCap * 1e8 : (x.info.marketCap || null);
@@ -4121,44 +4581,49 @@ const StockAPI = {
         role: '',
         concepts: (matchers.concepts || []).slice(),
         matchedSegments: x.matched,
-        relevance: x.relevance
+        relevance: x.relevance,
+        rawRelevance: x.raw
       };
     };
-    let stocks = raw.filter(x => x.relevance > 0).map(buildStock);
-    // 产品库兜底：确保用户期望的生产厂商（杰瑞股份/东方电气/上海电气…种子公司）始终出现——
-    // 当其主营构成未列明细导致相关度=0 被过滤时，按产业链角色评分保底补入（即便已有其他公司命中）。
+    let stocks = scored.map(buildStock);
+    // 产品库兜底：种子公司在主营构成里未列明细（相关度=0）时，按产业链角色评分保底补入
     if (productKey) {
       const have = new Set(stocks.map(s => s.code));
-      for (const x of raw) {
-        if (seedCodes.includes(x.info.code) && !have.has(x.info.code)) {
-          const st = buildStock(x);
-          const roleScore = scoreRoleRelevance(roleMap[x.info.code] || '');
-          st.relevance = st.relevance > 0 ? st.relevance : roleScore;
-          st.matchedSegments = st.matchedSegments || [];
-          stocks.push(st);
-        }
+      for (const code of seedNorm) {
+        if (have.has(code)) continue;
+        const rr = revenueRelevance(await bizOf(code), coreArr, domainArr);
+        const st = buildStock({ info: { code, name: '' }, relevance: rr.relevance, raw: rr.raw, matched: rr.matched });
+        const roleScore = scoreRoleRelevance(roleMap[code] || '');
+        st.relevance = st.relevance > 0 ? st.relevance : roleScore;
+        st.matchedSegments = st.matchedSegments || [];
+        st.concepts = (matchers.concepts || []).slice();
+        stocks.push(st);
       }
     }
-    stocks.sort((a, b) => (b.relevance - a.relevance) || ((b.marketCap || 0) - (a.marketCap || 0)));
+    // 排序：**按命中主营段营收占比降序** = 用户要的「按所占营收比例排序」。
+    // 用未封顶的 rawRelevance 排序：否则多家都是 100% 时会退化成按总市值排，丢掉「占比更高者优先」的语义。
+    const sortKey = (s) => Math.max(s.rawRelevance || 0, s.relevance || 0);
+    stocks.sort((a, b) => (sortKey(b) - sortKey(a)) || ((b.marketCap || 0) - (a.marketCap || 0)));
     const TOPN = 20;
     if (modifiers.includes('核心')) stocks = stocks.slice(0, TOPN);
     else if (modifiers.includes('小市值')) {
       stocks = [...stocks].sort((a, b) => (a.marketCap || 0) - (b.marketCap || 0)).slice(0, TOPN)
-        .sort((a, b) => (b.relevance - a.relevance) || ((b.marketCap || 0) - (a.marketCap || 0)));
+        .sort((a, b) => (sortKey(b) - sortKey(a)) || ((b.marketCap || 0) - (a.marketCap || 0)));
     }
     return {
       ok: true, query,
       concepts: matchers.concepts || [],
       modifiers,
-      method: productKey ? 'product' : (explicitBoards && explicitBoards.length ? 'boards' : 'revenue'),
+      method: productKey ? 'product' : (usedDeep ? 'deep' : (explicitBoards && explicitBoards.length ? 'boards' : 'revenue')),
       productKey, productDesc,
       matchers: matchers.segHints || [],
-      boards: allBoardLists,
-      stocks
+      boards: boardHits.map(b => ({ bk: b.code, name: b.name })),
+      stocks,
+      scan: { pool: stockInfo.size, deep: usedDeep, matched: stocks.length }
     };
   },
 
-  async semanticSearch(rawQuery) {
+  async semanticSearch(rawQuery, opts = {}) {
     const query = String(rawQuery || '').trim();
     if (!query) return { ok: false, error: '请输入描述，如：生产薄膜铌酸锂的企业 / 主营为ai安全的核心上市公司 / ai短剧审核' };
     const ql = query.toLowerCase();
@@ -4173,22 +4638,26 @@ const StockAPI = {
       productStocks = product.stocks;
       productKey = product.key;
       productDesc = product.desc;
-      // 仅用产品 key 生成精准匹配词：desc 的泛化长描述（含「火力发电厂」「燃煤/燃气」等）若整体做滑动窗口，
-      // 会产生「火力发/力发电/燃煤」等碎片误命中火电运营商；精准核心词（发电设备/锅炉/汽轮机…）已由 SEMANTIC_CONCEPTS 概念提供。
-      const pterms = extractQueryTerms(product.key);
-      pterms.terms.forEach(t => { if (!matchers.segHints.includes(t)) matchers.segHints.push(t); });
+      // 产品级：段名匹配词**只取产品族本身**（见 productCoreTerms 注释），
+      // 避免被所属概念的泛词（传感器/电机/丝杠…）带偏成「同赛道」而不是「同产品」。
+      // 同时把概念泛词存进 broadSegHints —— 产品级严格匹配若一无所获，用它兜底重试。
+      const strictCore = productCoreTerms(query, product);
+      matchers.broadSegHints = (matchers.segHints || []).slice();
+      matchers.segHints = strictCore;
+      matchers.productCore = strictCore;
       if (!matchers.concepts.length) matchers.concepts.push(product.key);
     }
 
     if (!matchers.concepts.length && !matchers.generic.length) {
       return {
         ok: false, query, concepts: [], modifiers,
-        error: '未识别到已知概念，请尝试：人工智能、ai、安全、芯片、机器人、新能源、医药、军工、短剧、审核、内容安全 等关键词'
+        error: '未识别到可检索的业务/产品词，请更具体些，如：谐波减速器 / 国产芯片 / 储能 / 人工智能'
       };
     }
     try {
       return await this._revenueSearch({
-        query, matchers, modifiers, seedCodes, productKey, productDesc, productStocks
+        query, matchers, modifiers, seedCodes, productKey, productDesc, productStocks,
+        forceDeep: !!opts.deep, onProgress: opts.onProgress || null
       });
     } catch (e) {
       return { ok: false, query, concepts: matchers.concepts, modifiers, error: 'AI语义筛选失败：' + (e && e.message ? e.message : e) };
@@ -4209,11 +4678,20 @@ const StockAPI = {
     const cl = c.toLowerCase();
     const found = SEMANTIC_CONCEPTS.find(x =>
       x.canonical.toLowerCase() === cl ||
-      x.aliases.some(a => a.toLowerCase() === cl) ||
-      x.aliases.some(a => cl.includes(a.toLowerCase())) ||
-      x.hints.some(h => cl.includes(h.toLowerCase()))
+      x.aliases.some(a => a.length >= 2 && a.toLowerCase() === cl) ||
+      x.aliases.some(a => a.length >= 2 && cl.includes(a.toLowerCase())) ||
+      x.hints.some(h => h.length >= 2 && cl.includes(h.toLowerCase()))
     );
     const all = await this.getAllSectors();
+    // batch45：优先用「东财板块名词典」本地匹配（零网络、且不依赖 push2 / 新浪板块是否含该概念）
+    const keys = found ? [found.canonical].concat(found.hints || []) : [c];
+    const out = new Map();
+    for (const k of keys) {
+      for (const b of this._dcMatchBoards(k, 4)) if (!out.has(b.code)) out.set(b.code, { bk: b.code, name: b.name });
+      if (out.size >= 12) break;
+    }
+    if (out.size) return [...out.values()].slice(0, 12);
+    // 兜底：词典没命中时退回全量板块名模糊匹配（兼容新浪板块命名）
     if (found) {
       return all
         .filter(b => found.hints.some(h => b.name.toLowerCase().includes(h.toLowerCase())))
@@ -4225,6 +4703,15 @@ const StockAPI = {
       .filter(b => b.name.toLowerCase().includes(cl))
       .slice(0, 12)
       .map(b => ({ bk: b.bk, name: b.name }));
+  },
+
+  /**
+   * 按关键词搜「东财板块名」（本地词典，**零网络请求**）。
+   * 供语义结果的「命中板块」增删使用——不依赖 push2、也不依赖新浪板块是否收录该主题。
+   * @returns {Array<{bk:string, name:string}>}
+   */
+  searchBoardNames(kw, limit = 12) {
+    return this._dcMatchBoards(kw, limit).map(b => ({ bk: b.code, name: b.name }));
   },
 
   /**

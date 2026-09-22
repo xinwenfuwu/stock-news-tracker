@@ -3544,7 +3544,7 @@ const app = createApp({
       query: '',
       concepts: [],
       modifiers: [],
-      method: '',       // 'product' | 'revenue' | 'boards' | 'empty'
+      method: '',       // 'product' | 'deep' | 'revenue' | 'boards' | 'empty'
       productKey: '',
       productDesc: '',
       boards: [],       // 命中的板块（用于透明展示）
@@ -3552,19 +3552,29 @@ const app = createApp({
       matchers: [],     // 营收占比相关度的主营段名匹配词（重算时回传，保持业务意图）
       done: false,
       saved: false,     // 是否已保存到我的板块
-      recomputing: false // 编辑概念/板块后正在按条件重算
+      recomputing: false, // 编辑概念/板块后正在按条件重算
+      progress: '',     // 深度扫描（全市场主营构成）进度提示
+      scan: null        // { pool, deep, matched } 本次检索的扫描范围
     });
-    async function semanticSearch() {
+    async function semanticSearch(forceDeep) {
       const q = String(sectorSearch.value || '').trim();
-      if (!q) { showToast('请输入语义描述，如：主营为ai安全的核心上市公司', 'error'); return; }
+      if (!q) { showToast('请输入语义描述，如：谐波减速器 / 主营为ai安全的核心上市公司', 'error'); return; }
+      if (semantic.searching) return;
       semantic.searching = true;
       semantic.error = '';
       semantic.boards = [];
       semantic.stocks = [];
       semantic.done = false;
       semantic.saved = false;
+      semantic.scan = null;
+      semantic.progress = '';
+      const t0 = Date.now();
       try {
-        const res = await StockAPI.semanticSearch(q);
+        const res = await StockAPI.semanticSearch(q, {
+          deep: !!forceDeep,
+          // 深度扫描要拉全市场 5 万+ 行主营构成（约 100+ 页），必须给用户可见反馈，否则像是卡死
+          onProgress: (done, total) => { semantic.progress = `🌐 正在扫描全市场主营构成 ${done}/${total} 页…`; }
+        });
         if (!res.ok) {
           semantic.error = res.error || '解析失败';
           showToast(semantic.error, 'error');
@@ -3578,11 +3588,15 @@ const app = createApp({
           semantic.boards = res.boards;
           semantic.stocks = res.stocks;
           semantic.matchers = res.matchers || [];
+          semantic.scan = res.scan || null;
           semantic.done = true;
-          const m = res.method === 'product' ? '产品级语义命中（产业链真实标的，营收占比相关度）'
+          const m = res.method === 'product' ? '产品级语义命中（同产品族，按营收占比）'
+            : res.method === 'deep' ? '全市场深度扫描（同业务/同产品，按营收占比）'
             : res.method === 'boards' ? '按当前板块重算（营收占比相关度）'
             : res.method === 'revenue' ? '营收占比相关度（主营构成匹配）' : '空';
-          showToast(`AI语义筛选完成：${m}，命中 ${res.stocks.length} 只`, 'success');
+          const secs = ((Date.now() - t0) / 1000).toFixed(1);
+          const scope = res.scan ? `，扫描 ${res.scan.pool} 只${res.scan.deep ? '（全市场）' : ''}` : '';
+          showToast(`AI语义筛选完成：${m}，命中 ${res.stocks.length} 只${scope}（${secs}s）`, 'success');
         }
       } catch (e) {
         semantic.error = 'AI语义筛选失败：' + (e && e.message ? e.message : e);
@@ -3590,6 +3604,7 @@ const app = createApp({
         console.warn('AI语义筛选失败', e);
       } finally {
         semantic.searching = false;
+        semantic.progress = '';
       }
     }
     // 把语义筛选结果保存为「我的概念选股板块」
@@ -3783,10 +3798,14 @@ const app = createApp({
         });
         semantic.stocks = res.stocks;
         semantic.method = res.method;
+        semantic.scan = res.scan || semantic.scan;
         semantic.saved = false;
         const m = res.method === 'intersect' ? '概念交集（同时归属这些板块的公司）'
           : res.method === 'union' ? '概念并集（无完全交集，已展示并集）'
-          : res.method === 'single' ? '单板块' : (res.method === 'boards' ? '按当前板块重算（营收占比相关度）' : '空');
+          : res.method === 'single' ? '单板块'
+          : res.method === 'deep' ? '全市场深度扫描（营收占比相关度）'
+          : res.method === 'product' ? '产品级语义命中（营收占比相关度）'
+          : (res.method === 'boards' ? '按当前板块重算（营收占比相关度）' : '空');
         showToast(`已按当前条件重算：${m}，命中 ${res.stocks.length} 只`, 'success');
       } catch (e) {
         showToast('重算失败：' + (e && e.message ? e.message : e), 'error');
@@ -3843,6 +3862,9 @@ const app = createApp({
       const kw = boardAddKw.value.trim(); if (!kw) { boardAddMatches.value = []; return; }
       boardAdding.value = true;
       try {
+        // 优先用「东财业务板块名词典」本地匹配（零网络、不受 push2 限流影响、且含「人工智能/低空经济」等新浪没有的板块）
+        const local = StockAPI.searchBoardNames(kw, 8) || [];
+        if (local.length) { boardAddMatches.value = local; return; }
         const all = await StockAPI.getAllSectors();
         const k = kw.toLowerCase();
         boardAddMatches.value = all.filter(b => String(b.name || '').toLowerCase().includes(k)).slice(0, 8);

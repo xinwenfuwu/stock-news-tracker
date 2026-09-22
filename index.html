@@ -4,12 +4,12 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>股市信息分析系统</title>
-  <link rel="stylesheet" href="css/style.css?v=20260920p">
+  <link rel="stylesheet" href="css/style.css?v=20260920q">
   <!-- Vue 3 全局构建版（v3.4.21 · 自托管）
        原先走 unpkg.com CDN：国内网络对 unpkg 的连通性不稳定，一旦该请求长时间挂起，
        <head> 里的阻塞脚本会让整页停在白屏、后续 auth-boot.js 根本不会执行。
        改为同源托管后，启动链路不再依赖任何第三方 CDN。 -->
-  <script src="js/vue.global.prod.js?v=20260920p"></script>
+  <script src="js/vue.global.prod.js?v=20260920q"></script>
 </head>
 <body class="auth-locked">
   <!-- ===== 登录关卡：登录通过前业务脚本不会被加载 ===== -->
@@ -1377,10 +1377,15 @@
             <span v-if="similar.loading">⏳ 匹配中...</span>
             <span v-else>🧬 同类股票</span>
           </button>
-          <button class="btn btn-ai" @click="semanticSearch" :disabled="semantic.searching || sectorSearching"
-            title="用自然语言描述选股意图：产品级如「生产薄膜铌酸锂的企业」；概念级如「主营为ai安全的核心上市公司」">
+          <button class="btn btn-ai" @click="semanticSearch(false)" :disabled="semantic.searching || sectorSearching"
+            title="用自然语言描述选股意图：自动匹配东财业务板块 → 拉取候选公司主营构成 → 按「该业务占公司营收比例」降序，找出经营相同业务/相同产品的上市公司">
             <span v-if="semantic.searching">⏳ 语义理解中...</span>
             <span v-else>🤖 AI语义搜索</span>
+          </button>
+          <button class="btn btn-ai" @click="semanticSearch(true)" :disabled="semantic.searching || sectorSearching"
+            title="【深度】不依赖板块库，直接遍历全市场 5000+ 家上市公司的最新一期主营构成，找出所有经营相同业务/相同产品的公司并按其营收占比降序（冷门/细分产品词推荐用这个；首次约 100+ 页请求，之后本机 3 天内复用）">
+            <span v-if="semantic.searching">⏳ 深度扫描中...</span>
+            <span v-else>🌐 全市场深度扫描</span>
           </button>
           <button class="btn" @click="searchSubSectors" :disabled="sectorSearching" title="在我的概念选股板块中，按名称关键字搜索子版块">
             🔎 搜索子版块
@@ -1406,7 +1411,10 @@
           </span>
         </div>
         <p class="muted tiny" style="margin:-6px 0 14px">
-          产品级语义示例：在上方输入框输入 <b>生产薄膜铌酸锂的企业</b> / <b>HBM核心公司</b> / <b>复合铜箔龙头</b> / <b>人形机器人减速器</b>，点 🤖 AI语义搜索 即可直接得到相关上市公司及产业链定位。
+          用法：在上方输入框输入 <b>谐波减速器</b> / <b>复合铜箔</b> / <b>人工智能</b> / <b>低空经济</b> / <b>薄膜铌酸锂</b>，
+          点 🤖 AI语义搜索 即可列出<b>经营相同业务或相同产品</b>的上市公司，并按「<b>该业务占公司营收比例</b>」从高到低排序；
+          冷门/细分产品词若结果偏少，用 🌐 全市场深度扫描（遍历全部 A 股主营构成）。
+          数据源：东方财富<b>数据中心报表</b>（板块成分 + F10 主营构成），不走 push2 行情域名，避免限流。
         </p>
 
         <!-- 搜索结果：按「主行业概念（行业板块）＋ 多个次行业概念（概念板块）」分组 -->
@@ -1471,13 +1479,18 @@
         <div class="semantic-result" v-if="semantic.searching">
           <div class="semantic-loading">
             <span class="ai-spinner">🤖</span>
-            <span>AI 正在理解语义：匹配具体产品/技术 → 整理真实上市公司…</span>
+            <span v-if="semantic.progress">{{ semantic.progress }}</span>
+            <span v-else>AI 正在理解语义：匹配具体产品/技术 → 拉取主营构成 → 按营收占比排序…</span>
           </div>
+          <p class="muted tiny" style="margin-top:6px">首次「深度扫描」需把全市场约 5 万条主营构成拉下来做本地索引（约 100+ 页），完成后本机 3 天内复用、后续搜索秒级返回。</p>
         </div>
         <div class="semantic-result" v-else-if="semantic.done">
           <div class="semantic-header">
             <h3>🤖 AI 语义筛选结果</h3>
             <div class="semantic-header-actions">
+              <span class="muted tiny" v-if="semantic.scan" style="margin-right:8px">
+                扫描 {{ semantic.scan.pool }} 只{{ semantic.scan.deep ? '（全市场）' : '（板块）' }}
+              </span>
               <button class="btn btn-sm btn-ai" @click="recomputeSemanticStocks" :disabled="semantic.recomputing || !semantic.boards.length" title="根据当前识别概念/命中板块重新计算符合语义的上市公司">
                 <span v-if="semantic.recomputing">⏳ 重算中...</span>
                 <span v-else>🔄 按当前条件重算</span>
@@ -1493,7 +1506,11 @@
             <div class="semantic-edit-title">识别概念 <span class="muted tiny">（可增 / 删 / 改）</span></div>
             <template v-if="semantic.method==='product'">
               <span class="semantic-chip product">🎯 产品级语义命中：{{ semantic.productKey }}</span>
-              <span class="semantic-method">· 基于产业链研究整理的真实标的（非板块名匹配）</span>
+              <span class="semantic-method">· 以产品库产业链标的为种子 + 主营构成营收占比精筛</span>
+            </template>
+            <template v-else-if="semantic.method==='deep'">
+              <span class="semantic-chip product">🌐 全市场深度扫描</span>
+              <span class="semantic-method">· 已遍历全市场主营构成，按「命中业务占营收比例」排序</span>
             </template>
             <template v-else>
               <span class="semantic-tag-label">识别概念：</span>
@@ -1602,7 +1619,11 @@
             <button class="btn btn-xs btn-primary" @click="addStockByCode" :disabled="stockAdding">＋ 添加股票</button>
           </div>
           <p class="muted small" v-if="!semantic.stocks.length">未找到符合条件的上市公司，可尝试调整描述（如去掉"核心"或减少概念），或手动「添加股票」。</p>
-          <p class="muted tiny">说明：AI 语义选股按「主营构成营收占比」计算相关度——逐家拉取东方财富 F10 主营构成，把段名与你的语义描述做匹配，命中业务段的营收占比之和即为相关度（%），按相关度从高到低排序。"核心/龙头"取前 20 家；修改概念/板块后点「按当前条件重算」会基于最新主营构成重新计算。行情数据来自腾讯股票接口。相关度=0 的标的已自动剔除，因此像蓝思科技这类与该业务无关的公司不会出现在结果中。</p>
+          <p class="muted tiny">说明：AI 语义搜索围绕「<b>主营构成</b>」这个唯一判据——把候选公司（命中东财业务板块的成分股，或全市场）的最新一期<b>按产品主营构成</b>与你的语义/产品词做匹配，
+            <b>命中业务段营收占比之和 = 相关度(%)</b>，并<b>按该占比从高到低排序</b>（同占比再按总市值降序），相关度为 0 的一律剔除。
+            「核心/龙头」取前 20 家；「小市值」取市值最小的 20 家；修改概念/板块后点「按当前条件重算」会基于最新主营构成重新计算。
+            候选池与主营构成均取数自东方财富<b>数据中心报表</b>（RPT_F10_CORETHEME_BOARDTYPE / RPT_F10_FN_MAINOP，批量拉取），
+            <b>不依赖 push2 行情域名与搜索建议接口</b>（前者会间歇性限流、后者已下线），因此不会再出现「搜索为 0」。行情来自腾讯股票接口。</p>
         </div>
         <div class="semantic-result" v-else-if="semantic.error">
           <p class="semantic-error">⚠️ {{ semantic.error }}</p>
@@ -3588,12 +3609,12 @@
     </transition>
   </div>
 
-  <script src="js/auth.js?v=20260920p"></script>
-  <script src="js/auth-sync.js?v=20260920p"></script>
+  <script src="js/auth.js?v=20260920q"></script>
+  <script src="js/auth-sync.js?v=20260920q"></script>
   <!-- 边缘加速默认站点（batch37 治本：Cloudflare Worker 代理东财/腾讯，缓解 JSONP 限流误报）。
        若你所在地区 workers.dev 访问慢，可在「设置 → 行情加速地址」清空即恢复纯直连。 -->
   <script>window.__SNT_ACCEL__ = 'https://stock-edge.hui-zhou.workers.dev';</script>
-  <script src="js/auth-boot.js?v=20260920p"></script>
+  <script src="js/auth-boot.js?v=20260920q"></script>
   <!-- store / stock-api / hot-topics / app 由 auth-boot.js 在登录通过后动态装载，
        未登录时它们不会被下载，业务数据也不会进入内存 -->
 </body>
