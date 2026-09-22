@@ -27,7 +27,7 @@
   'use strict';
 
   // 与 index.html 中静态资源版本号保持一致，避免升级后命中旧缓存
-  var ASSET_V = '20260920s';
+  var ASSET_V = '20260920t';
 
   // 管理员点开「注册申请导入链接」后，申请码暂存在这里，等业务层（app.js）就绪后取走
   var IMPORT_KEY = 'snt-pending-import-v1';
@@ -813,7 +813,14 @@
       // 不再强制注册表单——否则本机还没有任何账号的用户（例如跨设备免码登录、
       // 或已拿到管理员准入码的人）会被困在注册页，点「返回登录」也回不去，
       // 表现成「初次登录没有准入码入口」。注册入口仍在登录表单内，新用户点一下即可。
-      showForm('login');
+      //
+      // 🔴 但「注册直达链接」(#register / #signup) 必须例外（batch47 修）：
+      //    本机没有任何账号 = hasUsers() 为 false，**正是新用户的常态**——
+      //    管理员把注册链接发给一个从没用过本站的人，对方就是「全新设备」。
+      //    原来这里无条件 showForm('login')，等于把这条链接在新设备上直接作废
+      //    （线上实测：全新浏览器打开 #register 落回登录页）。
+      //    所以只要 URL 明确带了 #register / #signup，就尊重意图，直接给注册表单。
+      showForm(askRegister ? 'register' : 'login');
       return;
     }
 
