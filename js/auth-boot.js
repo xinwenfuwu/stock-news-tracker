@@ -27,7 +27,7 @@
   'use strict';
 
   // 与 index.html 中静态资源版本号保持一致，避免升级后命中旧缓存
-  var ASSET_V = '20260920n';
+  var ASSET_V = '20260920o';
 
   // 管理员点开「注册申请导入链接」后，申请码暂存在这里，等业务层（app.js）就绪后取走
   var IMPORT_KEY = 'snt-pending-import-v1';
@@ -368,8 +368,18 @@
    * 按顺序装载业务脚本，失败自动重试。
    * 之所以要重试：国内访问 github.io 偶发「连接建起来但迟迟不返回」，
    * 这种挂起既不会触发 onerror、也不会自己恢复，只能主动超时后换一条连接重来。
+   *
+   * ⚠️ 同一 src 的并发请求必须**共享同一个 Promise**（loadPromises）：
+   *   loadedScripts 只在装载成功后才 push，因此若 enterApp() 被并发调用两次
+   *   （例：登录成功同时页面自身的恢复流程也判定为已登录；或用户在加载中点了「重试」），
+   *   两次都会看到「未装载」而各自注入一个 <script> —— 浏览器会把**同一份业务脚本执行两遍**，
+   *   于是 app.js / store.js 顶层的 const 直接抛
+   *   "Identifier 'createApp' / 'Store' has already been declared"，
+   *   业务应用挂载失败（表现为白屏）。这里用「在飞 Promise 表」把并发调用收敛成一次装载。
    * @param {function} [onProgress] (src, index, total, attempt) 进度回调
    */
+  var loadPromises = {};   // src -> Promise（同一 src 的装载中 Promise）
+
   function loadScripts(list, onProgress) {
     var i = 0;
     return new Promise(function (resolve, reject) {
@@ -377,19 +387,27 @@
         if (i >= list.length) { resolve(); return; }
         var src = list[i++];
         if (loadedScripts.indexOf(src) >= 0) { next(); return; }
-        var attempt = 0;
-        (function tryOnce() {
-          attempt++;
-          if (onProgress) onProgress(src, i, list.length, attempt);
-          loadOne(src, attempt).then(function () {
-            loadedScripts.push(src);
-            next();
-          }).catch(function (err) {
-            if (attempt < LOAD_RETRIES) { setTimeout(tryOnce, 600 * attempt); return; }
-            var offline = (typeof navigator !== 'undefined' && navigator.onLine === false);
-            reject(new Error(err.message + (offline ? '（当前网络已断开）' : '（已自动重试 ' + LOAD_RETRIES + ' 次仍未成功，多为网络问题）')));
-          });
-        })();
+        var p = loadPromises[src];
+        if (!p) {
+          var attempt = 0;
+          p = (function tryLoop() {
+            attempt++;
+            if (onProgress) onProgress(src, i, list.length, attempt);
+            return loadOne(src, attempt).then(function () {
+              if (loadedScripts.indexOf(src) < 0) loadedScripts.push(src);
+            }).catch(function (err) {
+              if (attempt < LOAD_RETRIES) {
+                return new Promise(function (r) { setTimeout(r, 600 * attempt); }).then(tryLoop);
+              }
+              delete loadPromises[src];   // 彻底失败：清掉在飞记录，允许用户重试
+              var offline = (typeof navigator !== 'undefined' && navigator.onLine === false);
+              throw new Error(err.message + (offline ? '（当前网络已断开）' : '（已自动重试 ' + LOAD_RETRIES + ' 次仍未成功，多为网络问题）'));
+            });
+          })();
+          loadPromises[src] = p;
+        }
+        // 顺序装载：这一个装完（或失败）再装下一个
+        p.then(next, reject);
       })();
     });
   }
@@ -471,14 +489,19 @@
     if (u) { try { u.focus(); } catch (e) { /* ignore */ } }
   }
 
+  // 防重入：enterApp 可能被并发触发（登录成功 + 页面自身恢复流程判定已登录；
+  // 或用户在「加载中」点了重试）。第二次调用复用同一次装载，避免重复初始化与重复通知业务层。
+  var enteringPromise = null;
+
   function enterApp() {
+    if (enteringPromise) return enteringPromise;
     showMsg('');
     setBusy('正在加载数据…');
     // 网络慢时把「正在加载第几/共几个脚本」显示出来，避免用户以为卡死
     var slowHint = setTimeout(function () {
       if (busy) setBusy('网络较慢，正在重试加载…请稍候');
     }, 12000);
-    loadScripts(APP_SCRIPTS, function (src, idx, total) {
+    enteringPromise = loadScripts(APP_SCRIPTS, function (src, idx, total) {
       if (!busy) return;
       setBusy('正在加载数据… (' + idx + '/' + total + ')');
     }).then(function () {
@@ -498,6 +521,10 @@
       showForm(Auth.hasUsers() ? 'login' : 'register');
       showRetry('资源加载失败，请检查网络后重试');
     });
+    // 无论成功失败都清空在飞标记：失败时允许用户点「重试」再走一次
+    enteringPromise.then(function () { enteringPromise = null; },
+                         function () { enteringPromise = null; });
+    return enteringPromise;
   }
 
   /* ---------------- 事件绑定 ---------------- */
