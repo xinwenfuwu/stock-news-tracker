@@ -4090,16 +4090,17 @@ const app = createApp({
       sectorSearching.value = true;
       sectorLoadError.value = false;
       try {
+        // 🔴 batch44：先直接搜（searchSectors 内部已含「新浪全量本地过滤 + 兜底」），
+        // 不再「列表为空 → 直接报加载失败 → 根本不搜」这种一刀切。
+        sectorResults.value = (await StockAPI.searchSectors(kw)) || [];
+        if (sectorResults.value.length) return;
+        // 零结果时才检查板块库本身是否为空，以区分「库没加载出来」与「确实没这个词」
         const all = await StockAPI.getAllSectors(false);
         if (!all.length) {
-          sectorResults.value = [];
           sectorLoadError.value = true;
           showToast('板块数据加载失败，请检查网络后重试', 'error');
         } else {
-          sectorResults.value = await StockAPI.searchSectors(kw);
-          if (!sectorResults.value.length) {
-            showToast(`未找到「${kw}」相关板块，可尝试「加载全部板块」`, 'info');
-          }
+          showToast(`未找到「${kw}」相关板块，可尝试「加载全部板块」`, 'info');
         }
       } catch (e) {
         sectorResults.value = [];
@@ -4133,10 +4134,15 @@ const app = createApp({
     async function loadAllSectors() {
       sectorLoadingAll.value = true;
       sectorLoadError.value = false;
-      showToast('正在加载全部板块（约1000个），可能需要几秒...', 'info');
+      showToast('正在加载全部板块，可能需要几秒...', 'info');
       try {
-        await StockAPI.getAllSectors(true);
-        showToast('已加载全部板块', 'success');
+        const all = await StockAPI.getAllSectors(true);
+        if (!all.length) {
+          sectorLoadError.value = true;
+          showToast('板块数据加载失败，请稍后重试', 'error');
+          return;
+        }
+        showToast(`已加载 ${all.length} 个板块`, 'success');
         await searchSector();
       } catch (e) {
         sectorLoadError.value = true;

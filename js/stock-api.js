@@ -2390,7 +2390,7 @@ const StockAPI = {
    *
    * @returns {Array<{bk,name,change}>} 按涨跌幅降序、截取 limit 条
    */
-  _sinaBoardsFromMap(map, limit = 15) {
+  _sinaBoardsFromMap(map, limit = 15, all = false) {
     const raw = [];
     if (map && typeof map === 'object') {
       for (const k of Object.keys(map)) {
@@ -2419,6 +2419,12 @@ const StockAPI = {
       });
     }
     if (!list.length) return [];
+    // 全量模式：不做「涨幅榜」截断，按名称排序返回，供「选股板块」搜索使用。
+    // 这是「免费永不限流」的关键——见 newSinaHy.php / newFLJK.php 的说明。
+    if (all) {
+      list.sort((a, b) => String(a.name).localeCompare(String(b.name), 'zh'));
+      return list;
+    }
     list.sort((a, b) => b.change - a.change);
     return list.slice(0, limit).map(b => ({ bk: b.bk, name: b.name, change: b.change }));
   },
@@ -2435,6 +2441,40 @@ const StockAPI = {
     const url = 'https://vip.stock.finance.sina.com.cn/q/view/newFLJK.php?param=class';
     const map = await this._sinaSerial(() => this._sinaLoadVar(url, 'S_Finance_bankuai_class', 8000));
     return this._sinaBoardsFromMap(map, limit);
+  },
+
+  /**
+   * 新浪**全量**板块（行业 + 概念），供「选股板块」搜索使用（batch44）。
+   *
+   * 与上面两个「涨幅榜」方法的区别：不做 top-N 截断、返回全部条目。
+   *
+   * 🔴 为什么它是「完全免费、永不限流」的最优解：
+   *   newSinaHy.php / newFLJK.php 本质是新浪**定时刷新的静态快照文件**（命中 CDN），
+   *   不是按 IP 做频率控制的动态查询接口；且用 <script> 直载 → 无 CORS 预检、无跨域限制。
+   *   一次请求拿到全量（约 49 行业 + 175 概念），替代东财「3 类 × 6 页 = 18 次请求」的分页拉取，
+   *   请求数下降一个数量级，从根上规避限流。
+   *
+   * ⚠️ 两个接口的全局变量名固定，必须串行加载（_sinaSerial），否则并发会互相覆盖。
+   *
+   * @returns {Promise<{industries: Array, concepts: Array}>} 元素含 {bk,name,change,stockCount,leadCode,leadName}
+   */
+  async _sinaAllSectors() {
+    const [hyMap, clsMap] = await this._sinaSerial(async () => {
+      let a = null, b = null;
+      try {
+        a = await this._sinaLoadVar('https://vip.stock.finance.sina.com.cn/q/view/newSinaHy.php',
+          'S_Finance_bankuai_sinaindustry', 9000);
+      } catch (e) { /* 行业失败不影响概念 */ }
+      try {
+        b = await this._sinaLoadVar('https://vip.stock.finance.sina.com.cn/q/view/newFLJK.php?param=class',
+          'S_Finance_bankuai_class', 9000);
+      } catch (e) { /* 概念失败不影响行业 */ }
+      return [a, b];
+    });
+    return {
+      industries: this._sinaBoardsFromMap(hyMap, 0, true),
+      concepts: this._sinaBoardsFromMap(clsMap, 0, true)
+    };
   },
 
   /** 新浪个股涨幅榜（jsonp_v2，变量名唯一化 → 可并发，且响应为 \uXXXX 转义的纯 ASCII，无编码风险） */
@@ -3508,29 +3548,123 @@ const StockAPI = {
       () => this._getAllSectorsRaw(loadAll), v => !!(v && v.length));
   },
 
+  /**
+   * 获取板块列表（概念+行业+指数，去重）。
+   *
+   * 🔴 batch44 换源：主源由「东财 push2 分页」改为「**新浪静态快照**」。
+   *   原因：push2 是动态查询接口，浏览器侧**会间歇性限流**（实测同一 URL 连测 5 次有通有不通），
+   *   一旦限流，选股板块的**所有搜索全部失效**（提示「板块数据加载失败（可能是网络或行情源限流）」）；
+   *   且旧实现要分 3 类 × 6 页 = 18 次请求，本身也更容易触发限流。
+   *   新浪 newSinaHy.php / newFLJK.php 是定时刷新的**静态快照文件**（命中 CDN），
+   *   用 <script> 直载、免 CORS、**一次拿全量**（约 49 行业 + 175 概念），请求数降一个数量级。
+   *   东财降级为「后台异步补充」，成功则合并（补上指数板块等），失败/限流静默跳过、绝不阻塞搜索。
+   *
+   * 结果缓存 2 小时避免重复请求。
+   * @param {boolean} loadAll 兼容参数；当前无论是否传 true 均加载完整列表
+   * @returns {Promise<Array<{bk, name, type, change}>>} type: '概念'|'行业'|'指数'
+   */
+  async getAllSectors(loadAll = false) {
+    // 复用既有 _sectorCache（2 小时，覆盖在 _getAllSectorsRaw 内），外层再加并发去重，
+    // 避免多个面板同时挂载时并发触发板块请求。
+    return this._withCache('sectors:all', 2 * 60 * 60 * 1000,
+      () => this._getAllSectorsRaw(loadAll), v => !!(v && v.length));
+  },
+
   async _getAllSectorsRaw(loadAll = false) {
     const now = Date.now();
     const cacheTtl = 2 * 60 * 60 * 1000; // 2 小时
     if (this._sectorCache && this._sectorCache._full >= 1 && now - this._sectorCacheAt < cacheTtl) {
       return this._sectorCache.data;
     }
-    const maxPg = 6; // 概念约6页、行业约5页、指数约6页，足够覆盖全部板块
-    // 概念 / 行业 / 指数(板块指数，如「高端装备」000097)分开请求，各自失败不互相影响
-    let concepts = [], industries = [], indices = [];
-    try { concepts = await this._loadSectors('m:90+t:3', maxPg); } catch (e) { console.debug('概念板块加载失败', e); }
-    try { industries = await this._loadSectors('m:90+t:2', maxPg); } catch (e) { console.debug('行业板块加载失败', e); }
-    try { indices = await this._loadSectors('m:90+t:5', maxPg); } catch (e) { console.debug('指数板块加载失败', e); }
-    const seen = new Set();
+
     const all = [];
-    concepts.forEach(s => { if (!seen.has(s.bk)) { seen.add(s.bk); all.push({ ...s, type: '概念' }); } });
-    industries.forEach(s => { if (!seen.has(s.bk)) { seen.add(s.bk); all.push({ ...s, type: '行业' }); } });
-    // 指数板块（如「高端装备」000097）单独一类，确保「搜索板块」能搜到平时归类在指数下的概念
-    indices.forEach(s => { if (!seen.has(s.bk)) { seen.add(s.bk); all.push({ ...s, type: '指数' }); } });
-    // 缓存（始终标记为完整加载，供搜索使用）
+    const seen = new Set();
+    const pushSector = (s, type) => {
+      const bk = String((s && s.bk) || '');
+      if (!bk || seen.has(bk)) return;
+      seen.add(bk);
+      all.push({
+        bk, name: s.name, type,
+        change: s.change != null ? s.change : null,
+        stockCount: s.stockCount || 0
+      });
+    };
+
+    // ===== ① 主源：新浪静态快照（免费、不限流、<script> 直载、一次拿全量）=====
+    let sinaFail = false;
+    try {
+      const { industries, concepts } = await this._sinaAllSectors();
+      // 概念优先（搜索场景以概念为主），行业其次
+      concepts.forEach(s => pushSector(s, '概念'));
+      industries.forEach(s => pushSector(s, '行业'));
+    } catch (e) {
+      sinaFail = true;
+      console.debug('[stock-api] 新浪板块快照加载失败', e && e.message);
+    }
+
+    // 写缓存（新浪结果**立即可用**，不等东财；缓存按引用持有 all，后台补充会自动并入）
     this._sectorCache = { data: all, _full: 1 };
     this._sectorCacheAt = now;
+
+    // ===== ② 兜底/增强：东财 push2（免费公开但偶发限流）=====
+    if (sinaFail || all.length < 50) {
+      // 新浪不可用或结果过少：**同步**等东财（此时没有更稳的源，只能等）
+      try {
+        const east = await this._loadEastAllSectors();
+        east.forEach(s => pushSector(s, s.type));
+      } catch (e) { /* 两源都不可用 → 返回已有内容（可能为空，由调用方提示） */ }
+    } else {
+      // 新浪可用：东财改为**后台异步补充**，绝不阻塞搜索（成功则把指数板块等并入同一数组）
+      this._enrichSectorsFromEast(all, seen);
+    }
+
     return all;
   },
+
+  /**
+   * 拉取东财全量板块（概念 m:90+t:3 / 行业 m:90+t:2 / 指数 m:90+t:5）。
+   * 三类**并发**请求，各自失败不互相影响，缩短总耗时。
+   * @returns {Promise<Array<{bk,name,change,type}>>}
+   */
+  async _loadEastAllSectors() {
+    const groups = [['m:90+t:3', '概念'], ['m:90+t:2', '行业'], ['m:90+t:5', '指数']];
+    const maxPg = 6; // 概念约6页、行业约5页、指数约6页，足够覆盖全部板块
+    const result = await Promise.all(groups.map(async ([fs, type]) => {
+      try {
+        const list = await this._loadSectors(fs, maxPg);
+        return list.map(s => ({ ...s, type }));
+      } catch (e) {
+        console.debug('[stock-api] 东财' + type + '板块加载失败', e && e.message);
+        return [];
+      }
+    }));
+    return result.reduce((acc, cur) => acc.concat(cur), []);
+  },
+
+  /**
+   * 东财板块**后台异步增强**：把东财独有的板块（指数板块、新浪未收录的概念）合并进 `all`。
+   * 东财限流/失败时静默跳过——这是「东财挂了也不影响搜索」的关键。
+   * 合并的是同一个数组引用，因此 `_sectorCache.data` 与已返回给调用方的数组都会同步看到新板块。
+   */
+  _eastEnrichPromise: null,
+  _enrichSectorsFromEast(all, seen) {
+    this._eastEnrichPromise = (this._eastEnrichPromise || Promise.resolve()).then(async () => {
+      try {
+        const east = await this._loadEastAllSectors();
+        let added = 0;
+        for (const s of east) {
+          const bk = String((s && s.bk) || '');
+          if (!bk || seen.has(bk)) continue;
+          seen.add(bk);
+          all.push({ bk, name: s.name, type: s.type, change: s.change != null ? s.change : null });
+          added++;
+        }
+        if (added) console.debug('[stock-api] 东财板块后台补充 ' + added + ' 个（未阻塞搜索）');
+      } catch (e) { /* 静默：东财不可用不影响新浪结果 */ }
+    }).then(() => {}, () => {});
+    return this._eastEnrichPromise;
+  },
+
 
   /**
    * 按关键词搜索板块（本地过滤，中文匹配名称）
@@ -3549,20 +3683,53 @@ const StockAPI = {
     return s;
   },
 
+  // 东财「搜索建议」熔断器（batch44）
+  // 🔴 实测背景：searchapi.eastmoney.com 该接口**已失效**（fetch 与 JSONP 均失败），
+  //    而原实现每次搜索都 await 它、超时 9 秒 —— 用户搜一次要转 9 秒才出结果，
+  //    是「选股板块所有搜索都用不了」的**直接主因**（比板块列表限流更致命）。
+  // 方案：缩短超时到 2.5s + 连续失败即熔断 5 分钟，期间直接跳过（零开销）；
+  //       且 searchSectors 只在「本地无命中」时才调用它，本地命中时搜索是纯本地的、零网络。
+  _suggestBreaker: { fails: 0, openUntil: 0 },
+  SUGGEST_FAIL_THRESHOLD: 2,
+  SUGGEST_COOLDOWN: 5 * 60 * 1000,
+  SUGGEST_TIMEOUT: 2500,
+
+  /** 搜索建议链路当前是否处于熔断（应直接跳过） */
+  _suggestOpen() {
+    return Date.now() < (this._suggestBreaker && this._suggestBreaker.openUntil || 0);
+  },
+  /** 记录一次搜索建议失败，达阈值则打开熔断 */
+  _suggestMarkFail() {
+    const b = this._suggestBreaker;
+    b.fails = (b.fails || 0) + 1;
+    if (b.fails >= this.SUGGEST_FAIL_THRESHOLD) b.openUntil = Date.now() + this.SUGGEST_COOLDOWN;
+  },
+  /** 搜索建议链路恢复可用 */
+  _suggestMarkOk() {
+    this._suggestBreaker = { fails: 0, openUntil: 0 };
+  },
+
   /**
    * 通过东财「搜索建议」API 直接解析关键词→板块（JSONP，绕过浏览器 CORS）。
-   * 该接口覆盖概念/行业/指数（含「高端装备」「人工智能」这类平时归类在指数下的板块），
-   * 比本地过滤全量板块列表更可靠（不受分页/加载失败影响）。
+   * 该接口覆盖概念/行业/指数（含「高端装备」「人工智能」这类平时归类在指数下的板块）。
+   *
+   * ⚠️ batch44 起：该接口**实测已失效**（2026-09-22 线上同源实测 fetch 与 JSONP 均 FAILED）。
+   *    因此它只作为「本地全量无命中」时的可选补充，并带熔断保护；
+   *    选股板块搜索的主路径已改为「新浪全量板块 + 本地过滤」，不再依赖本接口。
    * @returns {Promise<Array<{bk,code,name,type,secid,change}>>}
    */
   async resolveBoardViaSuggest(keyword) {
     const kw = (keyword || '').trim();
     if (!kw) return [];
+    if (this._suggestOpen()) return [];          // 熔断中：立即跳过，不再白等超时
     const token = 'D43BF7224A6D6F3AEA560038B6A1D52C';
     const url = `https://searchapi.eastmoney.com/api/suggest/get?input=${encodeURIComponent(kw)}&type=14&token=${token}`;
     try {
-      const j = await this._eastJsonp(url, 9000);
-      const arr = (j && j.QuotationCodeTable && j.QuotationCodeTable.Data) || [];
+      const j = await this._eastJsonp(url, this.SUGGEST_TIMEOUT);
+      const table = j && j.QuotationCodeTable;
+      if (!table) throw new Error('suggest: payload 结构不符（接口可能已下线）');
+      this._suggestMarkOk();
+      const arr = table.Data || [];
       const out = [];
       for (const x of arr) {
         const cls = x.Classify;
@@ -3579,27 +3746,35 @@ const StockAPI = {
       }
       return out;
     } catch (e) {
-      console.debug('[stock-api] 搜索建议解析失败，回退本地过滤', e && e.message);
+      this._suggestMarkFail();
+      console.debug('[stock-api] 搜索建议不可用（已熔断，回退本地过滤）', e && e.message);
       return [];
     }
   },
 
   /**
-   * 按关键词搜索板块（本地过滤 + 东财搜索建议双路合并）。
-   * 本地过滤保证概念/行业/指数已加载项的精确分类；
-   * 搜索建议兜底，确保「高端装备」「人工智能」等指数板块也能被直接搜到。
+   * 按关键词搜索板块（本地全量过滤 + 东财搜索建议可选补充）。
+   *
+   * 🔴 batch44 行为调整（性能关键）：
+   *   - 板块全量已由**新浪静态快照**提供（约 224 个概念/行业，本地即可精确分类），
+   *     因此**本地命中时直接返回，完全不发网络请求** → 搜索瞬间完成。
+   *   - 东财搜索建议（实测已失效）只在「本地零命中」时才试一次，且带熔断，
+   *     不再让每次搜索都白等 9 秒。
    * @param {string} keyword
    * @returns {Promise<Array<{bk,code,name,type,secid,change}>>}
    */
   async searchSectors(keyword) {
     const kw = (keyword || '').trim().toLowerCase();
     if (!kw) return [];
-    // 1) 本地过滤（已加载的概念/行业/指数全量列表，含正确 行业/概念 分类）
+    // 1) 本地过滤（新浪全量的概念/行业/指数列表，含正确 行业/概念 分类）
     const all = await this.getAllSectors();
     const local = all.filter(s => s.name.toLowerCase().includes(kw)).map(s => ({ ...s, code: s.bk }));
-    // 2) 东财搜索建议（JSONP，绕过 CORS）：直接解析关键词→板块，补充本地未收录的指数等
+    // 2) 东财搜索建议：**仅当本地零命中**时才试（避免为「补充」白等网络往返）；
+    //    熔断中直接跳过。本地全量已覆盖主要概念/行业，绝大多数搜索走不到这里。
     let suggest = [];
-    try { suggest = await this.resolveBoardViaSuggest(keyword); } catch (e) { /* 忽略 */ }
+    if (!local.length) {
+      try { suggest = await this.resolveBoardViaSuggest(keyword); } catch (e) { /* 忽略 */ }
+    }
     // 合并去重（以归一化后的代码为准；先本地后建议，本地保留精确 行业/概念 分类）
     const seen = new Set();
     const merge = [];
