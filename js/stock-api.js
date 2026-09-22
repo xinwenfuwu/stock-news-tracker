@@ -657,8 +657,9 @@ const StockAPI = {
     const pure = code.replace(/\D/g, '');
     if (/^6[89]/.test(pure)) return 'sh' + pure;        // 科创板 688 / 主板 60x
     if (/^6/.test(pure)) return 'sh' + pure;             // 上海主板
+    if (/^92/.test(pure)) return 'bj' + pure;            // 北交所新代码段 920xxx
     if (/^[45]/.test(pure)) return 'sh' + pure;          // 权证等
-    if (/^9/.test(pure)) return 'sh' + pure;
+    if (/^9/.test(pure)) return 'sh' + pure;             // 沪 B 股 900xxx
     if (/^3/.test(pure)) return 'sz' + pure;             // 创业板
     if (/^0/.test(pure)) return 'sz' + pure;             // 深圳主板
     if (/^2/.test(pure)) return 'sz' + pure;
@@ -1048,6 +1049,84 @@ const StockAPI = {
     return v;
   },
 
+  // ---- 边缘加速熔断（batch43） ----
+  // 背景：加速站点域名（形如 *.workers.dev）在部分网络下是「连接被阻断」而不是快速拒绝，
+  //       每次调用都要等满超时才失败。而「热门板块」一轮刷新会发起 10~20 次接口请求，
+  //       若每次都白等 7 秒，整轮刷新必然超过限时 → 用户看到「刷新失败（网络/接口限流）」。
+  //       实测线上配置的加速站点在国内即被拦截，这正是两个子版块长期失败的放大器。
+  // 方案：连续失败达阈值即熔断一段时间，期间所有加速调用**立即返回**（零开销），
+  //       冷却结束再放一次试探；一旦成功立刻恢复。失败路径从此不再拖慢直连主链路。
+  _accelBreaker: { fails: 0, openUntil: 0 },
+  ACCEL_FAIL_THRESHOLD: 2,          // 连续失败几次后熔断
+  ACCEL_COOLDOWN: 2 * 60 * 1000,    // 熔断时长（2 分钟）
+  ACCEL_TIMEOUT: 2500,              // 加速请求超时（原 6~7 秒：被墙时白等太久）
+
+  /** 加速链路当前是否处于熔断（应直接跳过） */
+  _accelOpen() {
+    return Date.now() < (this._accelBreaker && this._accelBreaker.openUntil || 0);
+  },
+  /** 记录一次加速失败，达阈值则打开熔断 */
+  _accelMarkFail() {
+    const b = this._accelBreaker;
+    b.fails = (b.fails || 0) + 1;
+    if (b.fails >= this.ACCEL_FAIL_THRESHOLD) b.openUntil = Date.now() + this.ACCEL_COOLDOWN;
+  },
+  /** 加速链路恢复可用 */
+  _accelMarkOk() {
+    this._accelBreaker = { fails: 0, openUntil: 0 };
+  },
+
+  /**
+   * 带并发上限的 map（结果顺序与输入一致；单条异常不影响其它条目）。
+   * 外部接口对突发并发敏感（腾讯/新浪都会限流），统一在这里收敛并发度。
+   */
+  async _mapLimit(items, limit, fn) {
+    const arr = Array.from(items || []);
+    const out = new Array(arr.length);
+    if (!arr.length) return out;
+    let idx = 0;
+    const n = Math.max(1, Math.min(limit || 4, arr.length));
+    const worker = async () => {
+      for (;;) {
+        const i = idx++;
+        if (i >= arr.length) return;
+        try { out[i] = await fn(arr[i], i); } catch (e) { out[i] = null; }
+      }
+    };
+    await Promise.all(Array.from({ length: n }, worker));
+    return out;
+  },
+
+  /** 限时取 JSON（失败抛错，由调用方决定回退） */
+  async _fetchJson(url, timeoutMs) {
+    const buf = await this._fetchBytes(url, timeoutMs || 10000);
+    return JSON.parse(new TextDecoder('utf-8').decode(buf));
+  },
+
+  /**
+   * 竞速：并发执行多个任务，返回**最先拿到的非空结果**（对象场景，区别于 _raceFirstValid 的数组场景）。
+   * 用于「同一份数据的多条取数路径同时开跑」，让最快可用的一条胜出，
+   * 慢的/被墙的路径不再拖累整体耗时。全部失败则返回 null。
+   */
+  _raceFirstNonNull(tasks) {
+    return new Promise(resolve => {
+      const list = Array.isArray(tasks) ? tasks : [];
+      if (!list.length) { resolve(null); return; }
+      let pending = list.length, settled = false;
+      for (const t of list) {
+        // 同时接受「函数」与「已经在飞的 Promise」两种写法：
+        // 若把 Promise 直接交给 .then()，它会被当作回调调用（Promise 不是函数）→ 静默失败。
+        Promise.resolve().then(() => (typeof t === 'function' ? t() : t))
+          .catch(() => null)
+          .then(v => {
+            if (settled) return;
+            if (v) { settled = true; resolve(v); return; }
+            if (--pending === 0) { settled = true; resolve(null); }
+          });
+      }
+    });
+  },
+
   /**
    * 限时抓取字节（失败抛错，由调用方决定回退）。
    * ⚠️ 这里刻意**不使用** cache:'no-store'：
@@ -1081,15 +1160,21 @@ const StockAPI = {
    */
   async _fetchQuoteTextViaAccel(pathSuffix) {
     const bases = this._accelBases();
+    if (!bases.length) return null;
+    if (this._accelOpen()) return null;          // 熔断中：立即跳过，不再白等超时
+    let anyFail = false;
     for (const base of bases) {
       try {
-        const buf = await this._fetchBytes(base + pathSuffix, 6000);
+        const buf = await this._fetchBytes(base + pathSuffix, this.ACCEL_TIMEOUT);
         const txt = new TextDecoder('gbk').decode(buf);
-        if (txt && txt.indexOf('v_') >= 0) return txt;
+        if (txt && txt.indexOf('v_') >= 0) { this._accelMarkOk(); return txt; }
+        anyFail = true;
       } catch (e) {
+        anyFail = true;
         console.debug('[accel] 行情加速站点不可用，回退直连:', base, e && e.message);
       }
     }
+    if (anyFail) this._accelMarkFail();
     return null;
   },
 
@@ -2062,9 +2147,9 @@ const StockAPI = {
     const c = String(code);
     if (/^sh/i.test(c)) return `${pure}.SH`;
     if (/^bj/i.test(c)) return `${pure}.BJ`;
-    // 纯数字/未知前缀时按代码段判断市场：6/9 沪市，4/8 北交所，其余(0/3等)深市
+    // 纯数字/未知前缀时按代码段判断市场：6/9 沪市，4/8/92 北交所，其余(0/3等)深市
+    if (/^[48]/.test(pure) || /^92/.test(pure)) return `${pure}.BJ`;
     if (/^[69]/.test(pure)) return `${pure}.SH`;
-    if (/^[48]/.test(pure)) return `${pure}.BJ`;
     return `${pure}.SZ`;
   },
 
@@ -2138,16 +2223,21 @@ const StockAPI = {
   async _eastGetViaAccel(url) {
     const bases = this._accelBases();
     if (!bases.length) return null;
+    if (this._accelOpen()) return null;          // 熔断中：立即跳过，不再白等超时
+    let anyFail = false;
     for (const base of bases) {
       try {
-        const buf = await this._fetchBytes(base + '/proxy?url=' + encodeURIComponent(url), 7000);
+        const buf = await this._fetchBytes(base + '/proxy?url=' + encodeURIComponent(url), this.ACCEL_TIMEOUT);
         const txt = new TextDecoder('utf-8').decode(buf);
         const j = JSON.parse(txt);
-        if (j && j.data != null) return j;
+        if (j && j.data != null) { this._accelMarkOk(); return j; }
+        anyFail = true;
       } catch (e) {
+        anyFail = true;
         console.debug('[accel] 东财加速不可用，回退直连:', base, e && e.message);
       }
     }
+    if (anyFail) this._accelMarkFail();
     return null;
   },
 
@@ -2771,17 +2861,251 @@ const StockAPI = {
     return results;
   },
 
+  // ============ 新上市股票（batch43 全面换源） ============
   /**
-   * 获取新上市股票（东财「新股/次新股」板块），按上市天数升序取前 50。
-   * 数据源：东财行情 clist，板块筛选 fs=m:0+f:8,m:1+f:8（新股/次新股），
-   * 上市日期取自字段 f26；上市天数 = 今日 − 上市日期。
-   * @returns {Array<{name, code, pureCode, change, listingDate, listingDays}>}
+   * 取「新上市股票」清单 —— 上市日期 + 代码 + 名称。
+   *
+   * 换源原因：该子版块原先完全依赖东财 `push2.eastmoney.com/api/qt/clist/get`。
+   *   实测（线上站点同源环境真实浏览器）push2 / push2delay / push2his **三个域名一律
+   *   `TypeError: Failed to fetch`** —— 不是偶发限流，而是浏览器侧完全连不通，
+   *   所以点「刷新数据」必然失败。
+   *
+   * 现在改为两级源：
+   *   ① 主：东财**数据中心**（datacenter-web）报表 `RPTA_APP_IPOAPPLY`。
+   *      与 push2 是两套完全不同的通道（数据中心走离线报表，不做按 IP 频率控制），
+   *      一次请求即可拿到全部上市日期（字段 LISTING_DATE / SECURITY_CODE / SECURITY_NAME_ABBR），
+   *      浏览器实测 200 且带 CORS，可直连。
+   *   ② 备：新浪「次新股」节点 `node=new_stock`（CORS 直连、免费不限流）+ 腾讯日K第一根
+   *      （上市首日；上市日永不变更 → localStorage 永久缓存，正常只请求一次）。
+   *
+   * @param {number} [maxDays=400] 上市天数上限（超出视为老股，不进「新股/次新」口径）
+   * @returns {Promise<Array<{name,code,pureCode,change,listingDate,listingDays,market}>>}
+   */
+  async _newListedCandidates(maxDays = 400) {
+    // ① 主源：东财数据中心
+    let list = [];
+    try {
+      const today = new Date(); today.setHours(0, 0, 0, 0);
+      const ymd = this.fmtDate(today);
+      const from = this.fmtDate(new Date(today.getTime() - maxDays * 86400000));
+      const rows = await this._dcGet('RPTA_APP_IPOAPPLY',
+        'SECURITY_CODE,SECURITY_NAME_ABBR,LISTING_DATE,MARKET_TYPE_NEW,TRADE_MARKET',
+        { pageSize: 400, sortColumns: 'LISTING_DATE', sortTypes: -1,
+          filter: `(LISTING_DATE<='${ymd}')(LISTING_DATE>='${from}')` });
+      list = this._ipoRowsToStocks(rows, maxDays);
+      if (list.length) console.debug(`[新上市股票] 数据中心命中 ${list.length} 只`);
+    } catch (e) {
+      console.debug('新上市股票：数据中心源不可用，改用新浪兜底', e && e.message);
+    }
+
+    // ② 兜底：新浪次新股节点 + 腾讯日K首根补齐上市日
+    if (!list.length) {
+      try {
+        list = await this._sinaNewListedCandidates(maxDays);
+        if (list.length) console.debug(`[新上市股票] 新浪兜底命中 ${list.length} 只`);
+      } catch (e) {
+        console.debug('新上市股票：新浪源亦不可用', e && e.message);
+      }
+    }
+    return list;
+  },
+
+  /** 东财数据中心取数（报表通道，浏览器可直连；与 push2 行情域名是两套链路） */
+  async _dcGet(reportName, columns, opts = {}) {
+    const parts = [
+      'reportName=' + encodeURIComponent(reportName),
+      'columns=' + encodeURIComponent(columns),
+      'pageSize=' + (opts.pageSize || 50),
+      'pageNumber=' + (opts.pageNumber || 1),
+      'source=WEB', 'client=WEB'
+    ];
+    if (opts.sortColumns) {
+      parts.push('sortColumns=' + encodeURIComponent(opts.sortColumns));
+      parts.push('sortTypes=' + (opts.sortTypes == null ? -1 : opts.sortTypes));
+    }
+    // filter 里的 ( ) ' 需原样传给东财，这里手工编码，避免 URLSearchParams 把整段重排
+    if (opts.filter) parts.push('filter=' + encodeURIComponent(opts.filter));
+    const url = 'https://datacenter-web.eastmoney.com/api/data/v1/get?' + parts.join('&');
+    const j = await this._fetchJson(url, 12000);
+    return (j && j.result && Array.isArray(j.result.data)) ? j.result.data : [];
+  },
+
+  /** 把 RPTA_APP_IPOAPPLY 的报表行转成股票对象（剔除未上市/超期/非 6 位代码） */
+  _ipoRowsToStocks(rows, maxDays) {
+    const out = [];
+    const today0 = new Date(); today0.setHours(0, 0, 0, 0);
+    for (const r of (rows || [])) {
+      const pure = String(r.SECURITY_CODE || '').trim();
+      if (!/^\d{6}$/.test(pure)) continue;
+      const raw = String(r.LISTING_DATE || '').slice(0, 10);
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(raw)) continue;
+      const d = new Date(raw + 'T00:00:00');
+      if (isNaN(d.getTime())) continue;
+      const days = Math.round((today0.getTime() - d.getTime()) / 86400000);
+      if (days < 0 || days > maxDays) continue;   // 还没上市 / 已是老股
+      out.push({
+        name: r.SECURITY_NAME_ABBR || r.SECURITY_NAME || pure,
+        code: this._marketPrefix(pure, r.MARKET_TYPE_NEW || r.TRADE_MARKET),
+        pureCode: pure,
+        change: 0,
+        listingDate: raw,
+        listingDays: days,
+        market: r.MARKET_TYPE_NEW || ''
+      });
+    }
+    return out;
+  },
+
+  /**
+   * 按「板块 + 代码段」定市场前缀。
+   * 注意：不能只靠 inferPrefix —— 北交所 920xxx 落在 `^9` 段，会被误判成沪市，
+   * 而腾讯/新浪对北交所都要求 `bj` 前缀，前缀错了行情就取不到。
+   */
+  _marketPrefix(pure, marketName) {
+    const p = String(pure || '').trim();
+    const m = String(marketName || '');
+    if (/北交所|北京证券/.test(m)) return 'bj' + p;
+    if (/科创/.test(m) || /^68/.test(p)) return 'sh' + p;
+    if (/^92/.test(p) || /^[48]/.test(p)) return 'bj' + p;
+    return this.inferPrefix(p);
+  },
+
+  // ---- 上市日永久缓存：上市日期不会变，同一代码只需取一次 ----
+  LISTING_LS_KEY: 'snt.listingDates',
+  _listingDateCache: null,
+  _listingDateStore() {
+    if (this._listingDateCache) return this._listingDateCache;
+    let m = {};
+    try {
+      if (typeof localStorage !== 'undefined' && localStorage) {
+        m = JSON.parse(localStorage.getItem(this.LISTING_LS_KEY) || '{}') || {};
+      }
+    } catch (e) { m = {}; }
+    this._listingDateCache = (m && typeof m === 'object') ? m : {};
+    return this._listingDateCache;
+  },
+  _saveListingDates() {
+    try {
+      if (typeof localStorage !== 'undefined' && localStorage && this._listingDateCache) {
+        localStorage.setItem(this.LISTING_LS_KEY, JSON.stringify(this._listingDateCache));
+      }
+    } catch (e) { /* 隐私模式 / 容量超额：仅影响下次是否重取，不影响正确性 */ }
+  },
+
+  /**
+   * 取某代码的上市首日：腾讯日K接口从最新往回给，返回数组的**第一根就是最早一根**，
+   * 对上市不足 320 个交易日的次新股即为上市首日。上市日永不变 → 写入 localStorage 永久缓存。
+   * @returns {Promise<string>} 'YYYY-MM-DD'，取不到返回 ''
+   */
+  async _listingDateOf(code) {
+    const c = String(code || '').toLowerCase();
+    if (!/^(sh|sz|bj)\d{6}$/.test(c)) return '';
+    const store = this._listingDateStore();
+    if (store[c]) return store[c];
+    // 直连优先，失败退 JSONP（腾讯支持 _var= 变量名，可走 <script> 直载）
+    const url = `https://web.ifzq.gtimg.cn/appstock/app/fqkline/get?param=${c},day,,,320,qfq`;
+    let j = null;
+    try { j = await this._fetchJson(url, 8000); } catch (e) { /* 直连失败，试 script 直载 */ }
+    if (!j) {
+      try {
+        if (typeof document !== 'undefined') {
+          // 变量名必须每次唯一：并发补上市日时若共用同名，会互相覆盖串号
+          const vn = '__txk_' + Math.random().toString(36).slice(2);
+          j = await this._sinaLoadVar(url + '&_var=' + vn, vn);
+        }
+      } catch (e) { /* 两条路都不通 */ }
+    }
+    const node = j && j.data && j.data[c];
+    const bars = (node && (node.qfqday || node.day)) || [];
+    if (!bars.length) return '';
+    const first = String((bars[0] && bars[0][0]) || '').slice(0, 10);
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(first)) return '';
+    store[c] = first;
+    this._saveListingDates();
+    return first;
+  },
+
+  /**
+   * 新浪兜底：`node=new_stock`（次新股节点，CORS 直连、免费不限流，实测约 160 只）
+   * 逐只补上市日（腾讯日K首根），并发 6，失败的不计入（避免渲染出「上市 NaN 天」）。
+   */
+  async _sinaNewListedCandidates(maxDays) {
+    const url = (page) => 'https://vip.stock.finance.sina.com.cn/quotes_service/api/json_v2.php/'
+      + `Market_Center.getHQNodeData?page=${page}&num=100&sort=symbol&asc=0&node=new_stock&symbol=&_s_r_a=page`;
+    const rows = [];
+    for (let page = 1; page <= 3; page++) {
+      let arr = null;
+      // 新浪偶发断连（实测同参数一次 200 / 一次 Failed to fetch），同一页重试一次
+      for (let t = 0; t < 2 && !arr; t++) {
+        try { arr = await this._fetchJson(url(page), 8000); } catch (e) { /* 重试 */ }
+      }
+      if (!Array.isArray(arr) || !arr.length) break;
+      rows.push(...arr);
+      if (arr.length < 100) break;
+    }
+    if (!rows.length) return [];
+    const today0 = new Date(); today0.setHours(0, 0, 0, 0);
+    const dates = await this._mapLimit(rows, 6, r => this._listingDateOf(r.symbol));
+    const out = [];
+    rows.forEach((r, i) => {
+      const raw = dates[i];
+      if (!raw) return;
+      const d = new Date(raw + 'T00:00:00');
+      if (isNaN(d.getTime())) return;
+      const days = Math.round((today0.getTime() - d.getTime()) / 86400000);
+      if (days < 0 || days > maxDays) return;
+      out.push({
+        name: r.name || r.code,
+        code: this._marketPrefix(r.code, ''),
+        pureCode: String(r.code || ''),
+        change: parseFloat(r.changepercent) || 0,
+        listingDate: raw,
+        listingDays: days,
+        market: ''
+      });
+    });
+    return out;
+  },
+
+  /**
+   * 获取新上市股票（按上市天数升序取前 50）。
+   * 数据源：① 东财数据中心 RPTA_APP_IPOAPPLY（上市清单）② 新浪 node=new_stock + 腾讯日K（兜底）
+   * 当日涨幅统一由腾讯批量行情补齐（一次请求 50 只）。
+   * @returns {Promise<Array<{name,code,pureCode,change,listingDate,listingDays,market}>>}
    */
   async getNewListedStocks() {
     return this._withCache('newlisted', API_TTL.KLINE, () => this._getNewListedStocksRaw(), v => !!(v && v.length));
   },
 
   async _getNewListedStocksRaw() {
+    const list = await this._newListedCandidates(400);
+    if (!list.length) return [];
+
+    // 上市天数升序（越新越靠前）；同天数按代码，保证结果稳定可复现
+    list.sort((a, b) => (a.listingDays - b.listingDays) || String(a.code).localeCompare(String(b.code)));
+    const top = list.slice(0, 50);
+
+    // 当日涨幅：腾讯批量行情（一次请求即可覆盖 50 只；失败不影响清单本身）
+    try {
+      const quotes = await this.getQuotes(top.map(s => s.code));
+      top.forEach(s => {
+        const q = quotes && quotes[s.code];
+        if (!q) return;
+        if (q.changePercent != null && !isNaN(q.changePercent)) s.change = q.changePercent;
+        if (q.name) s.name = q.name;
+      });
+    } catch (e) { /* 取不到涨幅就显示清单，不因此判定整轮失败 */ }
+
+    top.forEach(s => { if (s.change == null || isNaN(s.change)) s.change = 0; });
+    return top;
+  },
+
+  /**
+   * 【旧实现，保留为最后兜底】东财行情中心 clist 的「新股/次新股」板块（push2 域名）。
+   * 实测该域名在浏览器侧已完全连不通，正常情况下不会走到这里；
+   * 保留是为了万一上游恢复时能自动接回原口径。
+   */
+  async _eastNewListedStocks() {
     const results = [];
     try {
       const url = `https://push2.eastmoney.com/api/qt/clist/get?pn=1&pz=1000&po=1&np=1&fltt=2&invt=2&fid=f26&fs=m:0+f:8,m:1+f:8&fields=f3,f12,f13,f14,f26`;
@@ -2801,7 +3125,6 @@ const StockAPI = {
         if (listDate && !isNaN(listDate.getTime())) {
           listingDays = Math.floor((Date.now() - listDate.getTime()) / 86400000);
         }
-        // f13：市场 1=沪 0=深；prefix 仅用于展示/后续点选
         const m = String(item.f13);
         const prefix = m === '1' ? 'sh' : (m === '0' ? 'sz' : (String(item.f12).startsWith('6') ? 'sh' : 'sz'));
         results.push({
@@ -2814,9 +3137,8 @@ const StockAPI = {
         });
       }
     } catch (e) {
-      console.debug('新上市股票获取失败', e);
+      console.debug('新上市股票（东财旧源）获取失败', e);
     }
-    // 按上市天数升序（天数越少 = 越新上市），剔除无上市日期 / 未上市（负数）的，取前 50
     const valid = results.filter(r => r.listingDays != null && !isNaN(r.listingDays) && r.listingDays >= 0);
     valid.sort((a, b) => a.listingDays - b.listingDays);
     return valid.slice(0, 50);
@@ -2844,60 +3166,95 @@ const StockAPI = {
     return this._withCache('ztpool:10d25', API_TTL.SECTOR, () => this._getLimitUpStreakRaw(), v => !!(v && v.length));
   },
 
-  /** 涨停池单日抓取：返回 { ok, tc, pool }；ok=false 表示该日无有效数据（非交易日/未开盘/接口失败） */
+  /**
+   * 涨停池单日抓取（batch43 提速）：返回 { ok, tc, pool }；ok=false 表示该日无有效数据。
+   *
+   * 原实现是「先 fetch 直连 → 失败后再 JSONP」的串行兜底。而 push2ex 域名**不返回 CORS 响应头**，
+   * 直连 fetch 必被浏览器拦下 —— 于是每个交易日都要白等一次失败往返；再叠加上游 3 次重试退避
+   * 与「边缘加速被墙时每次等满 7 秒」，单日最坏十几秒，10 个交易日就是上百秒，
+   * 「连板股票」刷新必然超时 → 用户看到「刷新失败（网络/接口限流）」。
+   *
+   * 现在改为三条路径**并发竞速**，谁先给出有效池子用谁：
+   *   ① JSONP —— push2ex 支持 `cb=`，天然不受 CORS 限制，是最可能成功的一条；
+   *   ② 直连 fetch —— 若上游将来补上 CORS 头，这条路最快；
+   *   ③ 边缘加速 —— 已配置且未熔断时才真正发起（被墙时立即跳过，见 _accelOpen）。
+   */
   async _fetchZtPool(dateStr) {
     const url = `https://push2ex.eastmoney.com/getTopicZTPool?ut=7eea3edcaed734bea9cbfc24409ed989&dpt=wz.ztzt&Pageindex=0&pagesize=300&sort=fbt%3Aasc&date=${dateStr}`;
-    try {
-      let json = null;
-      // 涨停池是独立域名（push2ex），Worker 白名单/直连都可能不通，故三条路都试：
-      // ① 边缘加速（Worker 代理）→ ② 直连 fetch → ③ JSONP 兜底（_eastGet 内已含直连+JSONP，此处仅作补位）
-      const viaAccel = await this._eastGetViaAccel(url).catch(() => null);
-      if (viaAccel) json = viaAccel;
-      if (!json) json = await this._eastGet(url);
-      const pool = json && json.data && Array.isArray(json.data.pool) ? json.data.pool : [];
-      const tc = json && json.data && json.data.tc != null ? json.data.tc : pool.length;
+    /** 把各路径的原始回包统一成 { ok, tc, pool }；结构不对返回 null（继续等其他路径） */
+    const pick = (json) => {
+      const pool = json && json.data && Array.isArray(json.data.pool) ? json.data.pool : null;
+      if (!pool) return null;
+      const tc = json.data.tc != null ? json.data.tc : pool.length;
       return { ok: pool.length > 0, tc: tc || 0, pool };
-    } catch (e) {
-      console.debug('涨停池抓取失败', dateStr, e && e.message);
-      return { ok: false, tc: 0, pool: [] };
-    }
+    };
+    const tasks = [
+      this._eastJsonp(url, 8000).then(pick).catch(() => null),
+      this._fetchJson(url, 6000).then(pick).catch(() => null),
+      this._eastGetViaAccel(url).then(pick).catch(() => null)
+    ];
+    // 注：非交易日/未开盘会返回 pool:[]，这也是**有效结果**（pick 会给出 ok:false），
+    // 竞速到此即结束，不会再空等其他路径，也就不会把「空池」误当成「接口挂了」。
+    const r = await this._raceFirstNonNull(tasks);
+    return r || { ok: false, tc: 0, pool: [] };
   },
 
   async _getLimitUpStreakRaw() {
-    // ① 从今日起回扫，最多 20 个自然日，凑满 10 个「有涨停数据」的交易日
-    const collected = new Map(); // pureCode -> 该股最近一次出现的条目（越晚抓到的日期越新，覆盖保留最新）
-    const dates = [];
+    // ① 生成候选交易日：从今日起最多回看 20 个自然日（跳过周末，不消耗接口请求）
+    const cands = [];
     const base = new Date();
-    for (let back = 0; back < 20 && dates.length < 10; back++) {
+    for (let back = 0; back < 20; back++) {
       const d = new Date(base.getTime() - back * 86400000);
       const dow = d.getDay();
-      if (dow === 0 || dow === 6) continue;             // 跳过周末（不消耗接口）
-      const s = d.getFullYear().toString()
+      if (dow === 0 || dow === 6) continue;
+      cands.push(d.getFullYear().toString()
         + String(d.getMonth() + 1).padStart(2, '0')
-        + String(d.getDate()).padStart(2, '0');
-      // 单日抓取失败（网络抖动/限流/被 mock 抛错）绝不能中断整轮回扫，跳过该日继续往前找
-      let r;
-      try { r = await this._fetchZtPool(s); }
-      catch (e) { console.debug('涨停池单日抓取异常，跳过', s, e && e.message); continue; }
-      if (!r || !r.ok) continue;                        // 非交易日 / 未开盘 → 不计入窗口，继续回扫
-      dates.push({ date: s, tc: r.tc });
-      for (const it of r.pool) {
-        const pure = String(it.c || '').trim();
-        if (!pure) continue;
-        // 同一只股可能连续多日涨停，只保留最新一条（连板数/涨停次数已是窗口口径，无需再累加）
-        collected.set(pure, it);
-      }
-      if (dates.length >= 10) break;
+        + String(d.getDate()).padStart(2, '0'));
     }
+
+    // ② 并发回扫：4 路并行（原为串行，10 个交易日要等 10 个来回），凑满 10 个有效交易日即收工
+    const collected = new Map();   // pureCode -> { i, it }，i 越小日期越新
+    const dates = [];
+    const CONC = 4;
+    let cursor = 0, inflight = 0;
+    const worker = async () => {
+      for (;;) {
+        // 已凑满 10 个（含正在飞的）即收工 —— 把在飞请求也计入，
+        // 否则 4 个 worker 会在同一拍都通过检查，实际多抓 3 天（实测 10 → 13 次请求）
+        if (dates.length + inflight >= 10) return;
+        const i = cursor++;
+        if (i >= cands.length) return;
+        const s = cands[i];
+        inflight++;
+        // 单日失败（网络抖动/限流/被 mock 抛错）绝不能中断整轮回扫，跳过该日继续
+        let r = null;
+        try { r = await this._fetchZtPool(s); }
+        catch (e) { console.debug('涨停池单日抓取异常，跳过', s, e && e.message); }
+        inflight--;
+        if (!r || !r.ok) continue;                 // 非交易日 / 未开盘 → 不计入窗口，继续回扫
+        dates.push({ date: s, tc: r.tc });
+        for (const it of r.pool) {
+          const pure = String(it.c || '').trim();
+          if (!pure) continue;
+          // 同一只股可能连续多日涨停：只保留**日期最新**的一条
+          // （并发抓取下完成顺序不确定，必须按候选序号比较，不能靠「后写覆盖」）
+          const prev = collected.get(pure);
+          if (!prev || i < prev.i) collected.set(pure, { i: i, it: it });
+        }
+      }
+    };
+    await Promise.all(Array.from({ length: CONC }, worker));
     if (!dates.length) return [];
 
     const rows = [];
-    for (const [pure, it] of collected) {
+    for (const entry of collected.values()) {
+      const it = entry.it;
       // zttj.ct = 统计窗口内涨停次数（东财口径为近 N 日，days 即窗口天数）；缺失则回退连板数
       const zttj = it.zttj || {};
       const ct = (zttj.ct != null && !isNaN(Number(zttj.ct))) ? Number(zttj.ct) : null;
       const lbc = (it.lbc != null && !isNaN(Number(it.lbc))) ? Number(it.lbc) : 1;
       const ztCount = ct != null ? ct : lbc;
+      const pure = String(it.c || '').trim();
       const m = String(it.m);
       const prefix = m === '1' ? 'sh' : (m === '0' ? 'sz' : (pure.startsWith('6') ? 'sh' : 'sz'));
       rows.push({
@@ -2914,7 +3271,7 @@ const StockAPI = {
         firstLimitTime: it.fbt != null ? String(it.fbt) : ''
       });
     }
-    // ② 排序：涨停次数降序 → 连板数降序 → 当日涨幅降序 → 行业 → 代码（稳定）
+    // ③ 排序：涨停次数降序 → 连板数降序 → 当日涨幅降序 → 行业 → 代码（稳定）
     rows.sort((a, b) =>
       (b.ztCount - a.ztCount) ||
       (b.boardCount - a.boardCount) ||
