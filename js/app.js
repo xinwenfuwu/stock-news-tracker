@@ -840,7 +840,11 @@ const app = createApp({
     const favorites = computed(() => D.favorites || []);
     const sortedFavorites = computed(() => {
       const list = [...(D.favorites || [])];
-      if (favSort.key) {
+      if (favSort.key === '__idx') {
+        const dir = favSort.dir === 'asc' ? 1 : -1;
+        const pos = new Map(list.map((s, i) => [s, i]));
+        list.sort((a, b) => (pos.get(a) - pos.get(b)) * dir);
+      } else if (favSort.key) {
         const dir = favSort.dir === 'asc' ? 1 : -1;
         list.sort((a, b) => compareForSort(a, b, favSort.key) * dir);
       } else {
@@ -3085,67 +3089,67 @@ const app = createApp({
     //  前 4 列为冻结列(fixed)：序号/代码/股票名称/正数统计；其余随横条滚动
     // ============================================================
     const STOCK_COLUMNS = [
-      { key: '__idx', label: '序号', fixed: true, fixedIndex: 0, width: 46, sortable: false, type: 'idx' },
-      { key: 'code', label: '代码', fixed: true, fixedIndex: 1, width: 88, sortable: true, type: 'code' },
-      { key: 'name', label: '股票名称', fixed: true, fixedIndex: 2, width: 104, sortable: true, type: 'name' },
+      { key: '__idx', label: '序号', fixed: true, fixedIndex: 0, width: 50, sortable: true, type: 'idx' },
+      { key: 'code', label: '代码', fixed: true, fixedIndex: 1, width: 72, sortable: true, type: 'code' },
+      { key: 'name', label: '股票名称', fixed: true, fixedIndex: 2, width: 92, sortable: true, type: 'name' },
       { key: 'positiveCount', label: '统计', fixed: true, fixedIndex: 3, width: 60, sortable: true, type: 'pos' },
       // 财务估值段：净利润 / 扣非 / 相关度 / 市营比 / 市净比 / 市扣比
       // 按需求：24营比、24扣比 紧随「市扣比」之后；「相关度」列位于「市营比」左侧（来自 AI 语义搜索的营收占比相关度）
-      { key: 'netProfit', label: '净利润', width: 100, sortable: true, type: 'money' },
+      { key: 'netProfit', label: '净利润', width: 82, sortable: true, type: 'money' },
       // batch46：列名由「扣非净利润」缩短为「扣非」（**仅改显示名**，key=kcfjcxjlr 与取值口径不变）
-      { key: 'kcfjcxjlr', label: '扣非', width: 100, sortable: true, type: 'money' },
-      { key: 'relevance', label: '相关度', width: 88, sortable: true, type: 'relevance' },
+      { key: 'kcfjcxjlr', label: '扣非', width: 82, sortable: true, type: 'money' },
+      { key: 'relevance', label: '相关度', width: 70, sortable: true, type: 'relevance' },
       // 主营业务：由筛选栏「产品业务」输入框算出的命中明细（段名 + 营收占比），与相关度成对出现
       // batch46：列名由「命中主营业务」改为「主营业务」（**仅改显示名**，key=hitBusiness 与计算逻辑不变）
       { key: 'hitBusiness', label: '主营业务', width: 186, sortable: false, type: 'hitbiz' },
-      { key: 'prRatio', label: '市营比', width: 86, sortable: true, type: 'ratio' },
-      { key: 'pbRatio', label: '市净比', width: 86, sortable: true, type: 'ratio' },
-      { key: 'pkRatio', label: '市扣比', width: 86, sortable: true, type: 'ratio' },
-      { key: 'q24Rev', label: '24营比', width: 88, sortable: true, type: 'pct' },
-      { key: 'q24Kcf', label: '24扣比', width: 88, sortable: true, type: 'pct' },
+      { key: 'prRatio', label: '市营比', width: 72, sortable: true, type: 'ratio' },
+      { key: 'pbRatio', label: '市净比', width: 72, sortable: true, type: 'ratio' },
+      { key: 'pkRatio', label: '市扣比', width: 72, sortable: true, type: 'ratio' },
+      { key: 'q24Rev', label: '24营比', width: 74, sortable: true, type: 'pct' },
+      { key: 'q24Kcf', label: '24扣比', width: 74, sortable: true, type: 'pct' },
       // 924涨跌 / 年涨跌：按需求置于「24扣比」右侧（紧贴 24扣比），二者位置互换
-      { key: 'change924', label: '924涨跌', width: 88, sortable: true, type: 'pct' },
-      { key: 'yearChange', label: '年涨跌', width: 88, sortable: true, type: 'pct' },
+      { key: 'change924', label: '924涨跌', width: 78, sortable: true, type: 'pct' },
+      { key: 'yearChange', label: '年涨跌', width: 78, sortable: true, type: 'pct' },
       // 现价：今日实时股价，固定红色显示，便于与各项涨跌幅直接对照
-      { key: 'todayPrice', label: '现价', width: 84, sortable: true, type: 'curPrice' },
+      { key: 'todayPrice', label: '现价', width: 70, sortable: true, type: 'curPrice' },
       // 涨跌幅段（日涨跌紧贴一周涨跌左侧；一周/一月涨跌置于「距高价」左侧）
       // 一周涨跌 = 现价 vs 5 个交易日前收盘价；一月涨跌 = 现价 vs 20 个交易日前收盘价
-      { key: 'dailyChange', label: '日涨跌', width: 88, sortable: true, type: 'pct' },
-      { key: 'weekChange', label: '一周涨跌', width: 88, sortable: true, type: 'pct' },
-      { key: 'monthChange', label: '一月涨跌', width: 88, sortable: true, type: 'pct' },
-      { key: 'distToYearHigh', label: '距高价', width: 88, sortable: true, type: 'pct' },
-      { key: 'distToYearLow', label: '距低价', width: 88, sortable: true, type: 'pct' },
-      { key: 'pyRatio', label: '市净同比', width: 92, sortable: true, type: 'num2' },
-      { key: 'pk2Ratio', label: '市扣同比', width: 92, sortable: true, type: 'num2' },
-      { key: 'prrRatio', label: '市营同比', width: 92, sortable: true, type: 'num2' },
-      { key: 'phRatio', label: '市净环比', width: 92, sortable: true, type: 'num2' },
-      { key: 'pkHbRatio', label: '市扣环比', width: 92, sortable: true, type: 'num2' },
-      { key: 'ph2Ratio', label: '市营环比', width: 92, sortable: true, type: 'num2' },
-      { key: 'profitYoY', label: '净利润同比', width: 96, sortable: true, type: 'pct' },
-      { key: 'hbGrowth', label: '净利润环比', width: 96, sortable: true, type: 'pct' },
-      { key: 'kcfYoY', label: '扣非同比', width: 92, sortable: true, type: 'pct' },
-      { key: 'kcfHb', label: '扣非环比', width: 92, sortable: true, type: 'pct' },
-      { key: 'revenueYoY', label: '营收同比', width: 92, sortable: true, type: 'pct' },
-      { key: 'revHb', label: '营收环比', width: 92, sortable: true, type: 'pct' },
-      { key: 'amplitude', label: '振幅', width: 78, sortable: true, type: 'num2pct' },
-      { key: 'shareholderDiff', label: '散户差额', width: 92, sortable: true, type: 'diff' },
-      { key: 'shareholderCount', label: '最新散户', width: 96, sortable: true, type: 'int' },
-      { key: 'prevShareholderCount', label: '上期散户', width: 96, sortable: true, type: 'int' },
+      { key: 'dailyChange', label: '日涨跌', width: 78, sortable: true, type: 'pct' },
+      { key: 'weekChange', label: '一周涨跌', width: 78, sortable: true, type: 'pct' },
+      { key: 'monthChange', label: '一月涨跌', width: 78, sortable: true, type: 'pct' },
+      { key: 'distToYearHigh', label: '距高价', width: 78, sortable: true, type: 'pct' },
+      { key: 'distToYearLow', label: '距低价', width: 78, sortable: true, type: 'pct' },
+      { key: 'pyRatio', label: '市净同比', width: 78, sortable: true, type: 'num2' },
+      { key: 'pk2Ratio', label: '市扣同比', width: 78, sortable: true, type: 'num2' },
+      { key: 'prrRatio', label: '市营同比', width: 78, sortable: true, type: 'num2' },
+      { key: 'phRatio', label: '市净环比', width: 78, sortable: true, type: 'num2' },
+      { key: 'pkHbRatio', label: '市扣环比', width: 78, sortable: true, type: 'num2' },
+      { key: 'ph2Ratio', label: '市营环比', width: 78, sortable: true, type: 'num2' },
+      { key: 'profitYoY', label: '净利润同比', width: 86, sortable: true, type: 'pct' },
+      { key: 'hbGrowth', label: '净利润环比', width: 86, sortable: true, type: 'pct' },
+      { key: 'kcfYoY', label: '扣非同比', width: 78, sortable: true, type: 'pct' },
+      { key: 'kcfHb', label: '扣非环比', width: 78, sortable: true, type: 'pct' },
+      { key: 'revenueYoY', label: '营收同比', width: 78, sortable: true, type: 'pct' },
+      { key: 'revHb', label: '营收环比', width: 78, sortable: true, type: 'pct' },
+      { key: 'amplitude', label: '振幅', width: 70, sortable: true, type: 'num2pct' },
+      { key: 'shareholderDiff', label: '散户差额', width: 80, sortable: true, type: 'diff' },
+      { key: 'shareholderCount', label: '最新散户', width: 82, sortable: true, type: 'int' },
+      { key: 'prevShareholderCount', label: '上期散户', width: 82, sortable: true, type: 'int' },
       // 按需求：今年高价、今年低价 置于「换手率」左侧
-      { key: 'yearHighPrice', label: '今年高价', width: 88, sortable: true, type: 'price' },
-      { key: 'yearHighDays', label: '距高天', width: 74, sortable: true, type: 'days' },
-      { key: 'yearLowPrice', label: '今年低价', width: 88, sortable: true, type: 'price' },
-      { key: 'yearLowDays', label: '距低天', width: 74, sortable: true, type: 'days' },
-      { key: 'turnover', label: '换手率', width: 78, sortable: true, type: 'num2pct' },
+      { key: 'yearHighPrice', label: '今年高价', width: 78, sortable: true, type: 'price' },
+      { key: 'yearHighDays', label: '距高天', width: 64, sortable: true, type: 'days' },
+      { key: 'yearLowPrice', label: '今年低价', width: 78, sortable: true, type: 'price' },
+      { key: 'yearLowDays', label: '距低天', width: 64, sortable: true, type: 'days' },
+      { key: 'turnover', label: '换手率', width: 70, sortable: true, type: 'num2pct' },
       // 按需求：总市值、营业收入 移至「资金流入」左侧
-      { key: 'totalMarketCap', label: '总市值', width: 96, sortable: true, type: 'cap' },
-      { key: 'revenue', label: '营业收入', width: 100, sortable: true, type: 'money' },
-      { key: 'capitalFlow', label: '资金流入', width: 104, sortable: true, type: 'flow' },
-      { key: 'contractLiab', label: '合同负债及排名', width: 100, sortable: true, type: 'contractliab' },
+      { key: 'totalMarketCap', label: '总市值', width: 82, sortable: true, type: 'cap' },
+      { key: 'revenue', label: '营业收入', width: 86, sortable: true, type: 'money' },
+      { key: 'capitalFlow', label: '资金流入', width: 90, sortable: true, type: 'flow' },
+      { key: 'contractLiab', label: '合同负债及排名', width: 114, sortable: true, type: 'contractliab' },
       // 主业与主要产品 / 概念 / 行业：按需求置于字段栏最后（收藏/操作/备注之前）
       { key: 'mainBusiness', label: '主业与主要产品', width: 178, sortable: false, type: 'mainbiz' },
       { key: 'concept', label: '概念', width: 112, sortable: false, type: 'concept' },
-      { key: 'industry', label: '行业', width: 96, sortable: true, type: 'text' },
+      { key: 'industry', label: '行业', width: 92, sortable: true, type: 'text' },
       { key: '__fav', label: '收藏', width: 58, sortable: false, type: 'fav' },
       { key: '__action', label: '操作', width: 84, sortable: false, type: 'action' },
       // batch42：备注列默认宽度 132 → 240（用户反馈输入框太短，中文备注两三个词就看不全）。
@@ -3408,7 +3412,12 @@ const app = createApp({
       const list = [...(poolDetail.data.stocks || [])];
       const k = poolDetailSort.key;
       const dir = poolDetailSort.dir === 'asc' ? 1 : -1;
-      list.sort((a, b) => compareForSort(a, b, k) * dir);
+      if (k === '__idx') {
+        const pos = new Map(list.map((s, i) => [s, i]));
+        list.sort((a, b) => (pos.get(a) - pos.get(b)) * dir);
+      } else {
+        list.sort((a, b) => compareForSort(a, b, k) * dir);
+      }
       return list;
     });
     /**
@@ -4556,7 +4565,12 @@ const app = createApp({
       const list = [...filteredSectorDetailStocks.value];
       const k = sectorDetailSort.key;
       const dir = sectorDetailSort.dir === 'asc' ? 1 : -1;
-      list.sort((a, b) => compareForSort(a, b, k) * dir);
+      if (k === '__idx') {
+        const pos = new Map(list.map((s, i) => [s, i]));
+        list.sort((a, b) => (pos.get(a) - pos.get(b)) * dir);
+      } else {
+        list.sort((a, b) => compareForSort(a, b, k) * dir);
+      }
       return list;
     });
     /**
@@ -5089,6 +5103,11 @@ const app = createApp({
       if (nameQ) list = list.filter(s => String(s.name || '').toLowerCase().indexOf(nameQ) >= 0);
       const k = hotSort.key;
       const dir = hotSort.dir === 'asc' ? 1 : -1;
+      if (k === '__idx') {
+        // 序号排序：按当前列表原始次序升序（还原）/ 降序（倒序），不依赖股票自身字段
+        const pos = new Map(list.map((s, i) => [s, i]));
+        list.sort((a, b) => (pos.get(a) - pos.get(b)) * dir);
+      } else {
       list.sort((a, b) => {
         const va = parseFloat(a[k]); const vb = parseFloat(b[k]);
         if (isNaN(va) && isNaN(vb)) return 0;
@@ -5096,6 +5115,7 @@ const app = createApp({
         if (isNaN(vb)) return -1;
         return (va - vb) * dir;
       });
+      }
       return list;
     });
     function sortHotBy(key) {
@@ -6834,7 +6854,12 @@ const app = createApp({
       const list = [...filteredFilterStocks.value];
       const k = filterSort.key;
       const dir = filterSort.dir === 'asc' ? 1 : -1;
-      list.sort((a, b) => compareForSort(a, b, k) * dir);
+      if (k === '__idx') {
+        const pos = new Map(list.map((s, i) => [s, i]));
+        list.sort((a, b) => (pos.get(a) - pos.get(b)) * dir);
+      } else {
+        list.sort((a, b) => compareForSort(a, b, k) * dir);
+      }
       return list;
     });
     function sortFilterBy(key) {

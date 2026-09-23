@@ -305,9 +305,9 @@ body {
 .pool-detail-table .col-sticky-3 { text-align: center; }
 /* 各冻结列 left 偏移：以下为兜底默认值，实际由 JS 按「前面各列实际宽度累加」动态写入 inline style */
 .col-sticky-0 { left: 0; }
-.col-sticky-1 { left: 46px; }
-.col-sticky-2 { left: 134px; }
-.col-sticky-3 { left: 238px; }
+.col-sticky-1 { left: 50px; }   /* 序号 50 */
+.col-sticky-2 { left: 122px; }  /* 序号 50 + 代码 72 */
+.col-sticky-3 { left: 214px; }  /* 序号 50 + 代码 72 + 股票名称 92 */
 /* 冻结区与滚动区的分界：末列加右侧阴影，横向滚动时层次清晰、不再显得粘连 */
 .pool-detail-table th.col-sticky-3,
 .pool-detail-table td.col-sticky-3 { box-shadow: 2px 0 4px -2px rgba(0, 0, 0, 0.18); }
@@ -354,6 +354,8 @@ body {
 .pool-detail-table td.num-cell { text-align: right; font-variant-numeric: tabular-nums; }
 /* 普通（非冻结）单元格：超宽内容以省略号截断，避免压到相邻列（固定布局 + nowrap 下必需） */
 .pool-detail-table td { overflow: hidden; text-overflow: ellipsis; }
+/* 表头（字段名）同样裁剪：字段名超宽时以省略号收尾，绝不外溢覆盖右侧字段（各列宽已按字段名+图标收紧） */
+.pool-detail-table th { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 /* 数值列表头右对齐，与下方右对齐的数字内容对齐 */
 .pool-detail-table th.num-col { text-align: right; }
 /* 收藏 / 操作 按钮 */
