@@ -788,10 +788,14 @@ const app = createApp({
     }
     /**
      * 市值类比值计算。
-     * 统一用「亿元」：总市值=totalMarketCap(亿)，净利润/扣非/营收=元→转亿。
-     * 市净比(pbRatio) = 总市值 ÷ 净利润 ÷ 10
-     * 市扣比(pkRatio) = 总市值 ÷ 扣非净利润 ÷ 10
+     * 统一用「亿元」：总市值=totalMarketCap(亿)，净利润/扣非/营收=元→转亿（yiVal）。
+     * 量纲必然自洽（亿 ÷ 亿 = 倍数），所以三个「市值比」**一律不再做任何缩放**：
+     * 市净比(pbRatio) = 总市值 ÷ 净利润
+     * 市扣比(pkRatio) = 总市值 ÷ 扣非净利润
      * 市营比(prRatio) = 总市值 ÷ 营业收入
+     * 🔴 batch54：市净比/市扣比原先各有一个 `÷ 10` 的历史缩放，已按用户要求删除
+     *    —— 它与量纲无关，会把 12.5 倍的市净比错显示成 1.25；改前请先确认三个字段
+     *    的取值来源单位（市值=亿、财务三项=元后转亿），别再引入新的系数。
      * 市净同比(pyRatio) = 总市值 ÷ 净利润同比增长率(profitYoY)
      * 市扣同比(pk2Ratio) = 总市值 ÷ 扣非净利润同比增长率(kcfYoY)
      * 市营同比(prrRatio) = 总市值 ÷ 营收同比增长率(revenueYoY)
@@ -807,8 +811,9 @@ const app = createApp({
       const p = ratio(cap, net);           // 总市值/净利润
       const k = ratio(cap, kcf);           // 总市值/扣非净利润
       const pr = ratio(cap, rev);          // 总市值/营业收入
-      const pRatio = p != null ? +(p / 10).toFixed(2) : null;   // 市净比
-      const kRatio = k != null ? +(k / 10).toFixed(2) : null;   // 市扣比
+      // 三个「市值比」同口径：都是「市值(亿) ÷ 财务项(亿)」的倍数，不再有额外系数
+      const pRatio = p != null ? +p.toFixed(2) : null;          // 市净比
+      const kRatio = k != null ? +k.toFixed(2) : null;          // 市扣比
       const prRatio = pr != null ? +pr.toFixed(2) : null;       // 市营比
       // 市净同比 = 总市值 ÷ 净利润同比增长率(profitYoY)
       const py = s.profitYoY != null && +s.profitYoY !== 0 ? +(+cap / +s.profitYoY).toFixed(2) : null;
