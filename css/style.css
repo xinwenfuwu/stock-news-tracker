@@ -1476,46 +1476,64 @@ body {
   font-size: 13px;
 }
 
-/* 股票池详情 */
+/* 股票池详情 —— batch50：工具栏
+   原先「平均涨跌幅」「添加股票」「备注搜索」各占一整行（3 行）把字段表往下挤，
+   现合并为**同一行工具栏**：平均涨跌幅 · 添加 · 字段含义 · 备注搜索 · 刷新行情
+   （添加在「字段含义」左侧、备注搜索在「字段含义」右侧）。窄屏 flex-wrap 自动换行，不横向溢出。 */
 .pool-detail-summary {
   display: flex;
-  justify-content: space-between;
+  flex-wrap: wrap;
   align-items: center;
-  margin-bottom: 12px;
-  padding: 10px 14px;
+  gap: 8px 10px;
+  margin-bottom: 8px;
+  padding: 8px 12px;
   background: var(--surface-alt);
   border-radius: 6px;
 }
-.pool-detail-summary b { font-size: 18px; }
+.pool-detail-summary b { font-size: 16px; }
+.pool-detail-summary .pds-avg { white-space: nowrap; }
 
-/* 股票池详情-添加股票 */
+/* 股票池详情-添加股票：内联在工具栏内（位于「字段含义」左侧），不再独占一行 */
 .pool-detail-add {
   display: flex;
   align-items: center;
-  gap: 8px;
-  margin-bottom: 12px;
-  padding: 10px 14px;
-  background: var(--surface-alt);
-  border: 1px dashed var(--border);
-  border-radius: 6px;
+  gap: 6px;
+  /* 组内不换行 + 不收缩：整组作为「一块」在工具栏里换行，
+     否则宽度被右侧「备注搜索」挤压后会在组内折断（按钮掉到输入框下面，撑高工具栏） */
+  flex-wrap: nowrap;
+  flex: 0 0 auto;
+  min-width: 0;
 }
+.pool-detail-add .pds-add-input {
+  /* 用 width 而不是 flex-basis 定宽：<input> 的「固有宽度」来自 size 属性（默认 20 字符 ≈197px），
+     只写 flex-basis 时容器 max-content 会取固有宽度，导致输入框被压窄、右侧「共 N 只」被挤成竖排。 */
+  width: 240px;
+  flex: 0 1 auto;
+  min-width: 120px;
+  padding: 7px 10px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  font-size: 13px;
+  background: var(--surface);
+  color: var(--text);
+}
+.pool-detail-add .pds-add-input:focus { outline: none; border-color: var(--primary-light); }
+.pool-detail-add > .muted { white-space: nowrap; }
 
-/* 股票池详情-备注搜索（batch42） */
+/* 股票池详情-备注搜索（batch42）：同样内联在工具栏内（位于「字段含义」右侧） */
 .pool-detail-search {
   display: flex;
   align-items: center;
   gap: 8px;
   flex-wrap: wrap;
-  margin-bottom: 12px;
-  padding: 10px 14px;
-  background: var(--surface-alt);
-  border: 1px solid var(--border);
-  border-radius: 6px;
+  /* 占据工具栏剩余宽度，输入框自动拉长 */
+  flex: 1 1 260px;
+  min-width: 240px;
 }
 .pool-detail-search .pds-label { font-size: 13px; font-weight: 600; white-space: nowrap; }
 .pool-detail-search .pds-input {
   flex: 1;
-  min-width: 200px;
+  min-width: 160px;
   padding: 7px 10px;
   border: 1px solid var(--border);
   border-radius: 6px;
@@ -3080,4 +3098,17 @@ body.guest-mode #app { display: none; }
   .nav-item { font-size: 10px; min-width: 48px; }
   .data-table td { font-size: 13px; }
   .data-table td::before { max-width: 46%; font-size: 12px; }
+}
+
+/* batch50：股票池详情工具栏 —— 窄屏（≤768px）放宽内联组的最小宽度约束。
+   桌面端靠「不收缩」保证三块排在同一行、且输入框不被压窄；手机上没有那么多横向空间，
+   若继续强制最小宽度会顶出容器（横向溢出）。这里改为「整组独占一行 + 输入框可收缩」，
+   工具栏自然折成多行，不再溢出，字段表仍可左右滑动查看。 */
+@media (max-width: 768px) {
+  .pool-detail-summary { gap: 6px 8px; }
+  .pool-detail-add { flex: 1 1 100%; }
+  .pool-detail-add .pds-add-input { width: auto; flex: 1 1 140px; min-width: 0; }
+  .pool-detail-search { flex: 1 1 100%; min-width: 0; }
+  .pool-detail-search .pds-input { min-width: 0; }
+  .pool-detail-summary .pds-avg { white-space: normal; }
 }

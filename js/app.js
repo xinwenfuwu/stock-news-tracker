@@ -3099,9 +3099,12 @@ const app = createApp({
       // batch46：列名由「扣非净利润」缩短为「扣非」（**仅改显示名**，key=kcfjcxjlr 与取值口径不变）
       { key: 'kcfjcxjlr', label: '扣非', width: 82, sortable: true, type: 'money' },
       { key: 'relevance', label: '相关度', width: 70, sortable: true, type: 'relevance' },
-      // 主营业务：由筛选栏「产品业务」输入框算出的命中明细（段名 + 营收占比），与相关度成对出现
-      // batch46：列名由「命中主营业务」改为「主营业务」（**仅改显示名**，key=hitBusiness 与计算逻辑不变）
-      { key: 'hitBusiness', label: '主营业务', width: 186, sortable: false, type: 'hitbiz' },
+      // batch50：「主营业务」列（key=hitBusiness，batch46 由「命中…主营业务」改名而来）**已整列删除** ——
+      //   它与「主业与主要产品」取的是同一份主营构成，信息重复、还白占一列宽度；
+      //   同时把「主业与主要产品」移到原「主营业务」的位置（紧随「相关度」），字段表更紧凑。
+      //   注：hitBusiness 这份**数据**仍在 bizRelevanceOf/applyBizRelevance 里照常计算并写回股票对象，
+      //       只是不再单独占一列（「板块成分股」勾选弹窗的悬浮提示仍在用它）。
+      { key: 'mainBusiness', label: '主业与主要产品', width: 186, sortable: false, type: 'mainbiz' },
       { key: 'prRatio', label: '市营比', width: 72, sortable: true, type: 'ratio' },
       { key: 'pbRatio', label: '市净比', width: 72, sortable: true, type: 'ratio' },
       { key: 'pkRatio', label: '市扣比', width: 72, sortable: true, type: 'ratio' },
@@ -3146,8 +3149,8 @@ const app = createApp({
       { key: 'revenue', label: '营业收入', width: 86, sortable: true, type: 'money' },
       { key: 'capitalFlow', label: '资金流入', width: 90, sortable: true, type: 'flow' },
       { key: 'contractLiab', label: '合同负债及排名', width: 114, sortable: true, type: 'contractliab' },
-      // 主业与主要产品 / 概念 / 行业：按需求置于字段栏最后（收藏/操作/备注之前）
-      { key: 'mainBusiness', label: '主业与主要产品', width: 178, sortable: false, type: 'mainbiz' },
+      // 概念 / 行业：按需求置于字段栏最后（收藏/操作/备注之前）
+      // （batch50：「主业与主要产品」已前移到原「主营业务」的位置，即紧随「相关度」列）
       { key: 'concept', label: '概念', width: 112, sortable: false, type: 'concept' },
       { key: 'industry', label: '行业', width: 92, sortable: true, type: 'text' },
       { key: '__fav', label: '收藏', width: 58, sortable: false, type: 'fav' },
@@ -3227,7 +3230,9 @@ const app = createApp({
         case 'num2': { const val = v(col.key); return (val != null && !isNaN(val)) ? (+val).toFixed(2) : '—'; }
         // 相关度：来自 AI 语义搜索的「营收占比相关度」(命中主营构成段营收占比之和 %)；无语义来源时显示占位
         case 'relevance': { const val = s[col.key]; return (val != null && !isNaN(val)) ? ((+val).toFixed(1) + '%') : '—'; }
-        // 主营业务：展示「产品业务」命中的主营构成段与占比，多条换行
+        // 命中「主营业务」的明细（段名 + 营收占比，多条换行）。
+        // batch50 起「主营业务」列已从 STOCK_COLUMNS 删除，这里**保留**该分支：
+        // 数据侧 s.hitBusiness 仍在计算，若日后要恢复该列无需再补渲染逻辑。
         case 'hitbiz': {
           const txt = s.hitBusiness;
           return txt ? esc(txt).split(' · ').join('<br>') : '<span class="muted small">—</span>';
