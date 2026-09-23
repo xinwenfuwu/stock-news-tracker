@@ -4,12 +4,12 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>股市信息分析系统</title>
-  <link rel="stylesheet" href="css/style.css?v=20260923w">
+  <link rel="stylesheet" href="css/style.css?v=20260923x">
   <!-- Vue 3 全局构建版（v3.4.21 · 自托管）
        原先走 unpkg.com CDN：国内网络对 unpkg 的连通性不稳定，一旦该请求长时间挂起，
        <head> 里的阻塞脚本会让整页停在白屏、后续 auth-boot.js 根本不会执行。
        改为同源托管后，启动链路不再依赖任何第三方 CDN。 -->
-  <script src="js/vue.global.prod.js?v=20260923w"></script>
+  <script src="js/vue.global.prod.js?v=20260923x"></script>
 </head>
 <body class="auth-locked">
   <!-- ===== 登录关卡：登录通过前业务脚本不会被加载 ===== -->
@@ -258,6 +258,230 @@
     <main class="app-main">
       <!-- ===== 页面1：新闻追踪 ===== -->
       <section v-show="currentPage === 'news'" class="page">
+<!-- BATCH52_BRIEF_TOP_BEGIN -->
+        <!-- batch52：每日快讯面板复制到「新闻追踪」页顶部（与「全球信息」页右栏同一份数据/同一套交互）。
+             class 用 brief-panel-top：与 .brief-panel 共用基础外观，但整行铺满而不是固定 720px。 -->
+        <aside class="brief-panel-top">
+          <div class="brief-head">
+            <h3 class="panel-title" style="margin:0">📰
+              <!-- 来源名可改：下拉选预设，或选「自定义…」自己写（存到本机设置，刷新后保留） -->
+              <select class="brief-source" @change="onBriefSourcePick($event.target.value)"
+                      :value="briefSourcePresets.indexOf(briefSourceName) >= 0 ? briefSourceName : '__custom__'"
+                      title="切换快讯来源名称（如改成「今日头条」），也可选「自定义…」自己写">
+                <option v-for="s in briefSourcePresets" :key="s" :value="s">{{ s }}</option>
+                <option value="__custom__">自定义…</option>
+              </select>
+              <input v-if="briefSourceCustom" class="brief-source-input" v-model="briefSourceInput"
+                     @change="commitBriefSource" @keyup.enter="commitBriefSource"
+                     placeholder="来源名称，如：今日头条" maxlength="12">
+              每日快讯
+            </h3>
+            <span class="muted small" v-if="briefBase.length">
+              共 {{ briefBase.length }} 条<span v-if="briefSearching"> · 匹配 {{ briefFiltered.length }} 条</span>
+            </span>
+          </div>
+
+          <!-- 统计时间窗口（batch16：以每天 15:00 为换日节点，起止可改，本板块独立刷新） -->
+          <div class="stat-win">
+            <span class="sw-label">新闻统计开始时间</span>
+            <input type="datetime-local" class="sw-input" v-model="briefWinStart" :disabled="briefLoading"
+                   title="统计开始时间（默认昨天 15:00，可修改）">
+            <span class="sw-sep">-</span>
+            <input type="datetime-local" class="sw-input" v-model="briefWinEnd" :disabled="briefLoading"
+                   title="统计结束时间（默认现在，可修改）">
+            <button class="sw-btn" :disabled="briefLoading" @click="refreshBriefCloseWindow"
+                    title="按上面这段时间重新统计（本板块独立刷新，不影响其他板块）">
+              🔄 {{ briefLoading ? '刷新中…' : '刷新' }}
+            </button>
+            <button class="sw-btn sw-btn-ghost" :disabled="briefLoading" @click="resetBriefWin"
+                    title="恢复默认：昨天 15:00 → 现在">重置</button>
+            <span class="sw-text" v-if="briefWinText">{{ briefWinText }}</span>
+          </div>
+
+          <div class="brief-controls">
+            <div class="brief-row">
+              <select class="brief-date" v-model="briefDate" @change="onBriefDateChange" :disabled="briefLoading || !briefDates.length">
+                <option v-for="d in briefDates" :key="d" :value="d">{{ d }}</option>
+                <option v-if="!briefDates.length" value="">暂无快讯日期</option>
+              </select>
+              <!-- 独立刷新按钮：按「股票闭市周期」重新统计，不按自然日 -->
+              <button class="btn btn-sm brief-refresh" :disabled="briefLoading"
+                      @click="refreshBriefCloseWindow"
+                      title="按上方时间窗口刷新；默认「昨天 15:00 → 现在」，以每天 15:00 为换日节点">
+                🔄 {{ briefLoading ? '刷新中…' : '刷新（按时间）' }}
+              </button>
+            </div>
+            <div class="brief-search-wrap">
+              <input class="brief-search" v-model="briefKeyword" type="search" placeholder="关键词搜索（如：英伟达 / 降息 / 原油）">
+              <button class="brief-search-clear" v-if="briefKeyword" @click="briefKeyword = ''" title="清空关键词">✕</button>
+            </div>
+          </div>
+
+          <!-- 三类维度并排：题材归类 / 概念归类 / 行业归类（各自按占比从大到小排序，点分类展开） -->
+
+          <!-- 闭市周期窗口说明（点「刷新（闭市周期）」后出现） -->
+          <div class="brief-window" v-if="briefWindow.on"
+               :data-start="briefWindow.start" :data-end="briefWindow.end">
+            <span class="bw-icon">🕒</span>
+            <span class="bw-label">闭市周期：{{ briefWindow.start.slice(5) }} → {{ briefWindow.end.slice(5) }}</span>
+            <span class="bw-count">共 {{ briefWindowItems.length }} 条</span>
+            <button class="bw-off" @click="clearBriefWindow" title="退出闭市周期视图，回到所选日期的全部快讯">✕ 回到当日全部</button>
+          </div>
+
+          <div class="brief-tip muted small" v-if="briefLoading">⏳ 正在加载该日快讯...</div>
+          <div class="brief-tip muted small" v-else-if="briefError">{{ briefError }}</div>
+          <div class="brief-tip muted small" v-else-if="briefSearching && !briefFiltered.length">没有匹配「{{ briefKeyword }}」的快讯</div>
+          <div class="brief-tip muted small" v-else-if="briefPaused">
+            ⏸ 自动加载已暂停（顶部「暂停」开关生效）
+            <button class="btn btn-sm" style="margin-left:6px" @click="loadBriefsNow">📥 加载该日快讯</button>
+          </div>
+
+          <div class="brief-dims" v-if="briefFiltered.length">
+            <!-- 题材归类 -->
+            <div class="brief-cat-group">
+              <div class="bcg-head">🧩 题材归类 <span class="muted small">{{ briefThemeStats.length }} 类</span></div>
+              <div class="brief-cats" v-if="briefThemeStats.length">
+                <div class="brief-cat" v-for="c in briefThemeStats" :key="c.key">
+                  <div class="brief-cat-head" :class="{ active: briefUi.open['theme::' + c.key] }" @click="toggleBriefCat(c.key, 'theme')"
+                       :title="'点击查看「' + c.name + '」相关的 ' + c.count + ' 条快讯'">
+                    <span class="bc-caret">{{ briefUi.open['theme::' + c.key] ? '▾' : '▸' }}</span>
+                    <span class="bc-icon">{{ c.icon }}</span>
+                    <span class="bc-name">{{ c.name }}</span>
+                    <span class="bc-track"><span class="bc-fill" :style="{ width: c.width + '%', background: c.color }"></span></span>
+                    <span class="bc-count">{{ c.count }}</span>
+                    <span class="bc-pct">{{ c.pct }}%</span>
+                  </div>
+                  <div class="brief-news" v-if="briefUi.open['theme::' + c.key]">
+                    <div class="brief-news-head">
+                      <span class="brief-news-title" :style="{ color: c.color }">{{ c.icon }} {{ c.name }} · {{ c.count }} 条</span>
+                      <span class="muted small">点标题跳{{ briefSourceName }}原文</span>
+                    </div>
+                    <!-- batch31：各省项目 —— 展开时附带「各省市本年度重大项目」清单。
+                         数据来自当日已抓取快讯的本地归纳（省份 + 项目特征词 + 投资额），不额外发请求。 -->
+                    <div class="proj-box" v-if="c.projects && c.projects.length">
+                      <div class="proj-head">📋 各省重大项目清单 · {{ c.projects.length }} 项
+                        <span class="muted small">（按省份聚合，投资额大的在前）</span>
+                      </div>
+                      <div class="proj-scroll">
+                        <table class="proj-table">
+                          <colgroup>
+                            <col class="c-prov"><col><col class="c-amt"><col class="c-time">
+                          </colgroup>
+                          <thead>
+                            <tr><th>省份</th><th>项目 / 事项</th><th>投资额</th><th>时间</th></tr>
+                          </thead>
+                          <tbody>
+                            <tr v-for="(p, pi) in c.projects" :key="pi">
+                              <td class="p-prov">{{ p.province }}</td>
+                              <td class="p-text">
+                                <a v-if="p.url" :href="p.url" target="_blank" rel="noopener">{{ p.title }}</a>
+                                <span v-else>{{ p.title }}</span>
+                              </td>
+                              <td class="p-amt">{{ p.amount || '—' }}</td>
+                              <td class="p-time">{{ (p.time || '').slice(5) }}</td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                    <div class="brief-item" v-for="(n, k) in c.news.slice(0, briefUi.limit['theme::' + c.key] || 30)" :key="n.id || k">
+                      <div class="brief-item-meta">
+                        <span class="brief-time">{{ (n.time || '').slice(5) }}</span>
+                        <span class="brief-tag stock" v-for="s in (n.stocks || []).slice(0, 3)" :key="s">{{ s }}</span>
+                        <span class="brief-tag subject" v-for="s in (n.subjects || []).slice(0, 3)" :key="s">{{ s }}</span>
+                      </div>
+                      <a v-if="n.url" :href="n.url" target="_blank" rel="noopener" class="brief-text" v-html="hlBrief(n.text)"></a>
+                      <span v-else class="brief-text" v-html="hlBrief(n.text)"></span>
+                    </div>
+                    <button class="theme-more" v-if="c.news.length > (briefUi.limit['theme::' + c.key] || 30)" @click.stop="moreBriefNews(c.key, 'theme')">
+                      还有 {{ c.news.length - (briefUi.limit['theme::' + c.key] || 30) }} 条，点击展开更多
+                    </button>
+                    <div class="muted small" v-if="!c.news.length">该类暂无匹配快讯</div>
+                  </div>
+                </div>
+              </div>
+              <div class="muted small" v-else>暂无归类</div>
+            </div>
+
+            <!-- 概念归类 -->
+            <div class="brief-cat-group">
+              <div class="bcg-head">💡 概念归类 <span class="muted small">{{ briefConceptStats.length }} 类</span></div>
+              <div class="brief-cats" v-if="briefConceptStats.length">
+                <div class="brief-cat" v-for="c in briefConceptStats" :key="c.key">
+                  <div class="brief-cat-head" :class="{ active: briefUi.open['concept::' + c.key] }" @click="toggleBriefCat(c.key, 'concept')"
+                       :title="'点击查看「' + c.name + '」相关的 ' + c.count + ' 条快讯'">
+                    <span class="bc-caret">{{ briefUi.open['concept::' + c.key] ? '▾' : '▸' }}</span>
+                    <span class="bc-icon">{{ c.icon }}</span>
+                    <span class="bc-name">{{ c.name }}</span>
+                    <span class="bc-track"><span class="bc-fill" :style="{ width: c.width + '%', background: c.color }"></span></span>
+                    <span class="bc-count">{{ c.count }}</span>
+                    <span class="bc-pct">{{ c.pct }}%</span>
+                  </div>
+                  <div class="brief-news" v-if="briefUi.open['concept::' + c.key]">
+                    <div class="brief-news-head">
+                      <span class="brief-news-title" :style="{ color: c.color }">{{ c.icon }} {{ c.name }} · {{ c.count }} 条</span>
+                      <span class="muted small">点标题跳{{ briefSourceName }}原文</span>
+                    </div>
+                    <div class="brief-item" v-for="(n, k) in c.news.slice(0, briefUi.limit['concept::' + c.key] || 30)" :key="n.id || k">
+                      <div class="brief-item-meta">
+                        <span class="brief-time">{{ (n.time || '').slice(5) }}</span>
+                        <span class="brief-tag stock" v-for="s in (n.stocks || []).slice(0, 3)" :key="s">{{ s }}</span>
+                        <span class="brief-tag subject" v-for="s in (n.subjects || []).slice(0, 3)" :key="s">{{ s }}</span>
+                      </div>
+                      <a v-if="n.url" :href="n.url" target="_blank" rel="noopener" class="brief-text" v-html="hlBrief(n.text)"></a>
+                      <span v-else class="brief-text" v-html="hlBrief(n.text)"></span>
+                    </div>
+                    <button class="theme-more" v-if="c.news.length > (briefUi.limit['concept::' + c.key] || 30)" @click.stop="moreBriefNews(c.key, 'concept')">
+                      还有 {{ c.news.length - (briefUi.limit['concept::' + c.key] || 30) }} 条，点击展开更多
+                    </button>
+                    <div class="muted small" v-if="!c.news.length">该类暂无匹配快讯</div>
+                  </div>
+                </div>
+              </div>
+              <div class="muted small" v-else>暂无归类</div>
+            </div>
+
+            <!-- 行业归类 -->
+            <div class="brief-cat-group">
+              <div class="bcg-head">🏭 行业归类 <span class="muted small">{{ briefIndustryStats.length }} 类</span></div>
+              <div class="brief-cats" v-if="briefIndustryStats.length">
+                <div class="brief-cat" v-for="c in briefIndustryStats" :key="c.key">
+                  <div class="brief-cat-head" :class="{ active: briefUi.open['industry::' + c.key] }" @click="toggleBriefCat(c.key, 'industry')"
+                       :title="'点击查看「' + c.name + '」相关的 ' + c.count + ' 条快讯'">
+                    <span class="bc-caret">{{ briefUi.open['industry::' + c.key] ? '▾' : '▸' }}</span>
+                    <span class="bc-icon">{{ c.icon }}</span>
+                    <span class="bc-name">{{ c.name }}</span>
+                    <span class="bc-track"><span class="bc-fill" :style="{ width: c.width + '%', background: c.color }"></span></span>
+                    <span class="bc-count">{{ c.count }}</span>
+                    <span class="bc-pct">{{ c.pct }}%</span>
+                  </div>
+                  <div class="brief-news" v-if="briefUi.open['industry::' + c.key]">
+                    <div class="brief-news-head">
+                      <span class="brief-news-title" :style="{ color: c.color }">{{ c.icon }} {{ c.name }} · {{ c.count }} 条</span>
+                      <span class="muted small">点标题跳{{ briefSourceName }}原文</span>
+                    </div>
+                    <div class="brief-item" v-for="(n, k) in c.news.slice(0, briefUi.limit['industry::' + c.key] || 30)" :key="n.id || k">
+                      <div class="brief-item-meta">
+                        <span class="brief-time">{{ (n.time || '').slice(5) }}</span>
+                        <span class="brief-tag stock" v-for="s in (n.stocks || []).slice(0, 3)" :key="s">{{ s }}</span>
+                        <span class="brief-tag subject" v-for="s in (n.subjects || []).slice(0, 3)" :key="s">{{ s }}</span>
+                      </div>
+                      <a v-if="n.url" :href="n.url" target="_blank" rel="noopener" class="brief-text" v-html="hlBrief(n.text)"></a>
+                      <span v-else class="brief-text" v-html="hlBrief(n.text)"></span>
+                    </div>
+                    <button class="theme-more" v-if="c.news.length > (briefUi.limit['industry::' + c.key] || 30)" @click.stop="moreBriefNews(c.key, 'industry')">
+                      还有 {{ c.news.length - (briefUi.limit['industry::' + c.key] || 30) }} 条，点击展开更多
+                    </button>
+                    <div class="muted small" v-if="!c.news.length">该类暂无匹配快讯</div>
+                  </div>
+                </div>
+              </div>
+              <div class="muted small" v-else>暂无归类</div>
+            </div>
+          </div>
+          <div class="muted small" v-else-if="!briefLoading && !briefError && !briefPaused">暂无快讯数据，等待服务端定时抓取（每 2 小时一次）。</div>
+        </aside>
+        <!-- BATCH52_BRIEF_TOP_END -->
         <div class="page-toolbar">
           <div class="toolbar-left">
             <div class="date-picker">
@@ -1362,10 +1586,11 @@
 
         <!-- 板块搜索 -->
         <div class="sector-search">
-          <input v-model="sectorSearch" placeholder="输入行业/概念名称，如：白酒、人工智能、机器人..."
+          <input v-model="sectorSearch" placeholder="输入行业/概念名称，如：白酒、人工智能、新能源车、低空经济..."
             style="flex:1;min-width:220px;padding:9px 12px;border:1px solid #d8e0f0;border-radius:8px"
             @keyup.enter="searchSector">
-          <button class="btn btn-primary" @click="searchSector" :disabled="sectorSearching">
+          <button class="btn btn-primary" @click="searchSector" :disabled="sectorSearching"
+            title="按名称搜索板块（含东财全部板块：新能源车 / 算力 / 低空经济 / 半导体…）。点结果即加载该板块成分股">
             <span v-if="sectorSearching">⏳ 搜索中...</span>
             <span v-else>🔍 搜索板块</span>
           </button>
@@ -3614,12 +3839,12 @@
     </transition>
   </div>
 
-  <script src="js/auth.js?v=20260923w"></script>
-  <script src="js/auth-sync.js?v=20260923w"></script>
+  <script src="js/auth.js?v=20260923x"></script>
+  <script src="js/auth-sync.js?v=20260923x"></script>
   <!-- 边缘加速默认站点（batch37 治本：Cloudflare Worker 代理东财/腾讯，缓解 JSONP 限流误报）。
        若你所在地区 workers.dev 访问慢，可在「设置 → 行情加速地址」清空即恢复纯直连。 -->
   <script>window.__SNT_ACCEL__ = 'https://stock-edge.hui-zhou.workers.dev';</script>
-  <script src="js/auth-boot.js?v=20260923w"></script>
+  <script src="js/auth-boot.js?v=20260923x"></script>
   <!-- store / stock-api / hot-topics / app 由 auth-boot.js 在登录通过后动态装载，
        未登录时它们不会被下载，业务数据也不会进入内存 -->
 </body>

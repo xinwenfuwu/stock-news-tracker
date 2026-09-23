@@ -33,11 +33,17 @@ const app = createApp({
       { key: 'filter', label: '板块成分股', icon: '🎯' },
       { key: 'hot', label: '热门板块', icon: '🔥' }
     ];
+    // batch52：每日快讯面板现在同时挂在「新闻追踪」页顶部与「全球信息」页右栏（同一份数据、同一套交互），
+    // 因此这两个页面任一激活都要触发一次自动加载——原来只认 finance，会导致新闻页那份永远停在
+    // 「暂无快讯数据，等待服务端定时抓取」。autoLoadBriefs 内部有 _briefLoaded 幂等保护，重复调用无副作用。
+    const PAGES_WITH_BRIEFS = ['news', 'finance'];
+    function maybeAutoLoadBriefs(page) { if (PAGES_WITH_BRIEFS.indexOf(page) >= 0) autoLoadBriefs(); }
     function goPage(key) {
       currentPage.value = key;
       location.hash = key;
       // 进入「全球信息」页：优先展示最近可用的内置快照（同源、无需代理），再考虑实时抓取
-      if (key === 'finance') { autoLoadHotTopics(); autoLoadBriefs(); }
+      if (key === 'finance') autoLoadHotTopics();
+      maybeAutoLoadBriefs(key);
     }
     // 初始化路由
     const hash = location.hash.replace('#', '');
@@ -718,7 +724,8 @@ const app = createApp({
         showToast('已暂停数据自动刷新（进入页面不再自动抓取、不再自动云同步；手动刷新按钮照常可用）', 'info');
       } else {
         showToast('已恢复数据自动刷新', 'success');
-        if (currentPage.value === 'finance') { autoLoadHotTopics(); autoLoadBriefs(); }
+        if (currentPage.value === 'finance') autoLoadHotTopics();
+        maybeAutoLoadBriefs(currentPage.value);
       }
     }
 
@@ -4401,21 +4408,36 @@ const app = createApp({
       if (!force && sectorPick.industryDone) return;
       sectorPick.industryLoading = true;
       try {
-        const CONC = 4;   // 低并发，避免触发接口限流
-        for (let i = 0; i < missing.length; i += CONC) {
-          const batch = missing.slice(i, i + CONC);
-          await Promise.all(batch.map(async s => {
-            try {
-              const ind = await StockAPI.getIndustry(s.code);
-              if (ind) s.industry = ind;
-            } catch (e) { /* 单只失败忽略 */ }
-            try {
-              if (!s.mainBusiness) {
-                const mb = await StockAPI.getMainBusiness(s.code);
-                if (mb) s.mainBusiness = mb;
-              }
-            } catch (e) { /* 单只失败忽略 */ }
-          }));
+        // 🔴 batch51：先走**批量**接口（东财报表支持 SECUCODE in，实测 200 只 / 166ms）。
+        //   旧实现逐只调 getIndustry + getMainBusiness：一个 719 只成分股的板块（如「新能源车」）
+        //   要发 ~1400 次请求（CONC=4 串行 180 批），既慢又会把免费接口打爆 —— 这是万级用户下的隐患。
+        //   批量后同一板块只需个位数请求。
+        const codes = missing.map(s => s.code);
+        try {
+          const indMap = await StockAPI.getIndustriesBatch(codes);
+          if (indMap && indMap.size) missing.forEach(s => { const v = indMap.get(s.code); if (v) s.industry = v; });
+        } catch (e) { /* 批量失败 → 落到下面的逐只兜底 */ }
+        // 逐只兜底：只处理批量仍没拿到的（正常情况下为空）
+        const stillNoInd = missing.filter(s => !s.industry);
+        if (stillNoInd.length) {
+          const CONC = 4;   // 低并发，避免触发接口限流
+          for (let i = 0; i < stillNoInd.length; i += CONC) {
+            const batch = stillNoInd.slice(i, i + CONC);
+            await Promise.all(batch.map(async s => {
+              try {
+                const ind = await StockAPI.getIndustry(s.code);
+                if (ind) s.industry = ind;
+              } catch (e) { /* 单只失败忽略 */ }
+            }));
+          }
+        }
+        // 主营构成（字段表「主业与主要产品」列）同样走批量补全
+        const noBiz = missing.filter(s => !s.mainBusiness && s.code);
+        if (noBiz.length) {
+          try {
+            const mbMap = await StockAPI.getMainBusinessBatch(noBiz.map(s => s.code));
+            if (mbMap && mbMap.size) noBiz.forEach(s => { const v = mbMap.get(s.code); if (v) s.mainBusiness = v; });
+          } catch (e) { /* 批量失败：该列显示为空，不影响勾选与保存 */ }
         }
         sectorPick.industryDone = true;
       } finally {
@@ -7049,7 +7071,8 @@ const app = createApp({
       window.addEventListener('focus', scanPending);
     });
     watch(currentPage, (k) => {
-      if (k === 'finance') { autoLoadHotTopics(); autoLoadBriefs(); }
+      if (k === 'finance') autoLoadHotTopics();
+      maybeAutoLoadBriefs(k);   // batch52：新闻追踪 / 全球信息 两页都要加载每日快讯
     }, { immediate: true });
     watch(sortedFilterStocks, () => nextTick(() => initResizeFor('.filter-scroll table', 'filterColWidths', FILTER_DEFAULT_COL_WIDTHS)), { flush: 'post' });
     watch(currentPage, (k) => {
