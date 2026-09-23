@@ -1020,6 +1020,19 @@ body {
 .semantic-chip.mod { background: #ffe9c7; color: #b06a00; }
 .semantic-chip.product { background: #d8f5e8; color: #0a7a4f; }
 .semantic-chip.mini { background: #efe9ff; color: #5a32e6; padding: 1px 6px; font-size: 11px; }
+/* ===== batch53：语义结果「命中来源」标签 =====
+   为什么要显示：深度扫描原先只按「主营构成段名」召回，同行业公司因各自业务线命名不同而召回率随机波动
+   （输入「证券」时中国银河/国泰海通被静默丢掉）。现在补了「板块成员 / 行业归属」通道，
+   但它们的相关度是 0（不伪造营收占比），所以必须在界面上标注来源，否则用户会以为相关度算错了。 */
+.match-kind { white-space: nowrap; font-size: 11px; color: var(--text-secondary); }
+.mk-tag {
+  display: inline-block; padding: 1px 7px; border-radius: 8px;
+  font-size: 11px; font-weight: 600; line-height: 1.6;
+}
+.mk-tag.mk-segment { background: #dbeafe; color: #1d4ed8; }
+.mk-tag.mk-board { background: #ffe9c7; color: #b06a00; }
+.mk-tag.mk-industry { background: #efe9ff; color: #5a32e6; }
+.mk-tag.mk-product { background: #d8f5e8; color: #0a7a4f; }
 .semantic-method { color: #8a7fb5; font-size: 12px; }
 .semantic-board {
   display: inline-block; padding: 1px 7px; margin: 2px 4px 2px 0;
@@ -3071,16 +3084,32 @@ body.guest-mode #app { display: none; }
   .data-table td[data-label="选择"], .data-table td[data-label="操作"] { justify-content: flex-start; flex-wrap: wrap; gap: 8px; }
   .data-table td[data-label="选择"]::before, .data-table td[data-label="操作"]::before { display: none; }
 
-  /* 语义表（全球信息）用列序补标签 */
-  .semantic-table:not(.reverse) tbody td:nth-child(1)::before { content: "排名"; }
-  .semantic-table:not(.reverse) tbody td:nth-child(2)::before { content: "代码"; }
-  .semantic-table:not(.reverse) tbody td:nth-child(3)::before { content: "名称"; }
-  .semantic-table:not(.reverse) tbody td:nth-child(4)::before { content: "现价"; }
-  .semantic-table:not(.reverse) tbody td:nth-child(5)::before { content: "涨跌幅"; }
-  .semantic-table:not(.reverse) tbody td:nth-child(6)::before { content: "总市值(亿)"; }
-  .semantic-table:not(.reverse) tbody td:nth-child(7)::before { content: "相关度(营收占比)"; }
-  .semantic-table:not(.reverse) tbody td:nth-child(8)::before { content: "主营业务(占营收)"; }
-  .semantic-table:not(.reverse) tbody td:nth-child(9)::before { content: "操作"; }
+  /* 语义表（全球信息）用列序补标签。
+     ⚠️ 这里的标签是按**列序**写死的，任何一次「给语义表加列 / 删列 / 换序」都必须同步改这一段，
+     否则手机端卡片会出现「值在 A 列、标签写着 B 列」的错位。
+     batch53 在「相关度(营收占比)」与「主营业务(占营收)」之间插入了「命中来源」列（共 10 列），
+     所以这里必须同时：① 补 nth-child(8)=命中来源；② 把主营业务/操作各右移一位；
+     ③ 顺手把 `.similar`（同类股票，9 列、无操作列）从 `:not(.reverse)` 里摘出来单独标注 —— 它原本就被这套标签错标了第 8/9 列。 */
+  .semantic-table:not(.reverse):not(.similar) tbody td:nth-child(1)::before { content: "排名"; }
+  .semantic-table:not(.reverse):not(.similar) tbody td:nth-child(2)::before { content: "代码"; }
+  .semantic-table:not(.reverse):not(.similar) tbody td:nth-child(3)::before { content: "名称"; }
+  .semantic-table:not(.reverse):not(.similar) tbody td:nth-child(4)::before { content: "现价"; }
+  .semantic-table:not(.reverse):not(.similar) tbody td:nth-child(5)::before { content: "涨跌幅"; }
+  .semantic-table:not(.reverse):not(.similar) tbody td:nth-child(6)::before { content: "总市值(亿)"; }
+  .semantic-table:not(.reverse):not(.similar) tbody td:nth-child(7)::before { content: "相关度(营收占比)"; }
+  .semantic-table:not(.reverse):not(.similar) tbody td:nth-child(8)::before { content: "命中来源"; }
+  .semantic-table:not(.reverse):not(.similar) tbody td:nth-child(9)::before { content: "主营业务(占营收)"; }
+  .semantic-table:not(.reverse):not(.similar) tbody td:nth-child(10)::before { content: "操作"; }
+  /* 同类股票表（.similar，9 列） */
+  .semantic-table.similar tbody td:nth-child(1)::before { content: "排名"; }
+  .semantic-table.similar tbody td:nth-child(2)::before { content: "代码"; }
+  .semantic-table.similar tbody td:nth-child(3)::before { content: "股票名称"; }
+  .semantic-table.similar tbody td:nth-child(4)::before { content: "现价"; }
+  .semantic-table.similar tbody td:nth-child(5)::before { content: "涨跌幅"; }
+  .semantic-table.similar tbody td:nth-child(6)::before { content: "总市值(亿)"; }
+  .semantic-table.similar tbody td:nth-child(7)::before { content: "相关度"; }
+  .semantic-table.similar tbody td:nth-child(8)::before { content: "主营业务占比排序"; }
+  .semantic-table.similar tbody td:nth-child(9)::before { content: "主营业务(占营收)"; }
   .semantic-table.reverse tbody td:nth-child(1)::before { content: "排名"; }
   .semantic-table.reverse tbody td:nth-child(2)::before { content: "股票名称"; }
   .semantic-table.reverse tbody td:nth-child(3)::before { content: "代码"; }

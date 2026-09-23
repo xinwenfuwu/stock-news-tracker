@@ -2781,6 +2781,16 @@ const app = createApp({
       showToast('股票池名称已更新', 'success');
     }
 
+    /**
+     * batch53：单个板块「自动补全」的股票数上限。
+     * 背景：「人工智能」这类大板块本身就有 700+ 只成员（东财 BK0800 = 751 只），
+     *  而 batch53 新增的「板块归属」召回通道会把它们整批带进语义结果 / 保存的板块里。
+     *  `refreshPoolDetail` 的补全里有一部分是**逐只**请求（资金流 / 财务 / 季报），
+     *  873 只就是数千次请求：浏览器会卡到连截图都超时，也等于在打爆免费接口。
+     * 所以超过上限就**不自动补全**，改为明确提示 + 手动点「🔄 刷新行情」（并在服务端可承受时批量补全行业/主营）。
+     */
+    const AUTO_ENRICH_MAX = 200;
+
     async function refreshPoolDetail(pool) {
       showToast('正在刷新行情与财务数据...', 'info');
       const codes = pool.stocks.map(s => s.code).filter(Boolean);
@@ -2807,6 +2817,29 @@ const app = createApp({
       showToast('行情已刷新，正在获取财务/股东数据...', 'info');
       // 2) 补充数据（东方财富，best-effort）：逐只 try/catch，避免单只失败中断整体
       const works = pool.stocks.filter(s => s.code);
+      // 2a) batch53：**先把「缺行业 / 缺主营构成」的整批用批量接口补齐**。
+      //     原来这两项在下面的逐只循环里各发一次请求 —— 一个 873 只的板块就是约 1800 次请求，
+      //     既是「打开详情弹窗就卡死」的主因，也违背「用能承载一万用户的免费接口」这个前提。
+      //     批量接口按 80 只一组（batch51 已落地）：873 只只需约 11 + 11 次。
+      const needInd = works.filter(s => !s.industry).map(s => s.code);
+      const needMb = works.filter(s => !s.mainBusiness).map(s => s.code);
+      let indCovered = 0, mbCovered = 0;
+      if (needInd.length) {
+        try {
+          const m = await StockAPI.getIndustriesBatch(needInd);
+          if (m && m.size) for (const s of works) { const v = m.get(s.code); if (!s.industry && v) { s.industry = v; indCovered++; } }
+        } catch (e) { console.warn('批量行业获取失败', e); }
+      }
+      if (needMb.length) {
+        try {
+          const m = await StockAPI.getMainBusinessBatch(needMb);
+          if (m && m.size) for (const s of works) { const v = m.get(s.code); if (!s.mainBusiness && v) { s.mainBusiness = v; mbCovered++; } }
+        } catch (e) { console.warn('批量主营构成获取失败', e); }
+      }
+      console.debug('[refreshPoolDetail] 批量补全：行业 ' + indCovered + '/' + needInd.length + '，主营 ' + mbCovered + '/' + needMb.length);
+      // 逐只兜底只在**板块不大**时启用：大板块若批量也拿不到，宁可少几个字段，
+      // 也不要在弹窗打开时对这个免费接口连发上千次请求。
+      const allowPerStockFallback = works.length <= AUTO_ENRICH_MAX;
       for (let i = 0; i < works.length; i++) {
         const s = works[i];
         try {
@@ -2830,18 +2863,18 @@ const app = createApp({
         } catch (e) {
           console.warn('补充数据获取失败', s.code, e);
         }
-        // 所属行业（best-effort）
+        // 所属行业（best-effort）：批量没覆盖到、且板块不大时，才逐只补
         try {
-          if (!s.industry) {
+          if (!s.industry && allowPerStockFallback) {
             const ind = await StockAPI.getIndustry(s.code);
             if (ind) s.industry = ind;
           }
         } catch (e) {
           console.warn('行业获取失败', s.code, e);
         }
-        // 主营构成（公司主业 + 占比，best-effort）
+        // 主营构成（公司主业 + 占比，best-effort）：同上
         try {
-          if (!s.mainBusiness) {
+          if (!s.mainBusiness && allowPerStockFallback) {
             const mb = await StockAPI.getMainBusiness(s.code);
             if (mb) s.mainBusiness = mb;
           }
@@ -3486,6 +3519,9 @@ const app = createApp({
     // 勾选弹窗状态：选择板块成分股时使用
     const sectorPick = reactive({
       show: false, loading: false, name: '', bk: '', type: '', stocks: [], selected: {},
+      // batch53：交集筛选时记录「源板块」。交集板块没有公开接口（bk 是前端生成的虚拟码），
+      //         记住源板块后即可随时用它们**重算交集**，而不是拿虚拟码去查一个不存在的接口。
+      blocks: [],
       // 筛选：去除301/688/北交所/ST；industry='' 表示不限行业
       filter: { no301: false, no688: false, noBj: false, noST: false, industry: '' },
       industryLoading: false,   // 是否正在补全行业字段
@@ -3914,6 +3950,24 @@ const app = createApp({
       await onBoardChanged();
     }
 
+    /**
+     * 「命中来源」文案（batch53）。
+     * 为什么需要：深度扫描原先只按「主营构成段名」召回，导致同一行业的公司因**各自给业务线起名不同**
+     * 而召回率随机波动 —— 输入「证券」时中国银河、国泰海通这类段名不含「证券」的公司会被静默丢掉。
+     * 现在补上「板块成员 / 行业归属」通道，但它们的相关度是 0（不伪造营收占比），
+     * 所以必须在界面上说清楚**这一行是靠什么被选出来的**，否则用户会以为相关度算错了。
+     */
+    function matchKindLabel(s) {
+      if (!s) return '—';
+      const via = s.matchVia ? '：' + s.matchVia : '';
+      switch (s.matchKind) {
+        case 'board': return '板块成员' + via;
+        case 'industry': return '行业归属' + via;
+        case 'product': return '产品库';
+        default: return '主营业务';
+      }
+    }
+
     // ===== 语义结果 增删改：筛选出的股票 =====
     const editingStockCode = ref('');
     const stockNameDraft = ref('');
@@ -4260,16 +4314,18 @@ const app = createApp({
       sectorPick.stocks = [];
       sectorPick.selected = {};
       sectorPick.bk = '';
+      sectorPick.blocks = (blocks || []).map(b => ({ bk: b.bk, name: b.name, type: b.type || '' }));
       sectorPick.filter.industry = '';      // 切换板块时重置行业筛选
       sectorPick.industryDone = false;
       const names = blocks.map(b => b.name).join(' ∩ ');
       sectorPick.name = names;
       sectorPick.type = '交集筛选';
       try {
-        // 并行加载各板块成分股
-        const results = await Promise.all(blocks.map(b => StockAPI.getSectorStocks(b.bk)));
+        // 并行加载各板块成分股（带上板块名，末档「按名兜底」可用）
+        const results = await Promise.all(blocks.map(b => StockAPI.getSectorStocks(b.bk, b.name)));
         if (results.some(r => !r.length)) {
-          showToast('部分板块未获取到成分股', 'error');
+          const miss = blocks.filter((b, i) => !(results[i] && results[i].length)).map(b => b.name).join('、');
+          showToast(`部分板块未获取到成分股（${miss}）：${StockAPI.lastSectorDiag() || '接口暂不可达'}`, 'error');
           return;
         }
         // 统计每只股票出现的板块数
@@ -4329,8 +4385,18 @@ const app = createApp({
       sectorPick.industryDone = false;
       showToast(`正在获取「${block.name}」成分股...`, 'info');
       try {
-        const stocks = await StockAPI.getSectorStocks(block.bk);
-        if (!stocks.length) { showToast('未获取到该板块成分股', 'error'); return; }
+        const stocks = await StockAPI.getSectorStocks(block.bk, block.name);
+        if (!stocks.length) {
+          // batch53：不再只甩一句无信息量的「未获取到该板块成分股」。
+          // 多源链路会把「每一档试了什么、结果如何」记在诊断里，直接展示给用户/便于自查。
+          if (StockAPI.isVirtualBoard && StockAPI.isVirtualBoard(block.bk)) {
+            showToast(`「${block.name}」是交集筛选生成的虚拟板块，没有对应的板块接口；请点「开始交集筛选」重新生成`, 'error');
+          } else {
+            const diag = StockAPI.lastSectorDiag ? StockAPI.lastSectorDiag() : '';
+            showToast(`未取到「${block.name}」的成分股${diag ? '｜' + diag : ''}`, 'error');
+          }
+          return;
+        }
         const list = stocks.map(s => {
           const ns = _newStock(s);
           ns.dailyChange = s.changePercent;
@@ -4448,6 +4514,22 @@ const app = createApp({
     const visibleSectorPickStocks = computed(() => {
       return sectorPick.stocks.filter(s => !sectorPickFiltered(s));
     });
+    /**
+     * 弹窗「空列表」时的提示文案（batch53）。
+     * 区分三种完全不同的原因，不再笼统甩「未获取到该板块成分股，请重试」：
+     *   ① 交集筛选虚拟板块 —— 本来就没有接口，应引导重算交集；
+     *   ② 筛选条件把股票全隐藏了 —— 应提示清空筛选，而不是让用户以为接口坏了；
+     *   ③ 真的没取到 —— 引导重试。
+     */
+    const sectorPickEmptyHint = computed(() => {
+      if (sectorPick.stocks.length && !visibleSectorPickStocks.value.length) {
+        return '成分股已取到，但被当前筛选条件全部隐藏了，请清空筛选（去除301/688/北交所/ST 与行业下拉）后查看';
+      }
+      if (StockAPI.isVirtualBoard && StockAPI.isVirtualBoard(sectorPick.bk)) {
+        return '该板块是「交集筛选」生成的虚拟板块，没有对应的板块接口；请关闭后用「开始交集筛选」重新生成';
+      }
+      return '未获取到该板块成分股';
+    });
     /** 成分股行涨跌幅：优先 dailyChange，兼容旧字段 changePercent */
     function pickChg(s) {
       if (!s) return null;
@@ -4496,6 +4578,12 @@ const app = createApp({
         date: Store.today(),
         stocks: selected
       };
+      // batch53：交集板块必须带上「源板块」一起保存。
+      // 否则虚拟码 INTERSECT_* 永远查不到接口，一旦成分股为空（换设备同步 / 误删）
+      // 用户就只能反复看到「未获取到该板块成分股」而无法自愈。
+      if (!sectorPick.bk && sectorPick.blocks && sectorPick.blocks.length >= 2) {
+        sector.intersectBlocks = sectorPick.blocks.map(b => ({ bk: b.bk, name: b.name, type: b.type || '' }));
+      }
       Store.addSectorPool(sector);
       recomputePoolAvg(sector);
       sectorPick.show = false;
@@ -4509,8 +4597,39 @@ const app = createApp({
     async function loadSectorStocks(sector) {
       sectorLoading.value = true;
       try {
-        const stocks = await StockAPI.getSectorStocks(sector.bk);
-        if (!stocks.length) { showToast('未获取到该板块成分股', 'error'); return; }
+        // batch53：交集板块（bk 形如 INTERSECT_*）没有公开接口，必须用**源板块重算交集**，
+        //   否则拿虚拟码去查必然返回 0 → 用户只看到「未获取到该板块成分股」，且无法自愈。
+        if (StockAPI.isVirtualBoard && StockAPI.isVirtualBoard(sector.bk)) {
+          const blocks = (sector.intersectBlocks || []).filter(b => b && b.bk);
+          if (blocks.length < 2) {
+            showToast('该板块是交集筛选结果，缺少源板块信息，无法自动重建；请重新执行「开始交集筛选」', 'error');
+            return;
+          }
+          const lists = await Promise.all(blocks.map(b => StockAPI.getSectorStocks(b.bk, b.name)));
+          const codeCount = {};
+          lists.forEach(list => (list || []).forEach(s => {
+            const c = String(s.code || ''); if (c) codeCount[c] = (codeCount[c] || 0) + 1;
+          }));
+          const base = lists.find(l => l && l.length) || [];
+          const common = base.filter(s => codeCount[String(s.code || '')] === blocks.length);
+          if (!common.length) { showToast('重算交集为空（源板块构成可能已变化）', 'error'); return; }
+          const list = common.map(s => {
+            const ns = _newStock(s);
+            ns.dailyChange = s.changePercent;
+            ns.todayPrice = s.price;
+            return ns;
+          });
+          sector.stocks = list;
+          recomputePoolAvg(sector);
+          showToast(`已按源板块重算交集：${list.length} 只成分股（${blocks.map(b => b.name).join(' ∩ ')}）`, 'success');
+          return;
+        }
+        const stocks = await StockAPI.getSectorStocks(sector.bk, sector.name);
+        if (!stocks.length) {
+          const diag = StockAPI.lastSectorDiag ? StockAPI.lastSectorDiag() : '';
+          showToast(`未取到「${sector.name}」的成分股${diag ? '｜' + diag : ''}`, 'error');
+          return;
+        }
         // 转成股票池标准股票对象
         const list = stocks.map(s => {
           const ns = _newStock(s);
@@ -4558,7 +4677,11 @@ const app = createApp({
       if (sector.stocks && sector.stocks.length) {
         const needHist = sector.stocks.some(s =>
           s.yearStartPrice == null || s.yearHighPrice == null || s.price924 == null);
-        if (needHist && autoRefreshPaused()) {
+        if (needHist && sector.stocks.length > AUTO_ENRICH_MAX) {
+          // batch53：大板块（如「人工智能」751 只、语义结果保存的板块常有数百只）**不自动补全**。
+          // 逐只补全要上千次请求 —— 页面会卡死，也等于在打爆免费接口。改为提示用户按需手动刷新。
+          showToast(`该板块共 ${sector.stocks.length} 只，已跳过自动补全（避免大量请求）；需要时点「🔄 刷新行情」`, 'info');
+        } else if (needHist && autoRefreshPaused()) {
           // 暂停期间不自动补全，避免「打开弹窗」就偷偷发一堆请求；手动「刷新行情」仍可用
           pauseHint('板块详情历史价自动补全');
         } else if (needHist) {
@@ -7638,7 +7761,7 @@ const app = createApp({
       quickAdd, quickAddSearch, quickAddBlur, quickAddPick, quickAddSubmit,
     sectorResultsMain, sectorResultsSub, sectorResultsIdx,
       sectorPick, sectorPickCount, toggleSelectAllSector, confirmSectorPick,
-      visibleSectorPickStocks, sectorPickFiltered, computeSectorPickRelevance, pickChg,
+      visibleSectorPickStocks, sectorPickFiltered, computeSectorPickRelevance, pickChg, sectorPickEmptyHint,
       sectorPickIndustries, sectorPickIndustryLoaded, loadSectorPickIndustries,
       sectorSel, sectorSelCount, sectorSelIntersecting, sectorSelError,
       addSubSector, removeSubSector, clearSectorSel, startIntersectFilter, openSectorSelPick,
@@ -7653,7 +7776,7 @@ const app = createApp({
       semantic, semanticSearch, saveSemanticAsPool,
       recomputeSemanticStocks, onConceptChanged, onBoardChanged,
       editingConceptIdx, conceptDraft, newConceptText, startEditConcept, commitEditConcept, cancelEditConcept, removeConcept, addConcept,
-      editingBoardIdx, boardDraft, boardAddKw, boardAddMatches, boardAdding, startEditBoard, commitEditBoard, cancelEditBoard, removeBoard, searchBoardForAdd, addBoard,
+      editingBoardIdx, boardDraft, boardAddKw, boardAddMatches, boardAdding, startEditBoard, commitEditBoard, cancelEditBoard, removeBoard, searchBoardForAdd, addBoard, matchKindLabel,
       editingStockCode, stockNameDraft, stockRoleDraft, stockConceptsDraft, stockAddCode, stockAdding, startEditStock, commitEditStock, cancelEditStock, removeStock, addStockByCode,
       // 反推业务
       reverse, reverseSorted, reverseSort, setReverseSort, reverseBusiness, reverseSortIcon,

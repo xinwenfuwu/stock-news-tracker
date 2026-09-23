@@ -3535,6 +3535,116 @@ const StockAPI = {
     } catch (e) { /* 隐私模式 / 容量超额：仅影响下次是否重扫 */ }
   },
 
+  // ---- 全市场「行业归属」索引（batch53：深度扫描的第二召回通道）----
+  //
+  // 为什么需要（实测定位）：
+  //   深度扫描原先**只**按「主营构成段名是否字面包含关键词」召回。而段名是各家公司自报的业务线名称，
+  //   用词千差万别 —— 同一行业的公司命名不统一，召回率就随命名风格随机波动。
+  //   实测「证券」：券商板块（证券Ⅱ / BK0473）共 **49 只**，其中**只有 21 只**的主营段名含「证券」，
+  //   **28 只被丢掉**（57% 缺失），中国银河、国泰海通正在缺失名单里：
+  //     中信证券 段名 = 证券投资业务 / 证券承销业务            → 含「证券」✓
+  //     中国银河 段名 = 财富管理业务 / 投资交易业务 / 机构业务… → 不含 ✗
+  //     国泰海通 段名 = 机构与交易 / 财富管理 / 投资管理…      → 不含 ✗
+  //   而它们的**行业归属字段是 100% 覆盖且命名统一的**：
+  //     49/49 都是 BOARD_NAME_1LEVEL=非银金融、BOARD_NAME_2LEVEL=证券Ⅱ、CSRC=金融业-资本市场服务。
+  //   → 因此新增本索引：按「行业名」召回，与「段名」召回取并集。
+  //
+  // 成本：RPT_F10_ORG_BASICINFO 全市场约 5400 行，pageSize=5000 → **2 页**（对比主营构成索引 103 页）。
+  IND_LS_KEY: 'snt.allIndustry',
+  IND_TTL: 3 * 24 * 60 * 60 * 1000,
+  _allIndIndex: null,
+  _allIndAt: 0,
+  _allIndPromise: null,
+
+  _loadAllIndFromLS() {
+    if (this._allIndIndex) return this._allIndIndex;
+    try {
+      if (typeof localStorage !== 'undefined' && localStorage) {
+        const raw = localStorage.getItem(this.IND_LS_KEY);
+        if (raw) {
+          const o = JSON.parse(raw);
+          if (o && o.d && Date.now() - (o.t || 0) < this.IND_TTL) {
+            const m = new Map();
+            for (const line of String(o.d).split('\n')) {
+              if (!line) continue;
+              const seg = line.split('|');
+              const sc = seg[0];
+              if (!sc) continue;
+              m.set(sc, { name: seg[1] || '', l1: seg[2] || '', l2: seg[3] || '', csrc: seg[4] || '' });
+            }
+            if (m.size) { this._allIndIndex = m; this._allIndAt = o.t || 0; return m; }
+          }
+        }
+      }
+    } catch (e) { /* 解析失败 → 重新构建 */ }
+    return null;
+  },
+
+  _saveAllIndToLS(m) {
+    try {
+      const lines = [];
+      for (const [sc, v] of m) lines.push([sc, v.name, v.l1, v.l2, v.csrc].join('|'));
+      localStorage.setItem(this.IND_LS_KEY, JSON.stringify({ t: Date.now(), d: lines.join('\n') }));
+    } catch (e) { /* 隐私模式 / 配额：仅影响下次是否重扫 */ }
+  },
+
+  /**
+   * 全市场「行业归属」索引：secucode → { name, l1, l2, csrc }。
+   * 数据源 RPT_F10_ORG_BASICINFO（BOARD_NAME_1LEVEL / BOARD_NAME_2LEVEL / CSRC_INDUSTRY_NAME），
+   * 一次 5000 条 × 2 页，本会话 + localStorage 3 天复用。
+   * @returns {Promise<Map<string,{name:string,l1:string,l2:string,csrc:string}>>}
+   */
+  async _allMarketIndustryIndex() {
+    const cached = this._loadAllIndFromLS();
+    if (cached) return cached;
+    if (this._allIndPromise) return this._allIndPromise;
+    this._allIndPromise = (async () => {
+      const COLS = 'SECUCODE,SECURITY_NAME_ABBR,BOARD_NAME_1LEVEL,BOARD_NAME_2LEVEL,CSRC_INDUSTRY_NAME';
+      const PS = 5000;
+      const idx = new Map();
+      const addRows = (rows) => {
+        for (const r of rows) {
+          const sc = String(r.SECUCODE || '').toUpperCase();
+          if (!/^\d{6}\.(SH|SZ|BJ)$/.test(sc)) continue;
+          idx.set(sc, {
+            name: r.SECURITY_NAME_ABBR || '',
+            l1: String(r.BOARD_NAME_1LEVEL || '').trim(),
+            l2: String(r.BOARD_NAME_2LEVEL || '').trim(),
+            csrc: String(r.CSRC_INDUSTRY_NAME || '').trim()
+          });
+        }
+      };
+      let pages = 2;
+      try {
+        const j = await this._fetchJson(
+          'https://datacenter-web.eastmoney.com/api/data/v1/get?reportName=RPT_F10_ORG_BASICINFO'
+          + '&columns=' + encodeURIComponent(COLS)
+          + '&pageSize=' + PS + '&pageNumber=1&source=WEB&client=WEB'
+          + '&sortColumns=SECUCODE&sortTypes=1', 25000);
+        const rows = (j && j.result && Array.isArray(j.result.data)) ? j.result.data : [];
+        const cnt = j && j.result && j.result.count;
+        if (cnt) pages = Math.min(4, Math.ceil(cnt / PS));
+        addRows(rows);
+      } catch (e) { /* 首页失败 → 交给上层走别的通道 */ }
+      for (let p = 2; p <= pages; p++) {
+        try {
+          const rows = await this._dcGet('RPT_F10_ORG_BASICINFO', COLS, {
+            pageSize: PS, pageNumber: p, sortColumns: 'SECUCODE', sortTypes: 1, timeoutMs: 25000
+          });
+          addRows(rows);
+          if (!rows.length) break;
+        } catch (e) { /* 单页失败不影响其它页 */ }
+      }
+      if (idx.size) {
+        this._allIndIndex = idx;
+        this._allIndAt = Date.now();
+        this._saveAllIndToLS(idx);
+      }
+      return idx;
+    })();
+    try { return await this._allIndPromise; } finally { this._allIndPromise = null; }
+  },
+
   /**
    * 全市场主营构成索引（深度扫描）：
    * 一次拉齐**全部 A 股**最新一期「按产品」主营构成，之后所有语义搜索都退化成纯本地匹配。
@@ -4539,14 +4649,157 @@ const StockAPI = {
     return out;
   },
 
+  // ==================================================================
+  //  板块成分股「多源容错」链路（batch53）
+  // ==================================================================
+  //
+  // 为什么重做（实测定位，2026-09-23）：
+  //   旧实现的最后一档兜底是**东财 push2**（`clist/get?fs=b:<code>`）。实测它有两个致命问题：
+  //     ① **会限流**，并且在浏览器侧已直接 `Failed to fetch`（同源实测 fetch 返回
+  //        "Failed to fetch"，连 HTTP 状态都没有）—— 这正是用户要「换掉东财这种有限制接口」的原因；
+  //     ② 它是**唯一**处理「既不是新浪板块、也不是 6 位指数、也不是 BKxxxx」的代码的分支，
+  //        而「交集筛选」生成的板块代码恰好是 `INTERSECT_<时间戳>` → 必然落到这里 → 必然返回 0 →
+  //        用户看到「未获取到该板块成分股」。
+  //
+  // 新链路（**已彻底移除 push2**，只保留不限流/免第三方的来源）：
+  //   0) `INTERSECT_*` 虚拟板块 → 立即短路（无公开接口，由上层复用已保存的成分股 / 重算交集）
+  //   1) 新浪板块（gn_/new_）→ 新浪成分股接口（`<script>` 直载，天然无 CORS 限制）
+  //   2) 6 位指数 → 东财数据中心「指数成分」报表
+  //   3) 东财 BK 板块 → 东财数据中心「板块成分」报表（一次拿全，**不限流**，与 push2 是两套链路）
+  //   4) **本站 CDN 静态快照**（`data/board-members.json`）→ 零第三方 API、零限流、零配额，
+  //      随站点发布、被 CDN 边缘缓存 —— 这是「能承载一万用户」的那条免费链路
+  //   5) **新浪按板块名**兜底（`Market_Center.getHQNodeData`，非东财 / 免费 / CORS 开放 / 不限流）
+  //
+  // 每一档都会把结果记进 `_sectorDiag`，由 `lastSectorDiag()` 给出**精确诊断**，
+  // 不再让用户只看到一句无信息量的「未获取到该板块成分股」。
+
+  BOARD_SNAPSHOT_URL: 'data/board-members.json',
+  BOARD_SNAPSHOT_RETRY: 5 * 60 * 1000,   // 快照拉取失败后的静默期（避免反复 404 噪声）
+  _boardSnap: null,
+  _boardSnapAt: 0,
+  _boardSnapPromise: null,
+  _boardSnapFailedAt: 0,
+  _boardSnapStats: null,                 // { boards, members } 便于自检/展示
+  _sectorDiag: null,                     // 最近一次板块成分股取数的逐源诊断
+
+  /** 交集筛选产生的虚拟板块代码（前端生成，没有对应公开接口） */
+  _isVirtualBoard(bk) {
+    return /^INTERSECT_/i.test(String(bk || ''));
+  },
+
+  /** 对外：该板块代码是否为「交集筛选虚拟板块」（供 UI 给出准确提示） */
+  isVirtualBoard(bk) {
+    return this._isVirtualBoard(bk);
+  },
+
   /**
-   * 获取某板块的全部成分股
-   * @param {string} bk 板块代码，如 BK0896
+   * 载入本站 CDN 上的「板块 → 成分股」静态快照（零第三方 API）。
+   * 一次拉取后常驻内存（站点每次发版数据都会更新，页面刷新即重新取）。
+   * 失败进入 5 分钟静默期：既避免反复 404 噪声，也不影响报表主路径。
+   * @returns {Promise<{v:number,t:number,boards:Object}|null>}
+   */
+  async _loadBoardSnapshot() {
+    if (this._boardSnap) return this._boardSnap;
+    if (this._boardSnapPromise) return this._boardSnapPromise;          // 并发收敛
+    if (Date.now() - this._boardSnapFailedAt < this.BOARD_SNAPSHOT_RETRY) return null;
+    this._boardSnapPromise = (async () => {
+      try {
+        const r = await fetch(this.BOARD_SNAPSHOT_URL, { cache: 'force-cache' });
+        if (!r.ok) throw new Error('HTTP ' + r.status);
+        const j = await r.json();
+        if (!j || !j.boards || typeof j.boards !== 'object') throw new Error('payload 结构不符');
+        this._boardSnap = j;
+        this._boardSnapAt = Date.now();
+        let members = 0;
+        for (const k of Object.keys(j.boards)) members += String(j.boards[k][1] || '').split(',').filter(Boolean).length;
+        this._boardSnapStats = { boards: Object.keys(j.boards).length, members };
+        return j;
+      } catch (e) {
+        this._boardSnapFailedAt = Date.now();
+        console.debug('[stock-api] 板块静态快照不可用：', e && e.message);
+        return null;
+      } finally { this._boardSnapPromise = null; }
+    })();
+    return this._boardSnapPromise;
+  },
+
+  /**
+   * 从静态快照取成分股。**按板块代码（BKxxxx）精确命中**；代码未命中时再用**板块名**兜底。
+   * @param {string} code 归一化后的板块代码（BKxxxx）
+   * @param {string} [name] 板块名（可选，用于代码未命中时按名匹配）
+   * @returns {Promise<Array<{code,name,pureCode}>>} code 为带市场前缀格式；未命中返回 []
+   */
+  async _snapshotBoardStocks(code, name) {
+    const snap = await this._loadBoardSnapshot();
+    if (!snap) return [];
+    let entry = snap.boards[String(code || '').toUpperCase()];
+    if (!entry && name) {
+      const want = String(name).trim();
+      for (const k of Object.keys(snap.boards)) {
+        if (String(snap.boards[k][0] || '').trim() === want) { entry = snap.boards[k]; break; }
+      }
+    }
+    if (!entry) return [];
+    const codes = String(entry[1] || '').split(',').filter(Boolean);
+    const out = [];
+    for (const pure of codes) {
+      // 注意：inferPrefix 返回的是**带前缀的完整代码**（'sh600030'），不是纯前缀 ——
+      // 早期误写成 `pre + pure` 会得到 'sh600030600030'，导致快照档的代码全部非法、
+      // 腾讯行情查不到、表格只剩下代码没有名称。（batch53 单测 A4 抓到的真实 bug）
+      const full = this.inferPrefix(pure);
+      if (!/^(sh|sz|bj)\d{6}$/.test(full)) continue;
+      // 名称留空，由 _attachQuotes 用腾讯行情补齐（拿不到时回退纯代码）——
+      // 绝不能拿 entry[0]（那是**板块名**，如「证券Ⅱ」），否则整个板块的成员都会显示成板块名。
+      out.push({ code: full, name: '', pureCode: pure });
+    }
+    return out;
+  },
+
+  /**
+   * 用**新浪**「板块节点」接口按板块名取成分股（非东财 / 免费 / CORS 开放 / 不限流）。
+   * 做法：把板块名与已缓存的**新浪全量板块库**做**完全同名**匹配 → 拿到新浪节点码（gn_/new_）
+   *       → 复用已有的 `_sinaSectorStocks` 分页取全。
+   * 只做精确同名匹配：模糊匹配会把「证券Ⅱ」这类东财专名错配到含义不同的新浪板块上，
+   * 宁可返回空、由上一档的静态快照负责，也不给用户错数据。
+   * @param {string} name 板块名（东财口径）
+   * @param {number} [maxPages] 最多翻页
+   */
+  async _sinaStocksByBoardName(name, maxPages = 20) {
+    const want = String(name || '').trim();
+    if (!want) return [];
+    let node = '';
+    try {
+      const all = await this.getAllSectors();
+      const hit = (all || []).find(s => String(s.name || '').trim() === want && this._isSinaBoard(s.bk));
+      if (hit) node = hit.bk;
+    } catch (e) { /* 板块库拿不到 → 本档放弃 */ }
+    if (!node) return [];
+    try {
+      return (await this._sinaSectorStocks(node, maxPages)) || [];
+    } catch (e) { return []; }
+  },
+
+  /**
+   * 最近一次板块成分股取数的**逐源诊断**（给用户看的一句话）。
+   * 例：「BLOCK 报表 49 只（东财数据中心）；已用该源」/「全部来源均未取到：报表 超时；快照 HTTP 404；新浪 无同名板块」
+   * @returns {string}
+   */
+  lastSectorDiag() {
+    const d = this._sectorDiag;
+    if (!d) return '';
+    return `${d.bk}${d.name ? '「' + d.name + '」' : ''} → ` + d.tried.map(t => `${t.src} ${t.note}`).join('；');
+  },
+
+  /**
+   * 获取某板块的全部成分股（多源容错；见上方链路说明）
+   * @param {string} bk 板块代码，如 BK0896 / gn_gf / 000097 / INTERSECT_xxx
+   * @param {string} [name] 板块名（可选；仅用于末档「按名兜底」，提升命中率）
    * @returns {Promise<Array<{code, name, price, changePercent}>>} code 为带前缀格式
    */
-  async getSectorStocks(bk) {
+  async getSectorStocks(bk, name) {
     const _bk = this._normalizeBoardCode(bk);
-    return this._withCache('ss:' + _bk, API_TTL.SECTOR, () => this._getSectorStocksRaw(_bk), v => !!(v && v.length));
+    return this._withCache('ss:' + _bk, API_TTL.SECTOR,
+      () => this._getSectorStocksRaw(_bk, name), v => !!(v && v.length));
   },
 
   /**
@@ -4577,65 +4830,91 @@ const StockAPI = {
     return out;
   },
 
-  async _getSectorStocksRaw(bk) {
+  /**
+   * 板块成分股取数的**多源容错实现**（batch53 重写；push2 已彻底移除）。
+   * 逐档尝试并记录诊断，任一滴返回非空即用；全部落空返回 []（诊断留在 `_sectorDiag`）。
+   */
+  async _getSectorStocksRaw(bk, name) {
     const code = this._normalizeBoardCode(bk);
-    // 新浪板块（行业 new_xxxx / 概念 gn_xxxx）：走新浪成分股接口（<script> 直载，天然无 CORS 限制）
+    const tried = [];
+    this._sectorDiag = { bk: code, name: name || '', tried };
+
+    // 0) 交集筛选生成的虚拟板块：没有对应公开接口，立即短路。
+    //    （上层会复用已保存的成分股 / 用源板块重新计算交集，见 app.js loadSectorStocks）
+    if (this._isVirtualBoard(code)) {
+      tried.push({ src: '交集板块', note: '虚拟代码，无对应接口（请用源板块重算）' });
+      return [];
+    }
+
+    // 1) 新浪板块（行业 new_xxxx / 概念 gn_xxxx）：新浪成分股接口（<script> 直载，天然无 CORS 限制）
     if (this._isSinaBoard(code)) {
-      const list = await this._sinaSectorStocks(code);
-      if (list.length) return list;
+      try {
+        const list = await this._sinaSectorStocks(code);
+        tried.push({ src: '新浪', note: list.length ? `${list.length} 只` : '0 只' });
+        if (list.length) return list;
+      } catch (e) { tried.push({ src: '新浪', note: '异常 ' + (e && e.message || e) }); }
     }
-    // 指数板块：数据中心成分股 + 批量行情补全名称/价格（push2 fs=b:code 对指数查不到成员）
+
+    // 2) 指数板块（6 位数字）：东财数据中心「指数成分」报表
     if (this._isIndexBoard(code)) {
-      return (await this._getIndexConstituents(code)).map(s => ({
-        code: s.code, name: s.name, price: s.price, changePercent: s.changePercent
-      }));
+      try {
+        const cs = await this._getIndexConstituents(code);
+        tried.push({ src: '指数报表', note: cs.length ? `${cs.length} 只` : '0 只' });
+        if (cs.length) {
+          return cs.map(s => ({ code: s.code, name: s.name, price: s.price, changePercent: s.changePercent }));
+        }
+      } catch (e) { tried.push({ src: '指数报表', note: '异常 ' + (e && e.message || e) }); }
     }
-    // 🔴 batch51：东财 BK 板块**优先走数据中心报表**（BOARDTYPE，一次拿全）。
-    //   实测「新能源车」(BK0900) 真实成分股 719 只，而旧实现只走 push2 `fs=b:BKxxxx`：
-    //     ① 单页 100 条、翻页上限 15，实测只回 100 只（严重截断）；
-    //     ② push2 在浏览器侧**间歇性限流**，一旦限流直接返回 0 只 →
-    //        用户看到「未获取到该板块成分股」（这正是「输入新能源车没有成分股」的第二层原因）。
-    //   换成报表通道后：1 次请求拿全 719 只，再补 1 次腾讯批量行情。push2 降为最后兜底。
+
+    // 3) 东财 BK 板块：数据中心「板块成分」报表（BOARDTYPE，一次拿全 719 只这种量级）。
+    //    实测该通道 200 + CORS + **不限流**，与 push2 是两套完全不同的链路；1 次请求 + 1 次批量行情。
     if (/^BK\d+$/i.test(code)) {
-      const dc = await this._dcBoardStocks(code, 5000);
-      if (dc.length) return this._attachQuotes(dc);
+      try {
+        const dc = await this._dcBoardStocks(code, 5000);
+        tried.push({ src: '东财报表', note: dc.length ? `${dc.length} 只` : '0 只' });
+        if (dc.length) return this._attachQuotes(dc);
+      } catch (e) { tried.push({ src: '东财报表', note: '异常 ' + (e && e.message || e) }); }
     }
-    const all = [];
-    for (let pn = 1; pn <= 15; pn++) {
-      const url = `https://push2.eastmoney.com/api/qt/clist/get?pn=${pn}&pz=100&po=1&np=1&fltt=2&invt=2&fid=f3&fs=b%3A${code}&fields=f12,f14,f3,f2`;
-      const json = await this._eastFetch(url);
-      const diff = this._diffArray(json);
-      for (const it of diff) {
-        const pure = String(it.f12);
-        const prefix = /^(6|9|4|8)/.test(pure) ? 'sh' : 'sz';
-        all.push({
-          code: prefix + pure,
-          name: it.f14 || '',
-          price: it.f2 != null ? parseFloat(it.f2) : null,
-          changePercent: it.f3 != null ? parseFloat(it.f3) : null
-        });
-      }
-      const total = json && json.data && json.data.total;
-      if (!diff.length || all.length >= total) break;
-      await new Promise(r => setTimeout(r, 300));
+
+    // 4) 本站 CDN 静态快照（data/board-members.json）：**零第三方 API、零限流、零配额**。
+    //    随站点发布并被 CDN 边缘缓存 —— 一万用户各自拉一份也只是边缘命中，这是最抗量的那条路。
+    //    放在报表之后：报表永远是最新的，快照只负责「报表取不到时不至于没数据」。
+    try {
+      const snap = await this._snapshotBoardStocks(code, name);
+      tried.push({ src: '本站快照', note: snap.length ? `${snap.length} 只` : '未收录' });
+      if (snap.length) return this._attachQuotes(snap);
+    } catch (e) { tried.push({ src: '本站快照', note: '异常 ' + (e && e.message || e) }); }
+
+    // 5) 新浪「按板块名」兜底（非东财 / 免费 / CORS 开放 / 不限流）。
+    //    只做完全同名匹配，避免把「证券Ⅱ」错配到含义不同的新浪板块上。
+    if (name) {
+      try {
+        const byName = await this._sinaStocksByBoardName(name);
+        tried.push({ src: '新浪按名', note: byName.length ? `${byName.length} 只` : '无同名板块' });
+        if (byName.length) return byName;
+      } catch (e) { tried.push({ src: '新浪按名', note: '异常 ' + (e && e.message || e) }); }
     }
-    return all;
+
+    return [];
   },
 
   /**
    * 获取某板块成分股（含总市值，用于语义搜索的"核心/龙头"排序）
    * @param {string} bk 板块代码，如 BK0896
    * @param {number} maxPages 最多翻几页（默认 15，单页 100 条）
+   * @param {string} [name] 板块名（可选；仅用于末档「按名兜底」）
    * @returns {Promise<Array<{code,name,price,changePercent,marketCap}>>}
    */
-  async getSectorStocksMeta(bk, maxPages = 15) {
+  async getSectorStocksMeta(bk, maxPages = 15, name) {
     const _bk = this._normalizeBoardCode(bk);
     return this._withCache('ssm:' + _bk + ':' + maxPages, API_TTL.SECTOR,
-      () => this._getSectorStocksMetaRaw(_bk, maxPages), v => !!(v && v.length));
+      () => this._getSectorStocksMetaRaw(_bk, maxPages, name), v => !!(v && v.length));
   },
 
-  async _getSectorStocksMetaRaw(bk, maxPages = 15) {
+  async _getSectorStocksMetaRaw(bk, maxPages = 15, name) {
     const code = this._normalizeBoardCode(bk);
+    // 交集筛选生成的虚拟板块：无公开接口，短路（语义搜索重算时由源板块负责）
+    if (this._isVirtualBoard(code)) return [];
     // 新浪板块：同源走新浪成分股（含总市值），保证语义搜索的「核心/龙头」排序可用
     if (this._isSinaBoard(code)) {
       const list = await this._sinaSectorStocks(code, maxPages);
@@ -4643,36 +4922,21 @@ const StockAPI = {
     }
     // 指数板块：复用指数成分股完整信息（含总市值），与 getSectorStocks 同源
     if (this._isIndexBoard(code)) {
-      return await this._getIndexConstituents(code);
+      const idx = await this._getIndexConstituents(code);
+      if (idx.length) return idx;
     }
-    // 🔴 batch51：BK 板块同 getSectorStocks —— 优先数据中心报表（一次拿全），push2 仅兜底。
-    //   语义搜索的「核心/龙头」（按总市值）与「编辑板块后重算」都走这里，
-    //   若继续依赖 push2，限流时重算会静默变成 0 条。
+    // 🔴 batch53：BK 板块优先数据中心报表（一次拿全）。**已移除 push2 兜底**——
+    //   该接口限流且在浏览器侧已直接 Failed to fetch，留着只会让「编辑板块后重算」静默变 0 条。
     if (/^BK\d+$/i.test(code)) {
       const dc = await this._attachQuotes(await this._dcBoardStocks(code, 5000));
       if (dc.length) return dc;
     }
-    const all = [];
-    for (let pn = 1; pn <= maxPages; pn++) {
-      const url = `https://push2.eastmoney.com/api/qt/clist/get?pn=${pn}&pz=100&po=1&np=1&fltt=2&invt=2&fid=f20&fs=b%3A${code}&fields=f12,f14,f3,f2,f20`;
-      const json = await this._eastFetch(url);
-      const diff = this._diffArray(json);
-      for (const it of diff) {
-        const pure = String(it.f12);
-        const prefix = /^(6|9|4|8)/.test(pure) ? 'sh' : 'sz';
-        all.push({
-          code: prefix + pure,
-          name: it.f14 || '',
-          price: it.f2 != null ? parseFloat(it.f2) : null,
-          changePercent: it.f3 != null ? parseFloat(it.f3) : null,
-          marketCap: it.f20 != null ? parseFloat(it.f20) : null  // 总市值（元）
-        });
-      }
-      const total = json && json.data && json.data.total;
-      if (!diff.length || all.length >= total) break;
-      await new Promise(r => setTimeout(r, 300));
-    }
-    return all;
+    // 兜底：本站 CDN 静态快照（零第三方 API）→ 新浪按名（非东财 / 免费 / CORS）
+    const snap = await this._snapshotBoardStocks(code, name);
+    if (snap.length) return this._attachQuotes(snap);
+    const byName = await this._sinaStocksByBoardName(name, maxPages);
+    if (byName.length) return byName;
+    return [];
   },
 
   /**
@@ -4882,21 +5146,28 @@ const StockAPI = {
     boardHits = boardHits.slice(0, 10);
 
     // 2) 候选池：并发反查各板块成分股（数据中心报表，不经 push2）
+    //    batch53：同时记录**每个候选来自哪块板块、该板块名与查询词的匹配质量**。
+    //    这是新增「板块成员」召回通道的数据基础（见下方 3c）。
     const stockInfo = new Map();   // code → { code, name }
+    const stockBoard = new Map();  // code → { name, score }（最强的那块板块）
     const lists = await this._mapLimit(boardHits, 6, async (b) => {
       try {
         if (b.raw) {
-          const l = await this.getSectorStocksMeta(b.code, 6);
-          return { codes: (l || []).map(s => ({ code: this._normalizeCode(s.code), name: s.name || '' })) };
+          const l = await this.getSectorStocksMeta(b.code, 6, b.name);
+          return { b, codes: (l || []).map(s => ({ code: this._normalizeCode(s.code), name: s.name || '' })) };
         }
         const l = await this._dcBoardStocks(b.code, 2000);
-        return { codes: (l || []).map(s => ({ code: s.code, name: s.name })) };
-      } catch (e) { return { codes: [] }; }
+        return { b, codes: (l || []).map(s => ({ code: s.code, name: s.name })) };
+      } catch (e) { return { b, codes: [] }; }
     });
     for (const r of lists) {
       for (const s of ((r && r.codes) || [])) {
         if (!s.code || !/^(sh|sz|bj)\d{6}$/.test(s.code)) continue;
         if (!stockInfo.has(s.code)) stockInfo.set(s.code, s);
+        const prev = stockBoard.get(s.code);
+        if (!prev || (r.b && r.b.score > prev.score)) {
+          stockBoard.set(s.code, { name: (r.b && r.b.name) || '', score: (r.b && r.b.score) || 0 });
+        }
       }
     }
     // 产品库种子强制纳入（用户期望的生产厂商必须出现）
@@ -4910,7 +5181,7 @@ const StockAPI = {
       const arr = [];
       for (const [code, info] of stockInfo) {
         const rr = revenueRelevance(await bizOf(code), core, domainArr);
-        if (rr.relevance > 0) arr.push({ info, relevance: rr.relevance, raw: rr.raw, matched: rr.matched });
+        if (rr.relevance > 0) arr.push({ info, relevance: rr.relevance, raw: rr.raw, matched: rr.matched, kind: 'segment' });
       }
       return arr;
     };
@@ -4949,6 +5220,60 @@ const StockAPI = {
       }
     }
 
+    // 3c) 🔴 batch53 新增：**板块归属 / 行业归属** 召回通道（与「主营段名」通道取并集）。
+    //
+    //     为什么必须加（实测定位，这就是「输入证券却看不到银河证券 / 国泰证券」的根因）：
+    //       段名是各家公司**自报的业务线名称**，用词千差万别 —— 同一行业的公司命名并不统一，
+    //       于是召回率只取决于「这家公司恰好怎么给分段起名」，完全随机。
+    //       实测「证券」：券商板块（证券Ⅱ / BK0473）共 **49 只**，
+    //         其中**只有 21 只**的主营段名含「证券」→ **28 只被静默丢掉（57% 缺失）**：
+    //           中信证券 = 证券投资业务 / 证券承销业务            → 含「证券」✓
+    //           中国银河 = 财富管理业务 / 投资交易业务 / 机构业务…  → 不含 ✗（被丢）
+    //           国泰海通 = 机构与交易 / 财富管理 / 投资管理…        → 不含 ✗（被丢）
+    //       而它们的**板块/行业归属是统一且 100% 覆盖的**（49/49 = 非银金融 / 证券Ⅱ / 金融业-资本市场服务）。
+    //
+    //     门槛（防止过度扩张，宁可少召回也不给噪声）：
+    //       · 板块通道：只采信板块名与查询词匹配分 ≥ 700 的板块（完全相同/前缀/包含），
+    //         不采信「被包含」档（查询「谐波减速器」会被「减速器」板块以 500 分捞进来）；
+    //       · 行业通道：仅深度模式构建（成本 2 页），且只认「行业名以核心词开头或完全相等」。
+    //     两者产出的条目 `relevance = 0`（**不伪造营收占比**），仅在 UI 上标注命中来源，
+    //     排序时自然排在「段名命中」之后。
+    const BOARD_MEMBER_MIN_SCORE = 700;
+    const IND_MAX_EXTRA = 400;
+    const channelHits = new Map();     // code → { kind, via }
+    for (const [code, b] of stockBoard) {
+      if (b && b.score >= BOARD_MEMBER_MIN_SCORE) channelHits.set(code, { kind: 'board', via: b.name });
+    }
+    if (usedDeep && coreArr.length) {
+      try {
+        const indIdx = await this._allMarketIndustryIndex();
+        let extra = 0;
+        for (const [sc, ind] of indIdx) {
+          if (extra >= IND_MAX_EXTRA) break;
+          const pre = this._dcPrefix(sc);
+          const pure = sc.split('.')[0];
+          if (!pre || !/^\d{6}$/.test(pure)) continue;
+          const code = pre + pure;
+          if (channelHits.has(code) && channelHits.get(code).kind === 'board') continue;
+          const names = [ind.l2, ind.l1, ind.csrc].filter(Boolean).map(s => s.toLowerCase());
+          const hitName = names.find(n => coreArr.some(t => t.length >= 2 && (n === t || n.startsWith(t))));
+          if (!hitName) continue;
+          if (!stockInfo.has(code)) { stockInfo.set(code, { code, name: ind.name || '' }); extra++; }
+          if (!channelHits.has(code)) channelHits.set(code, { kind: 'industry', via: ind.l2 || ind.l1 || ind.csrc });
+        }
+      } catch (e) { /* 行业索引拿不到 → 只保留板块通道 */ }
+    }
+    // 把「通道命中但段名未命中」的补进来（段名已命中的保持原样，不重复）
+    const scoredCodes = new Set(scored.map(x => x.info.code));
+    let chanAdded = 0;
+    for (const [code, ch] of channelHits) {
+      if (scoredCodes.has(code)) continue;
+      const info = stockInfo.get(code);
+      if (!info) continue;
+      scored.push({ info, relevance: 0, raw: 0, matched: [], kind: ch.kind, via: ch.via });
+      chanAdded++;
+    }
+
     // 4) 补齐行情（腾讯批量；**含产品库种子**，保证种子公司也带名称），组装结果
     const seedNorm = seedCodes.map(c => this._normalizeCode(c)).filter(Boolean);
     const quoteCodes = [...new Set([...scored.map(x => x.info.code), ...seedNorm])];
@@ -4967,7 +5292,11 @@ const StockAPI = {
         concepts: (matchers.concepts || []).slice(),
         matchedSegments: x.matched,
         relevance: x.relevance,
-        rawRelevance: x.raw
+        rawRelevance: x.raw,
+        // batch53：命中来源。'segment' 主营段名命中（相关度 = 段营收占比之和）；
+        //          'board' 板块成员命中（相关度 0，不伪造比例）；'industry' 行业归属命中。
+        matchKind: x.kind || 'segment',
+        matchVia: x.via || ''
       };
     };
     let stocks = scored.map(buildStock);
@@ -4977,16 +5306,18 @@ const StockAPI = {
       for (const code of seedNorm) {
         if (have.has(code)) continue;
         const rr = revenueRelevance(await bizOf(code), coreArr, domainArr);
-        const st = buildStock({ info: { code, name: '' }, relevance: rr.relevance, raw: rr.raw, matched: rr.matched });
+        const st = buildStock({ info: { code, name: '' }, relevance: rr.relevance, raw: rr.raw, matched: rr.matched, kind: 'product' });
         const roleScore = scoreRoleRelevance(roleMap[code] || '');
         st.relevance = st.relevance > 0 ? st.relevance : roleScore;
         st.matchedSegments = st.matchedSegments || [];
         st.concepts = (matchers.concepts || []).slice();
+        st.matchKind = 'product';
         stocks.push(st);
       }
     }
     // 排序：**按命中主营段营收占比降序** = 用户要的「按所占营收比例排序」。
     // 用未封顶的 rawRelevance 排序：否则多家都是 100% 时会退化成按总市值排，丢掉「占比更高者优先」的语义。
+    // 相关度 0 的「板块成员 / 行业归属」自然排在末尾（同档内按总市值降序，龙头在前）。
     const sortKey = (s) => Math.max(s.rawRelevance || 0, s.relevance || 0);
     stocks.sort((a, b) => (sortKey(b) - sortKey(a)) || ((b.marketCap || 0) - (a.marketCap || 0)));
     const TOPN = 20;
@@ -4995,6 +5326,7 @@ const StockAPI = {
       stocks = [...stocks].sort((a, b) => (a.marketCap || 0) - (b.marketCap || 0)).slice(0, TOPN)
         .sort((a, b) => (sortKey(b) - sortKey(a)) || ((b.marketCap || 0) - (a.marketCap || 0)));
     }
+    const segCount = stocks.filter(s => s.matchKind === 'segment').length;
     return {
       ok: true, query,
       concepts: matchers.concepts || [],
@@ -5004,7 +5336,10 @@ const StockAPI = {
       matchers: matchers.segHints || [],
       boards: boardHits.map(b => ({ bk: b.code, name: b.name })),
       stocks,
-      scan: { pool: stockInfo.size, deep: usedDeep, matched: stocks.length }
+      scan: {
+        pool: stockInfo.size, deep: usedDeep, matched: stocks.length,
+        segment: segCount, channel: stocks.length - segCount, channelAdded: chanAdded
+      }
     };
   },
 
