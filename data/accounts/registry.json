@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": 1790209114062,
+  "updatedAt": 1790209116901,
   "accounts": {
     "789": {
       "hash": "pbkdf2$150000$Ekk0dlJppCZxXb/2RxUN/w==$tjExSgfWL9xjHVlZtVuYbjkWXh0uBrqk63oMkrh5rFc=",
@@ -24,19 +24,7 @@
       "disableDate": "",
       "registerDate": "",
       "createdAt": 1789540967533,
-      "updatedAt": 1790084793499
-    },
-    "cp130855": {
-      "hash": "pbkdf2$150000$zh/EECdscvG5O8TyQTLpIA==$maJFyXOZGpEtN3D4FnO0Oovz6n5eceQp/Qn+JSHv/Rc=",
-      "role": "user",
-      "status": "active",
-      "disabled": false,
-      "trialUntil": 1789957264355,
-      "quotaMonths": 0,
-      "disableDate": "",
-      "registerDate": "2026-09-18",
-      "createdAt": 1789697954397,
-      "updatedAt": 1790209114062
+      "updatedAt": 1790209116901
     }
   }
 }
