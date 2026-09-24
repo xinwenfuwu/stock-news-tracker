@@ -4,12 +4,12 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>股市信息分析系统</title>
-  <link rel="stylesheet" href="css/style.css?v=20260924d">
+  <link rel="stylesheet" href="css/style.css?v=20260924e">
   <!-- Vue 3 全局构建版（v3.4.21 · 自托管）
        原先走 unpkg.com CDN：国内网络对 unpkg 的连通性不稳定，一旦该请求长时间挂起，
        <head> 里的阻塞脚本会让整页停在白屏、后续 auth-boot.js 根本不会执行。
        改为同源托管后，启动链路不再依赖任何第三方 CDN。 -->
-  <script src="js/vue.global.prod.js?v=20260924d"></script>
+  <script src="js/vue.global.prod.js?v=20260924e"></script>
 </head>
 <body class="auth-locked">
   <!-- ===== 登录关卡：登录通过前业务脚本不会被加载 ===== -->
@@ -1636,14 +1636,6 @@
             <span v-if="semantic.searching">⏳ 深度扫描中...</span>
             <span v-else>🌐 全市场深度扫描</span>
           </button>
-          <input v-model="similar.input" placeholder="同类股票：输入种子股票代码/名称，如 600519 / 贵州茅台"
-            style="width:280px;min-width:200px;padding:9px 12px;border:1px solid #d8e0f0;border-radius:8px"
-            @keyup.enter="runSimilarBusiness">
-          <button class="btn btn-similar" @click="runSimilarBusiness" :disabled="similar.loading || sectorSearching"
-            title="输入一只股票，找出 A 股中经营相同主营业务/产品的同类公司（相关度口径与 AI 语义搜索一致：命中主营段营收占比之和）">
-            <span v-if="similar.loading">⏳ 匹配中...</span>
-            <span v-else>🧬 同类股票</span>
-          </button>
           <button class="btn btn-ai" @click="semanticSearch(false)" :disabled="semantic.searching || sectorSearching"
             title="用自然语言描述选股意图：自动匹配东财业务板块 → 拉取候选公司主营构成 → 按「该业务占公司营收比例」降序，找出经营相同业务/相同产品的上市公司">
             <span v-if="semantic.searching">⏳ 语义理解中...</span>
@@ -1651,6 +1643,14 @@
           </button>
           <button class="btn" @click="searchSubSectors" :disabled="sectorSearching" title="在我的概念选股板块中，按名称关键字搜索子版块">
             🔎 搜索子版块
+          </button>
+          <input v-model="similar.input" placeholder="同类股票：输入种子股票代码/名称，如 600519 / 贵州茅台"
+            style="width:280px;min-width:200px;padding:9px 12px;border:1px solid #d8e0f0;border-radius:8px"
+            @keyup.enter="runSimilarBusiness">
+          <button class="btn btn-similar" @click="runSimilarBusiness" :disabled="similar.loading || sectorSearching"
+            title="输入一只股票，找出 A 股中经营相同主营业务/产品的同类公司（相关度口径与 AI 语义搜索一致：命中主营段营收占比之和）">
+            <span v-if="similar.loading">⏳ 匹配中...</span>
+            <span v-else>🧬 同类股票</span>
           </button>
           <span class="reverse-inline" title="输入一只股票，反推其各主营业务/产品的营收占比（相关度）与业务热度（结果表首两行固定为「该股最火业务」与「自定义业务」）">
             <input v-model="reverse.input" placeholder="股票代码/名称，如 000711 / 掌阅科技"
@@ -1661,6 +1661,20 @@
               <span v-else>🔄 反推业务</span>
             </button>
           </span>
+          <!-- batch60：手动添加股票输入框从语义结果区移到选股栏（反推业务后面），随时可加股票进当前结果列表 -->
+          <span class="reverse-inline" title="输入股票代码或名称，手动添加到当前选股结果列表（如 600519 / 贵州茅台），多只用逗号分隔">
+            <input class="inline-input wide" v-model="stockAddCode" @keyup.enter="addStockByCode" placeholder="输入股票代码或名称添加（如 600519 / 贵州茅台），多只用逗号分隔"
+              style="width:230px;min-width:170px;padding:9px 12px;border:1px solid #d8e0f0;border-radius:8px" />
+            <button class="btn btn-primary" @click="addStockByCode" :disabled="stockAdding">
+              <span v-if="stockAdding">⏳ 添加中...</span>
+              <span v-else>＋ 添加股票</span>
+            </button>
+          </span>
+          <!-- batch60：恢复按钮——清空选股栏所有输入与结果，恢复默认状态 -->
+          <button class="btn" @click="resetSectorPanel" :disabled="semantic.searching || sectorSearching || similar.loading || reverse.loading"
+            title="清空选股栏的搜索词与全部结果（AI语义/同类股票/反推业务），恢复默认状态">
+            🧹 恢复
+          </button>
         </div>
         <div class="usage-panel" style="margin:-6px 0 14px">
           <div class="usage-toggle" @click="sectorUsageOpen = !sectorUsageOpen"
@@ -1672,6 +1686,9 @@
             用法：在上方输入框输入 <b>谐波减速器</b> / <b>复合铜箔</b> / <b>人工智能</b> / <b>低空经济</b> / <b>薄膜铌酸锂</b>，
             点 🤖 AI语义搜索 即可列出<b>经营相同业务或相同产品</b>的上市公司，并按「<b>该业务占公司营收比例</b>」从高到低排序；
             冷门/细分产品词若结果偏少，用 🌐 全市场深度扫描（遍历全部 A 股主营构成）。
+            <b>组词整词匹配</b>：你填写的主业/产品词会被当成<b>一个整体</b>理解——如输入「特种电缆」，
+            只命中主营构成里含「<b>特种电缆</b>」整词的公司，<b>不会</b>拆成「主营带特种」和「产品带电缆」分别命中；
+            识别概念与命中来源同样展示该组词。纯组词词（未命中概念库/产品库时）自动对<b>全市场主营业务和产品</b>做深度扫描。
             同类股票：输入一只股票，找出其<b>排名前 2 的两大业务/主要产品</b>相同的 A 股公司（已自动剔除 301/300 开头、北交所、ST）。
             结果表带「<b>命中来源</b>」列：<b>主营业务</b>=主营构成段名直接命中（相关度即该段营收占比之和）；
             <b>板块成员</b>/<b>行业归属</b>=段名未列该词但公司确实属于该板块/行业（如输入「证券」时的中国银河、国泰海通，相关度记 0）。
@@ -1882,11 +1899,8 @@
               </tbody>
             </table>
           </div>
-          <div class="semantic-add-stock">
-            <input class="inline-input wide" v-model="stockAddCode" @keyup.enter="addStockByCode" placeholder="输入股票代码或名称添加（如 600519 / 贵州茅台），多只用逗号分隔" />
-            <button class="btn btn-xs btn-primary" @click="addStockByCode" :disabled="stockAdding">＋ 添加股票</button>
-          </div>
-          <p class="muted small" v-if="!semantic.stocks.length">未找到符合条件的上市公司，可尝试调整描述（如去掉"核心"或减少概念），或手动「添加股票」。</p>
+          <!-- batch60：「输入股票代码或名称添加」输入框已移到上方选股栏（反推业务后面），不再重复放在语义结果区 -->
+          <p class="muted small" v-if="!semantic.stocks.length">未找到符合条件的上市公司，可尝试调整描述（如去掉"核心"或减少概念），或在上方选股栏「＋ 添加股票」手动补充。</p>
           <p class="muted tiny">说明：AI 语义搜索围绕「<b>主营构成</b>」这个唯一判据——把候选公司（命中东财业务板块的成分股，或全市场）的最新一期<b>按产品主营构成</b>与你的语义/产品词做匹配，
             <b>命中业务段营收占比之和 = 相关度(%)</b>，并<b>按该占比从高到低排序</b>（同占比再按总市值降序），相关度为 0 的一律剔除。
             「核心/龙头」取前 20 家；「小市值」取市值最小的 20 家；修改概念/板块后点「按当前条件重算」会基于最新主营构成重新计算。
@@ -3877,18 +3891,23 @@
       </div>
     </transition>
 
+    <!-- ===== batch60：回顶按钮（页面向下滚动超过一屏后出现） ===== -->
+    <transition name="toast">
+      <button class="back-top-btn" v-if="showBackTop" @click="scrollToTop" title="回到顶部">⬆ 顶部</button>
+    </transition>
+
     <!-- ===== Toast 提示 ===== -->
     <transition name="toast">
       <div class="toast" v-if="toast.show" :class="toast.type">{{ toast.msg }}</div>
     </transition>
   </div>
 
-  <script src="js/auth.js?v=20260924d"></script>
-  <script src="js/auth-sync.js?v=20260924d"></script>
+  <script src="js/auth.js?v=20260924e"></script>
+  <script src="js/auth-sync.js?v=20260924e"></script>
   <!-- 边缘加速默认站点（batch37 治本：Cloudflare Worker 代理东财/腾讯，缓解 JSONP 限流误报）。
        若你所在地区 workers.dev 访问慢，可在「设置 → 行情加速地址」清空即恢复纯直连。 -->
   <script>window.__SNT_ACCEL__ = 'https://stock-edge.hui-zhou.workers.dev';</script>
-  <script src="js/auth-boot.js?v=20260924d"></script>
+  <script src="js/auth-boot.js?v=20260924e"></script>
   <!-- store / stock-api / hot-topics / app 由 auth-boot.js 在登录通过后动态装载，
        未登录时它们不会被下载，业务数据也不会进入内存 -->
 </body>

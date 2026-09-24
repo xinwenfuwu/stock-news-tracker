@@ -3172,3 +3172,22 @@ body.guest-mode #app { display: none; }
   .pool-detail-search .pds-input { min-width: 0; }
   .pool-detail-summary .pds-avg { white-space: normal; }
 }
+
+/* ===== batch60：全局回顶按钮（滚动超过一屏后出现，右下角固定） ===== */
+.back-top-btn {
+  position: fixed;
+  right: 22px;
+  bottom: 84px;
+  z-index: 2200;
+  padding: 9px 14px;
+  border: 1px solid #c9d6ef;
+  border-radius: 20px;
+  background: #ffffff;
+  color: #33415c;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 4px 14px rgba(30, 58, 95, 0.18);
+  transition: background .15s ease, transform .15s ease;
+}
+.back-top-btn:hover { background: #eef3fc; transform: translateY(-2px); }

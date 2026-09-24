@@ -4047,11 +4047,48 @@ const app = createApp({
           });
         }
         stockAddCode.value = '';
+        // batch60：输入框已移到选股栏——没有语义结果时手动添加，也要把结果面板显示出来
+        if (!semantic.done) { semantic.done = true; if (!semantic.query) semantic.query = '手动添加'; }
         showToast(targets.length > 1 ? `已添加 ${targets.length} 只股票，首个：${firstName}` : '已添加 ' + firstName, 'success');
         markSemanticDirty();
       } catch (e) {
         showToast('添加失败：' + (e && e.message ? e.message : e), 'error');
       } finally { stockAdding.value = false; }
+    }
+
+    /**
+     * batch60：「恢复」按钮（选股栏末尾）——清空搜索词与全部结果，恢复默认状态。
+     * 覆盖范围：板块搜索词/搜索结果、AI语义筛选、同类股票、反推业务、手动添加输入框。
+     * 不动「我的概念选股板块」等已保存数据（那属于删除操作，不叫恢复默认状态）。
+     */
+    function resetSectorPanel() {
+      sectorSearch.value = '';
+      sectorResults.value = [];
+      stockAddCode.value = '';
+      // AI 语义筛选状态复位
+      semantic.searching = false; semantic.error = ''; semantic.query = '';
+      semantic.concepts = []; semantic.modifiers = [];
+      semantic.method = ''; semantic.productKey = ''; semantic.productDesc = '';
+      semantic.boards = []; semantic.stocks = []; semantic.matchers = [];
+      semantic.done = false; semantic.saved = false;
+      semantic.recomputing = false; semantic.progress = ''; semantic.scan = null;
+      // 同类股票状态复位（保留排序方式/占比阈值这两个固定选项的默认值）
+      similar.input = ''; similar.loading = false; similar.error = ''; similar.done = false;
+      similar.seedName = ''; similar.seedCode = ''; similar.segments = []; similar.stocks = [];
+      // 反推业务状态复位
+      reverse.input = ''; reverse.loading = false; reverse.error = ''; reverse.done = false;
+      reverse.name = ''; reverse.code = ''; reverse.segments = [];
+      reverse.hotTheme = ''; reverse.hotConcept = null;
+      showToast('已恢复默认状态', 'info');
+    }
+
+    // ===== batch60：全局回顶按钮（任何页面向下滚动超过一屏后出现） =====
+    const showBackTop = ref(false);
+    function scrollToTop() { window.scrollTo({ top: 0, behavior: 'smooth' }); }
+    function _updateBackTop() {
+      const y = Math.max(window.scrollY || window.pageYOffset || 0,
+        document.documentElement.scrollTop || document.body.scrollTop || 0);
+      showBackTop.value = y > 400;
     }
 
     // 已保存板块顺序：一旦用户拖动过卡片（所有板块都有显式 order），就按 order 升序；
@@ -7369,6 +7406,10 @@ const app = createApp({
         if (e.key === 'Escape') userMenuOpen.value = false;
       });
 
+      // batch60：回顶按钮——监听页面滚动（passive，不阻塞滚动渲染）
+      window.addEventListener('scroll', _updateBackTop, { passive: true });
+      _updateBackTop();
+
       // ===== 注册申请提醒 =====
       // 初次扫描（例如刷新页面后发现有待审核）＋ 消费注册者发来的导入链接
       scanPending();
@@ -7974,6 +8015,8 @@ const app = createApp({
       editingConceptIdx, conceptDraft, newConceptText, startEditConcept, commitEditConcept, cancelEditConcept, removeConcept, addConcept,
       editingBoardIdx, boardDraft, boardAddKw, boardAddMatches, boardAdding, startEditBoard, commitEditBoard, cancelEditBoard, removeBoard, searchBoardForAdd, addBoard, matchKindLabel,
       editingStockCode, stockNameDraft, stockRoleDraft, stockConceptsDraft, stockAddCode, stockAdding, startEditStock, commitEditStock, cancelEditStock, removeStock, addStockByCode,
+      // batch60：恢复按钮 + 回顶按钮
+      resetSectorPanel, showBackTop, scrollToTop,
       // 反推业务
       reverse, reverseSorted, reverseSort, setReverseSort, reverseBusiness, reverseSortIcon,
       // 页面3

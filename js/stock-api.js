@@ -529,11 +529,60 @@ function extractQueryTerms(query) {
 }
 
 /**
+ * batch60：组词（整词短语）抽取 —— 用户填写的主业/主要产品词必须当成**一个整体**理解。
+ * 例：「特种电缆」是"特种"+"电缆"组成的**一个**产品词。语义搜索 / 全市场深度扫描时
+ *     必须整词匹配主营段名（段名含「特种电缆」才算命中），
+ *     绝不能拆成「主营业务带特种」+「产品带电缆」两个独立条件分别命中。
+ * 抽取规则：按中文连续段切分 → 剥离首尾停用词（如「主营为X的企业」→「X」）→
+ *   剩余长度 ≥3 的短语视为组词；长度 2 的短语仅当它就是整个查询时才算（如「铜箔」「证券」）。
+ *   纯类别词/领域词/弱产品词（设备/火电/发电…）不构成组词（无区分度，沿用原有碎片逻辑）。
+ * @returns {string[]} 组词列表（整词优先，最多取 4 个）
+ */
+function extractCompoundPhrases(query) {
+  const ql = String(query || '').toLowerCase().trim();
+  if (!ql) return [];
+  let runs = ql.match(/[一-龥]+/g) || [];
+  const out = [];
+  for (let run of runs) {
+    // ① 先按单字停用词切分：「和/与/及/或/的/为…」是分隔符不是主体
+    //    （注意不能把「种」「一」当分隔符，否则「特种电缆」会被拆坏）
+    //    例：「特种电缆和风电叶片」→ [特种电缆, 风电叶片]
+    const parts = run.split(/[的和与及或在是了为有请帮我找做等]/);
+    for (let part of parts) {
+      if (!part) continue;
+      // ② 剥离首尾多字停用词（如「主营」「上市」「公司」），保留至少 2 字主体
+      let changed = true;
+      while (changed && part.length >= 2) {
+        changed = false;
+        for (const sw of SEMANTIC_STOPWORDS) {
+          if (sw.length < 2) continue;
+          if (part.length - sw.length >= 2) {
+            if (part.startsWith(sw)) { part = part.slice(sw.length); changed = true; continue; }
+            if (part.endsWith(sw)) { part = part.slice(0, -sw.length); changed = true; continue; }
+          }
+        }
+      }
+      if (part.length < 2 || part.length > 10) continue;
+      // 2 字短语必须是「整个查询」才构成组词（如「铜箔」），否则只是碎片
+      if (part.length === 2 && ql !== part) continue;
+      if (SEMANTIC_STOPWORDS.has(part) || GENERIC_CATEGORY_NOUNS.has(part) ||
+          DOMAIN_MODIFIERS.has(part) || WEAK_PRODUCT_WORDS.has(part)) continue;
+      out.push(part);
+      if (out.length >= 4) break;
+    }
+    if (out.length >= 4) break;
+  }
+  return [...new Set(out)];
+}
+
+/**
  * 把自然语言解析为语义匹配要素。
  *  - concepts：命中的概念本体（用于概念板块检索候选池 + 标签展示）
  *  - boardHints：从命中概念聚合的「板块名」匹配词（候选池发现）
  *  - segHints：从命中概念聚合的「主营构成段名」匹配词（相关度计算）
  *  - generic：从查询直接抽取的通用匹配词（同时用于板块名与段名）
+ *  - compound（batch60）：组词整词短语（如「特种电缆」）。存在时 segHints **只含组词**（严格整词匹配，
+ *    不再让「特种」「电缆」等碎片独立命中），原碎片词降级存入 broadSegHints 作 0 命中兜底。
  */
 function buildMatchers(query) {
   const ql = String(query || '').toLowerCase();
@@ -554,7 +603,18 @@ function buildMatchers(query) {
   const g = extractQueryTerms(query);
   g.terms.forEach(t => { boardHints.add(t); segHints.add(t); });
   g.domain.forEach(t => { segHints.add(t); }); // 领域词只进段名（加权），不进 boardHints（不驱动运营板块）
-  return { concepts, boardHints: [...boardHints], segHints: [...segHints], generic: [...g.terms], domain: [...g.domain] };
+  // batch60：组词抽取 —— 有组词时段名匹配词收严为「仅组词」，碎片词全部降级为兜底
+  const compound = extractCompoundPhrases(query);
+  if (compound.length) {
+    compound.forEach(c => boardHints.add(c));
+    return {
+      concepts, boardHints: [...boardHints],
+      segHints: compound.slice(),               // 严格：整词优先
+      broadSegHints: [...segHints],             // 兜底：0 命中时才放宽到碎片
+      generic: [...g.terms], domain: [...g.domain], compound
+    };
+  }
+  return { concepts, boardHints: [...boardHints], segHints: [...segHints], generic: [...g.terms], domain: [...g.domain], compound: [], broadSegHints: null };
 }
 
 /** 主营构成段名是否命中任一匹配词（子串，忽略大小写） */
@@ -5208,8 +5268,13 @@ const StockAPI = {
     };
     const scoreWithFallback = async () => {
       let s = await scoreAll(coreArr);
-      // 产品级严格匹配一无所获 → 用概念泛词兜底重试（宁可召回放宽，也绝不返回 0 结果）
-      if (!s.length && productKey && (matchers.broadSegHints || []).length) {
+      // batch60：组词/产品级严格匹配一无所获 → 用碎片泛词兜底重试（宁可召回放宽，也绝不返回 0 结果）。
+      // 兜底后 coreArr 会被替换成碎片词——重算与展示都沿用替换后的实际匹配词。
+      // 【关键约束】组词查询（compound 非空）**禁用碎片兜底**——用户的「特种电缆」是整词，
+      //   绝不允许退化成「特种」「电缆」碎片分别命中（否则 特种装备 / 电缆料 这类错误结果都算进来）。
+      //   组词整词 0 命中就返回 0（配合全市场深度扫描，已保证对全市场主营构成做过整词匹配）。
+      const canBroaden = !(matchers.compound && matchers.compound.length);
+      if (!s.length && canBroaden && (matchers.broadSegHints || []).length) {
         const broad = matchers.broadSegHints.map(t => String(t).toLowerCase());
         const retry = await scoreAll(broad);
         if (retry.length) { coreArr = broad; return retry; }
@@ -5354,7 +5419,8 @@ const StockAPI = {
       modifiers,
       method: productKey ? 'product' : (usedDeep ? 'deep' : (explicitBoards && explicitBoards.length ? 'boards' : 'revenue')),
       productKey, productDesc,
-      matchers: matchers.segHints || [],
+      // batch60：返回**实际生效**的段名匹配词（组词整词或兜底碎片），编辑概念/板块后「重算」沿用同一口径
+      matchers: coreArr.slice(),
       boards: boardHits.map(b => ({ bk: b.code, name: b.name })),
       stocks,
       scan: {
@@ -5395,10 +5461,17 @@ const StockAPI = {
         error: '未识别到可检索的业务/产品词，请更具体些，如：谐波减速器 / 国产芯片 / 储能 / 人工智能'
       };
     }
+    // batch60：组词处理 —— ① 把组词整词放进「识别概念」首位（识别和命中都带上这个组词）；
+    // ② 纯组词查询（没命中概念本体、也没命中产品库，如「特种电缆」）强制走全市场主营构成扫描，
+    //    保证对**全市场的主营业务和产品**进行扫描，不漏掉板块库覆盖不到的公司。
+    const hasCompound = !!(matchers.compound && matchers.compound.length);
+    const hadConceptHit = matchers.concepts.length > 0;
+    if (hasCompound) matchers.concepts = [...matchers.compound, ...matchers.concepts];
     try {
       return await this._revenueSearch({
         query, matchers, modifiers, seedCodes, productKey, productDesc, productStocks,
-        forceDeep: !!opts.deep, onProgress: opts.onProgress || null
+        forceDeep: !!opts.deep || (hasCompound && !hadConceptHit && !product),
+        onProgress: opts.onProgress || null
       });
     } catch (e) {
       return { ok: false, query, concepts: matchers.concepts, modifiers, error: 'AI语义筛选失败：' + (e && e.message ? e.message : e) };
