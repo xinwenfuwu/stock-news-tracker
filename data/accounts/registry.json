@@ -1,30 +1,18 @@
 {
   "version": 1,
-  "updatedAt": 1790209194296,
+  "updatedAt": 1790209196565,
   "accounts": {
-    "123": {
-      "hash": "pbkdf2$150000$3Szu4HM4TkXQeuZaTW3+lA==$h8Ut/+4NjwCT2VLmWcG0qcSCsOEacCseHgM9GD+Xc+4=",
-      "role": "user",
-      "status": "active",
-      "disabled": false,
-      "trialUntil": 1790041767645,
-      "quotaMonths": 0,
-      "disableDate": "",
-      "registerDate": "2026-08-18",
-      "createdAt": 1789564630930,
-      "updatedAt": 1790209194296
-    },
     "789": {
       "hash": "pbkdf2$150000$Ekk0dlJppCZxXb/2RxUN/w==$tjExSgfWL9xjHVlZtVuYbjkWXh0uBrqk63oMkrh5rFc=",
       "role": "user",
       "status": "active",
       "disabled": false,
-      "trialUntil": 1789877255919,
+      "trialUntil": 1790050066510,
       "quotaMonths": 0,
       "disableDate": "",
       "registerDate": "2026-09-17",
       "createdAt": 1789653491895,
-      "updatedAt": 1789790863337
+      "updatedAt": 1790209196565
     },
     "huyun": {
       "hash": "pbkdf2$150000$2U78TImuWTnQP2S6OfqV8w==$WKk/lcaAOHBMYwQlwQCh96dsWAs4HUc46/CgIbvbWp0=",
