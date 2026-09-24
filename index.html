@@ -4,12 +4,12 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>股市信息分析系统</title>
-  <link rel="stylesheet" href="css/style.css?v=20260924b">
+  <link rel="stylesheet" href="css/style.css?v=20260924c">
   <!-- Vue 3 全局构建版（v3.4.21 · 自托管）
        原先走 unpkg.com CDN：国内网络对 unpkg 的连通性不稳定，一旦该请求长时间挂起，
        <head> 里的阻塞脚本会让整页停在白屏、后续 auth-boot.js 根本不会执行。
        改为同源托管后，启动链路不再依赖任何第三方 CDN。 -->
-  <script src="js/vue.global.prod.js?v=20260924b"></script>
+  <script src="js/vue.global.prod.js?v=20260924c"></script>
 </head>
 <body class="auth-locked">
   <!-- ===== 登录关卡：登录通过前业务脚本不会被加载 ===== -->
@@ -59,11 +59,10 @@
         <div class="auth-done-title">✅ 注册申请已提交，等待管理员审核</div>
         <div class="auth-alert-box">
           <b>⚠️ 还有一步：请主动通知管理员</b>
-          <span>本系统没有服务端，<b>不会自动给管理员发通知</b>。请点下面的按钮，把申请信息复制后发给管理员（微信 / QQ 都可以）。</span>
+          <span>本系统没有服务端，<b>不会自动给管理员发通知</b>。请点下面的「只复制申请码」，把申请码复制后发给管理员（微信 / QQ 都可以）。</span>
         </div>
         <textarea class="auth-code auth-code-lg" id="reg-code" rows="8" readonly spellcheck="false"></textarea>
         <p class="auth-tip" id="reg-code-hint"></p>
-        <button class="auth-btn" type="button" id="auth-reg-send">📨 复制申请信息，发给管理员</button>
         <button class="auth-btn" type="button" id="auth-reg-copy">只复制申请码</button>
         <button class="auth-btn auth-btn-primary" type="button" id="auth-reg-done-code">📋 我已拿到准入码，去登录</button>
         <button class="auth-btn auth-btn-back" type="button" id="auth-reg-done-back">← 返回登录</button>
@@ -312,7 +311,7 @@
               </button>
             </div>
             <div class="brief-search-wrap">
-              <input class="brief-search" v-model="briefKeyword" type="search" placeholder="关键词搜索（如：英伟达 / 降息 / 原油）">
+              <input class="brief-search" v-model="briefKeyword" type="search" autocomplete="off" placeholder="关键词搜索（如：英伟达 / 降息 / 原油）">
               <button class="brief-search-clear" v-if="briefKeyword" @click="briefKeyword = ''" title="清空关键词">✕</button>
             </div>
           </div>
@@ -1370,7 +1369,7 @@
                 </button>
               </div>
               <div class="brief-search-wrap">
-                <input class="brief-search" v-model="briefKeyword" type="search" placeholder="关键词搜索（如：英伟达 / 降息 / 原油）">
+                <input class="brief-search" v-model="briefKeyword" type="search" autocomplete="off" placeholder="关键词搜索（如：英伟达 / 降息 / 原油）">
                 <button class="brief-search-clear" v-if="briefKeyword" @click="briefKeyword = ''" title="清空关键词">✕</button>
               </div>
             </div>
@@ -3869,7 +3868,7 @@
 
     <!-- ===== 管理员：待审核注册申请站内提醒 ===== -->
     <transition name="adminalert">
-      <div class="admin-alert" v-if="adminAlert.show">
+      <div class="admin-alert" v-if="adminAlert.show && can('users.manage')">
         <span class="admin-alert-icon">🔔</span>
         <div class="admin-alert-body">
           <b>有 {{ adminAlert.count }} 份新的注册申请待审核</b>
@@ -3886,12 +3885,12 @@
     </transition>
   </div>
 
-  <script src="js/auth.js?v=20260924b"></script>
-  <script src="js/auth-sync.js?v=20260924b"></script>
+  <script src="js/auth.js?v=20260924c"></script>
+  <script src="js/auth-sync.js?v=20260924c"></script>
   <!-- 边缘加速默认站点（batch37 治本：Cloudflare Worker 代理东财/腾讯，缓解 JSONP 限流误报）。
        若你所在地区 workers.dev 访问慢，可在「设置 → 行情加速地址」清空即恢复纯直连。 -->
   <script>window.__SNT_ACCEL__ = 'https://stock-edge.hui-zhou.workers.dev';</script>
-  <script src="js/auth-boot.js?v=20260924b"></script>
+  <script src="js/auth-boot.js?v=20260924c"></script>
   <!-- store / stock-api / hot-topics / app 由 auth-boot.js 在登录通过后动态装载，
        未登录时它们不会被下载，业务数据也不会进入内存 -->
 </body>

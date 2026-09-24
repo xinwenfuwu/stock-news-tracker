@@ -2250,6 +2250,10 @@ a.tt-news-text:hover { color: var(--accent); text-decoration: underline; }
 
 /* ===== 登录关卡 ===== */
 body.auth-locked { overflow: hidden; }
+/* 关卡收起前，#app 仍是未编译的原始模板（含 {{}} 插值与管理员站内提醒条 .admin-alert）。
+   必须隐藏，否则在慢网络 / 跨设备场景下，关卡淡出的瞬间会短暂露出这些本不该出现的内部内容。
+   Vue 挂载后 auth-boot 会移除 auth-locked，#app 才显示（此时已是编译后的真实界面）。 */
+body.auth-locked #app { visibility: hidden; }
 #auth-gate [hidden] { display: none !important; }
 
 /* 游客预览：把登录关卡和「尚未挂载 Vue 的 #app 原始模板」一起真正藏掉。

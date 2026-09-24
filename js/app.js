@@ -7328,6 +7328,9 @@ const app = createApp({
     }
 
     onMounted(() => {
+      // batch57：防御浏览器「表单自动填充 / 会话恢复」把上次搜过的关键词回填进搜索框。
+      // 业务上 briefKeyword 默认就是空，这里挂载时再强行清一次，保证两个每日快讯搜索框在任意设备都默认为空。
+      try { briefKeyword.value = ''; } catch (e) { /* ignore */ }
       // 进入系统后补写本次登录的 IP / 归属地 / 设备（异步、失败不影响使用）
       syncLoginMeta();
       // 账号隔离上线后，本账号的持仓若是从旧共享数据里认领过来的，明确告知一声

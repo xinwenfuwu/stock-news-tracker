@@ -27,7 +27,7 @@
   'use strict';
 
   // 与 index.html 中静态资源版本号保持一致，避免升级后命中旧缓存
-  var ASSET_V = '20260924b';
+  var ASSET_V = '20260924c';
 
   // 管理员点开「注册申请导入链接」后，申请码暂存在这里，等业务层（app.js）就绪后取走
   var IMPORT_KEY = 'snt-pending-import-v1';
@@ -470,6 +470,18 @@
 
   function hideGate() {
     if (!elGate) return;
+    // 必须等 Vue 把 #app 编译挂载完，再收起登录关卡。
+    // 否则在慢网络 / 跨设备场景下，关卡淡出的瞬间 #app 仍是未编译的原始模板，
+    // 其中含 {{adminAlert.count}} 插值与管理员站内提醒条 .admin-alert，
+    // 会直接裸露给普通用户（违反「普通用户绝不可见管理员内容」）。
+    // Vue3 挂载后会在根容器上挂 __vue_app__，用它判断是否已就绪。
+    var appEl = document.getElementById('app');
+    if (appEl && !appEl.__vue_app__) {
+      // 极端时序防御：mount 本应同步完成，这里最多再等一会儿；超上限则不再死等，直接收起。
+      if (!hideGate._wait) hideGate._wait = 0;
+      hideGate._wait += 1;
+      if (hideGate._wait < 200) { setTimeout(hideGate, 50); return; }
+    }
     // 极端时序：游客预览开着时 Auth.restore() 才异步返回「已登录」，
     // 若不收起预览层，业务应用会挂载在它下面、看起来像没登录成功。
     removeGuestView();
@@ -478,6 +490,7 @@
     elGate.classList.add('auth-gate-hide');
     setTimeout(function () {
       if (elGate && elGate.parentNode) elGate.parentNode.removeChild(elGate);
+      elGate = null;
     }, 340);
   }
 
@@ -700,13 +713,6 @@
         // 「返回登录」也必须能落到登录页，而不是再弹回注册表单卡死。
         showForm('login');
       });
-    });
-    var sendBtn = $('#auth-reg-send');
-    if (sendBtn) sendBtn.addEventListener('click', function () {
-      var code = elRegCode ? elRegCode.value : lastReg.code;
-      var name = lastReg.username || ($('#reg-username') ? $('#reg-username').value.trim() : '');
-      if (!code) { showMsg('请先提交注册申请', 'error'); return; }
-      copyText(buildRegMessage(name, code), '申请信息已复制，粘到微信 / QQ 发给管理员即可');
     });
     var copyBtn = $('#auth-reg-copy');
     if (copyBtn) copyBtn.addEventListener('click', function () {
