@@ -1961,7 +1961,7 @@ body {
  * 元素与交互完全不变（batch27 的「名称完整显示、不截断」继续保留）。 */
 .brief-cat-head {
   display: grid;
-  grid-template-columns: 10px 22px 68px minmax(0, 1fr) 30px 38px;
+  grid-template-columns: 10px 30px 30px 20px 80px 24px minmax(0, 1fr) 34px 40px 34px;
   align-items: center; column-gap: 4px;
   padding: 7px 2px; font-size: 12.5px; cursor: pointer; border-radius: 6px;
 }
@@ -1980,6 +1980,20 @@ body {
 /* 计数 / 占比：定宽 + 右对齐，所有行的百分比右边缘落在同一条垂直线上 */
 .bc-count { text-align: right; font-weight: 400; font-variant-numeric: tabular-nums; overflow: hidden; }
 .bc-pct { text-align: right; color: var(--text-placeholder); font-variant-numeric: tabular-nums; overflow: hidden; }
+/* batch55：序 / 增 / 数 一键排序按钮 + 📊成分股按钮 + 排序工具条 */
+.bc-sort { justify-self: center; min-width: 0; text-align: center; font-variant-numeric: tabular-nums;
+  background: transparent; border: 1px solid transparent; border-radius: 4px; padding: 1px 2px;
+  font-size: 12px; cursor: pointer; color: var(--text-strong); line-height: 1.2; white-space: nowrap; }
+.bc-sort:hover { background: var(--surface-alt); border-color: var(--border); }
+.bc-sort .bsort { font-style: normal; font-size: 9px; color: var(--primary); margin-left: 1px; }
+.bc-stocks { justify-self: center; background: transparent; border: 1px solid var(--border); border-radius: 4px;
+  padding: 1px 3px; cursor: pointer; font-size: 12px; line-height: 1.2; }
+.bc-stocks:hover { background: var(--primary-light); border-color: var(--primary); }
+.brief-sortbar { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; margin: 4px 0 8px; font-size: 12px; }
+.brief-sortbar button { border: 1px solid var(--border); background: var(--surface); border-radius: 4px;
+  padding: 2px 10px; cursor: pointer; font-size: 12px; color: var(--text-strong); }
+.brief-sortbar button.active { background: var(--primary); border-color: var(--primary); color: #fff; }
+.brief-sortbar .bsort-dir { color: var(--text-placeholder); }
 .brief-news { padding: 6px 0 10px 10px; border-left: 2px solid var(--border); margin: 0 0 6px 4px; }
 .brief-news-head { display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; margin-bottom: 6px; }
 /* batch31：各省项目 —— 展开后附带的项目清单（省份 / 项目事项 / 投资额 / 时间） */

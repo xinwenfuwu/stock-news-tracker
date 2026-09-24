@@ -5273,6 +5273,8 @@ const app = createApp({
       }
       return list;
     });
+    /** batch55：新闻追踪页「当日股票明细」数据源——子类激活时显示其成分股（独立状态），否则沿用热门板块点击载入的股票 */
+    const dailyStockRows = computed(() => briefCatActive.value ? (briefCatStocks.value || []) : sortedHotStocks.value);
     function sortHotBy(key) {
       if (hotSort.key === key) {
         hotSort.dir = hotSort.dir === 'asc' ? 'desc' : 'asc';
@@ -5646,6 +5648,7 @@ const app = createApp({
           })
           .sort((a, b) => String(b.time).localeCompare(String(a.time)));
         briefWindowItems.value = inWin;
+        loadPrevBriefStats();   // batch55：闭市周期窗口变化后，重算「上一个等长窗口」用于 序/增/数
         briefWindow.on = true;
         briefWindow.start = startStr;
         briefWindow.end = endStr;
@@ -5703,13 +5706,195 @@ const app = createApp({
         (it.subjects || []).some(s => String(s).toLowerCase().includes(k)));
     });
     const briefSearching = computed(() => !!briefKeyword.value.trim());
-    /** 分类统计（在关键词过滤后的集合上统计；三维度各自独立，内部已按占比从大到小排序） */
-    const briefThemeStats = computed(() =>
-      (typeof HotTopics !== 'undefined' && HotTopics.briefStats) ? HotTopics.briefStats(briefFiltered.value, 'theme') : []);
-    const briefConceptStats = computed(() =>
-      (typeof HotTopics !== 'undefined' && HotTopics.briefStats) ? HotTopics.briefStats(briefFiltered.value, 'concept') : []);
-    const briefIndustryStats = computed(() =>
-      (typeof HotTopics !== 'undefined' && HotTopics.briefStats) ? HotTopics.briefStats(briefFiltered.value, 'industry') : []);
+
+    /* ===================== batch55：每日快讯子类 → 成分股 + 序/增/数 =====================
+     * ① 上一个默认时间段（用于「增/数」的排名变化计算）：取与当前窗口等长的「紧邻上一个窗口」。
+     *    默认窗口（昨天15:00→现在）→ 上一个 = 前天15:00→昨天15:00（HotTopics.lastClosedWindow）。
+     *    自定义闭市周期窗口 → 上一个 = [当前开始−窗口长度, 当前开始)。按 窗口+来源 缓存，不重复请求。 */
+    const prevBriefItems = ref([]);
+    const prevBriefLoading = ref(false);
+    let _prevKey = '';
+    const prevStats = computed(() => {
+      const items = prevBriefItems.value;
+      const out = { map: {}, max: { theme: 1, concept: 1, industry: 1 }, hasData: items.length > 0 };
+      if (!out.hasData) return out;
+      for (const m of ['theme', 'concept', 'industry']) {
+        const arr = HotTopics.briefStats(items, m);
+        let mx = 1;
+        arr.forEach((c, i) => {
+          out.map[m + '::' + c.key] = { rank: i + 1, count: c.count };
+          if (c.count > mx) mx = c.count;
+        });
+        out.max[m] = mx;
+      }
+      return out;
+    });
+    async function loadPrevBriefStats() {
+      let pwin;
+      if (briefWindow.on) {
+        const s = HotTopics.parseBriefTime(briefWindow.start), e = HotTopics.parseBriefTime(briefWindow.end);
+        if (s == null || e == null) return;
+        const len = e - s; pwin = { startMs: s - len, endMs: e - len };
+      } else {
+        const lw = HotTopics.lastClosedWindow();
+        pwin = { startMs: lw.start.getTime(), endMs: lw.end.getTime() };
+      }
+      const key = (briefWindow.on ? 'win' : 'def') + ':' + briefSourceName.value + ':' + pwin.startMs + '-' + pwin.endMs;
+      if (key === _prevKey && prevBriefItems.value.length) return;   // 已缓存，跳过
+      _prevKey = key;
+      prevBriefLoading.value = true;
+      try {
+        const dates = HotTopics.windowSnapshotDates(pwin.startMs, pwin.endMs);
+        const chunks = await Promise.all(dates.map(d => fetchBriefsFile(d, briefSourceName.value).catch(() => [])));
+        let items = [];
+        chunks.forEach(c => { if (Array.isArray(c)) items = items.concat(c); });
+        items = items.filter(it => {
+          const ts = HotTopics.parseBriefTime(it.time);
+          return ts != null && ts >= pwin.startMs && ts < pwin.endMs;
+        });
+        prevBriefItems.value = items;
+      } catch (e) {
+        prevBriefItems.value = [];
+      } finally {
+        prevBriefLoading.value = false;
+      }
+    }
+
+    /* ===================== 子类 → 成分股（新闻追踪页当日股票明细，独立于热门板块点击） ===================== */
+    const briefCatStocks = ref([]);          // 子类成分股（独立状态，绝不写 daily.stocks）
+    const briefCatActive = ref('');          // 当前选中的子类名（驱动新闻页明细表）
+    const briefCatLoading = ref(false);
+    const briefCatIsFallback = ref(false);   // true=未找到对应板块，回退到新闻关联股票
+    // 类别名 → 板块名 的少量纠偏（概念名与板块名不完全一致时用）；其余走 searchSectors 名称匹配
+    const BRIEF_CAT_BOARD_OVERRIDE = {
+      '人工智能': '人工智能', '算力': '算力', '半导体': '半导体', '芯片': '芯片', '新能源车': '新能源车',
+      '锂电池': '锂电池', '光伏': '光伏', '白酒': '白酒', '银行': '银行', '证券': '证券',
+      '房地产': '房地产', '军工': '国防军工', '医药': '医药生物', '电子': '电子', '汽车': '汽车整车',
+      '食品饮料': '食品饮料', '有色金属': '有色金属', '电力设备': '电力设备', '计算机': '计算机',
+      '通信': '通信', '传媒': '传媒', '农林牧渔': '农林牧渔', '化工': '化学制品', '钢铁': '钢铁',
+      '煤炭': '煤炭', '家电': '家用电器', '有色': '有色金属', '机器人': '机器人', '储能': '储能'
+    };
+    async function resolveCatBoard(cat) {
+      const name = BRIEF_CAT_BOARD_OVERRIDE[cat.name] || cat.name;
+      try {
+        const res = await StockAPI.searchSectors(name);
+        if (res && res.length && res[0] && res[0].bk) return res[0].bk;
+      } catch (e) { /* 搜索失败则回退 */ }
+      return null;
+    }
+    /** 给任意股票列表补全行情与财务（复用 refreshHotStocks 的核心逻辑，但不动 daily.stocks） */
+    async function enrichStockList(list) {
+      if (!list || !list.length) return;
+      const codes = list.map(s => s.code).filter(Boolean);
+      try {
+        const quotes = await StockAPI.getQuotes(codes);
+        for (const s of list) {
+          const q = quotes[s.code];
+          if (!q) continue;
+          if (!s.name && q.name) s.name = q.name;
+          s.amplitude = q.amplitude;
+          s.dailyChange = q.changePercent;
+          s.turnover = q.turnover;
+          s.todayPrice = q.price || s.todayPrice;
+          if (q.totalMarketCap) s.totalMarketCap = q.totalMarketCap;
+        }
+      } catch (e) { /* 行情失败不影响成分股本身 */ }
+      await runWithConcurrency(list, 6, async (s) => {
+        try { await enrichStockFinancials(s); } catch (e) { console.warn('子类成分股财务补全失败', s.code, e); }
+      });
+    }
+    // 请求令牌：加载未完成时用户再点别的子类，新点击应立刻生效（后点覆盖先点），
+    // 旧请求的结果作废，不再写回 —— 修复「加载中点击被静默吞掉」的旧行为。
+    let briefCatToken = 0;
+    async function openBriefCat(cat, mode) {
+      if (!cat) return;
+      const my = ++briefCatToken;
+      briefCatLoading.value = true;
+      briefCatActive.value = cat.name;
+      briefCatIsFallback.value = false;
+      showToast(`正在获取「${cat.name}」成分股...`, 'info');
+      try {
+        const bk = await resolveCatBoard(cat);
+        if (my !== briefCatToken) return;   // 已被更新的点击取代，直接放弃旧结果
+        if (bk) {
+          const all = await StockAPI.getSectorStocks(bk, cat.name);
+          if (all && all.length) {
+            const list = all.filter(s => !hotExcluded({ code: s.code, name: s.name }));
+            const removed = all.length - list.length;
+            briefCatStocks.value = list.map(s => {
+              const ns = _newStock(s);
+              ns.dailyChange = s.changePercent;
+              ns.todayPrice = s.price;
+              return ns;
+            });
+            await enrichStockList(briefCatStocks.value);
+            showToast(`已载入「${cat.name}」${briefCatStocks.value.length} 只成分股` + (removed ? `（已剔除 ${removed} 只）` : ''), 'success');
+            return;
+          }
+        }
+        // 回退：用该子类新闻里关联的股票
+        const codes = []; const seen = new Set();
+        (cat.news || []).forEach(n => (n.stocks || []).forEach(st => { if (!seen.has(st)) { seen.add(st); codes.push(st); } }));
+        if (codes.length) {
+          briefCatStocks.value = codes.map(c => _newStock({ code: c, name: '' }));
+          await enrichStockList(briefCatStocks.value);
+          briefCatIsFallback.value = true;
+          showToast(`未找到「${cat.name}」对应板块，已用新闻关联股票代替（${codes.length} 只）`, 'warn');
+        } else {
+          briefCatStocks.value = [];
+          showToast(`「${cat.name}」暂无成分股数据`, 'error');
+        }
+      } catch (e) {
+        if (my === briefCatToken) {
+          console.warn('子类成分股获取失败', e);
+          briefCatStocks.value = [];
+          showToast('成分股获取失败，请重试', 'error');
+        }
+      } finally {
+        if (my === briefCatToken) briefCatLoading.value = false;
+      }
+    }
+    function clearBriefCat() { briefCatActive.value = ''; briefCatStocks.value = []; }
+
+    /* ===================== 子类排序字段 序/增/数（及占比）一键排序 ===================== */
+    const briefCatSort = reactive({ field: 'seq', dir: 'asc' });   // 默认按序升序（名次 1 在最前，与「占比由大到小」同向）
+    function sortByBriefField(field) {
+      if (briefCatSort.field === field) { briefCatSort.dir = briefCatSort.dir === 'asc' ? 'desc' : 'asc'; }
+      else { briefCatSort.field = field; briefCatSort.dir = 'desc'; }
+    }
+    /**
+     * 给子类列表附上 序(seq)/增(inc)/数(cnt)，并按 briefCatSort 排序后返回。
+     *  seq = 当前窗口内、本归类下、按新闻出现次数占比由大到小排序后的名次（1 起）。
+     *  inc = 本次排名 − 上次默认时间段排名（正=名次下降/变差，负=上升/变好）。无上期数据则 null。
+     *  cnt = 本次该子类新闻数量 − 上次默认时间段该归类下最大数量。无上期数据则 null。
+     */
+    function buildBriefStats(items, mode) {
+      const base = (typeof HotTopics !== 'undefined' && HotTopics.briefStats) ? HotTopics.briefStats(items, mode) : [];
+      const pv = prevStats.value;
+      const enriched = base.map((c, i) => {
+        const seq = i + 1;
+        const prev = pv.hasData ? pv.map[mode + '::' + c.key] : null;
+        const inc = prev ? (seq - prev.rank) : null;
+        const cnt = pv.hasData ? (c.count - pv.max[mode]) : null;
+        return Object.assign({}, c, { seq: seq, inc: inc, cnt: cnt });
+      });
+      const f = briefCatSort.field, dir = briefCatSort.dir === 'asc' ? 1 : -1;
+      if (f === 'seq') return enriched.slice().sort((a, b) => (a.seq - b.seq) * dir);   // 序：名次升/降序（dir 控制箭头）
+      if (f === 'pct') return enriched.slice().sort((a, b) => (a.count - b.count) * dir); // 占比：按 count 升/降序（与数值路径一致）
+      const copy = enriched.slice();
+      copy.sort((a, b) => {
+        const va = a[f], vb = b[f];
+        if (va == null && vb == null) return 0;
+        if (va == null) return 1;
+        if (vb == null) return -1;
+        return (va - vb) * dir;
+      });
+      return copy;
+    }
+    /** 分类统计（关键词过滤后集合上统计；三维度各自独立，附 序/增/数 且支持一键排序） */
+    const briefThemeStats = computed(() => buildBriefStats(briefFiltered.value, 'theme'));
+    const briefConceptStats = computed(() => buildBriefStats(briefFiltered.value, 'concept'));
+    const briefIndustryStats = computed(() => buildBriefStats(briefFiltered.value, 'industry'));
     // 兼容旧引用（统计面板标题等）
     const briefStatsList = briefThemeStats;
     const briefDimCount = computed(() => briefThemeStats.value.length);
@@ -6312,6 +6497,7 @@ const app = createApp({
         if (s.change != null) ns.dailyChange = s.change;
         daily.stocks = [ns];
         hotBoardActive.value = label;
+        briefCatActive.value = '';   // batch55：热门个股点击载入时，清除新闻子类选择，保持两张表隔离
         hotDetailIsStock.value = true;
         // 联动：把个股同时载入下方「筛选板块」列表（尊重「固定筛选」区间）
         if (!filterPanel.locked) resetHotFilterRanges();
@@ -7801,6 +7987,9 @@ const app = createApp({
       tailBuyHit, isTailBuyHit, clearTailBuyHits,
       hotSearchCode, hotSearchName, clearHotSearch,
       sortedHotStocks, sortHotBy, hotSortIcon, removeHotStock,
+      // batch55：每日快讯子类 → 成分股（新闻追踪页当日股票明细，独立于热门板块点击）+ 序/增/数 排序
+      dailyStockRows, briefCatStocks, briefCatActive, briefCatLoading, briefCatIsFallback,
+      openBriefCat, clearBriefCat, briefCatSort, sortByBriefField, prevBriefLoading,
       loadHotData, fetchHotBoards, refreshHotStocks,
       refreshAmplitudeBoards, ampLoading, hotPanelsHidden, financePushHidden,
       // batch23（请求F）：六个子版块独立刷新按钮
