@@ -335,7 +335,7 @@
             <button class="btn btn-sm" style="margin-left:6px" @click="loadBriefsNow">📥 加载该日快讯</button>
           </div>
 
-          <div class="brief-sortbar" v-if="briefFiltered.length">
+          <div class="brief-sortbar" v-if="briefFiltered.length && currentPage === 'news'">
             <span class="muted small">子类排序：</span>
             <button type="button" :class="{ active: briefCatSort.field === 'seq' }" @click="sortByBriefField('seq')">序</button>
             <button type="button" :class="{ active: briefCatSort.field === 'inc' }" @click="sortByBriefField('inc')">增</button>
@@ -352,15 +352,15 @@
                 <div class="brief-cat" v-for="c in briefThemeStats" :key="c.key">
                   <div class="brief-cat-head" :class="{ active: briefUi.open['theme::' + c.key] }">
                     <span class="bc-caret" @click.stop="toggleBriefCat(c.key, 'theme')">{{ briefUi.open['theme::' + c.key] ? '▾' : '▸' }}</span>
-                    <button type="button" class="bc-sort bc-inc" @click.stop="sortByBriefField('inc')" :title="'增 = 本次排名 − 上次排名'">{{ c.inc==null?'—':(c.inc>0?'+':'')+c.inc }}<i class="bsort" v-if="briefCatSort.field==='inc'">{{ briefCatSort.dir==='asc'?'↑':'↓' }}</i></button>
-                    <button type="button" class="bc-sort bc-seq" @click.stop="sortByBriefField('seq')" :title="'序 = 按占比降序的排名'">{{ c.seq }}<i class="bsort" v-if="briefCatSort.field==='seq'">{{ briefCatSort.dir==='asc'?'↑':'↓' }}</i></button>
+                    <button type="button" class="bc-sort bc-inc" v-if="currentPage === 'news'" @click.stop="sortByBriefField('inc')" :title="'增 = 本次排名 − 上次排名'">{{ c.inc==null?'—':(c.inc>0?'+':'')+c.inc }}<i class="bsort" v-if="briefCatSort.field==='inc'">{{ briefCatSort.dir==='asc'?'↑':'↓' }}</i></button>
+                    <button type="button" class="bc-sort bc-seq" v-if="currentPage === 'news'" @click.stop="sortByBriefField('seq')" :title="'序 = 按占比降序的排名'">{{ c.seq }}<i class="bsort" v-if="briefCatSort.field==='seq'">{{ briefCatSort.dir==='asc'?'↑':'↓' }}</i></button>
                     <span class="bc-icon">{{ c.icon }}</span>
                     <span class="bc-name" @click.stop="openBriefCat(c, 'theme')" :title="'点击查看「'+c.name+'」成分股'">{{ c.name }}</span>
                     <button type="button" class="bc-stocks" @click.stop="openBriefCat(c, 'theme')" title="在下方「当日股票明细」展示成分股">📊</button>
                     <span class="bc-track"><span class="bc-fill" :style="{ width: c.width + '%', background: c.color }"></span></span>
                     <span class="bc-count">{{ c.count }}</span>
                     <span class="bc-pct">{{ c.pct }}%</span>
-                    <button type="button" class="bc-sort bc-cnt" @click.stop="sortByBriefField('cnt')" :title="'数 = 本次数量 − 上次最大数量'">{{ c.cnt==null?'—':c.cnt }}<i class="bsort" v-if="briefCatSort.field==='cnt'">{{ briefCatSort.dir==='asc'?'↑':'↓' }}</i></button>
+                    <button type="button" class="bc-sort bc-cnt" v-if="currentPage === 'news'" @click.stop="sortByBriefField('cnt')" :title="'数 = 本次数量 − 上次最大数量'">{{ c.cnt==null?'—':c.cnt }}<i class="bsort" v-if="briefCatSort.field==='cnt'">{{ briefCatSort.dir==='asc'?'↑':'↓' }}</i></button>
                   </div>
                   <div class="brief-news" v-if="briefUi.open['theme::' + c.key]">
                     <div class="brief-news-head">
@@ -421,15 +421,15 @@
                 <div class="brief-cat" v-for="c in briefConceptStats" :key="c.key">
                   <div class="brief-cat-head" :class="{ active: briefUi.open['concept::' + c.key] }">
                     <span class="bc-caret" @click.stop="toggleBriefCat(c.key, 'concept')">{{ briefUi.open['concept::' + c.key] ? '▾' : '▸' }}</span>
-                    <button type="button" class="bc-sort bc-inc" @click.stop="sortByBriefField('inc')" :title="'增 = 本次排名 − 上次排名'">{{ c.inc==null?'—':(c.inc>0?'+':'')+c.inc }}<i class="bsort" v-if="briefCatSort.field==='inc'">{{ briefCatSort.dir==='asc'?'↑':'↓' }}</i></button>
-                    <button type="button" class="bc-sort bc-seq" @click.stop="sortByBriefField('seq')" :title="'序 = 按占比降序的排名'">{{ c.seq }}<i class="bsort" v-if="briefCatSort.field==='seq'">{{ briefCatSort.dir==='asc'?'↑':'↓' }}</i></button>
+                    <button type="button" class="bc-sort bc-inc" v-if="currentPage === 'news'" @click.stop="sortByBriefField('inc')" :title="'增 = 本次排名 − 上次排名'">{{ c.inc==null?'—':(c.inc>0?'+':'')+c.inc }}<i class="bsort" v-if="briefCatSort.field==='inc'">{{ briefCatSort.dir==='asc'?'↑':'↓' }}</i></button>
+                    <button type="button" class="bc-sort bc-seq" v-if="currentPage === 'news'" @click.stop="sortByBriefField('seq')" :title="'序 = 按占比降序的排名'">{{ c.seq }}<i class="bsort" v-if="briefCatSort.field==='seq'">{{ briefCatSort.dir==='asc'?'↑':'↓' }}</i></button>
                     <span class="bc-icon">{{ c.icon }}</span>
                     <span class="bc-name" @click.stop="openBriefCat(c, 'concept')" :title="'点击查看「'+c.name+'」成分股'">{{ c.name }}</span>
                     <button type="button" class="bc-stocks" @click.stop="openBriefCat(c, 'concept')" title="在下方「当日股票明细」展示成分股">📊</button>
                     <span class="bc-track"><span class="bc-fill" :style="{ width: c.width + '%', background: c.color }"></span></span>
                     <span class="bc-count">{{ c.count }}</span>
                     <span class="bc-pct">{{ c.pct }}%</span>
-                    <button type="button" class="bc-sort bc-cnt" @click.stop="sortByBriefField('cnt')" :title="'数 = 本次数量 − 上次最大数量'">{{ c.cnt==null?'—':c.cnt }}<i class="bsort" v-if="briefCatSort.field==='cnt'">{{ briefCatSort.dir==='asc'?'↑':'↓' }}</i></button>
+                    <button type="button" class="bc-sort bc-cnt" v-if="currentPage === 'news'" @click.stop="sortByBriefField('cnt')" :title="'数 = 本次数量 − 上次最大数量'">{{ c.cnt==null?'—':c.cnt }}<i class="bsort" v-if="briefCatSort.field==='cnt'">{{ briefCatSort.dir==='asc'?'↑':'↓' }}</i></button>
                   </div>
                   <div class="brief-news" v-if="briefUi.open['concept::' + c.key]">
                     <div class="brief-news-head">
@@ -462,15 +462,15 @@
                 <div class="brief-cat" v-for="c in briefIndustryStats" :key="c.key">
                   <div class="brief-cat-head" :class="{ active: briefUi.open['industry::' + c.key] }">
                     <span class="bc-caret" @click.stop="toggleBriefCat(c.key, 'industry')">{{ briefUi.open['industry::' + c.key] ? '▾' : '▸' }}</span>
-                    <button type="button" class="bc-sort bc-inc" @click.stop="sortByBriefField('inc')" :title="'增 = 本次排名 − 上次排名'">{{ c.inc==null?'—':(c.inc>0?'+':'')+c.inc }}<i class="bsort" v-if="briefCatSort.field==='inc'">{{ briefCatSort.dir==='asc'?'↑':'↓' }}</i></button>
-                    <button type="button" class="bc-sort bc-seq" @click.stop="sortByBriefField('seq')" :title="'序 = 按占比降序的排名'">{{ c.seq }}<i class="bsort" v-if="briefCatSort.field==='seq'">{{ briefCatSort.dir==='asc'?'↑':'↓' }}</i></button>
+                    <button type="button" class="bc-sort bc-inc" v-if="currentPage === 'news'" @click.stop="sortByBriefField('inc')" :title="'增 = 本次排名 − 上次排名'">{{ c.inc==null?'—':(c.inc>0?'+':'')+c.inc }}<i class="bsort" v-if="briefCatSort.field==='inc'">{{ briefCatSort.dir==='asc'?'↑':'↓' }}</i></button>
+                    <button type="button" class="bc-sort bc-seq" v-if="currentPage === 'news'" @click.stop="sortByBriefField('seq')" :title="'序 = 按占比降序的排名'">{{ c.seq }}<i class="bsort" v-if="briefCatSort.field==='seq'">{{ briefCatSort.dir==='asc'?'↑':'↓' }}</i></button>
                     <span class="bc-icon">{{ c.icon }}</span>
                     <span class="bc-name" @click.stop="openBriefCat(c, 'industry')" :title="'点击查看「'+c.name+'」成分股'">{{ c.name }}</span>
                     <button type="button" class="bc-stocks" @click.stop="openBriefCat(c, 'industry')" title="在下方「当日股票明细」展示成分股">📊</button>
                     <span class="bc-track"><span class="bc-fill" :style="{ width: c.width + '%', background: c.color }"></span></span>
                     <span class="bc-count">{{ c.count }}</span>
                     <span class="bc-pct">{{ c.pct }}%</span>
-                    <button type="button" class="bc-sort bc-cnt" @click.stop="sortByBriefField('cnt')" :title="'数 = 本次数量 − 上次最大数量'">{{ c.cnt==null?'—':c.cnt }}<i class="bsort" v-if="briefCatSort.field==='cnt'">{{ briefCatSort.dir==='asc'?'↑':'↓' }}</i></button>
+                    <button type="button" class="bc-sort bc-cnt" v-if="currentPage === 'news'" @click.stop="sortByBriefField('cnt')" :title="'数 = 本次数量 − 上次最大数量'">{{ c.cnt==null?'—':c.cnt }}<i class="bsort" v-if="briefCatSort.field==='cnt'">{{ briefCatSort.dir==='asc'?'↑':'↓' }}</i></button>
                   </div>
                   <div class="brief-news" v-if="briefUi.open['industry::' + c.key]">
                     <div class="brief-news-head">
@@ -1393,7 +1393,7 @@
               <button class="btn btn-sm" style="margin-left:6px" @click="loadBriefsNow">📥 加载该日快讯</button>
             </div>
 
-            <div class="brief-sortbar" v-if="briefFiltered.length">
+            <div class="brief-sortbar" v-if="briefFiltered.length && currentPage === 'news'">
               <span class="muted small">子类排序：</span>
               <button type="button" :class="{ active: briefCatSort.field === 'seq' }" @click="sortByBriefField('seq')">序</button>
               <button type="button" :class="{ active: briefCatSort.field === 'inc' }" @click="sortByBriefField('inc')">增</button>
@@ -1410,15 +1410,15 @@
                   <div class="brief-cat" v-for="c in briefThemeStats" :key="c.key">
                     <div class="brief-cat-head" :class="{ active: briefUi.open['theme::' + c.key] }">
                       <span class="bc-caret" @click.stop="toggleBriefCat(c.key, 'theme')">{{ briefUi.open['theme::' + c.key] ? '▾' : '▸' }}</span>
-                      <button type="button" class="bc-sort bc-inc" @click.stop="sortByBriefField('inc')" :title="'增 = 本次排名 − 上次排名'">{{ c.inc==null?'—':(c.inc>0?'+':'')+c.inc }}<i class="bsort" v-if="briefCatSort.field==='inc'">{{ briefCatSort.dir==='asc'?'↑':'↓' }}</i></button>
-                      <button type="button" class="bc-sort bc-seq" @click.stop="sortByBriefField('seq')" :title="'序 = 按占比降序的排名'">{{ c.seq }}<i class="bsort" v-if="briefCatSort.field==='seq'">{{ briefCatSort.dir==='asc'?'↑':'↓' }}</i></button>
+                      <button type="button" class="bc-sort bc-inc" v-if="currentPage === 'news'" @click.stop="sortByBriefField('inc')" :title="'增 = 本次排名 − 上次排名'">{{ c.inc==null?'—':(c.inc>0?'+':'')+c.inc }}<i class="bsort" v-if="briefCatSort.field==='inc'">{{ briefCatSort.dir==='asc'?'↑':'↓' }}</i></button>
+                      <button type="button" class="bc-sort bc-seq" v-if="currentPage === 'news'" @click.stop="sortByBriefField('seq')" :title="'序 = 按占比降序的排名'">{{ c.seq }}<i class="bsort" v-if="briefCatSort.field==='seq'">{{ briefCatSort.dir==='asc'?'↑':'↓' }}</i></button>
                       <span class="bc-icon">{{ c.icon }}</span>
                       <span class="bc-name" @click.stop="openBriefCat(c, 'theme')" :title="'点击查看「'+c.name+'」成分股'">{{ c.name }}</span>
                       <button type="button" class="bc-stocks" @click.stop="openBriefCat(c, 'theme')" title="在下方「当日股票明细」展示成分股">📊</button>
                       <span class="bc-track"><span class="bc-fill" :style="{ width: c.width + '%', background: c.color }"></span></span>
                       <span class="bc-count">{{ c.count }}</span>
                       <span class="bc-pct">{{ c.pct }}%</span>
-                      <button type="button" class="bc-sort bc-cnt" @click.stop="sortByBriefField('cnt')" :title="'数 = 本次数量 − 上次最大数量'">{{ c.cnt==null?'—':c.cnt }}<i class="bsort" v-if="briefCatSort.field==='cnt'">{{ briefCatSort.dir==='asc'?'↑':'↓' }}</i></button>
+                      <button type="button" class="bc-sort bc-cnt" v-if="currentPage === 'news'" @click.stop="sortByBriefField('cnt')" :title="'数 = 本次数量 − 上次最大数量'">{{ c.cnt==null?'—':c.cnt }}<i class="bsort" v-if="briefCatSort.field==='cnt'">{{ briefCatSort.dir==='asc'?'↑':'↓' }}</i></button>
                     </div>
                     <div class="brief-news" v-if="briefUi.open['theme::' + c.key]">
                       <div class="brief-news-head">
@@ -1479,15 +1479,15 @@
                   <div class="brief-cat" v-for="c in briefConceptStats" :key="c.key">
                     <div class="brief-cat-head" :class="{ active: briefUi.open['concept::' + c.key] }">
                       <span class="bc-caret" @click.stop="toggleBriefCat(c.key, 'concept')">{{ briefUi.open['concept::' + c.key] ? '▾' : '▸' }}</span>
-                      <button type="button" class="bc-sort bc-inc" @click.stop="sortByBriefField('inc')" :title="'增 = 本次排名 − 上次排名'">{{ c.inc==null?'—':(c.inc>0?'+':'')+c.inc }}<i class="bsort" v-if="briefCatSort.field==='inc'">{{ briefCatSort.dir==='asc'?'↑':'↓' }}</i></button>
-                      <button type="button" class="bc-sort bc-seq" @click.stop="sortByBriefField('seq')" :title="'序 = 按占比降序的排名'">{{ c.seq }}<i class="bsort" v-if="briefCatSort.field==='seq'">{{ briefCatSort.dir==='asc'?'↑':'↓' }}</i></button>
+                      <button type="button" class="bc-sort bc-inc" v-if="currentPage === 'news'" @click.stop="sortByBriefField('inc')" :title="'增 = 本次排名 − 上次排名'">{{ c.inc==null?'—':(c.inc>0?'+':'')+c.inc }}<i class="bsort" v-if="briefCatSort.field==='inc'">{{ briefCatSort.dir==='asc'?'↑':'↓' }}</i></button>
+                      <button type="button" class="bc-sort bc-seq" v-if="currentPage === 'news'" @click.stop="sortByBriefField('seq')" :title="'序 = 按占比降序的排名'">{{ c.seq }}<i class="bsort" v-if="briefCatSort.field==='seq'">{{ briefCatSort.dir==='asc'?'↑':'↓' }}</i></button>
                       <span class="bc-icon">{{ c.icon }}</span>
                       <span class="bc-name" @click.stop="openBriefCat(c, 'concept')" :title="'点击查看「'+c.name+'」成分股'">{{ c.name }}</span>
                       <button type="button" class="bc-stocks" @click.stop="openBriefCat(c, 'concept')" title="在下方「当日股票明细」展示成分股">📊</button>
                       <span class="bc-track"><span class="bc-fill" :style="{ width: c.width + '%', background: c.color }"></span></span>
                       <span class="bc-count">{{ c.count }}</span>
                       <span class="bc-pct">{{ c.pct }}%</span>
-                      <button type="button" class="bc-sort bc-cnt" @click.stop="sortByBriefField('cnt')" :title="'数 = 本次数量 − 上次最大数量'">{{ c.cnt==null?'—':c.cnt }}<i class="bsort" v-if="briefCatSort.field==='cnt'">{{ briefCatSort.dir==='asc'?'↑':'↓' }}</i></button>
+                      <button type="button" class="bc-sort bc-cnt" v-if="currentPage === 'news'" @click.stop="sortByBriefField('cnt')" :title="'数 = 本次数量 − 上次最大数量'">{{ c.cnt==null?'—':c.cnt }}<i class="bsort" v-if="briefCatSort.field==='cnt'">{{ briefCatSort.dir==='asc'?'↑':'↓' }}</i></button>
                     </div>
                     <div class="brief-news" v-if="briefUi.open['concept::' + c.key]">
                       <div class="brief-news-head">
@@ -1520,15 +1520,15 @@
                   <div class="brief-cat" v-for="c in briefIndustryStats" :key="c.key">
                     <div class="brief-cat-head" :class="{ active: briefUi.open['industry::' + c.key] }">
                       <span class="bc-caret" @click.stop="toggleBriefCat(c.key, 'industry')">{{ briefUi.open['industry::' + c.key] ? '▾' : '▸' }}</span>
-                      <button type="button" class="bc-sort bc-inc" @click.stop="sortByBriefField('inc')" :title="'增 = 本次排名 − 上次排名'">{{ c.inc==null?'—':(c.inc>0?'+':'')+c.inc }}<i class="bsort" v-if="briefCatSort.field==='inc'">{{ briefCatSort.dir==='asc'?'↑':'↓' }}</i></button>
-                      <button type="button" class="bc-sort bc-seq" @click.stop="sortByBriefField('seq')" :title="'序 = 按占比降序的排名'">{{ c.seq }}<i class="bsort" v-if="briefCatSort.field==='seq'">{{ briefCatSort.dir==='asc'?'↑':'↓' }}</i></button>
+                      <button type="button" class="bc-sort bc-inc" v-if="currentPage === 'news'" @click.stop="sortByBriefField('inc')" :title="'增 = 本次排名 − 上次排名'">{{ c.inc==null?'—':(c.inc>0?'+':'')+c.inc }}<i class="bsort" v-if="briefCatSort.field==='inc'">{{ briefCatSort.dir==='asc'?'↑':'↓' }}</i></button>
+                      <button type="button" class="bc-sort bc-seq" v-if="currentPage === 'news'" @click.stop="sortByBriefField('seq')" :title="'序 = 按占比降序的排名'">{{ c.seq }}<i class="bsort" v-if="briefCatSort.field==='seq'">{{ briefCatSort.dir==='asc'?'↑':'↓' }}</i></button>
                       <span class="bc-icon">{{ c.icon }}</span>
                       <span class="bc-name" @click.stop="openBriefCat(c, 'industry')" :title="'点击查看「'+c.name+'」成分股'">{{ c.name }}</span>
                       <button type="button" class="bc-stocks" @click.stop="openBriefCat(c, 'industry')" title="在下方「当日股票明细」展示成分股">📊</button>
                       <span class="bc-track"><span class="bc-fill" :style="{ width: c.width + '%', background: c.color }"></span></span>
                       <span class="bc-count">{{ c.count }}</span>
                       <span class="bc-pct">{{ c.pct }}%</span>
-                      <button type="button" class="bc-sort bc-cnt" @click.stop="sortByBriefField('cnt')" :title="'数 = 本次数量 − 上次最大数量'">{{ c.cnt==null?'—':c.cnt }}<i class="bsort" v-if="briefCatSort.field==='cnt'">{{ briefCatSort.dir==='asc'?'↑':'↓' }}</i></button>
+                      <button type="button" class="bc-sort bc-cnt" v-if="currentPage === 'news'" @click.stop="sortByBriefField('cnt')" :title="'数 = 本次数量 − 上次最大数量'">{{ c.cnt==null?'—':c.cnt }}<i class="bsort" v-if="briefCatSort.field==='cnt'">{{ briefCatSort.dir==='asc'?'↑':'↓' }}</i></button>
                     </div>
                     <div class="brief-news" v-if="briefUi.open['industry::' + c.key]">
                       <div class="brief-news-head">
