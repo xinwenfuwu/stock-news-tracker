@@ -4119,14 +4119,21 @@ const StockAPI = {
       if (!seedBiz || !seedBiz.length) {
         return { ok: false, error: `未获取到 ${full.toUpperCase()} 的主营构成（可能刚上市/停牌/数据缺失）`, seed: null, segments: [], stocks: [] };
       }
-      // 主营段名 → 核心匹配词（剔除运营商标志词之外的通用噪音：仅保留中文≥2 的有效产品短语）
-      const coreArr = [...new Set(
+      // 候选池召回用：全部主营段名（提升广度，便于找回更多潜在同类公司）
+      const allCore = [...new Set(
         seedBiz.map(s => String(s.name || '').trim().toLowerCase())
           .map(n => n.replace(/[（(].*?[)）]/g, '').trim())
           .filter(n => n.length >= 2)
       )];
+      // 匹配词：仅取「排名前 2 的业务 + 主要产品」（seedBiz 已按营收占比降序，前两段即 top2）
+      const coreArr = [...new Set(
+        seedBiz.slice(0, 2)
+          .map(s => String(s.name || '').trim().toLowerCase())
+          .map(n => n.replace(/[（(].*?[)）]/g, '').trim())
+          .filter(n => n.length >= 2)
+      )];
       if (!coreArr.length) {
-        return { ok: false, error: '该股票主营构成无有效产品名，无法匹配同类公司', seed: null, segments: [], stocks: [] };
+        return { ok: false, error: '该股票主营构成前两段无有效产品名，无法匹配同类公司', seed: null, segments: [], stocks: [] };
       }
 
       // 2) 候选池：种子所属行业/概念板块成分股；再叠加全市场名称含关键词的兜底
@@ -4139,7 +4146,7 @@ const StockAPI = {
 
       // 2a) 用主营段名反查板块（东财搜索建议），取成分股作为候选
       const boards = [];
-      for (const seg of coreArr.slice(0, 8)) {
+      for (const seg of allCore.slice(0, 8)) {
         try {
           const bs = await this.resolveBoardViaSuggest(seg);
           if (bs && bs.length) bs.slice(0, 2).forEach(b => boards.push({ bk: b.bk || b.code, name: b.name }));
@@ -4167,7 +4174,7 @@ const StockAPI = {
       if (candidate.size < 40) {
         try {
           const all = await this.getAllSectors();
-          const extra = all.filter(x => coreArr.some(k => x.name.toLowerCase().includes(k))).slice(0, 6);
+          const extra = all.filter(x => allCore.some(k => x.name.toLowerCase().includes(k))).slice(0, 6);
           for (const b of extra) {
             try {
               const list = await this.getSectorStocksMeta(b.bk, 4);
@@ -4195,7 +4202,21 @@ const StockAPI = {
 
       // 4) 过滤阈值 + 归一
       const threshold = Number(minRatio) || 0;
-      const passed = (scored || []).filter(x => x && x.relevance > 0 && x.relevance >= threshold);
+      // 过滤：去除 301/300 开头、北交所(8/4/92 开头或 bj 前缀)、ST（名称以 ST/*ST 开头）
+      const isExcluded = (code, name) => {
+        const pure = String(code || '').replace(/^(sh|sz|bj)/i, '');
+        const digits = /^\d{4,8}$/.test(pure) ? pure : String(code || '');
+        if (/^30[01]/.test(digits)) return true;        // 去除 301 / 300 开头（创业板）
+        if (/^(8|4|92)/.test(digits)) return true;       // 去除北交所
+        const nm = String(name || '').toUpperCase();
+        if (/^(\*?ST)/.test(nm)) return true;            // 去除 ST / *ST
+        return false;
+      };
+      const passed = (scored || []).filter(x => {
+        if (!x || x.relevance <= 0 || x.relevance < threshold) return false;
+        if (isExcluded(x.info.code, x.info.name)) return false;
+        return true;
+      });
       const codes2 = passed.map(x => x.info.code);
       let quotes = {};
       try { quotes = await this.getQuotes(codes2); } catch (e) { quotes = {}; }

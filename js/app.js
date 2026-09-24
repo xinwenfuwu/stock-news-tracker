@@ -3521,6 +3521,8 @@ const app = createApp({
     const favInfoOpen = ref(false);
     const filterInfoOpen = ref(false);
     const poolInfoOpen = ref(false);
+    // 选股页「用法和说明」折叠面板（默认收起，点击标题展开）
+    const sectorUsageOpen = ref(false);
     // 勾选弹窗状态：选择板块成分股时使用
     const sectorPick = reactive({
       show: false, loading: false, name: '', bk: '', type: '', stocks: [], selected: {},
@@ -7965,7 +7967,7 @@ const app = createApp({
       sectorFilter, sectorDetailIndustries, filteredSectorDetailStocks,
       resetSectorFilter, toggleSectorFilterLock, sectorIndustryOpen,
       computeSectorDetailRelevance,
-      sectorFilterOpen, sectorInfoOpen, favInfoOpen, filterInfoOpen, poolInfoOpen,
+      sectorFilterOpen, sectorInfoOpen, favInfoOpen, filterInfoOpen, poolInfoOpen, sectorUsageOpen,
       // AI 语义选股（含结果 增删改）
       semantic, semanticSearch, saveSemanticAsPool,
       recomputeSemanticStocks, onConceptChanged, onBoardChanged,
