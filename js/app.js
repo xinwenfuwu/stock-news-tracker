@@ -3291,8 +3291,22 @@ const app = createApp({
       const v = (k) => poolVal(s, k);
       switch (col.type) {
         case 'idx': return String((idx || 0) + 1);
-        case 'code': return esc(s.code || '');
-        case 'name': return esc(s.name || s.code || '');
+        case 'code': {
+          // 涨停高基数 + 低热度 → 股票代码蓝色：去年涨停数+今年涨停数≥10 且 热度≤5%
+          const ztSum = (s.ztLastYear || 0) + (s.ztThisYear || 0);
+          const hasZt = s.ztLastYear != null || s.ztThisYear != null;
+          const heatPct = ztHeatPct(s, list);
+          if (hasZt && ztSum >= 10 && heatPct != null && heatPct <= 5) {
+            return '<span class="zt-blue">' + esc(s.code || '') + '</span>';
+          }
+          return esc(s.code || '');
+        }
+        case 'name': {
+          // 热度/排名 位列本表前三 → 股票名称红色
+          const rk = ztRank(s, list);
+          if (rk != null && rk <= 3) return '<span class="rank-top3">' + esc(s.name || s.code || '') + '</span>';
+          return esc(s.name || s.code || '');
+        }
         case 'pos': return positiveCountText(s);
         case 'mainbiz':
           return (s.mainBusiness && s.mainBusiness.length) ? esc(mainBusinessText(s)) : '<span class="muted small">—</span>';

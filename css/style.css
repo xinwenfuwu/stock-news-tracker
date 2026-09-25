@@ -495,6 +495,9 @@ body {
 .down { color: var(--down); font-weight: 600; }
 /* 现价列：今日实时股价，固定红色高亮（不受涨跌影响） */
 .price-red { color: var(--up, #dc2626); font-weight: 700; }
+/* 字段表高亮：热度/排名 本表前三 → 股票名称红色；涨停高基数(去年+今年≥10)且热度≤5% → 股票代码蓝色 */
+.rank-top3 { color: #e53935; font-weight: 700; }
+.zt-blue { color: #1565d8; font-weight: 700; }
 
 /* ===== 当日股票明细 · 股票查询 ===== */
 .hot-search-row { display: flex; align-items: center; gap: 6px; }
