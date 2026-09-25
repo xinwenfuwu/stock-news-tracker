@@ -4,12 +4,12 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>股市信息分析系统</title>
-  <link rel="stylesheet" href="css/style.css?v=20260925b">
+  <link rel="stylesheet" href="css/style.css?v=20260925c">
   <!-- Vue 3 全局构建版（v3.4.21 · 自托管）
        原先走 unpkg.com CDN：国内网络对 unpkg 的连通性不稳定，一旦该请求长时间挂起，
        <head> 里的阻塞脚本会让整页停在白屏、后续 auth-boot.js 根本不会执行。
        改为同源托管后，启动链路不再依赖任何第三方 CDN。 -->
-  <script src="js/vue.global.prod.js?v=20260925b"></script>
+  <script src="js/vue.global.prod.js?v=20260925c"></script>
 </head>
 <body class="auth-locked">
   <!-- ===== 登录关卡：登录通过前业务脚本不会被加载 ===== -->
@@ -936,7 +936,7 @@
         <div class="modal-overlay" v-if="userNoticeModal.show" @click.self="userNoticeModal.show = false">
           <div class="modal notice-modal">
             <h3>📋 用户须知</h3>
-            <p class="notice-sub">使用前请先阅读。以下为操作提示与风险提示，仅供参考，不构成任何投资建议。</p>
+            <p class="notice-sub">使用前请先阅读。以下为操作提示与风险提示，本软件仅供数据参考，不做任何选板块、选股、买卖决策，不构成任何投资建议。</p>
 
             <!-- 限时优惠活动：按用户要求置于正文上方 -->
             <div class="notice-promo">
@@ -948,40 +948,27 @@
               <div class="notice-item">
                 <span class="notice-idx">一</span>
                 <div class="notice-text">
-                  <p class="notice-strong">股市有风险，投资需谨慎。</p>
-                  <p>价值作用超过 50%，是炒股的价值；资金作用大于 50%，是赌博的概念。两者都有可能赚钱，但我们建议按照国家的政策来。</p>
+                  <p>确定方向：当价值作用超过 50%，是炒股的价值投资；当资金作用大于 50%，是炒股的赌博概念。两者都有可能赚钱，但我们建议按照国家的政策去做。</p>
+                  <p>股票上涨赚钱，不是某一个指标促成的。就像盖房子，分为地基、框架、梁板、装修、家电，才能建成一个好房子。股票收获也是如此：</p>
                 </div>
               </div>
 
               <div class="notice-item">
                 <span class="notice-idx">二</span>
                 <div class="notice-text">
-                  <p>股票上涨赚钱，不是某一个指标促成的。就像盖房子，分为地基、框架、梁板、装修、家电，才能建成一个好房子。股票收获也是如此：</p>
-                  <p>第一点，一个向上、等待轮动风口的板块，是上涨的前提；第二点，一个板块里基本面好的股票，是上涨后守住利益的前提；第三点，一个等待风口轮动的时机；第四点，驾驭数据的能力和不断积累的经验。</p>
-                  <p class="notice-strong">满足这四点，是股票价值投资获取收益的前提。</p>
-                </div>
-              </div>
-
-              <div class="notice-item">
-                <span class="notice-idx">三</span>
-                <div class="notice-text">
-                  <p>一个好的软件，不会告诉你哪只股票会涨。如果有，那一定是骗局，你只会成为接盘侠。</p>
-                  <p>好的软件只会告诉你：这些数据都是真的。你用好这些数据，去参考判断、取长补短、综合分析、态势感知。</p>
-                </div>
-              </div>
-
-              <div class="notice-item">
-                <span class="notice-idx">四</span>
-                <div class="notice-text">
-                  <p class="notice-strong">注意事项</p>
-                  <p>建立板块、选择刷新股票数据的时候，请对股票进行精确筛选，这对数据的参考判断非常准确。请去除无用的股票，使数据刷新的股票尽量不要超过 30 个，同时也能减轻服务器的压力。</p>
+                  <p>综合过程：股票利润是一个综合过程，这个过程需要满足五点：</p>
+                  <p>第一，不断积累的新闻总结、基本经济学、政治军事学常识、态势感知的能力和驾驭股票数据的能力（个人基础）；</p>
+                  <p>第二，择一待轮动风口的向上板块是上涨的前提（板块）；</p>
+                  <p>第三，此板块里基本面最好且低估值的股票是上涨的前提（个股）；</p>
+                  <p>第四点，判断等待风口轮动的时机（时机）；</p>
+                  <p>第五点，买卖操盘决策能力（买卖），此五点缺一不可。</p>
                 </div>
               </div>
 
               <div class="notice-item">
                 <span class="notice-idx">五</span>
                 <div class="notice-text">
-                  <p>悟道以后，请帮助更多需要帮助的人，股友之间相互学习参悟，愿诸君早日悟道。</p>
+                  <p>悟道以后，切勿宣传本网站，切勿告诉别人自己的大道之法，自悟之道别人学不得，切勿害人害己，自由以后，请帮助更多需要帮助的人，鼓励股友之间相互学习参悟，愿诸君早日悟道。</p>
                 </div>
               </div>
             </div>
@@ -3989,12 +3976,12 @@
     </transition>
   </div>
 
-  <script src="js/auth.js?v=20260925b"></script>
-  <script src="js/auth-sync.js?v=20260925b"></script>
+  <script src="js/auth.js?v=20260925c"></script>
+  <script src="js/auth-sync.js?v=20260925c"></script>
   <!-- 边缘加速默认站点（batch37 治本：Cloudflare Worker 代理东财/腾讯，缓解 JSONP 限流误报）。
        若你所在地区 workers.dev 访问慢，可在「设置 → 行情加速地址」清空即恢复纯直连。 -->
   <script>window.__SNT_ACCEL__ = 'https://stock-edge.hui-zhou.workers.dev';</script>
-  <script src="js/auth-boot.js?v=20260925b"></script>
+  <script src="js/auth-boot.js?v=20260925c"></script>
   <!-- store / stock-api / hot-topics / app 由 auth-boot.js 在登录通过后动态装载，
        未登录时它们不会被下载，业务数据也不会进入内存 -->
 </body>

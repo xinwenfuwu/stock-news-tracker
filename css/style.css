@@ -2940,7 +2940,7 @@ body.guest-mode #app { display: none; }
 /* 用户须知（入口在「会员服务」左侧） */
 .btn-notice { background: linear-gradient(135deg, #eef2ff, #dbeafe); border: 1px solid #bfdbfe; color: #1e40af; font-weight: 600; }
 .btn-notice:hover { background: linear-gradient(135deg, #e0e7ff, #bfdbfe); }
-.notice-modal { width: 620px; max-width: 94vw; text-align: left; }
+.notice-modal { width: 1240px; max-width: 96vw; text-align: left; }
 .notice-sub { color: var(--text-placeholder); font-size: 12.5px; line-height: 1.6; margin: 2px 0 14px; }
 .notice-body { max-height: 72vh; overflow-y: auto; padding-right: 4px; }
 /* 限时优惠活动：用户要求置于正文上方，醒目展示 */
