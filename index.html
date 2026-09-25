@@ -4,12 +4,12 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>股市信息分析系统</title>
-  <link rel="stylesheet" href="css/style.css?v=20260924e">
+  <link rel="stylesheet" href="css/style.css?v=20260925a">
   <!-- Vue 3 全局构建版（v3.4.21 · 自托管）
        原先走 unpkg.com CDN：国内网络对 unpkg 的连通性不稳定，一旦该请求长时间挂起，
        <head> 里的阻塞脚本会让整页停在白屏、后续 auth-boot.js 根本不会执行。
        改为同源托管后，启动链路不再依赖任何第三方 CDN。 -->
-  <script src="js/vue.global.prod.js?v=20260924e"></script>
+  <script src="js/vue.global.prod.js?v=20260925a"></script>
 </head>
 <body class="auth-locked">
   <!-- ===== 登录关卡：登录通过前业务脚本不会被加载 ===== -->
@@ -350,13 +350,13 @@
               <div class="bcg-head">🧩 题材归类 <span class="muted small">{{ briefThemeStats.length }} 类</span></div>
               <div class="brief-cats" v-if="briefThemeStats.length">
                 <div class="brief-cat" v-for="c in briefThemeStats" :key="c.key">
-                  <div class="brief-cat-head" :class="{ active: briefUi.open['theme::' + c.key] }">
+                  <div class="brief-cat-head" :class="{ active: briefUi.open['theme::' + c.key], 'no-sort': currentPage !== 'news' }">
                     <span class="bc-caret" @click.stop="toggleBriefCat(c.key, 'theme')">{{ briefUi.open['theme::' + c.key] ? '▾' : '▸' }}</span>
                     <button type="button" class="bc-sort bc-inc" v-if="currentPage === 'news'" @click.stop="sortByBriefField('inc')" :title="'增 = 本次排名 − 上次排名'">{{ c.inc==null?'—':(c.inc>0?'+':'')+c.inc }}<i class="bsort" v-if="briefCatSort.field==='inc'">{{ briefCatSort.dir==='asc'?'↑':'↓' }}</i></button>
                     <button type="button" class="bc-sort bc-seq" v-if="currentPage === 'news'" @click.stop="sortByBriefField('seq')" :title="'序 = 按占比降序的排名'">{{ c.seq }}<i class="bsort" v-if="briefCatSort.field==='seq'">{{ briefCatSort.dir==='asc'?'↑':'↓' }}</i></button>
                     <span class="bc-icon">{{ c.icon }}</span>
                     <span class="bc-name" @click.stop="openBriefCat(c, 'theme')" :title="'点击查看「'+c.name+'」成分股'">{{ c.name }}</span>
-                    <button type="button" class="bc-stocks" @click.stop="openBriefCat(c, 'theme')" title="在下方「当日股票明细」展示成分股">📊</button>
+                    <button type="button" class="bc-stocks" v-if="currentPage === 'news'" @click.stop="openBriefCat(c, 'theme')" title="在下方「当日股票明细」展示成分股">📊</button>
                     <span class="bc-track"><span class="bc-fill" :style="{ width: c.width + '%', background: c.color }"></span></span>
                     <span class="bc-count">{{ c.count }}</span>
                     <span class="bc-pct">{{ c.pct }}%</span>
@@ -419,13 +419,13 @@
               <div class="bcg-head">💡 概念归类 <span class="muted small">{{ briefConceptStats.length }} 类</span></div>
               <div class="brief-cats" v-if="briefConceptStats.length">
                 <div class="brief-cat" v-for="c in briefConceptStats" :key="c.key">
-                  <div class="brief-cat-head" :class="{ active: briefUi.open['concept::' + c.key] }">
+                  <div class="brief-cat-head" :class="{ active: briefUi.open['concept::' + c.key], 'no-sort': currentPage !== 'news' }">
                     <span class="bc-caret" @click.stop="toggleBriefCat(c.key, 'concept')">{{ briefUi.open['concept::' + c.key] ? '▾' : '▸' }}</span>
                     <button type="button" class="bc-sort bc-inc" v-if="currentPage === 'news'" @click.stop="sortByBriefField('inc')" :title="'增 = 本次排名 − 上次排名'">{{ c.inc==null?'—':(c.inc>0?'+':'')+c.inc }}<i class="bsort" v-if="briefCatSort.field==='inc'">{{ briefCatSort.dir==='asc'?'↑':'↓' }}</i></button>
                     <button type="button" class="bc-sort bc-seq" v-if="currentPage === 'news'" @click.stop="sortByBriefField('seq')" :title="'序 = 按占比降序的排名'">{{ c.seq }}<i class="bsort" v-if="briefCatSort.field==='seq'">{{ briefCatSort.dir==='asc'?'↑':'↓' }}</i></button>
                     <span class="bc-icon">{{ c.icon }}</span>
                     <span class="bc-name" @click.stop="openBriefCat(c, 'concept')" :title="'点击查看「'+c.name+'」成分股'">{{ c.name }}</span>
-                    <button type="button" class="bc-stocks" @click.stop="openBriefCat(c, 'concept')" title="在下方「当日股票明细」展示成分股">📊</button>
+                    <button type="button" class="bc-stocks" v-if="currentPage === 'news'" @click.stop="openBriefCat(c, 'concept')" title="在下方「当日股票明细」展示成分股">📊</button>
                     <span class="bc-track"><span class="bc-fill" :style="{ width: c.width + '%', background: c.color }"></span></span>
                     <span class="bc-count">{{ c.count }}</span>
                     <span class="bc-pct">{{ c.pct }}%</span>
@@ -460,13 +460,13 @@
               <div class="bcg-head">🏭 行业归类 <span class="muted small">{{ briefIndustryStats.length }} 类</span></div>
               <div class="brief-cats" v-if="briefIndustryStats.length">
                 <div class="brief-cat" v-for="c in briefIndustryStats" :key="c.key">
-                  <div class="brief-cat-head" :class="{ active: briefUi.open['industry::' + c.key] }">
+                  <div class="brief-cat-head" :class="{ active: briefUi.open['industry::' + c.key], 'no-sort': currentPage !== 'news' }">
                     <span class="bc-caret" @click.stop="toggleBriefCat(c.key, 'industry')">{{ briefUi.open['industry::' + c.key] ? '▾' : '▸' }}</span>
                     <button type="button" class="bc-sort bc-inc" v-if="currentPage === 'news'" @click.stop="sortByBriefField('inc')" :title="'增 = 本次排名 − 上次排名'">{{ c.inc==null?'—':(c.inc>0?'+':'')+c.inc }}<i class="bsort" v-if="briefCatSort.field==='inc'">{{ briefCatSort.dir==='asc'?'↑':'↓' }}</i></button>
                     <button type="button" class="bc-sort bc-seq" v-if="currentPage === 'news'" @click.stop="sortByBriefField('seq')" :title="'序 = 按占比降序的排名'">{{ c.seq }}<i class="bsort" v-if="briefCatSort.field==='seq'">{{ briefCatSort.dir==='asc'?'↑':'↓' }}</i></button>
                     <span class="bc-icon">{{ c.icon }}</span>
                     <span class="bc-name" @click.stop="openBriefCat(c, 'industry')" :title="'点击查看「'+c.name+'」成分股'">{{ c.name }}</span>
-                    <button type="button" class="bc-stocks" @click.stop="openBriefCat(c, 'industry')" title="在下方「当日股票明细」展示成分股">📊</button>
+                    <button type="button" class="bc-stocks" v-if="currentPage === 'news'" @click.stop="openBriefCat(c, 'industry')" title="在下方「当日股票明细」展示成分股">📊</button>
                     <span class="bc-track"><span class="bc-fill" :style="{ width: c.width + '%', background: c.color }"></span></span>
                     <span class="bc-count">{{ c.count }}</span>
                     <span class="bc-pct">{{ c.pct }}%</span>
@@ -1408,13 +1408,13 @@
                 <div class="bcg-head">🧩 题材归类 <span class="muted small">{{ briefThemeStats.length }} 类</span></div>
                 <div class="brief-cats" v-if="briefThemeStats.length">
                   <div class="brief-cat" v-for="c in briefThemeStats" :key="c.key">
-                    <div class="brief-cat-head" :class="{ active: briefUi.open['theme::' + c.key] }">
+                    <div class="brief-cat-head" :class="{ active: briefUi.open['theme::' + c.key], 'no-sort': currentPage !== 'news' }">
                       <span class="bc-caret" @click.stop="toggleBriefCat(c.key, 'theme')">{{ briefUi.open['theme::' + c.key] ? '▾' : '▸' }}</span>
                       <button type="button" class="bc-sort bc-inc" v-if="currentPage === 'news'" @click.stop="sortByBriefField('inc')" :title="'增 = 本次排名 − 上次排名'">{{ c.inc==null?'—':(c.inc>0?'+':'')+c.inc }}<i class="bsort" v-if="briefCatSort.field==='inc'">{{ briefCatSort.dir==='asc'?'↑':'↓' }}</i></button>
                       <button type="button" class="bc-sort bc-seq" v-if="currentPage === 'news'" @click.stop="sortByBriefField('seq')" :title="'序 = 按占比降序的排名'">{{ c.seq }}<i class="bsort" v-if="briefCatSort.field==='seq'">{{ briefCatSort.dir==='asc'?'↑':'↓' }}</i></button>
                       <span class="bc-icon">{{ c.icon }}</span>
                       <span class="bc-name" @click.stop="openBriefCat(c, 'theme')" :title="'点击查看「'+c.name+'」成分股'">{{ c.name }}</span>
-                      <button type="button" class="bc-stocks" @click.stop="openBriefCat(c, 'theme')" title="在下方「当日股票明细」展示成分股">📊</button>
+                      <button type="button" class="bc-stocks" v-if="currentPage === 'news'" @click.stop="openBriefCat(c, 'theme')" title="在下方「当日股票明细」展示成分股">📊</button>
                       <span class="bc-track"><span class="bc-fill" :style="{ width: c.width + '%', background: c.color }"></span></span>
                       <span class="bc-count">{{ c.count }}</span>
                       <span class="bc-pct">{{ c.pct }}%</span>
@@ -1477,13 +1477,13 @@
                 <div class="bcg-head">💡 概念归类 <span class="muted small">{{ briefConceptStats.length }} 类</span></div>
                 <div class="brief-cats" v-if="briefConceptStats.length">
                   <div class="brief-cat" v-for="c in briefConceptStats" :key="c.key">
-                    <div class="brief-cat-head" :class="{ active: briefUi.open['concept::' + c.key] }">
+                    <div class="brief-cat-head" :class="{ active: briefUi.open['concept::' + c.key], 'no-sort': currentPage !== 'news' }">
                       <span class="bc-caret" @click.stop="toggleBriefCat(c.key, 'concept')">{{ briefUi.open['concept::' + c.key] ? '▾' : '▸' }}</span>
                       <button type="button" class="bc-sort bc-inc" v-if="currentPage === 'news'" @click.stop="sortByBriefField('inc')" :title="'增 = 本次排名 − 上次排名'">{{ c.inc==null?'—':(c.inc>0?'+':'')+c.inc }}<i class="bsort" v-if="briefCatSort.field==='inc'">{{ briefCatSort.dir==='asc'?'↑':'↓' }}</i></button>
                       <button type="button" class="bc-sort bc-seq" v-if="currentPage === 'news'" @click.stop="sortByBriefField('seq')" :title="'序 = 按占比降序的排名'">{{ c.seq }}<i class="bsort" v-if="briefCatSort.field==='seq'">{{ briefCatSort.dir==='asc'?'↑':'↓' }}</i></button>
                       <span class="bc-icon">{{ c.icon }}</span>
                       <span class="bc-name" @click.stop="openBriefCat(c, 'concept')" :title="'点击查看「'+c.name+'」成分股'">{{ c.name }}</span>
-                      <button type="button" class="bc-stocks" @click.stop="openBriefCat(c, 'concept')" title="在下方「当日股票明细」展示成分股">📊</button>
+                      <button type="button" class="bc-stocks" v-if="currentPage === 'news'" @click.stop="openBriefCat(c, 'concept')" title="在下方「当日股票明细」展示成分股">📊</button>
                       <span class="bc-track"><span class="bc-fill" :style="{ width: c.width + '%', background: c.color }"></span></span>
                       <span class="bc-count">{{ c.count }}</span>
                       <span class="bc-pct">{{ c.pct }}%</span>
@@ -1518,13 +1518,13 @@
                 <div class="bcg-head">🏭 行业归类 <span class="muted small">{{ briefIndustryStats.length }} 类</span></div>
                 <div class="brief-cats" v-if="briefIndustryStats.length">
                   <div class="brief-cat" v-for="c in briefIndustryStats" :key="c.key">
-                    <div class="brief-cat-head" :class="{ active: briefUi.open['industry::' + c.key] }">
+                    <div class="brief-cat-head" :class="{ active: briefUi.open['industry::' + c.key], 'no-sort': currentPage !== 'news' }">
                       <span class="bc-caret" @click.stop="toggleBriefCat(c.key, 'industry')">{{ briefUi.open['industry::' + c.key] ? '▾' : '▸' }}</span>
                       <button type="button" class="bc-sort bc-inc" v-if="currentPage === 'news'" @click.stop="sortByBriefField('inc')" :title="'增 = 本次排名 − 上次排名'">{{ c.inc==null?'—':(c.inc>0?'+':'')+c.inc }}<i class="bsort" v-if="briefCatSort.field==='inc'">{{ briefCatSort.dir==='asc'?'↑':'↓' }}</i></button>
                       <button type="button" class="bc-sort bc-seq" v-if="currentPage === 'news'" @click.stop="sortByBriefField('seq')" :title="'序 = 按占比降序的排名'">{{ c.seq }}<i class="bsort" v-if="briefCatSort.field==='seq'">{{ briefCatSort.dir==='asc'?'↑':'↓' }}</i></button>
                       <span class="bc-icon">{{ c.icon }}</span>
                       <span class="bc-name" @click.stop="openBriefCat(c, 'industry')" :title="'点击查看「'+c.name+'」成分股'">{{ c.name }}</span>
-                      <button type="button" class="bc-stocks" @click.stop="openBriefCat(c, 'industry')" title="在下方「当日股票明细」展示成分股">📊</button>
+                      <button type="button" class="bc-stocks" v-if="currentPage === 'news'" @click.stop="openBriefCat(c, 'industry')" title="在下方「当日股票明细」展示成分股">📊</button>
                       <span class="bc-track"><span class="bc-fill" :style="{ width: c.width + '%', background: c.color }"></span></span>
                       <span class="bc-count">{{ c.count }}</span>
                       <span class="bc-pct">{{ c.pct }}%</span>
@@ -2449,12 +2449,38 @@
               <input type="number" step="1" min="0" :max="POSITIVE_KEYS.length" v-model.number="filterPanel.posMax" placeholder="最大">
             </div>
           </div>
-          <!-- 比值筛选 -->
-          <div class="filter-field">
-            <label class="checkbox-label" title="仅保留满足「924涨跌 < 24营比 + 24扣比」的股票">
-              <input type="checkbox" v-model="filterPanel.ratioFilter"> 比值筛选
-            </label>
-            <span class="muted small">924涨跌 &lt; 24营比/2+24扣比/2</span>
+          <!-- 自动计算筛选（原「比值筛选」升级） -->
+          <div class="filter-field autocalc-field">
+            <label title="对自动计算字段做数值区间筛选（原「比值筛选」升级版）">自动计算</label>
+            <div class="autocalc-row">
+              <select v-model="filterPanel.autoCalc.key" title="自动计算字段">
+                <option value="valuation">估值(24营比/2+24扣比/2)</option>
+                <option value="change924">924涨跌</option>
+                <option value="diff924Val">924−估值(业绩未兑现)</option>
+                <option value="yearChange">年涨跌</option>
+                <option value="distToYearHigh">距高价</option>
+                <option value="distToYearLow">距低价</option>
+                <option value="ztThisYear">今年涨停数</option>
+                <option value="ztLastYear">去年涨停数</option>
+                <option value="positiveCount">正数统计</option>
+              </select>
+              <select v-model="filterPanel.autoCalc.op1" title="运算符1">
+                <option value="gt">&gt;</option><option value="gte">&ge;</option>
+                <option value="lt">&lt;</option><option value="lte">&le;</option>
+                <option value="eq">=</option><option value="ne">≠</option>
+              </select>
+              <input type="number" step="0.01" v-model.number="filterPanel.autoCalc.num1" placeholder="数值">
+              <select v-model="filterPanel.autoCalc.conn" title="且/或">
+                <option value="and">且</option><option value="or">或</option>
+              </select>
+              <select v-model="filterPanel.autoCalc.op2" title="运算符2">
+                <option value="gt">&gt;</option><option value="gte">&ge;</option>
+                <option value="lt">&lt;</option><option value="lte">&le;</option>
+                <option value="eq">=</option><option value="ne">≠</option>
+              </select>
+              <input type="number" step="0.01" v-model.number="filterPanel.autoCalc.num2" placeholder="数值">
+            </div>
+            <span class="muted small">例：估值 &gt; 0 且 &lt; 20（某侧留空则该侧不参与）</span>
           </div>
           <!-- 行业筛选：可收起的下拉勾选（多选），与概念详情一致；未勾选 = 全部 -->
           <div class="filter-field industry-dropdown-field">
@@ -2522,7 +2548,10 @@
           <p>💡 <b>字段含义与计算规则</b>：<br>
           · 行业=个股所属一级行业（如食品饮料、银行），来自东方财富公司概况。<br>
           · <b>正数统计</b>=统计「日涨跌」到「营收环比」之间共 {{ POSITIVE_KEYS.length }} 个字段，显示为「正数个数 / 有数据的字段个数」（空值不计入总数也不计入正数），比值越高越强势。顶部「正数统计」框仍按正数个数区间筛选（如填 15—20 即只保留至少15项为正的个股）。<br>
-          · <b>比值筛选</b>=勾选后仅保留满足「924涨跌 < 24营比/2 + 24扣比/2」（即 924涨跌 小于 24营比与24扣比之均值）的股票（三者均须有数据）。该规则筛出「股价涨幅小于业绩增幅」的个股（业绩增长未充分反映在股价上）。<br>
+          · <b>自动计算</b>=对所选「自动计算字段」做数值区间筛选（原「比值筛选」升级）：选字段(估值/924涨跌/924−估值/年涨跌/距高低价/今去年涨停数/正数统计) → 运算符 → 数值，可再加「且/或」第二组。例：估值 &gt; 0 且 &lt; 20 筛出业绩正增长个股；「924−估值 &lt; 0」等价于原「924涨跌 &lt; 24营比/2+24扣比/2」。<br>
+          · <b>估值</b>=(24营比+24扣比)/2，即「924涨跌」与「业绩增幅均值」的比较基准；&gt;0 表示业绩正增长。<br>
+          · <b>涨停</b>=去年涨停数/今年涨停数（腾讯日线按自然年统计，不计算比值；某年无数据为「—」）。<br>
+          · <b>热度/排名</b>=今年涨停数 ÷ 本列表全部股票今年涨停总数 的百分比(热度)，及按今年涨停数在本列表的降序名次(热排)；切换列表即重算。<br>
           · <b>行业筛选</b>=按成分股所属一级行业下拉过滤，可与其他条件组合使用。<br>
           · 今涨跌=当日涨跌幅(%)；年涨跌=当日价相对当年首个交易日涨跌幅(%)；924涨跌=当日价相对2024-09-24收盘价涨跌幅(%)（不复权）；一周涨跌=现价相对5个交易日前收盘价涨跌幅(%)；一月涨跌=现价相对20个交易日前收盘价涨跌幅(%)。<br>
           · 24营比=最新报告期营收 相对 2024年同期营收增长率(%)；24扣比=最新报告期扣非净利润 相对 2024年同期扣非净利润增长率(%)。顶部「24营比/24扣比」框可按该增长率区间筛选。<br>
@@ -2697,12 +2726,38 @@
               <input type="number" step="1" min="0" :max="POSITIVE_KEYS.length" v-model.number="filterPanel.posMax" placeholder="最大">
             </div>
           </div>
-          <!-- 比值筛选 -->
-          <div class="filter-field">
-            <label class="checkbox-label" title="仅保留满足「924涨跌 < 24营比 + 24扣比」的股票">
-              <input type="checkbox" v-model="filterPanel.ratioFilter"> 比值筛选
-            </label>
-            <span class="muted small">924涨跌 &lt; 24营比/2+24扣比/2</span>
+          <!-- 自动计算筛选（原「比值筛选」升级） -->
+          <div class="filter-field autocalc-field">
+            <label title="对自动计算字段做数值区间筛选（原「比值筛选」升级版）">自动计算</label>
+            <div class="autocalc-row">
+              <select v-model="filterPanel.autoCalc.key" title="自动计算字段">
+                <option value="valuation">估值(24营比/2+24扣比/2)</option>
+                <option value="change924">924涨跌</option>
+                <option value="diff924Val">924−估值(业绩未兑现)</option>
+                <option value="yearChange">年涨跌</option>
+                <option value="distToYearHigh">距高价</option>
+                <option value="distToYearLow">距低价</option>
+                <option value="ztThisYear">今年涨停数</option>
+                <option value="ztLastYear">去年涨停数</option>
+                <option value="positiveCount">正数统计</option>
+              </select>
+              <select v-model="filterPanel.autoCalc.op1" title="运算符1">
+                <option value="gt">&gt;</option><option value="gte">&ge;</option>
+                <option value="lt">&lt;</option><option value="lte">&le;</option>
+                <option value="eq">=</option><option value="ne">≠</option>
+              </select>
+              <input type="number" step="0.01" v-model.number="filterPanel.autoCalc.num1" placeholder="数值">
+              <select v-model="filterPanel.autoCalc.conn" title="且/或">
+                <option value="and">且</option><option value="or">或</option>
+              </select>
+              <select v-model="filterPanel.autoCalc.op2" title="运算符2">
+                <option value="gt">&gt;</option><option value="gte">&ge;</option>
+                <option value="lt">&lt;</option><option value="lte">&le;</option>
+                <option value="eq">=</option><option value="ne">≠</option>
+              </select>
+              <input type="number" step="0.01" v-model.number="filterPanel.autoCalc.num2" placeholder="数值">
+            </div>
+            <span class="muted small">例：估值 &gt; 0 且 &lt; 20（某侧留空则该侧不参与）</span>
           </div>
           <!-- 行业筛选：可收起的下拉勾选（多选），与概念详情一致；未勾选 = 全部 -->
           <div class="filter-field industry-dropdown-field">
@@ -2770,7 +2825,10 @@
           <p>💡 <b>字段含义与计算规则</b>：<br>
           · 行业=个股所属一级行业（如食品饮料、银行），来自东方财富公司概况。<br>
           · <b>正数统计</b>=统计「日涨跌」到「营收环比」之间共 {{ POSITIVE_KEYS.length }} 个字段，显示为「正数个数 / 有数据的字段个数」（空值不计入总数也不计入正数），比值越高越强势。顶部「正数统计」框仍按正数个数区间筛选（如填 15—20 即只保留至少15项为正的个股）。<br>
-          · <b>比值筛选</b>=勾选后仅保留满足「924涨跌 < 24营比/2 + 24扣比/2」（即 924涨跌 小于 24营比与24扣比之均值）的股票（三者均须有数据）。该规则筛出「股价涨幅小于业绩增幅」的个股（业绩增长未充分反映在股价上）。<br>
+          · <b>自动计算</b>=对所选「自动计算字段」做数值区间筛选（原「比值筛选」升级）：选字段(估值/924涨跌/924−估值/年涨跌/距高低价/今去年涨停数/正数统计) → 运算符 → 数值，可再加「且/或」第二组。例：估值 &gt; 0 且 &lt; 20 筛出业绩正增长个股；「924−估值 &lt; 0」等价于原「924涨跌 &lt; 24营比/2+24扣比/2」。<br>
+          · <b>估值</b>=(24营比+24扣比)/2，即「924涨跌」与「业绩增幅均值」的比较基准；&gt;0 表示业绩正增长。<br>
+          · <b>涨停</b>=去年涨停数/今年涨停数（腾讯日线按自然年统计，不计算比值；某年无数据为「—」）。<br>
+          · <b>热度/排名</b>=今年涨停数 ÷ 本列表全部股票今年涨停总数 的百分比(热度)，及按今年涨停数在本列表的降序名次(热排)；切换列表即重算。<br>
           · <b>行业筛选</b>=按成分股所属一级行业下拉过滤，可与其他条件组合使用。<br>
           · 今涨跌=当日涨跌幅(%)；年涨跌=当日价相对当年首个交易日涨跌幅(%)；924涨跌=当日价相对2024-09-24收盘价涨跌幅(%)（不复权）；一周涨跌=现价相对5个交易日前收盘价涨跌幅(%)；一月涨跌=现价相对20个交易日前收盘价涨跌幅(%)。<br>
           · 24营比=最新报告期营收 相对 2024年同期营收增长率(%)；24扣比=最新报告期扣非净利润 相对 2024年同期扣非净利润增长率(%)。顶部「24营比/24扣比」框可按该增长率区间筛选。<br>
@@ -3150,11 +3208,38 @@
                 <input type="number" step="1" min="0" :max="POSITIVE_KEYS.length" v-model.number="sectorFilter.posMax" placeholder="最大">
               </div>
             </div>
-            <div class="filter-field">
-              <label class="checkbox-label" title="仅保留满足「924涨跌 < 24营比/2 + 24扣比/2」的股票">
-                <input type="checkbox" v-model="sectorFilter.ratioFilter"> 比值筛选
-              </label>
-              <span class="muted small">924涨跌 &lt; 24营比/2+24扣比/2</span>
+            <!-- 自动计算筛选（原「比值筛选」升级） -->
+            <div class="filter-field autocalc-field">
+              <label title="对自动计算字段做数值区间筛选（原「比值筛选」升级版）">自动计算</label>
+              <div class="autocalc-row">
+                <select v-model="sectorFilter.autoCalc.key" title="自动计算字段">
+                  <option value="valuation">估值(24营比/2+24扣比/2)</option>
+                  <option value="change924">924涨跌</option>
+                  <option value="diff924Val">924−估值(业绩未兑现)</option>
+                  <option value="yearChange">年涨跌</option>
+                  <option value="distToYearHigh">距高价</option>
+                  <option value="distToYearLow">距低价</option>
+                  <option value="ztThisYear">今年涨停数</option>
+                  <option value="ztLastYear">去年涨停数</option>
+                  <option value="positiveCount">正数统计</option>
+                </select>
+                <select v-model="sectorFilter.autoCalc.op1" title="运算符1">
+                  <option value="gt">&gt;</option><option value="gte">&ge;</option>
+                  <option value="lt">&lt;</option><option value="lte">&le;</option>
+                  <option value="eq">=</option><option value="ne">≠</option>
+                </select>
+                <input type="number" step="0.01" v-model.number="sectorFilter.autoCalc.num1" placeholder="数值">
+                <select v-model="sectorFilter.autoCalc.conn" title="且/或">
+                  <option value="and">且</option><option value="or">或</option>
+                </select>
+                <select v-model="sectorFilter.autoCalc.op2" title="运算符2">
+                  <option value="gt">&gt;</option><option value="gte">&ge;</option>
+                  <option value="lt">&lt;</option><option value="lte">&le;</option>
+                  <option value="eq">=</option><option value="ne">≠</option>
+                </select>
+                <input type="number" step="0.01" v-model.number="sectorFilter.autoCalc.num2" placeholder="数值">
+              </div>
+              <span class="muted small">例：估值 &gt; 0 且 &lt; 20（某侧留空则该侧不参与）</span>
             </div>
             <!-- 行业选择：可收起的下拉勾选（多选），未勾选任何行业 = 全部 -->
             <div class="filter-field industry-dropdown-field">
@@ -3902,12 +3987,12 @@
     </transition>
   </div>
 
-  <script src="js/auth.js?v=20260924e"></script>
-  <script src="js/auth-sync.js?v=20260924e"></script>
+  <script src="js/auth.js?v=20260925a"></script>
+  <script src="js/auth-sync.js?v=20260925a"></script>
   <!-- 边缘加速默认站点（batch37 治本：Cloudflare Worker 代理东财/腾讯，缓解 JSONP 限流误报）。
        若你所在地区 workers.dev 访问慢，可在「设置 → 行情加速地址」清空即恢复纯直连。 -->
   <script>window.__SNT_ACCEL__ = 'https://stock-edge.hui-zhou.workers.dev';</script>
-  <script src="js/auth-boot.js?v=20260924e"></script>
+  <script src="js/auth-boot.js?v=20260925a"></script>
   <!-- store / stock-api / hot-topics / app 由 auth-boot.js 在登录通过后动态装载，
        未登录时它们不会被下载，业务数据也不会进入内存 -->
 </body>

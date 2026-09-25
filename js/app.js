@@ -1048,6 +1048,12 @@ const app = createApp({
         if (q24.q24Rev != null) s.q24Rev = q24.q24Rev;
         if (q24.q24Kcf != null) s.q24Kcf = q24.q24Kcf;
       } catch (e) { console.warn('季报对比获取失败', s.code, e); }
+      // 涨停统计（去年/今年，腾讯日线按自然年数，best-effort）：独立 try，失败不影响其他字段
+      try {
+        const lu = await StockAPI.computeLimitUp(s.code);
+        if (lu.ztLastYear != null) s.ztLastYear = lu.ztLastYear;
+        if (lu.ztThisYear != null) s.ztThisYear = lu.ztThisYear;
+      } catch (e) { console.warn('涨停统计获取失败', s.code, e); }
       // 历史价：优先「一次请求取四项」（getHistoryBundle，请求量降为 1/3），
       // 取不到的项再逐项兜底。各项独立 try —— 原先四项挤在同一个 try 里，
       // 只要 getYearStartPrice 抛异常，后面三项就永远不会执行，六个字段全部空白。
@@ -2474,6 +2480,8 @@ const app = createApp({
         kcfHb: null,         // 扣非净利润环比增长率(%)
         q24Rev: null,        // 24营比：最新营收 vs 2024同期 增长率(%)
         q24Kcf: null,        // 24扣比：最新扣非 vs 2024同期 增长率(%)
+        ztLastYear: null,    // 去年(上一年)涨停天数（腾讯日线按自然年统计，best-effort）
+        ztThisYear: null,    // 今年涨停天数
         netProfit: null,       // 净利润(元)
         kcfjcxjlr: null,       // 扣非净利润(元)
         revenue: null,         // 营业收入(元)
@@ -2894,6 +2902,12 @@ const app = createApp({
         } catch (e) {
           console.warn('季报对比获取失败', s.code, e);
         }
+        // 涨停统计（去年/今年，腾讯日线按自然年数，best-effort）：独立 try，失败不影响其他字段
+        try {
+          const lu = await StockAPI.computeLimitUp(s.code);
+          if (lu.ztLastYear != null) s.ztLastYear = lu.ztLastYear;
+          if (lu.ztThisYear != null) s.ztThisYear = lu.ztThisYear;
+        } catch (e) { console.warn('涨停统计获取失败', s.code, e); }
         // 历史价：优先「一次请求取四项 + 一周/一月」（getHistoryBundle，请求量降为 1/4 且腾讯优先），
         // 取不到的项再逐项兜底（各自独立 try，互不连坐）。旧实现把三项挤在同一 try 里，
         // 且 924 走 getHistoryClose 的窄窗口取不到 2024-09-24，导致「924涨跌」等字段长期为空。
@@ -3157,6 +3171,8 @@ const app = createApp({
       { key: 'q24Kcf', label: '24扣比', width: 74, sortable: true, type: 'pct' },
       // 924涨跌 / 年涨跌：按需求置于「24扣比」右侧（紧贴 24扣比），二者位置互换
       { key: 'change924', label: '924涨跌', width: 78, sortable: true, type: 'pct' },
+      // 估值：=(24营比+24扣比)/2（即 924涨跌 与「业绩增幅均值」的比较基准；>0 表示业绩正增长）
+      { key: 'valuation', label: '估值', width: 76, sortable: true, type: 'pct' },
       { key: 'yearChange', label: '年涨跌', width: 78, sortable: true, type: 'pct' },
       // 现价：今日实时股价，固定红色显示，便于与各项涨跌幅直接对照
       { key: 'todayPrice', label: '现价', width: 70, sortable: true, type: 'curPrice' },
@@ -3194,6 +3210,9 @@ const app = createApp({
       { key: 'revenue', label: '营业收入', width: 86, sortable: true, type: 'money' },
       { key: 'capitalFlow', label: '资金流入', width: 90, sortable: true, type: 'flow' },
       { key: 'contractLiab', label: '合同负债及排名', width: 114, sortable: true, type: 'contractliab' },
+      // 涨停：去年涨停数/今年涨停数（腾讯日线按自然年统计，不计算比值）；热度/排名：今年涨停数占本列表今年涨停总数的百分比 + 排名
+      { key: 'ztCount', label: '涨停', width: 80, sortable: true, type: 'ztcount' },
+      { key: 'heat', label: '热度/排名', width: 96, sortable: true, type: 'heat' },
       // 概念 / 行业：按需求置于字段栏最后（收藏/操作/备注之前）
       // （batch50：「主业与主要产品」已前移到原「主营业务」的位置，即紧随「相关度」列）
       { key: 'concept', label: '概念', width: 112, sortable: false, type: 'concept' },
@@ -3213,7 +3232,7 @@ const app = createApp({
     const POSITIVE_KEYS = [
       'dailyChange', 'totalMarketCap', 'revenue', 'netProfit', 'kcfjcxjlr',
       'prRatio', 'pbRatio', 'pkRatio', 'q24Rev', 'q24Kcf',
-      'todayPrice', 'weekChange', 'monthChange', 'yearChange', 'change924',
+      'todayPrice', 'weekChange', 'monthChange', 'yearChange', 'change924', 'valuation',
       'distToYearHigh', 'distToYearLow', 'yearHighPrice', 'yearLowPrice',
       'pyRatio', 'pk2Ratio', 'prrRatio', 'phRatio', 'pkHbRatio', 'ph2Ratio',
       'profitYoY', 'hbGrowth', 'kcfYoY', 'kcfHb', 'revenueYoY', 'revHb'
@@ -3249,6 +3268,25 @@ const app = createApp({
       return ctx === 'fav' ? STOCK_COLUMNS.concat(FAV_EXTRA_COLUMNS) : STOCK_COLUMNS;
     }
     /** 单元格内容（HTML 字符串），通过 v-html 渲染 */
+    /** 本列表今年涨停总数（热度占比分母）。 */
+    function boardZtTotal(list) {
+      let t = 0;
+      if (list) for (const x of list) { if (x.ztThisYear != null) t += x.ztThisYear; }
+      return t;
+    }
+    /** 个股热度(%)：今年涨停数 / 本列表今年涨停总数 × 100；无数据返回 null。 */
+    function ztHeatPct(s, list) {
+      if (s.ztThisYear == null || !list || !list.length) return null;
+      const t = boardZtTotal(list);
+      return t > 0 ? +((s.ztThisYear / t) * 100).toFixed(1) : null;
+    }
+    /** 个股热排：按今年涨停数在本列表降序排名（并列取较小名次）。无数据返回 null。 */
+    function ztRank(s, list) {
+      if (s.ztThisYear == null || !list) return null;
+      let r = 1;
+      for (const x of list) { if (x.ztThisYear != null && x.ztThisYear > s.ztThisYear) r++; }
+      return r;
+    }
     function cellHtml(col, s, idx, list, ctx) {
       const v = (k) => poolVal(s, k);
       switch (col.type) {
@@ -3268,6 +3306,16 @@ const app = createApp({
           const c = contractLiabCell(s, list);
           if (!c) return '<span class="muted small">—</span>';
           return esc(c.text) + (c.rank != null ? '<span class="muted small">/' + c.rank + '</span>' : '');
+        }
+        case 'ztcount': {
+          const ly = s.ztLastYear, ty = s.ztThisYear;
+          if (ly == null && ty == null) return '<span class="muted small">—</span>';
+          return (ly == null ? '—' : ly) + '<span class="muted small">/</span>' + (ty == null ? '—' : ty);
+        }
+        case 'heat': {
+          const h = ztHeatPct(s, list), r = ztRank(s, list);
+          if (h == null && r == null) return '<span class="muted small">—</span>';
+          return (h == null ? '—' : h + '%') + '<br><span class="muted small">排' + (r == null ? '—' : r) + '</span>';
         }
         case 'pct': { const val = v(col.key); return (val != null && !isNaN(val)) ? '<span class="' + pctClass(val) + '">' + fmtPct(val) + '</span>' : '—'; }
         case 'price': { const val = s[col.key]; return (val != null && !isNaN(val)) ? (+val).toFixed(2) : '—'; }
@@ -3329,7 +3377,7 @@ const app = createApp({
      * （cap / curPrice / favGain 等）也加 num-cell，导致「表头靠左、数据靠右」，
      * 字段与数据不在同一条中轴线上。这里统一为一份定义。
      */
-    const NUMERIC_COL_TYPES = ['pct', 'price', 'ratio', 'num2', 'num2pct', 'money', 'flow', 'int', 'diff', 'cap', 'curPrice', 'favGain', 'relevance'];
+    const NUMERIC_COL_TYPES = ['pct', 'price', 'ratio', 'num2', 'num2pct', 'money', 'flow', 'int', 'diff', 'cap', 'curPrice', 'favGain', 'relevance', 'ztcount', 'heat'];
     function isNumCol(col) { return !!col && NUMERIC_COL_TYPES.indexOf(col.type) >= 0; }
 
     /** 单元格 class（冻结列 + 数值列 + 涨跌色 + 多行展示） */
@@ -3436,6 +3484,10 @@ const app = createApp({
       // 距高天 / 距低天：今年最高价 / 最低价当天，距离今天的自然日数（无极值日期时为 null）
       if (key === 'yearHighDays') return daysFromDate(s.yearHighDate);
       if (key === 'yearLowDays') return daysFromDate(s.yearLowDate);
+      if (key === 'valuation') {
+        return (s.q24Rev != null && s.q24Kcf != null) ? +((s.q24Rev + s.q24Kcf) / 2).toFixed(2) : null;
+      }
+      if (key === 'ztCount' || key === 'heat') return s.ztThisYear != null ? s.ztThisYear : null;
       return s[key];
     }
 
@@ -4779,7 +4831,7 @@ const app = createApp({
       q24Min: null, q24Max: null,
       q24kMin: null, q24kMax: null,
       posMin: null, posMax: null,
-      ratioFilter: false,
+      autoCalc: { key: 'valuation', op1: 'gt', num1: null, conn: 'and', op2: 'lt', num2: null },  // 自动计算筛选（原「比值筛选」升级）
       industry: '',
       industries: []   // 行业多选勾选（与单选 industry 二选一，勾选优先）
     });
@@ -4800,7 +4852,7 @@ const app = createApp({
       sectorFilter.q24Min = null; sectorFilter.q24Max = null;
       sectorFilter.q24kMin = null; sectorFilter.q24kMax = null;
       sectorFilter.posMin = null; sectorFilter.posMax = null;
-      sectorFilter.ratioFilter = false; sectorFilter.industry = ''; sectorFilter.industries = [];
+      sectorFilter.autoCalc = { key: 'valuation', op1: 'gt', num1: null, conn: 'and', op2: 'lt', num2: null }; sectorFilter.industry = ''; sectorFilter.industries = [];
       sectorFilter.bizKeyword = '';
     }
     function toggleSectorFilterLock() {
@@ -7013,7 +7065,7 @@ const app = createApp({
       q24Min: null, q24Max: null,   // 24营比区间
       q24kMin: null, q24kMax: null, // 24扣比区间
       posMin: null, posMax: null,   // 正数统计区间（今涨跌→扣非环比 中为正的字段个数）
-      ratioFilter: false,            // 比值筛选：924涨跌 < 24营比 + 24扣比
+      autoCalc: { key: 'valuation', op1: 'gt', num1: null, conn: 'and', op2: 'lt', num2: null },  // 自动计算筛选（原「比值筛选」升级）
       industry: '',                  // 行业筛选（单选下拉，兼容旧值）
       industries: [],                // 行业筛选（多选勾选，与 sector 详情一致；勾选优先于 industry）
       mainBusiness: ''               // 主业产品筛选：关键字模糊匹配「主业与主要产品」文本，'' 表示不限
@@ -7139,7 +7191,7 @@ const app = createApp({
       filterPanel.q24Min = null; filterPanel.q24Max = null;
       filterPanel.q24kMin = null; filterPanel.q24kMax = null;
       filterPanel.posMin = null; filterPanel.posMax = null;
-      filterPanel.ratioFilter = false; filterPanel.industry = '';
+      filterPanel.autoCalc = { key: 'valuation', op1: 'gt', num1: null, conn: 'and', op2: 'lt', num2: null }; filterPanel.industry = '';
       filterPanel.industries = []; filterPanel.mainBusiness = '';
       hotFilterStocks.value = [];   // 同步清空热门板块联动的筛选列表
     }
@@ -7152,7 +7204,7 @@ const app = createApp({
       filterPanel.q24Min = null; filterPanel.q24Max = null;
       filterPanel.q24kMin = null; filterPanel.q24kMax = null;
       filterPanel.posMin = null; filterPanel.posMax = null;
-      filterPanel.ratioFilter = false; filterPanel.industry = '';
+      filterPanel.autoCalc = { key: 'valuation', op1: 'gt', num1: null, conn: 'and', op2: 'lt', num2: null }; filterPanel.industry = '';
       filterPanel.industries = []; filterPanel.mainBusiness = '';
     }
     /** 切换热门板块时清空筛选区间（不触碰 poolId，由调用方设置）；调用方需自行判断「固定筛选」开关 */
@@ -7163,7 +7215,7 @@ const app = createApp({
       filterPanel.q24Min = null; filterPanel.q24Max = null;
       filterPanel.q24kMin = null; filterPanel.q24kMax = null;
       filterPanel.posMin = null; filterPanel.posMax = null;
-      filterPanel.ratioFilter = false; filterPanel.industry = '';
+      filterPanel.autoCalc = { key: 'valuation', op1: 'gt', num1: null, conn: 'and', op2: 'lt', num2: null }; filterPanel.industry = '';
       filterPanel.industries = []; filterPanel.mainBusiness = '';
     }
     /** 区间判断工具：v 在 [min,max] 内（含边界），边界均为空则不限（含 null） */
@@ -7189,8 +7241,32 @@ const app = createApp({
     /**
      * 通用区间/比值/行业筛选：对单只股票 s 应用筛选对象 f。
      * f 需包含 pbMin/pbMax/pkMin/pkMax/prMin/prMax/q24Min/q24Max/q24kMin/q24kMax/
-     * posMin/posMax/ratioFilter/industry。筛选板块与板块详情共用同一套规则。
+     * posMin/posMax/autoCalc/industry。筛选板块与板块详情共用同一套规则。
      */
+    /** 自动计算字段取值（被「自动计算筛选」使用）。无数据/无法计算返回 null。 */
+    function autoCalcValue(s, key) {
+      if (key === 'valuation') return (s.q24Rev != null && s.q24Kcf != null) ? +((s.q24Rev + s.q24Kcf) / 2).toFixed(2) : null;
+      if (key === 'diff924Val') return (s.change924 != null && s.q24Rev != null && s.q24Kcf != null) ? +(s.change924 - (s.q24Rev + s.q24Kcf) / 2).toFixed(2) : null;
+      if (key === 'change924') return s.change924;
+      if (key === 'yearChange') return s.yearChange;
+      if (key === 'distToYearHigh') return poolVal(s, 'distToYearHigh');
+      if (key === 'distToYearLow') return poolVal(s, 'distToYearLow');
+      if (key === 'ztThisYear') return s.ztThisYear;
+      if (key === 'ztLastYear') return s.ztLastYear;
+      if (key === 'positiveCount') return positiveCount(s);
+      return s[key];
+    }
+    /** 数值比较：op ∈ gt/gte/lt/lte/eq/ne。 */
+    function cmpOp(v, op, n) {
+      if (n == null || isNaN(n)) return true;
+      if (op === 'gt') return v > n;
+      if (op === 'gte') return v >= n;
+      if (op === 'lt') return v < n;
+      if (op === 'lte') return v <= n;
+      if (op === 'eq') return v === n;
+      if (op === 'ne') return v !== n;
+      return true;
+    }
     function passFilter(s, f) {
       const r = sRatio(s);
       if (!inRange(r.pbRatio, f.pbMin, f.pbMax)) return false;
@@ -7206,11 +7282,14 @@ const app = createApp({
         const picked = multi || (f.industry ? [f.industry] : []);
         if (picked.length && picked.indexOf(s.industry || '未知') === -1) return false;
       }
-      // 比值筛选：924涨跌 < 24营比/2 + 24扣比/2（924涨跌 小于二者均值，三值均须有效）
-      if (f.ratioFilter) {
-        const c9 = s.change924, rv = s.q24Rev, kc = s.q24Kcf;
-        if (c9 == null || isNaN(c9) || rv == null || isNaN(rv) || kc == null || isNaN(kc)) return false;
-        if (!(c9 < rv / 2 + kc / 2)) return false;
+      // 自动计算筛选（原「比值筛选」升级）：对所选自动计算字段做 数值1 [且/或] 数值2 比较
+      if (f.autoCalc && (f.autoCalc.num1 != null || f.autoCalc.num2 != null)) {
+        const v = autoCalcValue(s, f.autoCalc.key);
+        if (v == null || isNaN(v)) return false;
+        const ok1 = f.autoCalc.num1 != null ? cmpOp(v, f.autoCalc.op1, f.autoCalc.num1) : true;
+        const ok2 = f.autoCalc.num2 != null ? cmpOp(v, f.autoCalc.op2, f.autoCalc.num2) : true;
+        const ok = f.autoCalc.conn === 'or' ? (ok1 || ok2) : (ok1 && ok2);
+        if (!ok) return false;
       }
       // 主业产品筛选：关键字模糊匹配「主业与主要产品」文本（mainBusiness 为 {name,ratio} 数组）
       if (f.mainBusiness && f.mainBusiness.trim()) {

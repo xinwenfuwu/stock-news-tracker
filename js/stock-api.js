@@ -745,6 +745,29 @@ const API_TTL = {
  *  取 200 留 3 倍余量，避免边界抖动；一个 719 只的板块只需 4 个分片（并发 4 → 1 轮）。 */
 const QUOTE_CHUNK = 200;
 
+/** 涨停统计：代码→{ztLastYear,ztThisYear} 内存缓存（同会话同代码只算一次，按自然年刷新）。 */
+const _ztCache = new Map();
+
+/** 6位代码或 sh/sz/bj 前缀代码 → 腾讯前缀代码（sh/sz/bj）。无法识别返回 ''。 */
+function txCodeOf(code) {
+  const c = String(code || '').toLowerCase().replace(/\s/g, '');
+  if (/^(sh|sz|bj)\d{6}$/.test(c)) return c;
+  const d = c.replace(/[^0-9]/g, '');
+  if (d.length !== 6) return '';
+  if (/^[69]/.test(d)) return 'sh' + d;
+  if (/^[48]/.test(d) || /^92/.test(d)) return 'bj' + d;
+  return 'sz' + d;
+}
+
+/** 由腾讯前缀代码判断板块：main 主板 / cyb 创业板 / star 科创板 / bse 北交所。 */
+function boardOf(c) {
+  const p = c.replace(/[a-z]/g, '');
+  if (/^(688|689)/.test(p)) return 'star';
+  if (/^8/.test(p) || /^4/.test(p) || /^92/.test(p)) return 'bse';
+  if (/^30/.test(p)) return 'cyb';
+  return 'main';
+}
+
 const StockAPI = {
 
   // ============ 缓存与请求合并（性能层，不改动任何接口语义） ============
@@ -3884,6 +3907,54 @@ const StockAPI = {
     store[c] = first;
     this._saveListingDates();
     return first;
+  },
+
+  /**
+   * 按自然年统计个股「去年 / 今年」涨停天数（免费、无限流：腾讯日K线，浏览器直连 CORS=*）。
+   * 取最近 ~520 个交易日日线（覆盖上一年全年 + 今年至今），按板块涨跌停阈值 +
+   * 「收盘==最高价(封板)」逐日判定涨停，分别统计去年(ztLastYear) / 今年(ztThisYear)涨停数。
+   * 命中规则：主板 ≥9.8%、创业板/科创板 ≥19.8%、北交所 ≥29.8%，且当日最高价==收盘价（封死涨停）。
+   * 结果缓存到内存（同会话同代码只算一次）；best-effort：取不到数据返回双 null。
+   * @param {string} code 6位代码或 sh/sz/bj 前缀代码
+   * @returns {Promise<{ztLastYear:number|null, ztThisYear:number|null}>}
+   */
+  async computeLimitUp(code) {
+    const c = txCodeOf(code);
+    if (!c) return { ztLastYear: null, ztThisYear: null };
+    if (_ztCache.has(c)) return _ztCache.get(c);
+    const yr = new Date().getFullYear();
+    const ly = yr - 1;
+    const url = `https://web.ifzq.gtimg.cn/appstock/app/fqkline/get?param=${c},day,,,520,qfq`;
+    let j = null;
+    try { j = await this._fetchJson(url, 9000); } catch (e) { /* 直连失败退 JSONP */ }
+    if (!j || !(j.data && j.data[c] && (j.data[c].qfqday || j.data[c].day))) {
+      try {
+        if (typeof document !== 'undefined') {
+          const vn = '__txlu_' + Math.random().toString(36).slice(2);
+          j = await this._sinaLoadVar(url + '&_var=' + vn, vn);
+        }
+      } catch (e) { /* 两条路都不通 */ }
+    }
+    const node = j && j.data && j.data[c];
+    const bars = (node && (node.qfqday || node.day)) || [];
+    const res = { ztLastYear: null, ztThisYear: null };
+    if (bars.length > 1) {
+      const b = boardOf(c);
+      const thr = b === 'cyb' || b === 'star' ? 19.8 : (b === 'bse' ? 29.8 : 9.8);
+      let nLy = 0, nTy = 0;
+      for (let i = 1; i < bars.length; i++) {
+        const dt = String((bars[i] && bars[i][0]) || '');
+        const close = +bars[i][2], prev = +bars[i - 1][2], high = +bars[i][3];
+        if (!isFinite(close) || !isFinite(prev) || !isFinite(high) || prev === 0) continue;
+        const pct = (close - prev) / prev * 100;
+        const isZT = Math.abs(high - close) < 0.02 && pct >= thr;
+        if (dt.indexOf(String(ly)) === 0 && isZT) nLy++;
+        else if (dt.indexOf(String(yr)) === 0 && isZT) nTy++;
+      }
+      res.ztLastYear = nLy; res.ztThisYear = nTy;
+    }
+    _ztCache.set(c, res);
+    return res;
   },
 
   /**

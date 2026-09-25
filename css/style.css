@@ -277,6 +277,11 @@ body {
   margin-bottom: 14px;
 }
 .filter-field { display: flex; flex-direction: column; gap: 4px; }
+/* 自动计算筛选行：字段/运算符/数值/且或 一行排布，窄屏自动换行 */
+.autocalc-field { grid-column: 1 / -1; }
+.autocalc-row { display: flex; flex-wrap: wrap; align-items: center; gap: 4px; margin-top: 2px; }
+.autocalc-row select { padding: 4px 6px; border: 1px solid #d8e0f0; border-radius: 6px; background: #fff; font-size: 12px; min-width: 0; }
+.autocalc-row input[type="number"] { padding: 4px 6px; border: 1px solid #d8e0f0; border-radius: 6px; font-size: 12px; width: 70px; }
 .filter-field label { font-size: 12px; color: var(--text-secondary); font-weight: 600; white-space: nowrap; }
 .filter-field select { padding: 6px 10px; border: 1px solid #d8e0f0; border-radius: 6px; background: #fff; font-size: 13px; min-width: 170px; }
 .filter-field .range { display: flex; align-items: center; gap: 4px; }
@@ -1967,6 +1972,11 @@ body {
 }
 .brief-cat-head:hover { background: var(--surface-alt); }
 .brief-cat-head.active { background: var(--primary-light); }
+/* batch61：全球信息页（currentPage!=='news'）下「序/增/数」排序按钮被 v-if 隐藏，
+ * 原 10 列网格只剩 7 个元素被自动塞进前 7 列，导致 bc-name 落到 30px 窄列溢出、与 📊 重叠掩盖文字。
+ * 这里在非新闻页用 6 列网格（caret|icon|name|track|count|pct），名称列固定 80px 完整显示，
+ * 📊 按钮在非新闻页也一并隐藏（点击子类名仍可展开成分股），彻底消除文字被覆盖。 */
+.brief-cat-head.no-sort { grid-template-columns: 10px 20px 80px minmax(0, 1fr) 34px 40px; }
 .bc-caret { justify-self: center; color: var(--text-placeholder); font-size: 11px; }
 /* 图标：固定列宽 + 左对齐。用居中会让宽窄不同的 emoji（🌍 单字 vs 🇺🇸 国旗）左边缘参差，
  * 与右侧名称列「统一左起点」的观感不一致，所以这里跟文字一样走左对齐。 */
