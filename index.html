@@ -4,12 +4,12 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>股市信息分析系统</title>
-  <link rel="stylesheet" href="css/style.css?v=20260925d">
+  <link rel="stylesheet" href="css/style.css?v=20260925e">
   <!-- Vue 3 全局构建版（v3.4.21 · 自托管）
        原先走 unpkg.com CDN：国内网络对 unpkg 的连通性不稳定，一旦该请求长时间挂起，
        <head> 里的阻塞脚本会让整页停在白屏、后续 auth-boot.js 根本不会执行。
        改为同源托管后，启动链路不再依赖任何第三方 CDN。 -->
-  <script src="js/vue.global.prod.js?v=20260925d"></script>
+  <script src="js/vue.global.prod.js?v=20260925e"></script>
 </head>
 <body class="auth-locked">
   <!-- ===== 登录关卡：登录通过前业务脚本不会被加载 ===== -->
@@ -499,6 +499,450 @@
           <div class="muted small" v-else-if="!briefLoading && !briefError && !briefPaused">暂无快讯数据，等待服务端定时抓取（每 2 小时一次）。</div>
         </aside>
         <!-- BATCH52_BRIEF_TOP_END -->
+        <!-- batch65：把「选股」页的选股搜索栏整体复制到「新闻追踪」页「每日快讯」下方（复用同一套 setupState 状态与函数） -->
+        <div class="news-sector-search">
+          <h3 class="page-subtitle">🧭 选股搜索（板块 / AI语义 / 同类股票 / 反推业务）</h3>
+        <!-- 板块搜索 -->
+        <div class="sector-search">
+          <input v-model="sectorSearch" placeholder="输入行业/概念名称，如：白酒、人工智能、新能源车、低空经济..."
+            style="flex:1;min-width:220px;padding:9px 12px;border:1px solid #d8e0f0;border-radius:8px"
+            @keyup.enter="searchSector">
+          <button class="btn btn-primary" @click="searchSector" :disabled="sectorSearching"
+            title="按名称搜索板块（含东财全部板块：新能源车 / 算力 / 低空经济 / 半导体…）。点结果即加载该板块成分股">
+            <span v-if="sectorSearching">⏳ 搜索中...</span>
+            <span v-else>🔍 搜索板块</span>
+          </button>
+          <button class="btn btn-ai" @click="semanticSearch(true)" :disabled="semantic.searching || sectorSearching"
+            title="【深度】不依赖板块库，直接遍历全市场 5000+ 家上市公司的最新一期主营构成，找出所有经营相同业务/相同产品的公司并按其营收占比降序（冷门/细分产品词推荐用这个；首次约 100+ 页请求，之后本机 3 天内复用）">
+            <span v-if="semantic.searching">⏳ 深度扫描中...</span>
+            <span v-else>🌐 全市场深度扫描</span>
+          </button>
+          <button class="btn btn-ai" @click="semanticSearch(false)" :disabled="semantic.searching || sectorSearching"
+            title="用自然语言描述选股意图：自动匹配东财业务板块 → 拉取候选公司主营构成 → 按「该业务占公司营收比例」降序，找出经营相同业务/相同产品的上市公司">
+            <span v-if="semantic.searching">⏳ 语义理解中...</span>
+            <span v-else>🤖 AI语义搜索</span>
+          </button>
+          <button class="btn" @click="searchSubSectors" :disabled="sectorSearching" title="在我的概念选股板块中，按名称关键字搜索子版块">
+            🔎 搜索子版块
+          </button>
+          <input v-model="similar.input" placeholder="同类股票：输入种子股票代码/名称，如 600519 / 贵州茅台"
+            style="width:280px;min-width:200px;padding:9px 12px;border:1px solid #d8e0f0;border-radius:8px"
+            @keyup.enter="runSimilarBusiness">
+          <button class="btn btn-similar" @click="runSimilarBusiness" :disabled="similar.loading || sectorSearching"
+            title="输入一只股票，找出 A 股中经营相同主营业务/产品的同类公司（相关度口径与 AI 语义搜索一致：命中主营段营收占比之和）">
+            <span v-if="similar.loading">⏳ 匹配中...</span>
+            <span v-else>🧬 同类股票</span>
+          </button>
+          <span class="reverse-inline" title="输入一只股票，反推其各主营业务/产品的营收占比（相关度）与业务热度（结果表首两行固定为「该股最火业务」与「自定义业务」）">
+            <input v-model="reverse.input" placeholder="股票代码/名称，如 000711 / 掌阅科技"
+              style="width:210px;min-width:160px;padding:9px 12px;border:1px solid #d8e0f0;border-radius:8px"
+              @keyup.enter="reverseBusiness">
+            <button class="btn" @click="reverseBusiness" :disabled="reverse.loading">
+              <span v-if="reverse.loading">⏳ 反推中...</span>
+              <span v-else>🔄 反推业务</span>
+            </button>
+          </span>
+          <!-- batch60：手动添加股票输入框从语义结果区移到选股栏（反推业务后面），随时可加股票进当前结果列表 -->
+          <span class="reverse-inline" title="输入股票代码或名称，手动添加到当前选股结果列表（如 600519 / 贵州茅台），多只用逗号分隔">
+            <input class="inline-input wide" v-model="stockAddCode" @keyup.enter="addStockByCode" placeholder="输入股票代码或名称添加（如 600519 / 贵州茅台），多只用逗号分隔"
+              style="width:230px;min-width:170px;padding:9px 12px;border:1px solid #d8e0f0;border-radius:8px" />
+            <button class="btn btn-primary" @click="addStockByCode" :disabled="stockAdding">
+              <span v-if="stockAdding">⏳ 添加中...</span>
+              <span v-else>＋ 添加股票</span>
+            </button>
+          </span>
+          <!-- batch60：恢复按钮——清空选股栏所有输入与结果，恢复默认状态 -->
+          <button class="btn" @click="resetSectorPanel" :disabled="semantic.searching || sectorSearching || similar.loading || reverse.loading"
+            title="清空选股栏的搜索词与全部结果（AI语义/同类股票/反推业务），恢复默认状态">
+            🧹 恢复
+          </button>
+        </div>
+        <div class="usage-panel" style="margin:-6px 0 14px">
+          <div class="usage-toggle" @click="sectorUsageOpen = !sectorUsageOpen"
+               style="cursor:pointer;user-select:none;font-weight:600;color:#33415c;display:flex;align-items:center;gap:6px">
+            <span>📖 用法和说明</span>
+            <span class="muted small">{{ sectorUsageOpen ? '▲ 收起' : '▼ 展开' }}</span>
+          </div>
+          <p class="muted tiny" v-show="sectorUsageOpen" style="margin:8px 0 0">
+            用法：在上方输入框输入 <b>谐波减速器</b> / <b>复合铜箔</b> / <b>人工智能</b> / <b>低空经济</b> / <b>薄膜铌酸锂</b>，
+            点 🤖 AI语义搜索 即可列出<b>经营相同业务或相同产品</b>的上市公司，并按「<b>该业务占公司营收比例</b>」从高到低排序；
+            冷门/细分产品词若结果偏少，用 🌐 全市场深度扫描（遍历全部 A 股主营构成）。
+            <b>组词整词匹配</b>：你填写的主业/产品词会被当成<b>一个整体</b>理解——如输入「特种电缆」，
+            只命中主营构成里含「<b>特种电缆</b>」整词的公司，<b>不会</b>拆成「主营带特种」和「产品带电缆」分别命中；
+            识别概念与命中来源同样展示该组词。纯组词词（未命中概念库/产品库时）自动对<b>全市场主营业务和产品</b>做深度扫描。
+            同类股票：输入一只股票，找出其<b>排名前 2 的两大业务/主要产品</b>相同的 A 股公司（已自动剔除 301/300 开头、北交所、ST）。
+            结果表带「<b>命中来源</b>」列：<b>主营业务</b>=主营构成段名直接命中（相关度即该段营收占比之和）；
+            <b>板块成员</b>/<b>行业归属</b>=段名未列该词但公司确实属于该板块/行业（如输入「证券」时的中国银河、国泰海通，相关度记 0）。
+            数据源：东方财富<b>数据中心报表</b>（板块成分 + F10 主营构成 + 公司概况），不走 push2 行情域名，避免限流。
+          </p>
+        </div>
+
+        <!-- 搜索结果：按「主行业概念（行业板块）＋ 多个次行业概念（概念板块）」分组 -->
+        <div class="sector-results" v-if="sectorResults.length">
+          <template v-if="sectorResultsMain.length">
+            <div class="sector-group-title">🏭 主行业概念</div>
+            <div class="sector-result-list">
+              <div class="sector-result-item" v-for="item in sectorResultsMain" :key="item.bk"
+                   @click="addSectorFromSearch(item)">
+                <span class="sector-result-name">{{ item.name }}</span>
+                <span class="sector-result-type">{{ item.type }}</span>
+                <span class="sector-result-change" v-if="item.change != null">{{ fmtPct(item.change) }}</span>
+                <button class="btn btn-sm btn-primary">➕ 添加</button>
+                <button class="btn btn-sm" @click.stop="addSubSector(item)">次选</button>
+              </div>
+            </div>
+          </template>
+          <template v-if="sectorResultsSub.length">
+            <div class="sector-group-title">🔗 多个次行业概念</div>
+            <div class="sector-result-list">
+              <div class="sector-result-item" v-for="item in sectorResultsSub" :key="item.bk"
+                   @click="addSectorFromSearch(item)">
+                <span class="sector-result-name">{{ item.name }}</span>
+                <span class="sector-result-type">{{ item.type }}</span>
+                <span class="sector-result-change" v-if="item.change != null">{{ fmtPct(item.change) }}</span>
+                <button class="btn btn-sm btn-primary">➕ 添加</button>
+                <button class="btn btn-sm" @click.stop="addSubSector(item)">次选</button>
+              </div>
+            </div>
+          </template>
+          <template v-if="sectorResultsIdx.length">
+            <div class="sector-group-title">🔢 指数板块（如高端装备）</div>
+            <div class="sector-result-list">
+              <div class="sector-result-item" v-for="item in sectorResultsIdx" :key="item.bk"
+                   @click="addSectorFromSearch(item)">
+                <span class="sector-result-name">{{ item.name }}</span>
+                <span class="sector-result-type">{{ item.type }}</span>
+                <span class="sector-result-change" v-if="item.change != null">{{ fmtPct(item.change) }}</span>
+                <button class="btn btn-sm btn-primary">➕ 添加</button>
+                <button class="btn btn-sm" @click.stop="addSubSector(item)">次选</button>
+              </div>
+            </div>
+          </template>
+          <p class="muted small">点击板块设为主选并添加；点「次选」加入次选概念列表。<b>主行业概念</b>=行业板块，<b>多个次行业概念</b>=概念板块，<b>指数板块</b>=东财指数类（如「高端装备」000097）。</p>
+        </div>
+        <div class="sector-results" v-else-if="sectorSearching">
+          <p class="muted">正在搜索板块...</p>
+        </div>
+        <!-- 加载失败提示 -->
+        <div class="sector-load-error" v-else-if="sectorLoadError">
+          <p>⚠️ 板块数据加载失败（可能是网络或行情源限流）</p>
+          <div class="sector-error-actions">
+            <button class="btn btn-sm" @click="reloadSectors" :disabled="sectorSearching">🔄 重新加载</button>
+            <button class="btn btn-sm" @click="loadAllSectors" :disabled="sectorLoadingAll">
+              <span v-if="sectorLoadingAll">⏳ 加载全部中...</span>
+              <span v-else>📚 加载全部板块</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- AI 语义选股结果 -->
+        <div class="semantic-result" v-if="semantic.searching">
+          <div class="semantic-loading">
+            <span class="ai-spinner">🤖</span>
+            <span v-if="semantic.progress">{{ semantic.progress }}</span>
+            <span v-else>AI 正在理解语义：匹配具体产品/技术 → 拉取主营构成 → 按营收占比排序…</span>
+          </div>
+          <p class="muted tiny" style="margin-top:6px">首次「深度扫描」需把全市场约 5 万条主营构成拉下来做本地索引（约 100+ 页），完成后本机 3 天内复用、后续搜索秒级返回。</p>
+        </div>
+        <div class="semantic-result" v-else-if="semantic.done">
+          <div class="semantic-header">
+            <h3>🤖 AI 语义筛选结果</h3>
+            <div class="semantic-header-actions">
+              <span class="muted tiny" v-if="semantic.scan" style="margin-right:8px">
+                扫描 {{ semantic.scan.pool }} 只{{ semantic.scan.deep ? '（全市场）' : '（板块）' }}
+              </span>
+              <button class="btn btn-sm btn-ai" @click="recomputeSemanticStocks" :disabled="semantic.recomputing || !semantic.boards.length" title="根据当前识别概念/命中板块重新计算符合语义的上市公司">
+                <span v-if="semantic.recomputing">⏳ 重算中...</span>
+                <span v-else>🔄 按当前条件重算</span>
+              </button>
+              <button class="btn btn-sm btn-primary" @click="saveSemanticAsPool" :disabled="semantic.saved || !semantic.stocks.length">
+                {{ semantic.saved ? '✅ 已保存' : '💾 保存到我的板块' }}
+              </button>
+            </div>
+          </div>
+          <p class="muted tiny semantic-hint">提示：编辑「识别概念」或「命中板块」后会自动按条件重算上市公司（多板块取成分股交集＝主业同时符合多主题）；也可点上方按钮手动重算。</p>
+          <!-- 识别概念：增删改 -->
+          <div class="semantic-edit-block">
+            <div class="semantic-edit-title">识别概念 <span class="muted tiny">（可增 / 删 / 改）</span></div>
+            <template v-if="semantic.method==='product'">
+              <span class="semantic-chip product">🎯 产品级语义命中：{{ semantic.productKey }}</span>
+              <span class="semantic-method">· 以产品库产业链标的为种子 + 主营构成营收占比精筛</span>
+            </template>
+            <template v-else-if="semantic.method==='deep'">
+              <span class="semantic-chip product">🌐 全市场深度扫描</span>
+              <span class="semantic-method">· 已遍历全市场主营构成，按「命中业务占营收比例」排序</span>
+            </template>
+            <span class="semantic-method" v-if="semantic.scan && (semantic.scan.channel > 0)">
+              · 另按<b>板块归属 / 行业归属</b>补入 <b>{{ semantic.scan.channel }}</b> 家（相关度记 0，见「命中来源」列）
+            </span>
+            <template v-else>
+              <span class="semantic-tag-label">识别概念：</span>
+            </template>
+            <span class="semantic-chip concept editable" v-for="(c,i) in semantic.concepts" :key="'c'+i">
+              <template v-if="editingConceptIdx===i">
+                <input class="inline-input" v-model="conceptDraft" @keyup.enter="commitEditConcept" @blur="commitEditConcept" />
+              </template>
+              <template v-else>
+                {{ c }}
+                <span class="chip-actions">
+                  <button class="icon-btn" title="编辑概念" @click="startEditConcept(i)">✏️</button>
+                  <button class="icon-btn" title="删除概念" @click="removeConcept(i)">🗑️</button>
+                </span>
+              </template>
+            </span>
+            <input class="inline-input add-input" v-model="newConceptText" @keyup.enter="addConcept" placeholder="加概念" />
+            <button class="btn btn-xs" @click="addConcept">＋ 概念</button>
+            <template v-if="semantic.modifiers.length">
+              <span class="semantic-tag-label">修饰：</span>
+              <span class="semantic-chip mod" v-for="m in semantic.modifiers" :key="'m'+m">{{ m==='核心'?'核心/龙头':(m==='小市值'?'小市值':'') }}</span>
+            </template>
+            <span class="semantic-method" v-if="semantic.method==='intersect'">· 多概念取「交集」（同时具备上述主题的公司）</span>
+            <span class="semantic-method" v-else-if="semantic.method==='union'">· 概念无完全交集，已展示「并集」</span>
+            <span class="semantic-method" v-else-if="semantic.method==='single'">· 单概念</span>
+          </div>
+
+          <p class="muted small" v-if="semantic.method==='product' && semantic.productDesc">{{ semantic.productDesc }}</p>
+
+          <!-- 命中板块：增删改 -->
+          <div class="semantic-edit-block">
+            <div class="semantic-edit-title">命中板块 <span class="muted tiny">（可增 / 删 / 改）</span></div>
+            <span class="semantic-board editable" v-for="(b,i) in semantic.boards" :key="'b'+i">
+              <template v-if="editingBoardIdx===i">
+                <input class="inline-input" v-model="boardDraft" @keyup.enter="commitEditBoard" @blur="commitEditBoard" />
+              </template>
+              <template v-else>
+                {{ b.name }}
+                <span class="chip-actions">
+                  <button class="icon-btn" title="编辑板块" @click="startEditBoard(i)">✏️</button>
+                  <button class="icon-btn" title="删除板块" @click="removeBoard(i)">🗑️</button>
+                </span>
+              </template>
+            </span>
+            <span v-if="!semantic.boards.length" class="muted tiny">（暂无，可搜索添加）</span>
+            <span class="board-add">
+              <input class="inline-input" v-model="boardAddKw" @keyup.enter="searchBoardForAdd" placeholder="搜板块名" />
+              <button class="btn btn-xs" @click="searchBoardForAdd" :disabled="boardAdding">🔍 搜</button>
+            </span>
+            <div class="board-add-matches" v-if="boardAddMatches.length">
+              <span class="semantic-board match" v-for="(m,i) in boardAddMatches" :key="'m'+m.bk" @click="addBoard(m)">{{ m.name }} ＋</span>
+            </div>
+          </div>
+
+          <!-- 筛选出的股票：增删改 -->
+          <div class="semantic-table-wrap" v-if="semantic.stocks.length">
+            <table class="semantic-table">
+              <thead>
+                <tr>
+                  <th>排名</th><th>代码</th><th>名称</th><th>现价</th>
+                  <th>涨跌幅</th><th>总市值(亿)</th>
+                  <th title="相关度 = 命中语义描述的主营业务/产品之营收占比之和(%)">相关度(营收占比)</th>
+                  <th title="这一行是怎么被选出来的：主营业务=主营构成段名直接命中（相关度=该段营收占比之和）；板块成员=该公司属于名称命中的该板块（主营未列此词，相关度记 0）；行业归属=其行业分类命中">命中来源</th>
+                  <th>主营业务(占营收)</th>
+                  <th>操作</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="(s,i) in semantic.stocks" :key="s.code">
+                  <template v-if="editingStockCode===s.code">
+                    <td class="rank">{{ i+1 }}</td>
+                    <td class="code">{{ s.code.toUpperCase() }}</td>
+                    <td><input class="inline-input" v-model="stockNameDraft" placeholder="名称" /></td>
+                    <td>{{ s.price != null ? s.price.toFixed(2) : '-' }}</td>
+                    <td :class="pctClass(s.changePercent)">{{ fmtPct(s.changePercent) }}</td>
+                    <td>{{ s.marketCap ? (s.marketCap/1e8).toFixed(1) : '-' }}</td>
+                    <td class="relevance">{{ s.relevance != null ? s.relevance + '%' : '—' }}</td>
+                    <td class="match-kind">{{ matchKindLabel(s) }}</td>
+                    <td><input class="inline-input wide" v-model="stockConceptsDraft" placeholder="概念,逗号分隔" /></td>
+                    <td class="ops">
+                      <button class="icon-btn" title="保存" @click="commitEditStock">💾</button>
+                      <button class="icon-btn" title="取消" @click="cancelEditStock">✕</button>
+                    </td>
+                  </template>
+                  <template v-else>
+                    <td class="rank">{{ i+1 }}</td>
+                    <td class="code">{{ s.code.toUpperCase() }}</td>
+                    <td class="name">{{ s.name }}</td>
+                    <td>{{ s.price != null ? s.price.toFixed(2) : '-' }}</td>
+                    <td :class="pctClass(s.changePercent)">{{ fmtPct(s.changePercent) }}</td>
+                    <td>{{ s.marketCap ? (s.marketCap/1e8).toFixed(1) : '-' }}</td>
+                    <td class="relevance">{{ s.relevance != null ? s.relevance + '%' : '—' }}</td>
+                    <td class="match-kind"><span :class="'mk-tag mk-'+(s.matchKind||'segment')">{{ matchKindLabel(s) }}</span></td>
+                    <td class="concepts">
+                      <span class="semantic-chip mini seg" v-for="ms in (s.matchedSegments||[])" :key="'ms'+ms.name" :title="ms.name+' 占营收 '+ms.ratio+'%'">{{ ms.name }} <b>{{ ms.ratio }}%</b></span>
+                      <span class="muted tiny" v-if="!(s.matchedSegments&&s.matchedSegments.length)">（主营构成未列该词，按{{ (s.matchKind==='industry') ? '行业归属' : '板块成员' }}纳入）</span>
+                    </td>
+                    <td class="ops">
+                      <button class="icon-btn" title="编辑" @click="startEditStock(s)">✏️</button>
+                      <button class="icon-btn" title="删除" @click="removeStock(s.code)">🗑️</button>
+                    </td>
+                  </template>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <!-- batch60：「输入股票代码或名称添加」输入框已移到上方选股栏（反推业务后面），不再重复放在语义结果区 -->
+          <p class="muted small" v-if="!semantic.stocks.length">未找到符合条件的上市公司，可尝试调整描述（如去掉"核心"或减少概念），或在上方选股栏「＋ 添加股票」手动补充。</p>
+          <p class="muted tiny">说明：AI 语义搜索围绕「<b>主营构成</b>」这个唯一判据——把候选公司（命中东财业务板块的成分股，或全市场）的最新一期<b>按产品主营构成</b>与你的语义/产品词做匹配，
+            <b>命中业务段营收占比之和 = 相关度(%)</b>，并<b>按该占比从高到低排序</b>（同占比再按总市值降序），相关度为 0 的一律剔除。
+            「核心/龙头」取前 20 家；「小市值」取市值最小的 20 家；修改概念/板块后点「按当前条件重算」会基于最新主营构成重新计算。
+            候选池与主营构成均取数自东方财富<b>数据中心报表</b>（RPT_F10_CORETHEME_BOARDTYPE / RPT_F10_FN_MAINOP，批量拉取），
+            <b>不依赖 push2 行情域名与搜索建议接口</b>（前者会间歇性限流、后者已下线），因此不会再出现「搜索为 0」。行情来自腾讯股票接口。</p>
+        </div>
+        <div class="semantic-result" v-else-if="semantic.error">
+          <p class="semantic-error">⚠️ {{ semantic.error }}</p>
+        </div>
+
+        <!-- 同类股票结果（同主营业务/产品的 A 股公司） -->
+        <div class="similar-result" v-if="similar.loading">
+          <div class="semantic-loading">
+            <span class="ai-spinner">🧬</span>
+            <span>正在解析种子股票主营构成 → 扫描 A 股同类公司 → 计算主营占比相关度…</span>
+          </div>
+        </div>
+        <div class="similar-result" v-else-if="similar.error">
+          <p class="semantic-error">⚠️ {{ similar.error }}</p>
+        </div>
+        <div class="similar-result" v-else-if="similar.done">
+          <div class="semantic-header">
+            <h3>🧬 同类股票：
+              <span v-if="similar.seedName">{{ similar.seedName }}</span>
+              <span class="muted small">{{ similar.seedCode ? similar.seedCode.toUpperCase() : '' }}</span>
+            </h3>
+          </div>
+
+          <!-- 选项栏：固定项（排序方式 / 主营占比阈值）+ 可增删的自定义选项 -->
+          <div class="similar-options">
+            <div class="similar-opt" v-for="opt in similar.options" :key="opt.id">
+              <span class="similar-opt-label">{{ opt.label }}</span>
+              <template v-if="opt.type === 'sort'">
+                <select v-model="similar.sort" @change="applySimilarOptions" class="similar-opt-input">
+                  <option v-for="c in opt.choices" :key="c.v" :value="c.v">{{ c.t }}</option>
+                </select>
+              </template>
+              <template v-else-if="opt.type === 'ratio'">
+                <input type="number" min="0" max="100" step="1" v-model.number="similar.minRatio"
+                  @keyup.enter="applySimilarOptions" class="similar-opt-input narrow" />
+                <span class="muted tiny">%（低于该占比的公司不筛选）</span>
+                <button class="btn btn-xs" @click="applySimilarOptions">应用</button>
+              </template>
+              <template v-else>
+                <input v-model="opt.value" @input="setSimilarOptionValue(opt, opt.value)" placeholder="输入条件"
+                  class="similar-opt-input" />
+                <button class="btn btn-xs" @click="removeSimilarOption(opt)" title="删除该选项">🗑</button>
+              </template>
+            </div>
+            <div class="similar-opt add">
+              <input v-model="similarNewOption" @keyup.enter="addSimilarOption" placeholder="新增选项"
+                class="similar-opt-input narrow2" />
+              <button class="btn btn-xs btn-primary" @click="addSimilarOption">＋ 选项</button>
+            </div>
+          </div>
+
+          <!-- 匹配依据：种子股票主营构成 -->
+          <p class="muted tiny" v-if="similar.segments.length" style="margin:6px 0 10px">
+            <b>匹配依据</b>（{{ similar.seedName || similar.seedCode }} 的主营构成）：
+            <span class="semantic-chip mini seg" v-for="sg in similar.segments.slice(0, 12)" :key="sg.name">{{ sg.name }} <b>{{ (+sg.ratio).toFixed(1) }}%</b></span>
+          </p>
+
+          <div class="semantic-table-wrap" v-if="similar.stocks.length">
+            <table class="semantic-table similar">
+              <thead>
+                <tr>
+                  <th>排名</th>
+                  <th>代码</th>
+                  <th>股票名称</th>
+                  <th>现价</th>
+                  <th>涨跌幅</th>
+                  <th>总市值(亿)</th>
+                  <th title="相关度 = 命中主营段营收占比之和(%)，与 AI 语义搜索同口径">相关度</th>
+                  <th title="按主营业务占比之和排序（从大到小）" class="sortable" @click="applySimilarOptions">主营业务占比排序 <span class="sort-caret">⬇️</span></th>
+                  <th>主营业务(占营收)</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="(s, i) in similar.stocks" :key="s.code">
+                  <td class="rank">{{ i + 1 }}</td>
+                  <td class="code">{{ s.code.toUpperCase() }}</td>
+                  <td class="name">{{ s.name }}</td>
+                  <td>{{ s.price != null ? s.price.toFixed(2) : '-' }}</td>
+                  <td :class="pctClass(s.changePercent)">{{ fmtPct(s.changePercent) }}</td>
+                  <td>{{ s.marketCap ? (s.marketCap/1e8).toFixed(1) : '-' }}</td>
+                  <td class="relevance">{{ s.relevance != null ? s.relevance + '%' : '—' }}</td>
+                  <td class="relevance">{{ s.bizRatio != null ? s.bizRatio + '%' : '—' }}</td>
+                  <td class="concepts">
+                    <span class="semantic-chip mini seg" v-for="ms in (s.matchedSegments||[])" :key="'ms'+ms.name" :title="ms.name+' 占营收 '+ms.ratio+'%'">{{ ms.name }} <b>{{ ms.ratio }}%</b></span>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <p class="muted small" v-else>未找到同类公司，可尝试降低「主营占比」阈值后点「应用」，或确认种子股票代码是否正确。</p>
+          <p class="muted tiny">说明：同类股票以种子股票的<b>主营业务/产品</b>为匹配词，逐只拉取东财 F10 主营构成，命中主营段营收占比之和即为<b>相关度</b>（口径与「AI 语义搜索」完全一致）；结果按<b>主营业务占比</b>从大到小排序，并可用上方「主营占比」阈值过滤掉占比过低的公司（如相同营收不足 5% 的不计入）。行情数据来自腾讯免费接口。</p>
+        </div>
+
+        <!-- 反推业务结果 -->
+        <div class="reverse-result" v-if="reverse.loading">
+          <div class="semantic-loading">
+            <span class="ai-spinner">🔄</span>
+            <span>正在拉取主营构成并反推业务相关度与热度…</span>
+          </div>
+        </div>
+        <div class="reverse-result" v-else-if="reverse.done">
+          <div class="semantic-header">
+            <h3>🔄 反推业务：{{ reverse.name }} <span class="muted small">{{ reverse.code.toUpperCase() }}</span></h3>
+            <div class="semantic-header-actions">
+              <button class="btn btn-sm" :class="{ active: reverseSort==='relevance' }" @click="setReverseSort('relevance')">按相关度 {{ reverseSortIcon('relevance') }}</button>
+              <button class="btn btn-sm" :class="{ active: reverseSort==='heat' }" @click="setReverseSort('heat')">按热度 {{ reverseSortIcon('heat') }}</button>
+            </div>
+          </div>
+          <p class="muted tiny">说明：结果前<strong>两行固定必有</strong>——① <b>🔥 该股最火概念</b>（标签固定在「股票名称」列；反推后<strong>自动算出「平时最能带动该股上涨的概念」</strong>——在个股主营构成所映射到的东财概念板块中，取与个股日收益率联动最强（皮尔逊相关系数最高）的概念；其<b>相关度=联动强度(%)</b>、<b>热度=该概念板块成分股数</b>，营收占比列以「—」表示（概念非主营构成），框内可改）；② <b>✏️ 自定义业务</b>（标签同样在「股票名称」列；在框内填写业务名，若匹配该股票主营构成则复用其数据，否则按业务名解析东财板块取股票数作为热度）。其后才是该股票真实的<b>主营构成</b>。<b>相关度</b>（业务行）= 主营占营收比例（%）；<b>热度</b> = 对应东财板块成分股数（同业公司越多越热门）。默认按相关度从高到低排序，可切换为按热度排序。</p>
+          <div class="semantic-table-wrap">
+            <table class="semantic-table reverse">
+              <thead>
+                <tr>
+                  <th>排名</th>
+                  <th>股票名称</th>
+                  <th>代码</th>
+                  <th>所属行业</th>
+                  <th>业务名称</th>
+                  <th>营收占比</th>
+                  <th class="sortable" @click="setReverseSort('relevance')">相关度/联动 <span class="sort-caret">{{ reverseSort==='relevance'?'⬇️':'↕️' }}</span></th>
+                  <th class="sortable" @click="setReverseSort('heat')">热度(股票数) <span class="sort-caret">{{ reverseSort==='heat'?'⬇️':'↕️' }}</span></th>
+                  <th>对应板块</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="(s,i) in reverseSorted" :key="'r_' + (s.type !== 'seg' ? s.type : (s.name + '|' + (s.ratio != null ? s.ratio : '')))" :class="{ 'row-hot': s.type==='hot', 'row-custom': s.type==='custom' }">
+                  <td class="rank">{{ i+1 }}</td>
+                  <td class="name">
+                    <template v-if="s.type==='hot'"><span class="badge-hot">🔥 该股最火概念</span></template>
+                    <template v-else-if="s.type==='custom'"><span class="badge-custom">✏️ 自定义</span></template>
+                    <template v-else>{{ reverse.name }}</template>
+                  </td>
+                  <td class="code">{{ s.type!=='custom' ? reverse.code.toUpperCase() : '—' }}</td>
+                  <td class="industry">{{ reverse.industry || '—' }}</td>
+                  <td class="seg">
+                    <input v-if="s.type==='hot'" class="inline-input bus-input" v-model="reverse.hotTheme" placeholder="自动识别的最火概念(可改)" />
+                    <input v-else-if="s.type==='custom'" class="inline-input bus-input" v-model="reverse.customName" placeholder="自行填写业务名称" />
+                    <template v-else>{{ s.name }}</template>
+                  </td>
+                  <td>{{ s.ratio != null ? s.ratio + '%' : '-' }}</td>
+                  <td class="relevance">{{ s.relevance != null ? s.relevance + '%' : '-' }}</td>
+                  <td class="heat">{{ s.heat ? s.heat + ' 只' : '-' }}</td>
+                  <td class="concepts">
+                    <span class="semantic-chip mini" v-for="b in s.boardNames" :key="b">{{ b }}</span>
+                    <span v-if="!s.boardNames || !s.boardNames.length" class="muted tiny">—</span>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <div class="reverse-result" v-else-if="reverse.error">
+          <p class="semantic-error">⚠️ {{ reverse.error }}</p>
+        </div>
+        </div>
+        <!-- /batch65 选股搜索栏复制结束 -->
         <div class="page-toolbar">
           <div class="toolbar-left">
             <div class="date-picker">
@@ -3976,12 +4420,12 @@
     </transition>
   </div>
 
-  <script src="js/auth.js?v=20260925d"></script>
-  <script src="js/auth-sync.js?v=20260925d"></script>
+  <script src="js/auth.js?v=20260925e"></script>
+  <script src="js/auth-sync.js?v=20260925e"></script>
   <!-- 边缘加速默认站点（batch37 治本：Cloudflare Worker 代理东财/腾讯，缓解 JSONP 限流误报）。
        若你所在地区 workers.dev 访问慢，可在「设置 → 行情加速地址」清空即恢复纯直连。 -->
   <script>window.__SNT_ACCEL__ = 'https://stock-edge.hui-zhou.workers.dev';</script>
-  <script src="js/auth-boot.js?v=20260925d"></script>
+  <script src="js/auth-boot.js?v=20260925e"></script>
   <!-- store / stock-api / hot-topics / app 由 auth-boot.js 在登录通过后动态装载，
        未登录时它们不会被下载，业务数据也不会进入内存 -->
 </body>
