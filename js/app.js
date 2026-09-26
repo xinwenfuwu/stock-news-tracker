@@ -7639,16 +7639,16 @@ const app = createApp({
     watch(sortedPoolDetailStocks, () => {
       if (poolDetail.show) nextTick(() => initResizeFor('.pool-detail-modal .pool-detail-table', 'poolColWidths', POOL_DEFAULT_COL_WIDTHS));
     }, { flush: 'post' });
-    // 收藏板块（位于 筛选板块 页，筛选栏下方）
+    // 收藏板块（已移至「用户」页，持仓表下方）
     watch(sortedFavorites, () => {
-      if (currentPage.value === 'filter') nextTick(() => initResizeFor('.fav-panel table', 'favColWidths', FAV_DEFAULT_COL_WIDTHS));
+      if (currentPage.value === 'holdings') nextTick(() => initResizeFor('.fav-panel table', 'favColWidths', FAV_DEFAULT_COL_WIDTHS));
     }, { flush: 'post' });
 
     // 刷新筛选板块下所有股票的行情/财务数据
     const filterRefreshing = ref(false);
     // 筛选板块页：顶部筛选栏与「字段含义」说明的一键收起/展开（收起以显示更多股票内容）
     const filterFilterOpen = ref(true);
-    // 收藏板块折叠开关（收藏板块位于筛选结果表下方，可通过工具栏「收起收藏」隐藏）
+    // 收藏板块折叠开关（收藏板块位于「用户」页持仓表下方，可通过「收起收藏」隐藏）
     const favPanelOpen = ref(true);
     async function refreshFilterStocks() {
       const list = filterPoolStocks.value;
