@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": 1790386550865,
+  "updatedAt": 1790386554020,
   "accounts": {
     "181": {
       "hash": "pbkdf2$150000$KjYyYMWup5jVGwvFBcCcOQ==$3U/UO6mfq2XHtEoimjRCc/0rz4seqfPAhnrte+JrXlw=",
@@ -31,12 +31,12 @@
       "role": "user",
       "status": "active",
       "disabled": false,
-      "trialUntil": 1790472921847,
+      "trialUntil": 1790316626777,
       "quotaMonths": 0,
       "disableDate": "",
       "registerDate": "2026-09-24",
       "createdAt": 1790230074433,
-      "updatedAt": 1790386550865
+      "updatedAt": 1790230257047
     },
     "123456789": {
       "hash": "pbkdf2$150000$SZ6KbX/JWpixSZKfQmhjjA==$ud20EzaRFEm8+ZSCvLehWO+O/x+WL3mG0JnNpKP/a8g=",
@@ -48,7 +48,7 @@
       "disableDate": "",
       "registerDate": "2026-09-24",
       "createdAt": 1790212969776,
-      "updatedAt": 1790213526974
+      "updatedAt": 1790386554020
     },
     "171998110": {
       "hash": "pbkdf2$150000$wmiCmotkR7fubzoemLYNfA==$LN1M34skjJPv/gyVz/haCHKPepGRKCTT+EWxZKABk+o=",
@@ -72,7 +72,7 @@
       "disableDate": "",
       "registerDate": "",
       "createdAt": 1789540967533,
-      "updatedAt": 1790386511904
+      "updatedAt": 1790386533927
     },
     "cp130855": {
       "hash": "pbkdf2$150000$zh/EECdscvG5O8TyQTLpIA==$maJFyXOZGpEtN3D4FnO0Oovz6n5eceQp/Qn+JSHv/Rc=",
