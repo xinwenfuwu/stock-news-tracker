@@ -4,12 +4,12 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>股市信息分析系统</title>
-  <link rel="stylesheet" href="css/style.css?v=20260925e">
+  <link rel="stylesheet" href="css/style.css?v=20260926a">
   <!-- Vue 3 全局构建版（v3.4.21 · 自托管）
        原先走 unpkg.com CDN：国内网络对 unpkg 的连通性不稳定，一旦该请求长时间挂起，
        <head> 里的阻塞脚本会让整页停在白屏、后续 auth-boot.js 根本不会执行。
        改为同源托管后，启动链路不再依赖任何第三方 CDN。 -->
-  <script src="js/vue.global.prod.js?v=20260925e"></script>
+  <script src="js/vue.global.prod.js?v=20260926a"></script>
 </head>
 <body class="auth-locked">
   <!-- ===== 登录关卡：登录通过前业务脚本不会被加载 ===== -->
@@ -139,7 +139,7 @@
           <div class="page-toolbar">
             <div class="toolbar-left">
               <div class="date-picker">
-                <label>选择日期</label>
+                <label>新闻统计开始时间</label>
                 <input type="date" disabled>
                 <button class="btn btn-sm" disabled>全部</button>
               </div>
@@ -946,11 +946,13 @@
         <div class="page-toolbar">
           <div class="toolbar-left">
             <div class="date-picker">
-              <label>选择日期</label>
-              <input type="date" v-model="newsFilter.date">
+              <label>新闻统计开始时间</label>
+              <input type="date" v-model="newsFilter.date" title="统计开始时间：显示该日期及之后的新闻（向后统计）">
               <button class="btn btn-sm" @click="newsFilter.date = ''">全部</button>
             </div>
             <input class="search-input" v-model="newsFilter.keyword" placeholder="搜索新闻内容/股票...">
+            <button class="btn btn-sm btn-ai" @click="runNewsAiAnalysis()" :disabled="aiAnalyzing"
+                    title="输入关键词后点此，对该关键词命中的新闻逐条做 AI 分析（影响传播等级 / 利空 / 利好）">🤖 AI分析</button>
             <select class="select" v-model="newsFilter.category">
               <option value="">全部分类</option>
               <option v-for="c in allCategories" :key="c" :value="c">{{ c }}</option>
@@ -1067,6 +1069,54 @@
           </table>
         </div>
         <div class="page-footer">共 {{ filteredNews.length }} 条新闻</div>
+
+        <!-- batch66：关键词 + AI 分析新闻表（输入关键词点「🤖 AI分析」后出现） -->
+        <div class="ai-news-analysis" v-if="aiAnalysisRows.length || aiAnalysisError">
+          <div class="ana-head">
+            <h3 class="panel-title">🤖 关键词「{{ aiAnalysisKeyword }}」新闻 AI 分析</h3>
+            <button class="btn btn-sm" v-if="aiAnalysisRows.length"
+                    @click="aiAnalysisRows = []; aiAnalysisKeyword = ''; aiAnalysisError = ''">清除</button>
+          </div>
+          <p class="ana-tip muted small" v-if="!aiConfigured">
+            ⚠️ 未配置 AI 接口（偏好设置 → AI 解读）：下方仅列出匹配新闻，「影响传播等级 / 利空 / 利好」需配置 API 地址、密钥、模型后由 AI 生成。
+          </p>
+          <p class="ana-tip muted small" v-if="aiAnalyzing">
+            ⏳ AI 分析中…（{{ aiAnalysisRows.filter(r => !r.loading).length }}/{{ aiAnalysisRows.length }}）
+          </p>
+          <p class="ana-tip ana-error" v-if="aiAnalysisError">{{ aiAnalysisError }}</p>
+          <div class="table-wrap" v-if="aiAnalysisRows.length">
+            <table class="data-table ana-table">
+              <thead>
+                <tr>
+                  <th>新闻平台</th>
+                  <th>{{ aiAnalysisKeyword }}新闻事件</th>
+                  <th>ai分析（影响传播等级）</th>
+                  <th>利空分析</th>
+                  <th>利好分析</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="r in aiAnalysisRows" :key="r.id">
+                  <td data-label="新闻平台">{{ r.source || '—' }}</td>
+                  <td class="cell-news" data-label="新闻事件"><div class="news-text">{{ r.content }}</div></td>
+                  <td class="cell-ai" data-label="ai分析">
+                    <span v-if="r.loading" class="muted">分析中…</span>
+                    <span v-else-if="r.error" class="ana-err">{{ r.error }}</span>
+                    <div v-else class="ai-text">{{ r.level || '—' }}</div>
+                  </td>
+                  <td class="cell-ai" data-label="利空分析">
+                    <span v-if="r.loading" class="muted">…</span>
+                    <div v-else class="ai-text">{{ r.bearish || '—' }}</div>
+                  </td>
+                  <td class="cell-ai" data-label="利好分析">
+                    <span v-if="r.loading" class="muted">…</span>
+                    <div v-else class="ai-text">{{ r.bullish || '—' }}</div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
         <!-- 财经推送（已移入「新闻追踪」页下方，更名为「新闻」） -->
         <div class="finance-moved" v-show="!financePushHidden">
           <div class="page-toolbar" style="margin-top:24px">
@@ -4420,12 +4470,12 @@
     </transition>
   </div>
 
-  <script src="js/auth.js?v=20260925e"></script>
-  <script src="js/auth-sync.js?v=20260925e"></script>
+  <script src="js/auth.js?v=20260926a"></script>
+  <script src="js/auth-sync.js?v=20260926a"></script>
   <!-- 边缘加速默认站点（batch37 治本：Cloudflare Worker 代理东财/腾讯，缓解 JSONP 限流误报）。
        若你所在地区 workers.dev 访问慢，可在「设置 → 行情加速地址」清空即恢复纯直连。 -->
   <script>window.__SNT_ACCEL__ = 'https://stock-edge.hui-zhou.workers.dev';</script>
-  <script src="js/auth-boot.js?v=20260925e"></script>
+  <script src="js/auth-boot.js?v=20260926a"></script>
   <!-- store / stock-api / hot-topics / app 由 auth-boot.js 在登录通过后动态装载，
        未登录时它们不会被下载，业务数据也不会进入内存 -->
 </body>

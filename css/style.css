@@ -502,6 +502,17 @@ body {
 .news-sector-search { margin: 14px 0 20px; padding: 14px 16px; background: #fff; border: 1px solid #e6ecf7; border-radius: 12px; }
 .news-sector-search .page-subtitle { margin: 0 0 10px; font-size: 16px; color: #33415c; }
 
+/* ===== batch66：关键词新闻 AI 分析表 ===== */
+.ai-news-analysis { margin-top: 18px; padding-top: 6px; }
+.ana-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin: 4px 0 8px; }
+.ana-tip { margin: 4px 0; }
+.ana-error { color: #e53935; }
+.ana-err { color: #e53935; font-size: 12px; line-height: 1.4; }
+.btn-ai { background: linear-gradient(135deg, #7b2ff7, #9b59ff); color: #fff; border-color: transparent; white-space: nowrap; }
+.btn-ai:hover:not(:disabled) { filter: brightness(1.08); }
+.ana-table th:nth-child(2) { min-width: 300px; }
+.ana-table .cell-news .news-text { max-height: 160px; overflow: auto; }
+
 /* ===== 当日股票明细 · 股票查询 ===== */
 .hot-search-row { display: flex; align-items: center; gap: 6px; }
 

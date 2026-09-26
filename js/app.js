@@ -1294,7 +1294,8 @@ const app = createApp({
 
     const filteredNews = computed(() => {
       let list = D.news;
-      if (newsFilter.date) list = list.filter(n => n.date === newsFilter.date);
+      // batch66：选择日期 → 新闻统计开始时间（从该日期起、含当日，向后统计）
+      if (newsFilter.date) list = list.filter(n => String(n.date || '') >= newsFilter.date);
       if (newsFilter.category) list = list.filter(n => n.category === newsFilter.category);
       if (newsFilter.customTag) {
         const kw = newsFilter.customTag.toLowerCase();
@@ -1734,6 +1735,89 @@ const app = createApp({
         const updated = D.news.find(n => n.id === item.id);
         if (updated) fillPriceForNews(updated, true);
       }
+    }
+
+    // ============================================================
+    // batch66：新闻追踪页「关键词 + AI 分析」——输入关键词，对该关键词命中的新闻逐条做 AI 分析
+    // 输出：新闻影响传播等级 / 利空分析 / 利好分析，列表展示在新闻表下方（不写回原新闻，纯展示）
+    // ============================================================
+    const aiAnalysisKeyword = ref('');
+    const aiAnalysisRows = ref([]);
+    const aiAnalyzing = ref(false);
+    const aiAnalysisError = ref('');
+
+    /** 解析 AI 返回的「影响传播等级 / 利空 / 利好」三段 */
+    function parseNewsAnalysis(text) {
+      const out = { level: '', bearish: '', bullish: '' };
+      const mLv = text.match(/【?\s*新闻影响传播等级\s*】?([\s\S]*?)(?=【?\s*利空分析\s*】?|$)/);
+      const mBear = text.match(/【?\s*利空分析\s*】?([\s\S]*?)(?=【?\s*利好分析\s*】?|$)/);
+      const mBull = text.match(/【?\s*利好分析\s*】?([\s\S]*?)$/);
+      if (mLv) out.level = mLv[1].trim();
+      if (mBear) out.bearish = mBear[1].trim();
+      if (mBull) out.bullish = mBull[1].trim();
+      if (!out.level && !out.bearish && !out.bullish) out.level = text.trim();
+      return out;
+    }
+
+    /** 调用 AI 针对关键词分析单条新闻：返回 { ok, level, bearish, bullish, error } */
+    async function callAIForNewsAnalysis(content, stocks, keyword) {
+      if (!aiConfigured.value) return { ok: false, error: '未配置 AI 接口（偏好设置 → AI 解读：需填写 API 地址、密钥、模型）' };
+      if (!content || !content.trim()) return { ok: false, error: '新闻内容为空' };
+      const stockLine = stocks.length ? ('关联股票：' + stocks.join('、')) : '关联股票：无';
+      const sys = '你是资深 A 股财经分析师，语言精炼、专业、客观，不夸大、不喊单。';
+      const user = '请围绕关键词「' + keyword + '」分析以下财经新闻，并严格按下面三段格式输出（保留【】标记，不要加额外前后缀、不要使用 Markdown 代码块）：\n\n新闻内容：' + content + '\n' + stockLine + '\n\n【新闻影响传播等级】\n（先给一个等级：高 / 中 / 低，再用一句话说明该新闻的影响范围与传播热度，例如是否全网刷屏、是否涉及重大政策或龙头公司）\n\n【利空分析】\n利空概念：…（用顿号分隔的关键概念，可空）\n利空行业：…（用顿号分隔的行业，可空）\n\n【利好分析】\n利好概念：…（用顿号分隔的关键概念，可空）\n利好行业：…（用顿号分隔的行业，可空）';
+      const res = await callOpenAICompat([
+        { role: 'system', content: sys },
+        { role: 'user', content: user }
+      ]);
+      if (!res.ok) return res;
+      return { ok: true, ...parseNewsAnalysis(res.content) };
+    }
+
+    /** 入口：读取关键词 → 匹配新闻 → 并发(限 3)逐条 AI 分析 → 填充下方分析表 */
+    async function runNewsAiAnalysis() {
+      const kw = (newsFilter.keyword || '').trim();
+      if (!kw) { showToast('请先在搜索框输入关键词（如 ai安全）', 'error'); return; }
+      const lower = kw.toLowerCase();
+      const matches = (D.news || []).filter(n =>
+        (n.content || '').toLowerCase().includes(lower) ||
+        stocksText(n.relatedStocks).toLowerCase().includes(lower) ||
+        (n.conceptCategory || '').toLowerCase().includes(lower) ||
+        (n.industryCategory || '').toLowerCase().includes(lower) ||
+        (n.customTag || '').toLowerCase().includes(lower)
+      );
+      if (!matches.length) {
+        aiAnalysisRows.value = [];
+        aiAnalysisError.value = '没有匹配「' + kw + '」的新闻，请先在新闻追踪里录入或导入相关新闻';
+        showToast('没有匹配「' + kw + '」的新闻', 'warn');
+        return;
+      }
+      aiAnalysisKeyword.value = kw;
+      aiAnalysisError.value = '';
+      const rows = matches.map(n => ({
+        id: n.id, date: n.date, content: n.content, source: n.source || '',
+        level: '', bearish: '', bullish: '', loading: true, error: ''
+      }));
+      aiAnalysisRows.value = rows;
+      aiAnalyzing.value = true;
+      let cursor = 0;
+      const worker = async () => {
+        while (cursor < matches.length) {
+          const i = cursor++;
+          const n = matches[i];
+          const stocks = (parseStocks(n.relatedStocks) || []).map(s => s.name || pureCode(s.code)).filter(Boolean);
+          try {
+            const res = await callAIForNewsAnalysis(n.content, stocks, kw);
+            if (!res.ok) { rows[i].error = res.error; }
+            else { rows[i].level = res.level; rows[i].bearish = res.bearish; rows[i].bullish = res.bullish; }
+          } catch (e) { rows[i].error = (e && e.message) ? e.message : String(e); }
+          rows[i].loading = false;
+          aiAnalysisRows.value = rows.slice();
+        }
+      };
+      const pool = [worker(), worker(), worker()];
+      await Promise.all(pool);
+      aiAnalyzing.value = false;
     }
 
     // ============================================================
@@ -8060,6 +8144,7 @@ const app = createApp({
       // 页面1
       newsFilter, selectedNewsIds, sortedNews, filteredNews,
       doubaoSearch,
+      aiAnalysisKeyword, aiAnalysisRows, aiAnalyzing, aiAnalysisError, runNewsAiAnalysis,
       financePush, toggleFinanceLock,
       financePushNews, onFinanceStockSearch, addFinanceStock, removeFinanceStock, pushFinanceNews,
       sortKey, sortDir, sortBy, sortIcon,
