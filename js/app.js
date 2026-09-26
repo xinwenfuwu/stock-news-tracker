@@ -1161,7 +1161,7 @@ const app = createApp({
     // ============================================================
     //  页面1：新闻追踪
     // ============================================================
-    const newsFilter = reactive({ date: '', keyword: '', category: '', customTag: '' });
+    const newsFilter = reactive({ keyword: '', category: '', customTag: '' });
 
     // ---- 联网搜索（豆包） ----
     // 原「自定义标记 / 散户参考」输入框只能在本页已录入的新闻里筛选，查不到外部信息；
@@ -1292,10 +1292,48 @@ const app = createApp({
     const sortDir = ref('desc');
     const priceLoading = ref(false);
 
+    /* batch68：新闻统计时间段（与全球信息页统计分析模块同款同逻辑）。
+     * 默认「昨天 15:00 → 现在」；输入框改动不即时生效，点「刷新」按该时间段筛选列表，
+     * 点「重置」恢复默认并立即生效。新闻条目只有日期（YYYY-MM-DD），故按起止各自的日期做闭区间过滤。 */
+    const newsWinStart = ref('');
+    const newsWinEnd = ref('');
+    const newsWinApplied = reactive({ start: '', end: '' });
+    function resetNewsWin() {
+      const HT = ht_();
+      if (!HT || !HT.defaultWindowStart) { newsWinStart.value = ''; newsWinEnd.value = ''; newsWinApplied.start = ''; newsWinApplied.end = ''; return; }
+      newsWinStart.value = HT.toLocalInputValue(HT.defaultWindowStart());
+      newsWinEnd.value = HT.toLocalInputValue(HT.defaultWindowEnd());
+      newsWinApplied.start = newsWinStart.value;
+      newsWinApplied.end = newsWinEnd.value;
+    }
+    function applyNewsWin() {
+      newsWinApplied.start = newsWinStart.value;
+      newsWinApplied.end = newsWinEnd.value;
+      showToast('已按时间段筛选：共 ' + filteredNews.value.length + ' 条新闻', 'success');
+    }
+    const newsWinText = computed(() => {
+      const HT = ht_();
+      if (!HT || !HT.fromLocalInputValue || !HT.fmtWindowCN) return '';
+      const s = HT.fromLocalInputValue(newsWinApplied.start);
+      const e = HT.fromLocalInputValue(newsWinApplied.end);
+      if (!s || !e) return '';
+      return HT.fmtWindowCN(s.getTime()) + ' - ' + HT.fmtWindowCN(e.getTime());
+    });
+    resetNewsWin();
+
+    // 起止 datetime 值 → 'YYYY-MM-DD'（用于与新闻条目的 date 字段比较）
+    function newsWinDateStr(v) {
+      if (!v || v.length < 10) return '';
+      return v.slice(0, 10);
+    }
+
     const filteredNews = computed(() => {
       let list = D.news;
-      // batch66：选择日期 → 新闻统计开始时间（从该日期起、含当日，向后统计）
-      if (newsFilter.date) list = list.filter(n => String(n.date || '') >= newsFilter.date);
+      // batch68：新闻统计时间段（开始~结束闭区间，与全球信息页统计窗口同口径；按日期比较）
+      const sd = newsWinDateStr(newsWinApplied.start);
+      const ed = newsWinDateStr(newsWinApplied.end);
+      if (sd) list = list.filter(n => String(n.date || '') >= sd);
+      if (ed) list = list.filter(n => String(n.date || '') <= ed);
       if (newsFilter.category) list = list.filter(n => n.category === newsFilter.category);
       if (newsFilter.customTag) {
         const kw = newsFilter.customTag.toLowerCase();
@@ -8143,6 +8181,7 @@ const app = createApp({
       cloud, cloudModal, openCloudModal, cloudLogin, syncToCloud, syncFromCloud, cloudLogout, toggleAutoSync,
       // 页面1
       newsFilter, selectedNewsIds, sortedNews, filteredNews,
+      newsWinStart, newsWinEnd, newsWinText, applyNewsWin, resetNewsWin,
       doubaoSearch,
       aiAnalysisKeyword, aiAnalysisRows, aiAnalyzing, aiAnalysisError, runNewsAiAnalysis,
       financePush, toggleFinanceLock,
