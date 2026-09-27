@@ -237,11 +237,15 @@
    *       - 公司/机构是**事件主角**时（Meta宣布、高通宣布…），按 ENTITY_MAP 给对应类别加分。
    * 最后裁决：总分 < MIN_SCORE 淘汰；只保留 ≥ max(MIN_SCORE, REL_CUT×最高分) 的类别（最多 MAX_KEEP 个），
    *          「顺带提到」的类别被相对分挤掉，主线类别留下来。
+   *   ⑤ 泛词闸门（本批新增）：若一条新闻对某类别**只命中泛词**（specific<=0，无具体词/组合规则/事件主体支撑），
+   *          即使总分达标也丢弃——杜绝「供应链/产业链/市场/龙头」等跨类别泛词把无关新闻塞进类别
+   *          （如「耐心资本布局供应链」「美国以色列冲突冲击全球供应链」不再误入「苹果概念」）。
    * ============================================================ */
   const STRICT_CFG = {
     MIN_SCORE: 1.0,      // 归入某类的最低分（低于此值视为顺带提到）
-    REL_CUT: 0.35,       // 相对截断：只保留 ≥ 最高分 × 该系数的类别（保留多标签：0.35 只砍「顺带提到」）
-    MAX_KEEP: 6,         // 一条新闻最多归入几个类别
+    REL_CUT: 0.5,        // 相对截断收紧：只保留 ≥ 最高分 × 0.5 的类别，砍掉「顺带提到」的弱兄弟类
+    MAX_KEEP: 4,         // 一条新闻最多归入 4 个类别，避免一条新闻散到过多分类
+    GENERIC_ONLY_DROP: true, // 第⑤闸门：某类别仅被泛词命中（无具体词/主体支撑）则丢弃，杜绝「供应链/市场」乱入
     HEAD: 40,            // 「开头主体区」长度
     HEAD_BOOST: 1.35,    // 主体区内命中的加权
     ENTITY_BONUS: 1.8,   // 事件主角（公司/机构）命中时的加分
@@ -329,7 +333,10 @@
     // 「股指期货」→多元金融、「可用金属库存」→贵金属
     '信号': 1, '眼镜': 1, '商业': 1, '期货': 1, '金属': 1, '资金': 1, '车辆': 1,
     // 机构名碎片（会命中券商/银行的简称，靠主体判定之外再兜一层）
-    '中信': 1, '中金': 1, '国泰': 1, '华泰': 1, '招商': 1, '证券': 1
+    '中信': 1, '中金': 1, '国泰': 1, '华泰': 1, '招商': 1, '证券': 1,
+    // 跨类别泛词（实测泄漏源）：「供应链/产业链」会被苹果概念等几十个类别共用，
+    // 一条「耐心资本布局供应链」「美国以色列冲突冲击全球供应链」的新闻不应因此塞进苹果概念
+    '供应链': 1, '产业链': 1, '概念股': 1, '个股': 1, '题材': 1, '热点': 1, '主线': 1
   };
 
   /** 词的基础特异度权重：越长越专，越短越泛 */
@@ -403,6 +410,9 @@
       const rule = dict[k];
       if (!rule) continue;
       let s = 0;
+      // specific：非泛词（具体词/组合规则/事件主体）累计分。
+      // 第⑤闸门：若一条新闻对该类别只命中泛词（specific<=0），视为「顺带提到」，丢弃——避免「供应链/市场/龙头」把无关新闻塞进类别。
+      let specific = 0;
       if (Array.isArray(rule)) {
         for (let j = 0; j < rule.length; j++) {
           const kw = rule[j];
@@ -411,31 +421,37 @@
           if (p < 0) continue;
           // 转述方屏蔽：券商/媒体研报的主体名里的词不计分（中信、证券、日报…）
           if (sub.relay && sub.len && p < sub.len) continue;
-          s += kwWeight(kw, cnt) * (p < head ? STRICT_CFG.HEAD_BOOST : 1);
+          const w = kwWeight(kw, cnt) * (p < head ? STRICT_CFG.HEAD_BOOST : 1);
+          s += w;
+          if (!GENERIC_WORDS[kw]) specific += w;
         }
       } else {
-        // {must,any} 组合规则：整体命中本身就是强信号；any 里的词另计词权
-        if (_hitRule(t, rule)) s += STRICT_CFG.COMBO_SCORE;
+        // {must,any} 组合规则：整体命中本身就是强信号（视为具体）；any 里的词另计词权
+        if (_hitRule(t, rule)) { s += STRICT_CFG.COMBO_SCORE; specific += STRICT_CFG.COMBO_SCORE; }
         const anyKw = rule.any || [];
         for (let j = 0; j < anyKw.length; j++) {
           const kw = anyKw[j];
           const p = t.indexOf(kw);
           if (p < 0) continue;
           if (sub.relay && sub.len && p < sub.len) continue;
-          s += kwWeight(kw, cnt) * (p < head ? STRICT_CFG.HEAD_BOOST : 1);
+          const w = kwWeight(kw, cnt) * (p < head ? STRICT_CFG.HEAD_BOOST : 1);
+          s += w;
+          if (!GENERIC_WORDS[kw]) specific += w;
         }
       }
-      // 事件主角加分（转述方不加）
+      // 事件主角加分（转述方不加）——主体命中视为「具体」，可单独定性
       if (!sub.relay && sub.name) {
         const nm = nameOf ? nameOf(k) : k;
         for (const ent in ENTITY_MAP) {
           if (sub.name.indexOf(ent) < 0) continue;
           const cats = ENTITY_MAP[ent];
           for (let c = 0; c < cats.length; c++) {
-            if (cats[c] === nm || String(k) === cats[c]) { s += STRICT_CFG.ENTITY_BONUS; break; }
+            if (cats[c] === nm || String(k) === cats[c]) { s += STRICT_CFG.ENTITY_BONUS; specific += STRICT_CFG.ENTITY_BONUS; break; }
           }
         }
       }
+      // 第⑤闸门：仅泛词命中（无具体词/主体支撑）→ 丢弃
+      if (s > 0 && specific <= 0) continue;
       if (s > 0) scored.push({ key: k, name: nameOf ? nameOf(k) : k, score: s });
     }
     if (!scored.length) return [];
