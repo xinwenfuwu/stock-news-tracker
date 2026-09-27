@@ -1813,27 +1813,67 @@ const app = createApp({
     }
 
     /** 入口：读取关键词 → 匹配新闻 → 并发(限 3)逐条 AI 分析 → 填充下方分析表 */
+    /**
+     * 收集全球信息快照中「格隆汇」源、落在上一个收盘→本次收盘窗口内的快讯。
+     * 与火热话题/每日话题同口径：按窗口覆盖的快照日期逐个读取（本地快照优先、回退仓库内置 JSON），
+     * 仅取 key==='gelonghui' 的源，再按条目时间戳用 HT.inWindow 精筛落在区间内者。
+     */
+    async function collectGelonghuiWindowNews(startMs, endMs) {
+      const HT = ht_();
+      const dates = HT.windowSnapshotDates(startMs, endMs);
+      const out = [];
+      for (const d of dates) {
+        let snap = getLocalHotTopicSnapshot(d);
+        if (!snap) {
+          try {
+            const r = await fetch('./data/hot-topics/' + d + '.json', { cache: 'no-store' });
+            if (!r.ok) continue;
+            snap = await r.json();
+          } catch (e) { continue; }
+        }
+        if (!snap || !snap.sources) continue;
+        const g = snap.sources.find(s => s.key === 'gelonghui');
+        if (!g || !g.items) continue;
+        for (const it of g.items) {
+          if (it.time && HT.parseBriefTime && HT.inWindow) {
+            const ts = HT.parseBriefTime(it.time);
+            if (ts != null && !HT.inWindow(ts, startMs, endMs)) continue;
+          }
+          out.push({ text: it.text, time: it.time, cat: it.cat, url: it.url, date: d });
+        }
+      }
+      return out;
+    }
+
     async function runNewsAiAnalysis() {
       const kw = (newsFilter.keyword || '').trim();
       if (!kw) { showToast('请先在搜索框输入关键词（如 ai安全）', 'error'); return; }
       const lower = kw.toLowerCase();
-      const matches = (D.news || []).filter(n =>
-        (n.content || '').toLowerCase().includes(lower) ||
-        stocksText(n.relatedStocks).toLowerCase().includes(lower) ||
-        (n.conceptCategory || '').toLowerCase().includes(lower) ||
-        (n.industryCategory || '').toLowerCase().includes(lower) ||
-        (n.customTag || '').toLowerCase().includes(lower)
-      );
+      const HT = ht_();
+      if (!HT || !HT.lastClosedWindow) {
+        aiAnalysisError.value = '全球信息模块未就绪，无法读取格隆汇快讯';
+        showToast('全球信息模块未就绪', 'error');
+        return;
+      }
+      // 时间段：上一个收盘日期时间 → 本次收盘日期时间
+      const win = HT.lastClosedWindow();
+      const startMs = win.start.getTime(), endMs = win.end.getTime();
+      // 取全球信息中「格隆汇」源、落在该窗口内的新闻
+      const items = await collectGelonghuiWindowNews(startMs, endMs);
+      const matches = items.filter(it => (it.text || '').toLowerCase().includes(lower));
       if (!matches.length) {
         aiAnalysisRows.value = [];
-        aiAnalysisError.value = '没有匹配「' + kw + '」的新闻，请先在新闻追踪里录入或导入相关新闻';
-        showToast('没有匹配「' + kw + '」的新闻', 'warn');
+        aiAnalysisError.value = '在「上一个收盘（' + HT.fmtWindowCN(startMs) + '）→ 本次收盘（' + HT.fmtWindowCN(endMs) + '）」之间，全球信息的格隆汇快讯中没有匹配「' + kw + '」的新闻';
+        showToast('该时间段全球信息格隆汇快讯中暂无匹配「' + kw + '」的新闻', 'warn');
         return;
       }
       aiAnalysisKeyword.value = kw;
       aiAnalysisError.value = '';
-      const rows = matches.map(n => ({
-        id: n.id, date: n.date, content: n.content, source: n.source || '',
+      const rows = matches.map((it, i) => ({
+        id: 'gh-' + i + '-' + (it.time || ''),
+        date: (it.time || '').slice(0, 10),
+        content: it.text,
+        source: '格隆汇',
         level: '', bearish: '', bullish: '', loading: true, error: ''
       }));
       aiAnalysisRows.value = rows;
@@ -1842,10 +1882,9 @@ const app = createApp({
       const worker = async () => {
         while (cursor < matches.length) {
           const i = cursor++;
-          const n = matches[i];
-          const stocks = (parseStocks(n.relatedStocks) || []).map(s => s.name || pureCode(s.code)).filter(Boolean);
+          const it = matches[i];
           try {
-            const res = await callAIForNewsAnalysis(n.content, stocks, kw);
+            const res = await callAIForNewsAnalysis(it.text, [], kw);
             if (!res.ok) { rows[i].error = res.error; }
             else { rows[i].level = res.level; rows[i].bearish = res.bearish; rows[i].bullish = res.bullish; }
           } catch (e) { rows[i].error = (e && e.message) ? e.message : String(e); }
