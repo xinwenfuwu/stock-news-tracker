@@ -6226,16 +6226,17 @@ const app = createApp({
     function clearBriefCat() { briefCatActive.value = ''; briefCatStocks.value = []; }
 
     /* ===================== 子类排序字段 序/增/数（及占比）一键排序 ===================== */
-    const briefCatSort = reactive({ field: 'seq', dir: 'asc' });   // 默认按序升序（名次 1 在最前，与「占比由大到小」同向）
+    const briefCatSort = reactive({ field: 'seq', dir: 'asc' });   // 默认按今(序)升序（名次 1 在最前，与「占比由大到小」同向）
     function sortByBriefField(field) {
       if (briefCatSort.field === field) { briefCatSort.dir = briefCatSort.dir === 'asc' ? 'desc' : 'asc'; }
       else { briefCatSort.field = field; briefCatSort.dir = 'desc'; }
     }
     /**
-     * 给子类列表附上 序(seq)/增(inc)/数(cnt)，并按 briefCatSort 排序后返回。
-     *  seq = 当前窗口内、本归类下、按新闻出现次数占比由大到小排序后的名次（1 起）。
-     *  inc = 本次排名 − 上次默认时间段排名（正=名次下降/变差，负=上升/变好）。无上期数据则 null。
-     *  cnt = 本次该子类新闻数量 − 上次默认时间段该归类下最大数量。无上期数据则 null。
+     * 给子类列表附上 今(seq)/昨(prevSeq)/增(inc)/数(cnt)，并按 briefCatSort 排序后返回。
+     *  seq(今) = 当前窗口内、本归类下、按新闻出现次数占比由大到小排序后的名次（1 起）。
+     *  prevSeq(昨) = 上一个默认闭市周期内、该概念的最终排名（来自「上次对比周期」统计，默认=上次闭市前一交易日→上次闭市）。无数据则 null。
+     *  inc(增) = 昨 − 今（prevSeq − seq）：正=今名次比昨更靠后（热度下降），负=更靠前（热度上升）。无「昨」数据则 null。
+     *  cnt(数) = 本次该子类新闻数量 − 上次默认时间段该归类下最大数量。无上期数据则 null。
      */
     function buildBriefStats(items, mode) {
       const base = (typeof HotTopics !== 'undefined' && HotTopics.briefStats) ? HotTopics.briefStats(items, mode) : [];
@@ -6244,7 +6245,7 @@ const app = createApp({
       const enriched = base.map((c, i) => {
         const seq = i + 1;
         const prev = pv.hasData ? pv.map[mode + '::' + c.key] : null;
-        const inc = prev ? (seq - prev.rank) : null;
+        const inc = (prevSeq != null) ? (prevSeq - seq) : null;
         const cnt = pv.hasData ? (c.count - pv.max[mode]) : null;
         // batch73：「昨」= 该子类在「上次」对比周期内的排名（无上次数据则 null → 界面显示「—」）
         const lp = ls.hasData ? ls.map[mode + '::' + c.key] : null;
