@@ -4,12 +4,12 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>股市信息分析系统</title>
-  <link rel="stylesheet" href="css/style.css?v=20260928n">
+  <link rel="stylesheet" href="css/style.css?v=20260928o">
   <!-- Vue 3 全局构建版（v3.4.21 · 自托管）
        原先走 unpkg.com CDN：国内网络对 unpkg 的连通性不稳定，一旦该请求长时间挂起，
        <head> 里的阻塞脚本会让整页停在白屏、后续 auth-boot.js 根本不会执行。
        改为同源托管后，启动链路不再依赖任何第三方 CDN。 -->
-  <script src="js/vue.global.prod.js?v=20260928n"></script>
+  <script src="js/vue.global.prod.js?v=20260928o"></script>
 </head>
 <body class="auth-locked">
   <!-- ===== 登录关卡：登录通过前业务脚本不会被加载 ===== -->
@@ -354,6 +354,25 @@
             <span class="bsort-dir" v-if="briefCatSort.field !== 'pct'">{{ briefCatSort.dir === 'asc' ? '↑ 升序' : '↓ 降序' }}</span>
             <span class="muted small" style="margin-left:auto">点击子类名或 📊 查看成分股</span>
           </div>
+          <!-- batch79：全部快讯时间线 —— 默认展示当日/窗口内全部快讯（按时间倒序），刷新即见新闻流，
+               不必逐个展开子类；关键词搜索实时过滤；点「展开更多」加载后续。 -->
+          <div class="brief-all" v-if="briefFiltered.length">
+            <div class="brief-all-head">
+              <span>📜 全部快讯</span>
+              <span class="muted small">{{ briefFiltered.length }} 条 · 按时间倒序</span>
+            </div>
+            <div class="brief-item" v-for="(it, i) in briefFiltered.slice(0, briefAllLimit)" :key="it.id || ('a' + i)">
+              <div class="brief-item-meta">
+                <span class="brief-time">{{ (it.time || '').slice(5) }}</span>
+                <span class="brief-tag stock" v-for="s in (it.stocks || []).slice(0, 3)" :key="'s' + s">{{ s }}</span>
+                <span class="brief-tag subject" v-for="s in (it.subjects || []).slice(0, 3)" :key="'j' + s">{{ s }}</span>
+              </div>
+              <a v-if="it.url" :href="it.url" target="_blank" rel="noopener" class="brief-text" v-html="hlBrief(it.text)"></a>
+              <span v-else class="brief-text" v-html="hlBrief(it.text)"></span>
+            </div>
+            <button class="theme-more" v-if="briefFiltered.length > briefAllLimit" @click="briefAllLimit += 50">还有 {{ briefFiltered.length - briefAllLimit }} 条，点击展开更多</button>
+          </div>
+
           <div class="brief-dims" v-if="briefFiltered.length">
             <!-- 题材归类 -->
             <div class="brief-cat-group">
@@ -1964,7 +1983,26 @@
               <span class="bsort-dir" v-if="briefCatSort.field !== 'pct'">{{ briefCatSort.dir === 'asc' ? '↑ 升序' : '↓ 降序' }}</span>
               <span class="muted small" style="margin-left:auto">点击子类名或 📊 查看成分股</span>
             </div>
-            <div class="brief-dims" v-if="briefFiltered.length">
+            <!-- batch79：全部快讯时间线 —— 默认展示当日/窗口内全部快讯（按时间倒序），刷新即见新闻流，
+               不必逐个展开子类；关键词搜索实时过滤；点「展开更多」加载后续。 -->
+          <div class="brief-all" v-if="briefFiltered.length">
+            <div class="brief-all-head">
+              <span>📜 全部快讯</span>
+              <span class="muted small">{{ briefFiltered.length }} 条 · 按时间倒序</span>
+            </div>
+            <div class="brief-item" v-for="(it, i) in briefFiltered.slice(0, briefAllLimit)" :key="it.id || ('a' + i)">
+              <div class="brief-item-meta">
+                <span class="brief-time">{{ (it.time || '').slice(5) }}</span>
+                <span class="brief-tag stock" v-for="s in (it.stocks || []).slice(0, 3)" :key="'s' + s">{{ s }}</span>
+                <span class="brief-tag subject" v-for="s in (it.subjects || []).slice(0, 3)" :key="'j' + s">{{ s }}</span>
+              </div>
+              <a v-if="it.url" :href="it.url" target="_blank" rel="noopener" class="brief-text" v-html="hlBrief(it.text)"></a>
+              <span v-else class="brief-text" v-html="hlBrief(it.text)"></span>
+            </div>
+            <button class="theme-more" v-if="briefFiltered.length > briefAllLimit" @click="briefAllLimit += 50">还有 {{ briefFiltered.length - briefAllLimit }} 条，点击展开更多</button>
+          </div>
+
+          <div class="brief-dims" v-if="briefFiltered.length">
               <!-- 题材归类 -->
               <div class="brief-cat-group">
                 <div class="bcg-head">🧩 题材归类 <span class="muted small">{{ briefThemeStats.length }} 类</span></div>
@@ -4498,12 +4536,12 @@
     </transition>
   </div>
 
-  <script src="js/auth.js?v=20260928n"></script>
-  <script src="js/auth-sync.js?v=20260928n"></script>
+  <script src="js/auth.js?v=20260928o"></script>
+  <script src="js/auth-sync.js?v=20260928o"></script>
   <!-- 边缘加速默认站点（batch37 治本：Cloudflare Worker 代理东财/腾讯，缓解 JSONP 限流误报）。
        若你所在地区 workers.dev 访问慢，可在「设置 → 行情加速地址」清空即恢复纯直连。 -->
   <script>window.__SNT_ACCEL__ = 'https://stock-edge.hui-zhou.workers.dev';</script>
-  <script src="js/auth-boot.js?v=20260928n"></script>
+  <script src="js/auth-boot.js?v=20260928o"></script>
   <!-- store / stock-api / hot-topics / app 由 auth-boot.js 在登录通过后动态装载，
        未登录时它们不会被下载，业务数据也不会进入内存 -->
 </body>
