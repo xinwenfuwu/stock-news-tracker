@@ -6074,6 +6074,15 @@ const app = createApp({
     let briefCatToken = 0;
     async function openBriefCat(cat, mode) {
       if (!cat) return;
+      // batch71：兜底类（其他题材/其他概念/其他行业）无对应板块，直接提示其新闻数，避免用数百条新闻关联股票造成噪音
+      if (cat.key === HotTopics.BRIEF_OTHER_KEY) {
+        briefCatActive.value = cat.name;
+        briefCatStocks.value = [];
+        briefCatIsFallback.value = true;
+        briefCatLoading.value = false;
+        showToast(`「${cat.name}」为未明确归入具体子类的其余 ${cat.count} 条新闻，无对应板块`, 'info');
+        return;
+      }
       const my = ++briefCatToken;
       briefCatLoading.value = true;
       briefCatActive.value = cat.name;

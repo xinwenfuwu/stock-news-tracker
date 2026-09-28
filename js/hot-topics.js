@@ -837,7 +837,10 @@
     { key: 'jpkstock', name: '日韩股', icon: '🎌', color: '#0f766e' },
     { key: 'hkstock', name: '港股', icon: '🇭🇰', color: '#c8102e' },
     { key: 'gold', name: '黄金', icon: '🥇', color: '#ca8a04' },
-    { key: 'oil', name: '石油', icon: '🛢️', color: '#57534e' }
+    { key: 'oil', name: '石油', icon: '🛢️', color: '#57534e' },
+    // batch71：补全两类高频题材，缩小「其他题材」残留（关键词刻意限定 A 股/宏观语义，避免误吞海外市场的同类词）
+    { key: 'macro', name: '宏观政策', icon: '🏛️', color: '#0e7490' },
+    { key: 'market', name: 'A股大盘', icon: '📊', color: '#be123c' }
   ];
 
   /* ============================================================
@@ -939,6 +942,13 @@
     oil: [
       '原油', '油价', 'WTI', '布伦特', 'OPEC', '石油', '页岩油', '炼油', '成品油', '天然气', '油轮', '原油期货',
       '石油输出国', '柴油', '汽油'
+    ],
+    // batch71：宏观政策 / A股大盘（与主题维度两个新类对应）
+    macro: [
+      '降准', '加息', '货币政策', '政治局', '国务院常务会议', '财政部', '央行', '逆回购', 'MLF', '社融', '信贷', '财政赤字', '积极财政', '稳增长', '扩内需', '转移支付', '财政发力'
+    ],
+    market: [
+      '沪指', '上证指数', '深成指', '深证成指', '创业板指', '科创板指', '北证50', '沪深两市', 'A股两市', '沪市', '深市', 'A股开盘', 'A股收盘', 'A股今日', '中证指数', '两市成交额'
     ]
   };
 
@@ -961,6 +971,8 @@
     { key: 'concept', name: '概念分类', dims: BRIEF_CONCEPT_DIMS, dict: BRIEF_CONCEPT_KEYWORDS },
     { key: 'industry', name: '行业分类', dims: BRIEF_INDUSTRY_DIMS, dict: BRIEF_INDUSTRY_KEYWORDS }
   ];
+  /** 兜底类别 key：无任何具体子类命中的新闻归入此类，保证「全部新闻都参与分类」（batch71）。 */
+  const BRIEF_OTHER_KEY = '__other__';
 
   /**
    * 剥掉快讯统一前缀（"格隆汇9月16日｜"、"今日头条9月16日｜"…）与残留的 HTML 标签。
@@ -1100,10 +1112,14 @@
     dims.forEach(d => { nameOfKey[d.key] = d.name; });
     const bucket = Object.create(null);
     dimKeys.forEach(k => { bucket[k] = []; });
+    // batch71：兜底桶——没有任何具体子类命中的新闻归入「其他」，保证 100% 覆盖
+    // （用户要求：时间段内全部新闻都参与分类；泛词仅命中仍被第⑤闸门丢弃，故落兜底类，不会误入具体类）。
+    bucket[BRIEF_OTHER_KEY] = [];
     for (const it of list) {
       const t = cleanBriefText(it.text);
-      if (!t) continue;
+      if (!t) { bucket[BRIEF_OTHER_KEY].push(it); continue; }   // 无正文 → 兜底
       const rows = scoreEntries(t, dict, dimKeys, k => nameOfKey[k]);
+      if (rows.length === 0) { bucket[BRIEF_OTHER_KEY].push(it); continue; }  // 无具体子类 → 兜底
       for (const r of rows) { if (bucket[r.key]) bucket[r.key].push(it); }
     }
     const raw = dims.map(dim => {
@@ -1115,11 +1131,24 @@
       if (dim.projectList) row.projects = briefProjectList(news);
       return row;
     });
+    // 兜底行：名称为「其他题材 / 其他概念 / 其他行业」，始终参与统计
+    const otherName = (m.name || '').indexOf('行业') >= 0 ? '其他行业'
+                    : (m.name || '').indexOf('概念') >= 0 ? '其他概念'
+                    : '其他题材';
+    raw.push({
+      key: BRIEF_OTHER_KEY, name: otherName, icon: '📋', color: '#94a3b8',
+      count: bucket[BRIEF_OTHER_KEY].length, news: bucket[BRIEF_OTHER_KEY], isOther: true
+    });
     // 自动按归类条数（比例）从大到小排序，便于一眼看到占比最高的分类
     // batch48：过滤掉「该时间窗口内 0 条命中」的分类，避免 150+ 维度铺满空行。
     // 主题/概念/行业三套维度统一只展示有新闻命中的类别，便于一眼看到重点。
+    // batch71：兜底类恒置底（count 最大也不喧宾夺主）。
     const nonEmpty = raw.filter(d => d.count > 0);
-    nonEmpty.sort((a, b) => b.count - a.count);
+    nonEmpty.sort((a, b) => {
+      if (a.key === BRIEF_OTHER_KEY) return 1;
+      if (b.key === BRIEF_OTHER_KEY) return -1;
+      return b.count - a.count;
+    });
     const max = nonEmpty.reduce((m, d) => Math.max(m, d.count), 1);
     nonEmpty.forEach(d => {
       d.pct = base ? Math.round((d.count / base) * 100) : 0;
@@ -1234,7 +1263,7 @@
     BRIEF_DIMENSIONS, BRIEF_KEYWORDS, briefStats, cleanBriefText,
     BRIEF_CONCEPT_DIMS, BRIEF_CONCEPT_KEYWORDS,
     BRIEF_INDUSTRY_DIMS, BRIEF_INDUSTRY_KEYWORDS,
-    BRIEF_MODES,
+    BRIEF_MODES, BRIEF_OTHER_KEY,
     // batch31：各省项目（省市词表 / 项目特征词 / 组合命中规则 / 项目清单抽取）
     PROVINCES, PROJECT_WORDS, _hitRule, briefProjectList,
     // batch56：严格分类引擎（供单测直接断言打分/主体判定）
