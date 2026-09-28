@@ -1981,9 +1981,15 @@ body {
  * 修法：固定 6 列网格 caret | icon | name | track | count | pct，除进度条外全部定宽，
  * 名称列 68px ≈ 5 个汉字（最长的「稀土小金属」）加余量，三块共用同一列宽，因此三块之间也对齐。
  * 元素与交互完全不变（batch27 的「名称完整显示、不截断」继续保留）。 */
+/* batch77：新闻追踪页行头实有 11 个元素（▸|增|昨|序|icon|名称|📊|进度条|数|占比|数），
+ * 旧模板只有 10 列 → 「数」按钮落入隐式第 11 列被容器截断（用户所见「数据被覆盖」），
+ * 名称列仅 24px 靠溢出展示、进度条被压到 34px。
+ * 重排为真正的 11 列等宽网格：定宽列保证数字/按钮上下对齐，
+ * 名称列 minmax(56px,1fr) 弹性吃掉剩余宽度，进度条固定 44px 不再被挤成小点；
+ * 三组（题材/概念/行业）共用同一列宽，行与行、组与组上下整齐对齐。 */
 .brief-cat-head {
   display: grid;
-  grid-template-columns: 10px 30px 30px 20px 80px 24px minmax(0, 1fr) 34px 40px 34px;
+  grid-template-columns: 8px 22px 22px 26px 18px minmax(56px, 1fr) 22px 44px 28px 32px 22px;
   align-items: center; column-gap: 4px;
   padding: 7px 2px; font-size: 12.5px; cursor: pointer; border-radius: 6px;
 }
@@ -2053,6 +2059,10 @@ body {
 /* batch26：归类表头去加粗（700 → 400） */
 .bcg-head { font-size: 13px; font-weight: 400; margin: 6px 0 4px; padding-bottom: 4px; border-bottom: 2px solid var(--border); }
 @media (max-width: 900px) { .brief-dims { grid-template-columns: 1fr; } }
+/* batch77：新闻追踪页每日快讯是整行铺满面板，11 列行头需 ≥1100px 视口才能三列并排不被挤压；
+ * 低于该宽度改为单列堆叠，避免行内「数/占比」被裁切。全球信息页 720px 固定面板的
+ * no-sort 行头只有 6 列（窄得多），继续沿用上面的 900px 断点，不受本条影响。 */
+@media (max-width: 1100px) { .brief-panel-top .brief-dims { grid-template-columns: 1fr; } }
 .brief-item-meta { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; margin-bottom: 3px; }
 .brief-time { font-size: 11.5px; color: var(--text-placeholder); font-variant-numeric: tabular-nums; }
 .brief-tag { font-size: 11px; padding: 1px 5px; border-radius: 4px; }
