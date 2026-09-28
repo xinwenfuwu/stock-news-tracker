@@ -5518,29 +5518,48 @@ const app = createApp({
       const daily = D.dailyData[hotDate.value];
       let list = daily ? [...daily.stocks] : [];
       // 股票查询：按代码 / 名称关键字过滤（两者同时填写时取交集）
+      // batch72：本 computed 仅做「过滤」，排序统一下沉到 dailyStockRows，保证两分支（子类/热门板块）排序口径一致
       const codeQ = String(hotSearchCode.value || '').trim().toLowerCase();
       const nameQ = String(hotSearchName.value || '').trim().toLowerCase();
       if (codeQ) list = list.filter(s => String(s.code || '').toLowerCase().indexOf(codeQ) >= 0);
       if (nameQ) list = list.filter(s => String(s.name || '').toLowerCase().indexOf(nameQ) >= 0);
+      return list;
+    });
+    /** batch55：新闻追踪页「当日股票明细」数据源——子类激活时显示其成分股（独立状态），否则沿用热门板块点击载入的股票。
+     *  batch72：无论哪个分支，最终都按 hotSort 排序；字符串列（代码/名称/概念/行业）走 localeCompare，
+     *  数值列走 parseFloat，彻底修复「点击列头排序无反应」与「名称/代码列点排序不动」两个问题。 */
+    const dailyStockRows = computed(() => {
+      const base = briefCatActive.value ? (briefCatStocks.value || []) : sortedHotStocks.value;
+      const list = base ? [...base] : [];
       const k = hotSort.key;
       const dir = hotSort.dir === 'asc' ? 1 : -1;
-      if (k === '__idx') {
-        // 序号排序：按当前列表原始次序升序（还原）/ 降序（倒序），不依赖股票自身字段
-        const pos = new Map(list.map((s, i) => [s, i]));
-        list.sort((a, b) => (pos.get(a) - pos.get(b)) * dir);
-      } else {
+      if (!k || k === '__idx') {
+        // 序号：asc=原始次序（还原），desc=倒序
+        if (dir < 0) list.reverse();
+        return list;
+      }
+      const col = STOCK_COLUMNS.find(c => c.key === k);
+      const t = col ? col.type : '';
+      const strSort = (t === 'code' || t === 'name' || t === 'concept' || t === 'text');
       list.sort((a, b) => {
+        if (strSort) {
+          const av = String(a[k] == null ? '' : a[k]);
+          const bv = String(b[k] == null ? '' : b[k]);
+          if (t === 'code') {
+            // 股票代码按数值序（避免 '10' 排在 '2' 之前），含字母的市场代码（如 BJ/SH）兜底走中文序
+            const na = parseFloat(av), nb = parseFloat(bv);
+            if (!isNaN(na) && !isNaN(nb)) return (na - nb) * dir;
+          }
+          return av.localeCompare(bv, 'zh') * dir;
+        }
         const va = parseFloat(a[k]); const vb = parseFloat(b[k]);
         if (isNaN(va) && isNaN(vb)) return 0;
         if (isNaN(va)) return 1;
         if (isNaN(vb)) return -1;
         return (va - vb) * dir;
       });
-      }
       return list;
     });
-    /** batch55：新闻追踪页「当日股票明细」数据源——子类激活时显示其成分股（独立状态），否则沿用热门板块点击载入的股票 */
-    const dailyStockRows = computed(() => briefCatActive.value ? (briefCatStocks.value || []) : sortedHotStocks.value);
     function sortHotBy(key) {
       if (hotSort.key === key) {
         hotSort.dir = hotSort.dir === 'asc' ? 'desc' : 'asc';
@@ -6583,6 +6602,31 @@ const app = createApp({
     function clearHotSearch() {
       hotSearchCode.value = '';
       hotSearchName.value = '';
+    }
+    // batch72：当日股票明细「刷新数据」按钮状态 + 处理函数
+    // 子类激活 → 重补全该子类成分股行情；其余（热门板块/个股/当日数据）→ 刷新当日行情
+    const dailyStockRefreshing = ref(false);
+    async function refreshDailyStockRows() {
+      if (briefCatActive.value) {
+        if (!briefCatStocks.value || !briefCatStocks.value.length) { showToast('当前子类无成分股可刷新', 'warn'); return; }
+        dailyStockRefreshing.value = true;
+        try {
+          await enrichStockList(briefCatStocks.value);
+          showToast('成分股行情已刷新', 'success');
+        } catch (e) {
+          console.warn('子类成分股刷新失败', e);
+          showToast('刷新失败，请重试', 'error');
+        } finally {
+          dailyStockRefreshing.value = false;
+        }
+      } else {
+        dailyStockRefreshing.value = true;
+        try {
+          await refreshHotStocks();
+        } finally {
+          dailyStockRefreshing.value = false;
+        }
+      }
     }
     // 当前选中的热门板块名（用于高亮与表头提示）
     const hotBoardActive = ref('');
@@ -8299,7 +8343,8 @@ const app = createApp({
       // batch24：命中标红（筛选板块表里把尾盘买入法命中的行标红）
       tailBuyHit, isTailBuyHit, clearTailBuyHits,
       hotSearchCode, hotSearchName, clearHotSearch,
-      sortedHotStocks, sortHotBy, hotSortIcon, removeHotStock,
+      dailyStockRefreshing, refreshDailyStockRows,
+      sortedHotStocks, hotSort, sortHotBy, hotSortIcon, removeHotStock,
       // batch55：每日快讯子类 → 成分股（新闻追踪页当日股票明细，独立于热门板块点击）+ 序/增/数 排序
       dailyStockRows, briefCatStocks, briefCatActive, briefCatLoading, briefCatIsFallback,
       openBriefCat, clearBriefCat, briefCatSort, sortByBriefField, prevBriefLoading,
