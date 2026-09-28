@@ -2013,6 +2013,9 @@ body {
   font-size: 12px; cursor: pointer; color: var(--text-strong); line-height: 1.2; white-space: nowrap; }
 .bc-sort:hover { background: var(--surface-alt); border-color: var(--border); }
 .bc-sort .bsort { font-style: normal; font-size: 9px; color: var(--primary); margin-left: 1px; }
+.bc-prev { color: var(--text-secondary); }
+.bc-prev:hover { background: var(--surface-alt); border-color: var(--border); }
+.bc-prev .bsort { color: var(--secondary, #6b7280); }
 .bc-stocks { justify-self: center; background: transparent; border: 1px solid var(--border); border-radius: 4px;
   padding: 1px 3px; cursor: pointer; font-size: 12px; line-height: 1.2; }
 .bc-stocks:hover { background: var(--primary-light); border-color: var(--primary); }

@@ -5259,12 +5259,21 @@ const app = createApp({
      * 以前闭市周期是写死计算的，用户没法改；现在起止都能改，改完点刷新即时重算。 */
     const briefWinStart = ref('');
     const briefWinEnd = ref('');
+    // batch73：「上次」对比周期（「昨」排名窗口）—— 仅新闻追踪页每日快讯使用；默认=上次闭市前一交易日→上次闭市
+    const briefPrevWinStart = ref('');
+    const briefPrevWinEnd = ref('');
     function ht_() { return (typeof HotTopics !== 'undefined') ? HotTopics : null; }
     function resetBriefWin() {
       const HT = ht_();
       if (!HT || !HT.defaultWindowStart) return;
       briefWinStart.value = HT.toLocalInputValue(HT.defaultWindowStart());
       briefWinEnd.value = HT.toLocalInputValue(HT.defaultWindowEnd());
+      // batch73：重置时同步把「上次」对比周期恢复为默认（上次闭市前一交易日→上次闭市）
+      if (HT.defaultPrevSessionWindow) {
+        const pw = HT.defaultPrevSessionWindow();
+        briefPrevWinStart.value = HT.toLocalInputValue(pw.start);
+        briefPrevWinEnd.value = HT.toLocalInputValue(pw.end);
+      }
     }
     resetBriefWin();
     /** 时间栏文案：'2026年9月16日 15:00 - 2026年9月17日 15:00' */
@@ -5934,6 +5943,7 @@ const app = createApp({
           .sort((a, b) => String(b.time).localeCompare(String(a.time)));
         briefWindowItems.value = inWin;
         loadPrevBriefStats();   // batch55：闭市周期窗口变化后，重算「上一个等长窗口」用于 序/增/数
+        loadLastBriefStats();    // batch73：同步拉取「上次」对比周期（「昨」排名窗口）
         briefWindow.on = true;
         briefWindow.start = startStr;
         briefWindow.end = endStr;
@@ -6042,6 +6052,57 @@ const app = createApp({
         prevBriefItems.value = [];
       } finally {
         prevBriefLoading.value = false;
+      }
+    }
+
+    /* ===================== batch73：「上次」对比周期（「昨」排名）独立拉取 =====================
+     * 与上方「上一个等长窗口」(loadPrevBriefStats/prevStats，用于 增/数) 不同：
+     * 这里是用户可在刷新按钮左侧手动调整的「上次」开闭市时间段，默认 = 上次闭市前一交易日→上次闭市，
+     * 用来给每个归类子类算「昨」排名（上次周期内的名次）。同源、独立缓存。 */
+    const lastBriefItems = ref([]);
+    const lastBriefLoading = ref(false);
+    let _lastKey = '';
+    const lastStats = computed(() => {
+      const items = lastBriefItems.value;
+      const out = { map: {}, max: { theme: 1, concept: 1, industry: 1 }, hasData: items.length > 0 };
+      if (!out.hasData) return out;
+      for (const m of ['theme', 'concept', 'industry']) {
+        const arr = HotTopics.briefStats(items, m);
+        let mx = 1;
+        arr.forEach((c, i) => {
+          out.map[m + '::' + c.key] = { rank: i + 1, count: c.count };
+          if (c.count > mx) mx = c.count;
+        });
+        out.max[m] = mx;
+      }
+      return out;
+    });
+    async function loadLastBriefStats() {
+      const HT = ht_();
+      if (!HT || !HT.fromLocalInputValue || !HT.parseBriefTime) return;
+      const s = HT.fromLocalInputValue(briefPrevWinStart.value);
+      const e = HT.fromLocalInputValue(briefPrevWinEnd.value);
+      if (!s || !e) { lastBriefItems.value = []; return; }
+      const startMs = s.getTime(), endMs = e.getTime();
+      const key = briefSourceName.value + ':' + startMs + '-' + endMs;
+      if (key === _lastKey && lastBriefItems.value.length) return;   // 已缓存，跳过
+      _lastKey = key;
+      lastBriefLoading.value = true;
+      try {
+        const dates = HT.windowSnapshotDates(startMs, endMs);
+        const chunks = await Promise.all(dates.map(d => fetchBriefsFile(d, briefSourceName.value).catch(() => [])));
+        let items = [];
+        chunks.forEach(c => { if (Array.isArray(c)) items = items.concat(c); });
+        items = items.filter(it => {
+          const ts = HT.parseBriefTime(it.time);
+          return ts != null && ts >= startMs && ts < endMs;
+        });
+        lastBriefItems.value = items;
+      } catch (err) {
+        lastBriefItems.value = [];
+        console.warn('上次对比周期统计失败', err);
+      } finally {
+        lastBriefLoading.value = false;
       }
     }
 
@@ -6165,12 +6226,17 @@ const app = createApp({
     function buildBriefStats(items, mode) {
       const base = (typeof HotTopics !== 'undefined' && HotTopics.briefStats) ? HotTopics.briefStats(items, mode) : [];
       const pv = prevStats.value;
+      const ls = lastStats.value;
       const enriched = base.map((c, i) => {
         const seq = i + 1;
         const prev = pv.hasData ? pv.map[mode + '::' + c.key] : null;
         const inc = prev ? (seq - prev.rank) : null;
         const cnt = pv.hasData ? (c.count - pv.max[mode]) : null;
-        return Object.assign({}, c, { seq: seq, inc: inc, cnt: cnt });
+        // batch73：「昨」= 该子类在「上次」对比周期内的排名（无上次数据则 null → 界面显示「—」）
+        const lp = ls.hasData ? ls.map[mode + '::' + c.key] : null;
+        const prevSeq = lp ? lp.rank : null;
+        const prevCnt = lp ? lp.count : null;
+        return Object.assign({}, c, { seq: seq, inc: inc, cnt: cnt, prevSeq: prevSeq, prevCnt: prevCnt });
       });
       const f = briefCatSort.field, dir = briefCatSort.dir === 'asc' ? 1 : -1;
       if (f === 'seq') return enriched.slice().sort((a, b) => (a.seq - b.seq) * dir);   // 序：名次升/降序（dir 控制箭头）
@@ -8365,6 +8431,8 @@ const app = createApp({
       briefWindow, briefWindowItems, refreshBriefCloseWindow, clearBriefWindow,
       // batch16：可编辑统计时间窗口（15:00 换日，三板块统一）
       briefWinStart, briefWinEnd, briefWinText, resetBriefWin,
+      // batch73：「上次」对比周期（「昨」排名窗口）状态
+      briefPrevWinStart, briefPrevWinEnd, lastBriefLoading, loadLastBriefStats,
       onBriefDateChange, toggleBriefCat, moreBriefNews, hlBrief, autoLoadBriefs, loadBriefsNow,
       htTab, htMode, htLiveNote, hotTopicDate, hotTopicDateHasData, htCatFilter, htCategories, htRangeOptions, localSnapshotDates,
       analysisRange, analysisLoading, analysisResult, filteredHotSources,

@@ -4,12 +4,12 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>股市信息分析系统</title>
-  <link rel="stylesheet" href="css/style.css?v=20260926h">
+  <link rel="stylesheet" href="css/style.css?v=20260926i">
   <!-- Vue 3 全局构建版（v3.4.21 · 自托管）
        原先走 unpkg.com CDN：国内网络对 unpkg 的连通性不稳定，一旦该请求长时间挂起，
        <head> 里的阻塞脚本会让整页停在白屏、后续 auth-boot.js 根本不会执行。
        改为同源托管后，启动链路不再依赖任何第三方 CDN。 -->
-  <script src="js/vue.global.prod.js?v=20260926h"></script>
+  <script src="js/vue.global.prod.js?v=20260926i"></script>
 </head>
 <body class="auth-locked">
   <!-- ===== 登录关卡：登录通过前业务脚本不会被加载 ===== -->
@@ -287,16 +287,23 @@
           <div class="stat-win">
             <span class="sw-label">新闻统计开始时间</span>
             <input type="datetime-local" class="sw-input" v-model="briefWinStart" :disabled="briefLoading"
-                   title="统计开始时间（默认昨天 15:00，可修改）">
+                   title="统计开始时间（默认上次闭市 15:00，可修改）">
             <span class="sw-sep">-</span>
             <input type="datetime-local" class="sw-input" v-model="briefWinEnd" :disabled="briefLoading"
-                   title="统计结束时间（默认现在，可修改）">
+                   title="统计结束时间（默认本次闭市 15:00，可修改）">
+            <!-- batch73：上次对比周期（「昨」排名窗口），在刷新按钮左侧；默认=上次闭市前一交易日→上次闭市，可手动调整 -->
+            <span class="sw-label sw-label-prev">上次</span>
+            <input type="datetime-local" class="sw-input" v-model="briefPrevWinStart" :disabled="briefLoading"
+                   title="上次对比周期开始（默认=上次闭市前一交易日 15:00）">
+            <span class="sw-sep">-</span>
+            <input type="datetime-local" class="sw-input" v-model="briefPrevWinEnd" :disabled="briefLoading"
+                   title="上次对比周期结束（默认=上次闭市 15:00）">
             <button class="sw-btn" :disabled="briefLoading" @click="refreshBriefCloseWindow"
-                    title="按上面这段时间重新统计（本板块独立刷新，不影响其他板块）">
+                    title="按上面这段时间重新统计（本板块独立刷新，不影响其他板块）；同时按「上次」周期算「昨」排名">
               🔄 {{ briefLoading ? '刷新中…' : '刷新' }}
             </button>
             <button class="sw-btn sw-btn-ghost" :disabled="briefLoading" @click="resetBriefWin"
-                    title="恢复默认：昨天 15:00 → 现在">重置</button>
+                    title="恢复默认：上次闭市 → 本次闭市（同步恢复「上次」对比周期）">重置</button>
             <span class="sw-text" v-if="briefWinText">{{ briefWinText }}</span>
           </div>
 
@@ -356,6 +363,7 @@
                   <div class="brief-cat-head" :class="{ active: briefUi.open['theme::' + c.key], 'no-sort': currentPage !== 'news' }">
                     <span class="bc-caret" @click.stop="toggleBriefCat(c.key, 'theme')">{{ briefUi.open['theme::' + c.key] ? '▾' : '▸' }}</span>
                     <button type="button" class="bc-sort bc-inc" v-if="currentPage === 'news'" @click.stop="sortByBriefField('inc')" :title="'增 = 本次排名 − 上次排名'">{{ c.inc==null?'—':(c.inc>0?'+':'')+c.inc }}<i class="bsort" v-if="briefCatSort.field==='inc'">{{ briefCatSort.dir==='asc'?'↑':'↓' }}</i></button>
+                    <button type="button" class="bc-sort bc-prev" v-if="currentPage === 'news'" @click.stop="sortByBriefField('prevSeq')" :title="'昨 = 上次周期内排名（点按排序）'">{{ c.prevSeq != null ? c.prevSeq : '—' }}<i class="bsort" v-if="briefCatSort.field==='prevSeq'">{{ briefCatSort.dir==='asc'?'↑':'↓' }}</i></button>
                     <button type="button" class="bc-sort bc-seq" v-if="currentPage === 'news'" @click.stop="sortByBriefField('seq')" :title="'序 = 按占比降序的排名'">{{ c.seq }}<i class="bsort" v-if="briefCatSort.field==='seq'">{{ briefCatSort.dir==='asc'?'↑':'↓' }}</i></button>
                     <span class="bc-icon">{{ c.icon }}</span>
                     <span class="bc-name" @click.stop="openBriefCat(c, 'theme')" :title="'点击查看「'+c.name+'」成分股'">{{ c.name }}</span>
@@ -425,6 +433,7 @@
                   <div class="brief-cat-head" :class="{ active: briefUi.open['concept::' + c.key], 'no-sort': currentPage !== 'news' }">
                     <span class="bc-caret" @click.stop="toggleBriefCat(c.key, 'concept')">{{ briefUi.open['concept::' + c.key] ? '▾' : '▸' }}</span>
                     <button type="button" class="bc-sort bc-inc" v-if="currentPage === 'news'" @click.stop="sortByBriefField('inc')" :title="'增 = 本次排名 − 上次排名'">{{ c.inc==null?'—':(c.inc>0?'+':'')+c.inc }}<i class="bsort" v-if="briefCatSort.field==='inc'">{{ briefCatSort.dir==='asc'?'↑':'↓' }}</i></button>
+                    <button type="button" class="bc-sort bc-prev" v-if="currentPage === 'news'" @click.stop="sortByBriefField('prevSeq')" :title="'昨 = 上次周期内排名（点按排序）'">{{ c.prevSeq != null ? c.prevSeq : '—' }}<i class="bsort" v-if="briefCatSort.field==='prevSeq'">{{ briefCatSort.dir==='asc'?'↑':'↓' }}</i></button>
                     <button type="button" class="bc-sort bc-seq" v-if="currentPage === 'news'" @click.stop="sortByBriefField('seq')" :title="'序 = 按占比降序的排名'">{{ c.seq }}<i class="bsort" v-if="briefCatSort.field==='seq'">{{ briefCatSort.dir==='asc'?'↑':'↓' }}</i></button>
                     <span class="bc-icon">{{ c.icon }}</span>
                     <span class="bc-name" @click.stop="openBriefCat(c, 'concept')" :title="'点击查看「'+c.name+'」成分股'">{{ c.name }}</span>
@@ -466,6 +475,7 @@
                   <div class="brief-cat-head" :class="{ active: briefUi.open['industry::' + c.key], 'no-sort': currentPage !== 'news' }">
                     <span class="bc-caret" @click.stop="toggleBriefCat(c.key, 'industry')">{{ briefUi.open['industry::' + c.key] ? '▾' : '▸' }}</span>
                     <button type="button" class="bc-sort bc-inc" v-if="currentPage === 'news'" @click.stop="sortByBriefField('inc')" :title="'增 = 本次排名 − 上次排名'">{{ c.inc==null?'—':(c.inc>0?'+':'')+c.inc }}<i class="bsort" v-if="briefCatSort.field==='inc'">{{ briefCatSort.dir==='asc'?'↑':'↓' }}</i></button>
+                    <button type="button" class="bc-sort bc-prev" v-if="currentPage === 'news'" @click.stop="sortByBriefField('prevSeq')" :title="'昨 = 上次周期内排名（点按排序）'">{{ c.prevSeq != null ? c.prevSeq : '—' }}<i class="bsort" v-if="briefCatSort.field==='prevSeq'">{{ briefCatSort.dir==='asc'?'↑':'↓' }}</i></button>
                     <button type="button" class="bc-sort bc-seq" v-if="currentPage === 'news'" @click.stop="sortByBriefField('seq')" :title="'序 = 按占比降序的排名'">{{ c.seq }}<i class="bsort" v-if="briefCatSort.field==='seq'">{{ briefCatSort.dir==='asc'?'↑':'↓' }}</i></button>
                     <span class="bc-icon">{{ c.icon }}</span>
                     <span class="bc-name" @click.stop="openBriefCat(c, 'industry')" :title="'点击查看「'+c.name+'」成分股'">{{ c.name }}</span>
@@ -1963,7 +1973,8 @@
                     <div class="brief-cat-head" :class="{ active: briefUi.open['theme::' + c.key], 'no-sort': currentPage !== 'news' }">
                       <span class="bc-caret" @click.stop="toggleBriefCat(c.key, 'theme')">{{ briefUi.open['theme::' + c.key] ? '▾' : '▸' }}</span>
                       <button type="button" class="bc-sort bc-inc" v-if="currentPage === 'news'" @click.stop="sortByBriefField('inc')" :title="'增 = 本次排名 − 上次排名'">{{ c.inc==null?'—':(c.inc>0?'+':'')+c.inc }}<i class="bsort" v-if="briefCatSort.field==='inc'">{{ briefCatSort.dir==='asc'?'↑':'↓' }}</i></button>
-                      <button type="button" class="bc-sort bc-seq" v-if="currentPage === 'news'" @click.stop="sortByBriefField('seq')" :title="'序 = 按占比降序的排名'">{{ c.seq }}<i class="bsort" v-if="briefCatSort.field==='seq'">{{ briefCatSort.dir==='asc'?'↑':'↓' }}</i></button>
+                      <button type="button" class="bc-sort bc-prev" v-if="currentPage === 'news'" @click.stop="sortByBriefField('prevSeq')" :title="'昨 = 上次周期内排名（点按排序）'">{{ c.prevSeq != null ? c.prevSeq : '—' }}<i class="bsort" v-if="briefCatSort.field==='prevSeq'">{{ briefCatSort.dir==='asc'?'↑':'↓' }}</i></button>
+                    <button type="button" class="bc-sort bc-seq" v-if="currentPage === 'news'" @click.stop="sortByBriefField('seq')" :title="'序 = 按占比降序的排名'">{{ c.seq }}<i class="bsort" v-if="briefCatSort.field==='seq'">{{ briefCatSort.dir==='asc'?'↑':'↓' }}</i></button>
                       <span class="bc-icon">{{ c.icon }}</span>
                       <span class="bc-name" @click.stop="openBriefCat(c, 'theme')" :title="'点击查看「'+c.name+'」成分股'">{{ c.name }}</span>
                       <button type="button" class="bc-stocks" v-if="currentPage === 'news'" @click.stop="openBriefCat(c, 'theme')" title="在下方「当日股票明细」展示成分股">📊</button>
@@ -2032,7 +2043,8 @@
                     <div class="brief-cat-head" :class="{ active: briefUi.open['concept::' + c.key], 'no-sort': currentPage !== 'news' }">
                       <span class="bc-caret" @click.stop="toggleBriefCat(c.key, 'concept')">{{ briefUi.open['concept::' + c.key] ? '▾' : '▸' }}</span>
                       <button type="button" class="bc-sort bc-inc" v-if="currentPage === 'news'" @click.stop="sortByBriefField('inc')" :title="'增 = 本次排名 − 上次排名'">{{ c.inc==null?'—':(c.inc>0?'+':'')+c.inc }}<i class="bsort" v-if="briefCatSort.field==='inc'">{{ briefCatSort.dir==='asc'?'↑':'↓' }}</i></button>
-                      <button type="button" class="bc-sort bc-seq" v-if="currentPage === 'news'" @click.stop="sortByBriefField('seq')" :title="'序 = 按占比降序的排名'">{{ c.seq }}<i class="bsort" v-if="briefCatSort.field==='seq'">{{ briefCatSort.dir==='asc'?'↑':'↓' }}</i></button>
+                      <button type="button" class="bc-sort bc-prev" v-if="currentPage === 'news'" @click.stop="sortByBriefField('prevSeq')" :title="'昨 = 上次周期内排名（点按排序）'">{{ c.prevSeq != null ? c.prevSeq : '—' }}<i class="bsort" v-if="briefCatSort.field==='prevSeq'">{{ briefCatSort.dir==='asc'?'↑':'↓' }}</i></button>
+                    <button type="button" class="bc-sort bc-seq" v-if="currentPage === 'news'" @click.stop="sortByBriefField('seq')" :title="'序 = 按占比降序的排名'">{{ c.seq }}<i class="bsort" v-if="briefCatSort.field==='seq'">{{ briefCatSort.dir==='asc'?'↑':'↓' }}</i></button>
                       <span class="bc-icon">{{ c.icon }}</span>
                       <span class="bc-name" @click.stop="openBriefCat(c, 'concept')" :title="'点击查看「'+c.name+'」成分股'">{{ c.name }}</span>
                       <button type="button" class="bc-stocks" v-if="currentPage === 'news'" @click.stop="openBriefCat(c, 'concept')" title="在下方「当日股票明细」展示成分股">📊</button>
@@ -2073,7 +2085,8 @@
                     <div class="brief-cat-head" :class="{ active: briefUi.open['industry::' + c.key], 'no-sort': currentPage !== 'news' }">
                       <span class="bc-caret" @click.stop="toggleBriefCat(c.key, 'industry')">{{ briefUi.open['industry::' + c.key] ? '▾' : '▸' }}</span>
                       <button type="button" class="bc-sort bc-inc" v-if="currentPage === 'news'" @click.stop="sortByBriefField('inc')" :title="'增 = 本次排名 − 上次排名'">{{ c.inc==null?'—':(c.inc>0?'+':'')+c.inc }}<i class="bsort" v-if="briefCatSort.field==='inc'">{{ briefCatSort.dir==='asc'?'↑':'↓' }}</i></button>
-                      <button type="button" class="bc-sort bc-seq" v-if="currentPage === 'news'" @click.stop="sortByBriefField('seq')" :title="'序 = 按占比降序的排名'">{{ c.seq }}<i class="bsort" v-if="briefCatSort.field==='seq'">{{ briefCatSort.dir==='asc'?'↑':'↓' }}</i></button>
+                      <button type="button" class="bc-sort bc-prev" v-if="currentPage === 'news'" @click.stop="sortByBriefField('prevSeq')" :title="'昨 = 上次周期内排名（点按排序）'">{{ c.prevSeq != null ? c.prevSeq : '—' }}<i class="bsort" v-if="briefCatSort.field==='prevSeq'">{{ briefCatSort.dir==='asc'?'↑':'↓' }}</i></button>
+                    <button type="button" class="bc-sort bc-seq" v-if="currentPage === 'news'" @click.stop="sortByBriefField('seq')" :title="'序 = 按占比降序的排名'">{{ c.seq }}<i class="bsort" v-if="briefCatSort.field==='seq'">{{ briefCatSort.dir==='asc'?'↑':'↓' }}</i></button>
                       <span class="bc-icon">{{ c.icon }}</span>
                       <span class="bc-name" @click.stop="openBriefCat(c, 'industry')" :title="'点击查看「'+c.name+'」成分股'">{{ c.name }}</span>
                       <button type="button" class="bc-stocks" v-if="currentPage === 'news'" @click.stop="openBriefCat(c, 'industry')" title="在下方「当日股票明细」展示成分股">📊</button>
@@ -4485,12 +4498,12 @@
     </transition>
   </div>
 
-  <script src="js/auth.js?v=20260926h"></script>
-  <script src="js/auth-sync.js?v=20260926h"></script>
+  <script src="js/auth.js?v=20260926i"></script>
+  <script src="js/auth-sync.js?v=20260926i"></script>
   <!-- 边缘加速默认站点（batch37 治本：Cloudflare Worker 代理东财/腾讯，缓解 JSONP 限流误报）。
        若你所在地区 workers.dev 访问慢，可在「设置 → 行情加速地址」清空即恢复纯直连。 -->
   <script>window.__SNT_ACCEL__ = 'https://stock-edge.hui-zhou.workers.dev';</script>
-  <script src="js/auth-boot.js?v=20260926h"></script>
+  <script src="js/auth-boot.js?v=20260926i"></script>
   <!-- store / stock-api / hot-topics / app 由 auth-boot.js 在登录通过后动态装载，
        未登录时它们不会被下载，业务数据也不会进入内存 -->
 </body>

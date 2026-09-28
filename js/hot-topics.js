@@ -1166,6 +1166,23 @@
   /** 一天的分界时点（小时）。15 表示「当天 15:00 之后算第二天」 */
   var WIN_CUTOFF_HOUR = 15;
 
+  /** 是否 A 股交易日（周一~周五；跳过周六日。注：法定节假日未纳入，按周末近似） */
+  function isTradingDay(d) {
+    var day = d.getDay();
+    return day !== 0 && day !== 6;   // 0=周日 6=周六
+  }
+  /** 按交易日历平移 delta 个交易日（delta>0 向未来，<0 向过去），返回该交易日 0 点的 Date */
+  function shiftTradingDay(d, delta) {
+    var cur = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+    var step = delta > 0 ? 1 : -1;
+    var left = Math.abs(delta);
+    while (left > 0) {
+      cur.setDate(cur.getDate() + step);
+      if (isTradingDay(cur)) left--;
+    }
+    return cur;
+  }
+
   function pad2(n) { return (n < 10 ? '0' : '') + n; }
 
   /** Date → 'YYYY-MM-DDTHH:mm'，可直接喂给 <input type="datetime-local"> */
@@ -1181,19 +1198,41 @@
     return isNaN(d.getTime()) ? null : d;
   }
 
-  /** 默认结束时间：现在（用户要求「默认现在，可修改」） */
+  /**
+   * 本次闭市时间：now 所在交易日尚未收盘（<15:00）→ 今日 15:00；
+   * 已过今日 15:00 → 下一交易日 15:00（跳过周末）。返回 Date。
+   * batch73：原「默认现在」改为「本次闭市」（股票收盘口径）。
+   */
   function defaultWindowEnd(now) {
-    var d = now ? new Date(now.getTime()) : new Date();
-    d.setSeconds(0, 0);
-    return d;
+    var n = now ? new Date(now.getTime()) : new Date();
+    var close = new Date(n.getFullYear(), n.getMonth(), n.getDate(), WIN_CUTOFF_HOUR, 0, 0, 0);
+    if (n.getTime() < close.getTime()) return close;            // 今天还没收盘 → 本次闭市=今日15:00
+    var nd = shiftTradingDay(close, 1);                           // 已过 → 下一交易日15:00
+    return new Date(nd.getFullYear(), nd.getMonth(), nd.getDate(), WIN_CUTOFF_HOUR, 0, 0, 0);
   }
 
-  /** 默认开始时间：昨天 15:00（收盘换日口径） */
+  /**
+   * 上次闭市时间：本次闭市前一个交易日的 15:00（跳过周末）。
+   * 例：now=周一 9/28 13:16 → 本次闭市=9/28 15:00，上次闭市=9/25 15:00。
+   * batch73：原「昨天 15:00」改为「上次闭市」（股票收盘口径）。
+   */
   function defaultWindowStart(now) {
-    var d = now ? new Date(now.getTime()) : new Date();
-    d.setDate(d.getDate() - 1);
-    d.setHours(WIN_CUTOFF_HOUR, 0, 0, 0);
-    return d;
+    var ec = defaultWindowEnd(now);
+    var prevDay = shiftTradingDay(new Date(ec.getFullYear(), ec.getMonth(), ec.getDate()), -1);
+    return new Date(prevDay.getFullYear(), prevDay.getMonth(), prevDay.getDate(), WIN_CUTOFF_HOUR, 0, 0, 0);
+  }
+
+  /**
+   * 上次对比周期（「昨」）：上次闭市前一个交易日的 15:00 → 上次闭市 15:00。
+   * 例：now=周一 9/28 13:16 → 本次闭市=9/28 15:00、上次闭市=9/25 15:00，
+   *     上次对比周期 = 9/24 15:00 → 9/25 15:00（即上次闭市前的那一交易日）。
+   * batch73：用于每日快讯「昨」排名对比窗口，默认且可手动调整。
+   */
+  function defaultPrevSessionWindow(now) {
+    var lastClose = defaultWindowStart(now);
+    var prevDay = shiftTradingDay(new Date(lastClose.getFullYear(), lastClose.getMonth(), lastClose.getDate()), -1);
+    var start = new Date(prevDay.getFullYear(), prevDay.getMonth(), prevDay.getDate(), WIN_CUTOFF_HOUR, 0, 0, 0);
+    return { start: start, end: lastClose };
   }
 
   /**
@@ -1273,7 +1312,8 @@
     /* 统计时间窗口（15:00 换日口径） */
     WIN_CUTOFF_HOUR,
     toLocalInputValue, fromLocalInputValue,
-    defaultWindowStart, defaultWindowEnd, lastClosedWindow,
+    defaultWindowStart, defaultWindowEnd, lastClosedWindow, defaultPrevSessionWindow,
+    isTradingDay, shiftTradingDay,
     fmtWindowCN, inWindow, parseBriefTime, windowSnapshotDates
   };
   if (typeof module !== 'undefined' && module.exports) module.exports = global.HotTopics;
