@@ -6244,13 +6244,14 @@ const app = createApp({
       const ls = lastStats.value;
       const enriched = base.map((c, i) => {
         const seq = i + 1;
-        const prev = pv.hasData ? pv.map[mode + '::' + c.key] : null;
-        const inc = (prevSeq != null) ? (prevSeq - seq) : null;
-        const cnt = pv.hasData ? (c.count - pv.max[mode]) : null;
-        // batch73：「昨」= 该子类在「上次」对比周期内的排名（无上次数据则 null → 界面显示「—」）
+        // batch73：「昨」= 该子类在上一个默认闭市周期窗口内的最终排名（无数据则 null → 界面显示「—」）
         const lp = ls.hasData ? ls.map[mode + '::' + c.key] : null;
         const prevSeq = lp ? lp.rank : null;
         const prevCnt = lp ? lp.count : null;
+        // 增 = 昨 − 今（prevSeq − seq）；无「昨」数据时 null
+        const inc = (prevSeq != null) ? (prevSeq - seq) : null;
+        const prev = pv.hasData ? pv.map[mode + '::' + c.key] : null;
+        const cnt = pv.hasData ? (c.count - pv.max[mode]) : null;
         return Object.assign({}, c, { seq: seq, inc: inc, cnt: cnt, prevSeq: prevSeq, prevCnt: prevCnt });
       });
       const f = briefCatSort.field, dir = briefCatSort.dir === 'asc' ? 1 : -1;
