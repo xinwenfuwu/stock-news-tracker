@@ -5944,13 +5944,27 @@ const app = createApp({
         briefWindowItems.value = inWin;
         loadPrevBriefStats();   // batch55：闭市周期窗口变化后，重算「上一个等长窗口」用于 序/增/数
         loadLastBriefStats();    // batch73：同步拉取「上次」对比周期（「昨」排名窗口）
-        briefWindow.on = true;
-        briefWindow.start = startStr;
-        briefWindow.end = endStr;
-        Object.keys(briefUi.open).forEach(k => { briefUi.open[k] = false; });   // 换窗口后分类先收起
         if (!inWin.length) {
-          briefError.value = `闭市周期（${startStr} → ${endStr}）内没有快讯；可换用上方日期查看整日快讯`;
+          // 修复：窗口内无快讯时，不再切到空白「闭市周期」视图（否则只看到「共 0 条」），
+          // 而是回退展示最新有数据的那一日，并给出明确提示。
+          if (!briefDates.value.length) await loadBriefDates();
+          const latest = (briefDates.value || [])[0];
+          briefWindowItems.value = [];
+          briefWindow.on = false;                 // 关键：停留在「按日」视图，展示最新快照
+          Object.keys(briefUi.open).forEach(k => { briefUi.open[k] = false; });
+          if (latest) {
+            briefDate.value = latest;
+            if (!briefItems.value.length) await loadBriefs(latest);
+            briefError.value = `闭市周期（${startStr} → ${endStr}）内暂无可显示快讯；已为你展示最新快照（${latest}）。如需更早数据，请用上方「日期」或调整「新闻统计开始时间」。`;
+            showToast(`该时间段暂无快讯，已展示最新可用快照（${latest}）`, 'info');
+          } else {
+            briefError.value = `闭市周期（${startStr} → ${endStr}）内没有快讯；可换用上方日期查看整日快讯`;
+          }
         } else {
+          briefWindow.on = true;
+          briefWindow.start = startStr;
+          briefWindow.end = endStr;
+          Object.keys(briefUi.open).forEach(k => { briefUi.open[k] = false; });   // 换窗口后分类先收起
           const hrs = (w.end - w.start) / 3600000;
           showToast(`已刷新：${startStr} → ${endStr}（约 ${hrs.toFixed(1)} 小时）共 ${inWin.length} 条`, 'success');
         }
