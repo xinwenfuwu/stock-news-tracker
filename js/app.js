@@ -6001,8 +6001,6 @@ const app = createApp({
         (it.subjects || []).some(s => String(s).toLowerCase().includes(k)));
     });
     const briefSearching = computed(() => !!briefKeyword.value.trim());
-    // batch79：全部快讯时间线（「每日快讯」面板默认展示的逐条新闻流，按时间倒序；刷新即见新闻，不必逐个展开子类）
-    const briefAllLimit = ref(50);
 
     /* ===================== batch55：每日快讯子类 → 成分股 + 序/增/数 =====================
      * ① 上一个默认时间段（用于「增/数」的排名变化计算）：取与当前窗口等长的「紧邻上一个窗口」。
@@ -8425,7 +8423,7 @@ const app = createApp({
       hotTopicsSources, hotTopicsMerged, hotTopicsLoading, hotTopicsUpdated, refreshHotTopics,
       dailyWinStart, dailyWinEnd, dailyWinText, refreshDailyTopics, resetDailyWin,
       briefDates, briefDate, briefItems, briefKeyword, briefLoading, briefError, briefUi, briefPaused,
-      briefFiltered, briefSearching, briefStatsList, briefBase, briefAllLimit,
+      briefFiltered, briefSearching, briefStatsList, briefBase,
       briefThemeStats, briefConceptStats, briefIndustryStats,
       briefSourceName, briefSourceInput, briefSourceCustom, briefSourcePresets,
       onBriefSourcePick, commitBriefSource,

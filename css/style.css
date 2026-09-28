@@ -2054,11 +2054,6 @@ body {
 .brief-news-title { font-size: 12.5px; font-weight: 700; }
 .brief-item { padding: 6px 0; border-bottom: 1px dashed var(--border); }
 .brief-item:last-of-type { border-bottom: none; }
-/* batch79：全部快讯时间线（默认展示当日全部快讯，按时间倒序；刷新即见新闻流，不必逐个展开子类） */
-.brief-all { margin: 10px 0 6px; border-top: 1px dashed var(--border); padding-top: 8px; }
-.brief-all-head { display: flex; align-items: center; justify-content: space-between; font-weight: 600; color: var(--text-strong); margin-bottom: 6px; font-size: 13px; }
-.brief-all .brief-item { padding: 7px 2px; border-bottom: 1px solid var(--border); }
-.brief-all .brief-item:last-child { border-bottom: none; }
 /* 每日快讯：题材 / 概念 / 行业 三维度并排，各自按占比从大到小 */
 .brief-dims { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
 /* batch26：归类表头去加粗（700 → 400） */
