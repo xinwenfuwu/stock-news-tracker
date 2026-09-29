@@ -4,12 +4,12 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>股市信息分析系统</title>
-  <link rel="stylesheet" href="css/style.css?v=20260929c">
+  <link rel="stylesheet" href="css/style.css?v=20260929d">
   <!-- Vue 3 全局构建版（v3.4.21 · 自托管）
        原先走 unpkg.com CDN：国内网络对 unpkg 的连通性不稳定，一旦该请求长时间挂起，
        <head> 里的阻塞脚本会让整页停在白屏、后续 auth-boot.js 根本不会执行。
        改为同源托管后，启动链路不再依赖任何第三方 CDN。 -->
-  <script src="js/vue.global.prod.js?v=20260929c"></script>
+  <script src="js/vue.global.prod.js?v=20260929d"></script>
 </head>
 <body class="auth-locked">
   <!-- ===== 登录关卡：登录通过前业务脚本不会被加载 ===== -->
@@ -513,6 +513,57 @@
           <div class="muted small" v-else-if="!briefLoading && !briefError && !briefPaused">暂无快讯数据，等待服务端定时抓取（每 2 小时一次）。</div>
         </aside>
         <!-- BATCH52_BRIEF_TOP_END -->
+        <!-- 当日股票明细（点击热门板块页子板块载入的成分股，在此同步展示）——已移至选股搜索上方 -->
+        <!-- 当日股票表 -->
+        <div class="hot-detail-head">
+          <h3 class="section-title" style="margin:0">
+            📋 当日股票明细
+            <span v-if="briefCatActive" class="hot-detail-board">（子类：{{ briefCatActive }}{{ briefCatIsFallback ? ' · 新闻关联股票' : ' · 成分股' }} · {{ dailyStockRows.length }} 只）</span>
+            <span v-else-if="hotBoardActive" class="hot-detail-board">（{{ hotDetailIsStock ? '个股' : '板块' }}：{{ hotBoardActive }} · {{ dailyStockRows.length }} 只）</span>
+            <span v-if="briefCatLoading || hotBoardLoading" class="muted small">⏳ 加载中...</span>
+          </h3>
+          <!-- 股票查询：按代码 / 按名称关键字过滤下方明细 -->
+          <div class="hot-search-row">
+            <input v-model="hotSearchCode" class="cell-input" placeholder="代码查询" style="width:104px"
+                   title="按股票代码关键字过滤下方明细（支持部分匹配，如 6005）">
+            <input v-model="hotSearchName" class="cell-input" placeholder="名称查询" style="width:104px"
+                   title="按股票名称关键字过滤下方明细（支持部分匹配，如 茅台）">
+            <button class="btn btn-sm" @click="refreshDailyStockRows" :disabled="dailyStockRefreshing"
+                    title="刷新当前「当日股票明细」的行情数据（子类→重补全成分股；其余→刷新当日行情）">
+              <span v-if="dailyStockRefreshing">⏳ 刷新中...</span>
+              <span v-else>🔄 刷新数据</span>
+            </button>
+            <button class="btn btn-sm" v-if="hotSearchCode || hotSearchName" @click="clearHotSearch" title="清空查询条件">✕ 清空查询</button>
+          </div>
+          <button v-if="briefCatActive" class="btn btn-sm" @click="clearBriefCat">✕ 清除子类选择</button>
+          <button v-if="hotBoardActive" class="btn btn-sm" @click="clearHotBoard">{{ hotDetailIsStock ? '✕ 清除个股选择' : '✕ 清除板块选择' }}</button>
+        </div>
+        <div class="table-wrap">
+          <table class="data-table pool-detail-table hot-stock-table">
+            <colgroup>
+              <col v-for="(col, ci) in getColumns('hot')" :key="ci" :style="{ width: col.width + 'px' }" :class="col.fixed ? ('col-sticky col-sticky-' + col.fixedIndex) : ''"></col>
+            </colgroup>
+            <thead>
+              <tr>
+                <th v-for="(col, ci) in getColumns('hot')" :key="ci"
+                    :class="['col-' + col.key, col.fixed ? ('col-sticky col-sticky-' + col.fixedIndex) : '', col.sortable ? 'sortable' : '', isNumCol(col) ? 'num-col' : '']"
+                    @click="onStockSort(col, 'hot')">
+                  <span class="th-label">{{ col.label }}</span><span v-if="col.sortable" class="sort-ic">{{ stockSortIcon(col, 'hot') }}</span>
+                </th>
+              </tr>
+            </thead>
+            <tbody @click="onTableClick($event, 'hot', dailyStockRows)" @change="onTableChange($event, 'hot')">
+              <tr v-for="(s, idx) in dailyStockRows" :key="s.code">
+                <td v-for="(col, ci) in getColumns('hot')" :key="ci" :data-label="col.label"
+                    :class="cellClass(col, s, idx, dailyStockRows, 'hot')"
+                    v-html="cellHtml(col, s, idx, dailyStockRows, 'hot')"></td>
+              </tr>
+              <tr v-if="dailyStockRows.length === 0">
+                <td :colspan="getColumns('hot').length" class="empty-row">点击上方「每日快讯」中子类的 📊 或子类名，即可在此显示该子类的成分股；或点击「当日热门板块」中的板块查看其成分股，或点击「加载当日数据」</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
         <!-- batch65：把「选股」页的选股搜索栏整体复制到「新闻追踪」页「每日快讯」下方（复用同一套 setupState 状态与函数） -->
         <div class="news-sector-search">
           <h3 class="page-subtitle">🧭 选股搜索（板块 / AI语义 / 同类股票 / 反推业务）</h3>
@@ -1208,58 +1259,6 @@
           </div>
         </div>
         </div>
-        <!-- 当日股票明细（点击热门板块页子板块载入的成分股，在此同步展示） -->
-        <!-- 当日股票表 -->
-        <div class="hot-detail-head">
-          <h3 class="section-title" style="margin:0">
-            📋 当日股票明细
-            <span v-if="briefCatActive" class="hot-detail-board">（子类：{{ briefCatActive }}{{ briefCatIsFallback ? ' · 新闻关联股票' : ' · 成分股' }} · {{ dailyStockRows.length }} 只）</span>
-            <span v-else-if="hotBoardActive" class="hot-detail-board">（{{ hotDetailIsStock ? '个股' : '板块' }}：{{ hotBoardActive }} · {{ dailyStockRows.length }} 只）</span>
-            <span v-if="briefCatLoading || hotBoardLoading" class="muted small">⏳ 加载中...</span>
-          </h3>
-          <!-- 股票查询：按代码 / 按名称关键字过滤下方明细 -->
-          <div class="hot-search-row">
-            <input v-model="hotSearchCode" class="cell-input" placeholder="代码查询" style="width:104px"
-                   title="按股票代码关键字过滤下方明细（支持部分匹配，如 6005）">
-            <input v-model="hotSearchName" class="cell-input" placeholder="名称查询" style="width:104px"
-                   title="按股票名称关键字过滤下方明细（支持部分匹配，如 茅台）">
-            <button class="btn btn-sm" @click="refreshDailyStockRows" :disabled="dailyStockRefreshing"
-                    title="刷新当前「当日股票明细」的行情数据（子类→重补全成分股；其余→刷新当日行情）">
-              <span v-if="dailyStockRefreshing">⏳ 刷新中...</span>
-              <span v-else>🔄 刷新数据</span>
-            </button>
-            <button class="btn btn-sm" v-if="hotSearchCode || hotSearchName" @click="clearHotSearch" title="清空查询条件">✕ 清空查询</button>
-          </div>
-          <button v-if="briefCatActive" class="btn btn-sm" @click="clearBriefCat">✕ 清除子类选择</button>
-          <button v-if="hotBoardActive" class="btn btn-sm" @click="clearHotBoard">{{ hotDetailIsStock ? '✕ 清除个股选择' : '✕ 清除板块选择' }}</button>
-        </div>
-        <div class="table-wrap">
-          <table class="data-table pool-detail-table hot-stock-table">
-            <colgroup>
-              <col v-for="(col, ci) in getColumns('hot')" :key="ci" :style="{ width: col.width + 'px' }" :class="col.fixed ? ('col-sticky col-sticky-' + col.fixedIndex) : ''"></col>
-            </colgroup>
-            <thead>
-              <tr>
-                <th v-for="(col, ci) in getColumns('hot')" :key="ci"
-                    :class="['col-' + col.key, col.fixed ? ('col-sticky col-sticky-' + col.fixedIndex) : '', col.sortable ? 'sortable' : '', isNumCol(col) ? 'num-col' : '']"
-                    @click="onStockSort(col, 'hot')">
-                  <span class="th-label">{{ col.label }}</span><span v-if="col.sortable" class="sort-ic">{{ stockSortIcon(col, 'hot') }}</span>
-                </th>
-              </tr>
-            </thead>
-            <tbody @click="onTableClick($event, 'hot', dailyStockRows)" @change="onTableChange($event, 'hot')">
-              <tr v-for="(s, idx) in dailyStockRows" :key="s.code">
-                <td v-for="(col, ci) in getColumns('hot')" :key="ci" :data-label="col.label"
-                    :class="cellClass(col, s, idx, dailyStockRows, 'hot')"
-                    v-html="cellHtml(col, s, idx, dailyStockRows, 'hot')"></td>
-              </tr>
-              <tr v-if="dailyStockRows.length === 0">
-                <td :colspan="getColumns('hot').length" class="empty-row">点击上方「每日快讯」中子类的 📊 或子类名，即可在此显示该子类的成分股；或点击「当日热门板块」中的板块查看其成分股，或点击「加载当日数据」</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-
       </section>
 
       <!-- ===== 页面（用户：持仓管理 + 会员服务） ===== -->
@@ -4500,12 +4499,12 @@
     </transition>
   </div>
 
-  <script src="js/auth.js?v=20260929c"></script>
-  <script src="js/auth-sync.js?v=20260929c"></script>
+  <script src="js/auth.js?v=20260929d"></script>
+  <script src="js/auth-sync.js?v=20260929d"></script>
   <!-- 边缘加速默认站点（batch37 治本：Cloudflare Worker 代理东财/腾讯，缓解 JSONP 限流误报）。
        若你所在地区 workers.dev 访问慢，可在「设置 → 行情加速地址」清空即恢复纯直连。 -->
   <script>window.__SNT_ACCEL__ = 'https://stock-edge.hui-zhou.workers.dev';</script>
-  <script src="js/auth-boot.js?v=20260929c"></script>
+  <script src="js/auth-boot.js?v=20260929d"></script>
   <!-- store / stock-api / hot-topics / app 由 auth-boot.js 在登录通过后动态装载，
        未登录时它们不会被下载，业务数据也不会进入内存 -->
 </body>
