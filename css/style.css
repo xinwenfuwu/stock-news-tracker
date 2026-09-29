@@ -303,7 +303,7 @@ body {
 .pool-detail-table tbody tr td.col-sticky { position: sticky; }
 .pool-detail-table th.col-sticky { z-index: 30; background: #f5f7fa; }
 .pool-detail-table td.col-sticky { background: var(--surface); }
-.pool-detail-table tbody tr:hover td.col-sticky { background: #dbe7ff; }
+.pool-detail-table tbody tr:hover td.col-sticky { background: #bcd2ff; }
 /* 冻结列宽度完全由 <colgroup> 控制（允许用户拖拽），此处不再写死 min-width，
    否则单元格被撑宽后会与 sticky 的 left 偏移脱节，出现表头/内容错位或重叠 */
 .pool-detail-table .col-sticky-0 { text-align: center; }
@@ -344,11 +344,11 @@ body {
   vertical-align: middle;
   transition: background-color 0.15s ease;
 }
-.data-table tbody tr:hover { background: #dbe7ff; }
-.data-table tbody tr:hover td { background: #dbe7ff; }
+.data-table tbody tr:hover { background: #bcd2ff; }
+.data-table tbody tr:hover td { background: #bcd2ff; }
 .data-table tbody tr.selected { background: #eef5ff; }
-.data-table tr.selected:hover { background: #cfe0ff; }
-.data-table tr.selected:hover td { background: #cfe0ff; }
+.data-table tr.selected:hover { background: #a9c7fb; }
+.data-table tr.selected:hover td { background: #a9c7fb; }
 .sortable { cursor: pointer; user-select: none; }
 .sortable:hover { color: var(--primary); }
 .sort-arrow { font-size: 11px; opacity: 0.6; }
@@ -1989,7 +1989,7 @@ body {
  * 三组（题材/概念/行业）共用同一列宽，行与行、组与组上下整齐对齐。 */
 .brief-cat-head {
   display: grid;
-  grid-template-columns: 8px 22px 22px 26px 18px minmax(56px, 1fr) 22px 44px 28px 32px 22px;
+  grid-template-columns: 8px 22px 22px 26px 18px 90px 22px 44px 28px 32px 22px;
   align-items: center; column-gap: 4px;
   padding: 7px 2px; font-size: 12.5px; cursor: pointer; border-radius: 6px;
 }
@@ -1999,7 +1999,7 @@ body {
  * 原 10 列网格只剩 7 个元素被自动塞进前 7 列，导致 bc-name 落到 30px 窄列溢出、与 📊 重叠掩盖文字。
  * 这里在非新闻页用 6 列网格（caret|icon|name|track|count|pct），名称列固定 80px 完整显示，
  * 📊 按钮在非新闻页也一并隐藏（点击子类名仍可展开成分股），彻底消除文字被覆盖。 */
-.brief-cat-head.no-sort { grid-template-columns: 10px 20px 80px minmax(0, 1fr) 34px 40px; }
+.brief-cat-head.no-sort { grid-template-columns: 10px 20px 90px minmax(0, 1fr) 34px 40px; }
 .bc-caret { justify-self: center; color: var(--text-placeholder); font-size: 11px; }
 /* 图标：固定列宽 + 左对齐。用居中会让宽窄不同的 emoji（🌍 单字 vs 🇺🇸 国旗）左边缘参差，
  * 与右侧名称列「统一左起点」的观感不一致，所以这里跟文字一样走左对齐。 */
@@ -2055,7 +2055,11 @@ body {
 .brief-item { padding: 6px 0; border-bottom: 1px dashed var(--border); }
 .brief-item:last-of-type { border-bottom: none; }
 /* 每日快讯：题材 / 概念 / 行业 三维度并排，各自按占比从大到小 */
-.brief-dims { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+.brief-dims { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 28px; }
+/* 视觉优化（用户需求）：各归类块内子类名称统一预留 ~6 汉字宽度（上 grid 第6/3列固定 90px），
+ * 块本身 justify-self:start 收缩到内容宽度，于是「名称列不拉伸、剩余空白落在三块之间」，
+ * 配合加大的 gap 让 题材/概念/行业 三者之间留白更清爽。 */
+.brief-cat-group { justify-self: start; }
 /* batch26：归类表头去加粗（700 → 400） */
 .bcg-head { font-size: 13px; font-weight: 400; margin: 6px 0 4px; padding-bottom: 4px; border-bottom: 2px solid var(--border); }
 @media (max-width: 900px) { .brief-dims { grid-template-columns: 1fr; } }
