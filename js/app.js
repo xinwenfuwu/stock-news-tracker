@@ -6400,7 +6400,11 @@ const app = createApp({
         // 主题维度统计（行业/概念/产品/产业/科技），多标签命中，与跨站重合榜并排展示
         const themeStats = (typeof HotTopics !== 'undefined' && HotTopics.themeStats ? HotTopics.themeStats(flat) : [])
           .map(d => ({ ...d, _open: true, showAll: false, selTopic: null, newsLimit: 30 }));
-        analysisResult.value = { clusters, siteStats, themeStats, dayCount, totalItems: flat.length };
+        // 请求U：主题分类统计的「总条数」= 十个新闻平台在该时间段内的全部新闻条数（与 themeStats 的分母一致，排除无文本条目）
+        const themeBaseTotal = (typeof HotTopics !== 'undefined' && HotTopics.themeStats)
+          ? flat.filter(it => it && it.text).length
+          : flat.length;
+        analysisResult.value = { clusters, siteStats, themeStats, dayCount, totalItems: flat.length, themeBaseTotal };
       } catch (e) {
         showToast('统计分析失败：' + (e && e.message ? e.message : e), 'error');
       } finally {
