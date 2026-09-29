@@ -3493,7 +3493,7 @@ const app = createApp({
           return (h == null ? '—' : h + '%') + '<br><span class="muted small">排' + (r == null ? '—' : r) + '</span>';
         }
         case 'pct': { const val = v(col.key); return (val != null && !isNaN(val)) ? '<span class="' + pctClass(val) + '">' + fmtPct(val) + '</span>' : '—'; }
-        case 'price': { const val = s[col.key]; return (val != null && !isNaN(val)) ? (+val).toFixed(2) : '—'; }
+        case 'price': { const val = v(col.key); return (val != null && !isNaN(val)) ? (+val).toFixed(2) : '—'; }
         case 'ratio': { const val = v(col.key); return (val != null && !isNaN(val)) ? (+val).toFixed(2) : '—'; }
         case 'num2': { const val = v(col.key); return (val != null && !isNaN(val)) ? (+val).toFixed(2) : '—'; }
         // 相关度：来自 AI 语义搜索的「营收占比相关度」(命中主营构成段营收占比之和 %)；无语义来源时显示占位
@@ -3510,7 +3510,7 @@ const app = createApp({
         // 总市值：单位已是「亿元」，直接保留两位小数展示
         case 'cap': { const val = s[col.key]; return (val != null && !isNaN(val)) ? (+val).toFixed(2) + '亿' : '—'; }
         // 现价：今日实时股价，固定红色
-        case 'curPrice': { const val = s[col.key]; return (val != null && !isNaN(val)) ? '<span class="price-red">' + (+val).toFixed(2) + '</span>' : '—'; }
+        case 'curPrice': { const val = v(col.key); return (val != null && !isNaN(val)) ? '<span class="price-red">' + (+val).toFixed(2) + '</span>' : '—'; }
         case 'int': { const val = s[col.key]; return (val != null && !isNaN(val)) ? Math.round(val).toLocaleString('en-US') : '—'; }
         case 'diff': { const val = v(col.key); return (val != null && !isNaN(val)) ? ((val > 0 ? '+' : '') + Math.round(val).toLocaleString('en-US')) : '—'; }
         case 'flow': {
@@ -3638,6 +3638,10 @@ const app = createApp({
 
     /** 取股票池详情某列的排序值（含计算字段 市净比/市扣比/市营比/同比/环比系列、散户差额、正数统计） */
     function poolVal(s, key) {
+      // 兼容当日股票明细快照里的旧字段名：changePercent→dailyChange、price→todayPrice
+      // （否则排序/显示读到 undefined，导致「点列头排序无反应」「数值列显示 —」）
+      if (key === 'dailyChange' && s.dailyChange == null) return s.changePercent;
+      if (key === 'todayPrice' && s.todayPrice == null) return s.price;
       if (key === 'positiveCount') return positiveCount(s);
       if (key === 'pbRatio' || key === 'pkRatio' || key === 'pyRatio' || key === 'pk2Ratio' || key === 'phRatio' || key === 'prRatio' || key === 'prrRatio' || key === 'ph2Ratio' || key === 'pkHbRatio') {
         const r = sRatio(s);
@@ -5552,20 +5556,24 @@ const app = createApp({
       const strSort = (t === 'code' || t === 'name' || t === 'concept' || t === 'text');
       list.sort((a, b) => {
         if (strSort) {
-          const av = String(a[k] == null ? '' : a[k]);
-          const bv = String(b[k] == null ? '' : b[k]);
+          const av = poolVal(a, k);
+          const bv = poolVal(b, k);
+          const avs = String(av == null ? '' : av);
+          const bvs = String(bv == null ? '' : bv);
           if (t === 'code') {
             // 股票代码按数值序（避免 '10' 排在 '2' 之前），含字母的市场代码（如 BJ/SH）兜底走中文序
-            const na = parseFloat(av), nb = parseFloat(bv);
+            const na = parseFloat(avs), nb = parseFloat(bvs);
             if (!isNaN(na) && !isNaN(nb)) return (na - nb) * dir;
           }
-          return av.localeCompare(bv, 'zh') * dir;
+          return avs.localeCompare(bvs, 'zh') * dir;
         }
-        const va = parseFloat(a[k]); const vb = parseFloat(b[k]);
-        if (isNaN(va) && isNaN(vb)) return 0;
-        if (isNaN(va)) return 1;
-        if (isNaN(vb)) return -1;
-        return (va - vb) * dir;
+        // 数值列统一走 poolVal：兼容派生列（距高价/估值/距高天…由 todayPrice 等现算）与旧字段名
+        const va = poolVal(a, k);
+        const vb = poolVal(b, k);
+        if (va == null && vb == null) return 0;
+        if (va == null) return 1;
+        if (vb == null) return -1;
+        return (parseFloat(va) - parseFloat(vb)) * dir;
       });
       return list;
     });
