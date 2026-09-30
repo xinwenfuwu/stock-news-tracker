@@ -6108,12 +6108,36 @@ const app = createApp({
       briefPaused.value = false;
       _briefLoaded = true;
       try {
-        const chunks = await Promise.all(days.map(d => fetchBriefsFile(d, briefSourceName.value)));
-        if (!briefDates.value.length) {            // 顺手同步一下日期清单，便于「回到当日全部」
-          briefDates.value = days.slice().reverse();
-        }
+        // 实时叠加：服务端快照由 GitHub 定时任务生成，schedule 常被 GitHub 延迟/丢槽（实测可滞后 6 小时+）。
+        // 窗口覆盖「最近」时（结束时间在近 2 小时内或未来），经代理叠加格隆汇实时快讯；
+        // 未配置代理 / 代理不可达 / 非格隆汇源 → 自动跳过，不影响快照展示。
+        const wantLive = briefSourceName.value === '格隆汇' && w.end.getTime() > Date.now() - 2 * 3600e3;
+        const proxyUrl = String((D.settings && D.settings.proxyUrl) || '')
+          .split(/[\s,;]+/).map(s => s.trim()).filter(Boolean)[0] || '';
+        const [chunks, liveItems] = await Promise.all([
+          Promise.all(days.map(d => fetchBriefsFile(d, briefSourceName.value))),
+          (wantLive && proxyUrl)
+            ? StockAPI.fetchGelonghuiLiveBriefs(proxyUrl, 3).catch(() => [])
+            : Promise.resolve([])
+        ]);
+        // 记录每个拉取日是否有数据（用于回退到「最近真正有数据的一天」）
+        const daysWithData = [];
+        chunks.forEach((list, i) => { if (list && list.length) daysWithData.push(days[i]); });
+        // 用仓库 index.json 的真实日期清单补齐 briefDates（绝不拿窗口推算出的未来日期当回退目标）
+        if (!briefDates.value.length) await loadBriefDates();
         const merged = [];
         chunks.forEach(list => list.forEach(it => { if (it && it.time) merged.push(it); }));
+        // 叠加实时条目（按 id 去重，快照里已有的不再重复计）
+        const seenKey = new Set(merged.map(it => (it.id != null ? 'i:' + it.id : 't:' + it.text + '|' + it.time)));
+        let liveAdded = 0;
+        (liveItems || []).forEach(it => {
+          if (!it || !it.time) return;
+          const k = (it.id != null ? 'i:' + it.id : 't:' + it.text + '|' + it.time);
+          if (seenKey.has(k)) return;
+          seenKey.add(k);
+          merged.push(it);
+          liveAdded++;
+        });
         const inWin = merged
           .filter(it => {
             const t = String(it.time);
@@ -6124,18 +6148,21 @@ const app = createApp({
         loadPrevBriefStats();   // batch55：闭市周期窗口变化后，重算「上一个等长窗口」用于 序/增/数
         loadLastBriefStats();    // batch73：同步拉取「上次」对比周期（「昨」排名窗口）
         if (!inWin.length) {
-          // 修复：窗口内无快讯时，不再切到空白「闭市周期」视图（否则只看到「共 0 条」），
-          // 而是回退展示最新有数据的那一日，并给出明确提示。
+          // 修复：窗口内无快讯时，回退到「最近一天真正有数据的日期」。
+          // 旧逻辑曾把窗口推算出的未来日期（如明天）当 latest，导致回退到一个 404 空文件、页面全空。
           if (!briefDates.value.length) await loadBriefDates();
-          const latest = (briefDates.value || [])[0];
+          const todayStr = fmtDate(new Date());
+          const cands = [...new Set([...(briefDates.value || []), ...daysWithData.slice().reverse()])]
+            .filter(d => d && d <= todayStr);
+          const latest = cands[0];
           briefWindowItems.value = [];
-          briefWindow.on = false;                 // 关键：停留在「按日」视图，展示最新快照
+          briefWindow.on = false;                 // 关键：停留在「按日」视图，展示最近有数据的快照
           Object.keys(briefUi.open).forEach(k => { briefUi.open[k] = false; });
           if (latest) {
             briefDate.value = latest;
-            if (!briefItems.value.length) await loadBriefs(latest);
-            briefError.value = `闭市周期（${startStr} → ${endStr}）内暂无可显示快讯；已为你展示最新快照（${latest}）。如需更早数据，请用上方「日期」或调整「新闻统计开始时间」。`;
-            showToast(`该时间段暂无快讯，已展示最新可用快照（${latest}）`, 'info');
+            await loadBriefs(latest);
+            briefError.value = `闭市周期（${startStr} → ${endStr}）内暂无可显示快讯；已为你展示最近有数据的快照（${latest}）。如需更早数据，请用上方「日期」或调整「新闻统计开始时间」。`;
+            showToast(`该时间段暂无快讯，已展示最近有数据的快照（${latest}）`, 'info');
           } else {
             briefError.value = `闭市周期（${startStr} → ${endStr}）内没有快讯；可换用上方日期查看整日快讯`;
           }
@@ -6145,7 +6172,7 @@ const app = createApp({
           briefWindow.end = endStr;
           Object.keys(briefUi.open).forEach(k => { briefUi.open[k] = false; });   // 换窗口后分类先收起
           const hrs = (w.end - w.start) / 3600000;
-          showToast(`已刷新：${startStr} → ${endStr}（约 ${hrs.toFixed(1)} 小时）共 ${inWin.length} 条`, 'success');
+          showToast(`已刷新：${startStr} → ${endStr}（约 ${hrs.toFixed(1)} 小时）共 ${inWin.length} 条${liveAdded ? '，其中实时叠加 ' + liveAdded + ' 条' : ''}`, 'success');
         }
       } catch (e) {
         briefWindowItems.value = [];

@@ -5704,9 +5704,46 @@ const StockAPI = {
     return { ok: true, date: today, sources, merged: merged.slice(0, 20) };
   },
 
+  /** 格隆汇实时快讯：经 Worker /proxy 转发其 v4 live 接口（与服务端定时抓取同一接口，条目带完整时间戳）。
+   *  背景：服务端快照由 GitHub 定时任务生成，schedule 经常被 GitHub 延迟/丢槽（实测可滞后 6 小时+），
+   *  新闻追踪页「按时间段刷新」需要最近几小时的条目时，用它叠加实时数据。
+   *  未配置代理返回 []；翻页按服务端同款游标（liveId = 上一页最小 id）；失败抛错由调用方兜底。 */
+  async fetchGelonghuiLiveBriefs(proxyUrl, maxPages = 3) {
+    const base = String(proxyUrl || '').trim().replace(/\/+$/, '');
+    if (!base) return [];
+    const GH = 'https://www.gelonghui.com/api/live-channels/all/lives/v4';
+    const out = [];
+    let cursor = null;
+    for (let p = 0; p < maxPages; p++) {
+      const u = GH + '?category=all' + (cursor != null ? '&liveId=' + cursor : '') + '&limit=15&timestamp=' + Date.now();
+      const txt = await this._proxyText(base + '/proxy?url=' + encodeURIComponent(u));
+      const j = JSON.parse(txt);
+      const arr = (j && j.result) || [];
+      if (!Array.isArray(arr) || !arr.length) break;
+      for (const it of arr) {
+        const ts = Number(it.createTimestamp || 0);
+        const text = String(it.content || it.title || '').replace(/<[^>]+>/g, '').replace(/\s+/g, ' ').trim().slice(0, 200);
+        if (!ts || !text) continue;
+        // Unix 秒 → 北京时间 "YYYY-MM-DD HH:mm"（与服务端快照同一换算，保证窗口字符串比较口径一致）
+        const time = new Date((ts + 8 * 3600) * 1000).toISOString().slice(0, 16).replace('T', ' ');
+        out.push({
+          id: it.id, time, text,
+          url: it.route || '',
+          stocks: ((it.relatedStocks || []).map(s => s.name + '(' + s.code + ')')).filter(Boolean).slice(0, 4),
+          subjects: ((it.relatedInfos || []).map(s => s.name)).filter(Boolean).slice(0, 4),
+          cat: (typeof HotTopics !== 'undefined' && HotTopics.classify) ? HotTopics.classify(text) : '财经'
+        });
+      }
+      const ids = arr.map(x => Number(x.id)).filter(n => !isNaN(n));
+      if (!ids.length) break;
+      cursor = Math.min.apply(null, ids);
+    }
+    // 翻页偶有重叠，按 id 去重
+    return out.filter((v, i, a) => a.findIndex(x => String(x.id) === String(v.id)) === i);
+  },
+
   /** 经代理取文本（12s 超时，非 2xx 直接抛错） */
-  async _proxyText(url) {
-    const ctrl = new AbortController();
+  async _proxyText(url) {    const ctrl = new AbortController();
     const timer = setTimeout(() => ctrl.abort(), 12000);
     try {
       const resp = await fetch(url, { signal: ctrl.signal, cache: 'no-store' });
