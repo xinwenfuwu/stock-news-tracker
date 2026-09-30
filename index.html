@@ -4,12 +4,12 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>股市信息分析系统</title>
-  <link rel="stylesheet" href="css/style.css?v=20260930e">
+  <link rel="stylesheet" href="css/style.css?v=20260930f">
   <!-- Vue 3 全局构建版（v3.4.21 · 自托管）
        原先走 unpkg.com CDN：国内网络对 unpkg 的连通性不稳定，一旦该请求长时间挂起，
        <head> 里的阻塞脚本会让整页停在白屏、后续 auth-boot.js 根本不会执行。
        改为同源托管后，启动链路不再依赖任何第三方 CDN。 -->
-  <script src="js/vue.global.prod.js?v=20260930e"></script>
+  <script src="js/vue.global.prod.js?v=20260930f"></script>
 </head>
 <body class="auth-locked">
   <!-- ===== 登录关卡：登录通过前业务脚本不会被加载 ===== -->
@@ -359,44 +359,6 @@
             <span class="muted small" style="margin-left:auto">点击子类名或 📊 查看成分股</span>
           </div>
           <div class="brief-dims" v-if="briefFiltered.length">
-            <!-- 前天 观察篮（仅新闻追踪页）：点概念/行业子类行的 ＋ 加入，跨日跟踪看好的子类 -->
-            <div class="brief-cat-group watch-group" v-if="currentPage === 'news'">
-              <div class="bcg-head">📌 前天 <span class="muted small">{{ watchBeforeRows.length }} 项</span></div>
-              <div class="watch-list" v-if="watchBeforeRows.length">
-                <div class="watch-item" v-for="w in watchBeforeRows" :key="w.id" :class="{ active: briefUi.open[w.dim + '::' + w.key] }">
-                  <span class="wi-icon">{{ w.icon }}</span>
-                  <span class="wi-name" @click="toggleBriefCat(w.key, w.dim)" :title="'点击展开「'+w.name+'」新闻'">{{ w.name }}</span>
-                  <span class="wi-streak" v-if="w.streakLoading">⏳</span>
-                  <span class="wi-streak" v-else-if="w.streak!=null" :class="w.streak>0?'up':(w.streak<0?'down':'')">{{ w.streak>0?'+':'' }}{{ w.streak }}</span>
-                  <span class="wi-nstreak" v-if="w.newsStreakLoading">⏳</span>
-                  <span class="wi-nstreak" v-else-if="w.newsStreak!=null" :class="w.newsStreak>0?'up':(w.newsStreak<0?'down':'')">{{ w.newsStreak>0?'+':'' }}{{ w.newsStreak }}</span>
-                  <span class="wi-pct" v-if="w.pct!=null">{{ w.pct }}%</span>
-                  <button type="button" class="wi-stocks" @click="openBriefFilter(liveCatFor(w), w.dim)" title="在下方「当日股票明细」展示成分股">📊</button>
-                  <button type="button" class="wi-del" @click="removeFromWatch('before', w.id)" title="从「前天」移除">✕</button>
-                </div>
-              </div>
-              <div class="muted small watch-empty" v-else>点概念 / 行业子类行的 ＋ 添加看好的子类</div>
-            </div>
-
-            <!-- 昨天 观察篮（仅新闻追踪页） -->
-            <div class="brief-cat-group watch-group" v-if="currentPage === 'news'">
-              <div class="bcg-head">📌 昨天 <span class="muted small">{{ watchYesterdayRows.length }} 项</span></div>
-              <div class="watch-list" v-if="watchYesterdayRows.length">
-                <div class="watch-item" v-for="w in watchYesterdayRows" :key="w.id" :class="{ active: briefUi.open[w.dim + '::' + w.key] }">
-                  <span class="wi-icon">{{ w.icon }}</span>
-                  <span class="wi-name" @click="toggleBriefCat(w.key, w.dim)" :title="'点击展开「'+w.name+'」新闻'">{{ w.name }}</span>
-                  <span class="wi-streak" v-if="w.streakLoading">⏳</span>
-                  <span class="wi-streak" v-else-if="w.streak!=null" :class="w.streak>0?'up':(w.streak<0?'down':'')">{{ w.streak>0?'+':'' }}{{ w.streak }}</span>
-                  <span class="wi-nstreak" v-if="w.newsStreakLoading">⏳</span>
-                  <span class="wi-nstreak" v-else-if="w.newsStreak!=null" :class="w.newsStreak>0?'up':(w.newsStreak<0?'down':'')">{{ w.newsStreak>0?'+':'' }}{{ w.newsStreak }}</span>
-                  <span class="wi-pct" v-if="w.pct!=null">{{ w.pct }}%</span>
-                  <button type="button" class="wi-stocks" @click="openBriefFilter(liveCatFor(w), w.dim)" title="在下方「当日股票明细」展示成分股">📊</button>
-                  <button type="button" class="wi-del" @click="removeFromWatch('yesterday', w.id)" title="从「昨天」移除">✕</button>
-                </div>
-              </div>
-              <div class="muted small watch-empty" v-else>点概念 / 行业子类行的 ＋ 添加看好的子类</div>
-            </div>
-
             <!-- 概念归类 -->
             <div class="brief-cat-group">
               <div class="bcg-head">💡 概念归类 <span class="muted small">{{ briefConceptStats.length }} 类</span></div>
@@ -416,7 +378,10 @@
                     <span class="bc-count">{{ c.count }}</span>
                     <span class="bc-pct">{{ c.pct }}%</span>
                     <button type="button" class="bc-sort bc-cnt" v-if="currentPage === 'news'" @click.stop="sortByBriefField('cnt')" :title="'数 = 本次数量 − 上次最大数量'">{{ c.cnt==null?'—':c.cnt }}<i class="bsort" v-if="briefCatSort.field==='cnt'">{{ briefCatSort.dir==='asc'?'↑':'↓' }}</i></button>
-                    <button type="button" class="bc-add" v-if="currentPage === 'news'" @click.stop="openWatchAdd(c, 'concept', $event)" :title="'把「'+c.name+'」加入前天 / 昨天观察篮'">＋</button>
+                    <label class="bc-color" v-if="currentPage === 'news'" :style="{ background: c.userColor || 'transparent' }" :title="c.userColor ? '当前标注色（点击修改）' : '点击设置标注色'">
+                      <input type="color" :value="c.userColor || '#ffffff'" @input="setCatColor(c.key, $event.target.value)" @click.stop>
+                    </label>
+                    <input type="text" class="bc-note" v-if="currentPage === 'news'" :value="c.note || ''" @input="setCatNote(c.key, $event.target.value)" placeholder="备注" :title="'给「'+c.name+'」添加备注'">
                   </div>
                   <div class="brief-news" v-if="briefUi.open['concept::' + c.key]">
                     <div class="brief-news-head">
@@ -461,7 +426,10 @@
                     <span class="bc-count">{{ c.count }}</span>
                     <span class="bc-pct">{{ c.pct }}%</span>
                     <button type="button" class="bc-sort bc-cnt" v-if="currentPage === 'news'" @click.stop="sortByBriefField('cnt')" :title="'数 = 本次数量 − 上次最大数量'">{{ c.cnt==null?'—':c.cnt }}<i class="bsort" v-if="briefCatSort.field==='cnt'">{{ briefCatSort.dir==='asc'?'↑':'↓' }}</i></button>
-                    <button type="button" class="bc-add" v-if="currentPage === 'news'" @click.stop="openWatchAdd(c, 'industry', $event)" :title="'把「'+c.name+'」加入前天 / 昨天观察篮'">＋</button>
+                    <label class="bc-color" v-if="currentPage === 'news'" :style="{ background: c.userColor || 'transparent' }" :title="c.userColor ? '当前标注色（点击修改）' : '点击设置标注色'">
+                      <input type="color" :value="c.userColor || '#ffffff'" @input="setCatColor(c.key, $event.target.value)" @click.stop>
+                    </label>
+                    <input type="text" class="bc-note" v-if="currentPage === 'news'" :value="c.note || ''" @input="setCatNote(c.key, $event.target.value)" placeholder="备注" :title="'给「'+c.name+'」添加备注'">
                   </div>
                   <div class="brief-news" v-if="briefUi.open['industry::' + c.key]">
                     <div class="brief-news-head">
@@ -489,14 +457,6 @@
           </div>
           <div class="muted small" v-else-if="!briefLoading && !briefError && !briefPaused">暂无快讯数据，等待服务端定时抓取（每 2 小时一次）。</div>
         </aside>
-        <!-- 前天/昨天 观察篮：加入弹层（fixed 定位，挂在每日快讯面板内，仅新闻追踪页会渲染内容） -->
-        <div class="pop-overlay" v-if="watchAddMenu.open" @click="closeWatchAdd"></div>
-        <div class="watch-add-pop" v-if="watchAddMenu.open" :style="{ top: watchAddMenu.top + 'px', left: watchAddMenu.left + 'px' }" @click.stop>
-          <div class="wap-title">添加「{{ watchAddMenu.name }}」到：</div>
-          <button type="button" class="wap-btn" @click="addToWatchFromMenu('before')">📌 前天</button>
-          <button type="button" class="wap-btn" @click="addToWatchFromMenu('yesterday')">📌 昨天</button>
-          <button type="button" class="wap-btn wap-cancel" @click="closeWatchAdd">取消</button>
-        </div>
         <!-- BATCH52_BRIEF_TOP_END -->
         <!-- 当日股票明细（点击热门板块页子板块载入的成分股，在此同步展示）——已移至选股搜索上方 -->
         <!-- 当日股票表 -->
@@ -4664,12 +4624,12 @@
     </transition>
   </div>
 
-  <script src="js/auth.js?v=20260930e"></script>
-  <script src="js/auth-sync.js?v=20260930e"></script>
+  <script src="js/auth.js?v=20260930f"></script>
+  <script src="js/auth-sync.js?v=20260930f"></script>
   <!-- 边缘加速默认站点（batch37 治本：Cloudflare Worker 代理东财/腾讯，缓解 JSONP 限流误报）。
        若你所在地区 workers.dev 访问慢，可在「设置 → 行情加速地址」清空即恢复纯直连。 -->
   <script>window.__SNT_ACCEL__ = 'https://stock-edge.hui-zhou.workers.dev';</script>
-  <script src="js/auth-boot.js?v=20260930e"></script>
+  <script src="js/auth-boot.js?v=20260930f"></script>
   <!-- store / stock-api / hot-topics / app 由 auth-boot.js 在登录通过后动态装载，
        未登录时它们不会被下载，业务数据也不会进入内存 -->
 </body>

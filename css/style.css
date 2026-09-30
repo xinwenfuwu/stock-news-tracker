@@ -2055,7 +2055,7 @@ body {
 /* batch-new：概念/行业归类行新增「天 / 闻」两列排序按钮（位于「今」右侧），网格扩为 13 列。
  * 置于 .no-sort 之前，确保非新闻页（no-sort，6 列）仍覆盖本规则、布局不被破坏。
  * 题材归类行不加 has-streak，沿用 11 列原布局。 */
-.brief-cat-head.has-streak { grid-template-columns: 8px 22px 22px 26px 22px 22px 18px 90px 22px 44px 28px 32px 22px 22px; }
+.brief-cat-head.has-streak { grid-template-columns: 8px 22px 22px 26px 22px 22px 18px 90px 22px 44px 28px 32px 22px 22px 120px; }
 .bc-streak.up, .bc-nstreak.up { color: var(--up); font-weight: 600; }
 .bc-streak.down, .bc-nstreak.down { color: var(--down); font-weight: 600; }
 /* batch61：全球信息页（currentPage!=='news'）下「序/增/数」排序按钮被 v-if 隐藏，
@@ -2117,12 +2117,10 @@ body {
 .brief-news-title { font-size: 12.5px; font-weight: 700; }
 .brief-item { padding: 6px 0; border-bottom: 1px dashed var(--border); }
 .brief-item:last-of-type { border-bottom: none; }
-/* 每日快讯：题材 / 概念 / 行业 三维度并排，各自按占比从大到小 */
+/* 每日快讯：概念 / 行业 两维度并排，各自按占比从大到小 */
 .brief-dims { display: flex; flex-wrap: wrap; align-items: flex-start; gap: 18px; }
-/* 混合宽度：观察篮(前天/昨天)窄、归类块(概念/行业)宽，flex 自动按视口换行；
- * 窄屏下每个块 min-width 触发换行，自然退化为堆叠，无需 grid 断点。 */
+/* 归类块(概念/行业)宽，flex 自动按视口换行；窄屏下每个块 min-width 触发换行，自然退化为堆叠。 */
 .brief-cat-group { flex: 1 1 320px; min-width: 300px; }
-.watch-group { flex: 0 1 210px; min-width: 175px; }
 /* batch26：归类表头去加粗（700 → 400） */
 .bcg-head { font-size: 13px; font-weight: 400; margin: 6px 0 4px; padding-bottom: 4px; border-bottom: 2px solid var(--border); }
 @media (max-width: 900px) { .brief-dims { gap: 14px; } }
@@ -2131,36 +2129,15 @@ body {
  * （已改为 flex 布局，原 grid-template-columns 断点不再适用，此处仅微调间距。） */
 @media (max-width: 1100px) { .brief-panel-top .brief-dims { gap: 14px; } }
 
-/* ===== 前天 / 昨天 观察篮（仅新闻追踪页·每日快讯面板） ===== */
-.bc-add { justify-self: center; min-width: 0; background: var(--surface); border: 1px solid var(--border); border-radius: 4px;
-  padding: 0 4px; height: 18px; line-height: 16px; font-size: 13px; color: var(--primary); cursor: pointer; font-weight: 700; }
-.bc-add:hover { background: var(--primary-light); border-color: var(--primary); }
-.watch-group { background: var(--surface-alt); border: 1px solid var(--border); border-radius: 8px; padding: 6px 8px; }
-.watch-group .bcg-head { border-bottom-color: var(--primary); color: var(--primary); }
-.watch-list { display: flex; flex-direction: column; gap: 4px; margin-top: 2px; }
-.watch-item { display: flex; align-items: center; gap: 4px; padding: 3px 4px; border-radius: 5px; background: var(--surface); border: 1px solid var(--border); font-size: 12px; }
-.watch-item:hover { background: var(--primary-light); }
-.watch-item.active { border-color: var(--primary); }
-.wi-icon { font-size: 12px; line-height: 1; }
-.wi-name { flex: 1 1 auto; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; cursor: pointer; font-weight: 500; }
-.wi-streak, .wi-nstreak { font-variant-numeric: tabular-nums; font-weight: 600; }
-.wi-streak.up, .wi-nstreak.up { color: var(--up); }
-.wi-streak.down, .wi-nstreak.down { color: var(--down); }
-.wi-pct { color: var(--text-placeholder); font-variant-numeric: tabular-nums; }
-.wi-stocks { background: transparent; border: 1px solid var(--border); border-radius: 4px; padding: 0 4px; cursor: pointer; font-size: 11px; line-height: 1.4; }
-.wi-stocks:hover { background: var(--primary-light); border-color: var(--primary); }
-.wi-del { background: transparent; border: 1px solid var(--border); border-radius: 4px; padding: 0 4px; cursor: pointer; color: var(--text-placeholder); font-size: 11px; line-height: 1.4; }
-.wi-del:hover { background: rgba(220,38,38,.1); border-color: #dc2626; color: #dc2626; }
-.watch-empty { line-height: 1.5; padding: 2px 0; }
-/* ＋ 弹层（fixed 定位，挂在新闻追踪每日快讯面板内） */
-.pop-overlay { position: fixed; inset: 0; z-index: 90; background: transparent; }
-.watch-add-pop { position: fixed; z-index: 91; min-width: 150px; background: var(--surface); border: 1px solid var(--border);
-  border-radius: 8px; box-shadow: 0 6px 20px rgba(0,0,0,.18); padding: 8px; display: flex; flex-direction: column; gap: 5px; }
-.wap-title { font-size: 12px; color: var(--text-secondary); margin-bottom: 2px; }
-.wap-btn { border: 1px solid var(--border); background: var(--surface); border-radius: 5px; padding: 5px 8px; cursor: pointer;
-  font-size: 12.5px; color: var(--text-strong); text-align: left; }
-.wap-btn:hover { background: var(--primary-light); border-color: var(--primary); color: var(--primary); }
-.wap-cancel { color: var(--text-placeholder); }
+/* ===== 概念/行业归类行最右侧：颜色标注 + 备注（仅新闻追踪页每日快讯面板） ===== */
+.bc-color { justify-self: center; width: 18px; height: 18px; border-radius: 50%; border: 1px solid var(--border);
+  background-clip: padding-box; cursor: pointer; overflow: hidden; position: relative; padding: 0; }
+.bc-color input[type="color"] { position: absolute; inset: -4px; width: 200%; height: 200%; border: none; padding: 0;
+  background: transparent; cursor: pointer; opacity: 0; }
+.bc-color:hover { border-color: var(--primary); }
+.bc-note { width: 100%; min-width: 0; max-width: 118px; height: 20px; font-size: 12px; line-height: 1.4;
+  padding: 1px 5px; border: 1px solid var(--border); border-radius: 4px; background: var(--surface); color: var(--text); }
+.bc-note:focus { outline: none; border-color: var(--primary); background: var(--surface); }
 
 .brief-item-meta { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; margin-bottom: 3px; }
 .brief-time { font-size: 11.5px; color: var(--text-placeholder); font-variant-numeric: tabular-nums; }

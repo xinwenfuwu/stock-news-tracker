@@ -6526,6 +6526,8 @@ const app = createApp({
       const base = (typeof HotTopics !== 'undefined' && HotTopics.briefStats) ? HotTopics.briefStats(items, mode) : [];
       const pv = prevStats.value;
       const ls = lastStats.value;
+      // 读取 catMeta（响应式，颜色/备注变更时本 computed 会重排）
+      const meta = (Store.data && Store.data.catMeta) || {};
       const enriched = base.map((c, i) => {
         const seq = i + 1;
         // batch73：「昨」= 该子类在上一个默认闭市周期窗口内的最终排名（无数据则 null → 界面显示「—」）
@@ -6539,6 +6541,7 @@ const app = createApp({
         // 天 / 闻：板块连涨连跌天数、新闻热度连升连降天数（供排序与展示；响应式读取以触发重排）
         const sk = boardStreak[mode + '::' + c.key];
         const nk = newsStreak[mode + '::' + c.key];
+        const mk = meta[c.key] || {};
         return Object.assign({}, c, {
           seq: seq, inc: inc, cnt: cnt, prevSeq: prevSeq, prevCnt: prevCnt,
           streak: sk ? (sk.state === 'done' ? sk.value : null) : null,
@@ -6546,7 +6549,9 @@ const app = createApp({
           streakLoading: sk ? sk.state === 'loading' : false,
           newsStreak: nk ? (nk.state === 'done' ? nk.value : null) : null,
           newsStreakNa: nk ? nk.state === 'na' : false,
-          newsStreakLoading: nk ? nk.state === 'loading' : false
+          newsStreakLoading: nk ? nk.state === 'loading' : false,
+          userColor: mk.color || '',
+          note: mk.note || ''
         });
       });
       const f = briefCatSort.field, dir = briefCatSort.dir === 'asc' ? 1 : -1;
@@ -6704,77 +6709,24 @@ const app = createApp({
         refreshStreaks();
       }, { flush: 'post' });
 
-    /* ===================== 前天 / 昨天 观察篮（仅新闻追踪页·每日快讯面板） =====================
-     * 在「概念归类 / 行业归类」子类行点 ＋，可把看好的子类加入「前天」或「昨天」观察篮，方便跨日跟踪。
-     * 数据持久化在 Store.data.watchCats（localStorage + Gist 同步），按 bucket 分为 before / yesterday。 */
-    function ensureWatchCats() {
-      if (!Store.data.watchCats) Store.data.watchCats = { before: [], yesterday: [] };
-      if (!Array.isArray(Store.data.watchCats.before)) Store.data.watchCats.before = [];
-      if (!Array.isArray(Store.data.watchCats.yesterday)) Store.data.watchCats.yesterday = [];
+    /* ===================== 子类标注「颜色 / 备注」（仅新闻追踪页·概念归类/行业归类行最右侧） =====================
+     * 数据持久化在 Store.data.catMeta（键 = `${dim}::${key}`，值为 {color, note}），localStorage + Gist 同步。 */
+    function ensureCatMeta() {
+      if (!Store.data.catMeta || typeof Store.data.catMeta !== 'object') Store.data.catMeta = {};
+      return Store.data.catMeta;
     }
-    function isWatched(bucket, dim, key) {
-      ensureWatchCats();
-      return Store.data.watchCats[bucket].some(x => x.dim === dim && x.key === key);
-    }
-    function addToWatch(bucket, cat) {
-      ensureWatchCats();
-      if (isWatched(bucket, cat.dim, cat.key)) return false;   // 同桶内去重
-      Store.data.watchCats[bucket].push({
-        id: Store.uid('w'),
-        dim: cat.dim,
-        key: cat.key,
-        name: cat.name,
-        icon: cat.icon || '',
-        addedAt: Date.now()
-      });
+    // key 即 briefStats 给出的稳定全键（如 'concept::机器人'），无需再拼 dim::
+    function setCatColor(key, color) {
+      const m = ensureCatMeta();
+      if (!m[key]) m[key] = {};
+      m[key].color = color;
       Store.saveNow();
-      return true;
     }
-    function removeFromWatch(bucket, id) {
-      ensureWatchCats();
-      const i = Store.data.watchCats[bucket].findIndex(x => x.id === id);
-      if (i >= 0) { Store.data.watchCats[bucket].splice(i, 1); Store.saveNow(); return true; }
-      return false;
-    }
-    // 把观察篮里的某条目，与「今日实时子类统计」合并（拿到最新的 数/占比/天/闻），今日已不存在的子类标 null
-    function mergeWatchRows(bucket) {
-      ensureWatchCats();
-      const arr = Store.data.watchCats[bucket] || [];
-      return arr.map(it => {
-        const live = it.dim === 'concept'
-          ? briefConceptStats.value.find(c => c.key === it.key)
-          : briefIndustryStats.value.find(c => c.key === it.key);
-        return live
-          ? Object.assign({}, it, { count: live.count, pct: live.pct, color: live.color, streak: live.streak, newsStreak: live.newsStreak, streakLoading: live.streakLoading, newsStreakLoading: live.newsStreakLoading })
-          : Object.assign({}, it, { count: null, pct: null, color: null, streak: null, newsStreak: null, streakLoading: false, newsStreakLoading: false });
-      });
-    }
-    const watchBeforeRows = computed(() => mergeWatchRows('before'));
-    const watchYesterdayRows = computed(() => mergeWatchRows('yesterday'));
-
-    // ＋ 弹层：点子类行 ＋ 弹出选择「前天 / 昨天」
-    const watchAddMenu = reactive({ open: false, dim: '', key: '', name: '', icon: '', top: 0, left: 0 });
-    function openWatchAdd(c, dim, ev) {
-      const r = (ev && ev.currentTarget) ? ev.currentTarget.getBoundingClientRect() : { bottom: 0, right: 0 };
-      watchAddMenu.open = true;
-      watchAddMenu.dim = dim;
-      watchAddMenu.key = c.key;
-      watchAddMenu.name = c.name;
-      watchAddMenu.icon = c.icon || '';
-      watchAddMenu.top = r.bottom + 4;
-      watchAddMenu.left = Math.max(8, r.right - 168);
-    }
-    function closeWatchAdd() { watchAddMenu.open = false; }
-    function addToWatchFromMenu(bucket) {
-      addToWatch(bucket, { dim: watchAddMenu.dim, key: watchAddMenu.key, name: watchAddMenu.name, icon: watchAddMenu.icon });
-      closeWatchAdd();
-    }
-    // 观察篮条目点 📊：优先用今日实时子类对象（带成分股），否则退回条目本身
-    function liveCatFor(w) {
-      const live = w.dim === 'concept'
-        ? briefConceptStats.value.find(c => c.key === w.key)
-        : briefIndustryStats.value.find(c => c.key === w.key);
-      return live || { key: w.key, name: w.name, icon: w.icon };
+    function setCatNote(key, note) {
+      const m = ensureCatMeta();
+      if (!m[key]) m[key] = {};
+      m[key].note = note;
+      Store.saveNow();
     }
 
     function autoLoadHotTopics() {
@@ -8979,9 +8931,8 @@ const app = createApp({
       briefFilter, briefFilterConcepts, openBriefFilter, cancelBriefFilter, confirmBriefFilter,
       // batch-new：连涨/连跌(天) 与 新闻连升/连降(闻)
       refreshStreaks, streakBusy, newsStreakBusy,
-      // 前天 / 昨天 观察篮（仅新闻追踪页·每日快讯面板）
-      watchBeforeRows, watchYesterdayRows, watchAddMenu,
-      openWatchAdd, closeWatchAdd, addToWatchFromMenu, removeFromWatch, isWatched, liveCatFor,
+      // 子类标注「颜色 / 备注」（仅新闻追踪页·概念归类/行业归类行最右侧）
+      setCatColor, setCatNote,
       loadHotData, fetchHotBoards, refreshHotStocks,
       refreshAmplitudeBoards, ampLoading, hotPanelsHidden, financePushHidden,
       // batch23（请求F）：六个子版块独立刷新按钮

@@ -30,7 +30,7 @@ const Store = {
       sectorPools: [],        // 概念/行业选股板块：[{id, name, bk, type, date, stocks: [...]}]
       favorites: [],          // 收藏股票：[{code, name, favDate, note}]
       conceptWatch: [],       // 收藏概念表：[{id, name, addDate, stocks:[{code,name,addPrice,curPrice,todayChange,sinceChange}]}]
-      watchCats: { before: [], yesterday: [] }, // 前天/昨天的「看好子类」观察篮：每项 {id, dim:'concept'|'industry', key, name, icon, addedAt}
+      catMeta: {},             // 子类标注：{ "概念归类::人工智能": { color:'#ff0000', note:'重点' }, ... }（概念/行业归类行右侧颜色与备注）
       holdings: {},            // 用户持仓：{ [username]: [{id, code, name, entryDate, entryPrice, currentPrice, shares, direction, fee, note, createdAt, updatedAt}] }
       holdingColWidths: {},    // 持仓页：各列宽度(px)，按列位置索引
       financePush: { url: '', locked: false }, // 财经推送：右侧嵌入的财经网址（锁定后持久化）
