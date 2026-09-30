@@ -984,6 +984,17 @@ body {
 }
 .btn-similar:disabled { opacity: .6; cursor: default; box-shadow: none; }
 
+/* 当日股票明细「存为板块」按钮：琥珀/暖橙，区别于刷新(中性)与同类(绿) */
+.btn-board {
+  background: linear-gradient(135deg, #f0883e, #f5a623);
+  color: #fff;
+  border: none;
+  font-weight: 600;
+  box-shadow: 0 2px 8px rgba(240, 136, 62, .32);
+}
+.btn-board:hover:not(:disabled) { filter: brightness(1.06); color: #fff; }
+.btn-board:disabled { opacity: .6; cursor: default; box-shadow: none; }
+
 /* ===== 同类股票结果面板 ===== */
 .similar-result {
   margin: 6px 0 14px;

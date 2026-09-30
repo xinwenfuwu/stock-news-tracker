@@ -6722,6 +6722,46 @@ const app = createApp({
         }
       }
     }
+    /**
+     * 新闻追踪页「当日股票明细」工具栏「存为板块」按钮：
+     * 把当前明细表（已按查询/排序后的 dailyStockRows）里的股票，作为子版块保存到「我的概念选股板块」。
+     * 去重按代码；自动命名（子类/板块名·明细，否则 当日股票明细 + 时间戳），可到板块页改名。
+     */
+    function saveDailyAsSectorBoard() {
+      const rows = dailyStockRows.value || [];
+      if (!rows.length) { showToast('当前「当日股票明细」没有可保存的股票', 'error'); return; }
+      const seen = new Set();
+      const stocks = [];
+      for (const s of rows) {
+        const code = s.code;
+        if (!code || seen.has(code)) continue;
+        seen.add(code);
+        stocks.push({
+          code,
+          name: s.name || '',
+          dailyChange: (s.dailyChange != null) ? s.dailyChange
+            : (s.changePercent != null ? s.changePercent : null)
+        });
+      }
+      if (!stocks.length) { showToast('当前明细的股票缺少代码，无法保存', 'error'); return; }
+      const d = new Date();
+      const pad = (n) => String(n).padStart(2, '0');
+      const ts = `${d.getFullYear()}${pad(d.getMonth() + 1)}${pad(d.getDate())}-${pad(d.getHours())}${pad(d.getMinutes())}`;
+      let label = '当日股票明细';
+      let type = '当日明细';
+      if (briefCatActive.value) { label = briefCatActive.value + '·明细'; type = '子类明细'; }
+      else if (hotBoardActive.value) { label = hotBoardActive.value + '·明细'; type = '板块明细'; }
+      const sector = {
+        name: `${label}-${ts}`,
+        bk: 'DAILY_' + Date.now(),
+        type,
+        date: Store.today(),
+        stocks
+      };
+      Store.addSectorPool(sector);
+      recomputePoolAvg(sector);
+      showToast(`已保存「${sector.name}」共 ${stocks.length} 只到「我的概念选股板块」`, 'success');
+    }
     // 当前选中的热门板块名（用于高亮与表头提示）
     const hotBoardActive = ref('');
     const hotBoardLoading = ref(false);
@@ -8437,7 +8477,7 @@ const app = createApp({
       // batch24：命中标红（筛选板块表里把尾盘买入法命中的行标红）
       tailBuyHit, isTailBuyHit, clearTailBuyHits,
       hotSearchCode, hotSearchName, clearHotSearch,
-      dailyStockRefreshing, refreshDailyStockRows,
+      dailyStockRefreshing, refreshDailyStockRows, saveDailyAsSectorBoard,
       sortedHotStocks, hotSort, sortHotBy, hotSortIcon, removeHotStock,
       // batch55：每日快讯子类 → 成分股（新闻追踪页当日股票明细，独立于热门板块点击）+ 序/增/数 排序
       dailyStockRows, briefCatStocks, briefCatActive, briefCatLoading, briefCatIsFallback,
