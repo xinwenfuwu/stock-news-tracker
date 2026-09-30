@@ -2129,12 +2129,25 @@ body {
  * （已改为 flex 布局，原 grid-template-columns 断点不再适用，此处仅微调间距。） */
 @media (max-width: 1100px) { .brief-panel-top .brief-dims { gap: 14px; } }
 
-/* ===== 概念/行业归类行最右侧：颜色标注 + 备注（仅新闻追踪页每日快讯面板） ===== */
-.bc-color { justify-self: center; width: 18px; height: 18px; border-radius: 50%; border: 1px solid var(--border);
-  background-clip: padding-box; cursor: pointer; overflow: hidden; position: relative; padding: 0; }
-.bc-color input[type="color"] { position: absolute; inset: -4px; width: 200%; height: 200%; border: none; padding: 0;
-  background: transparent; cursor: pointer; opacity: 0; }
-.bc-color:hover { border-color: var(--primary); }
+/* ===== 概念/行业归类行最右侧：颜色标注（弹层：预设色板 + 自定义 + 消除）+ 备注（仅新闻追踪页每日快讯面板） ===== */
+.bc-color-wrap { position: relative; justify-self: center; }
+.bc-color { width: 18px; height: 18px; border-radius: 50%; border: 1px solid var(--border);
+  background-clip: padding-box; cursor: pointer; padding: 0; display: inline-block; }
+.bc-color:hover { border-color: var(--primary); box-shadow: 0 0 0 2px var(--primary-light); }
+.cat-color-pop { position: absolute; top: 22px; left: 50%; transform: translateX(-50%); z-index: 40;
+  background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 8px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, .18); width: 172px; }
+.ccp-presets { display: grid; grid-template-columns: repeat(9, 1fr); gap: 4px; margin-bottom: 8px; }
+.ccp-swatch { width: 100%; aspect-ratio: 1 / 1; border-radius: 4px; border: 1px solid rgba(0, 0, 0, .12);
+  cursor: pointer; padding: 0; transition: transform .08s ease; }
+.ccp-swatch:hover { transform: scale(1.14); }
+.ccp-row { display: flex; align-items: center; gap: 6px; font-size: 12px; }
+.ccp-label { color: var(--text-placeholder); white-space: nowrap; }
+.ccp-custom { width: 28px; height: 22px; padding: 0; border: 1px solid var(--border); border-radius: 4px;
+  background: var(--surface); cursor: pointer; }
+.ccp-clear { margin-left: auto; border: 1px solid var(--border); background: var(--surface); border-radius: 4px;
+  padding: 2px 8px; cursor: pointer; font-size: 12px; color: var(--text-strong); white-space: nowrap; }
+.ccp-clear:hover { border-color: var(--down); color: var(--down); }
 .bc-note { width: 100%; min-width: 0; max-width: 118px; height: 20px; font-size: 12px; line-height: 1.4;
   padding: 1px 5px; border: 1px solid var(--border); border-radius: 4px; background: var(--surface); color: var(--text); }
 .bc-note:focus { outline: none; border-color: var(--primary); background: var(--surface); }

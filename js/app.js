@@ -6728,6 +6728,25 @@ const app = createApp({
       m[key].note = note;
       Store.saveNow();
     }
+    // 颜色标注弹层：默认色板（常用预设色）+ 自定义取色 + 消除（还原为无色/默认）
+    const catColorPopKey = ref(null);
+    const catPresetColors = ['#ef4444', '#f97316', '#eab308', '#22c55e', '#06b6d4', '#3b82f6', '#8b5cf6', '#ec4899', '#64748b'];
+    function toggleCatColorPop(key) {
+      catColorPopKey.value = catColorPopKey.value === key ? null : key;
+    }
+    function closeCatColorPop() { catColorPopKey.value = null; }
+    // 选预设色后自动收起弹层
+    function pickPreset(key, color) {
+      setCatColor(key, color);
+      catColorPopKey.value = null;
+    }
+    // 子类颜色消除：清空自定义色，回到默认（无色）
+    function clearCatColor(key) {
+      const m = ensureCatMeta();
+      if (m[key]) m[key].color = '';
+      Store.saveNow();
+      catColorPopKey.value = null;
+    }
 
     function autoLoadHotTopics() {
       if (_hotTopicsLoaded || hotTopicsSources.value.length || hotTopicsLoading.value) return;
@@ -8254,6 +8273,8 @@ const app = createApp({
     }
 
     onMounted(() => {
+      // 颜色标注弹层：点击页面其它区域时收起
+      document.addEventListener('click', closeCatColorPop);
       // batch57：防御浏览器「表单自动填充 / 会话恢复」把上次搜过的关键词回填进搜索框。
       // 业务上 briefKeyword 默认就是空，这里挂载时再强行清一次，保证两个每日快讯搜索框在任意设备都默认为空。
       try { briefKeyword.value = ''; } catch (e) { /* ignore */ }
@@ -8932,7 +8953,7 @@ const app = createApp({
       // batch-new：连涨/连跌(天) 与 新闻连升/连降(闻)
       refreshStreaks, streakBusy, newsStreakBusy,
       // 子类标注「颜色 / 备注」（仅新闻追踪页·概念归类/行业归类行最右侧）
-      setCatColor, setCatNote,
+      setCatColor, setCatNote, catColorPopKey, catPresetColors, toggleCatColorPop, pickPreset, clearCatColor,
       loadHotData, fetchHotBoards, refreshHotStocks,
       refreshAmplitudeBoards, ampLoading, hotPanelsHidden, financePushHidden,
       // batch23（请求F）：六个子版块独立刷新按钮

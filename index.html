@@ -4,12 +4,12 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>股市信息分析系统</title>
-  <link rel="stylesheet" href="css/style.css?v=20260930f">
+  <link rel="stylesheet" href="css/style.css?v=20260930g">
   <!-- Vue 3 全局构建版（v3.4.21 · 自托管）
        原先走 unpkg.com CDN：国内网络对 unpkg 的连通性不稳定，一旦该请求长时间挂起，
        <head> 里的阻塞脚本会让整页停在白屏、后续 auth-boot.js 根本不会执行。
        改为同源托管后，启动链路不再依赖任何第三方 CDN。 -->
-  <script src="js/vue.global.prod.js?v=20260930f"></script>
+  <script src="js/vue.global.prod.js?v=20260930g"></script>
 </head>
 <body class="auth-locked">
   <!-- ===== 登录关卡：登录通过前业务脚本不会被加载 ===== -->
@@ -378,9 +378,19 @@
                     <span class="bc-count">{{ c.count }}</span>
                     <span class="bc-pct">{{ c.pct }}%</span>
                     <button type="button" class="bc-sort bc-cnt" v-if="currentPage === 'news'" @click.stop="sortByBriefField('cnt')" :title="'数 = 本次数量 − 上次最大数量'">{{ c.cnt==null?'—':c.cnt }}<i class="bsort" v-if="briefCatSort.field==='cnt'">{{ briefCatSort.dir==='asc'?'↑':'↓' }}</i></button>
-                    <label class="bc-color" v-if="currentPage === 'news'" :style="{ background: c.userColor || 'transparent' }" :title="c.userColor ? '当前标注色（点击修改）' : '点击设置标注色'">
-                      <input type="color" :value="c.userColor || '#ffffff'" @input="setCatColor(c.key, $event.target.value)" @click.stop>
-                    </label>
+                    <div class="bc-color-wrap" v-if="currentPage === 'news'">
+                      <button type="button" class="bc-color" :style="{ background: c.userColor || 'transparent' }" :title="c.userColor ? '当前标注色（点击选色 / 消除）' : '点击设置标注色'" @click.stop="toggleCatColorPop(c.key)"></button>
+                      <div class="cat-color-pop" v-if="catColorPopKey === c.key" @click.stop>
+                        <div class="ccp-presets">
+                          <button type="button" v-for="pc in catPresetColors" :key="pc" class="ccp-swatch" :style="{ background: pc }" :title="pc" @click.stop="pickPreset(c.key, pc)"></button>
+                        </div>
+                        <div class="ccp-row">
+                          <span class="ccp-label">自定义</span>
+                          <input type="color" class="ccp-custom" :value="c.userColor || '#ffffff'" @input="setCatColor(c.key, $event.target.value)">
+                          <button type="button" class="ccp-clear" @click.stop="clearCatColor(c.key)">✕ 消除</button>
+                        </div>
+                      </div>
+                    </div>
                     <input type="text" class="bc-note" v-if="currentPage === 'news'" :value="c.note || ''" @input="setCatNote(c.key, $event.target.value)" placeholder="备注" :title="'给「'+c.name+'」添加备注'">
                   </div>
                   <div class="brief-news" v-if="briefUi.open['concept::' + c.key]">
@@ -426,9 +436,19 @@
                     <span class="bc-count">{{ c.count }}</span>
                     <span class="bc-pct">{{ c.pct }}%</span>
                     <button type="button" class="bc-sort bc-cnt" v-if="currentPage === 'news'" @click.stop="sortByBriefField('cnt')" :title="'数 = 本次数量 − 上次最大数量'">{{ c.cnt==null?'—':c.cnt }}<i class="bsort" v-if="briefCatSort.field==='cnt'">{{ briefCatSort.dir==='asc'?'↑':'↓' }}</i></button>
-                    <label class="bc-color" v-if="currentPage === 'news'" :style="{ background: c.userColor || 'transparent' }" :title="c.userColor ? '当前标注色（点击修改）' : '点击设置标注色'">
-                      <input type="color" :value="c.userColor || '#ffffff'" @input="setCatColor(c.key, $event.target.value)" @click.stop>
-                    </label>
+                    <div class="bc-color-wrap" v-if="currentPage === 'news'">
+                      <button type="button" class="bc-color" :style="{ background: c.userColor || 'transparent' }" :title="c.userColor ? '当前标注色（点击选色 / 消除）' : '点击设置标注色'" @click.stop="toggleCatColorPop(c.key)"></button>
+                      <div class="cat-color-pop" v-if="catColorPopKey === c.key" @click.stop>
+                        <div class="ccp-presets">
+                          <button type="button" v-for="pc in catPresetColors" :key="pc" class="ccp-swatch" :style="{ background: pc }" :title="pc" @click.stop="pickPreset(c.key, pc)"></button>
+                        </div>
+                        <div class="ccp-row">
+                          <span class="ccp-label">自定义</span>
+                          <input type="color" class="ccp-custom" :value="c.userColor || '#ffffff'" @input="setCatColor(c.key, $event.target.value)">
+                          <button type="button" class="ccp-clear" @click.stop="clearCatColor(c.key)">✕ 消除</button>
+                        </div>
+                      </div>
+                    </div>
                     <input type="text" class="bc-note" v-if="currentPage === 'news'" :value="c.note || ''" @input="setCatNote(c.key, $event.target.value)" placeholder="备注" :title="'给「'+c.name+'」添加备注'">
                   </div>
                   <div class="brief-news" v-if="briefUi.open['industry::' + c.key]">
@@ -4624,12 +4644,12 @@
     </transition>
   </div>
 
-  <script src="js/auth.js?v=20260930f"></script>
-  <script src="js/auth-sync.js?v=20260930f"></script>
+  <script src="js/auth.js?v=20260930g"></script>
+  <script src="js/auth-sync.js?v=20260930g"></script>
   <!-- 边缘加速默认站点（batch37 治本：Cloudflare Worker 代理东财/腾讯，缓解 JSONP 限流误报）。
        若你所在地区 workers.dev 访问慢，可在「设置 → 行情加速地址」清空即恢复纯直连。 -->
   <script>window.__SNT_ACCEL__ = 'https://stock-edge.hui-zhou.workers.dev';</script>
-  <script src="js/auth-boot.js?v=20260930f"></script>
+  <script src="js/auth-boot.js?v=20260930g"></script>
   <!-- store / stock-api / hot-topics / app 由 auth-boot.js 在登录通过后动态装载，
        未登录时它们不会被下载，业务数据也不会进入内存 -->
 </body>
