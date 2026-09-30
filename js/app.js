@@ -6079,6 +6079,35 @@ const app = createApp({
         return [];
       }
     }
+    // 实时快讯直连抓取 + 5 分钟节流缓存（20260930i：不再依赖代理 Worker；格隆汇 v4 接口已放开 CORS *）
+    let _liveCache = [];
+    let _lastLiveFetchTs = 0;
+    let _liveJustFetched = false;
+    function resetLiveFetch() { _liveCache = []; _lastLiveFetchTs = 0; _liveJustFetched = false; }
+    function liveFetchInfo() { return { ts: _lastLiveFetchTs, cacheLen: _liveCache.length, ageSec: _lastLiveFetchTs ? Math.round((Date.now() - _lastLiveFetchTs) / 1000) : -1 }; }
+    const LIVE_THROTTLE_MS = 5 * 60 * 1000;   // 距上次实拉取超过 5 分钟才重新抓取，期间复用缓存
+    async function fetchLiveBriefsForWindow() {
+      if (briefSourceName.value !== '格隆汇') return [];
+      const now = Date.now();
+      _liveJustFetched = false;
+      if (_liveCache.length && now - _lastLiveFetchTs < LIVE_THROTTLE_MS) {
+        return _liveCache;   // 5 分钟内：直接复用，避免重复抓取
+      }
+      // 直连（CORS 已放开，无需代理）
+      let items = [];
+      try { items = await StockAPI.fetchGelonghuiLiveBriefsDirect(3, 30); } catch (e) { items = []; }
+      // 直连失败（极端网络）则回退代理（若已配）
+      if (!items.length) {
+        const proxyUrl = String((D.settings && D.settings.proxyUrl) || '')
+          .split(/[\s,;]+/).map(s => s.trim()).filter(Boolean)[0] || '';
+        if (proxyUrl) {
+          try { items = await StockAPI.fetchGelonghuiLiveBriefs(proxyUrl, 3); } catch (_) { items = []; }
+        }
+      }
+      if (items.length) { _liveCache = items; _lastLiveFetchTs = now; _liveJustFetched = true; }
+      return _liveCache;
+    }
+
     /**
      * 用户主动「刷新（闭市周期）」：重新拉取窗口跨越的那几天快讯（绕开浏览器缓存），
      * 合并后按时间过滤，只保留 [最近一个 15:00, 现在] 的新闻。
@@ -6108,18 +6137,14 @@ const app = createApp({
       briefPaused.value = false;
       _briefLoaded = true;
       try {
-        // 实时叠加：服务端快照由 GitHub 定时任务生成，schedule 常被 GitHub 延迟/丢槽（实测可滞后 6 小时+）。
-        // 窗口覆盖「最近」时（结束时间在近 2 小时内或未来），经代理叠加格隆汇实时快讯；
-        // 未配置代理 / 代理不可达 / 非格隆汇源 → 自动跳过，不影响快照展示。
-        const wantLive = briefSourceName.value === '格隆汇' && w.end.getTime() > Date.now() - 2 * 3600e3;
-        const proxyUrl = String((D.settings && D.settings.proxyUrl) || '')
-          .split(/[\s,;]+/).map(s => s.trim()).filter(Boolean)[0] || '';
-        const [chunks, liveItems] = await Promise.all([
-          Promise.all(days.map(d => fetchBriefsFile(d, briefSourceName.value))),
-          (wantLive && proxyUrl)
-            ? StockAPI.fetchGelonghuiLiveBriefs(proxyUrl, 3).catch(() => [])
-            : Promise.resolve([])
-        ]);
+        // 实时叠加（20260930i）：不再依赖 GitHub 定时任务与代理——
+        // 每次刷新时若距上次实拉取超过 5 分钟，浏览器直连格隆汇 v4 接口抓取最近快讯并叠加到窗口，
+        // 保证「最近时段」的快讯一条不漏；5 分钟内重复刷新复用缓存；直连失败则回退代理（若已配）。
+        const liveItems = await fetchLiveBriefsForWindow();
+        const chunks = await Promise.all(days.map(d => fetchBriefsFile(d, briefSourceName.value)));
+        if (_liveJustFetched && liveItems.length) {
+          showToast(`已实时拉取格隆汇最近 ${liveItems.length} 条快讯（5 分钟内刷新不再重复抓取）`, 'success');
+        }
         // 记录每个拉取日是否有数据（用于回退到「最近真正有数据的一天」）
         const daysWithData = [];
         chunks.forEach((list, i) => { if (list && list.length) daysWithData.push(days[i]); });
@@ -8981,6 +9006,7 @@ const app = createApp({
       refreshStreaks, streakBusy, newsStreakBusy,
       // 子类标注「颜色 / 备注」（仅新闻追踪页·概念归类/行业归类行最右侧）
       setCatColor, setCatNote, catColorPopKey, catPresetColors, toggleCatColorPop, pickPreset, clearCatColor,
+      fetchLiveBriefsForWindow, resetLiveFetch, liveFetchInfo,
       loadHotData, fetchHotBoards, refreshHotStocks,
       refreshAmplitudeBoards, ampLoading, hotPanelsHidden, financePushHidden,
       // batch23（请求F）：六个子版块独立刷新按钮

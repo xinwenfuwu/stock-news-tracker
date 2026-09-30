@@ -5704,42 +5704,74 @@ const StockAPI = {
     return { ok: true, date: today, sources, merged: merged.slice(0, 20) };
   },
 
-  /** 格隆汇实时快讯：经 Worker /proxy 转发其 v4 live 接口（与服务端定时抓取同一接口，条目带完整时间戳）。
-   *  背景：服务端快照由 GitHub 定时任务生成，schedule 经常被 GitHub 延迟/丢槽（实测可滞后 6 小时+），
-   *  新闻追踪页「按时间段刷新」需要最近几小时的条目时，用它叠加实时数据。
-   *  未配置代理返回 []；翻页按服务端同款游标（liveId = 上一页最小 id）；失败抛错由调用方兜底。 */
-  async fetchGelonghuiLiveBriefs(proxyUrl, maxPages = 3) {
-    const base = String(proxyUrl || '').trim().replace(/\/+$/, '');
-    if (!base) return [];
-    const GH = 'https://www.gelonghui.com/api/live-channels/all/lives/v4';
+  /** 把格隆汇 v4 live 的 result 数组映射成本应用的快讯条目（与服务端快照同一 time 口径）。 */
+  _mapGelonghuiV4Items(arr) {
+    const out = [];
+    if (!Array.isArray(arr)) return out;
+    for (const it of arr) {
+      const ts = Number(it.createTimestamp || 0);
+      const text = String(it.content || it.title || '').replace(/<[^>]+>/g, '').replace(/\s+/g, ' ').trim().slice(0, 200);
+      if (!ts || !text) continue;
+      // Unix 秒 → 北京时间 "YYYY-MM-DD HH:mm"（与服务端快照同一换算，保证窗口字符串比较口径一致）
+      const time = new Date((ts + 8 * 3600) * 1000).toISOString().slice(0, 16).replace('T', ' ');
+      out.push({
+        id: it.id, time, text,
+        url: it.route || '',
+        stocks: ((it.relatedStocks || []).map(s => s.name + '(' + s.code + ')')).filter(Boolean).slice(0, 4),
+        subjects: ((it.relatedInfos || []).map(s => s.name)).filter(Boolean).slice(0, 4),
+        cat: (typeof HotTopics !== 'undefined' && HotTopics.classify) ? HotTopics.classify(text) : '财经'
+      });
+    }
+    return out;
+  },
+
+  /** 翻页抓取格隆汇 v4 live（带游标），合并去重后返回。fetcher(u) 返回文本；不传则用浏览器直连（带 UA + 12s 超时）。 */
+  async _fetchGelonghuiV4Pages(buildUrl, maxPages, limit, fetcher) {
+    const fetchFn = fetcher || (async (u) => {
+      const ctrl = new AbortController();
+      const timer = setTimeout(() => ctrl.abort(), 12000);
+      try {
+        const resp = await fetch(u, { signal: ctrl.signal, cache: 'no-store', headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)' } });
+        if (!resp.ok) throw new Error('HTTP ' + resp.status);
+        return await resp.text();
+      } finally { clearTimeout(timer); }
+    });
     const out = [];
     let cursor = null;
     for (let p = 0; p < maxPages; p++) {
-      const u = GH + '?category=all' + (cursor != null ? '&liveId=' + cursor : '') + '&limit=15&timestamp=' + Date.now();
-      const txt = await this._proxyText(base + '/proxy?url=' + encodeURIComponent(u));
+      const u = buildUrl(cursor, limit);
+      const txt = await fetchFn(u);
       const j = JSON.parse(txt);
       const arr = (j && j.result) || [];
       if (!Array.isArray(arr) || !arr.length) break;
-      for (const it of arr) {
-        const ts = Number(it.createTimestamp || 0);
-        const text = String(it.content || it.title || '').replace(/<[^>]+>/g, '').replace(/\s+/g, ' ').trim().slice(0, 200);
-        if (!ts || !text) continue;
-        // Unix 秒 → 北京时间 "YYYY-MM-DD HH:mm"（与服务端快照同一换算，保证窗口字符串比较口径一致）
-        const time = new Date((ts + 8 * 3600) * 1000).toISOString().slice(0, 16).replace('T', ' ');
-        out.push({
-          id: it.id, time, text,
-          url: it.route || '',
-          stocks: ((it.relatedStocks || []).map(s => s.name + '(' + s.code + ')')).filter(Boolean).slice(0, 4),
-          subjects: ((it.relatedInfos || []).map(s => s.name)).filter(Boolean).slice(0, 4),
-          cat: (typeof HotTopics !== 'undefined' && HotTopics.classify) ? HotTopics.classify(text) : '财经'
-        });
-      }
+      out.push(...this._mapGelonghuiV4Items(arr));
       const ids = arr.map(x => Number(x.id)).filter(n => !isNaN(n));
       if (!ids.length) break;
       cursor = Math.min.apply(null, ids);
     }
-    // 翻页偶有重叠，按 id 去重
     return out.filter((v, i, a) => a.findIndex(x => String(x.id) === String(v.id)) === i);
+  },
+
+  /** 格隆汇实时快讯（浏览器直连，无需任何代理）：格隆汇 v4 接口已放开 CORS（access-control-allow-origin: *），
+   *  故刷新「按时间段」时可直接抓取最近快讯叠加到窗口，秒级新鲜、不依赖 GitHub 定时任务，也不会漏掉最近时段的快讯。
+   *  翻页按服务端同款游标（liveId = 上一页最小 id）；单次失败抛错由调用方兜底。 */
+  async fetchGelonghuiLiveBriefsDirect(maxPages = 3, limit = 30) {
+    const GH = 'https://www.gelonghui.com/api/live-channels/all/lives/v4';
+    return this._fetchGelonghuiV4Pages((cursor) =>
+      GH + '?category=all' + (cursor != null ? '&liveId=' + cursor : '') + '&limit=' + limit + '&timestamp=' + Date.now()
+    , maxPages, limit);
+  },
+
+  /** 格隆汇实时快讯（经 Worker /proxy 转发，作为直连的回退路径）：仅当直连失败时、且用户已配代理才用。
+   *  未配置代理返回 []；翻页按服务端同款游标。 */
+  async fetchGelonghuiLiveBriefs(proxyUrl, maxPages = 3) {
+    const base = String(proxyUrl || '').trim().replace(/\/+$/, '');
+    if (!base) return [];
+    const GH = 'https://www.gelonghui.com/api/live-channels/all/lives/v4';
+    const fetchVia = (u) => this._proxyText(base + '/proxy?url=' + encodeURIComponent(u));
+    return this._fetchGelonghuiV4Pages((cursor) =>
+      GH + '?category=all' + (cursor != null ? '&liveId=' + cursor : '') + '&limit=15&timestamp=' + Date.now()
+    , maxPages, 15, fetchVia);
   },
 
   /** 经代理取文本（12s 超时，非 2xx 直接抛错） */
