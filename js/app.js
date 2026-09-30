@@ -6345,7 +6345,54 @@ const app = createApp({
     // 请求令牌：加载未完成时用户再点别的子类，新点击应立刻生效（后点覆盖先点），
     // 旧请求的结果作废，不再写回 —— 修复「加载中点击被静默吞掉」的旧行为。
     let briefCatToken = 0;
-    async function openBriefCat(cat, mode) {
+    /** 按维度+名称在三个归类子类列表里找回分类对象（用于「概念选择」里叠加的其它子类） */
+    function findBriefCatByKey(dim, name) {
+      const src = dim === 'theme' ? briefThemeStats.value
+        : dim === 'concept' ? briefConceptStats.value
+        : briefIndustryStats.value;
+      return (src || []).find(c => c.name === name) || null;
+    }
+    /** 收集某子类新闻里关联的股票代码（板块解析失败时的回退来源） */
+    function collectCatNewsCodes(cat) {
+      const codes = []; const seen = new Set();
+      (cat.news || []).forEach(n => (n.stocks || []).forEach(st => { if (!seen.has(st)) { seen.add(st); codes.push(st); } }));
+      return codes;
+    }
+    /** 多个成分股列表按 并集 / 交集 合并（按代码去重） */
+    function combineStockLists(lists, mode) {
+      if (mode === 'intersect') {
+        if (!lists.length) return [];
+        const sets = lists.map(l => new Set(l.map(s => s.code)));
+        const first = sets[0];
+        const inter = [...first].filter(code => sets.every(s => s.has(code)));
+        const byCode = new Map(lists[0].map(s => [s.code, s]));
+        return inter.map(code => byCode.get(code)).filter(Boolean);
+      }
+      const map = new Map();
+      for (const l of lists) for (const s of l) if (s && s.code && !map.has(s.code)) map.set(s.code, s);
+      return [...map.values()];
+    }
+    /** 按「去除类」剔除（no301/no688/noBj/noST），参数化避免污染热门板块共用的 hotExclude */
+    function briefExcluded(s, ex) {
+      const code = String(s.code || '');
+      const name = String(s.name || '');
+      if (ex.no301 && /^301/.test(code)) return true;
+      if (ex.no688 && /^688/.test(code)) return true;
+      if (ex.noBj  && /^(4|8|92)/.test(code)) return true;
+      if (ex.noST  && /ST/i.test(name)) return true;
+      return false;
+    }
+    /**
+     * 子类 → 成分股（新闻追踪页当日股票明细，独立于热门板块点击）。
+     * opts.concepts：弹框里额外勾选的其它归类子类（key 格式 dim::name），与当前点击子类合并。
+     * opts.combine：'union'（并集）/ 'intersect'（交集）。
+     * opts.exclude：{ no301, no688, noBj, noST } 去除类。
+     */
+    async function openBriefCat(cat, dim, opts) {
+      opts = opts || {};
+      const ex = opts.exclude || {};
+      const extra = opts.concepts || [];
+      const combine = opts.combine || 'union';
       if (!cat) return;
       // batch71：兜底类（其他题材/其他概念/其他行业）无对应板块，直接提示其新闻数，避免用数百条新闻关联股票造成噪音
       if (cat.key === HotTopics.BRIEF_OTHER_KEY) {
@@ -6362,36 +6409,54 @@ const app = createApp({
       briefCatIsFallback.value = false;
       showToast(`正在获取「${cat.name}」成分股...`, 'info');
       try {
-        const bk = await resolveCatBoard(cat);
-        if (my !== briefCatToken) return;   // 已被更新的点击取代，直接放弃旧结果
-        if (bk) {
-          const all = await StockAPI.getSectorStocks(bk, cat.name);
-          if (all && all.length) {
-            const list = all.filter(s => !hotExcluded({ code: s.code, name: s.name }));
-            const removed = all.length - list.length;
-            briefCatStocks.value = list.map(s => {
-              const ns = _newStock(s);
-              ns.dailyChange = s.changePercent;
-              ns.todayPrice = s.price;
-              return ns;
-            });
-            await enrichStockList(briefCatStocks.value);
-            showToast(`已载入「${cat.name}」${briefCatStocks.value.length} 只成分股` + (removed ? `（已剔除 ${removed} 只）` : ''), 'success');
-            return;
-          }
+        // 收集要载入的板块：主板块（当前点击）+ 弹框里额外勾选的概念板块
+        const targets = [{ cat, dim }];
+        for (const key of extra) {
+          const i = key.indexOf('::');
+          const cdim = i < 0 ? dim : key.slice(0, i);
+          const cname = i < 0 ? key : key.slice(i + 2);
+          const c = findBriefCatByKey(cdim, cname);
+          if (c) targets.push({ cat: c, dim: cdim });
         }
-        // 回退：用该子类新闻里关联的股票
-        const codes = []; const seen = new Set();
-        (cat.news || []).forEach(n => (n.stocks || []).forEach(st => { if (!seen.has(st)) { seen.add(st); codes.push(st); } }));
-        if (codes.length) {
-          briefCatStocks.value = codes.map(c => _newStock({ code: c, name: '' }));
-          await enrichStockList(briefCatStocks.value);
-          briefCatIsFallback.value = true;
-          showToast(`未找到「${cat.name}」对应板块，已用新闻关联股票代替（${codes.length} 只）`, 'warn');
-        } else {
+        const lists = [];
+        const fallbackCodes = [];
+        for (const t of targets) {
+          const bk = await resolveCatBoard(t.cat);
+          if (my !== briefCatToken) return;   // 已被更新的点击取代，直接放弃旧结果
+          if (bk) {
+            const all = await StockAPI.getSectorStocks(bk, t.cat.name);
+            if (my !== briefCatToken) return;
+            if (all && all.length) { lists.push(all); continue; }
+          }
+          const codes = collectCatNewsCodes(t.cat);
+          if (codes.length) fallbackCodes.push(...codes);
+        }
+        if (!lists.length && !fallbackCodes.length) {
           briefCatStocks.value = [];
           showToast(`「${cat.name}」暂无成分股数据`, 'error');
+          return;
         }
+        // 合并多个板块成分股（并集/交集），再按「去除类」剔除
+        let merged;
+        if (lists.length) {
+          merged = combineStockLists(lists, combine);
+        } else {
+          const seenF = new Set(); const fb = [];
+          for (const c of fallbackCodes) { if (!seenF.has(c)) { seenF.add(c); fb.push({ code: c, name: '' }); } }
+          merged = fb;
+        }
+        const before = merged.length;
+        const kept = merged.filter(s => !briefExcluded(s, ex));
+        const removed = before - kept.length;
+        briefCatStocks.value = kept.map(s => {
+          const ns = _newStock(s);
+          ns.dailyChange = s.changePercent;
+          ns.todayPrice = s.price;
+          return ns;
+        });
+        briefCatIsFallback.value = (lists.length === 0 && fallbackCodes.length > 0);
+        await enrichStockList(briefCatStocks.value);
+        showToast(`已载入「${cat.name}」${briefCatStocks.value.length} 只成分股` + (removed ? `（已剔除 ${removed} 只）` : ''), 'success');
       } catch (e) {
         if (my === briefCatToken) {
           console.warn('子类成分股获取失败', e);
@@ -6403,6 +6468,46 @@ const app = createApp({
       }
     }
     function clearBriefCat() { briefCatActive.value = ''; briefCatStocks.value = []; }
+
+    /* ===================== 子类点击 → 先弹筛选框（去除类 + 概念选择 并集/交集） ===================== */
+    const briefFilter = reactive({
+      show: false, cat: null, dim: '',
+      no301: false, no688: false, noBj: false, noST: false,   // 去除类（跨会话记忆）
+      concepts: [], combine: 'union'                            // 概念选择：额外子类（dim::name）+ 合并方式
+    });
+    /** 弹框里「概念选择」可勾选的子类列表：排除当前正在点击的子类本身 */
+    const briefFilterConcepts = computed(() => {
+      const curDim = briefFilter.dim, curName = briefFilter.cat ? briefFilter.cat.name : '';
+      const pick = (arr, d) => (arr.value || [])
+        .filter(c => !(d === curDim && c.name === curName))
+        .map(c => ({ dim: d, name: c.name, count: c.count }));
+      return {
+        theme:    pick(briefThemeStats, 'theme'),
+        concept:  pick(briefConceptStats, 'concept'),
+        industry: pick(briefIndustryStats, 'industry')
+      };
+    });
+    /** 点击子类名/📊：不再立即载入，而是弹出筛选框 */
+    function openBriefFilter(c, dim) {
+      if (!c) return;
+      briefFilter.cat = c;
+      briefFilter.dim = dim;
+      briefFilter.concepts = [];
+      briefFilter.combine = 'union';
+      // 去除类保留上次选择（与热门板块载入前筛选一致的跨会话记忆）
+      briefFilter.show = true;
+    }
+    function cancelBriefFilter() { briefFilter.show = false; briefFilter.cat = null; }
+    /** 弹框「应用并载入」：把筛选条件交给 openBriefCat 真正加载成分股 */
+    function confirmBriefFilter() {
+      const cat = briefFilter.cat, dim = briefFilter.dim;
+      const exclude = { no301: briefFilter.no301, no688: briefFilter.no688, noBj: briefFilter.noBj, noST: briefFilter.noST };
+      const concepts = briefFilter.concepts.slice();
+      const combine = briefFilter.combine;
+      briefFilter.show = false;
+      briefFilter.cat = null;
+      openBriefCat(cat, dim, { exclude, concepts, combine });
+    }
 
     /* ===================== 子类排序字段 序/增/数（及占比）一键排序 ===================== */
     const briefCatSort = reactive({ field: 'seq', dir: 'asc' });   // 默认按今(序)升序（名次 1 在最前，与「占比由大到小」同向）
@@ -8653,6 +8758,7 @@ const app = createApp({
       // batch55：每日快讯子类 → 成分股（新闻追踪页当日股票明细，独立于热门板块点击）+ 序/增/数 排序
       dailyStockRows, briefCatStocks, briefCatActive, briefCatLoading, briefCatIsFallback,
       openBriefCat, clearBriefCat, briefCatSort, sortByBriefField, prevBriefLoading,
+      briefFilter, briefFilterConcepts, openBriefFilter, cancelBriefFilter, confirmBriefFilter,
       loadHotData, fetchHotBoards, refreshHotStocks,
       refreshAmplitudeBoards, ampLoading, hotPanelsHidden, financePushHidden,
       // batch23（请求F）：六个子版块独立刷新按钮

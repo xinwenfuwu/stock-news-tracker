@@ -4,12 +4,12 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>股市信息分析系统</title>
-  <link rel="stylesheet" href="css/style.css?v=20260930b">
+  <link rel="stylesheet" href="css/style.css?v=20260930c">
   <!-- Vue 3 全局构建版（v3.4.21 · 自托管）
        原先走 unpkg.com CDN：国内网络对 unpkg 的连通性不稳定，一旦该请求长时间挂起，
        <head> 里的阻塞脚本会让整页停在白屏、后续 auth-boot.js 根本不会执行。
        改为同源托管后，启动链路不再依赖任何第三方 CDN。 -->
-  <script src="js/vue.global.prod.js?v=20260930b"></script>
+  <script src="js/vue.global.prod.js?v=20260930c"></script>
 </head>
 <body class="auth-locked">
   <!-- ===== 登录关卡：登录通过前业务脚本不会被加载 ===== -->
@@ -367,8 +367,8 @@
                     <button type="button" class="bc-sort bc-prev" v-if="currentPage === 'news'" @click.stop="sortByBriefField('prevSeq')" :title="'昨 = 上一个默认闭市周期内该概念的最终排名（点按排序）'">{{ c.prevSeq != null ? c.prevSeq : '—' }}<i class="bsort" v-if="briefCatSort.field==='prevSeq'">{{ briefCatSort.dir==='asc'?'↑':'↓' }}</i></button>
                     <button type="button" class="bc-sort bc-seq" v-if="currentPage === 'news'" @click.stop="sortByBriefField('seq')" :title="'今 = 当前窗口按新闻数占比降序的排名'">{{ c.seq }}<i class="bsort" v-if="briefCatSort.field==='seq'">{{ briefCatSort.dir==='asc'?'↑':'↓' }}</i></button>
                     <span class="bc-icon">{{ c.icon }}</span>
-                    <span class="bc-name" @click.stop="openBriefCat(c, 'theme')" :title="'点击查看「'+c.name+'」成分股'">{{ c.name }}</span>
-                    <button type="button" class="bc-stocks" v-if="currentPage === 'news'" @click.stop="openBriefCat(c, 'theme')" title="在下方「当日股票明细」展示成分股">📊</button>
+                    <span class="bc-name" @click.stop="openBriefFilter(c, 'theme')" :title="'点击查看「'+c.name+'」成分股'">{{ c.name }}</span>
+                    <button type="button" class="bc-stocks" v-if="currentPage === 'news'" @click.stop="openBriefFilter(c, 'theme')" title="在下方「当日股票明细」展示成分股">📊</button>
                     <span class="bc-track"><span class="bc-fill" :style="{ width: c.width + '%', background: c.color }"></span></span>
                     <span class="bc-count">{{ c.count }}</span>
                     <span class="bc-pct">{{ c.pct }}%</span>
@@ -437,8 +437,8 @@
                     <button type="button" class="bc-sort bc-prev" v-if="currentPage === 'news'" @click.stop="sortByBriefField('prevSeq')" :title="'昨 = 上一个默认闭市周期内该概念的最终排名（点按排序）'">{{ c.prevSeq != null ? c.prevSeq : '—' }}<i class="bsort" v-if="briefCatSort.field==='prevSeq'">{{ briefCatSort.dir==='asc'?'↑':'↓' }}</i></button>
                     <button type="button" class="bc-sort bc-seq" v-if="currentPage === 'news'" @click.stop="sortByBriefField('seq')" :title="'今 = 当前窗口按新闻数占比降序的排名'">{{ c.seq }}<i class="bsort" v-if="briefCatSort.field==='seq'">{{ briefCatSort.dir==='asc'?'↑':'↓' }}</i></button>
                     <span class="bc-icon">{{ c.icon }}</span>
-                    <span class="bc-name" @click.stop="openBriefCat(c, 'concept')" :title="'点击查看「'+c.name+'」成分股'">{{ c.name }}</span>
-                    <button type="button" class="bc-stocks" v-if="currentPage === 'news'" @click.stop="openBriefCat(c, 'concept')" title="在下方「当日股票明细」展示成分股">📊</button>
+                    <span class="bc-name" @click.stop="openBriefFilter(c, 'concept')" :title="'点击查看「'+c.name+'」成分股'">{{ c.name }}</span>
+                    <button type="button" class="bc-stocks" v-if="currentPage === 'news'" @click.stop="openBriefFilter(c, 'concept')" title="在下方「当日股票明细」展示成分股">📊</button>
                     <span class="bc-track"><span class="bc-fill" :style="{ width: c.width + '%', background: c.color }"></span></span>
                     <span class="bc-count">{{ c.count }}</span>
                     <span class="bc-pct">{{ c.pct }}%</span>
@@ -479,8 +479,8 @@
                     <button type="button" class="bc-sort bc-prev" v-if="currentPage === 'news'" @click.stop="sortByBriefField('prevSeq')" :title="'昨 = 上一个默认闭市周期内该概念的最终排名（点按排序）'">{{ c.prevSeq != null ? c.prevSeq : '—' }}<i class="bsort" v-if="briefCatSort.field==='prevSeq'">{{ briefCatSort.dir==='asc'?'↑':'↓' }}</i></button>
                     <button type="button" class="bc-sort bc-seq" v-if="currentPage === 'news'" @click.stop="sortByBriefField('seq')" :title="'今 = 当前窗口按新闻数占比降序的排名'">{{ c.seq }}<i class="bsort" v-if="briefCatSort.field==='seq'">{{ briefCatSort.dir==='asc'?'↑':'↓' }}</i></button>
                     <span class="bc-icon">{{ c.icon }}</span>
-                    <span class="bc-name" @click.stop="openBriefCat(c, 'industry')" :title="'点击查看「'+c.name+'」成分股'">{{ c.name }}</span>
-                    <button type="button" class="bc-stocks" v-if="currentPage === 'news'" @click.stop="openBriefCat(c, 'industry')" title="在下方「当日股票明细」展示成分股">📊</button>
+                    <span class="bc-name" @click.stop="openBriefFilter(c, 'industry')" :title="'点击查看「'+c.name+'」成分股'">{{ c.name }}</span>
+                    <button type="button" class="bc-stocks" v-if="currentPage === 'news'" @click.stop="openBriefFilter(c, 'industry')" title="在下方「当日股票明细」展示成分股">📊</button>
                     <span class="bc-track"><span class="bc-fill" :style="{ width: c.width + '%', background: c.color }"></span></span>
                     <span class="bc-count">{{ c.count }}</span>
                     <span class="bc-pct">{{ c.pct }}%</span>
@@ -2077,8 +2077,8 @@
                       <button type="button" class="bc-sort bc-prev" v-if="currentPage === 'news'" @click.stop="sortByBriefField('prevSeq')" :title="'昨 = 上一个默认闭市周期内该概念的最终排名（点按排序）'">{{ c.prevSeq != null ? c.prevSeq : '—' }}<i class="bsort" v-if="briefCatSort.field==='prevSeq'">{{ briefCatSort.dir==='asc'?'↑':'↓' }}</i></button>
                     <button type="button" class="bc-sort bc-seq" v-if="currentPage === 'news'" @click.stop="sortByBriefField('seq')" :title="'今 = 当前窗口按新闻数占比降序的排名'">{{ c.seq }}<i class="bsort" v-if="briefCatSort.field==='seq'">{{ briefCatSort.dir==='asc'?'↑':'↓' }}</i></button>
                       <span class="bc-icon">{{ c.icon }}</span>
-                      <span class="bc-name" @click.stop="openBriefCat(c, 'theme')" :title="'点击查看「'+c.name+'」成分股'">{{ c.name }}</span>
-                      <button type="button" class="bc-stocks" v-if="currentPage === 'news'" @click.stop="openBriefCat(c, 'theme')" title="在下方「当日股票明细」展示成分股">📊</button>
+                      <span class="bc-name" @click.stop="openBriefFilter(c, 'theme')" :title="'点击查看「'+c.name+'」成分股'">{{ c.name }}</span>
+                      <button type="button" class="bc-stocks" v-if="currentPage === 'news'" @click.stop="openBriefFilter(c, 'theme')" title="在下方「当日股票明细」展示成分股">📊</button>
                       <span class="bc-track"><span class="bc-fill" :style="{ width: c.width + '%', background: c.color }"></span></span>
                       <span class="bc-count">{{ c.count }}</span>
                       <span class="bc-pct">{{ c.pct }}%</span>
@@ -2147,8 +2147,8 @@
                       <button type="button" class="bc-sort bc-prev" v-if="currentPage === 'news'" @click.stop="sortByBriefField('prevSeq')" :title="'昨 = 上一个默认闭市周期内该概念的最终排名（点按排序）'">{{ c.prevSeq != null ? c.prevSeq : '—' }}<i class="bsort" v-if="briefCatSort.field==='prevSeq'">{{ briefCatSort.dir==='asc'?'↑':'↓' }}</i></button>
                     <button type="button" class="bc-sort bc-seq" v-if="currentPage === 'news'" @click.stop="sortByBriefField('seq')" :title="'今 = 当前窗口按新闻数占比降序的排名'">{{ c.seq }}<i class="bsort" v-if="briefCatSort.field==='seq'">{{ briefCatSort.dir==='asc'?'↑':'↓' }}</i></button>
                       <span class="bc-icon">{{ c.icon }}</span>
-                      <span class="bc-name" @click.stop="openBriefCat(c, 'concept')" :title="'点击查看「'+c.name+'」成分股'">{{ c.name }}</span>
-                      <button type="button" class="bc-stocks" v-if="currentPage === 'news'" @click.stop="openBriefCat(c, 'concept')" title="在下方「当日股票明细」展示成分股">📊</button>
+                      <span class="bc-name" @click.stop="openBriefFilter(c, 'concept')" :title="'点击查看「'+c.name+'」成分股'">{{ c.name }}</span>
+                      <button type="button" class="bc-stocks" v-if="currentPage === 'news'" @click.stop="openBriefFilter(c, 'concept')" title="在下方「当日股票明细」展示成分股">📊</button>
                       <span class="bc-track"><span class="bc-fill" :style="{ width: c.width + '%', background: c.color }"></span></span>
                       <span class="bc-count">{{ c.count }}</span>
                       <span class="bc-pct">{{ c.pct }}%</span>
@@ -2189,8 +2189,8 @@
                       <button type="button" class="bc-sort bc-prev" v-if="currentPage === 'news'" @click.stop="sortByBriefField('prevSeq')" :title="'昨 = 上一个默认闭市周期内该概念的最终排名（点按排序）'">{{ c.prevSeq != null ? c.prevSeq : '—' }}<i class="bsort" v-if="briefCatSort.field==='prevSeq'">{{ briefCatSort.dir==='asc'?'↑':'↓' }}</i></button>
                     <button type="button" class="bc-sort bc-seq" v-if="currentPage === 'news'" @click.stop="sortByBriefField('seq')" :title="'今 = 当前窗口按新闻数占比降序的排名'">{{ c.seq }}<i class="bsort" v-if="briefCatSort.field==='seq'">{{ briefCatSort.dir==='asc'?'↑':'↓' }}</i></button>
                       <span class="bc-icon">{{ c.icon }}</span>
-                      <span class="bc-name" @click.stop="openBriefCat(c, 'industry')" :title="'点击查看「'+c.name+'」成分股'">{{ c.name }}</span>
-                      <button type="button" class="bc-stocks" v-if="currentPage === 'news'" @click.stop="openBriefCat(c, 'industry')" title="在下方「当日股票明细」展示成分股">📊</button>
+                      <span class="bc-name" @click.stop="openBriefFilter(c, 'industry')" :title="'点击查看「'+c.name+'」成分股'">{{ c.name }}</span>
+                      <button type="button" class="bc-stocks" v-if="currentPage === 'news'" @click.stop="openBriefFilter(c, 'industry')" title="在下方「当日股票明细」展示成分股">📊</button>
                       <span class="bc-track"><span class="bc-fill" :style="{ width: c.width + '%', background: c.color }"></span></span>
                       <span class="bc-count">{{ c.count }}</span>
                       <span class="bc-pct">{{ c.pct }}%</span>
@@ -4082,6 +4082,86 @@
       </div>
     </div>
 
+    <!-- ===== 每日快讯子类：点击后先弹筛选框（去除类 + 概念选择 并集/交集），确认后才载入成分股 ===== -->
+    <div class="modal-overlay" v-if="briefFilter.show" @click.self="cancelBriefFilter">
+      <div class="modal hot-exclude-modal brief-filter-modal">
+        <div class="modal-header">
+          <h3>📊 子类成分股筛选</h3>
+          <button class="btn-icon" @click="cancelBriefFilter">✕</button>
+        </div>
+        <div class="modal-body">
+          <p class="muted small" style="margin-top:0">
+            即将载入：<b>{{ briefFilter.cat ? briefFilter.cat.name : '' }}</b> 的成分股；
+            先设置筛选条件，<b>确认后</b>才在「当日股票明细」中展示。
+          </p>
+
+          <div class="bf-section">
+            <div class="bf-sec-title">① 去除类（载入前剔除，避免逐一删除）</div>
+            <div class="hot-exclude-opts">
+              <label class="checkbox-label" title="剔除股票代码以 301 开头的股票">
+                <input type="checkbox" v-model="briefFilter.no301"> 去除301（301 开头）
+              </label>
+              <label class="checkbox-label" title="剔除股票代码以 688 开头的股票（科创板）">
+                <input type="checkbox" v-model="briefFilter.no688"> 去除688（688 开头）
+              </label>
+              <label class="checkbox-label" title="剔除北交所股票（4 / 8 / 92 开头）">
+                <input type="checkbox" v-model="briefFilter.noBj"> 去除北交所（4/8/92 开头）
+              </label>
+              <label class="checkbox-label" title="剔除股票名称含 ST / *ST 的股票">
+                <input type="checkbox" v-model="briefFilter.noST"> 去除ST（名称含 ST / *ST）
+              </label>
+            </div>
+          </div>
+
+          <div class="bf-section">
+            <div class="bf-sec-title">② 概念选择（叠加其它归类子类，与当前子类一并载入）</div>
+            <div class="bf-combine">
+              <label class="radio-label">
+                <input type="radio" value="union" v-model="briefFilter.combine"> 并集（合并所有勾选子类的成分股，去重）
+              </label>
+              <label class="radio-label">
+                <input type="radio" value="intersect" v-model="briefFilter.combine"> 交集（仅保留同时出现在所有勾选子类里的股票）
+              </label>
+            </div>
+            <div class="bf-concepts">
+              <template v-if="briefFilterConcepts.theme && briefFilterConcepts.theme.length">
+                <div class="bf-grp-title">题材（{{ briefFilterConcepts.theme.length }}）</div>
+                <div class="bf-chips">
+                  <label class="bf-chip" v-for="c in briefFilterConcepts.theme" :key="'t-'+c.name" :title="c.name+'（'+c.count+' 条）'">
+                    <input type="checkbox" :value="c.dim + '::' + c.name" v-model="briefFilter.concepts"> {{ c.name }}
+                  </label>
+                </div>
+              </template>
+              <template v-if="briefFilterConcepts.concept && briefFilterConcepts.concept.length">
+                <div class="bf-grp-title">概念（{{ briefFilterConcepts.concept.length }}）</div>
+                <div class="bf-chips">
+                  <label class="bf-chip" v-for="c in briefFilterConcepts.concept" :key="'c-'+c.name" :title="c.name+'（'+c.count+' 条）'">
+                    <input type="checkbox" :value="c.dim + '::' + c.name" v-model="briefFilter.concepts"> {{ c.name }}
+                  </label>
+                </div>
+              </template>
+              <template v-if="briefFilterConcepts.industry && briefFilterConcepts.industry.length">
+                <div class="bf-grp-title">行业（{{ briefFilterConcepts.industry.length }}）</div>
+                <div class="bf-chips">
+                  <label class="bf-chip" v-for="c in briefFilterConcepts.industry" :key="'i-'+c.name" :title="c.name+'（'+c.count+' 条）'">
+                    <input type="checkbox" :value="c.dim + '::' + c.name" v-model="briefFilter.concepts"> {{ c.name }}
+                  </label>
+                </div>
+              </template>
+              <div class="muted tiny" v-if="!briefFilterConcepts.theme.length && !briefFilterConcepts.concept.length && !briefFilterConcepts.industry.length">
+                当前暂无其它可叠加的子类。
+              </div>
+            </div>
+          </div>
+
+          <div class="modal-footer-actions">
+            <button class="btn" @click="cancelBriefFilter">取消</button>
+            <button class="btn btn-primary" @click="confirmBriefFilter">✅ 应用并载入</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- ===== 尾盘买入法：对 A 股全部股票筛选（筛选前弹窗提示 + 剔除规则） ===== -->
     <div class="modal-overlay" v-if="allAFilter.show" @click.self="cancelAllAFilter">
       <div class="modal hot-exclude-modal">
@@ -4599,12 +4679,12 @@
     </transition>
   </div>
 
-  <script src="js/auth.js?v=20260930b"></script>
-  <script src="js/auth-sync.js?v=20260930b"></script>
+  <script src="js/auth.js?v=20260930c"></script>
+  <script src="js/auth-sync.js?v=20260930c"></script>
   <!-- 边缘加速默认站点（batch37 治本：Cloudflare Worker 代理东财/腾讯，缓解 JSONP 限流误报）。
        若你所在地区 workers.dev 访问慢，可在「设置 → 行情加速地址」清空即恢复纯直连。 -->
   <script>window.__SNT_ACCEL__ = 'https://stock-edge.hui-zhou.workers.dev';</script>
-  <script src="js/auth-boot.js?v=20260930b"></script>
+  <script src="js/auth-boot.js?v=20260930c"></script>
   <!-- store / stock-api / hot-topics / app 由 auth-boot.js 在登录通过后动态装载，
        未登录时它们不会被下载，业务数据也不会进入内存 -->
 </body>
