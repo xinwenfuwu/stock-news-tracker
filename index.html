@@ -4,12 +4,12 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>股市信息分析系统</title>
-  <link rel="stylesheet" href="css/style.css?v=20260930c">
+  <link rel="stylesheet" href="css/style.css?v=20260930d">
   <!-- Vue 3 全局构建版（v3.4.21 · 自托管）
        原先走 unpkg.com CDN：国内网络对 unpkg 的连通性不稳定，一旦该请求长时间挂起，
        <head> 里的阻塞脚本会让整页停在白屏、后续 auth-boot.js 根本不会执行。
        改为同源托管后，启动链路不再依赖任何第三方 CDN。 -->
-  <script src="js/vue.global.prod.js?v=20260930c"></script>
+  <script src="js/vue.global.prod.js?v=20260930d"></script>
 </head>
 <body class="auth-locked">
   <!-- ===== 登录关卡：登录通过前业务脚本不会被加载 ===== -->
@@ -349,10 +349,13 @@
             <span class="muted small">子类排序：</span>
             <button type="button" :class="{ active: briefCatSort.field === 'prevSeq' }" @click="sortByBriefField('prevSeq')">昨</button>
             <button type="button" :class="{ active: briefCatSort.field === 'seq' }" @click="sortByBriefField('seq')">今</button>
+            <button type="button" :class="{ active: briefCatSort.field === 'streak' }" @click="sortByBriefField('streak')">天</button>
+            <button type="button" :class="{ active: briefCatSort.field === 'newsStreak' }" @click="sortByBriefField('newsStreak')">闻</button>
             <button type="button" :class="{ active: briefCatSort.field === 'inc' }" @click="sortByBriefField('inc')">增</button>
             <button type="button" :class="{ active: briefCatSort.field === 'cnt' }" @click="sortByBriefField('cnt')">数</button>
             <button type="button" :class="{ active: briefCatSort.field === 'pct' }" @click="sortByBriefField('pct')">占比</button>
             <span class="bsort-dir" v-if="briefCatSort.field !== 'pct'">{{ briefCatSort.dir === 'asc' ? '↑ 升序' : '↓ 降序' }}</span>
+            <button type="button" class="btn btn-sm" style="margin-left:10px" :disabled="streakBusy" @click="refreshStreaks" title="计算各子类板块连涨/连跌天数(天) 与 新闻热度连升/连降天数(闻)">📈 算连涨连跌<span v-if="streakBusy">…</span></button>
             <span class="muted small" style="margin-left:auto">点击子类名或 📊 查看成分股</span>
           </div>
           <div class="brief-dims" v-if="briefFiltered.length">
@@ -431,11 +434,13 @@
               <div class="bcg-head">💡 概念归类 <span class="muted small">{{ briefConceptStats.length }} 类</span></div>
               <div class="brief-cats" v-if="briefConceptStats.length">
                 <div class="brief-cat" v-for="c in briefConceptStats" :key="c.key">
-                  <div class="brief-cat-head" :class="{ active: briefUi.open['concept::' + c.key], 'no-sort': currentPage !== 'news' }">
+                  <div class="brief-cat-head has-streak" :class="{ active: briefUi.open['concept::' + c.key], 'no-sort': currentPage !== 'news' }">
                     <span class="bc-caret" @click.stop="toggleBriefCat(c.key, 'concept')">{{ briefUi.open['concept::' + c.key] ? '▾' : '▸' }}</span>
                     <button type="button" class="bc-sort bc-inc" v-if="currentPage === 'news'" @click.stop="sortByBriefField('inc')" :title="'增 = 昨 − 今（昨=上次闭市周期内排名）'">{{ c.inc==null?'—':(c.inc>0?'+':'')+c.inc }}<i class="bsort" v-if="briefCatSort.field==='inc'">{{ briefCatSort.dir==='asc'?'↑':'↓' }}</i></button>
                     <button type="button" class="bc-sort bc-prev" v-if="currentPage === 'news'" @click.stop="sortByBriefField('prevSeq')" :title="'昨 = 上一个默认闭市周期内该概念的最终排名（点按排序）'">{{ c.prevSeq != null ? c.prevSeq : '—' }}<i class="bsort" v-if="briefCatSort.field==='prevSeq'">{{ briefCatSort.dir==='asc'?'↑':'↓' }}</i></button>
                     <button type="button" class="bc-sort bc-seq" v-if="currentPage === 'news'" @click.stop="sortByBriefField('seq')" :title="'今 = 当前窗口按新闻数占比降序的排名'">{{ c.seq }}<i class="bsort" v-if="briefCatSort.field==='seq'">{{ briefCatSort.dir==='asc'?'↑':'↓' }}</i></button>
+                    <button type="button" class="bc-sort bc-streak" :class="c.streak>0?'up':(c.streak<0?'down':'')" v-if="currentPage === 'news'" @click.stop="sortByBriefField('streak')" :title="'天 = 该概念板块连涨/连跌天数（正=连涨，负=连跌；如 −2 = 连跌2天）'">{{ c.streakLoading ? '⏳' : (c.streakNa ? '—' : (c.streak==null?'…':(c.streak>0?'+':'')+c.streak)) }}<i class="bsort" v-if="briefCatSort.field==='streak'">{{ briefCatSort.dir==='asc'?'↑':'↓' }}</i></button>
+                    <button type="button" class="bc-sort bc-nstreak" :class="c.newsStreak>0?'up':(c.newsStreak<0?'down':'')" v-if="currentPage === 'news'" @click.stop="sortByBriefField('newsStreak')" :title="'闻 = 该概念新闻热度连升/连降天数（正=连升，负=连降）'">{{ c.newsStreakLoading ? '⏳' : (c.newsStreakNa ? '—' : (c.newsStreak==null?'…':(c.newsStreak>0?'+':'')+c.newsStreak)) }}<i class="bsort" v-if="briefCatSort.field==='newsStreak'">{{ briefCatSort.dir==='asc'?'↑':'↓' }}</i></button>
                     <span class="bc-icon">{{ c.icon }}</span>
                     <span class="bc-name" @click.stop="openBriefFilter(c, 'concept')" :title="'点击查看「'+c.name+'」成分股'">{{ c.name }}</span>
                     <button type="button" class="bc-stocks" v-if="currentPage === 'news'" @click.stop="openBriefFilter(c, 'concept')" title="在下方「当日股票明细」展示成分股">📊</button>
@@ -473,11 +478,13 @@
               <div class="bcg-head">🏭 行业归类 <span class="muted small">{{ briefIndustryStats.length }} 类</span></div>
               <div class="brief-cats" v-if="briefIndustryStats.length">
                 <div class="brief-cat" v-for="c in briefIndustryStats" :key="c.key">
-                  <div class="brief-cat-head" :class="{ active: briefUi.open['industry::' + c.key], 'no-sort': currentPage !== 'news' }">
+                  <div class="brief-cat-head has-streak" :class="{ active: briefUi.open['industry::' + c.key], 'no-sort': currentPage !== 'news' }">
                     <span class="bc-caret" @click.stop="toggleBriefCat(c.key, 'industry')">{{ briefUi.open['industry::' + c.key] ? '▾' : '▸' }}</span>
                     <button type="button" class="bc-sort bc-inc" v-if="currentPage === 'news'" @click.stop="sortByBriefField('inc')" :title="'增 = 昨 − 今（昨=上次闭市周期内排名）'">{{ c.inc==null?'—':(c.inc>0?'+':'')+c.inc }}<i class="bsort" v-if="briefCatSort.field==='inc'">{{ briefCatSort.dir==='asc'?'↑':'↓' }}</i></button>
                     <button type="button" class="bc-sort bc-prev" v-if="currentPage === 'news'" @click.stop="sortByBriefField('prevSeq')" :title="'昨 = 上一个默认闭市周期内该概念的最终排名（点按排序）'">{{ c.prevSeq != null ? c.prevSeq : '—' }}<i class="bsort" v-if="briefCatSort.field==='prevSeq'">{{ briefCatSort.dir==='asc'?'↑':'↓' }}</i></button>
                     <button type="button" class="bc-sort bc-seq" v-if="currentPage === 'news'" @click.stop="sortByBriefField('seq')" :title="'今 = 当前窗口按新闻数占比降序的排名'">{{ c.seq }}<i class="bsort" v-if="briefCatSort.field==='seq'">{{ briefCatSort.dir==='asc'?'↑':'↓' }}</i></button>
+                    <button type="button" class="bc-sort bc-streak" :class="c.streak>0?'up':(c.streak<0?'down':'')" v-if="currentPage === 'news'" @click.stop="sortByBriefField('streak')" :title="'天 = 该行业板块连涨/连跌天数（正=连涨，负=连跌；如 −2 = 连跌2天）'">{{ c.streakLoading ? '⏳' : (c.streakNa ? '—' : (c.streak==null?'…':(c.streak>0?'+':'')+c.streak)) }}<i class="bsort" v-if="briefCatSort.field==='streak'">{{ briefCatSort.dir==='asc'?'↑':'↓' }}</i></button>
+                    <button type="button" class="bc-sort bc-nstreak" :class="c.newsStreak>0?'up':(c.newsStreak<0?'down':'')" v-if="currentPage === 'news'" @click.stop="sortByBriefField('newsStreak')" :title="'闻 = 该行业新闻热度连升/连降天数（正=连升，负=连降）'">{{ c.newsStreakLoading ? '⏳' : (c.newsStreakNa ? '—' : (c.newsStreak==null?'…':(c.newsStreak>0?'+':'')+c.newsStreak)) }}<i class="bsort" v-if="briefCatSort.field==='newsStreak'">{{ briefCatSort.dir==='asc'?'↑':'↓' }}</i></button>
                     <span class="bc-icon">{{ c.icon }}</span>
                     <span class="bc-name" @click.stop="openBriefFilter(c, 'industry')" :title="'点击查看「'+c.name+'」成分股'">{{ c.name }}</span>
                     <button type="button" class="bc-stocks" v-if="currentPage === 'news'" @click.stop="openBriefFilter(c, 'industry')" title="在下方「当日股票明细」展示成分股">📊</button>
@@ -4679,12 +4686,12 @@
     </transition>
   </div>
 
-  <script src="js/auth.js?v=20260930c"></script>
-  <script src="js/auth-sync.js?v=20260930c"></script>
+  <script src="js/auth.js?v=20260930d"></script>
+  <script src="js/auth-sync.js?v=20260930d"></script>
   <!-- 边缘加速默认站点（batch37 治本：Cloudflare Worker 代理东财/腾讯，缓解 JSONP 限流误报）。
        若你所在地区 workers.dev 访问慢，可在「设置 → 行情加速地址」清空即恢复纯直连。 -->
   <script>window.__SNT_ACCEL__ = 'https://stock-edge.hui-zhou.workers.dev';</script>
-  <script src="js/auth-boot.js?v=20260930c"></script>
+  <script src="js/auth-boot.js?v=20260930d"></script>
   <!-- store / stock-api / hot-topics / app 由 auth-boot.js 在登录通过后动态装载，
        未登录时它们不会被下载，业务数据也不会进入内存 -->
 </body>

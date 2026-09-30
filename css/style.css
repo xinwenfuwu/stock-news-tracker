@@ -2052,6 +2052,12 @@ body {
 }
 .brief-cat-head:hover { background: var(--surface-alt); }
 .brief-cat-head.active { background: var(--primary-light); }
+/* batch-new：概念/行业归类行新增「天 / 闻」两列排序按钮（位于「今」右侧），网格扩为 13 列。
+ * 置于 .no-sort 之前，确保非新闻页（no-sort，6 列）仍覆盖本规则、布局不被破坏。
+ * 题材归类行不加 has-streak，沿用 11 列原布局。 */
+.brief-cat-head.has-streak { grid-template-columns: 8px 22px 22px 26px 22px 22px 18px 90px 22px 44px 28px 32px 22px; }
+.bc-streak.up, .bc-nstreak.up { color: var(--up); font-weight: 600; }
+.bc-streak.down, .bc-nstreak.down { color: var(--down); font-weight: 600; }
 /* batch61：全球信息页（currentPage!=='news'）下「序/增/数」排序按钮被 v-if 隐藏，
  * 原 10 列网格只剩 7 个元素被自动塞进前 7 列，导致 bc-name 落到 30px 窄列溢出、与 📊 重叠掩盖文字。
  * 这里在非新闻页用 6 列网格（caret|icon|name|track|count|pct），名称列固定 80px 完整显示，

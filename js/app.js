@@ -6536,7 +6536,18 @@ const app = createApp({
         const inc = (prevSeq != null) ? (prevSeq - seq) : null;
         const prev = pv.hasData ? pv.map[mode + '::' + c.key] : null;
         const cnt = pv.hasData ? (c.count - pv.max[mode]) : null;
-        return Object.assign({}, c, { seq: seq, inc: inc, cnt: cnt, prevSeq: prevSeq, prevCnt: prevCnt });
+        // 天 / 闻：板块连涨连跌天数、新闻热度连升连降天数（供排序与展示；响应式读取以触发重排）
+        const sk = boardStreak[mode + '::' + c.key];
+        const nk = newsStreak[mode + '::' + c.key];
+        return Object.assign({}, c, {
+          seq: seq, inc: inc, cnt: cnt, prevSeq: prevSeq, prevCnt: prevCnt,
+          streak: sk ? (sk.state === 'done' ? sk.value : null) : null,
+          streakNa: sk ? sk.state === 'na' : false,
+          streakLoading: sk ? sk.state === 'loading' : false,
+          newsStreak: nk ? (nk.state === 'done' ? nk.value : null) : null,
+          newsStreakNa: nk ? nk.state === 'na' : false,
+          newsStreakLoading: nk ? nk.state === 'loading' : false
+        });
       });
       const f = briefCatSort.field, dir = briefCatSort.dir === 'asc' ? 1 : -1;
       if (f === 'seq') return enriched.slice().sort((a, b) => (a.seq - b.seq) * dir);   // 序：名次升/降序（dir 控制箭头）
@@ -6558,6 +6569,140 @@ const app = createApp({
     // 兼容旧引用（统计面板标题等）
     const briefStatsList = briefThemeStats;
     const briefDimCount = computed(() => briefThemeStats.value.length);
+
+    /* ===================== batch-new：连涨/连跌(天) 与 新闻连升/连降(闻) =====================
+     * 天 = 该子类对应板块「连涨/连跌天数」：解析板块 → 拉日K线 → 用收盘价算每日涨跌幅 → 从最新一天往回数连续同号天数。
+     *     正=连涨，负=连跌（如 人工智能 −2 = 连跌2天）。无板块映射或拉取失败显示「—」。
+     * 闻 = 该子类「新闻热度连升/连降天数」：取近 ~30 个快讯快照日，统计该子类新闻数逐日变化 → 连续上升/下降天数。
+     *     正=连升，负=连降。纯本地快照，零行情网络。
+     * 二者仅在「新闻追踪」页的概念归类/行业归类子类行展示，且支持点按排序。 */
+    const boardStreak = reactive({});   // `${mode}::${key}` -> { state:'loading'|'done'|'na', value:number|null }
+    const newsStreak = reactive({});
+    const streakBusy = ref(false);       // 天 计算中
+    const newsStreakBusy = ref(false);   // 闻 计算中
+    let _streakDoneKey = '';             // 防重复：同 (日期|来源|数量) 仅自动算一次
+    const _boardResolveCache = new Map();// 名称 → BKxxxx（命中即免网络搜索）
+
+    async function resolveCatBoardCode(cat) {
+      const name = cat.name;
+      if (_boardResolveCache.has(name)) return _boardResolveCache.get(name);
+      const ov = BRIEF_CAT_BOARD_OVERRIDE[name];
+      const kw = ov || name;
+      const res = await StockAPI.searchSectors(kw).catch(() => []);
+      const bk = (res && res[0] && (res[0].bk || res[0].code)) || null;
+      _boardResolveCache.set(name, bk);
+      return bk;
+    }
+
+    // 东财板块日K线（secid=b:BKxxxx），返回统一结构 [{date,open,close,...}]（升序）
+    async function fetchBoardKline(bkCode, count) {
+      const code = StockAPI._normalizeBoardCode(bkCode);
+      if (!code) return [];
+      const url = `https://push2his.eastmoney.com/api/qt/stock/kline/get?ut=fa5fd1943c7b386f172d6893dbfba10b&secid=b:${code}` +
+        `&fields1=f1,f2,f3,f4,f5,f6&fields2=f51,f52,f53,f54,f55,f56,f57,f58&klt=101&fqt=0&beg=0&end=20500101&lmt=${count || 45}`;
+      const json = await StockAPI._eastGet(url);
+      const kl = json && json.data && json.data.klines;
+      if (!kl || !kl.length) return [];
+      return StockAPI._parseEastKline(kl);
+    }
+
+    // 由收盘价序列算连涨/连跌天数（正=连涨，负=连跌；不足两日返回 0）
+    function streakFromCloses(bars) {
+      if (!bars || bars.length < 2) return 0;
+      const chg = [];
+      for (let i = 1; i < bars.length; i++) {
+        const prev = bars[i - 1].close, cur = bars[i].close;
+        chg.push((prev && cur) ? (cur - prev) / prev * 100 : 0);
+      }
+      const last = chg[chg.length - 1];
+      if (!last || isNaN(last)) return 0;
+      const dir = last > 0 ? 1 : -1;
+      let n = 1;
+      for (let i = chg.length - 2; i >= 0; i--) {
+        if (!chg[i]) break;
+        if ((chg[i] > 0 ? 1 : -1) === dir) n++; else break;
+      }
+      return dir * n;
+    }
+
+    // 天：板块连涨/连跌（按 mode 维度批量，concurrency 受控）
+    async function computeBoardStreaksFor(mode, cats) {
+      await runWithConcurrency(cats, 3, async (c) => {
+        const k = mode + '::' + c.key;
+        boardStreak[k] = { state: 'loading', value: null };
+        try {
+          const bk = await resolveCatBoardCode(c);
+          if (!bk) { boardStreak[k] = { state: 'na', value: null }; return; }
+          const bars = await fetchBoardKline(bk, 45).catch(() => []);
+          if (!bars || bars.length < 2) { boardStreak[k] = { state: 'na', value: null }; return; }
+          boardStreak[k] = { state: 'done', value: streakFromCloses(bars) };
+        } catch (e) {
+          boardStreak[k] = { state: 'na', value: null };
+        }
+      });
+    }
+
+    // 闻：新闻热度连升/连降（近 ~30 个快照日，纯本地快讯文件）
+    async function computeNewsStreaksFor(mode) {
+      const HT = ht_();
+      const today = new Date();
+      const startMs = today.getTime() - 35 * 86400000;
+      const dates = (HT && HT.windowSnapshotDates) ? HT.windowSnapshotDates(startMs, today.getTime()) : [];
+      const dayList = dates.length ? dates
+        : Array.from({ length: 30 }, (_, i) => dateMinusDays(fmtDate(today), i)).reverse();
+      const history = {};   // key -> [{date,count}]
+      for (const d of dayList) {
+        const items = await fetchBriefsFile(d, briefSourceName.value).catch(() => []);
+        if (!items.length) continue;
+        const arr = HotTopics.briefStats(items, mode);
+        for (const cc of arr) (history[cc.key] = history[cc.key] || []).push({ date: d, count: cc.count });
+      }
+      const list = mode === 'concept' ? briefConceptStats.value : briefIndustryStats.value;
+      for (const c of list) {
+        const k = mode + '::' + c.key;
+        const ser = history[c.key];
+        if (!ser || ser.length < 2) { newsStreak[k] = { state: 'na', value: null }; continue; }
+        const deltas = [];
+        for (let i = 1; i < ser.length; i++) deltas.push(ser[i].count - ser[i - 1].count);
+        const last = deltas[deltas.length - 1];
+        if (last === 0) { newsStreak[k] = { state: 'done', value: 0 }; continue; }
+        const dir = last > 0 ? 1 : -1;
+        let n = 1;
+        for (let i = deltas.length - 2; i >= 0; i--) {
+          if (deltas[i] === 0) break;
+          if ((deltas[i] > 0 ? 1 : -1) === dir) n++; else break;
+        }
+        newsStreak[k] = { state: 'done', value: dir * n };
+      }
+    }
+
+    // 统一入口：先计算 闻（离线），再算 天（板块K线）。可在新闻页自动触发，也可由按钮手动重算。
+    async function refreshStreaks() {
+      if (currentPage.value !== 'news') return;
+      const conceptCats = briefConceptStats.value;
+      const industryCats = briefIndustryStats.value;
+      if (!conceptCats.length && !industryCats.length) return;
+      newsStreakBusy.value = true;
+      try { await Promise.all([computeNewsStreaksFor('concept'), computeNewsStreaksFor('industry')]); }
+      finally { newsStreakBusy.value = false; }
+      streakBusy.value = true;
+      try {
+        await Promise.all([
+          computeBoardStreaksFor('concept', conceptCats),
+          computeBoardStreaksFor('industry', industryCats)
+        ]);
+      } finally { streakBusy.value = false; }
+    }
+
+    // 进入新闻页且子类统计就绪时自动算一次（同 日期|来源|数量 仅算一次）；手动按钮可随时重算
+    watch(() => [currentPage.value, briefConceptStats.value.length, briefIndustryStats.value.length, briefSourceName.value],
+      () => {
+        if (currentPage.value !== 'news') return;
+        const key = fmtDate(new Date()) + '|' + briefSourceName.value + '|' + briefConceptStats.value.length + '|' + briefIndustryStats.value.length;
+        if (key === _streakDoneKey) return;
+        _streakDoneKey = key;
+        refreshStreaks();
+      }, { flush: 'post' });
 
     function autoLoadHotTopics() {
       if (_hotTopicsLoaded || hotTopicsSources.value.length || hotTopicsLoading.value) return;
@@ -8759,6 +8904,8 @@ const app = createApp({
       dailyStockRows, briefCatStocks, briefCatActive, briefCatLoading, briefCatIsFallback,
       openBriefCat, clearBriefCat, briefCatSort, sortByBriefField, prevBriefLoading,
       briefFilter, briefFilterConcepts, openBriefFilter, cancelBriefFilter, confirmBriefFilter,
+      // batch-new：连涨/连跌(天) 与 新闻连升/连降(闻)
+      refreshStreaks, streakBusy, newsStreakBusy,
       loadHotData, fetchHotBoards, refreshHotStocks,
       refreshAmplitudeBoards, ampLoading, hotPanelsHidden, financePushHidden,
       // batch23（请求F）：六个子版块独立刷新按钮
