@@ -4,12 +4,12 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>股市信息分析系统</title>
-  <link rel="stylesheet" href="css/style.css?v=20260930a">
+  <link rel="stylesheet" href="css/style.css?v=20260930b">
   <!-- Vue 3 全局构建版（v3.4.21 · 自托管）
        原先走 unpkg.com CDN：国内网络对 unpkg 的连通性不稳定，一旦该请求长时间挂起，
        <head> 里的阻塞脚本会让整页停在白屏、后续 auth-boot.js 根本不会执行。
        改为同源托管后，启动链路不再依赖任何第三方 CDN。 -->
-  <script src="js/vue.global.prod.js?v=20260930a"></script>
+  <script src="js/vue.global.prod.js?v=20260930b"></script>
 </head>
 <body class="auth-locked">
   <!-- ===== 登录关卡：登录通过前业务脚本不会被加载 ===== -->
@@ -1355,6 +1355,101 @@
         </div>
         <div class="page-footer">共 {{ sortedHoldings.length }} 条持仓</div>
 
+
+        <!-- 收藏概念字段表（置于收藏板块上方） -->
+        <div class="cw-panel" v-show="cwPanelOpen">
+          <div class="cw-panel-header">
+            <h3 class="panel-title" style="margin:0">📌 收藏概念表</h3>
+            <div class="cw-add-row" style="margin:0">
+              <input v-model="cwAddName" list="cw-concept-source" class="cell-input" placeholder="概念名称（来源：每日快讯各归类子类）" style="width:240px">
+              <datalist id="cw-concept-source">
+                <option v-for="c in allBriefConceptNames" :key="c" :value="c"></option>
+              </datalist>
+              <button class="btn btn-sm" @click="addConceptWatchManual" :disabled="cwAdding" title="从下方来源名称或自定义输入，一键添加概念">
+                <span v-if="cwAdding">⏳</span>＋ 添加概念
+              </button>
+              <button class="btn btn-sm" @click="cwInfoOpen = !cwInfoOpen" :title="cwInfoOpen ? '隐藏字段含义与计算规则' : '显示字段含义与计算规则'">{{ cwInfoOpen ? '🙈 隐藏说明' : '👁 字段含义' }}</button>
+              <button class="btn btn-sm" @click="refreshConceptWatch" :disabled="cwRefreshing" title="刷新所有概念的备选股票行情，重算今日涨跌与距今涨跌">
+                <span v-if="cwRefreshing">⏳ 刷新中...</span>
+                <span v-else>🔄 刷新数据</span>
+              </button>
+              <button class="btn btn-sm" @click="cwPanelOpen = !cwPanelOpen" :title="cwPanelOpen ? '隐藏收藏概念表' : '显示收藏概念表'">{{ cwPanelOpen ? '🙈 收起' : '👁 展开' }}</button>
+            </div>
+          </div>
+          <div class="table-wrap table-scroll-x" v-if="sortedConceptWatch.length">
+            <table class="data-table cw-table">
+              <thead>
+                <tr>
+                  <th class="sortable" @click="onCwSort('name')">概念名称<span class="sort-ic">{{ cwSortIcon('name') }}</span></th>
+                  <th class="sortable" @click="onCwSort('addDate')">添加日期<span class="sort-ic">{{ cwSortIcon('addDate') }}</span></th>
+                  <th>备选股票<br><span class="muted tiny">（上=股票A，下=股票B）</span></th>
+                  <th>添加股价</th>
+                  <th class="sortable" @click="onCwSort('todayChange')">今日涨跌<span class="sort-ic">{{ cwSortIcon('todayChange') }}</span></th>
+                  <th class="sortable" @click="onCwSort('sinceChange')">距今涨跌<span class="sort-ic">{{ cwSortIcon('sinceChange') }}</span></th>
+                  <th>操作</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="cw in sortedConceptWatch" :key="cw.id">
+                  <td>{{ cw.name }}</td>
+                  <td>{{ cw.addDate }}</td>
+                  <!-- 备选股票：上下两格（A/B） -->
+                  <td class="cw-dual">
+                    <template v-if="cw.stocks.length">
+                      <div class="cw-cell" v-for="(s,si) in cw.stocks" :key="si">
+                        <span class="stock-name">{{ s.name || s.code }}</span>
+                        <span class="stock-code muted small">{{ s.code }}</span>
+                        <button class="icon-btn" title="删除该备选股票" @click="removeConceptStock(cw, si)">✕</button>
+                      </div>
+                    </template>
+                    <div v-else class="muted small">—</div>
+                    <button class="btn btn-xs" v-if="cw.stocks.length < 2" @click="startAddConceptStock(cw)" title="添加备选股票（最多2只）">＋ 加股票</button>
+                    <div v-if="cwAddStockFor === cw.id" class="cw-add-stock">
+                      <input v-model="cwAddStockCode" class="cell-input" placeholder="代码" style="width:90px">
+                      <input v-model="cwAddStockName" class="cell-input" placeholder="名称" style="width:110px">
+                      <button class="btn btn-xs" @click="confirmAddConceptStock(cw)" :disabled="cwAdding">确定</button>
+                      <button class="btn btn-xs" @click="cancelAddConceptStock">取消</button>
+                    </div>
+                  </td>
+                  <!-- 添加股价：上下两格 -->
+                  <td class="cw-dual">
+                    <template v-if="cw.stocks.length">
+                      <div class="cw-cell" v-for="(s,si) in cw.stocks" :key="si">{{ fmt(s.addPrice) }}</div>
+                    </template>
+                    <div v-else class="muted small">—</div>
+                  </td>
+                  <!-- 今日涨跌：上下两格 -->
+                  <td class="cw-dual">
+                    <template v-if="cw.stocks.length">
+                      <div class="cw-cell num-col" v-for="(s,si) in cw.stocks" :key="si" :class="pctClass(s.todayChange)">{{ fmtPct(s.todayChange) }}</div>
+                    </template>
+                    <div v-else class="muted small">—</div>
+                  </td>
+                  <!-- 距今涨跌：上下两格 -->
+                  <td class="cw-dual">
+                    <template v-if="cw.stocks.length">
+                      <div class="cw-cell num-col" v-for="(s,si) in cw.stocks" :key="si" :class="pctClass(s.sinceChange)">{{ fmtPct(s.sinceChange) }}</div>
+                    </template>
+                    <div v-else class="muted small">—</div>
+                  </td>
+                  <td class="col-actions">
+                    <button class="icon-btn" title="删除该概念" @click="deleteConceptWatch(cw)">🗑</button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="muted small" v-else>暂无收藏概念。在上方输入「概念名称」（可取自每日快讯各归类子类），点「＋ 添加概念」即可建立一行。</div>
+          <div class="info-box small" v-show="cwInfoOpen">
+            <p>💡 <b>字段含义与计算规则</b>：<br>
+            · 概念名称：建议取自「每日快讯」各归类的子类（题材/概念/行业），输入框带联想下拉，也可自填。<br>
+            · 添加日期：概念加入本表的日期。<br>
+            · 备选股票：每个概念最多 2 只（上下两格分别为股票A、股票B），可增删。<br>
+            · 添加股价：股票加入当天的价格（添加时按当时现价自动快照并冻结，刷新不再变动）。<br>
+            · 今日涨跌：刷新时腾讯接口取到的当日涨跌幅(%)。<br>
+            · 距今涨跌(%) = (当前价 − 添加日股价) ÷ 添加日股价 × 100。当前价=刷新时取到的该股票最新价；添加日股价=加入当天的快照价（addPrice）。</p>
+          </div>
+        </div>
 
         <!-- 收藏板块（已从热门板块页移入，置于用户页持仓表下方） -->
         <div class="fav-panel" v-show="favPanelOpen">
@@ -4504,12 +4599,12 @@
     </transition>
   </div>
 
-  <script src="js/auth.js?v=20260930a"></script>
-  <script src="js/auth-sync.js?v=20260930a"></script>
+  <script src="js/auth.js?v=20260930b"></script>
+  <script src="js/auth-sync.js?v=20260930b"></script>
   <!-- 边缘加速默认站点（batch37 治本：Cloudflare Worker 代理东财/腾讯，缓解 JSONP 限流误报）。
        若你所在地区 workers.dev 访问慢，可在「设置 → 行情加速地址」清空即恢复纯直连。 -->
   <script>window.__SNT_ACCEL__ = 'https://stock-edge.hui-zhou.workers.dev';</script>
-  <script src="js/auth-boot.js?v=20260930a"></script>
+  <script src="js/auth-boot.js?v=20260930b"></script>
   <!-- store / stock-api / hot-topics / app 由 auth-boot.js 在登录通过后动态装载，
        未登录时它们不会被下载，业务数据也不会进入内存 -->
 </body>

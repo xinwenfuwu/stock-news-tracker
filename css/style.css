@@ -879,6 +879,29 @@ body {
 .hot-detail-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 6px; }
 .hot-detail-board { font-size: 13px; color: var(--primary); font-weight: 600; }
 
+/* 收藏概念字段表（收藏板块上方） */
+.cw-panel { margin-top: 18px; }
+.cw-add-row { display: flex; gap: 8px; margin-bottom: 10px; align-items: center; flex-wrap: wrap; }
+.cw-table { min-width: 720px; }
+.cw-table th, .cw-table td { vertical-align: top; padding: 0; }
+.cw-table thead th { padding: 6px 8px; text-align: left; }
+.cw-table tbody td { border-top: 1px solid #eceef2; }
+/* 上下两格：每格一只备选股票（A 上 / B 下） */
+.cw-table td.cw-dual { padding: 0; }
+.cw-table .cw-cell {
+  display: flex; align-items: center; gap: 6px;
+  padding: 6px 8px; min-height: 34px;
+  border-bottom: 1px dashed #eceef2;
+}
+.cw-table .cw-cell:last-child { border-bottom: none; }
+.cw-table .cw-cell .stock-name { font-weight: 600; }
+.cw-table .cw-add-stock {
+  display: flex; gap: 6px; padding: 6px 8px; flex-wrap: wrap; align-items: center;
+  background: #fafbff; border-top: 1px dashed #eceef2;
+}
+.cw-table .cw-cell.num-col { font-variant-numeric: tabular-nums; }
+.cw-table .col-actions { width: 64px; text-align: center; vertical-align: middle; }
+
 /* 收藏板块 */
 .fav-add-row { display: flex; gap: 6px; margin-bottom: 10px; align-items: center; }
 .fav-list { max-height: 340px; overflow-y: auto; }

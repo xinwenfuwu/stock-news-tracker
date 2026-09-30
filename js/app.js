@@ -1021,6 +1021,177 @@ const app = createApp({
         favAdding.value = false;
       }
     }
+    // ============================================================
+    //  收藏概念字段表（概念 + 备选股票，置于收藏板块上方）
+    // ============================================================
+    const cwPanelOpen = ref(true);
+    const cwInfoOpen = ref(false);
+    const cwAddName = ref('');
+    const cwAdding = ref(false);
+    const cwRefreshing = ref(false);
+    // 内联添加备选股票
+    const cwAddStockFor = ref('');     // 正在添加股票的 概念 id
+    const cwAddStockCode = ref('');
+    const cwAddStockName = ref('');
+    const cwSort = reactive({ field: 'addDate', dir: 'desc' });
+
+    const conceptWatch = computed(() => D.conceptWatch || []);
+    const sortedConceptWatch = computed(() => {
+      const list = [...(D.conceptWatch || [])];
+      list.sort((a, b) => cwCompare(a, b, cwSort.field));
+      return list;
+    });
+    // 概念名称来源：每日快讯各归类子类 + 设置分类 + 已有新闻分类
+    const allBriefConceptNames = computed(() => {
+      const set = new Set();
+      try {
+        (briefThemeStats.value || []).forEach(c => c.key && set.add(c.key));
+        (briefConceptStats.value || []).forEach(c => c.key && set.add(c.key));
+        (briefIndustryStats.value || []).forEach(c => c.key && set.add(c.key));
+      } catch (e) {}
+      (Store.getCategories() || []).forEach(c => set.add(c));
+      (D.news || []).forEach(n => n.category && set.add(n.category));
+      return [...set].filter(Boolean).sort((a, b) => a.localeCompare(b, 'zh'));
+    });
+
+    function cwCompare(a, b, field) {
+      const dir = cwSort.dir === 'asc' ? 1 : -1;
+      if (field === 'name') return (a.name || '').localeCompare(b.name || '', 'zh') * dir;
+      if (field === 'addDate') return (a.addDate || '').localeCompare(b.addDate || '', 'zh') * dir;
+      const sa = (a.stocks && a.stocks[0]) || {};
+      const sb = (b.stocks && b.stocks[0]) || {};
+      let va, vb;
+      if (field === 'todayChange') { va = sa.todayChange; vb = sb.todayChange; }
+      else if (field === 'sinceChange') { va = sa.sinceChange; vb = sb.sinceChange; }
+      else if (field === 'addPrice') { va = sa.addPrice; vb = sb.addPrice; }
+      else { va = null; vb = null; }
+      va = (va == null || isNaN(va)) ? -Infinity : +va;
+      vb = (vb == null || isNaN(vb)) ? -Infinity : +vb;
+      return (va - vb) * dir;
+    }
+    function cwSortIcon(field) {
+      if (cwSort.field !== field) return '⇅';
+      return cwSort.dir === 'asc' ? '▲' : '▼';
+    }
+    function onCwSort(field) {
+      if (cwSort.field === field) cwSort.dir = cwSort.dir === 'asc' ? 'desc' : 'asc';
+      else { cwSort.field = field; cwSort.dir = (field === 'name' || field === 'addDate') ? 'asc' : 'desc'; }
+    }
+
+    async function addConceptWatchManual() {
+      const name = String(cwAddName.value || '').trim();
+      if (!name) { showToast('请输入概念名称', 'error'); return; }
+      cwAdding.value = true;
+      try {
+        Store.addConceptWatch({ name, addDate: Store.today() });
+        showToast(`已添加概念「${name}」`, 'success');
+        cwAddName.value = '';
+      } catch (e) {
+        showToast('添加失败：' + (e && e.message ? e.message : e), 'error');
+      } finally {
+        cwAdding.value = false;
+      }
+    }
+
+    async function refreshConceptWatch() {
+      const list = D.conceptWatch || [];
+      const all = [];
+      list.forEach(c => (c.stocks || []).forEach(s => { if (s.code) all.push(s); }));
+      if (!all.length) { showToast('暂无备选股票可刷新', 'error'); return; }
+      cwRefreshing.value = true;
+      showToast('正在刷新概念表行情...', 'info');
+      try {
+        const quotes = await StockAPI.getQuotes(all.map(s => s.code).filter(Boolean));
+        for (const c of list) {
+          for (let i = 0; i < (c.stocks || []).length; i++) {
+            const s = c.stocks[i];
+            const q = quotes[s.code];
+            if (!q) continue;
+            const cur = (q.price != null && !isNaN(q.price)) ? +q.price : s.curPrice;
+            const add = s.addPrice;
+            const since = (add != null && add !== 0) ? +(((cur - add) / add) * 100).toFixed(2) : null;
+            Store.updateConceptStock(c.id, i, {
+              name: s.name || q.name,
+              curPrice: cur,
+              todayChange: q.changePercent != null && !isNaN(q.changePercent) ? +q.changePercent : s.todayChange,
+              sinceChange: since
+            });
+          }
+        }
+        showToast('概念表行情已刷新', 'success');
+      } catch (e) {
+        showToast('刷新失败，请重试', 'error');
+        console.warn('概念表刷新异常', e);
+      } finally {
+        cwRefreshing.value = false;
+      }
+    }
+
+    function startAddConceptStock(cw) {
+      cwAddStockFor.value = cw.id;
+      cwAddStockCode.value = '';
+      cwAddStockName.value = '';
+    }
+    function cancelAddConceptStock() {
+      cwAddStockFor.value = '';
+      cwAddStockCode.value = '';
+      cwAddStockName.value = '';
+    }
+    async function confirmAddConceptStock(cw) {
+      const rawCode = String(cwAddStockCode.value || '').trim();
+      const rawName = String(cwAddStockName.value || '').trim();
+      if (!rawCode && !rawName) { showToast('请输入股票代码或名称', 'error'); return; }
+      cwAdding.value = true;
+      try {
+        let code = rawCode ? StockAPI.inferPrefix(rawCode) : '';
+        let name = rawName;
+        if (!code && name) {
+          showToast(`正在识别「${name}」...`, 'info');
+          const pend = [{ name: name, code: '' }];
+          await StockAPI.resolveStockNames(pend);
+          if (pend[0].code) { code = pend[0].code; name = pend[0].name || name; }
+        }
+        if (!code) { showToast(`未能识别「${rawName || rawCode}」`, 'error'); return; }
+        if ((cw.stocks || []).some(s => StockAPI.pureCode(s.code) === StockAPI.pureCode(code))) {
+          showToast('该概念已包含此股票', 'info'); return;
+        }
+        // 抓取当前价作为「添加日股价」快照（冻结）
+        let addPrice = null, curPrice = null, todayChange = null;
+        try {
+          const q = await StockAPI.getQuotes([code]);
+          if (q && q[code]) {
+            addPrice = (q[code].price != null && !isNaN(q[code].price)) ? +q[code].price : null;
+            curPrice = addPrice;
+            todayChange = (q[code].changePercent != null && !isNaN(q[code].changePercent)) ? +q[code].changePercent : null;
+          }
+        } catch (e) { console.warn('概念股票现价获取失败', code, e); }
+        const ok = Store.addConceptStock(cw.id, {
+          code, name: name || code, addPrice, curPrice,
+          todayChange,
+          sinceChange: (curPrice != null && addPrice != null && addPrice !== 0) ? +(((curPrice - addPrice) / addPrice) * 100).toFixed(2) : 0
+        });
+        if (ok) {
+          showToast(`已添加备选股票「${name || code}」`, 'success');
+          cancelAddConceptStock();
+        } else {
+          showToast('每个概念最多 2 只备选股票', 'info');
+        }
+      } catch (e) {
+        showToast('添加失败：' + (e && e.message ? e.message : e), 'error');
+      } finally {
+        cwAdding.value = false;
+      }
+    }
+    function removeConceptStock(cw, idx) {
+      Store.removeConceptStock(cw.id, idx);
+    }
+    function deleteConceptWatch(cw) {
+      if (confirm(`确认删除概念「${cw.name}」及其备选股票？`)) {
+        Store.deleteConceptWatch(cw.id);
+        showToast('已删除概念', 'success');
+      }
+    }
+
     /** 补全单只股票的财务/股东/历史价数据（东财，best-effort）。供收藏/股票池/热门表刷新复用。 */
     async function enrichStockFinancials(s) {
       if (!s || !s.code) return;
@@ -8523,8 +8694,14 @@ const app = createApp({
       favorites, sortedFavorites, isFav, toggleFavorite, removeFavorite,
       updateFavNote, favDays,
       favAddCode, favAddName, favAdding, addFavoriteManual,
-      favRefreshing, refreshFavorites
-      ,
+      favRefreshing, refreshFavorites,
+      // 收藏概念字段表
+      cwPanelOpen, cwInfoOpen, cwAddName, cwAdding, cwRefreshing, cwSort,
+      sortedConceptWatch, allBriefConceptNames, cwSortIcon, onCwSort,
+      addConceptWatchManual, refreshConceptWatch,
+      cwAddStockFor, cwAddStockCode, cwAddStockName,
+      startAddConceptStock, confirmAddConceptStock, cancelAddConceptStock,
+      removeConceptStock, deleteConceptWatch,
       // 用户持仓
       myHoldings, sortedHoldings, holdingSummary, holdingModal, openAddHolding, editHolding,
       saveHolding, deleteHoldingRow, refreshHoldingPrices, holdingRefreshing,
