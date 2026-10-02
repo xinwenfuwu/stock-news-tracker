@@ -7246,7 +7246,7 @@ const app = createApp({
      */
     function saveDailyAsSectorBoard() {
       const rows = dailyStockRows.value || [];
-      if (!rows.length) { showToast('当前「当日股票明细」没有可保存的股票', 'error'); return; }
+      if (!rows.length) { showToast('当前「股票明细」没有可保存的股票', 'error'); return; }
       const seen = new Set();
       const stocks = [];
       for (const s of rows) {
@@ -7264,7 +7264,7 @@ const app = createApp({
       const d = new Date();
       const pad = (n) => String(n).padStart(2, '0');
       const ts = `${d.getFullYear()}${pad(d.getMonth() + 1)}${pad(d.getDate())}-${pad(d.getHours())}${pad(d.getMinutes())}`;
-      let label = '当日股票明细';
+      let label = '股票明细';
       let type = '当日明细';
       if (briefCatActive.value) { label = briefCatActive.value + '·明细'; type = '子类明细'; }
       else if (hotBoardActive.value) { label = hotBoardActive.value + '·明细'; type = '板块明细'; }
