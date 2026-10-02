@@ -2129,6 +2129,26 @@ body {
  * （已改为 flex 布局，原 grid-template-columns 断点不再适用，此处仅微调间距。） */
 @media (max-width: 1100px) { .brief-panel-top .brief-dims { gap: 14px; } }
 
+/* batch78：全球信息页每日快讯「题材 / 概念 / 行业」三归类并列显示。
+ * 原因：.brief-panel 固定 720px，内部 .brief-dims 实际仅 686px；而每个 .brief-cat-group
+ *       min-width:300px，三块并排需 ≥936px，于是折行成「两块一行 + 第三块独占下一行」。
+ * 改法：宽屏（≥1300px）下 .global-layout 改为栅格——火热话题让出约 10% 宽度
+ *       （1600px 视口实测 822px → 742px），快讯面板由 720px 放宽到 800px；
+ *       同时 .brief-dims 不换行、三块 flex:1 1 0 等分并排（每块约 244px，占比条约 30px）。
+ *       窄屏（<1300px）空间不足，保持原有换行堆叠，避免行内占比条被压没。 */
+@media (min-width: 1300px) {
+  .global-layout {
+    display: grid;
+    grid-template-columns: minmax(360px, 1fr) minmax(0, 800px);
+    gap: 18px;
+    align-items: start;
+    margin-top: 8px;
+  }
+  .brief-panel { flex: none; width: auto; }
+  .brief-panel .brief-dims { flex-wrap: nowrap; }
+  .brief-panel .brief-cat-group { flex: 1 1 0; min-width: 0; }
+}
+
 /* ===== 概念/行业归类行最右侧：颜色标注（弹层：预设色板 + 自定义 + 消除）+ 备注（仅新闻追踪页每日快讯面板） ===== */
 .bc-color-wrap { position: relative; justify-self: center; }
 .bc-color { width: 18px; height: 18px; border-radius: 50%; border: 1px solid var(--border);
