@@ -4,12 +4,12 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>股市信息分析系统</title>
-  <link rel="stylesheet" href="css/style.css?v=20260930k">
+  <link rel="stylesheet" href="css/style.css?v=20260930l">
   <!-- Vue 3 全局构建版（v3.4.21 · 自托管）
        原先走 unpkg.com CDN：国内网络对 unpkg 的连通性不稳定，一旦该请求长时间挂起，
        <head> 里的阻塞脚本会让整页停在白屏、后续 auth-boot.js 根本不会执行。
        改为同源托管后，启动链路不再依赖任何第三方 CDN。 -->
-  <script src="js/vue.global.prod.js?v=20260930k"></script>
+  <script src="js/vue.global.prod.js?v=20260930l"></script>
 </head>
 <body class="auth-locked">
   <!-- ===== 登录关卡：登录通过前业务脚本不会被加载 ===== -->
@@ -1475,7 +1475,10 @@
         <!-- 添加/编辑持仓 弹窗 -->
         <div class="modal-overlay" v-if="holdingModal.show" @click.self="holdingModal.show = false">
           <div class="modal holding-modal">
-            <h3>{{ holdingModal.isEdit ? '✏️ 编辑持仓' : '➕ 添加持仓' }}</h3>
+            <div class="modal-header">
+              <h3>{{ holdingModal.isEdit ? '✏️ 编辑持仓' : '➕ 添加持仓' }}</h3>
+              <button class="btn-icon" @click="holdingModal.show = false" title="关闭">✕</button>
+            </div>
             <div class="form-row">
               <label>股票</label>
               <div class="stock-search-wrap">
@@ -1531,7 +1534,10 @@
         <!-- 会员服务弹窗 -->
         <div class="modal-overlay" v-if="membershipModal.show" @click.self="membershipModal.show = false">
           <div class="modal membership-modal">
-            <h3>👑 会员服务</h3>
+            <div class="modal-header">
+              <h3>👑 会员服务</h3>
+              <button class="btn-icon" @click="membershipModal.show = false" title="关闭">✕</button>
+            </div>
             <div class="membership-body">
               <p class="membership-desc">开通会员后可使用完整持仓管理、新闻归属追踪及后续高级功能。</p>
               <div class="membership-plans">
@@ -1562,7 +1568,10 @@
         <!-- 准入码面板（batch16：管理员把审批 / 试用授权转达给用户） -->
         <div class="modal-overlay" v-if="approveCodeModal.show" @click.self="approveCodeModal.show = false">
           <div class="modal approve-code-modal">
-            <h3>🔑 {{ approveCodeModal.title }}</h3>
+            <div class="modal-header">
+              <h3>🔑 {{ approveCodeModal.title }}</h3>
+              <button class="btn-icon" @click="approveCodeModal.show = false" title="关闭">✕</button>
+            </div>
             <p class="notice-sub" v-if="approveCodeModal.desc">{{ approveCodeModal.desc }}</p>
             <textarea class="auth-code auth-code-lg" :value="approveCodeModal.code" rows="6" readonly spellcheck="false"></textarea>
             <div class="modal-actions">
@@ -1575,7 +1584,10 @@
         <!-- 用户须知弹窗（入口在「会员服务」左侧） -->
         <div class="modal-overlay" v-if="userNoticeModal.show" @click.self="userNoticeModal.show = false">
           <div class="modal notice-modal">
-            <h3>📋 用户须知</h3>
+            <div class="modal-header">
+              <h3>📋 用户须知</h3>
+              <button class="btn-icon" @click="userNoticeModal.show = false" title="关闭">✕</button>
+            </div>
             <p class="notice-sub">使用前请先阅读。以下为操作提示与风险提示，本软件仅供数据参考，不做任何选板块、选股、买卖决策，不构成任何投资建议。</p>
 
             <!-- 限时优惠活动：按用户要求置于正文上方 -->
@@ -1621,7 +1633,10 @@
         <!-- 本地数据管理弹窗（入口在「用户须知」左侧） -->
         <div class="modal-overlay" v-if="localDataModal.show" @click.self="localDataModal.show = false">
           <div class="modal ld-modal">
-            <h3>🗄 本地数据（这台设备）</h3>
+            <div class="modal-header">
+              <h3>🗄 本地数据（这台设备）</h3>
+              <button class="btn-icon" @click="localDataModal.show = false" title="关闭">✕</button>
+            </div>
             <p class="notice-sub">
               本系统是纯静态网页，没有服务端，所有业务数据都保存在<b>当前浏览器</b>里。
               下面是本机实际存了什么、占多大。删除只影响这台设备，GitHub 上定时抓取的官方快照不受影响。
@@ -4644,12 +4659,12 @@
     </transition>
   </div>
 
-  <script src="js/auth.js?v=20260930k"></script>
-  <script src="js/auth-sync.js?v=20260930k"></script>
+  <script src="js/auth.js?v=20260930l"></script>
+  <script src="js/auth-sync.js?v=20260930l"></script>
   <!-- 边缘加速默认站点（batch37 治本：Cloudflare Worker 代理东财/腾讯，缓解 JSONP 限流误报）。
        若你所在地区 workers.dev 访问慢，可在「设置 → 行情加速地址」清空即恢复纯直连。 -->
   <script>window.__SNT_ACCEL__ = 'https://stock-edge.hui-zhou.workers.dev';</script>
-  <script src="js/auth-boot.js?v=20260930k"></script>
+  <script src="js/auth-boot.js?v=20260930l"></script>
   <!-- store / stock-api / hot-topics / app 由 auth-boot.js 在登录通过后动态装载，
        未登录时它们不会被下载，业务数据也不会进入内存 -->
 </body>
