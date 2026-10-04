@@ -4,12 +4,12 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>股市信息分析系统</title>
-  <link rel="stylesheet" href="css/style.css?v=20260930l">
+  <link rel="stylesheet" href="css/style.css?v=20260930m">
   <!-- Vue 3 全局构建版（v3.4.21 · 自托管）
        原先走 unpkg.com CDN：国内网络对 unpkg 的连通性不稳定，一旦该请求长时间挂起，
        <head> 里的阻塞脚本会让整页停在白屏、后续 auth-boot.js 根本不会执行。
        改为同源托管后，启动链路不再依赖任何第三方 CDN。 -->
-  <script src="js/vue.global.prod.js?v=20260930l"></script>
+  <script src="js/vue.global.prod.js?v=20260930m"></script>
 </head>
 <body class="auth-locked">
   <!-- ===== 登录关卡：登录通过前业务脚本不会被加载 ===== -->
@@ -308,18 +308,7 @@
           </div>
 
           <div class="brief-controls">
-            <div class="brief-row">
-              <select class="brief-date" v-model="briefDate" @change="onBriefDateChange" :disabled="briefLoading || !briefDates.length">
-                <option v-for="d in briefDates" :key="d" :value="d">{{ d }}</option>
-                <option v-if="!briefDates.length" value="">暂无快讯日期</option>
-              </select>
-              <!-- 独立刷新按钮：按「股票闭市周期」重新统计，不按自然日 -->
-              <button class="btn btn-sm brief-refresh" :disabled="briefLoading"
-                      @click="refreshBriefCloseWindow"
-                      title="按上方时间窗口刷新；默认「昨天 15:00 → 现在」，以每天 15:00 为换日节点">
-                🔄 {{ briefLoading ? '刷新中…' : '刷新（按时间）' }}
-              </button>
-            </div>
+            <!-- batch79：按需求移除新闻追踪页的「日期下拉 + 刷新（按时间）」一行（刷新功能与上方「新闻统计开始时间」行的「刷新」按钮重复） -->
             <div class="brief-search-wrap">
               <input class="brief-search" v-model="briefKeyword" type="search" autocomplete="off" placeholder="关键词搜索（如：英伟达 / 降息 / 原油）">
               <button class="brief-search-clear" v-if="briefKeyword" @click="briefKeyword = ''" title="清空关键词">✕</button>
@@ -4659,12 +4648,12 @@
     </transition>
   </div>
 
-  <script src="js/auth.js?v=20260930l"></script>
-  <script src="js/auth-sync.js?v=20260930l"></script>
+  <script src="js/auth.js?v=20260930m"></script>
+  <script src="js/auth-sync.js?v=20260930m"></script>
   <!-- 边缘加速默认站点（batch37 治本：Cloudflare Worker 代理东财/腾讯，缓解 JSONP 限流误报）。
        若你所在地区 workers.dev 访问慢，可在「设置 → 行情加速地址」清空即恢复纯直连。 -->
   <script>window.__SNT_ACCEL__ = 'https://stock-edge.hui-zhou.workers.dev';</script>
-  <script src="js/auth-boot.js?v=20260930l"></script>
+  <script src="js/auth-boot.js?v=20260930m"></script>
   <!-- store / stock-api / hot-topics / app 由 auth-boot.js 在登录通过后动态装载，
        未登录时它们不会被下载，业务数据也不会进入内存 -->
 </body>
