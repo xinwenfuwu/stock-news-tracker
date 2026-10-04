@@ -3059,6 +3059,14 @@ body.guest-mode #app { display: none; }
 .membership-pay { border-top: 1px dashed var(--border); padding-top: 18px; }
 .pay-title { font-size: 15px; font-weight: 600; margin-bottom: 12px; }
 .qr-pay-img { width: 220px; height: 220px; object-fit: contain; border: 1px solid var(--border); border-radius: var(--radius); background: #fff; }
+/* batch84：扫码支付开通面板 */
+.member-status { margin: 6px 0 14px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.member-status b { color: var(--text); }
+.qr-row { display: flex; gap: 22px; flex-wrap: wrap; margin-top: 14px; justify-content: center; }
+.qr-box { text-align: center; }
+.qr-cap { font-size: 13px; color: var(--text-secondary); margin-bottom: 6px; }
+.membership-plans .plan-card.active { border-color: var(--accent, #3b82f6); box-shadow: 0 0 0 2px rgba(59,130,246,.25); }
+.error { color: #e5484d; }
 
 /* 用户管理：会员额度三列（注册日期 / 额度 / 停用日期） */
 .um-membership { vertical-align: middle; }

@@ -4,12 +4,12 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>股市信息分析系统</title>
-  <link rel="stylesheet" href="css/style.css?v=20260930m">
+  <link rel="stylesheet" href="css/style.css?v=20260930n">
   <!-- Vue 3 全局构建版（v3.4.21 · 自托管）
        原先走 unpkg.com CDN：国内网络对 unpkg 的连通性不稳定，一旦该请求长时间挂起，
        <head> 里的阻塞脚本会让整页停在白屏、后续 auth-boot.js 根本不会执行。
        改为同源托管后，启动链路不再依赖任何第三方 CDN。 -->
-  <script src="js/vue.global.prod.js?v=20260930m"></script>
+  <script src="js/vue.global.prod.js?v=20260930n"></script>
 </head>
 <body class="auth-locked">
   <!-- ===== 登录关卡：登录通过前业务脚本不会被加载 ===== -->
@@ -1528,24 +1528,46 @@
               <button class="btn-icon" @click="membershipModal.show = false" title="关闭">✕</button>
             </div>
             <div class="membership-body">
-              <p class="membership-desc">开通会员后可使用完整持仓管理、新闻归属追踪及后续高级功能。</p>
+              <p class="membership-desc">新用户注册即享 1 天免费试用；试用结束后，扫码支付即可自助开通会员，后台自动授权，无需等待审核。</p>
+              <div class="member-status" v-if="membershipModal.statusText">
+                <span class="muted">当前状态：</span><b>{{ membershipModal.statusText }}</b>
+                <button class="btn btn-sm" :disabled="membershipModal.syncing" @click="syncMembership()">↻ 刷新</button>
+              </div>
               <div class="membership-plans">
-                <div class="plan-card">
-                  <div class="plan-title">一年期会员</div>
-                  <div class="plan-price">¥2000</div>
-                  <div class="plan-unit">/ 12 个月</div>
-                </div>
-                <div class="plan-card">
-                  <div class="plan-title">6 个月期会员</div>
+                <label class="plan-card" :class="{ active: membershipModal.plan === '6m' }">
+                  <input type="radio" value="6m" v-model="membershipModal.plan" style="position:absolute;opacity:0">
+                  <div class="plan-title">6 个月会员</div>
                   <div class="plan-price">¥1000</div>
                   <div class="plan-unit">/ 6 个月</div>
-                </div>
+                </label>
+                <label class="plan-card" :class="{ active: membershipModal.plan === '1y' }">
+                  <input type="radio" value="1y" v-model="membershipModal.plan" style="position:absolute;opacity:0">
+                  <div class="plan-title">1 年会员</div>
+                  <div class="plan-price">¥2000</div>
+                  <div class="plan-unit">/ 12 个月</div>
+                </label>
               </div>
               <div class="membership-pay">
-                <div class="pay-title">扫码支付</div>
-                <!-- 懒加载：该图 130KB+，启动期加载会与业务脚本抢占带宽（国内网络下曾导致脚本加载超时） -->
-                <img src="assets/qr-pay-wechat.jpg" alt="微信支付二维码" class="qr-pay-img" loading="lazy" decoding="async">
-                <p class="muted small">请使用微信扫描二维码完成支付，支付后请联系管理员开通权限。</p>
+                <button class="btn btn-primary" :disabled="membershipModal.loading" @click="genPayQr()">
+                  {{ membershipModal.loading ? '正在生成收款码…' : '生成收款码（微信 / 支付宝）' }}
+                </button>
+                <p class="muted small" v-if="!membershipModal.wxQr && !membershipModal.aliQr && !membershipModal.error">
+                  选择套餐后点击上方按钮，将同时生成微信与支付宝收款码；手机扫码完成支付后，后台会自动把对应时长开通到当前账号。
+                </p>
+                <p class="error small" v-if="membershipModal.error">{{ membershipModal.error }}</p>
+                <div class="qr-row" v-if="membershipModal.wxQr || membershipModal.aliQr">
+                  <div class="qr-box" v-if="membershipModal.wxQr">
+                    <div class="qr-cap">微信支付</div>
+                    <img :src="membershipModal.wxQr" alt="微信支付二维码" class="qr-pay-img">
+                  </div>
+                  <div class="qr-box" v-if="membershipModal.aliQr">
+                    <div class="qr-cap">支付宝</div>
+                    <img :src="membershipModal.aliQr" alt="支付宝二维码" class="qr-pay-img">
+                  </div>
+                </div>
+                <p class="muted small" v-if="membershipModal.wxQr || membershipModal.aliQr">
+                  支付成功后稍候，点「刷新」即可看到「已开通会员」状态。
+                </p>
               </div>
             </div>
             <div class="modal-actions">
@@ -4648,12 +4670,14 @@
     </transition>
   </div>
 
-  <script src="js/auth.js?v=20260930m"></script>
-  <script src="js/auth-sync.js?v=20260930m"></script>
+  <script src="js/auth.js?v=20260930n"></script>
+  <script src="js/auth-sync.js?v=20260930n"></script>
   <!-- 边缘加速默认站点（batch37 治本：Cloudflare Worker 代理东财/腾讯，缓解 JSONP 限流误报）。
        若你所在地区 workers.dev 访问慢，可在「设置 → 行情加速地址」清空即恢复纯直连。 -->
   <script>window.__SNT_ACCEL__ = 'https://stock-edge.hui-zhou.workers.dev';</script>
-  <script src="js/auth-boot.js?v=20260930m"></script>
+  <!-- 扫码支付二维码渲染库（第三方 qrcodejs，本地托管避免外链失效）。renderQr 会先检测全局 QRCode 是否存在。 -->
+  <script src="assets/qrcode.min.js?v=20260930n"></script>
+  <script src="js/auth-boot.js?v=20260930n"></script>
   <!-- store / stock-api / hot-topics / app 由 auth-boot.js 在登录通过后动态装载，
        未登录时它们不会被下载，业务数据也不会进入内存 -->
 </body>

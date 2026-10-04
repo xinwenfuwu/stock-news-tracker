@@ -27,7 +27,7 @@
   'use strict';
 
   // 与 index.html 中静态资源版本号保持一致，避免升级后命中旧缓存
-  var ASSET_V = '20260930m';
+  var ASSET_V = '20260930n';
 
   // 管理员点开「注册申请导入链接」后，申请码暂存在这里，等业务层（app.js）就绪后取走
   var IMPORT_KEY = 'snt-pending-import-v1';
@@ -617,6 +617,8 @@
             return;
           }
           setBusy('登录成功，正在进入…');
+          // batch84：登录成功后同步后端会员状态（扫码支付开通的时长落到本机，供登录门禁放行）
+          try { if (window.SNTMembership && window.SNTMembership.sync) window.SNTMembership.sync(); } catch (_) {}
           enterApp();
         }).catch(function (err) {
           setBusy('');
@@ -643,6 +645,14 @@
         Auth.register(u, p).then(function (r) {
           setBusy('');
           if (!r.ok) { showMsg(r.error, 'error'); return; }
+          // batch84：注册即 1 天试用（免申请码）→ 直接提示可登录，不展示申请码。
+          if (r.autoTrial) {
+            var lu = $('#login-username');
+            if (lu) lu.value = (r.user && r.user.username) || '';
+            showForm('login');
+            showMsg('注册成功！已自动为你开通 1 天免费试用，现在就能用注册密码登录使用。', 'ok');
+            return;
+          }
           var code = r.requestCode || '';
           lastReg = { username: (r.user && r.user.username) || '', code: code };
           if (elRegCode) elRegCode.value = code;

@@ -459,6 +459,10 @@
 
   /** 由 注册日期 + 额度(月) 推算停用日期；无额度(0/空)视为长期，返回 null */
   function disableDateOf(u) {
+    // batch84：后端扫码支付会员的精确到期日（优先级最高，覆盖管理员手填的额度推算）
+    if (u && u.payMembershipUntil && Number(u.payMembershipUntil) > 0) {
+      return localDateStr(Number(u.payMembershipUntil));
+    }
     if (!u || !u.registerDate || !u.quotaMonths || u.quotaMonths <= 0) return null;
     return addMonthsToDateStr(u.registerDate, u.quotaMonths);
   }
@@ -847,13 +851,15 @@
       }
       return makePasswordHash(v.password).then(function (hash) {
         var now = Date.now();
-        // 跨设备免码：管理员设备（已配令牌）会把注册写进云端注册表（pending），其面板即可看到、一键通过。
-        // 失败不阻塞本地注册——用户仍可手动复制申请码走旧的码流程兜底。
-        if (typeof Auth !== 'undefined' && Auth.Sync && Auth.Sync.isConfigured && Auth.Sync.isConfigured()) {
+        // batch84：注册即 1 天试用（免申请码）。规则：
+        //   · 全新用户（本机无同名记录）→ 直接给 1 天 trial，注册完即可作为普通用户登录，无需复制申请码；
+        //   · 已存在「待审核」记录 → 原行为（同设备重提，返回同一申请码）；
+        //   · 已存在「被驳回」记录 → 原行为（重新申请，回到待审核，需管理员通过）。
+        // 仅「已存在账号重新申请」才写云端注册表；全新用户不进管理员待审列表。
+        if (exist && typeof Auth !== 'undefined' && Auth.Sync && Auth.Sync.isConfigured && Auth.Sync.isConfigured()) {
           Auth.Sync.registerRemote(v.username, v.password).catch(function () { /* 离线兜底 */ });
         }
-        // batch16：本机已有同名「待审核」记录时不再报错——换设备 / 忘记自己提交过的情况下
-        // 用户会反复注册，每次都以为要重新申请。密码一致就直接把同一个申请码再给他一次。
+        // 本机已有同名「待审核」记录：密码一致就直接把同一个申请码再给他一次。
         if (exist && statusOf(exist) === STATUS.PENDING) {
           // 注意：密码哈希带随机 salt，同一个密码每次算出的 hash 都不一样，
           // 所以不能拿 hash 字符串直接比，必须用 verifyPassword 真正校验一次。
@@ -873,22 +879,35 @@
             };
           });
         }
+        // 已存在「被驳回」记录：重新申请，回到待审核（沿用原行为，需管理员通过）。
+        if (exist && statusOf(exist) === STATUS.REJECTED) {
+          var ur = {
+            username: v.username, role: ROLE.USER, hash: hash,
+            pwSeal: sealPassword(v.password),
+            disabled: false, status: STATUS.PENDING,
+            createdAt: exist.createdAt || now, updatedAt: now,
+            logins: []
+          };
+          var ri = self.users.indexOf(exist);
+          if (ri >= 0) self.users[ri] = ur; else self.users.push(ur);
+          if (!saveUsers(self.users)) return { ok: false, error: '保存失败：浏览器本地存储不可用' };
+          return { ok: true, user: publicUser(ur), requestCode: makeRequestCode(ur) };
+        }
+        // 全新用户：注册即自动开通 1 天试用（trial），无需管理员审核、无需复制申请码。
         var u = {
           username: v.username, role: ROLE.USER, hash: hash,
           pwSeal: sealPassword(v.password),
-          disabled: false, status: STATUS.PENDING,
+          disabled: false, status: STATUS.TRIAL,
+          trialUntil: now + 24 * 60 * 60 * 1000,
           createdAt: now, updatedAt: now,
           logins: []
         };
-        // 曾被驳回的用户重新申请：覆盖旧记录，避免同名堆叠多条
-        if (exist) {
-          var i = self.users.indexOf(exist);
-          if (i >= 0) self.users[i] = u; else self.users.push(u);
-        } else {
-          self.users.push(u);
-        }
+        self.users.push(u);
         if (!saveUsers(self.users)) return { ok: false, error: '保存失败：浏览器本地存储不可用' };
-        return { ok: true, user: publicUser(u), requestCode: makeRequestCode(u) };
+        return {
+          ok: true, user: publicUser(u), autoTrial: true,
+          trialUntil: u.trialUntil, trialDays: 1
+        };
       });
     },
 
@@ -1569,6 +1588,31 @@
       saveUsers(this.users);
       this._syncUserToRegistry(u);
       return { ok: true, user: adminUser(u) };
+    },
+
+    /**
+     * batch84：把后端扫码支付返回的会员到期时间落到本机账号。
+     * 供业务层在登录后 / 打开会员面板时调用：查询后端「我的会员到期时间」，若有效则写入本机，
+     * 之后的登录门禁（isMembershipExpired）会据此放行。不要求管理员权限（属于本人自助开通）。
+     * @param {string} username
+     * @param {number} untilTs 会员到期时间戳(ms)；<=now 视为无效不写入
+     */
+    applyRemoteMembership: function (username, untilTs) {
+      var u = findUser(this.users, username);
+      if (!u) return { ok: false, error: '用户不存在' };
+      var until = Number(untilTs) || 0;
+      if (!until || until <= Date.now()) {
+        if (u.payMembershipUntil) { u.payMembershipUntil = 0; u.updatedAt = Date.now(); saveUsers(this.users); }
+        return { ok: true, active: false };
+      }
+      u.payMembershipUntil = until;
+      u.updatedAt = Date.now();
+      // 此前因会员到期被自动停用的账号，若支付会员续期到今天之后，解除停用
+      if (u.disabled && u.autoDisabled && !isMembershipExpired(u)) {
+        u.disabled = false; u.autoDisabled = false; u.disabledAt = null;
+      }
+      saveUsers(this.users);
+      return { ok: true, active: true, until: until };
     },
 
     /** 改密码：改自己的需验原密码；管理员改他人无需。改完自动重签自己的会话，避免把自己踢下线。 */

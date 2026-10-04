@@ -2080,8 +2080,116 @@ const app = createApp({
     }
     const holdingModal = reactive({ show: false, isEdit: false, data: blankHolding(), stockSearch: '', suggestions: [] });
     const holdingRefreshing = ref(false);
-    const membershipModal = reactive({ show: false });
-    function openMembershipService() { membershipModal.show = true; }
+    // batch84：会员服务 / 扫码支付开通面板状态
+    const membershipModal = reactive({
+      show: false,
+      plan: '6m',          // 套餐：'6m' 六个月 | '1y' 一年
+      wxQr: '',            // 微信支付二维码（data URL 或 URL）
+      aliQr: '',           // 支付宝面对面二维码（data URL 或 URL）
+      loading: false,      // 生成收款码中
+      syncing: false,      // 查询会员状态中
+      error: '',           // 错误提示
+      statusText: '',      // 当前会员状态文案
+      untilTs: 0           // 后端返回的会员到期时间戳(ms)
+    });
+    function fmtDate(ts) { const d = new Date(Number(ts) || Date.now()); const p = n => String(n).padStart(2, '0'); return d.getFullYear() + '-' + p(d.getMonth() + 1) + '-' + p(d.getDate()); }
+    function planMonths(plan) { return plan === '1y' ? 12 : 6; }
+    function memberApiBase() {
+      const base = String((D && D.settings && D.settings.proxyUrl) || '').trim().replace(/\/+$/, '');
+      return base || '';
+    }
+    // 查询后端「我的会员到期时间」
+    async function queryMembership(username) {
+      const base = memberApiBase();
+      if (!base) return { ok: false, error: '未配置行情加速/代理地址（即会员服务后端），无法查询' };
+      try {
+        const r = await fetch(base + '/pay/membership?user=' + encodeURIComponent(username), { headers: { 'Accept': 'application/json' } });
+        if (!r.ok) return { ok: false, error: '查询失败(' + r.status + ')' };
+        const j = await r.json();
+        return { ok: true, until: Number(j.until) || 0 };
+      } catch (e) { return { ok: false, error: '查询异常：' + (e && e.message ? e.message : e) }; }
+    }
+    // 创建支付订单（微信 + 支付宝扫码），返回两个二维码
+    async function createPayOrder(username, plan) {
+      const base = memberApiBase();
+      if (!base) return { ok: false, error: '未配置行情加速/代理地址（即会员服务后端），无法生成收款码' };
+      try {
+        const r = await fetch(base + '/pay/create', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+          body: JSON.stringify({ user: username, plan: plan, months: planMonths(plan) })
+        });
+        if (!r.ok) {
+          let msg = '生成失败(' + r.status + ')';
+          try { const j = await r.json(); if (j && j.error) msg = j.error; } catch (_) {}
+          return { ok: false, error: msg };
+        }
+        const j = await r.json();
+        return { ok: true, wxQr: j.wxQr || '', aliQr: j.aliQr || '' };
+      } catch (e) { return { ok: false, error: '生成异常：' + (e && e.message ? e.message : e) }; }
+    }
+    // 把后端会员状态落到本机，并刷新面板状态文案
+    async function syncMembership() {
+      const uname = (Auth && Auth.user && Auth.user.username) || '';
+      if (!uname) { membershipModal.statusText = '请先登录'; return; }
+      membershipModal.syncing = true;
+      const q = await queryMembership(uname);
+      membershipModal.syncing = false;
+      if (q.ok && q.until > Date.now()) {
+        if (A) A.applyRemoteMembership(uname, q.until);
+        membershipModal.untilTs = q.until;
+        membershipModal.statusText = '已开通会员，有效期至 ' + fmtDate(q.until);
+      } else if (q.ok) {
+        membershipModal.untilTs = 0;
+        membershipModal.statusText = '当前无有效会员（试用期内可直接使用；试用结束后请扫码支付开通）';
+      } else {
+        membershipModal.statusText = '无法连接会员服务后端（' + q.error + '）';
+      }
+    }
+    function openMembershipService() {
+      membershipModal.show = true;
+      membershipModal.error = '';
+      membershipModal.wxQr = '';
+      membershipModal.aliQr = '';
+      syncMembership();
+    }
+    // 生成收款码（微信 + 支付宝），并把原始支付串渲染为二维码图片
+    async function genPayQr() {
+      const uname = (Auth && Auth.user && Auth.user.username) || '';
+      if (!uname) { membershipModal.error = '请先登录后再开通会员'; return; }
+      membershipModal.loading = true;
+      membershipModal.error = '';
+      membershipModal.wxQr = '';
+      membershipModal.aliQr = '';
+      const r = await createPayOrder(uname, membershipModal.plan);
+      membershipModal.loading = false;
+      if (!r.ok) { membershipModal.error = r.error; return; }
+      // 把支付串渲染成二维码图片（qrcode.min.js 提供全局 QRCode）；渲染失败则退回原始串
+      const [wx, ali] = await Promise.all([renderQr(r.wxQr), renderQr(r.aliQr)]);
+      membershipModal.wxQr = wx || r.wxQr;
+      membershipModal.aliQr = ali || r.aliQr;
+    }
+    // 把文本渲染为二维码 data URL（依赖全局 QRCode；失败返回空串）
+    function renderQr(text) {
+      return new Promise((resolve) => {
+        if (!text || typeof QRCode === 'undefined') { resolve(''); return; }
+        const el = document.createElement('div');
+        el.style.cssText = 'position:absolute;left:-99999px;top:-99999px;';
+        document.body.appendChild(el);
+        try {
+          new QRCode(el, { text: String(text), width: 240, height: 240, correctLevel: QRCode.CorrectLevel.M });
+          setTimeout(() => {
+            const img = el.querySelector('img');
+            const canvas = el.querySelector('canvas');
+            const src = (img && img.src) ? img.src : (canvas ? canvas.toDataURL() : '');
+            document.body.removeChild(el);
+            resolve(src || '');
+          }, 60);
+        } catch (e) { if (el.parentNode) document.body.removeChild(el); resolve(''); }
+      });
+    }
+    // 暴露给登录流程（auth-boot.js）在登录成功后做会员状态同步
+    try { if (typeof window !== 'undefined') window.SNTMembership = { sync: syncMembership, open: openMembershipService }; } catch (_) {}
     // 用户须知（入口在「会员服务」左侧）
     const userNoticeModal = reactive({ show: false });
     function openUserNotice() { userNoticeModal.show = true; }
@@ -9062,8 +9170,8 @@ const app = createApp({
       onHoldingStockSearch, pickHoldingStock, fetchEntryPrice,
       holdingSortKey, holdingSortDir, sortHoldingBy, holdingSortIcon,
       holdingDays, holdingCost, holdingMarketValue, holdingChangePct, holdingProfit, holdingProfitPct,
-      // 会员服务
-      membershipModal, openMembershipService
+      // 会员服务 / 扫码支付开通（batch84）
+      membershipModal, openMembershipService, genPayQr, syncMembership
       ,
       // 用户须知
       userNoticeModal, openUserNotice
