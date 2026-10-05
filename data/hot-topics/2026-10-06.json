@@ -1,0 +1,2444 @@
+{
+  "date": "2026-10-06",
+  "generatedAt": "2026-10-05T22:29:26.570Z",
+  "sources": [
+    {
+      "rank": 1,
+      "key": "gelonghui",
+      "name": "格隆汇",
+      "color": "#c8102e",
+      "items": [
+        {
+          "text": "白银，值得重新关注了 恐慌结束了，故事没结束",
+          "time": "",
+          "url": "https://www.gelonghui.com/p/6875810",
+          "cat": "财经"
+        },
+        {
+          "text": "3名科学家获2026年诺贝尔生理学或医学奖 表彰他们在光门控离子通道和光遗传学方面的发现",
+          "time": "",
+          "url": "https://www.gelonghui.com/p/6875773",
+          "cat": "财经"
+        },
+        {
+          "text": "港股收评：恒指涨0.28%重上24000点，PCB、半导体概念爆发 在缺少南下资金的情况下，成交仅981亿港元",
+          "time": "",
+          "url": "https://www.gelonghui.com/p/6875605",
+          "cat": "科技"
+        },
+        {
+          "text": "港股投资策略",
+          "time": "",
+          "url": "https://www.gelonghui.com/subject/3",
+          "cat": "财经"
+        },
+        {
+          "text": "格隆汇股评君",
+          "time": "",
+          "url": "https://www.gelonghui.com/p/6875605",
+          "cat": "财经"
+        },
+        {
+          "text": "集体飙升！PCB又“炸”了 供需缺口至少延续至2027年",
+          "time": "",
+          "url": "https://www.gelonghui.com/p/6875571",
+          "cat": "经济"
+        },
+        {
+          "text": "电路板/PCB",
+          "time": "",
+          "url": "https://www.gelonghui.com/subject/163",
+          "cat": "财经"
+        },
+        {
+          "text": "9月经济数据前瞻：PPI增速或达年内新高 政策发力或带动9月金融数据边际企稳",
+          "time": "",
+          "url": "https://www.gelonghui.com/p/6875411",
+          "cat": "经济"
+        },
+        {
+          "text": "巴菲特逆势买入这只老登股！ 华尔街就唱起了反调",
+          "time": "",
+          "url": "https://www.gelonghui.com/p/6875240",
+          "cat": "财经"
+        },
+        {
+          "text": "ETF进化论",
+          "time": "",
+          "url": "https://www.gelonghui.com/p/6875240",
+          "cat": "财经"
+        },
+        {
+          "text": "官宣！华为和美国高通，达成重磅协议 内容包括双方在5G、计算、人工智能和网络等多个领域的专利组合交叉许可",
+          "time": "",
+          "url": "https://www.gelonghui.com/p/6875170",
+          "cat": "科技"
+        },
+        {
+          "text": "GPU在进场，电还没来：美国AI到底缺多少电？ 真正缺的，是按时交付的电",
+          "time": "",
+          "url": "https://www.gelonghui.com/p/6875133",
+          "cat": "科技"
+        },
+        {
+          "text": "AI算力引爆上游“缺料潮”，港股PCB概念集体大涨！ 龙头迎盈利重估",
+          "time": "",
+          "url": "https://www.gelonghui.com/p/6874690",
+          "cat": "科技"
+        },
+        {
+          "text": "一汽丰田：“一汽丰田或将彻底退出历史舞台”等均为不实言论 针对不实言论，公司保留法律追责权利",
+          "time": "",
+          "url": "https://www.gelonghui.com/p/6874345",
+          "cat": "百强企业"
+        },
+        {
+          "text": "亚太资金涌入东京市场！日经225突破70000点大关 外围利好托底",
+          "time": "",
+          "url": "https://www.gelonghui.com/p/6874323",
+          "cat": "财经"
+        },
+        {
+          "text": "再论系统思考的重要性 美元之所以高估，是因为美元的流动性好，金融开放度高，成为硬通货",
+          "time": "",
+          "url": "https://www.gelonghui.com/p/6874208",
+          "cat": "经济"
+        },
+        {
+          "text": "李迅雷金融与投资",
+          "time": "",
+          "url": "https://www.gelonghui.com/p/6874208",
+          "cat": "财经"
+        },
+        {
+          "text": "格隆汇10月6日｜纽约期金突破4170美元/盎司，日内涨0.31%。",
+          "time": "",
+          "url": "https://www.gelonghui.com/live/2698676",
+          "cat": "经济"
+        },
+        {
+          "text": "格隆汇10月6日｜惠誉：收购交易完成后，将派拉蒙天舞与华纳兄弟信用评级下调至BB级。",
+          "time": "",
+          "url": "https://www.gelonghui.com/live/2698675",
+          "cat": "经济"
+        },
+        {
+          "text": "格隆汇10月6日｜据外媒报道，沙特阿拉伯首都利雅得5日晚传出爆炸声。",
+          "time": "",
+          "url": "https://www.gelonghui.com/live/2698642",
+          "cat": "财经"
+        },
+        {
+          "text": "格隆汇10月6日｜据英国金融时报：华尔街银行推出创纪录的600亿美元芯片交易，涉及博通和Anthropic。",
+          "time": "",
+          "url": "https://www.gelonghui.com/live/2698640",
+          "cat": "科技"
+        },
+        {
+          "text": "美国纽约州宣布针对麻疹疫情进入灾难紧急状态格隆汇10月6日｜当地时间10月5日，美国纽约州州长凯西·霍楚尔发布命令称，纽约州针对麻疹疫情宣布进入灾难紧急状态，有效期为2026年10",
+          "time": "",
+          "url": "https://www.gelonghui.com/live/2698637",
+          "cat": "社会热点"
+        },
+        {
+          "text": "格隆汇10月6日｜据美国财经媒体Semafor：纽约联储正在拜访大型银行，审查它们对私人信贷公司的贷款情况。美联储官员对摩根大通(JPM.N)、富国银行、巴克莱(BCS.N)和摩根",
+          "time": "",
+          "url": "https://www.gelonghui.com/live/2698636",
+          "cat": "经济"
+        },
+        {
+          "text": "格隆汇10月6日｜市场消息：OpenAI已与Thrive、Andreessen Horowitz进行融资谈判；同时正与阿联酋基金及贝莱德商讨300亿美元融资轮。",
+          "time": "",
+          "url": "https://www.gelonghui.com/live/2698635",
+          "cat": "科技"
+        },
+        {
+          "text": "格隆汇10月6日｜美国总统特朗普抨击纽约时报“篡改”照片丑化特朗普家族旗下的酒店。",
+          "time": "",
+          "url": "https://www.gelonghui.com/live/2698629",
+          "cat": "财经"
+        },
+        {
+          "text": "PICO FAR EAST(00752.HK)获FMR LLC增持9万股",
+          "time": "",
+          "url": "https://www.gelonghui.com/news/5320620",
+          "cat": "财经"
+        },
+        {
+          "text": "北京首都机场股份(00694.HK)获WBT Value Limited增持123万股",
+          "time": "",
+          "url": "https://www.gelonghui.com/news/5320619",
+          "cat": "财经"
+        },
+        {
+          "text": "昭衍新药(06127.HK)获摩根士丹利增持45.7万股",
+          "time": "",
+          "url": "https://www.gelonghui.com/news/5320618",
+          "cat": "财经"
+        },
+        {
+          "text": "格隆汇APP",
+          "time": "",
+          "url": "https://www.gelonghui.com/official",
+          "cat": "科技"
+        },
+        {
+          "text": "格隆汇交易学苑",
+          "time": "",
+          "url": "https://www.gelonghui.com/official",
+          "cat": "财经"
+        },
+        {
+          "text": "格隆汇投资学苑",
+          "time": "",
+          "url": "https://www.gelonghui.com/official",
+          "cat": "财经"
+        },
+        {
+          "text": "格隆汇图解天下",
+          "time": "",
+          "url": "https://www.gelonghui.com/official",
+          "cat": "财经"
+        },
+        {
+          "text": "格隆汇财经早餐",
+          "time": "",
+          "url": "https://www.gelonghui.com/official",
+          "cat": "财经"
+        },
+        {
+          "text": "GPU在进场，电还没来：美国AI到底缺多少电？",
+          "time": "",
+          "url": "https://www.gelonghui.com/p/6875133",
+          "cat": "科技"
+        },
+        {
+          "text": "一汽丰田：“一汽丰田或将彻底退出历史舞台”等均为不实言论",
+          "time": "",
+          "url": "https://www.gelonghui.com/p/6874345",
+          "cat": "百强企业"
+        },
+        {
+          "text": "9月经济数据前瞻：PPI增速或达年内新高",
+          "time": "",
+          "url": "https://www.gelonghui.com/p/6875411",
+          "cat": "经济"
+        },
+        {
+          "text": "集体飙升！PCB又“炸”了",
+          "time": "",
+          "url": "https://www.gelonghui.com/p/6875571",
+          "cat": "财经"
+        },
+        {
+          "text": "港股收评：恒指涨0.28%重上24000点，PCB、半导体概念爆发",
+          "time": "",
+          "url": "https://www.gelonghui.com/p/6875605",
+          "cat": "科技"
+        },
+        {
+          "text": "亚太资金涌入东京市场！日经225突破70000点大关",
+          "time": "",
+          "url": "https://www.gelonghui.com/p/6874323",
+          "cat": "财经"
+        },
+        {
+          "text": "本周大事提醒：美联储决议、地缘巨震与A股节后第一枪！",
+          "time": "",
+          "url": "https://www.gelonghui.com/p/6874116",
+          "cat": "经济"
+        },
+        {
+          "text": "现金溢价退出窗口，好孩子国际(1086.HK)私有化背后的估值逻辑",
+          "time": "",
+          "url": "https://www.gelonghui.com/p/6874068",
+          "cat": "财经"
+        },
+        {
+          "text": "3名科学家获2026年诺贝尔生理学或医学奖",
+          "time": "",
+          "url": "https://www.gelonghui.com/p/6875773",
+          "cat": "财经"
+        },
+        {
+          "text": "再论系统思考的重要性",
+          "time": "",
+          "url": "https://www.gelonghui.com/p/6874208",
+          "cat": "财经"
+        },
+        {
+          "text": "缩量冰点！该不该持股过节？",
+          "time": "",
+          "url": "https://www.gelonghui.com/p/6847784",
+          "cat": "财经"
+        },
+        {
+          "text": "为什么美股可以指数长牛？",
+          "time": "",
+          "url": "https://www.gelonghui.com/p/6846834",
+          "cat": "财经"
+        },
+        {
+          "text": "节前逆势涨停！终于等到拐点？",
+          "time": "",
+          "url": "https://www.gelonghui.com/p/6870415",
+          "cat": "财经"
+        },
+        {
+          "text": "节前最后一天，医药股大爆发",
+          "time": "",
+          "url": "https://www.gelonghui.com/p/6865350",
+          "cat": "财经"
+        },
+        {
+          "text": "现在还能相信光吗？",
+          "time": "",
+          "url": "https://www.gelonghui.com/p/6873711",
+          "cat": "财经"
+        },
+        {
+          "text": "Anthropic，值不值2万亿美元？",
+          "time": "",
+          "url": "https://www.gelonghui.com/p/6872279",
+          "cat": "经济"
+        },
+        {
+          "text": "1500亿创纪录回购：为什么美股巨头赚得越多，越要把钱还给股东？",
+          "time": "",
+          "url": "https://www.gelonghui.com/p/6848715",
+          "cat": "财经"
+        }
+      ]
+    },
+    {
+      "rank": 2,
+      "key": "toutiao",
+      "name": "今日头条",
+      "color": "#2a6cff",
+      "items": [
+        {
+          "text": "中方10分钟收网缅北四大家族重要成员",
+          "time": "",
+          "url": "https://www.toutiao.com/trending/7693052468208992297/?category_name=topic_innerflow&event_type=hot_board&log_pb=%7B%22category_name%22%3A%22topic_innerflow%22%2C%22cluster_type%22%3A%226%22%2C%22enter_from%22%3A%22click_category%22%2C%22entrance_hotspot%22%3A%22outside%22%2C%22event_type%22%3A%22hot_board%22%2C%22hot_board_cluster_id%22%3A%227693052468208992297%22%2C%22hot_board_impr_id%22%3A%22202610060629152CBCFC5AACEC3285E99B%22%2C%22jump_page%22%3A%22hot_board_page%22%2C%22location%22%3A%22news_hot_card%22%2C%22page_location%22%3A%22hot_board_page%22%2C%22source%22%3A%22trending_tab%22%2C%22style_id%22%3A%2240132%22%2C%22title%22%3A%22%E4%B8%AD%E6%96%B910%E5%88%86%E9%92%9F%E6%94%B6%E7%BD%91%E7%BC%85%E5%8C%97%E5%9B%9B%E5%A4%A7%E5%AE%B6%E6%97%8F%E9%87%8D%E8%A6%81%E6%88%90%E5%91%98%22%7D&rank=&style_id=40132&topic_id=7693052468208992297",
+          "cat": "财经"
+        },
+        {
+          "text": "第一批返程的“大聪明”又失算了",
+          "time": "",
+          "url": "https://www.toutiao.com/trending/7692875083153408036/?category_name=topic_innerflow&event_type=hot_board&log_pb=%7B%22category_name%22%3A%22topic_innerflow%22%2C%22cluster_type%22%3A%226%22%2C%22enter_from%22%3A%22click_category%22%2C%22entrance_hotspot%22%3A%22outside%22%2C%22event_type%22%3A%22hot_board%22%2C%22hot_board_cluster_id%22%3A%227692875083153408036%22%2C%22hot_board_impr_id%22%3A%22202610060629152CBCFC5AACEC3285E99B%22%2C%22jump_page%22%3A%22hot_board_page%22%2C%22location%22%3A%22news_hot_card%22%2C%22page_location%22%3A%22hot_board_page%22%2C%22source%22%3A%22trending_tab%22%2C%22style_id%22%3A%2240132%22%2C%22title%22%3A%22%E7%AC%AC%E4%B8%80%E6%89%B9%E8%BF%94%E7%A8%8B%E7%9A%84%E2%80%9C%E5%A4%A7%E8%81%AA%E6%98%8E%E2%80%9D%E5%8F%88%E5%A4%B1%E7%AE%97%E4%BA%86%22%7D&rank=&style_id=40132&topic_id=7692875083153408036",
+          "cat": "财经"
+        },
+        {
+          "text": "假期过半，在照片中看见活力中国",
+          "time": "",
+          "url": "https://www.toutiao.com/article/7693112334583087659",
+          "cat": "财经"
+        },
+        {
+          "text": "被执行死刑的巫鸿明、白应苍出镜",
+          "time": "",
+          "url": "https://www.toutiao.com/trending/7692982754535358506/?category_name=topic_innerflow&event_type=hot_board&log_pb=%7B%22category_name%22%3A%22topic_innerflow%22%2C%22cluster_type%22%3A%2216%22%2C%22enter_from%22%3A%22click_category%22%2C%22entrance_hotspot%22%3A%22outside%22%2C%22event_type%22%3A%22hot_board%22%2C%22hot_board_cluster_id%22%3A%227692982754535358506%22%2C%22hot_board_impr_id%22%3A%22202610060629152CBCFC5AACEC3285E99B%22%2C%22jump_page%22%3A%22hot_board_page%22%2C%22location%22%3A%22news_hot_card%22%2C%22page_location%22%3A%22hot_board_page%22%2C%22source%22%3A%22trending_tab%22%2C%22style_id%22%3A%2240132%22%2C%22title%22%3A%22%E8%A2%AB%E6%89%A7%E8%A1%8C%E6%AD%BB%E5%88%91%E7%9A%84%E5%B7%AB%E9%B8%BF%E6%98%8E%E3%80%81%E7%99%BD%E5%BA%94%E8%8B%8D%E5%87%BA%E9%95%9C%22%7D&rank=&style_id=40132&topic_id=7692982754535358506",
+          "cat": "财经"
+        },
+        {
+          "text": "金价大跌后国庆上海金店排长队",
+          "time": "",
+          "url": "https://www.toutiao.com/trending/7693062547020398628/?category_name=topic_innerflow&event_type=hot_board&log_pb=%7B%22category_name%22%3A%22topic_innerflow%22%2C%22cluster_type%22%3A%220%22%2C%22enter_from%22%3A%22click_category%22%2C%22entrance_hotspot%22%3A%22outside%22%2C%22event_type%22%3A%22hot_board%22%2C%22hot_board_cluster_id%22%3A%227693062547020398628%22%2C%22hot_board_impr_id%22%3A%22202610060629152CBCFC5AACEC3285E99B%22%2C%22jump_page%22%3A%22hot_board_page%22%2C%22location%22%3A%22news_hot_card%22%2C%22page_location%22%3A%22hot_board_page%22%2C%22source%22%3A%22trending_tab%22%2C%22style_id%22%3A%2240132%22%2C%22title%22%3A%22%E9%87%91%E4%BB%B7%E5%A4%A7%E8%B7%8C%E5%90%8E%E5%9B%BD%E5%BA%86%E4%B8%8A%E6%B5%B7%E9%87%91%E5%BA%97%E6%8E%92%E9%95%BF%E9%98%9F%22%7D&rank=&style_id=40132&topic_id=7693062547020398628",
+          "cat": "财经"
+        },
+        {
+          "text": "年轻人开始不买景区冤种三件套了",
+          "time": "",
+          "url": "https://www.toutiao.com/trending/7692387862813101604/?category_name=topic_innerflow&event_type=hot_board&log_pb=%7B%22category_name%22%3A%22topic_innerflow%22%2C%22cluster_type%22%3A%221%22%2C%22enter_from%22%3A%22click_category%22%2C%22entrance_hotspot%22%3A%22outside%22%2C%22event_type%22%3A%22hot_board%22%2C%22hot_board_cluster_id%22%3A%227692387862813101604%22%2C%22hot_board_impr_id%22%3A%22202610060629152CBCFC5AACEC3285E99B%22%2C%22jump_page%22%3A%22hot_board_page%22%2C%22location%22%3A%22news_hot_card%22%2C%22page_location%22%3A%22hot_board_page%22%2C%22source%22%3A%22trending_tab%22%2C%22style_id%22%3A%2240132%22%2C%22title%22%3A%22%E5%B9%B4%E8%BD%BB%E4%BA%BA%E5%BC%80%E5%A7%8B%E4%B8%8D%E4%B9%B0%E6%99%AF%E5%8C%BA%E5%86%A4%E7%A7%8D%E4%B8%89%E4%BB%B6%E5%A5%97%E4%BA%86%22%7D&rank=&style_id=40132&topic_id=7692387862813101604",
+          "cat": "财经"
+        },
+        {
+          "text": "明珍珍临刑前画面曝光",
+          "time": "",
+          "url": "https://www.toutiao.com/trending/7693097153194950665/?category_name=topic_innerflow&event_type=hot_board&log_pb=%7B%22category_name%22%3A%22topic_innerflow%22%2C%22cluster_type%22%3A%226%22%2C%22enter_from%22%3A%22click_category%22%2C%22entrance_hotspot%22%3A%22outside%22%2C%22event_type%22%3A%22hot_board%22%2C%22hot_board_cluster_id%22%3A%227693097153194950665%22%2C%22hot_board_impr_id%22%3A%22202610060629152CBCFC5AACEC3285E99B%22%2C%22jump_page%22%3A%22hot_board_page%22%2C%22location%22%3A%22news_hot_card%22%2C%22page_location%22%3A%22hot_board_page%22%2C%22source%22%3A%22trending_tab%22%2C%22style_id%22%3A%2240132%22%2C%22title%22%3A%22%E6%98%8E%E7%8F%8D%E7%8F%8D%E4%B8%B4%E5%88%91%E5%89%8D%E7%94%BB%E9%9D%A2%E6%9B%9D%E5%85%89%22%7D&rank=&style_id=40132&topic_id=7693097153194950665",
+          "cat": "社会热点"
+        },
+        {
+          "text": "专家揭秘心血管“隐形杀手”",
+          "time": "",
+          "url": "https://www.toutiao.com/trending/7692682364191277099/?category_name=topic_innerflow&event_type=hot_board&log_pb=%7B%22category_name%22%3A%22topic_innerflow%22%2C%22cluster_type%22%3A%226%22%2C%22enter_from%22%3A%22click_category%22%2C%22entrance_hotspot%22%3A%22outside%22%2C%22event_type%22%3A%22hot_board%22%2C%22hot_board_cluster_id%22%3A%227692682364191277099%22%2C%22hot_board_impr_id%22%3A%22202610060629152CBCFC5AACEC3285E99B%22%2C%22jump_page%22%3A%22hot_board_page%22%2C%22location%22%3A%22news_hot_card%22%2C%22page_location%22%3A%22hot_board_page%22%2C%22source%22%3A%22trending_tab%22%2C%22style_id%22%3A%2240132%22%2C%22title%22%3A%22%E4%B8%93%E5%AE%B6%E6%8F%AD%E7%A7%98%E5%BF%83%E8%A1%80%E7%AE%A1%E2%80%9C%E9%9A%90%E5%BD%A2%E6%9D%80%E6%89%8B%E2%80%9D%22%7D&rank=&style_id=40132&topic_id=7692682364191277099",
+          "cat": "财经"
+        },
+        {
+          "text": "超10万份孕妇血样被偷运出境",
+          "time": "",
+          "url": "https://www.toutiao.com/trending/7692649726601396267/?category_name=topic_innerflow&event_type=hot_board&log_pb=%7B%22category_name%22%3A%22topic_innerflow%22%2C%22cluster_type%22%3A%228%22%2C%22enter_from%22%3A%22click_category%22%2C%22entrance_hotspot%22%3A%22outside%22%2C%22event_type%22%3A%22hot_board%22%2C%22hot_board_cluster_id%22%3A%227692649726601396267%22%2C%22hot_board_impr_id%22%3A%22202610060629152CBCFC5AACEC3285E99B%22%2C%22jump_page%22%3A%22hot_board_page%22%2C%22location%22%3A%22news_hot_card%22%2C%22page_location%22%3A%22hot_board_page%22%2C%22source%22%3A%22trending_tab%22%2C%22style_id%22%3A%2240132%22%2C%22title%22%3A%22%E8%B6%8510%E4%B8%87%E4%BB%BD%E5%AD%95%E5%A6%87%E8%A1%80%E6%A0%B7%E8%A2%AB%E5%81%B7%E8%BF%90%E5%87%BA%E5%A2%83%22%7D&rank=&style_id=40132&topic_id=7692649726601396267",
+          "cat": "财经"
+        },
+        {
+          "text": "中方曾三次约见缅北四大家族代表",
+          "time": "",
+          "url": "https://www.toutiao.com/trending/7692387862813265444/?category_name=topic_innerflow&event_type=hot_board&log_pb=%7B%22category_name%22%3A%22topic_innerflow%22%2C%22cluster_type%22%3A%221%22%2C%22enter_from%22%3A%22click_category%22%2C%22entrance_hotspot%22%3A%22outside%22%2C%22event_type%22%3A%22hot_board%22%2C%22hot_board_cluster_id%22%3A%227692387862813265444%22%2C%22hot_board_impr_id%22%3A%22202610060629152CBCFC5AACEC3285E99B%22%2C%22jump_page%22%3A%22hot_board_page%22%2C%22location%22%3A%22news_hot_card%22%2C%22page_location%22%3A%22hot_board_page%22%2C%22source%22%3A%22trending_tab%22%2C%22style_id%22%3A%2240132%22%2C%22title%22%3A%22%E4%B8%AD%E6%96%B9%E6%9B%BE%E4%B8%89%E6%AC%A1%E7%BA%A6%E8%A7%81%E7%BC%85%E5%8C%97%E5%9B%9B%E5%A4%A7%E5%AE%B6%E6%97%8F%E4%BB%A3%E8%A1%A8%22%7D&rank=&style_id=40132&topic_id=7692387862813265444",
+          "cat": "财经"
+        },
+        {
+          "text": "医生辟谣高铁座椅或为HPV感染重灾区",
+          "time": "",
+          "url": "https://www.toutiao.com/trending/7691994895783411738/?category_name=topic_innerflow&event_type=hot_board&log_pb=%7B%22category_name%22%3A%22topic_innerflow%22%2C%22cluster_type%22%3A%224%22%2C%22enter_from%22%3A%22click_category%22%2C%22entrance_hotspot%22%3A%22outside%22%2C%22event_type%22%3A%22hot_board%22%2C%22hot_board_cluster_id%22%3A%227691994895783411738%22%2C%22hot_board_impr_id%22%3A%22202610060629152CBCFC5AACEC3285E99B%22%2C%22jump_page%22%3A%22hot_board_page%22%2C%22location%22%3A%22news_hot_card%22%2C%22page_location%22%3A%22hot_board_page%22%2C%22source%22%3A%22trending_tab%22%2C%22style_id%22%3A%2240132%22%2C%22title%22%3A%22%E5%8C%BB%E7%94%9F%E8%BE%9F%E8%B0%A3%E9%AB%98%E9%93%81%E5%BA%A7%E6%A4%85%E6%88%96%E4%B8%BAHPV%E6%84%9F%E6%9F%93%E9%87%8D%E7%81%BE%E5%8C%BA%22%7D&rank=&style_id=40132&topic_id=7691994895783411738",
+          "cat": "财经"
+        },
+        {
+          "text": "日本罕见1天3次向美国强烈抗议",
+          "time": "",
+          "url": "https://www.toutiao.com/trending/7692950590237756937/?category_name=topic_innerflow&event_type=hot_board&log_pb=%7B%22category_name%22%3A%22topic_innerflow%22%2C%22cluster_type%22%3A%222%22%2C%22enter_from%22%3A%22click_category%22%2C%22entrance_hotspot%22%3A%22outside%22%2C%22event_type%22%3A%22hot_board%22%2C%22hot_board_cluster_id%22%3A%227692950590237756937%22%2C%22hot_board_impr_id%22%3A%22202610060629152CBCFC5AACEC3285E99B%22%2C%22jump_page%22%3A%22hot_board_page%22%2C%22location%22%3A%22news_hot_card%22%2C%22page_location%22%3A%22hot_board_page%22%2C%22source%22%3A%22trending_tab%22%2C%22style_id%22%3A%2240132%22%2C%22title%22%3A%22%E6%97%A5%E6%9C%AC%E7%BD%95%E8%A7%811%E5%A4%A93%E6%AC%A1%E5%90%91%E7%BE%8E%E5%9B%BD%E5%BC%BA%E7%83%88%E6%8A%97%E8%AE%AE%22%7D&rank=&style_id=40132&topic_id=7692950590237756937",
+          "cat": "社会热点"
+        },
+        {
+          "text": "缅北电诈头目家中钱多到发霉",
+          "time": "",
+          "url": "https://www.toutiao.com/trending/7692952413359652906/?category_name=topic_innerflow&event_type=hot_board&log_pb=%7B%22category_name%22%3A%22topic_innerflow%22%2C%22cluster_type%22%3A%222%22%2C%22enter_from%22%3A%22click_category%22%2C%22entrance_hotspot%22%3A%22outside%22%2C%22event_type%22%3A%22hot_board%22%2C%22hot_board_cluster_id%22%3A%227692952413359652906%22%2C%22hot_board_impr_id%22%3A%22202610060629152CBCFC5AACEC3285E99B%22%2C%22jump_page%22%3A%22hot_board_page%22%2C%22location%22%3A%22news_hot_card%22%2C%22page_location%22%3A%22hot_board_page%22%2C%22source%22%3A%22trending_tab%22%2C%22style_id%22%3A%2240132%22%2C%22title%22%3A%22%E7%BC%85%E5%8C%97%E7%94%B5%E8%AF%88%E5%A4%B4%E7%9B%AE%E5%AE%B6%E4%B8%AD%E9%92%B1%E5%A4%9A%E5%88%B0%E5%8F%91%E9%9C%89%22%7D&rank=&style_id=40132&topic_id=7692952413359652906",
+          "cat": "财经"
+        },
+        {
+          "text": "老外动作过于热情女特警礼貌拒绝",
+          "time": "",
+          "url": "https://www.toutiao.com/trending/7692654888241250313/?category_name=topic_innerflow&event_type=hot_board&log_pb=%7B%22category_name%22%3A%22topic_innerflow%22%2C%22cluster_type%22%3A%228%22%2C%22enter_from%22%3A%22click_category%22%2C%22entrance_hotspot%22%3A%22outside%22%2C%22event_type%22%3A%22hot_board%22%2C%22hot_board_cluster_id%22%3A%227692654888241250313%22%2C%22hot_board_impr_id%22%3A%22202610060629152CBCFC5AACEC3285E99B%22%2C%22jump_page%22%3A%22hot_board_page%22%2C%22location%22%3A%22news_hot_card%22%2C%22page_location%22%3A%22hot_board_page%22%2C%22source%22%3A%22trending_tab%22%2C%22style_id%22%3A%2240132%22%2C%22title%22%3A%22%E8%80%81%E5%A4%96%E5%8A%A8%E4%BD%9C%E8%BF%87%E4%BA%8E%E7%83%AD%E6%83%85%E5%A5%B3%E7%89%B9%E8%AD%A6%E7%A4%BC%E8%B2%8C%E6%8B%92%E7%BB%9D%22%7D&rank=&style_id=40132&topic_id=7692654888241250313",
+          "cat": "财经"
+        },
+        {
+          "text": "《变形计》李勒优回应与“晋妈”关系",
+          "time": "",
+          "url": "https://www.toutiao.com/trending/7692681397429616666/?category_name=topic_innerflow&event_type=hot_board&log_pb=%7B%22category_name%22%3A%22topic_innerflow%22%2C%22cluster_type%22%3A%2216%22%2C%22enter_from%22%3A%22click_category%22%2C%22entrance_hotspot%22%3A%22outside%22%2C%22event_type%22%3A%22hot_board%22%2C%22hot_board_cluster_id%22%3A%227692681397429616666%22%2C%22hot_board_impr_id%22%3A%22202610060629152CBCFC5AACEC3285E99B%22%2C%22jump_page%22%3A%22hot_board_page%22%2C%22location%22%3A%22news_hot_card%22%2C%22page_location%22%3A%22hot_board_page%22%2C%22source%22%3A%22trending_tab%22%2C%22style_id%22%3A%2240132%22%2C%22title%22%3A%22%E3%80%8A%E5%8F%98%E5%BD%A2%E8%AE%A1%E3%80%8B%E6%9D%8E%E5%8B%92%E4%BC%98%E5%9B%9E%E5%BA%94%E4%B8%8E%E2%80%9C%E6%99%8B%E5%A6%88%E2%80%9D%E5%85%B3%E7%B3%BB%22%7D&rank=&style_id=40132&topic_id=7692681397429616666",
+          "cat": "财经"
+        },
+        {
+          "text": "缅北电诈回流人员自述被割肾经历",
+          "time": "",
+          "url": "https://www.toutiao.com/trending/7693016825923178034/?category_name=topic_innerflow&event_type=hot_board&log_pb=%7B%22category_name%22%3A%22topic_innerflow%22%2C%22cluster_type%22%3A%221%22%2C%22enter_from%22%3A%22click_category%22%2C%22entrance_hotspot%22%3A%22outside%22%2C%22event_type%22%3A%22hot_board%22%2C%22hot_board_cluster_id%22%3A%227693016825923178034%22%2C%22hot_board_impr_id%22%3A%22202610060629152CBCFC5AACEC3285E99B%22%2C%22jump_page%22%3A%22hot_board_page%22%2C%22location%22%3A%22news_hot_card%22%2C%22page_location%22%3A%22hot_board_page%22%2C%22source%22%3A%22trending_tab%22%2C%22style_id%22%3A%2240132%22%2C%22title%22%3A%22%E7%BC%85%E5%8C%97%E7%94%B5%E8%AF%88%E5%9B%9E%E6%B5%81%E4%BA%BA%E5%91%98%E8%87%AA%E8%BF%B0%E8%A2%AB%E5%89%B2%E8%82%BE%E7%BB%8F%E5%8E%86%22%7D&rank=&style_id=40132&topic_id=7693016825923178034",
+          "cat": "财经"
+        },
+        {
+          "text": "巨型“充电宝”驶进多地服务区",
+          "time": "",
+          "url": "https://www.toutiao.com/trending/7692911321746030655/?category_name=topic_innerflow&event_type=hot_board&log_pb=%7B%22category_name%22%3A%22topic_innerflow%22%2C%22cluster_type%22%3A%226%22%2C%22enter_from%22%3A%22click_category%22%2C%22entrance_hotspot%22%3A%22outside%22%2C%22event_type%22%3A%22hot_board%22%2C%22hot_board_cluster_id%22%3A%227692911321746030655%22%2C%22hot_board_impr_id%22%3A%22202610060629152CBCFC5AACEC3285E99B%22%2C%22jump_page%22%3A%22hot_board_page%22%2C%22location%22%3A%22news_hot_card%22%2C%22page_location%22%3A%22hot_board_page%22%2C%22source%22%3A%22trending_tab%22%2C%22style_id%22%3A%2240132%22%2C%22title%22%3A%22%E5%B7%A8%E5%9E%8B%E2%80%9C%E5%85%85%E7%94%B5%E5%AE%9D%E2%80%9D%E9%A9%B6%E8%BF%9B%E5%A4%9A%E5%9C%B0%E6%9C%8D%E5%8A%A1%E5%8C%BA%22%7D&rank=&style_id=40132&topic_id=7692911321746030655",
+          "cat": "财经"
+        },
+        {
+          "text": "央视迎来两位新主播",
+          "time": "",
+          "url": "https://www.toutiao.com/trending/7692785578697556009/?category_name=topic_innerflow&event_type=hot_board&log_pb=%7B%22category_name%22%3A%22topic_innerflow%22%2C%22cluster_type%22%3A%221%22%2C%22enter_from%22%3A%22click_category%22%2C%22entrance_hotspot%22%3A%22outside%22%2C%22event_type%22%3A%22hot_board%22%2C%22hot_board_cluster_id%22%3A%227692785578697556009%22%2C%22hot_board_impr_id%22%3A%22202610060629152CBCFC5AACEC3285E99B%22%2C%22jump_page%22%3A%22hot_board_page%22%2C%22location%22%3A%22news_hot_card%22%2C%22page_location%22%3A%22hot_board_page%22%2C%22source%22%3A%22trending_tab%22%2C%22style_id%22%3A%2240132%22%2C%22title%22%3A%22%E5%A4%AE%E8%A7%86%E8%BF%8E%E6%9D%A5%E4%B8%A4%E4%BD%8D%E6%96%B0%E4%B8%BB%E6%92%AD%22%7D&rank=&style_id=40132&topic_id=7692785578697556009",
+          "cat": "财经"
+        },
+        {
+          "text": "鲍军峰被抓画面曝光",
+          "time": "",
+          "url": "https://www.toutiao.com/trending/7693062442045390889/?category_name=topic_innerflow&event_type=hot_board&log_pb=%7B%22category_name%22%3A%22topic_innerflow%22%2C%22cluster_type%22%3A%228%22%2C%22enter_from%22%3A%22click_category%22%2C%22entrance_hotspot%22%3A%22outside%22%2C%22event_type%22%3A%22hot_board%22%2C%22hot_board_cluster_id%22%3A%227693062442045390889%22%2C%22hot_board_impr_id%22%3A%22202610060629152CBCFC5AACEC3285E99B%22%2C%22jump_page%22%3A%22hot_board_page%22%2C%22location%22%3A%22news_hot_card%22%2C%22page_location%22%3A%22hot_board_page%22%2C%22source%22%3A%22trending_tab%22%2C%22style_id%22%3A%2240132%22%2C%22title%22%3A%22%E9%B2%8D%E5%86%9B%E5%B3%B0%E8%A2%AB%E6%8A%93%E7%94%BB%E9%9D%A2%E6%9B%9D%E5%85%89%22%7D&rank=&style_id=40132&topic_id=7693062442045390889",
+          "cat": "社会热点"
+        },
+        {
+          "text": "美日导弹将部署与那国岛距台110公里",
+          "time": "",
+          "url": "https://www.toutiao.com/trending/7692616970865164351/?category_name=topic_innerflow&event_type=hot_board&log_pb=%7B%22category_name%22%3A%22topic_innerflow%22%2C%22cluster_type%22%3A%226%22%2C%22enter_from%22%3A%22click_category%22%2C%22entrance_hotspot%22%3A%22outside%22%2C%22event_type%22%3A%22hot_board%22%2C%22hot_board_cluster_id%22%3A%227692616970865164351%22%2C%22hot_board_impr_id%22%3A%22202610060629152CBCFC5AACEC3285E99B%22%2C%22jump_page%22%3A%22hot_board_page%22%2C%22location%22%3A%22news_hot_card%22%2C%22page_location%22%3A%22hot_board_page%22%2C%22source%22%3A%22trending_tab%22%2C%22style_id%22%3A%2240132%22%2C%22title%22%3A%22%E7%BE%8E%E6%97%A5%E5%AF%BC%E5%BC%B9%E5%B0%86%E9%83%A8%E7%BD%B2%E4%B8%8E%E9%82%A3%E5%9B%BD%E5%B2%9B%E8%B7%9D%E5%8F%B0110%E5%85%AC%E9%87%8C%22%7D&rank=&style_id=40132&topic_id=7692616970865164351",
+          "cat": "军事"
+        },
+        {
+          "text": "评论员：两岸走向统一是历史必然",
+          "time": "",
+          "url": "https://www.toutiao.com/trending/7692462607325429803/?category_name=topic_innerflow&event_type=hot_board&log_pb=%7B%22category_name%22%3A%22topic_innerflow%22%2C%22cluster_type%22%3A%226%22%2C%22enter_from%22%3A%22click_category%22%2C%22entrance_hotspot%22%3A%22outside%22%2C%22event_type%22%3A%22hot_board%22%2C%22hot_board_cluster_id%22%3A%227692462607325429803%22%2C%22hot_board_impr_id%22%3A%22202610060629152CBCFC5AACEC3285E99B%22%2C%22jump_page%22%3A%22hot_board_page%22%2C%22location%22%3A%22news_hot_card%22%2C%22page_location%22%3A%22hot_board_page%22%2C%22source%22%3A%22trending_tab%22%2C%22style_id%22%3A%2240132%22%2C%22title%22%3A%22%E8%AF%84%E8%AE%BA%E5%91%98%EF%BC%9A%E4%B8%A4%E5%B2%B8%E8%B5%B0%E5%90%91%E7%BB%9F%E4%B8%80%E6%98%AF%E5%8E%86%E5%8F%B2%E5%BF%85%E7%84%B6%22%7D&rank=&style_id=40132&topic_id=7692462607325429803",
+          "cat": "政治政策"
+        },
+        {
+          "text": "格力技工学校报到现场排起长队",
+          "time": "",
+          "url": "https://www.toutiao.com/trending/7693017598690315786/?category_name=topic_innerflow&event_type=hot_board&log_pb=%7B%22category_name%22%3A%22topic_innerflow%22%2C%22cluster_type%22%3A%222%22%2C%22enter_from%22%3A%22click_category%22%2C%22entrance_hotspot%22%3A%22outside%22%2C%22event_type%22%3A%22hot_board%22%2C%22hot_board_cluster_id%22%3A%227693017598690315786%22%2C%22hot_board_impr_id%22%3A%22202610060629152CBCFC5AACEC3285E99B%22%2C%22jump_page%22%3A%22hot_board_page%22%2C%22location%22%3A%22news_hot_card%22%2C%22page_location%22%3A%22hot_board_page%22%2C%22source%22%3A%22trending_tab%22%2C%22style_id%22%3A%2240132%22%2C%22title%22%3A%22%E6%A0%BC%E5%8A%9B%E6%8A%80%E5%B7%A5%E5%AD%A6%E6%A0%A1%E6%8A%A5%E5%88%B0%E7%8E%B0%E5%9C%BA%E6%8E%92%E8%B5%B7%E9%95%BF%E9%98%9F%22%7D&rank=&style_id=40132&topic_id=7693017598690315786",
+          "cat": "财经"
+        },
+        {
+          "text": "冲绳知事谈驻日美军杀人案多次发笑",
+          "time": "",
+          "url": "https://www.toutiao.com/trending/7692965525126725678/?category_name=topic_innerflow&event_type=hot_board&log_pb=%7B%22category_name%22%3A%22topic_innerflow%22%2C%22cluster_type%22%3A%221%22%2C%22enter_from%22%3A%22click_category%22%2C%22entrance_hotspot%22%3A%22outside%22%2C%22event_type%22%3A%22hot_board%22%2C%22hot_board_cluster_id%22%3A%227692965525126725678%22%2C%22hot_board_impr_id%22%3A%22202610060629152CBCFC5AACEC3285E99B%22%2C%22jump_page%22%3A%22hot_board_page%22%2C%22location%22%3A%22news_hot_card%22%2C%22page_location%22%3A%22hot_board_page%22%2C%22source%22%3A%22trending_tab%22%2C%22style_id%22%3A%2240132%22%2C%22title%22%3A%22%E5%86%B2%E7%BB%B3%E7%9F%A5%E4%BA%8B%E8%B0%88%E9%A9%BB%E6%97%A5%E7%BE%8E%E5%86%9B%E6%9D%80%E4%BA%BA%E6%A1%88%E5%A4%9A%E6%AC%A1%E5%8F%91%E7%AC%91%22%7D&rank=&style_id=40132&topic_id=7692965525126725678",
+          "cat": "财经"
+        },
+        {
+          "text": "王冰冰现场观看郑钦文比赛",
+          "time": "",
+          "url": "https://www.toutiao.com/trending/7692720349624451108/?category_name=topic_innerflow&event_type=hot_board&log_pb=%7B%22category_name%22%3A%22topic_innerflow%22%2C%22cluster_type%22%3A%228%22%2C%22enter_from%22%3A%22click_category%22%2C%22entrance_hotspot%22%3A%22outside%22%2C%22event_type%22%3A%22hot_board%22%2C%22hot_board_cluster_id%22%3A%227692720349624451108%22%2C%22hot_board_impr_id%22%3A%22202610060629152CBCFC5AACEC3285E99B%22%2C%22jump_page%22%3A%22hot_board_page%22%2C%22location%22%3A%22news_hot_card%22%2C%22page_location%22%3A%22hot_board_page%22%2C%22source%22%3A%22trending_tab%22%2C%22style_id%22%3A%2240132%22%2C%22title%22%3A%22%E7%8E%8B%E5%86%B0%E5%86%B0%E7%8E%B0%E5%9C%BA%E8%A7%82%E7%9C%8B%E9%83%91%E9%92%A6%E6%96%87%E6%AF%94%E8%B5%9B%22%7D&rank=&style_id=40132&topic_id=7692720349624451108",
+          "cat": "财经"
+        },
+        {
+          "text": "国庆节中国人海外存在感“拉满”",
+          "time": "",
+          "url": "https://www.toutiao.com/trending/7692748246295117865/?category_name=topic_innerflow&event_type=hot_board&log_pb=%7B%22category_name%22%3A%22topic_innerflow%22%2C%22cluster_type%22%3A%226%22%2C%22enter_from%22%3A%22click_category%22%2C%22entrance_hotspot%22%3A%22outside%22%2C%22event_type%22%3A%22hot_board%22%2C%22hot_board_cluster_id%22%3A%227692748246295117865%22%2C%22hot_board_impr_id%22%3A%22202610060629152CBCFC5AACEC3285E99B%22%2C%22jump_page%22%3A%22hot_board_page%22%2C%22location%22%3A%22news_hot_card%22%2C%22page_location%22%3A%22hot_board_page%22%2C%22source%22%3A%22trending_tab%22%2C%22style_id%22%3A%2240132%22%2C%22title%22%3A%22%E5%9B%BD%E5%BA%86%E8%8A%82%E4%B8%AD%E5%9B%BD%E4%BA%BA%E6%B5%B7%E5%A4%96%E5%AD%98%E5%9C%A8%E6%84%9F%E2%80%9C%E6%8B%89%E6%BB%A1%E2%80%9D%22%7D&rank=&style_id=40132&topic_id=7692748246295117865",
+          "cat": "财经"
+        },
+        {
+          "text": "孙颖莎重返世排第一后迎首胜",
+          "time": "",
+          "url": "https://www.toutiao.com/trending/7693156228779740715/?category_name=topic_innerflow&event_type=hot_board&log_pb=%7B%22category_name%22%3A%22topic_innerflow%22%2C%22cluster_type%22%3A%225%22%2C%22enter_from%22%3A%22click_category%22%2C%22entrance_hotspot%22%3A%22outside%22%2C%22event_type%22%3A%22hot_board%22%2C%22hot_board_cluster_id%22%3A%227693156228779740715%22%2C%22hot_board_impr_id%22%3A%22202610060629152CBCFC5AACEC3285E99B%22%2C%22jump_page%22%3A%22hot_board_page%22%2C%22location%22%3A%22news_hot_card%22%2C%22page_location%22%3A%22hot_board_page%22%2C%22source%22%3A%22trending_tab%22%2C%22style_id%22%3A%2240132%22%2C%22title%22%3A%22%E5%AD%99%E9%A2%96%E8%8E%8E%E9%87%8D%E8%BF%94%E4%B8%96%E6%8E%92%E7%AC%AC%E4%B8%80%E5%90%8E%E8%BF%8E%E9%A6%96%E8%83%9C%22%7D&rank=&style_id=40132&topic_id=7693156228779740715",
+          "cat": "财经"
+        },
+        {
+          "text": "俄方称德总理访乌是“血腥公关”",
+          "time": "",
+          "url": "https://www.toutiao.com/trending/7692711040294846483/?category_name=topic_innerflow&event_type=hot_board&log_pb=%7B%22category_name%22%3A%22topic_innerflow%22%2C%22cluster_type%22%3A%226%22%2C%22enter_from%22%3A%22click_category%22%2C%22entrance_hotspot%22%3A%22outside%22%2C%22event_type%22%3A%22hot_board%22%2C%22hot_board_cluster_id%22%3A%227692711040294846483%22%2C%22hot_board_impr_id%22%3A%22202610060629152CBCFC5AACEC3285E99B%22%2C%22jump_page%22%3A%22hot_board_page%22%2C%22location%22%3A%22news_hot_card%22%2C%22page_location%22%3A%22hot_board_page%22%2C%22source%22%3A%22trending_tab%22%2C%22style_id%22%3A%2240132%22%2C%22title%22%3A%22%E4%BF%84%E6%96%B9%E7%A7%B0%E5%BE%B7%E6%80%BB%E7%90%86%E8%AE%BF%E4%B9%8C%E6%98%AF%E2%80%9C%E8%A1%80%E8%85%A5%E5%85%AC%E5%85%B3%E2%80%9D%22%7D&rank=&style_id=40132&topic_id=7692711040294846483",
+          "cat": "政治政策"
+        },
+        {
+          "text": "亚运国足主帅称这代球员有望进世界杯",
+          "time": "",
+          "url": "https://www.toutiao.com/trending/7692960933366304266/?category_name=topic_innerflow&event_type=hot_board&log_pb=%7B%22category_name%22%3A%22topic_innerflow%22%2C%22cluster_type%22%3A%221%22%2C%22enter_from%22%3A%22click_category%22%2C%22entrance_hotspot%22%3A%22outside%22%2C%22event_type%22%3A%22hot_board%22%2C%22hot_board_cluster_id%22%3A%227692960933366304266%22%2C%22hot_board_impr_id%22%3A%22202610060629152CBCFC5AACEC3285E99B%22%2C%22jump_page%22%3A%22hot_board_page%22%2C%22location%22%3A%22news_hot_card%22%2C%22page_location%22%3A%22hot_board_page%22%2C%22source%22%3A%22trending_tab%22%2C%22style_id%22%3A%2240132%22%2C%22title%22%3A%22%E4%BA%9A%E8%BF%90%E5%9B%BD%E8%B6%B3%E4%B8%BB%E5%B8%85%E7%A7%B0%E8%BF%99%E4%BB%A3%E7%90%83%E5%91%98%E6%9C%89%E6%9C%9B%E8%BF%9B%E4%B8%96%E7%95%8C%E6%9D%AF%22%7D&rank=&style_id=40132&topic_id=7692960933366304266",
+          "cat": "财经"
+        },
+        {
+          "text": "郑合惠子：不强行共情杜翠雀的恶",
+          "time": "",
+          "url": "https://www.toutiao.com/trending/7692486913731690550/?category_name=topic_innerflow&event_type=hot_board&log_pb=%7B%22category_name%22%3A%22topic_innerflow%22%2C%22cluster_type%22%3A%226%22%2C%22enter_from%22%3A%22click_category%22%2C%22entrance_hotspot%22%3A%22outside%22%2C%22event_type%22%3A%22hot_board%22%2C%22hot_board_cluster_id%22%3A%227692486913731690550%22%2C%22hot_board_impr_id%22%3A%22202610060629152CBCFC5AACEC3285E99B%22%2C%22jump_page%22%3A%22hot_board_page%22%2C%22location%22%3A%22news_hot_card%22%2C%22page_location%22%3A%22hot_board_page%22%2C%22source%22%3A%22trending_tab%22%2C%22style_id%22%3A%2240132%22%2C%22title%22%3A%22%E9%83%91%E5%90%88%E6%83%A0%E5%AD%90%EF%BC%9A%E4%B8%8D%E5%BC%BA%E8%A1%8C%E5%85%B1%E6%83%85%E6%9D%9C%E7%BF%A0%E9%9B%80%E7%9A%84%E6%81%B6%22%7D&rank=&style_id=40132&topic_id=7692486913731690550",
+          "cat": "财经"
+        },
+        {
+          "text": "央视公开佤邦副总司令落网画面",
+          "time": "",
+          "url": "https://www.toutiao.com/trending/7693064744177532991/?category_name=topic_innerflow&event_type=hot_board&log_pb=%7B%22category_name%22%3A%22topic_innerflow%22%2C%22cluster_type%22%3A%229%22%2C%22enter_from%22%3A%22click_category%22%2C%22entrance_hotspot%22%3A%22outside%22%2C%22event_type%22%3A%22hot_board%22%2C%22hot_board_cluster_id%22%3A%227693064744177532991%22%2C%22hot_board_impr_id%22%3A%22202610060629152CBCFC5AACEC3285E99B%22%2C%22jump_page%22%3A%22hot_board_page%22%2C%22location%22%3A%22news_hot_card%22%2C%22page_location%22%3A%22hot_board_page%22%2C%22source%22%3A%22trending_tab%22%2C%22style_id%22%3A%2240132%22%2C%22title%22%3A%22%E5%A4%AE%E8%A7%86%E5%85%AC%E5%BC%80%E4%BD%A4%E9%82%A6%E5%89%AF%E6%80%BB%E5%8F%B8%E4%BB%A4%E8%90%BD%E7%BD%91%E7%94%BB%E9%9D%A2%22%7D&rank=&style_id=40132&topic_id=7693064744177532991",
+          "cat": "财经"
+        },
+        {
+          "text": "长春队夺首届“东北超”冠军",
+          "time": "",
+          "url": "https://www.toutiao.com/trending/7693179964648132146/?category_name=topic_innerflow&event_type=hot_board&log_pb=%7B%22category_name%22%3A%22topic_innerflow%22%2C%22cluster_type%22%3A%222%22%2C%22enter_from%22%3A%22click_category%22%2C%22entrance_hotspot%22%3A%22outside%22%2C%22event_type%22%3A%22hot_board%22%2C%22hot_board_cluster_id%22%3A%227693179964648132146%22%2C%22hot_board_impr_id%22%3A%22202610060629152CBCFC5AACEC3285E99B%22%2C%22jump_page%22%3A%22hot_board_page%22%2C%22location%22%3A%22news_hot_card%22%2C%22page_location%22%3A%22hot_board_page%22%2C%22source%22%3A%22trending_tab%22%2C%22style_id%22%3A%2240132%22%2C%22title%22%3A%22%E9%95%BF%E6%98%A5%E9%98%9F%E5%A4%BA%E9%A6%96%E5%B1%8A%E2%80%9C%E4%B8%9C%E5%8C%97%E8%B6%85%E2%80%9D%E5%86%A0%E5%86%9B%22%7D&rank=&style_id=40132&topic_id=7693179964648132146",
+          "cat": "财经"
+        },
+        {
+          "text": "动作演员何麦离世",
+          "time": "",
+          "url": "https://www.toutiao.com/trending/7693081039589163044/?category_name=topic_innerflow&event_type=hot_board&log_pb=%7B%22category_name%22%3A%22topic_innerflow%22%2C%22cluster_type%22%3A%220%22%2C%22enter_from%22%3A%22click_category%22%2C%22entrance_hotspot%22%3A%22outside%22%2C%22event_type%22%3A%22hot_board%22%2C%22hot_board_cluster_id%22%3A%227693081039589163044%22%2C%22hot_board_impr_id%22%3A%22202610060629152CBCFC5AACEC3285E99B%22%2C%22jump_page%22%3A%22hot_board_page%22%2C%22location%22%3A%22news_hot_card%22%2C%22page_location%22%3A%22hot_board_page%22%2C%22source%22%3A%22trending_tab%22%2C%22style_id%22%3A%2240132%22%2C%22title%22%3A%22%E5%8A%A8%E4%BD%9C%E6%BC%94%E5%91%98%E4%BD%95%E9%BA%A6%E7%A6%BB%E4%B8%96%22%7D&rank=&style_id=40132&topic_id=7693081039589163044",
+          "cat": "财经"
+        },
+        {
+          "text": "日本对美国抗议有用吗",
+          "time": "",
+          "url": "https://www.toutiao.com/trending/7692994178204290570/?category_name=topic_innerflow&event_type=hot_board&log_pb=%7B%22category_name%22%3A%22topic_innerflow%22%2C%22cluster_type%22%3A%221%22%2C%22enter_from%22%3A%22click_category%22%2C%22entrance_hotspot%22%3A%22outside%22%2C%22event_type%22%3A%22hot_board%22%2C%22hot_board_cluster_id%22%3A%227692994178204290570%22%2C%22hot_board_impr_id%22%3A%22202610060629152CBCFC5AACEC3285E99B%22%2C%22jump_page%22%3A%22hot_board_page%22%2C%22location%22%3A%22news_hot_card%22%2C%22page_location%22%3A%22hot_board_page%22%2C%22source%22%3A%22trending_tab%22%2C%22style_id%22%3A%2240132%22%2C%22title%22%3A%22%E6%97%A5%E6%9C%AC%E5%AF%B9%E7%BE%8E%E5%9B%BD%E6%8A%97%E8%AE%AE%E6%9C%89%E7%94%A8%E5%90%97%22%7D&rank=&style_id=40132&topic_id=7692994178204290570",
+          "cat": "社会热点"
+        },
+        {
+          "text": "重庆酉阳发生盗矿案件 7人死亡",
+          "time": "",
+          "url": "https://www.toutiao.com/trending/7693197754847202879/?category_name=topic_innerflow&event_type=hot_board&log_pb=%7B%22category_name%22%3A%22topic_innerflow%22%2C%22cluster_type%22%3A%225%22%2C%22enter_from%22%3A%22click_category%22%2C%22entrance_hotspot%22%3A%22outside%22%2C%22event_type%22%3A%22hot_board%22%2C%22hot_board_cluster_id%22%3A%227693197754847202879%22%2C%22hot_board_impr_id%22%3A%22202610060629152CBCFC5AACEC3285E99B%22%2C%22jump_page%22%3A%22hot_board_page%22%2C%22location%22%3A%22news_hot_card%22%2C%22page_location%22%3A%22hot_board_page%22%2C%22source%22%3A%22trending_tab%22%2C%22style_id%22%3A%2240132%22%2C%22title%22%3A%22%E9%87%8D%E5%BA%86%E9%85%89%E9%98%B3%E5%8F%91%E7%94%9F%E7%9B%97%E7%9F%BF%E6%A1%88%E4%BB%B6+7%E4%BA%BA%E6%AD%BB%E4%BA%A1%22%7D&rank=&style_id=40132&topic_id=7693197754847202879",
+          "cat": "社会热点"
+        },
+        {
+          "text": "大兴安岭的秋看一眼就醉了",
+          "time": "",
+          "url": "https://www.toutiao.com/trending/7692592754895028250/?category_name=topic_innerflow&event_type=hot_board&log_pb=%7B%22category_name%22%3A%22topic_innerflow%22%2C%22cluster_type%22%3A%226%22%2C%22enter_from%22%3A%22click_category%22%2C%22entrance_hotspot%22%3A%22outside%22%2C%22event_type%22%3A%22hot_board%22%2C%22hot_board_cluster_id%22%3A%227692592754895028250%22%2C%22hot_board_impr_id%22%3A%22202610060629152CBCFC5AACEC3285E99B%22%2C%22jump_page%22%3A%22hot_board_page%22%2C%22location%22%3A%22news_hot_card%22%2C%22page_location%22%3A%22hot_board_page%22%2C%22source%22%3A%22trending_tab%22%2C%22style_id%22%3A%2240132%22%2C%22title%22%3A%22%E5%A4%A7%E5%85%B4%E5%AE%89%E5%B2%AD%E7%9A%84%E7%A7%8B%E7%9C%8B%E4%B8%80%E7%9C%BC%E5%B0%B1%E9%86%89%E4%BA%86%22%7D&rank=&style_id=40132&topic_id=7692592754895028250",
+          "cat": "财经"
+        },
+        {
+          "text": "中国航协：乘务员人格尊严不容践踏",
+          "time": "",
+          "url": "https://www.toutiao.com/trending/7692070251114020874/?category_name=topic_innerflow&event_type=hot_board&log_pb=%7B%22category_name%22%3A%22topic_innerflow%22%2C%22cluster_type%22%3A%226%22%2C%22enter_from%22%3A%22click_category%22%2C%22entrance_hotspot%22%3A%22outside%22%2C%22event_type%22%3A%22hot_board%22%2C%22hot_board_cluster_id%22%3A%227692070251114020874%22%2C%22hot_board_impr_id%22%3A%22202610060629152CBCFC5AACEC3285E99B%22%2C%22jump_page%22%3A%22hot_board_page%22%2C%22location%22%3A%22news_hot_card%22%2C%22page_location%22%3A%22hot_board_page%22%2C%22source%22%3A%22trending_tab%22%2C%22style_id%22%3A%2240132%22%2C%22title%22%3A%22%E4%B8%AD%E5%9B%BD%E8%88%AA%E5%8D%8F%EF%BC%9A%E4%B9%98%E5%8A%A1%E5%91%98%E4%BA%BA%E6%A0%BC%E5%B0%8A%E4%B8%A5%E4%B8%8D%E5%AE%B9%E8%B7%B5%E8%B8%8F%22%7D&rank=&style_id=40132&topic_id=7692070251114020874",
+          "cat": "财经"
+        },
+        {
+          "text": "边境民警谈“望缅止步”过往眼含热泪",
+          "time": "",
+          "url": "https://www.toutiao.com/trending/7693038471405043754/?category_name=topic_innerflow&event_type=hot_board&log_pb=%7B%22category_name%22%3A%22topic_innerflow%22%2C%22cluster_type%22%3A%224%22%2C%22enter_from%22%3A%22click_category%22%2C%22entrance_hotspot%22%3A%22outside%22%2C%22event_type%22%3A%22hot_board%22%2C%22hot_board_cluster_id%22%3A%227693038471405043754%22%2C%22hot_board_impr_id%22%3A%22202610060629152CBCFC5AACEC3285E99B%22%2C%22jump_page%22%3A%22hot_board_page%22%2C%22location%22%3A%22news_hot_card%22%2C%22page_location%22%3A%22hot_board_page%22%2C%22source%22%3A%22trending_tab%22%2C%22style_id%22%3A%2240132%22%2C%22title%22%3A%22%E8%BE%B9%E5%A2%83%E6%B0%91%E8%AD%A6%E8%B0%88%E2%80%9C%E6%9C%9B%E7%BC%85%E6%AD%A2%E6%AD%A5%E2%80%9D%E8%BF%87%E5%BE%80%E7%9C%BC%E5%90%AB%E7%83%AD%E6%B3%AA%22%7D&rank=&style_id=40132&topic_id=7693038471405043754",
+          "cat": "军事"
+        },
+        {
+          "text": "印度河成印巴新博弈前线",
+          "time": "",
+          "url": "https://www.toutiao.com/trending/7693121759754587684/?category_name=topic_innerflow&event_type=hot_board&log_pb=%7B%22category_name%22%3A%22topic_innerflow%22%2C%22cluster_type%22%3A%2213%22%2C%22enter_from%22%3A%22click_category%22%2C%22entrance_hotspot%22%3A%22outside%22%2C%22event_type%22%3A%22hot_board%22%2C%22hot_board_cluster_id%22%3A%227693121759754587684%22%2C%22hot_board_impr_id%22%3A%22202610060629152CBCFC5AACEC3285E99B%22%2C%22jump_page%22%3A%22hot_board_page%22%2C%22location%22%3A%22news_hot_card%22%2C%22page_location%22%3A%22hot_board_page%22%2C%22source%22%3A%22trending_tab%22%2C%22style_id%22%3A%2240132%22%2C%22title%22%3A%22%E5%8D%B0%E5%BA%A6%E6%B2%B3%E6%88%90%E5%8D%B0%E5%B7%B4%E6%96%B0%E5%8D%9A%E5%BC%88%E5%89%8D%E7%BA%BF%22%7D&rank=&style_id=40132&topic_id=7693121759754587684",
+          "cat": "财经"
+        },
+        {
+          "text": "全国游客在武汉玩嗨了",
+          "time": "",
+          "url": "https://www.toutiao.com/trending/7692384022224748587/?category_name=topic_innerflow&event_type=hot_board&log_pb=%7B%22category_name%22%3A%22topic_innerflow%22%2C%22cluster_type%22%3A%226%22%2C%22enter_from%22%3A%22click_category%22%2C%22entrance_hotspot%22%3A%22outside%22%2C%22event_type%22%3A%22hot_board%22%2C%22hot_board_cluster_id%22%3A%227692384022224748587%22%2C%22hot_board_impr_id%22%3A%22202610060629152CBCFC5AACEC3285E99B%22%2C%22jump_page%22%3A%22hot_board_page%22%2C%22location%22%3A%22news_hot_card%22%2C%22page_location%22%3A%22hot_board_page%22%2C%22source%22%3A%22trending_tab%22%2C%22style_id%22%3A%2240132%22%2C%22title%22%3A%22%E5%85%A8%E5%9B%BD%E6%B8%B8%E5%AE%A2%E5%9C%A8%E6%AD%A6%E6%B1%89%E7%8E%A9%E5%97%A8%E4%BA%86%22%7D&rank=&style_id=40132&topic_id=7692384022224748587",
+          "cat": "财经"
+        },
+        {
+          "text": "民警冒果敢战事风险带回三具遗体",
+          "time": "",
+          "url": "https://www.toutiao.com/trending/7693142861932167218/?category_name=topic_innerflow&event_type=hot_board&log_pb=%7B%22category_name%22%3A%22topic_innerflow%22%2C%22cluster_type%22%3A%229%22%2C%22enter_from%22%3A%22click_category%22%2C%22entrance_hotspot%22%3A%22outside%22%2C%22event_type%22%3A%22hot_board%22%2C%22hot_board_cluster_id%22%3A%227693142861932167218%22%2C%22hot_board_impr_id%22%3A%22202610060629152CBCFC5AACEC3285E99B%22%2C%22jump_page%22%3A%22hot_board_page%22%2C%22location%22%3A%22news_hot_card%22%2C%22page_location%22%3A%22hot_board_page%22%2C%22source%22%3A%22trending_tab%22%2C%22style_id%22%3A%2240132%22%2C%22title%22%3A%22%E6%B0%91%E8%AD%A6%E5%86%92%E6%9E%9C%E6%95%A2%E6%88%98%E4%BA%8B%E9%A3%8E%E9%99%A9%E5%B8%A6%E5%9B%9E%E4%B8%89%E5%85%B7%E9%81%97%E4%BD%93%22%7D&rank=&style_id=40132&topic_id=7693142861932167218",
+          "cat": "财经"
+        },
+        {
+          "text": "美军组建“自主作战司令部”有何目的",
+          "time": "",
+          "url": "https://www.toutiao.com/trending/7693173125881531945/?category_name=topic_innerflow&event_type=hot_board&log_pb=%7B%22category_name%22%3A%22topic_innerflow%22%2C%22cluster_type%22%3A%2213%22%2C%22enter_from%22%3A%22click_category%22%2C%22entrance_hotspot%22%3A%22outside%22%2C%22event_type%22%3A%22hot_board%22%2C%22hot_board_cluster_id%22%3A%227693173125881531945%22%2C%22hot_board_impr_id%22%3A%22202610060629152CBCFC5AACEC3285E99B%22%2C%22jump_page%22%3A%22hot_board_page%22%2C%22location%22%3A%22news_hot_card%22%2C%22page_location%22%3A%22hot_board_page%22%2C%22source%22%3A%22trending_tab%22%2C%22style_id%22%3A%2240132%22%2C%22title%22%3A%22%E7%BE%8E%E5%86%9B%E7%BB%84%E5%BB%BA%E2%80%9C%E8%87%AA%E4%B8%BB%E4%BD%9C%E6%88%98%E5%8F%B8%E4%BB%A4%E9%83%A8%E2%80%9D%E6%9C%89%E4%BD%95%E7%9B%AE%E7%9A%84%22%7D&rank=&style_id=40132&topic_id=7693173125881531945",
+          "cat": "财经"
+        },
+        {
+          "text": "游客到内蒙古游玩第一件事给车加满油",
+          "time": "",
+          "url": "https://www.toutiao.com/trending/7692668575311577130/?category_name=topic_innerflow&event_type=hot_board&log_pb=%7B%22category_name%22%3A%22topic_innerflow%22%2C%22cluster_type%22%3A%226%22%2C%22enter_from%22%3A%22click_category%22%2C%22entrance_hotspot%22%3A%22outside%22%2C%22event_type%22%3A%22hot_board%22%2C%22hot_board_cluster_id%22%3A%227692668575311577130%22%2C%22hot_board_impr_id%22%3A%22202610060629152CBCFC5AACEC3285E99B%22%2C%22jump_page%22%3A%22hot_board_page%22%2C%22location%22%3A%22news_hot_card%22%2C%22page_location%22%3A%22hot_board_page%22%2C%22source%22%3A%22trending_tab%22%2C%22style_id%22%3A%2240132%22%2C%22title%22%3A%22%E6%B8%B8%E5%AE%A2%E5%88%B0%E5%86%85%E8%92%99%E5%8F%A4%E6%B8%B8%E7%8E%A9%E7%AC%AC%E4%B8%80%E4%BB%B6%E4%BA%8B%E7%BB%99%E8%BD%A6%E5%8A%A0%E6%BB%A1%E6%B2%B9%22%7D&rank=&style_id=40132&topic_id=7692668575311577130",
+          "cat": "财经"
+        },
+        {
+          "text": "学者：高市对美四条要求都落不了地",
+          "time": "",
+          "url": "https://www.toutiao.com/trending/7693151239139233306/?category_name=topic_innerflow&event_type=hot_board&log_pb=%7B%22category_name%22%3A%22topic_innerflow%22%2C%22cluster_type%22%3A%2213%22%2C%22enter_from%22%3A%22click_category%22%2C%22entrance_hotspot%22%3A%22outside%22%2C%22event_type%22%3A%22hot_board%22%2C%22hot_board_cluster_id%22%3A%227693151239139233306%22%2C%22hot_board_impr_id%22%3A%22202610060629152CBCFC5AACEC3285E99B%22%2C%22jump_page%22%3A%22hot_board_page%22%2C%22location%22%3A%22news_hot_card%22%2C%22page_location%22%3A%22hot_board_page%22%2C%22source%22%3A%22trending_tab%22%2C%22style_id%22%3A%2240132%22%2C%22title%22%3A%22%E5%AD%A6%E8%80%85%EF%BC%9A%E9%AB%98%E5%B8%82%E5%AF%B9%E7%BE%8E%E5%9B%9B%E6%9D%A1%E8%A6%81%E6%B1%82%E9%83%BD%E8%90%BD%E4%B8%8D%E4%BA%86%E5%9C%B0%22%7D&rank=&style_id=40132&topic_id=7693151239139233306",
+          "cat": "财经"
+        },
+        {
+          "text": "解放军警告驱离菲律宾飞机",
+          "time": "",
+          "url": "https://www.toutiao.com/trending/7692032604891889700/?category_name=topic_innerflow&event_type=hot_board&log_pb=%7B%22category_name%22%3A%22topic_innerflow%22%2C%22cluster_type%22%3A%226%22%2C%22enter_from%22%3A%22click_category%22%2C%22entrance_hotspot%22%3A%22outside%22%2C%22event_type%22%3A%22hot_board%22%2C%22hot_board_cluster_id%22%3A%227692032604891889700%22%2C%22hot_board_impr_id%22%3A%22202610060629152CBCFC5AACEC3285E99B%22%2C%22jump_page%22%3A%22hot_board_page%22%2C%22location%22%3A%22news_hot_card%22%2C%22page_location%22%3A%22hot_board_page%22%2C%22source%22%3A%22trending_tab%22%2C%22style_id%22%3A%2240132%22%2C%22title%22%3A%22%E8%A7%A3%E6%94%BE%E5%86%9B%E8%AD%A6%E5%91%8A%E9%A9%B1%E7%A6%BB%E8%8F%B2%E5%BE%8B%E5%AE%BE%E9%A3%9E%E6%9C%BA%22%7D&rank=&style_id=40132&topic_id=7692032604891889700",
+          "cat": "财经"
+        },
+        {
+          "text": "央视曝光缅北明家电诈人员“处决地”",
+          "time": "",
+          "url": "https://www.toutiao.com/trending/7693078583815798811/?category_name=topic_innerflow&event_type=hot_board&log_pb=%7B%22category_name%22%3A%22topic_innerflow%22%2C%22cluster_type%22%3A%226%22%2C%22enter_from%22%3A%22click_category%22%2C%22entrance_hotspot%22%3A%22outside%22%2C%22event_type%22%3A%22hot_board%22%2C%22hot_board_cluster_id%22%3A%227693078583815798811%22%2C%22hot_board_impr_id%22%3A%22202610060629152CBCFC5AACEC3285E99B%22%2C%22jump_page%22%3A%22hot_board_page%22%2C%22location%22%3A%22news_hot_card%22%2C%22page_location%22%3A%22hot_board_page%22%2C%22source%22%3A%22trending_tab%22%2C%22style_id%22%3A%2240132%22%2C%22title%22%3A%22%E5%A4%AE%E8%A7%86%E6%9B%9D%E5%85%89%E7%BC%85%E5%8C%97%E6%98%8E%E5%AE%B6%E7%94%B5%E8%AF%88%E4%BA%BA%E5%91%98%E2%80%9C%E5%A4%84%E5%86%B3%E5%9C%B0%E2%80%9D%22%7D&rank=&style_id=40132&topic_id=7693078583815798811",
+          "cat": "社会热点"
+        },
+        {
+          "text": "国庆长假把时间留给家人",
+          "time": "",
+          "url": "https://www.toutiao.com/trending/7692951113242329115/?category_name=topic_innerflow&event_type=hot_board&log_pb=%7B%22category_name%22%3A%22topic_innerflow%22%2C%22cluster_type%22%3A%220%22%2C%22enter_from%22%3A%22click_category%22%2C%22entrance_hotspot%22%3A%22outside%22%2C%22event_type%22%3A%22hot_board%22%2C%22hot_board_cluster_id%22%3A%227692951113242329115%22%2C%22hot_board_impr_id%22%3A%22202610060629152CBCFC5AACEC3285E99B%22%2C%22jump_page%22%3A%22hot_board_page%22%2C%22location%22%3A%22news_hot_card%22%2C%22page_location%22%3A%22hot_board_page%22%2C%22source%22%3A%22trending_tab%22%2C%22style_id%22%3A%2240132%22%2C%22title%22%3A%22%E5%9B%BD%E5%BA%86%E9%95%BF%E5%81%87%E6%8A%8A%E6%97%B6%E9%97%B4%E7%95%99%E7%BB%99%E5%AE%B6%E4%BA%BA%22%7D&rank=&style_id=40132&topic_id=7692951113242329115",
+          "cat": "财经"
+        },
+        {
+          "text": "美CEO投资亏超1亿美元杀妻后自杀",
+          "time": "",
+          "url": "https://www.toutiao.com/trending/7692695850657431606/?category_name=topic_innerflow&event_type=hot_board&log_pb=%7B%22category_name%22%3A%22topic_innerflow%22%2C%22cluster_type%22%3A%222%22%2C%22enter_from%22%3A%22click_category%22%2C%22entrance_hotspot%22%3A%22outside%22%2C%22event_type%22%3A%22hot_board%22%2C%22hot_board_cluster_id%22%3A%227692695850657431606%22%2C%22hot_board_impr_id%22%3A%22202610060629152CBCFC5AACEC3285E99B%22%2C%22jump_page%22%3A%22hot_board_page%22%2C%22location%22%3A%22news_hot_card%22%2C%22page_location%22%3A%22hot_board_page%22%2C%22source%22%3A%22trending_tab%22%2C%22style_id%22%3A%2240132%22%2C%22title%22%3A%22%E7%BE%8ECEO%E6%8A%95%E8%B5%84%E4%BA%8F%E8%B6%851%E4%BA%BF%E7%BE%8E%E5%85%83%E6%9D%80%E5%A6%BB%E5%90%8E%E8%87%AA%E6%9D%80%22%7D&rank=&style_id=40132&topic_id=7692695850657431606",
+          "cat": "百强企业"
+        },
+        {
+          "text": "德约晋级中网决赛将战德米纳尔",
+          "time": "",
+          "url": "https://www.toutiao.com/trending/7693182554194824730/?category_name=topic_innerflow&event_type=hot_board&log_pb=%7B%22category_name%22%3A%22topic_innerflow%22%2C%22cluster_type%22%3A%222%22%2C%22enter_from%22%3A%22click_category%22%2C%22entrance_hotspot%22%3A%22outside%22%2C%22event_type%22%3A%22hot_board%22%2C%22hot_board_cluster_id%22%3A%227693182554194824730%22%2C%22hot_board_impr_id%22%3A%22202610060629152CBCFC5AACEC3285E99B%22%2C%22jump_page%22%3A%22hot_board_page%22%2C%22location%22%3A%22news_hot_card%22%2C%22page_location%22%3A%22hot_board_page%22%2C%22source%22%3A%22trending_tab%22%2C%22style_id%22%3A%2240132%22%2C%22title%22%3A%22%E5%BE%B7%E7%BA%A6%E6%99%8B%E7%BA%A7%E4%B8%AD%E7%BD%91%E5%86%B3%E8%B5%9B%E5%B0%86%E6%88%98%E5%BE%B7%E7%B1%B3%E7%BA%B3%E5%B0%94%22%7D&rank=&style_id=40132&topic_id=7693182554194824730",
+          "cat": "财经"
+        },
+        {
+          "text": "特朗普如何利用美国市场施压盟友",
+          "time": "",
+          "url": "https://www.toutiao.com/trending/7693125069307907647/?category_name=topic_innerflow&event_type=hot_board&log_pb=%7B%22category_name%22%3A%22topic_innerflow%22%2C%22cluster_type%22%3A%2213%22%2C%22enter_from%22%3A%22click_category%22%2C%22entrance_hotspot%22%3A%22outside%22%2C%22event_type%22%3A%22hot_board%22%2C%22hot_board_cluster_id%22%3A%227693125069307907647%22%2C%22hot_board_impr_id%22%3A%22202610060629152CBCFC5AACEC3285E99B%22%2C%22jump_page%22%3A%22hot_board_page%22%2C%22location%22%3A%22news_hot_card%22%2C%22page_location%22%3A%22hot_board_page%22%2C%22source%22%3A%22trending_tab%22%2C%22style_id%22%3A%2240132%22%2C%22title%22%3A%22%E7%89%B9%E6%9C%97%E6%99%AE%E5%A6%82%E4%BD%95%E5%88%A9%E7%94%A8%E7%BE%8E%E5%9B%BD%E5%B8%82%E5%9C%BA%E6%96%BD%E5%8E%8B%E7%9B%9F%E5%8F%8B%22%7D&rank=&style_id=40132&topic_id=7693125069307907647",
+          "cat": "财经"
+        },
+        {
+          "text": "官方提示警惕极端天气",
+          "time": "",
+          "url": "https://www.toutiao.com/trending/7693168515582918682/?category_name=topic_innerflow&event_type=hot_board&log_pb=%7B%22category_name%22%3A%22topic_innerflow%22%2C%22cluster_type%22%3A%226%22%2C%22enter_from%22%3A%22click_category%22%2C%22entrance_hotspot%22%3A%22outside%22%2C%22event_type%22%3A%22hot_board%22%2C%22hot_board_cluster_id%22%3A%227693168515582918682%22%2C%22hot_board_impr_id%22%3A%22202610060629152CBCFC5AACEC3285E99B%22%2C%22jump_page%22%3A%22hot_board_page%22%2C%22location%22%3A%22news_hot_card%22%2C%22page_location%22%3A%22hot_board_page%22%2C%22source%22%3A%22trending_tab%22%2C%22style_id%22%3A%2240132%22%2C%22title%22%3A%22%E5%AE%98%E6%96%B9%E6%8F%90%E7%A4%BA%E8%AD%A6%E6%83%95%E6%9E%81%E7%AB%AF%E5%A4%A9%E6%B0%94%22%7D&rank=&style_id=40132&topic_id=7693168515582918682",
+          "cat": "财经"
+        }
+      ]
+    },
+    {
+      "rank": 3,
+      "key": "ths",
+      "name": "同花顺",
+      "color": "#0a7d3e",
+      "items": [
+        {
+          "text": "澳大利亚数据中心运营商Firmus将于10月6日启动50亿美元的首次公开发行",
+          "time": "",
+          "url": "http://www.iwencai.com/search?qs=fincalendar_ths&amp;tid=info&amp;w=澳大利亚数据中心运营商Firmus将于10月6日启动50亿美元的首次公开发行",
+          "cat": "科技"
+        },
+        {
+          "text": "古瑞瓦特计划于10月8日上调产品价格，涉及组串式逆变器（含并网逆变器、储能逆变器）以及储能系统（含工商业储能柜、户储系统）",
+          "time": "",
+          "url": "http://www.iwencai.com/search?qs=fincalendar_ths&amp;tid=info&amp;w=古瑞瓦特计划于10月8日上调产品价格，涉及组串式逆变器（含并网逆变器、储能逆变器）以及储能系统（含工商业储能柜、户储系统）",
+          "cat": "财经"
+        },
+        {
+          "text": "上证光伏科创领先指数将于10月9日正式发布",
+          "time": "",
+          "url": "http://www.iwencai.com/search?qs=fincalendar_ths&amp;tid=info&amp;w=上证光伏科创领先指数将于10月9日正式发布",
+          "cat": "财经"
+        },
+        {
+          "text": "安森美发布涨价通知，将对广泛的产品系列实施价格调整，新价格将于10月10日起生效",
+          "time": "",
+          "url": "http://www.iwencai.com/search?qs=fincalendar_ths&amp;tid=info&amp;w=安森美发布涨价通知，将对广泛的产品系列实施价格调整，新价格将于10月10日起生效",
+          "cat": "财经"
+        },
+        {
+          "text": "第二十六届中国国际工业博览会将于10月12日至16日举办",
+          "time": "",
+          "url": "http://www.iwencai.com/search?qs=fincalendar_ths&amp;tid=info&amp;w=第二十六届中国国际工业博览会将于10月12日至16日举办",
+          "cat": "财经"
+        },
+        {
+          "text": "沪市首份三季报由有研新材发布",
+          "time": "",
+          "url": "http://www.iwencai.com/search?qs=fincalendar_ths&amp;tid=info&amp;w=沪市首份三季报由有研新材发布",
+          "cat": "财经"
+        },
+        {
+          "text": "千问新一代AI眼镜将于10月13日现货发售",
+          "time": "",
+          "url": "http://www.iwencai.com/search?qs=fincalendar_ths&amp;tid=info&amp;w=千问新一代AI眼镜将于10月13日现货发售",
+          "cat": "科技"
+        },
+        {
+          "text": "第19届国际油脂油料大会暨农畜产业（衍生品）大会将于10月13日至14日召开",
+          "time": "",
+          "url": "http://www.iwencai.com/search?qs=fincalendar_ths&amp;tid=info&amp;w=第19届国际油脂油料大会暨农畜产业（衍生品）大会将于10月13日至14日召开",
+          "cat": "财经"
+        },
+        {
+          "text": "2026湾区半导体产业生态博览会（湾芯展 WESEMiBAY）将于10月14日至16日举办",
+          "time": "",
+          "url": "http://www.iwencai.com/search?qs=fincalendar_ths&amp;tid=info&amp;w=2026湾区半导体产业生态博览会（湾芯展 WESEMiBAY）将于10月14日至16日举办",
+          "cat": "科技"
+        },
+        {
+          "text": "第140届广交会将于10月15日至11月4日在广州举办",
+          "time": "",
+          "url": "http://www.iwencai.com/search?qs=fincalendar_ths&amp;tid=info&amp;w=第140届广交会将于10月15日至11月4日在广州举办",
+          "cat": "财经"
+        },
+        {
+          "text": "第二十三届中国国际住宅产业暨建筑工业化产品与设备博览会将于10月15日至10月17日举办",
+          "time": "",
+          "url": "http://www.iwencai.com/search?qs=fincalendar_ths&amp;tid=info&amp;w=第二十三届中国国际住宅产业暨建筑工业化产品与设备博览会将于10月15日至10月17日举办",
+          "cat": "财经"
+        },
+        {
+          "text": "第二十五届中国国际酒业博览会将于10月16日至18日举办",
+          "time": "",
+          "url": "http://www.iwencai.com/search?qs=fincalendar_ths&amp;tid=info&amp;w=第二十五届中国国际酒业博览会将于10月16日至18日举办",
+          "cat": "财经"
+        },
+        {
+          "text": "第十九届中国欧盟投资贸易科技合作洽谈会于10月21日至23日在成都中国欧洲中心举办",
+          "time": "",
+          "url": "http://www.iwencai.com/search?qs=fincalendar_ths&amp;tid=info&amp;w=第十九届中国欧盟投资贸易科技合作洽谈会于10月21日至23日在成都中国欧洲中心举办",
+          "cat": "科技"
+        },
+        {
+          "text": "2026世界智能网联汽车大会将于10月21日举办",
+          "time": "",
+          "url": "http://www.iwencai.com/search?qs=fincalendar_ths&amp;tid=info&amp;w=2026世界智能网联汽车大会将于10月21日举办",
+          "cat": "财经"
+        },
+        {
+          "text": "第93届全国药品交易会将于10月21日举办",
+          "time": "",
+          "url": "http://www.iwencai.com/search?qs=fincalendar_ths&amp;tid=info&amp;w=第93届全国药品交易会将于10月21日举办",
+          "cat": "财经"
+        },
+        {
+          "text": "2026年欧洲肿瘤内科学会（ESMO）大会将于10月23日至27日举行",
+          "time": "",
+          "url": "http://www.iwencai.com/search?qs=fincalendar_ths&amp;tid=info&amp;w=2026年欧洲肿瘤内科学会（ESMO）大会将于10月23日至27日举行",
+          "cat": "财经"
+        },
+        {
+          "text": "CPE2026国际算电展将于10月26日至28日举办",
+          "time": "",
+          "url": "http://www.iwencai.com/search?qs=fincalendar_ths&amp;tid=info&amp;w=CPE2026国际算电展将于10月26日至28日举办",
+          "cat": "财经"
+        },
+        {
+          "text": "欧加峰会定于10月29日至30日在蒙特利尔举行，峰会将敲定双方未来关系的具体框架",
+          "time": "",
+          "url": "http://www.iwencai.com/search?qs=fincalendar_ths&amp;tid=info&amp;w=欧加峰会定于10月29日至30日在蒙特利尔举行，峰会将敲定双方未来关系的具体框架",
+          "cat": "政治政策"
+        },
+        {
+          "text": "用户体验计划",
+          "time": "",
+          "url": "http://vote.10jqka.com.cn/webvote/suggest.html",
+          "cat": "财经"
+        }
+      ]
+    },
+    {
+      "rank": 4,
+      "key": "eastmoney",
+      "name": "东方财富",
+      "color": "#e63525",
+      "items": [
+        {
+          "text": "纳斯达克综合指数",
+          "time": "",
+          "url": "http://quote.eastmoney.com/unify/r/100.NDX",
+          "cat": "财经"
+        },
+        {
+          "text": "苹果新CEO据称启动大改革",
+          "time": "",
+          "url": "https://finance.eastmoney.com/a/202609303886847282.html",
+          "cat": "百强企业"
+        },
+        {
+          "text": "英伟达创纪录回购背后",
+          "time": "",
+          "url": "https://finance.eastmoney.com/a/202609293886800152.html",
+          "cat": "科技"
+        },
+        {
+          "text": "30年期美债收益率连涨6日",
+          "time": "",
+          "url": "https://finance.eastmoney.com/a/202609303886848427.html",
+          "cat": "财经"
+        },
+        {
+          "text": "60秒后刷新",
+          "time": "",
+          "url": "",
+          "cat": "财经"
+        },
+        {
+          "text": "中信证券：积极迎接房地产新周期",
+          "time": "",
+          "url": "https://finance.eastmoney.com/a/202610053888599515.html",
+          "cat": "财经"
+        },
+        {
+          "text": "房贷贴息看住房支持政策新探索",
+          "time": "",
+          "url": "https://finance.eastmoney.com/a/202609303886967129.html",
+          "cat": "政治政策"
+        },
+        {
+          "text": "增量政策来了：央行发力宽信用",
+          "time": "",
+          "url": "https://finance.eastmoney.com/a/202609303886892572.html",
+          "cat": "政治政策"
+        },
+        {
+          "text": "特朗普白宫宴请AI领袖：签署AI协议",
+          "time": "",
+          "url": "https://finance.eastmoney.com/a/202609303887105922.html",
+          "cat": "政治政策"
+        },
+        {
+          "text": "特朗普将下令把人工智能更名为超级智能",
+          "time": "",
+          "url": "https://finance.eastmoney.com/a/202609293886823689.html",
+          "cat": "科技"
+        },
+        {
+          "text": "OpenAI发布AI助手“Dot”：可自主干活",
+          "time": "",
+          "url": "https://finance.eastmoney.com/a/202609303886861729.html",
+          "cat": "科技"
+        },
+        {
+          "text": "智能体、新模型、500美元套餐齐亮相",
+          "time": "",
+          "url": "https://finance.eastmoney.com/a/202609303886912952.html",
+          "cat": "经济"
+        },
+        {
+          "text": "AI应用将迈入收入兑现阶段",
+          "time": "",
+          "url": "https://finance.eastmoney.com/a/202609303887106198.html",
+          "cat": "科技"
+        },
+        {
+          "text": "全球市场：美股三大指数集体收涨 纳指涨超1%创收盘新高",
+          "time": "",
+          "url": "https://finance.eastmoney.com/a/202610063888706547.html",
+          "cat": "财经"
+        },
+        {
+          "text": "华为5G、AI专利授权取得突破 高通付费获得逻辑折叠等专利",
+          "time": "",
+          "url": "https://finance.eastmoney.com/a/202610053888667468.html",
+          "cat": "科技"
+        },
+        {
+          "text": "一只绿藻带来神经细胞“光开关” 光遗传何以拿下今年诺奖第一奖？",
+          "time": "",
+          "url": "https://finance.eastmoney.com/a/202610053888667867.html",
+          "cat": "财经"
+        },
+        {
+          "text": "美股三大指数集体收涨 纳指涨超1%创收盘新高 大型科技股普遍上涨",
+          "time": "",
+          "url": "https://finance.eastmoney.com/a/202610053888675618.html",
+          "cat": "财经"
+        },
+        {
+          "text": "总统选举首轮结果出炉 巴西史诗级暴涨",
+          "time": "",
+          "url": "https://finance.eastmoney.com/a/202610053888685540.html",
+          "cat": "财经"
+        },
+        {
+          "text": "港股小幅收涨！AI算力硬件全线爆发 PCB板块领涨",
+          "time": "",
+          "url": "https://finance.eastmoney.com/a/202610053888643313.html",
+          "cat": "科技"
+        },
+        {
+          "text": "2026年诺贝尔生理学或医学奖揭晓 这些A股公司布局相关领域",
+          "time": "",
+          "url": "https://finance.eastmoney.com/a/202610053888672725.html",
+          "cat": "财经"
+        },
+        {
+          "text": "美国数据中心抵制声浪愈演愈烈？高盛：到2027年增长前景基本不变",
+          "time": "",
+          "url": "https://finance.eastmoney.com/a/202610053888642965.html",
+          "cat": "科技"
+        },
+        {
+          "text": "2026年诺贝尔生理学或医学奖揭晓",
+          "time": "",
+          "url": "https://finance.eastmoney.com/a/202610053888645696.html",
+          "cat": "财经"
+        },
+        {
+          "text": "万亿赛道传来重磅消息！克莱顿出任白宫AI事务主管",
+          "time": "",
+          "url": "https://finance.eastmoney.com/a/202610043888572092.html",
+          "cat": "科技"
+        },
+        {
+          "text": "供需缺口或延续至2027年！PCB关键材料紧缺蔓延 建滔系两股均涨超7%",
+          "time": "",
+          "url": "https://finance.eastmoney.com/a/202610053888603814.html",
+          "cat": "经济"
+        },
+        {
+          "text": "10月5日晚间央视新闻联播要闻集锦",
+          "time": "",
+          "url": "https://finance.eastmoney.com/a/202610053888672846.html",
+          "cat": "财经"
+        },
+        {
+          "text": "从十篇“金轩”文章看中国经济：新动能、新空间、新支撑同向发力",
+          "time": "",
+          "url": "https://finance.eastmoney.com/a/202610043888570346.html",
+          "cat": "经济"
+        },
+        {
+          "text": "官宣！华为和美国高通达成重磅协议",
+          "time": "",
+          "url": "https://finance.eastmoney.com/a/202610053888623413.html",
+          "cat": "科技"
+        },
+        {
+          "text": "推理支出2026年首超训练：“Token工厂”崛起 AI基础设施投资逻辑生变",
+          "time": "",
+          "url": "https://finance.eastmoney.com/a/202610043888573083.html",
+          "cat": "科技"
+        },
+        {
+          "text": "油市利空又传来：中东原油出口量已超战前水平",
+          "time": "",
+          "url": "https://finance.eastmoney.com/a/202610053888628540.html",
+          "cat": "军事"
+        },
+        {
+          "text": "10月5日港股收盘：恒指涨0.28% 联想集团领涨成分股",
+          "time": "",
+          "url": "https://finance.eastmoney.com/a/202610053888636671.html",
+          "cat": "财经"
+        },
+        {
+          "text": "今年首个诺贝尔奖揭晓 多家公司布局相关赛道",
+          "time": "",
+          "url": "https://finance.eastmoney.com/a/202610053888672560.html",
+          "cat": "财经"
+        },
+        {
+          "text": "DeepSeek Harness国庆假期上新！90后负责人回应：希望做出让世界AI巨头跟进的创新",
+          "time": "",
+          "url": "https://finance.eastmoney.com/a/202610053888586015.html",
+          "cat": "科技"
+        },
+        {
+          "text": "助三位科学家拿下诺奖 光遗传学是什么？",
+          "time": "",
+          "url": "https://finance.eastmoney.com/a/202610053888662418.html",
+          "cat": "财经"
+        },
+        {
+          "text": "“大国重器”BEST、FAST 公布最新消息！",
+          "time": "",
+          "url": "https://finance.eastmoney.com/a/202610053888588767.html",
+          "cat": "财经"
+        },
+        {
+          "text": "大涨超1700点！日股、美股、黄金、白银、比特币全线拉升",
+          "time": "",
+          "url": "https://finance.eastmoney.com/a/202610053888600180.html",
+          "cat": "财经"
+        },
+        {
+          "text": "突破3.5万亿元！低空经济迎政策+出海双重共振 高成长潜力股出炉",
+          "time": "",
+          "url": "https://finance.eastmoney.com/a/202610053888642583.html",
+          "cat": "政治政策"
+        },
+        {
+          "text": "资管机构激辩四季度AI产业链机会！看好四大细分领域 后续空间多大？",
+          "time": "",
+          "url": "https://finance.eastmoney.com/a/202610053888600022.html",
+          "cat": "科技"
+        },
+        {
+          "text": "实探！政策红利释放 假期深圳楼市显暖意",
+          "time": "",
+          "url": "https://finance.eastmoney.com/a/202610053888656992.html",
+          "cat": "政治政策"
+        },
+        {
+          "text": "超越美国、德国 中国汽车供应链企业改写全球产业格局",
+          "time": "",
+          "url": "https://finance.eastmoney.com/a/202610053888628268.html",
+          "cat": "财经"
+        },
+        {
+          "text": "年年喊“元年” 钠电池这次有何不一样？",
+          "time": "",
+          "url": "https://finance.eastmoney.com/a/202610043888573254.html",
+          "cat": "财经"
+        },
+        {
+          "text": "9月份60张证监罚单创出新高 CIO被认定不适当人选更属罕见",
+          "time": "",
+          "url": "https://finance.eastmoney.com/a/202610053888612091.html",
+          "cat": "财经"
+        },
+        {
+          "text": "上市公司业绩大全",
+          "time": "",
+          "url": "https://data.eastmoney.com/bbsj/",
+          "cat": "财经"
+        },
+        {
+          "text": "速览沪深港通资金流向",
+          "time": "",
+          "url": "https://data.eastmoney.com/hsgt/index.html",
+          "cat": "财经"
+        },
+        {
+          "text": "AI投资能否对美国经济形成新支撑",
+          "time": "",
+          "url": "https://finance.eastmoney.com/a/202610063888707315.html",
+          "cat": "科技"
+        },
+        {
+          "text": "中信建投：展望10月 业绩进入验证期 海外流动性压力边际缓和",
+          "time": "",
+          "url": "https://finance.eastmoney.com/a/202610053888687093.html",
+          "cat": "财经"
+        },
+        {
+          "text": "夜读投资｜大回撤之后，别急于回本",
+          "time": "",
+          "url": "https://finance.eastmoney.com/a/202610053888683584.html",
+          "cat": "财经"
+        },
+        {
+          "text": "从雪饼猴到史元庭，一个NPC凭什么带火一座城",
+          "time": "",
+          "url": "https://finance.eastmoney.com/a/202610053888679465.html",
+          "cat": "财经"
+        },
+        {
+          "text": "管涛：浅谈“贸易顺差、资本外流”的经济与政策涵义",
+          "time": "",
+          "url": "https://finance.eastmoney.com/a/202610053888596955.html",
+          "cat": "经济"
+        },
+        {
+          "text": "股市日历 2026年09月30日 星期三 更多",
+          "time": "",
+          "url": "http://data.eastmoney.com/gsrl/default.html",
+          "cat": "财经"
+        },
+        {
+          "text": "新股申购0家",
+          "time": "",
+          "url": "http://data.eastmoney.com/xg/xg/calendar.html",
+          "cat": "财经"
+        }
+      ]
+    },
+    {
+      "rank": 5,
+      "key": "sina",
+      "name": "新浪财经",
+      "color": "#e60012",
+      "items": [
+        {
+          "text": "沙特领导的联军表示，摧毁了萨那一处弹道导弹发射平台，以及萨达一座存放20枚弹道导弹的导弹储存设施。",
+          "time": "2026-10-06 06:29",
+          "url": "https://finance.sina.cn/7x24/2026-10-06/detail-iniufsvp9114235.d.html",
+          "cat": "军事"
+        },
+        {
+          "text": "特朗普：已决定自行投放广告并自掏腰包，同时使用我为MAGA公司筹集的资金。",
+          "time": "2026-10-06 06:27",
+          "url": "https://finance.sina.cn/7x24/2026-10-06/detail-iniufsvr5886393.d.html",
+          "cat": "财经"
+        },
+        {
+          "text": "【沙特首都利雅得接连传出爆炸声】当地时间6日凌晨，沙特首都利雅得再次传出剧烈爆炸声。利雅得5日晚就曾传出过爆炸声。（央视新闻）",
+          "time": "2026-10-06 06:26",
+          "url": "https://finance.sina.cn/7x24/2026-10-06/detail-iniufsvp9113613.d.html",
+          "cat": "财经"
+        },
+        {
+          "text": "穆迪评级确认高通公司A2评级，展望稳定。",
+          "time": "2026-10-06 06:11",
+          "url": "https://finance.sina.cn/7x24/2026-10-06/detail-iniufsvr5880976.d.html",
+          "cat": "财经"
+        },
+        {
+          "text": "日本拟设立市场机制以延长火电厂服役年限。",
+          "time": "2026-10-06 06:11",
+          "url": "https://finance.sina.cn/7x24/2026-10-06/detail-iniufsvr5880924.d.html",
+          "cat": "财经"
+        },
+        {
+          "text": "【也门胡塞武装称发射导弹和无人机袭击沙特多个目标】也门胡塞武装军事发言人叶海亚·萨雷亚5日发表声明说，该组织使用弹道导弹、巡航导弹和无人机实施3次军事行动，袭击了沙特阿拉伯境内机场",
+          "time": "2026-10-06 06:06",
+          "url": "https://finance.sina.cn/7x24/2026-10-06/detail-iniufnpr9237510.d.html",
+          "cat": "军事"
+        },
+        {
+          "text": "【美联储10月维持利率不变的概率为77.3%】据CME“美联储观察”：美联储到10月维持利率不变的概率为77.3%，累计加息25个基点的概率为22.7%。美联储到12月维持利率不变",
+          "time": "2026-10-06 06:05",
+          "url": "https://finance.sina.cn/7x24/2026-10-06/detail-iniufnpt6009575.d.html",
+          "cat": "经济"
+        },
+        {
+          "text": "惠誉：收购交易完成后，将派拉蒙天舞与华纳兄弟信用评级下调至BB级。",
+          "time": "2026-10-06 06:00",
+          "url": "https://finance.sina.cn/7x24/2026-10-06/detail-iniufnpr9235718.d.html",
+          "cat": "经济"
+        },
+        {
+          "text": "纽约期金突破4170美元/盎司，日内涨0.31%。",
+          "time": "2026-10-06 06:00",
+          "url": "https://finance.sina.cn/7x24/2026-10-06/detail-iniufnpr9235457.d.html",
+          "cat": "经济"
+        },
+        {
+          "text": "【巴拿马型船闸将试行长期通航预约】巴拿马运河管理局5日发布公告说，将通过“长期通航名额分配计划”提前分配2027年1月3日至4月3日期间的长期通航名额，并首次将这一机制从新巴拿马型",
+          "time": "2026-10-06 05:50",
+          "url": "https://finance.sina.com.cn/7x24/",
+          "cat": "财经"
+        },
+        {
+          "text": "【美军称遭伊朗袭击后靠谷歌找医院】今年3月1日上午，美国、以色列对伊朗发动大规模空袭次日，伊朗在反击行动中发射无人机，打击了科威特南部舒艾拜港的美军基地，造成美军6人死亡，此外还有",
+          "time": "2026-10-06 05:30",
+          "url": "https://finance.sina.cn/7x24/2026-10-06/detail-iniufnpt5999115.d.html",
+          "cat": "百强企业"
+        },
+        {
+          "text": "惠誉维持凯雷集团“A-”评级，展望稳定。",
+          "time": "2026-10-06 05:22",
+          "url": "https://finance.sina.cn/7x24/2026-10-06/detail-iniufnpt5996484.d.html",
+          "cat": "财经"
+        },
+        {
+          "text": "富时A50期指连续夜盘收涨0.42%，报13874点。",
+          "time": "2026-10-06 05:15",
+          "url": "https://finance.sina.cn/7x24/2026-10-06/detail-iniufnpt5995139.d.html",
+          "cat": "财经"
+        },
+        {
+          "text": "【也门胡塞武装警告国际航司停止运营经沙特领空航线】也门胡塞武装军事发言人叶海亚·萨雷亚5日发布声明，称沙特阿拉伯领空已成为胡塞武装的“行动区域”，警告所有经沙特领空运营相关航线的国",
+          "time": "2026-10-06 05:09",
+          "url": "https://finance.sina.cn/7x24/2026-10-06/detail-iniufnpr9221234.d.html",
+          "cat": "军事"
+        },
+        {
+          "text": "华尔街银行牵头为博通与Anthropic敲定600亿美元芯片融资交易。",
+          "time": "2026-10-06 05:08",
+          "url": "https://finance.sina.cn/7x24/2026-10-06/detail-iniufnpr9220771.d.html",
+          "cat": "财经"
+        },
+        {
+          "text": "沙特首都利雅得传出强烈爆炸声。",
+          "time": "2026-10-06 05:06",
+          "url": "https://finance.sina.cn/7x24/2026-10-06/detail-iniufnpt5992797.d.html",
+          "cat": "财经"
+        },
+        {
+          "text": "瑞银将摩根大通的目标股价从每股400.00美元下调至每股395.00美元，维持买入评级。",
+          "time": "2026-10-06 05:05",
+          "url": "https://finance.sina.com.cn/7x24/",
+          "cat": "财经"
+        },
+        {
+          "text": "【韩国9月底外汇储备降至4405.6亿美元】韩国央行数据显示，韩国9月底外汇储备降至4405.6亿美元，上月为4422.8亿美元。外汇储备构成：证券3860.3亿美元；存款299.",
+          "time": "2026-10-06 05:00",
+          "url": "https://finance.sina.cn/7x24/2026-10-06/detail-iniufnpr9218917.d.html",
+          "cat": "政治政策"
+        },
+        {
+          "text": "【美国纽约州宣布针对麻疹疫情进入灾难紧急状态】当地时间10月5日，美国纽约州州长凯西·霍楚尔发布命令称，纽约州针对麻疹疫情宣布进入灾难紧急状态，有效期为2026年10月5日至11月",
+          "time": "2026-10-06 04:57",
+          "url": "https://finance.sina.cn/7x24/2026-10-06/detail-iniufnpr9218171.d.html",
+          "cat": "社会热点"
+        },
+        {
+          "text": "美国：10月5日改变第130艘伊朗封锁期间商船航线。",
+          "time": "2026-10-06 04:56",
+          "url": "https://finance.sina.cn/7x24/2026-10-06/detail-iniufnpr9218118.d.html",
+          "cat": "财经"
+        },
+        {
+          "text": "美联储官员就风险敞口、风险管理、抵押品质量等问题向摩根大通、富国银行、巴克莱、摩根士丹利提出质询。",
+          "time": "2026-10-06 04:51",
+          "url": "https://finance.sina.cn/7x24/2026-10-06/detail-iniufnpr9216793.d.html",
+          "cat": "经济"
+        },
+        {
+          "text": "美国纽约联邦储备银行一直在走访大型银行，审查它们向私人信贷公司提供的贷款。",
+          "time": "2026-10-06 04:50",
+          "url": "https://finance.sina.cn/7x24/2026-10-06/detail-iniufnpr9216359.d.html",
+          "cat": "财经"
+        },
+        {
+          "text": "沃尔玛称电子货架标签并非用于动态定价，否认利用个人数据定价。",
+          "time": "2026-10-06 04:50",
+          "url": "https://finance.sina.cn/7x24/2026-10-06/detail-iniufnpt5988700.d.html",
+          "cat": "百强企业"
+        },
+        {
+          "text": "【OpenAI正与阿联酋多家基金、贝莱德洽谈一轮300亿美元融资】OpenAI正与阿联酋多家投资基金（包括总部位于阿布扎比的MGX）洽谈，由后者牵头完成一轮300亿美元的融资。这些",
+          "time": "2026-10-06 04:48",
+          "url": "https://finance.sina.cn/7x24/2026-10-06/detail-iniufnpt5988285.d.html",
+          "cat": "科技"
+        },
+        {
+          "text": "OpenAI正与阿联酋基金、贝莱德洽谈300亿美元融资轮次。OpenAI已与Thrive资本、安德森·霍洛维茨基金开展融资磋商。",
+          "time": "2026-10-06 04:47",
+          "url": "https://finance.sina.com.cn/7x24/",
+          "cat": "科技"
+        },
+        {
+          "text": "【DayOne Data Centers提交纳斯达克IPO文件 股票代码为DODC】总部位于新加坡的数字基础设施平台DayOne Data Centers已向美国证券交易委员会(S",
+          "time": "2026-10-06 04:40",
+          "url": "https://finance.sina.cn/7x24/2026-10-06/detail-iniufnpr9212220.d.html",
+          "cat": "财经"
+        },
+        {
+          "text": "【美国务卿：美军轰炸机撤出英国系常规轮换】当地时间10月5日，美国国务卿鲁比奥在接受采访时表示，美国轰炸机撤出英国皇家空军费尔福德基地与此前发生的安全威胁事件没有直接关联。鲁比奥表",
+          "time": "2026-10-06 04:37",
+          "url": "https://finance.sina.cn/7x24/2026-10-06/detail-iniufnpt5983418.d.html",
+          "cat": "军事"
+        },
+        {
+          "text": "【胡塞武装称对沙特实施三轮打击】也门胡塞武装发言人叶海亚·萨雷亚当地时间10月5日深夜发表声明称，为回应沙特过去24小时对也门发动的袭击，胡塞武装当天实施三轮军事行动，使用大量弹道",
+          "time": "2026-10-06 04:34",
+          "url": "https://finance.sina.cn/7x24/2026-10-06/detail-iniufnpt5982038.d.html",
+          "cat": "军事"
+        },
+        {
+          "text": "AISI：美国钢铁公司截至10月3日当周产能利用率为78.3%。",
+          "time": "2026-10-06 04:32",
+          "url": "https://finance.sina.cn/7x24/2026-10-06/detail-iniufnpt5981061.d.html",
+          "cat": "科技"
+        },
+        {
+          "text": "【默茨：德国将加强北约东翼防务】德国总理默茨5日表示，德国将继续加强北约东翼防务，并与立陶宛等北约盟国深化合作，应对来自俄罗斯的“安全威胁”。（新华社）",
+          "time": "2026-10-06 04:24",
+          "url": "https://finance.sina.cn/7x24/2026-10-06/detail-iniufnpt5978841.d.html",
+          "cat": "政治政策"
+        },
+        {
+          "text": "惠誉评级：北美石油对冲已出现浮亏，天然气生产商将锁定2028年有利价格。",
+          "time": "2026-10-06 04:23",
+          "url": "https://finance.sina.cn/7x24/2026-10-06/detail-iniufnpt5978346.d.html",
+          "cat": "财经"
+        },
+        {
+          "text": "受博索纳罗大选领先影响，巴西股市迎来2020年以来最佳单日表现。",
+          "time": "2026-10-06 04:14",
+          "url": "https://finance.sina.cn/7x24/2026-10-06/detail-iniufnpt5975849.d.html",
+          "cat": "财经"
+        },
+        {
+          "text": "美国劳工部长：美国劳工统计局正在研究如何衡量就业增长。",
+          "time": "2026-10-06 04:14",
+          "url": "https://finance.sina.cn/7x24/2026-10-06/detail-iniufnpt5975806.d.html",
+          "cat": "政治政策"
+        },
+        {
+          "text": "美国劳工部长：劳工统计局数据将改善。",
+          "time": "2026-10-06 04:13",
+          "url": "https://finance.sina.cn/7x24/2026-10-06/detail-iniufnpr9203216.d.html",
+          "cat": "政治政策"
+        },
+        {
+          "text": "美国纽约联储就总体风险敞口质询（各大）银行。",
+          "time": "2026-10-06 04:13",
+          "url": "https://finance.sina.cn/7x24/2026-10-06/detail-iniufnpt5975530.d.html",
+          "cat": "财经"
+        },
+        {
+          "text": "美国纽约联储同时走访摩根士丹利、巴克莱银行。",
+          "time": "2026-10-06 04:13",
+          "url": "https://finance.sina.cn/7x24/2026-10-06/detail-iniufnpr9202959.d.html",
+          "cat": "财经"
+        },
+        {
+          "text": "美国纽约联邦储备银行走访大型银行。",
+          "time": "2026-10-06 04:11",
+          "url": "https://finance.sina.cn/7x24/2026-10-06/detail-iniufnpr9202457.d.html",
+          "cat": "财经"
+        },
+        {
+          "text": "巴西雷亚尔对美元即期交易收涨4.12%，收报1美元兑5.0022雷亚尔。",
+          "time": "2026-10-06 04:02",
+          "url": "https://finance.sina.cn/7x24/2026-10-06/detail-iniufnpt5972481.d.html",
+          "cat": "经济"
+        },
+        {
+          "text": "波音公司入选美国定向能武器系统试点项目。",
+          "time": "2026-10-06 04:02",
+          "url": "https://finance.sina.com.cn/7x24/",
+          "cat": "军事"
+        },
+        {
+          "text": "莱纳公司股价下跌6.7%，创下自2024年3月以来最大单日跌幅。",
+          "time": "2026-10-06 04:01",
+          "url": "https://finance.sina.cn/7x24/2026-10-06/detail-iniufnpt5972303.d.html",
+          "cat": "财经"
+        },
+        {
+          "text": "SPACEX股价上涨7.6%，收于6月以来最高水平。",
+          "time": "2026-10-06 04:01",
+          "url": "https://finance.sina.cn/7x24/2026-10-06/detail-iniufnpr9199639.d.html",
+          "cat": "财经"
+        },
+        {
+          "text": "【美股收盘：三大股指集体收涨】道指涨0.18%，标普500指数涨0.67%，纳指涨1.06%。PTC Inc.涨33.49%，MercadoLibre涨9.72%，VYLR涨9.2",
+          "time": "2026-10-06 04:00",
+          "url": "https://finance.sina.cn/7x24/2026-10-06/detail-iniufnpr9199540.d.html",
+          "cat": "财经"
+        },
+        {
+          "text": "美国选定四家公司参与定向能武器系统试点项目。",
+          "time": "2026-10-06 04:00",
+          "url": "https://finance.sina.cn/7x24/2026-10-06/detail-iniufnpr9199335.d.html",
+          "cat": "军事"
+        },
+        {
+          "text": "【纳斯达克中国金龙指数收涨1.68%】JDZG涨6.40%，万国数据涨6.33%，世纪互联涨6.16%，老虎证券涨5.53%，再鼎医药涨5.34%。",
+          "time": "2026-10-06 04:00",
+          "url": "https://finance.sina.cn/7x24/2026-10-06/detail-iniufnpr9199330.d.html",
+          "cat": "财经"
+        },
+        {
+          "text": "美泰股价涨幅扩大至3.9%。",
+          "time": "2026-10-06 03:57",
+          "url": "https://finance.sina.com.cn/7x24/",
+          "cat": "财经"
+        },
+        {
+          "text": "美国圣地亚哥市起诉AppLovin，指控其在儿童设备上展示露骨广告。",
+          "time": "2026-10-06 03:56",
+          "url": "https://finance.sina.cn/7x24/2026-10-06/detail-iniufnpr9198724.d.html",
+          "cat": "财经"
+        },
+        {
+          "text": "【特朗普：因“具体威胁” 美军轰炸机撤离英国基地】当地时间10月5日，美国总统特朗普表示，美军此前从英国皇家空军费尔福德基地撤走轰炸机，是因为基地面临“具体威胁”。特朗普当天在白宫",
+          "time": "2026-10-06 03:53",
+          "url": "https://finance.sina.cn/7x24/2026-10-06/detail-iniufnpt5970558.d.html",
+          "cat": "军事"
+        },
+        {
+          "text": "世界卫生组织：根据俄罗斯鼠疫研究所死亡事件后的非官方信息，对普通公众的公共卫生风险似乎较低。",
+          "time": "2026-10-06 03:51",
+          "url": "https://finance.sina.cn/7x24/2026-10-06/detail-iniufhft3993238.d.html",
+          "cat": "财经"
+        },
+        {
+          "text": "【土耳其一客机发现爆炸物威胁纸条 143人安全撤离】当地时间10月5日晚，一架从土耳其首都安卡拉飞往尚勒乌尔法的客机上发现一张声称机上有爆炸物的纸条。尚勒乌尔法省省长哈桑·舍尔达克",
+          "time": "2026-10-06 03:51",
+          "url": "https://finance.sina.cn/7x24/2026-10-06/detail-iniufhft9328095.d.html",
+          "cat": "财经"
+        },
+        {
+          "text": "【以色列：印制大选选票】以色列议会选举定于10月27日举行。按以色列媒体说法，这将是以色列近40年来首次按计划而非提前举行议会选举。（新华社）",
+          "time": "2026-10-06 03:45",
+          "url": "https://finance.sina.cn/7x24/2026-10-06/detail-iniufhfv6099037.d.html",
+          "cat": "财经"
+        }
+      ]
+    },
+    {
+      "rank": 6,
+      "key": "kaipanla",
+      "name": "开盘啦",
+      "color": "#f59e0b",
+      "items": [
+        {
+          "text": "轮动行情三步带你看懂“涨价暗线”",
+          "time": "",
+          "url": "https://www.kaipanla.com/article/42394",
+          "cat": "财经"
+        },
+        {
+          "text": "观资金变幻，察板块大势！ 用机构增仓捕捉板块风向变化",
+          "time": "",
+          "url": "https://www.kaipanla.com/article/42063",
+          "cat": "财经"
+        },
+        {
+          "text": "弱势行情捕捉超跌反抽，大盘直播助你把握市场节奏",
+          "time": "",
+          "url": "https://www.kaipanla.com/article/41972",
+          "cat": "财经"
+        },
+        {
+          "text": "居民房贷贴息政策10月1日起实施 楼市迎来重要变局",
+          "time": "",
+          "url": "https://www.kaipanla.com/article/42881",
+          "cat": "政治政策"
+        },
+        {
+          "text": "​新型电池产业发展规划印发 固态电池迎发展机遇",
+          "time": "",
+          "url": "https://www.kaipanla.com/article/42859",
+          "cat": "财经"
+        },
+        {
+          "text": "英伟达加码玻璃基板 产业链落地进度有望超预期",
+          "time": "",
+          "url": "https://www.kaipanla.com/article/42847",
+          "cat": "科技"
+        }
+      ]
+    },
+    {
+      "rank": 7,
+      "key": "stcn",
+      "name": "证券时报",
+      "color": "#c8102e",
+      "items": [
+        {
+          "text": "338家公司，1206亿港元！港股前三季度回购数据出炉",
+          "time": "",
+          "url": "https://www.stcn.com/article/detail/4206466.html",
+          "cat": "财经"
+        },
+        {
+          "text": "资管机构激辩四季度AI产业链机会！看好四大细分领域，后续空间多大？",
+          "time": "",
+          "url": "https://www.stcn.com/article/detail/4206374.html",
+          "cat": "科技"
+        },
+        {
+          "text": "刚刚，大涨超1700点！日股、美股、黄金、白银、比特币，全线拉升",
+          "time": "",
+          "url": "https://www.stcn.com/article/detail/4206373.html",
+          "cat": "财经"
+        },
+        {
+          "text": "三年、五年、十年......哪些公募是长跑冠军？最新“成绩单”揭晓！",
+          "time": "",
+          "url": "https://www.stcn.com/article/detail/4206329.html",
+          "cat": "财经"
+        },
+        {
+          "text": "人民日报10篇“金轩”，讲清中国经济向新向优向好的必然性",
+          "time": "",
+          "url": "https://www.stcn.com/article/detail/4206199.html",
+          "cat": "经济"
+        },
+        {
+          "text": "深夜，中国资产大涨！美联储，加息预期突变",
+          "time": "",
+          "url": "https://www.stcn.com/article/detail/4206549.html",
+          "cat": "经济"
+        },
+        {
+          "text": "人民鉴真182期丨粤万年青：东航“空姐下跪”涉事乘客非公司员工，已就相关谣言报警",
+          "time": "",
+          "url": "https://www.stcn.com/article/detail/4206543.html",
+          "cat": "财经"
+        },
+        {
+          "text": "今夜！多只美股，暴涨！",
+          "time": "",
+          "url": "https://www.stcn.com/article/detail/4206545.html",
+          "cat": "财经"
+        },
+        {
+          "text": "夜读投资｜大回撤之后，别急于回本",
+          "time": "",
+          "url": "https://www.stcn.com/article/detail/4206539.html",
+          "cat": "财经"
+        },
+        {
+          "text": "巴西股市，暴涨近9％！",
+          "time": "",
+          "url": "https://www.stcn.com/article/detail/4206536.html",
+          "cat": "财经"
+        },
+        {
+          "text": "中国航协回应东航“空姐下跪”事件",
+          "time": "",
+          "url": "https://www.stcn.com/article/detail/4206535.html",
+          "cat": "财经"
+        },
+        {
+          "text": "实探！政策红利释放，假期深圳楼市显暖意",
+          "time": "",
+          "url": "https://www.stcn.com/article/detail/4206496.html",
+          "cat": "政治政策"
+        },
+        {
+          "text": "投资人，争抢00后！",
+          "time": "",
+          "url": "https://www.stcn.com/article/detail/4206493.html",
+          "cat": "财经"
+        },
+        {
+          "text": "港股，尾盘异动！两大板块爆发！",
+          "time": "",
+          "url": "https://www.stcn.com/article/detail/4206491.html",
+          "cat": "财经"
+        },
+        {
+          "text": "新样本！这家公司或成首家全面要约退市B股公司",
+          "time": "",
+          "url": "https://www.stcn.com/article/detail/4206467.html",
+          "cat": "财经"
+        },
+        {
+          "text": "2026年首个诺贝尔奖揭晓！",
+          "time": "",
+          "url": "https://www.stcn.com/article/detail/4206462.html",
+          "cat": "财经"
+        },
+        {
+          "text": "刚刚，直线拉升！利好来了",
+          "time": "",
+          "url": "https://www.stcn.com/article/detail/4206448.html",
+          "cat": "财经"
+        },
+        {
+          "text": "中信建投：展望10月 业绩进入验证期 海外流动性压力边际缓和",
+          "time": "",
+          "url": "https://www.stcn.com/article/detail/4206537.html",
+          "cat": "财经"
+        },
+        {
+          "text": "突破3.5万亿元！低空经济迎政策+出海双重共振，高成长潜力股出炉",
+          "time": "",
+          "url": "https://www.stcn.com/article/detail/4206447.html",
+          "cat": "政治政策"
+        },
+        {
+          "text": "反弹并领跑业绩！这个板块基金，9月打出“翻身仗”",
+          "time": "",
+          "url": "https://www.stcn.com/article/detail/4206435.html",
+          "cat": "财经"
+        },
+        {
+          "text": "半导体，集体大涨！恒生科技指数盘中翻红",
+          "time": "",
+          "url": "https://www.stcn.com/article/detail/4206413.html",
+          "cat": "科技"
+        },
+        {
+          "text": "南向资金连续4个月净买入！净买入这只股近80亿港元！",
+          "time": "",
+          "url": "https://www.stcn.com/article/detail/4206334.html",
+          "cat": "财经"
+        },
+        {
+          "text": "“数据库三巨头”之一，股权再谋转让！",
+          "time": "",
+          "url": "https://www.stcn.com/article/detail/4206293.html",
+          "cat": "财经"
+        },
+        {
+          "text": "黄金市场四季度有哪些交易机会？",
+          "time": "",
+          "url": "https://www.stcn.com/article/detail/4206267.html",
+          "cat": "财经"
+        },
+        {
+          "text": "订单火爆！这一产业，悄然走红海外！",
+          "time": "",
+          "url": "https://www.stcn.com/article/detail/4206246.html",
+          "cat": "财经"
+        },
+        {
+          "text": "加仓！巴菲特，逆势买入！什么信号？",
+          "time": "",
+          "url": "https://www.stcn.com/article/detail/4206241.html",
+          "cat": "财经"
+        },
+        {
+          "text": "大涨后又跌了！汇隆新材实控人宣布：终止！",
+          "time": "",
+          "url": "https://www.stcn.com/article/detail/4206215.html",
+          "cat": "财经"
+        },
+        {
+          "text": "厦门银行：厦门银行股份有限公司关于持股5%以上股东股份解除质押的公告",
+          "time": "",
+          "url": "http://xp.stcn.com/index/pdf?id=1254783166&stock_code=601187&type=rm",
+          "cat": "财经"
+        },
+        {
+          "text": "汉邦科技：关于股份回购实施结果暨股份变动的公告",
+          "time": "",
+          "url": "http://xp.stcn.com/index/pdf?id=1254783043&stock_code=688755&type=rm",
+          "cat": "科技"
+        },
+        {
+          "text": "通裕重工：关于控股股东增持股份计划实施进展暨增持时间过半的公告",
+          "time": "",
+          "url": "http://xp.stcn.com/index/pdf?id=1254782011&stock_code=300185&type=rm",
+          "cat": "财经"
+        },
+        {
+          "text": "新疆天业：新疆天业股份有限公司拟收购股权所涉及的精河县晶羿矿业有限公司股东全部权益价值资产评估报告",
+          "time": "",
+          "url": "http://xp.stcn.com/index/pdf?id=1254781786&stock_code=600075&type=rm",
+          "cat": "财经"
+        },
+        {
+          "text": "广安爱众：四川广安爱众股份有限公司关于控股股东部分股份解除质押后再质押的公告",
+          "time": "",
+          "url": "http://xp.stcn.com/index/pdf?id=1254780769&stock_code=600979&type=rm",
+          "cat": "财经"
+        },
+        {
+          "text": "诚意药业：浙江诚意药业股份有限公司高级管理人员减持股份结果公告",
+          "time": "",
+          "url": "http://xp.stcn.com/index/pdf?id=1254780668&stock_code=603811&type=rm",
+          "cat": "财经"
+        },
+        {
+          "text": "权益分派与限售股上市",
+          "time": "",
+          "url": "https://www.stcn.com/xinpi/report.html?classify=12",
+          "cat": "财经"
+        },
+        {
+          "text": "可转债 澄清与风险提示",
+          "time": "",
+          "url": "https://www.stcn.com/xinpi/report.html?classify=15",
+          "cat": "财经"
+        },
+        {
+          "text": "买房车的年轻人变多了 2026年房车销量有望再创新高",
+          "time": "",
+          "url": "https://www.stcn.com/article/detail/4206548.html",
+          "cat": "财经"
+        },
+        {
+          "text": "纳指盘中再创历史新高",
+          "time": "",
+          "url": "https://www.stcn.com/article/detail/4206541.html",
+          "cat": "财经"
+        },
+        {
+          "text": "一架载有32人的军用飞机在尼日利亚坠毁",
+          "time": "",
+          "url": "https://www.stcn.com/article/detail/4206534.html",
+          "cat": "财经"
+        },
+        {
+          "text": "台积电股价再创新高 总市值达2.5万亿美元",
+          "time": "",
+          "url": "https://www.stcn.com/article/detail/4206530.html",
+          "cat": "财经"
+        },
+        {
+          "text": "国庆假期第五天 湖南接待游客1328.02万人次",
+          "time": "",
+          "url": "https://www.stcn.com/article/detail/4206528.html",
+          "cat": "财经"
+        },
+        {
+          "text": "美股三大指数开盘涨跌不一",
+          "time": "",
+          "url": "https://www.stcn.com/article/detail/4206526.html",
+          "cat": "财经"
+        },
+        {
+          "text": "2026年国庆档电影总票房破9亿元",
+          "time": "",
+          "url": "https://www.stcn.com/article/detail/4206524.html",
+          "cat": "财经"
+        },
+        {
+          "text": "WTI原油期货日内跌2%",
+          "time": "",
+          "url": "https://www.stcn.com/article/detail/4206522.html",
+          "cat": "财经"
+        },
+        {
+          "text": "俄财政部将大幅增加外汇和黄金购买量",
+          "time": "",
+          "url": "https://www.stcn.com/article/detail/4206520.html",
+          "cat": "政治政策"
+        },
+        {
+          "text": "国庆假期第五天全国道路交通平稳有序",
+          "time": "",
+          "url": "https://www.stcn.com/article/detail/4206519.html",
+          "cat": "财经"
+        },
+        {
+          "text": "伦敦大范围停电",
+          "time": "",
+          "url": "https://www.stcn.com/article/detail/4206518.html",
+          "cat": "财经"
+        },
+        {
+          "text": "云深处人形机器人开展国庆实战测试",
+          "time": "",
+          "url": "https://www.stcn.com/article/detail/4206512.html",
+          "cat": "科技"
+        },
+        {
+          "text": "现货白银突破62美元/盎司",
+          "time": "",
+          "url": "https://www.stcn.com/article/detail/4206509.html",
+          "cat": "经济"
+        },
+        {
+          "text": "也门政府军称对首都萨那展开攻势",
+          "time": "",
+          "url": "https://www.stcn.com/article/detail/4206507.html",
+          "cat": "政治政策"
+        },
+        {
+          "text": "佩斯科夫：俄已警告在基辅工作危险 各国自行决定使馆运作",
+          "time": "",
+          "url": "https://www.stcn.com/article/detail/4206504.html",
+          "cat": "财经"
+        }
+      ]
+    },
+    {
+      "rank": 8,
+      "key": "wscn",
+      "name": "华尔街见闻",
+      "color": "#222222",
+      "items": [
+        {
+          "text": "美国总统特朗普：已决定自行投放广告并自掏腰包，同时使用我为Maga Inc.筹集的资金。",
+          "time": "2026-10-05 22:28",
+          "url": "https://wallstreetcn.com/livenews/3174286",
+          "cat": "财经"
+        },
+        {
+          "text": "沙特主导的联盟：摧毁了Sanna导弹发射架。（沙特官方媒体SPA）",
+          "time": "2026-10-05 22:19",
+          "url": "https://wallstreetcn.com/livenews/3174284",
+          "cat": "军事"
+        },
+        {
+          "text": "① 时间待定 日本央行行长植田和男讲话，OpenAI成立澳大利亚AI网络风险工作组，首席战略官赴悉尼； ② 13:00 印度9月服务业、综合PMI终值； ③ 14:00 德国8月工",
+          "time": "2026-10-05 22:17",
+          "url": "https://wallstreetcn.com/livenews/3174283",
+          "cat": "科技"
+        },
+        {
+          "text": "穆迪确认高通A2评级。",
+          "time": "2026-10-05 22:12",
+          "url": "https://wallstreetcn.com/livenews/3174282",
+          "cat": "财经"
+        },
+        {
+          "text": "也门胡塞武装军事发言人叶海亚·萨雷亚5日发表声明说，该组织使用弹道导弹、巡航导弹和无人机实施3次军事行动，袭击了沙特阿拉伯境内机场、石油设施和多个军事目标，以回应沙特对也门胡塞武装",
+          "time": "2026-10-05 22:08",
+          "url": "https://wallstreetcn.com/livenews/3174281",
+          "cat": "军事"
+        },
+        {
+          "text": "沙特阿拉伯首都利雅得5日晚传出爆炸声。（央视）",
+          "time": "2026-10-05 22:06",
+          "url": "https://wallstreetcn.com/livenews/3174280",
+          "cat": "财经"
+        },
+        {
+          "text": "周一（10月5日），美国科技股七巨头（Magnificent 7）指数涨1.07%，报238.22点，突破9月21日所创收盘历史最高位236.01点，刷新盘中历史最高位至239.3",
+          "time": "2026-10-05 21:51",
+          "url": "https://wallstreetcn.com/livenews/3174279",
+          "cat": "科技"
+        },
+        {
+          "text": "英国航空将在升级后的空客A380双层客机上推出全新商务舱，商务舱客舱将覆盖整个上层甲板。航空公司还将升级头等舱座椅，配备可收起的隔板，使中间座位可转换为供同行旅客使用的更大套间。这",
+          "time": "2026-10-05 21:23",
+          "url": "https://wallstreetcn.com/livenews/3174278",
+          "cat": "财经"
+        },
+        {
+          "text": "富时A50期指连续夜盘收涨0.42%，报13874点。",
+          "time": "2026-10-05 21:15",
+          "url": "https://wallstreetcn.com/livenews/3174276",
+          "cat": "财经"
+        },
+        {
+          "text": "巴拿马运河管理局5日发布公告说，将通过“长期通航名额分配计划”提前分配2027年1月3日至4月3日期间的长期通航名额，并首次将这一机制从新巴拿马型船闸扩展至巴拿马型船闸试行。 公告",
+          "time": "2026-10-05 21:10",
+          "url": "https://wallstreetcn.com/livenews/3174275",
+          "cat": "财经"
+        },
+        {
+          "text": "华尔街银行周一已开始向市场分销一笔新的600亿美元债务包的部分份额，该融资将用于支持Anthropic租赁谷歌半导体芯片，这也是迄今为止规模最大的芯片融资交易，正值科技公司竞相锁定",
+          "time": "2026-10-05 21:10",
+          "url": "https://wallstreetcn.com/livenews/3174274",
+          "cat": "科技"
+        },
+        {
+          "text": "也门胡塞武装军事发言人叶海亚·萨雷亚5日发布声明，称沙特阿拉伯领空已成为胡塞武装的“行动区域”，警告所有经沙特领空运营相关航线的国际航空公司，暂停相关航班。萨雷亚当日在社交媒体发布",
+          "time": "2026-10-05 21:09",
+          "url": "https://wallstreetcn.com/livenews/3174273",
+          "cat": "军事"
+        },
+        {
+          "text": "周一（10月5日）纽约尾盘，标普500股指期货最终涨0.72%，道指期货涨0.25%，纳斯达克100股指期货涨0.91%。 罗素2000股指期货涨0.63%。",
+          "time": "2026-10-05 21:08",
+          "url": "https://wallstreetcn.com/livenews/3174272",
+          "cat": "财经"
+        },
+        {
+          "text": "周一（10月5日）纽约尾盘（周二北京时间04:59），离岸人民币（CNH）兑美元报6.7037元，较上周五纽约尾盘涨21点，日内整体交投于6.7148-6.7035元区间。",
+          "time": "2026-10-05 21:04",
+          "url": "https://wallstreetcn.com/livenews/3174271",
+          "cat": "经济"
+        },
+        {
+          "text": "10月5日，美国纽约州州长凯西·霍楚尔发布命令称，纽约州针对麻疹疫情宣布进入灾难紧急状态，有效期为2026年10月5日至11月4日。截至2026年10月3日，纽约州报告麻疹病例10",
+          "time": "2026-10-05 20:58",
+          "url": "https://wallstreetcn.com/livenews/3174269",
+          "cat": "社会热点"
+        },
+        {
+          "text": "10月5日，沙特主导的多国联军发言人图尔基·马利基表示，联军海军部队当天在也门荷台达省实施军事行动，打击了胡塞武装相关军事目标。马利基称，行动摧毁了武器库、装有爆炸物的船只储存设施",
+          "time": "2026-10-05 20:56",
+          "url": "https://wallstreetcn.com/livenews/3174268",
+          "cat": "军事"
+        },
+        {
+          "text": "周一（10月5日）纽约尾盘，现货黄金涨0.03%，报4142.46美元/盎司，日内呈现出M形走势，北京时间16:16刷新日高至4170.41美元、23:22跌至4123.44美元刷",
+          "time": "2026-10-05 20:56",
+          "url": "https://wallstreetcn.com/livenews/3174267",
+          "cat": "财经"
+        },
+        {
+          "text": "媒体援引知情人士报道称，OpenAI正与包括阿布扎比MGX在内的多家阿联酋投资基金进行谈判，以协助锚定ChatGPT开发商一笔300亿美元的融资轮。这些基金将组成银团参与本轮投资，",
+          "time": "2026-10-05 20:49",
+          "url": "https://wallstreetcn.com/livenews/3174266",
+          "cat": "科技"
+        },
+        {
+          "text": "也门胡塞武装发言人叶海亚·萨雷亚当地时间10月5日深夜发表声明称，为回应沙特过去24小时对也门发动的袭击，胡塞武装当天实施三轮军事行动，使用大量弹道导弹、巡航导弹和无人机，袭击了沙",
+          "time": "2026-10-05 20:35",
+          "url": "https://wallstreetcn.com/livenews/3174264",
+          "cat": "军事"
+        },
+        {
+          "text": "据知情人士透露，AI芯片初创公司Etched正在评估的投资报价，对应的估值已达到其此前估值的两倍甚至更高。 该公司正在审阅的报价区间为：来自顶级投资者的400亿美元报价，以及来自知",
+          "time": "2026-10-05 20:26",
+          "url": "https://wallstreetcn.com/livenews/3174262",
+          "cat": "科技"
+        },
+        {
+          "text": "德国总理默茨5日表示，德国将继续加强北约东翼防务，并与立陶宛等北约盟国深化合作，应对来自俄罗斯的“安全威胁”。（新华社）",
+          "time": "2026-10-05 20:26",
+          "url": "https://wallstreetcn.com/livenews/3174261",
+          "cat": "政治政策"
+        },
+        {
+          "text": "周一（10月5日），新兴市场ETF收涨1.57%，农产品基金涨0.89%，纳斯达克100 ETF涨0.88%，标普500 ETF、罗素2000指数ETF至多涨0.67%，大豆基金涨",
+          "time": "2026-10-05 20:25",
+          "url": "https://wallstreetcn.com/livenews/3174260",
+          "cat": "财经"
+        },
+        {
+          "text": "惠誉评级：北美石油对冲已出现浮亏，天然气生产商将锁定2028年有利价格。",
+          "time": "2026-10-05 20:24",
+          "url": "https://wallstreetcn.com/livenews/3174259",
+          "cat": "财经"
+        },
+        {
+          "text": "彭博汇总的数据显示，截至10月2日当周，投资于发展中国家及特定市场的美国上市新兴市场ETF总计流出9.867亿美元，而前一周还录得2.453亿美元流入。今年迄今它们吸引到554亿美",
+          "time": "2026-10-05 20:17",
+          "url": "https://wallstreetcn.com/livenews/3174257",
+          "cat": "经济"
+        },
+        {
+          "text": "明晟公司MSCI新兴市场股票指数涨1.8%，发展中国家外汇指数涨0.4%。 巴西股市创2020年以来最佳单日表现，投资者关注总统候选人博索纳罗在第一轮选举中领先总统卢拉。 巴西圣保",
+          "time": "2026-10-05 20:15",
+          "url": "https://wallstreetcn.com/livenews/3174256",
+          "cat": "财经"
+        },
+        {
+          "text": "美国纽约联储同时走访摩根士丹利、巴克莱银行，就总体风险敞口质询（各大）银行。",
+          "time": "2026-10-05 20:14",
+          "url": "https://wallstreetcn.com/livenews/3174255",
+          "cat": "财经"
+        },
+        {
+          "text": "美国劳工部长Keith Sonderling：将借助新技术改进劳工统计局（BLS）数据采集。 劳工统计局数据将改善。 透明度是“我对美国公众的承诺”。（福克斯商业频道）",
+          "time": "2026-10-05 20:13",
+          "url": "https://wallstreetcn.com/livenews/3174254",
+          "cat": "政治政策"
+        },
+        {
+          "text": "周一（10月5日），美股行业ETF多数收涨，生物科技指数ETF涨1.3%，能源业ETF涨1%，网络股指数ETF、全球科技股指数ETF、科技行业ETF、半导体ETF至少涨0.52%，",
+          "time": "2026-10-05 20:13",
+          "url": "https://wallstreetcn.com/livenews/3174253",
+          "cat": "科技"
+        },
+        {
+          "text": "标普500指数的11个板块普遍上涨，原材料板块收涨1.22%，电信板块涨1.14%，能源、金融、信息技术/科技板块至少涨0.72%，房地产板块则收跌0.44%，是唯一下跌的板块。",
+          "time": "2026-10-05 20:10",
+          "url": "https://wallstreetcn.com/livenews/3174252",
+          "cat": "财经"
+        },
+        {
+          "text": "据知情人士透露，麦克森公司（McKesson）和私募股权公司Clayton Dubilier & Rice（CD&R）正接近达成收购美国最大独立医疗输液服务提供商Option Ca",
+          "time": "2026-10-05 20:07",
+          "url": "https://wallstreetcn.com/livenews/3174251",
+          "cat": "社会热点"
+        },
+        {
+          "text": "Lucid Group第三财季交付3,806辆，产量季环比下滑至2,954辆。",
+          "time": "2026-10-05 20:05",
+          "url": "https://wallstreetcn.com/livenews/3174250",
+          "cat": "财经"
+        },
+        {
+          "text": "随着混合动力汽车销量在汽油价格高企和纯电动汽车需求降温的背景下持续增长，通用汽车计划向美国产品线引入混合动力车型。通用汽车推进工程副总裁迈克·安德森重申了公司的混合动力计划，但拒绝",
+          "time": "2026-10-05 20:04",
+          "url": "https://wallstreetcn.com/livenews/3174249",
+          "cat": "百强企业"
+        },
+        {
+          "text": "住宅建筑公司Lennar Corp.（LEN）跌6.7%，创2024年3月份以来最差单日表现。",
+          "time": "2026-10-05 20:02",
+          "url": "https://wallstreetcn.com/livenews/3174248",
+          "cat": "财经"
+        },
+        {
+          "text": "Spacex收涨7.6%，创6月份以来收盘新高，帮助马斯克“恢复”万亿美元富豪头衔。",
+          "time": "2026-10-05 20:01",
+          "url": "https://wallstreetcn.com/livenews/3174247",
+          "cat": "百强企业"
+        },
+        {
+          "text": "周一（10月5日），彭博电动汽车价格回报指数涨0.24%，报3154.87点，亚欧时段主要维持下跌状态，美股开盘后快速转涨并平缓地持续扩大涨幅。",
+          "time": "2026-10-05 20:01",
+          "url": "https://wallstreetcn.com/livenews/3174246",
+          "cat": "财经"
+        },
+        {
+          "text": "标普500指数收涨51.23点，涨幅0.66%，报7773.95点，整体持续扩大涨幅，逼近8月13日所创收盘历史最高位7798.99点和盘中历史最高位。标普500相等权重指数收涨0",
+          "time": "2026-10-05 20:00",
+          "url": "https://wallstreetcn.com/livenews/3174245",
+          "cat": "财经"
+        },
+        {
+          "text": "纳斯达克金龙中国指数收涨1.71%，报5613.68点，脱离上周五（美国非农日）收盘位5519.24点。 ETF中，中概互联网指数ETF（KWEB）收涨2.93%，中国科技指数ET",
+          "time": "2026-10-05 20:00",
+          "url": "https://wallstreetcn.com/livenews/3174244",
+          "cat": "财经"
+        },
+        {
+          "text": "美泰涨幅扩大至3.9%，华尔街日报报道称，该公司面临股东“要求其考虑出售”的压力。",
+          "time": "2026-10-05 19:57",
+          "url": "https://wallstreetcn.com/livenews/3174243",
+          "cat": "财经"
+        },
+        {
+          "text": "【特朗普：因“具体威胁” 美军轰炸机撤离英国基地】10月5日，美国总统特朗普表示，美军此前从英国皇家空军费尔福德基地撤走轰炸机，是因为基地面临“具体威胁”。特朗普当天在白宫外接受记",
+          "time": "2026-10-05 19:56",
+          "url": "https://wallstreetcn.com/livenews/3174242",
+          "cat": "军事"
+        },
+        {
+          "text": "当地时间10月5日晚，一架从土耳其首都安卡拉飞往尚勒乌尔法的客机上发现一张声称机上有爆炸物的纸条。尚勒乌尔法省省长哈桑·舍尔达克表示，涉事客机为AJet航空4180航班，于当天19",
+          "time": "2026-10-05 19:51",
+          "url": "https://wallstreetcn.com/livenews/3174240",
+          "cat": "财经"
+        },
+        {
+          "text": "周一（10月5日）纽约尾盘，美国10年期基准国债收益率涨4.04个基点，报5.3110%，日内交投于5.2475%-5.3472%区间，日内大约一半的时间维持微幅下跌状态、持稳于5",
+          "time": "2026-10-05 19:46",
+          "url": "https://wallstreetcn.com/livenews/3174239",
+          "cat": "经济"
+        },
+        {
+          "text": "以色列议会选举定于10月27日举行。按以色列媒体说法，这将是以色列近40年来首次按计划而非提前举行议会选举。（新华社）",
+          "time": "2026-10-05 19:45",
+          "url": "https://wallstreetcn.com/livenews/3174238",
+          "cat": "财经"
+        },
+        {
+          "text": "美国总统特朗普就迪拜航空飞机事故表态：我认为伊朗应对此事负责。",
+          "time": "2026-10-05 19:31",
+          "url": "https://wallstreetcn.com/livenews/3174236",
+          "cat": "社会热点"
+        },
+        {
+          "text": "周一（10月5日）纽约尾盘，美元兑日元涨0.07%，报157.97日元，日内交投区间为157.44-158.30日元。 欧元兑日元跌0.22%，英镑兑日元跌0.07%，日元兑离岸人",
+          "time": "2026-10-05 19:28",
+          "url": "https://wallstreetcn.com/livenews/3174235",
+          "cat": "经济"
+        },
+        {
+          "text": "美国总统特朗普：曾经认为英国境内（对美军）存在威胁。 知道是谁构成威胁。 若伊朗在英国部署作战无人机，将付出惨重代价。",
+          "time": "2026-10-05 19:26",
+          "url": "https://wallstreetcn.com/livenews/3174234",
+          "cat": "财经"
+        },
+        {
+          "text": "周一（10月5日，非农次日）纽约尾盘，ICE美元指数涨0.23%，报102.164点，日内交投区间为101.855-102.535点，亚太早盘显著上涨、北京时间10:00出现一波加",
+          "time": "2026-10-05 19:25",
+          "url": "https://wallstreetcn.com/livenews/3174233",
+          "cat": "财经"
+        },
+        {
+          "text": "美国总统特朗普谈沙特和胡塞武装冲突：一切都会好起来的。",
+          "time": "2026-10-05 19:24",
+          "url": "https://wallstreetcn.com/livenews/3174232",
+          "cat": "军事"
+        },
+        {
+          "text": "美国总统特朗普被问及是否对与伊朗直接对话持开放态度，声称：是的。",
+          "time": "2026-10-05 19:22",
+          "url": "https://wallstreetcn.com/livenews/3174231",
+          "cat": "财经"
+        },
+        {
+          "text": "美国总统特朗普：炼油厂不足才是问题（汽油价格）所在。 将帮助农民解决柴油问题。",
+          "time": "2026-10-05 19:21",
+          "url": "https://wallstreetcn.com/livenews/3174230",
+          "cat": "财经"
+        }
+      ]
+    },
+    {
+      "rank": 9,
+      "key": "jin10",
+      "name": "金十数据",
+      "color": "#1267c7",
+      "items": [
+        {
+          "text": "【金十数据整理：俄乌冲突最新24小时局势跟踪（10月6日）】冲突情况：1. 乌称人工智能炮塔首次成功拦截俄无人机。2. 俄罗斯国防部：俄罗斯袭击了乌克兰皮夫登内港的一艘货船。3. ",
+          "time": "2026-10-06 06:09",
+          "url": "https://flash.jin10.com/detail/20261006060914136800",
+          "cat": "军事"
+        },
+        {
+          "text": "【美联储10月维持利率不变的概率为77.3%】金十数据10月6日讯，据CME“美联储观察”：美联储到10月维持利率不变的概率为77.3%，累计加息25个基点的概率为22.7%。美联",
+          "time": "2026-10-06 06:05",
+          "url": "https://flash.jin10.com/detail/20261006060539426800",
+          "cat": "经济"
+        },
+        {
+          "text": "美国总统特朗普：如果共和党在2026年中期选举中赢得众议院和参议院的控制权，我将向美国的所有成年公民发放5,000美元，我期待着签署这些支票。",
+          "time": "2026-10-06 06:05",
+          "url": "https://flash.jin10.com/detail/20261006060536017800",
+          "cat": "经济"
+        },
+        {
+          "text": "金十图示：2026年10月06日（周二）各大货币对表现",
+          "time": "2026-10-06 06:00",
+          "url": "https://flash.jin10.com/detail/20261006060033881800",
+          "cat": "财经"
+        },
+        {
+          "text": "【英伟达股价多月来首创新高 分析师：仍有继续上涨的理由】金十数据10月6日讯，随着英伟达(NVDA.O)股价在四个月内首次创下新高，分析师对未来持乐观态度。该公司股票周一收于237",
+          "time": "2026-10-06 06:00",
+          "url": "https://flash.jin10.com/detail/20261006060004622800",
+          "cat": "财经"
+        },
+        {
+          "text": "【美军称遭伊朗袭击后靠谷歌找医院】金十数据10月6日讯，今年3月1日上午，美国、以色列对伊朗发动大规模空袭次日，伊朗在反击行动中发射无人机，打击了科威特南部舒艾拜港的美军基地，造成",
+          "time": "2026-10-06 05:34",
+          "url": "https://flash.jin10.com/detail/20261006053407848800",
+          "cat": "百强企业"
+        },
+        {
+          "text": "【金十数据整理：中东局势跟踪（10月6日）】冲突情况：1. 也门政府军：重新控制曼德海峡。2. 也门政府军称收复红海港口城市穆哈。3. 内塔尼亚胡：伊朗政权终将消失。4. 胡塞方面",
+          "time": "2026-10-06 05:28",
+          "url": "https://flash.jin10.com/detail/20261006052844566800",
+          "cat": "军事"
+        },
+        {
+          "text": "【特朗普角逐诺贝尔和平奖，专家称胜算甚低】金十数据10月6日讯，2026年诺贝尔和平奖将于星期五（10月9日）揭晓。尽管美国总统特朗普据报获多个国家领导人提名，但多名专家认为，他今",
+          "time": "2026-10-06 05:15",
+          "url": "https://flash.jin10.com/detail/20261006051508944800",
+          "cat": "财经"
+        },
+        {
+          "text": "【华尔街银团启动创纪录的600亿美元AI融资交易】金十数据10月6日讯，据英国金融时报报道，美国银行、花旗和摩根士丹利已开始向其他银行分销一笔总额600亿美元的债务融资，用于支持A",
+          "time": "2026-10-06 05:13",
+          "url": "https://flash.jin10.com/detail/20261006051305337800",
+          "cat": "经济"
+        },
+        {
+          "text": "据外媒报道，沙特阿拉伯首都利雅得5日晚传出爆炸声。",
+          "time": "2026-10-06 05:05",
+          "url": "https://flash.jin10.com/detail/20261006050523094800",
+          "cat": "财经"
+        },
+        {
+          "text": "据英国金融时报：华尔街银行推出创纪录的600亿美元芯片交易，涉及博通和Anthropic。",
+          "time": "2026-10-06 05:02",
+          "url": "https://flash.jin10.com/detail/20261006050210319800",
+          "cat": "科技"
+        },
+        {
+          "text": "【美媒：私人信贷担忧推动美联储对大型银行进行审查】金十数据10月6日讯，据美国财经媒体Semafor报道，纽约联储已开始走访大型银行，审查其对私营信贷公司的贷款情况，并了解这些银行",
+          "time": "2026-10-06 05:01",
+          "url": "https://flash.jin10.com/detail/20261006050159607800",
+          "cat": "经济"
+        },
+        {
+          "text": "韩国9月外汇储备 4405.6亿美元，前值4422.8亿美元。",
+          "time": "2026-10-06 05:00",
+          "url": "https://flash.jin10.com/detail/20261006050002101800",
+          "cat": "经济"
+        },
+        {
+          "text": "【美国纽约州宣布针对麻疹疫情进入灾难紧急状态】金十数据10月6日讯，当地时间10月5日，美国纽约州州长凯西·霍楚尔发布命令称，纽约州针对麻疹疫情宣布进入灾难紧急状态，有效期为202",
+          "time": "2026-10-06 04:57",
+          "url": "https://flash.jin10.com/detail/20261006045747460800",
+          "cat": "社会热点"
+        },
+        {
+          "text": "据美国财经媒体Semafor：纽约联储正在拜访大型银行，审查它们对私人信贷公司的贷款情况。美联储官员对摩根大通(JPM.N)、富国银行、巴克莱(BCS.N)和摩根士丹利(MS.N)",
+          "time": "2026-10-06 04:53",
+          "url": "https://flash.jin10.com/detail/20261006045326061800",
+          "cat": "经济"
+        },
+        {
+          "text": "市场消息：OpenAI已与Thrive、Andreessen Horowitz进行融资谈判；同时正与阿联酋基金及贝莱德商讨300亿美元融资轮。",
+          "time": "2026-10-06 04:48",
+          "url": "https://flash.jin10.com/detail/20261006044845596800",
+          "cat": "科技"
+        },
+        {
+          "text": "美国总统特朗普抨击纽约时报“篡改”照片丑化特朗普家族旗下的酒店。",
+          "time": "2026-10-06 04:37",
+          "url": "https://flash.jin10.com/detail/20261006043721615800",
+          "cat": "财经"
+        },
+        {
+          "text": "【古巴官员：与美国维持“沟通渠道”，但尚未展开正式谈判】金十数据10月6日讯，据路透社报道，古巴驻华盛顿高级外交官表示，古巴与美国之间仍保持“沟通渠道”，但目前尚未进行任何正式谈判",
+          "time": "2026-10-06 04:28",
+          "url": "https://flash.jin10.com/detail/20261006042822410800",
+          "cat": "政治政策"
+        },
+        {
+          "text": "【沙特联军：在荷台达省开展军事行动 摧毁胡塞武器设施】金十数据10月6日讯，沙特领导的联军发言人表示，联军海军部队在也门荷台达省实施军事行动，摧毁胡塞武装合法军事目标，包括武器储存",
+          "time": "2026-10-06 04:28",
+          "url": "https://flash.jin10.com/detail/20261006042800751800",
+          "cat": "军事"
+        }
+      ]
+    },
+    {
+      "rank": 10,
+      "key": "cs",
+      "name": "中国证券",
+      "color": "#b91c1c",
+      "items": [
+        {
+          "text": "博瑞医药BGM0504减重Ⅲ期数据亮相EASD 2026",
+          "time": "",
+          "url": "https://www.cs.com.cn/ssgs/01/2026/10/03/detail_2026100310042935.html",
+          "cat": "财经"
+        },
+        {
+          "text": "Mirxes-B：多条业务线取得进展",
+          "time": "",
+          "url": "https://www.cs.com.cn/ssgs/01/2026/10/03/detail_2026100310042916.html",
+          "cat": "财经"
+        },
+        {
+          "text": "国庆出行带动换电需求 蔚来单日换电次数刷新历史纪录",
+          "time": "",
+          "url": "https://www.cs.com.cn/ssgs/01/2026/10/03/detail_2026100310042894.html",
+          "cat": "科技"
+        },
+        {
+          "text": "中金开元旅业商业REIT获批",
+          "time": "",
+          "url": "https://www.cs.com.cn/tzjj/01/2026/10/01/detail_2026100110042758.html",
+          "cat": "财经"
+        },
+        {
+          "text": "福田汽车发布“十五五”战略 设定2030年百万销量目标",
+          "time": "",
+          "url": "https://www.cs.com.cn/ssgs/01/2026/09/30/detail_2026093010042735.html",
+          "cat": "财经"
+        },
+        {
+          "text": "拟挂牌出售低效资产，苏大维格聚焦半导体及微纳光学业务",
+          "time": "",
+          "url": "https://www.cs.com.cn/ssgs/01/2026/09/30/detail_2026093010042734.html",
+          "cat": "科技"
+        },
+        {
+          "text": "逐际动力发布搭载国产电子架构的人形机器人",
+          "time": "",
+          "url": "https://www.cs.com.cn/ssgs/01/2026/09/30/detail_2026093010042713.html",
+          "cat": "科技"
+        },
+        {
+          "text": "地平线发布HSD V2.1智驾系统 实现量产全场景倒车功能",
+          "time": "",
+          "url": "https://www.cs.com.cn/ssgs/01/2026/09/30/detail_2026093010042712.html",
+          "cat": "财经"
+        },
+        {
+          "text": "江铃汽车完成高管梯队交接 丁文敏接任第一执行副总裁",
+          "time": "",
+          "url": "https://www.cs.com.cn/ssgs/01/2026/09/30/detail_2026093010042710.html",
+          "cat": "百强企业"
+        },
+        {
+          "text": "中金杭州安居宁巢REIT成立",
+          "time": "",
+          "url": "https://www.cs.com.cn/tzjj/01/2026/09/30/detail_2026093010042709.html",
+          "cat": "财经"
+        },
+        {
+          "text": "中证智能财讯",
+          "time": "",
+          "url": "https://newzzbcx.cs.com.cn/channelnews.html",
+          "cat": "财经"
+        },
+        {
+          "text": "具身智能帕西尼启动IPO 估值已过百亿",
+          "time": "",
+          "url": "https://jnzstatic.cs.com.cn/zzb/htmlInfo/133761.html",
+          "cat": "财经"
+        },
+        {
+          "text": "希音正式登陆港交所 全球发售顺利完成",
+          "time": "",
+          "url": "https://jnzstatic.cs.com.cn/zzb/htmlInfo/132172.html",
+          "cat": "财经"
+        },
+        {
+          "text": "贷款中介“付费加白”调查：借渠道说辞收取高额费用",
+          "time": "",
+          "url": "https://www.cs.com.cn/yh/04/2026/07/17/detail_2026071710024969.html",
+          "cat": "财经"
+        },
+        {
+          "text": "浙江美大停牌前连续涨停 控制权转让是否提前泄密",
+          "time": "",
+          "url": "https://www.cs.com.cn/ssgs/01/2026/07/11/detail_2026071110023757.html",
+          "cat": "财经"
+        },
+        {
+          "text": "万家基金吴宜蓉：科技的长期产业趋势没有改变",
+          "time": "",
+          "url": "https://www.cs.com.cn/sylm/jsbd/2026/09/10/detail_2026091010038314.html",
+          "cat": "科技"
+        },
+        {
+          "text": "万家基金吴宜蓉：畜牧养殖板块正从\"估值修复型反弹\"向\"周期反转左侧定价\"过渡",
+          "time": "",
+          "url": "https://www.cs.com.cn/sylm/jsbd/2026/09/10/detail_2026091010038308.html",
+          "cat": "财经"
+        },
+        {
+          "text": "今年以来我国投资结构优化持续推进",
+          "time": "",
+          "url": "https://www.cs.com.cn/xwzx/01/2026/10/05/detail_2026100510043024.html",
+          "cat": "财经"
+        },
+        {
+          "text": "出行热 体验丰 门市旺——国庆假期消费市场观察",
+          "time": "",
+          "url": "https://www.cs.com.cn/xwzx/01/2026/10/05/detail_2026100510043038.html",
+          "cat": "财经"
+        },
+        {
+          "text": "国庆假期过半消费市场平稳有序",
+          "time": "",
+          "url": "https://www.cs.com.cn/xwzx/01/2026/10/05/detail_2026100510042991.html",
+          "cat": "财经"
+        },
+        {
+          "text": "2026年国庆档档期票房破8亿元",
+          "time": "",
+          "url": "https://www.cs.com.cn/xwzx/msxf/2026/10/05/detail_2026100510043025.html",
+          "cat": "财经"
+        },
+        {
+          "text": "10月4日全社会跨区域人员流动量同比增长1.3%",
+          "time": "",
+          "url": "https://www.cs.com.cn/xwzx/01/2026/10/05/detail_2026100510043043.html",
+          "cat": "社会热点"
+        },
+        {
+          "text": "七部门部署“十五五”时期加强新型电池产品创新",
+          "time": "",
+          "url": "https://www.cs.com.cn/xwzx/01/2026/10/05/detail_2026100510042997.html",
+          "cat": "财经"
+        },
+        {
+          "text": "截至二季度末资产管理产品总规模突破88万亿元",
+          "time": "",
+          "url": "https://www.cs.com.cn/xwzx/01/2026/10/05/detail_2026100510042984.html",
+          "cat": "财经"
+        },
+        {
+          "text": "我国推进7项天然气国际标准成功立项",
+          "time": "",
+          "url": "https://www.cs.com.cn/xwzx/01/2026/10/05/detail_2026100510042982.html",
+          "cat": "财经"
+        },
+        {
+          "text": "华为与高通，达成重要协议",
+          "time": "",
+          "url": "https://mp.weixin.qq.com/s/NWpHH4va4hcUttQbTQENVw",
+          "cat": "科技"
+        },
+        {
+          "text": "一汽丰田发布声明：“退出历史舞台”“丰田大降价”等言论不实",
+          "time": "",
+          "url": "https://jnzstatic.cs.com.cn/zzb/htmlInfo/134545.html",
+          "cat": "百强企业"
+        },
+        {
+          "text": "南方电网投入5万余人 保障国庆电力供应",
+          "time": "",
+          "url": "https://www.cs.com.cn/xwzx/01/2026/10/05/detail_2026100510042998.html",
+          "cat": "财经"
+        },
+        {
+          "text": "8万余人在岗 国家电网员工坚守国庆保电一线",
+          "time": "",
+          "url": "https://www.cs.com.cn/xwzx/01/2026/10/05/detail_2026100510042985.html",
+          "cat": "财经"
+        },
+        {
+          "text": "金秋蟹肥丰收忙——辽宁盘锦河蟹产业一线观察",
+          "time": "",
+          "url": "https://www.cs.com.cn/xwzx/01/2026/10/05/detail_2026100510042989.html",
+          "cat": "财经"
+        },
+        {
+          "text": "AI巨头，大消息",
+          "time": "",
+          "url": "https://mp.weixin.qq.com/s/aVxAaj0toEBACDMwUxa10Q",
+          "cat": "科技"
+        },
+        {
+          "text": "开创智能网联新能源汽车全球产业合作新局面这样发力",
+          "time": "",
+          "url": "https://www.cs.com.cn/ssgs/cj2020/2026/10/03/detail_2026100310042932.html",
+          "cat": "财经"
+        },
+        {
+          "text": "港股收评：恒生指数涨0.28% 恒生科技指数涨0.62%",
+          "time": "",
+          "url": "https://www.cs.com.cn/gppd/ggzx/2026/10/05/detail_2026100510043036.html",
+          "cat": "财经"
+        },
+        {
+          "text": "PCB概念股，涨超9%",
+          "time": "",
+          "url": "https://mp.weixin.qq.com/s/a6TGbMSTSuMXpIfJtXIOnA",
+          "cat": "财经"
+        },
+        {
+          "text": "港股午评：恒生指数跌0.08%，恒生科技指数涨0.27%",
+          "time": "",
+          "url": "https://www.cs.com.cn/gppd/ggzx/2026/10/05/detail_2026100510042999.html",
+          "cat": "财经"
+        },
+        {
+          "text": "恒生科技指数转涨",
+          "time": "",
+          "url": "https://www.cs.com.cn/gppd/ggzx/2026/10/05/detail_2026100510042967.html",
+          "cat": "科技"
+        },
+        {
+          "text": "恒生指数开盘跌0.04%，恒生科技指数跌0.47%",
+          "time": "",
+          "url": "https://www.cs.com.cn/gppd/ggzx/2026/10/05/detail_2026100510042966.html",
+          "cat": "科技"
+        },
+        {
+          "text": "港股2日跌2.6% 收报23972.29点",
+          "time": "",
+          "url": "https://www.cs.com.cn/gppd/ggzx/2026/10/03/detail_2026100310042859.html",
+          "cat": "财经"
+        },
+        {
+          "text": "港股午评：恒生指数跌2.64% 恒生科技指数跌2.45%",
+          "time": "",
+          "url": "https://www.cs.com.cn/gppd/ggzx/2026/10/02/detail_2026100210042809.html",
+          "cat": "财经"
+        },
+        {
+          "text": "9月十大牛股出炉！最牛股票单月涨超133%",
+          "time": "",
+          "url": "https://mp.weixin.qq.com/s/oB01-B5rcfedXdg00CDoJw?scene=1",
+          "cat": "财经"
+        },
+        {
+          "text": "两个字，刷屏A股！复盘20年数据，节后A股有四大规律",
+          "time": "",
+          "url": "https://mp.weixin.qq.com/s/gWMVZJeo4x64NbZM-Wutnw?scene=1",
+          "cat": "财经"
+        },
+        {
+          "text": "收评：沪指涨0.31% 创新药、CRO概念走强",
+          "time": "",
+          "url": "https://www.cs.com.cn/gppd/gsyj/2026/09/30/detail_2026093010042627.html",
+          "cat": "财经"
+        },
+        {
+          "text": "“大消费”，过节了！",
+          "time": "",
+          "url": "https://mp.weixin.qq.com/s/4XaycdDvbNF6HbXfuML6gQ",
+          "cat": "财经"
+        },
+        {
+          "text": "中证饲料养殖指数在雄安新区正式发布",
+          "time": "",
+          "url": "https://www.cs.com.cn/gppd/gsyj/2026/09/30/detail_2026093010042608.html",
+          "cat": "财经"
+        },
+        {
+          "text": "【涨停直击】电力板块走强，三股直线涨停",
+          "time": "",
+          "url": "https://jnzstatic.cs.com.cn/zzb/htmlInfo/134425.html",
+          "cat": "财经"
+        },
+        {
+          "text": "【涨停直击】4连板！机器人减速器龙头，再度涨停",
+          "time": "",
+          "url": "https://jnzstatic.cs.com.cn/zzb/htmlInfo/134426.html",
+          "cat": "科技"
+        },
+        {
+          "text": "4连板牛股，跳水跌停",
+          "time": "",
+          "url": "https://jnzstatic.cs.com.cn/zzb/htmlInfo/134416.html",
+          "cat": "财经"
+        },
+        {
+          "text": "基金·ETF",
+          "time": "",
+          "url": "https://www.cs.com.cn/jijin.html",
+          "cat": "财经"
+        },
+        {
+          "text": "公募定增收益大幅分化 部分项目浮盈超四成",
+          "time": "",
+          "url": "https://jnzstatic.cs.com.cn/zzb/htmlInfo/134544.html",
+          "cat": "财经"
+        },
+        {
+          "text": "资金逆势加仓，涌入这些方向",
+          "time": "",
+          "url": "https://mp.weixin.qq.com/s/kYDSfVQ5vWHZUtro0C-prQ",
+          "cat": "财经"
+        }
+      ]
+    }
+  ]
+}
