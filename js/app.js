@@ -256,6 +256,7 @@ const app = createApp({
       if (A && A.Sync && A.Sync.isAdminConfigured && A.Sync.isAdminConfigured()) {
         A.syncSelfToRegistry();
         loadRemotePending();
+        loadMemberClaims();   // batch-A：拉会员待开通记录
       }
       userModal.show = true;
       markPendingSeen();   // 打开面板即视为已查看，收起提醒条、角标转已读
@@ -2090,8 +2091,21 @@ const app = createApp({
       syncing: false,      // 查询会员状态中
       error: '',           // 错误提示
       statusText: '',      // 当前会员状态文案
-      untilTs: 0           // 后端返回的会员到期时间戳(ms)
+      untilTs: 0,          // 后端返回的会员到期时间戳(ms)
+      mode: '',            // 收款方式：'personal' 个人码 | 'merchant' 商户 | '' 未配置
+      claimMsg: '',        // 「我已支付」提交后的提示
+      claimed: false       // 本次是否已提交待开通
     });
+    // batch-A：个人收款码配置（来自公开文件 data/membership/config.json，免鉴权读取）
+    const membershipConfig = reactive({ qrData: '', note: '', loaded: false });
+    async function loadMembershipConfig() {
+      try {
+        const cfg = (A && A.Sync && A.Sync.readMembershipConfig) ? await A.Sync.readMembershipConfig() : null;
+        membershipConfig.qrData = (cfg && cfg.qrData) ? cfg.qrData : '';
+        membershipConfig.note = (cfg && cfg.note) ? cfg.note : '';
+      } catch (e) { membershipConfig.qrData = ''; }
+      membershipConfig.loaded = true;
+    }
     function fmtDate(ts) { const d = new Date(Number(ts) || Date.now()); const p = n => String(n).padStart(2, '0'); return d.getFullYear() + '-' + p(d.getMonth() + 1) + '-' + p(d.getDate()); }
     function planMonths(plan) { return plan === '1y' ? 12 : 6; }
     function memberApiBase() {
@@ -2128,30 +2142,92 @@ const app = createApp({
         return { ok: true, wxQr: j.wxQr || '', aliQr: j.aliQr || '' };
       } catch (e) { return { ok: false, error: '生成异常：' + (e && e.message ? e.message : e) }; }
     }
-    // 把后端会员状态落到本机，并刷新面板状态文案
+    // 收款方式：个人码（免费）优先；其次商户；都未配置则空
+    function resolvePayMode() {
+      if (membershipConfig.qrData) return 'personal';
+      if (memberApiBase()) return 'merchant';
+      return '';
+    }
+    function planLabel(p) { return p === '1y' ? '1 年会员（¥2000）' : '6 个月会员（¥1000）'; }
+    async function copyUsername() {
+      const uname = (Auth && Auth.user && Auth.user.username) || '';
+      try { await copyText(uname); } catch (e) {}
+      return uname;
+    }
+    // 把会员状态落到本机，并刷新面板状态文案（个人码方案读公开注册表；商户方案查 Worker）
     async function syncMembership() {
       const uname = (Auth && Auth.user && Auth.user.username) || '';
-      if (!uname) { membershipModal.statusText = '请先登录'; return; }
+      if (!uname) { membershipModal.statusText = '请先登录'; membershipModal.mode = ''; return; }
       membershipModal.syncing = true;
+      // 1) 个人码方案：读公开注册表里的 payMembershipUntil（管理员后台开通后写入）
+      try {
+        const reg = (A && A.Sync && A.Sync.readRegistry) ? await A.Sync.readRegistry() : null;
+        const acc = reg && reg.accounts && reg.accounts[uname];
+        const until = acc ? Number(acc.payMembershipUntil) || 0 : 0;
+        if (until > Date.now()) {
+          if (A) A.applyRemoteMembership(uname, until);
+          membershipModal.syncing = false;
+          membershipModal.untilTs = until;
+          membershipModal.mode = resolvePayMode();
+          membershipModal.statusText = '已开通会员，有效期至 ' + fmtDate(until);
+          return;
+        }
+      } catch (e) { /* 忽略，继续走商户路径 */ }
+      // 2) 商户方案：查 Worker /pay/membership
       const q = await queryMembership(uname);
       membershipModal.syncing = false;
       if (q.ok && q.until > Date.now()) {
         if (A) A.applyRemoteMembership(uname, q.until);
         membershipModal.untilTs = q.until;
+        membershipModal.mode = 'merchant';
         membershipModal.statusText = '已开通会员，有效期至 ' + fmtDate(q.until);
       } else if (q.ok) {
         membershipModal.untilTs = 0;
+        membershipModal.mode = resolvePayMode();
         membershipModal.statusText = '当前无有效会员（试用期内可直接使用；试用结束后请扫码支付开通）';
       } else {
-        membershipModal.statusText = '无法连接会员服务后端（' + q.error + '）';
+        membershipModal.untilTs = 0;
+        membershipModal.mode = resolvePayMode();
+        membershipModal.statusText = '当前无有效会员（试用期内可直接使用；试用结束后请扫码支付开通）';
       }
     }
-    function openMembershipService() {
+    async function openMembershipService() {
       membershipModal.show = true;
       membershipModal.error = '';
       membershipModal.wxQr = '';
       membershipModal.aliQr = '';
-      syncMembership();
+      membershipModal.claimMsg = '';
+      membershipModal.claimed = false;
+      if (!membershipConfig.loaded) await loadMembershipConfig();
+      membershipModal.mode = resolvePayMode();
+      await syncMembership();
+    }
+    // 个人码方案：「我已支付」→ 经 Worker /pay/claim 写待开通记录；无 Worker/GH_PAT 则降级为复制用户名
+    async function submitMemberClaim() {
+      const uname = (Auth && Auth.user && Auth.user.username) || '';
+      if (!uname) { membershipModal.error = '请先登录后再开通会员'; return; }
+      const base = memberApiBase();
+      membershipModal.loading = true; membershipModal.claimMsg = ''; membershipModal.error = '';
+      if (base) {
+        try {
+          const r = await fetch(base + '/pay/claim', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+            body: JSON.stringify({ user: uname, plan: membershipModal.plan })
+          });
+          if (r.ok) {
+            membershipModal.loading = false;
+            membershipModal.claimed = true;
+            membershipModal.claimMsg = '已提交「' + planLabel(membershipModal.plan) + '」开通申请，等待管理员核对账单后开通。';
+            return;
+          }
+        } catch (e) { /* 落到降级分支 */ }
+      }
+      // 降级：复制用户名，提示用户发给管理员
+      membershipModal.loading = false;
+      const uname2 = await copyUsername();
+      membershipModal.claimed = true;
+      membershipModal.claimMsg = '已复制你的用户名「' + uname2 + '」，请连同所选套餐发给管理员，管理员在后台核对后会一键开通。';
     }
     // 生成收款码（微信 + 支付宝），并把原始支付串渲染为二维码图片
     async function genPayQr() {
@@ -2188,6 +2264,71 @@ const app = createApp({
         } catch (e) { if (el.parentNode) document.body.removeChild(el); resolve(''); }
       });
     }
+    // ===== batch-A：会员后台（管理员） =====
+    const memberClaims = reactive({ list: [], loading: false });
+    const memberManual = reactive({ username: '', plan: '6m' });
+    // 拉取待开通记录（公开读 data/membership/claims.json）
+    async function loadMemberClaims() {
+      memberClaims.loading = true;
+      try {
+        const r = (A && A.Sync && A.Sync.readClaims) ? await A.Sync.readClaims() : { ok: true, claims: [] };
+        const all = (r && r.claims) || [];
+        memberClaims.list = all.filter(c => !c.resolved).map(c => ({
+          id: c.id, user: c.user, plan: c.plan || '6m', ts: c.ts || 0, resolved: !!c.resolved
+        }));
+      } catch (e) { memberClaims.list = []; }
+      finally { memberClaims.loading = false; }
+    }
+    // 管理员一键开通某条待开通记录
+    async function grantMemberClaim(claim) {
+      if (!A) return;
+      const months = claim.plan === '1y' ? 12 : 6;
+      const r = A.grantMembership(claim.user, months);
+      if (!r || !r.ok) { showToast((r && r.error) || '开通失败', 'error'); return; }
+      // 标记该 claim 已处理（写回 claims.json；失败不影响已开通）
+      try {
+        const rd = (A.Sync && A.Sync.readClaims) ? await A.Sync.readClaims() : { ok: true, claims: [] };
+        const all = (rd && rd.claims) || [];
+        const tgt = all.find(c => c.id === claim.id);
+        if (tgt) { tgt.resolved = true; tgt.resolvedAt = Date.now(); await A.Sync.writeClaims(all); }
+      } catch (e) { /* 会员已开通，仅未标记 */ }
+      showToast('已为「' + claim.user + '」开通会员', 'success');
+      await loadMemberClaims();
+    }
+    // 管理员手动开通（按用户名，无需待开通记录）
+    function grantMemberManual() {
+      if (!A) return;
+      const uname = (memberManual.username || '').trim();
+      if (!uname) { showToast('请输入用户名', 'error'); return; }
+      const months = memberManual.plan === '1y' ? 12 : 6;
+      const r = A.grantMembership(uname, months);
+      if (!r || !r.ok) { showToast((r && r.error) || '开通失败', 'error'); return; }
+      showToast('已为「' + uname + '」开通会员', 'success');
+      memberManual.username = '';
+    }
+
+    // ===== batch-A：管理员配置个人收款码 =====
+    const membershipQrFile = ref('');
+    const membershipQrNote = ref('');
+    function onMembershipQrChange(e) {
+      const f = e && e.target && e.target.files && e.target.files[0];
+      if (!f) return;
+      const reader = new FileReader();
+      reader.onload = () => { membershipQrFile.value = reader.result; };
+      reader.readAsDataURL(f);
+    }
+    async function saveMembershipQr() {
+      if (!A || !A.Sync || !A.Sync.isAdminConfigured || !A.Sync.isAdminConfigured()) {
+        showToast('请先在「设置」填写 GitHub 令牌（仅管理员）才能保存收款码', 'error'); return;
+      }
+      if (!membershipQrFile.value) { showToast('请先选择收款码图片', 'error'); return; }
+      const r = await A.Sync.writeMembershipConfig({ qrData: membershipQrFile.value, note: membershipQrNote.value || '', updatedAt: Date.now() });
+      if (!r || !r.ok) { showToast((r && r.error) || '保存失败', 'error'); return; }
+      membershipConfig.qrData = membershipQrFile.value;
+      membershipConfig.note = membershipQrNote.value || '';
+      showToast('个人收款码已保存（用户端会员弹窗将展示）', 'success');
+    }
+
     // 暴露给登录流程（auth-boot.js）在登录成功后做会员状态同步
     try { if (typeof window !== 'undefined') window.SNTMembership = { sync: syncMembership, open: openMembershipService }; } catch (_) {}
     // 用户须知（入口在「会员服务」左侧）
@@ -9170,8 +9311,8 @@ const app = createApp({
       onHoldingStockSearch, pickHoldingStock, fetchEntryPrice,
       holdingSortKey, holdingSortDir, sortHoldingBy, holdingSortIcon,
       holdingDays, holdingCost, holdingMarketValue, holdingChangePct, holdingProfit, holdingProfitPct,
-      // 会员服务 / 扫码支付开通（batch84）
-      membershipModal, openMembershipService, genPayQr, syncMembership
+      // 会员服务 / 扫码支付开通（batch84 + batch-A）
+      membershipModal, membershipConfig, openMembershipService, genPayQr, syncMembership, submitMemberClaim, loadMembershipConfig
       ,
       // 用户须知
       userNoticeModal, openUserNotice
@@ -9197,6 +9338,9 @@ const app = createApp({
       // 跨设备免码登录（GitHub 注册表）
       authAdminToken, remotePending, remotePendingLoading,
       loadRemotePending, approveRemoteByAdmin, rejectRemoteByAdmin, syncAllToRegistryByAdmin,
+      // batch-A：会员后台（个人码方案）
+      memberClaims, memberManual, loadMemberClaims, grantMemberClaim, grantMemberManual,
+      membershipQrFile, membershipQrNote, onMembershipQrChange, saveMembershipQr,
       showApproveCode, toggleRevealPassword, revealPendingPassword,
       copyPassword, toggleLoginLog,
       // batch16：准入码面板（管理员把授权转达给用户）

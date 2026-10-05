@@ -1591,6 +1591,30 @@
     },
 
     /**
+     * batch-A：管理员后台手动开通会员（个人收款码方案，无需商户/无需回调）。
+     * 直接把 payMembershipUntil 设为「现在 + months 个月」，复用既有登录门禁（disableDateOf 优先取它）。
+     * @param {string} username
+     * @param {number} months 6 或 12
+     */
+    grantMembership: function (username, months) {
+      if (!this.isAdmin()) return { ok: false, error: '仅管理员可开通会员' };
+      var m = parseInt(months, 10);
+      if (!(m === 6 || m === 12)) return { ok: false, error: '套餐仅支持 6 或 12 个月' };
+      this.users = loadUsers();
+      var u = findUser(this.users, username);
+      if (!u) return { ok: false, error: '用户不存在' };
+      u.payMembershipUntil = Date.now() + m * 30 * 24 * 60 * 60 * 1000;
+      u.updatedAt = Date.now();
+      // 此前因会员到期被自动停用的账号，若开通后续期到今天之后，解除停用
+      if (u.disabled && u.autoDisabled && !isMembershipExpired(u)) {
+        u.disabled = false; u.autoDisabled = false; u.disabledAt = null;
+      }
+      saveUsers(this.users);
+      this._syncUserToRegistry(u);
+      return { ok: true, until: u.payMembershipUntil, user: adminUser(u) };
+    },
+
+    /**
      * batch84：把后端扫码支付返回的会员到期时间落到本机账号。
      * 供业务层在登录后 / 打开会员面板时调用：查询后端「我的会员到期时间」，若有效则写入本机，
      * 之后的登录门禁（isMembershipExpired）会据此放行。不要求管理员权限（属于本人自助开通）。
@@ -1730,6 +1754,7 @@
           quotaMonths: u.quotaMonths || 0,
           disableDate: u.disableDate || '',
           registerDate: u.registerDate || '',
+          payMembershipUntil: u.payMembershipUntil || 0,   // batch-A：后台/扫码开通的会员到期时间戳(ms)
           createdAt: u.createdAt || Date.now(),
           updatedAt: Date.now()
         };

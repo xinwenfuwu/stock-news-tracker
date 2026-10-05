@@ -126,12 +126,63 @@
         quotaMonths: record.quotaMonths || 0,
         disableDate: record.disableDate || '',
         registerDate: record.registerDate || '',
+        payMembershipUntil: record.payMembershipUntil || 0,   // batch-A：扫码/后台开通的会员到期时间戳(ms)
         createdAt: record.createdAt || Date.now(),
         updatedAt: Date.now()
       };
       return writeRegistry(reg);
     });
   }
+
+  /* ---------- 会员相关共享文件（个人收款码配置 / 待开通记录），复用同一套 GitHub 读写 ---------- */
+  var MEMBER_CFG_PATH = 'data/membership/config.json';
+  var MEMBER_CLAIMS_PATH = 'data/membership/claims.json';
+
+  function readJsonFile(path) {
+    return fetch(path, { method: 'GET', cache: 'no-store' })
+      .then(function (r) {
+        if (!r.ok) return null;
+        return r.json().catch(function () { return null; });
+      })
+      .catch(function () { return null; });
+  }
+  function writeJsonFile(path, obj, message) {
+    var token = getToken();
+    if (!token) return Promise.resolve({ ok: false, error: '未配置 GitHub 令牌' });
+    var content = b64utf8(JSON.stringify(obj, null, 2));
+    function doPut(sha) {
+      var body = { message: message || 'chore(membership): update ' + path, content: content, branch: REPO_BRANCH };
+      if (sha) body.sha = sha;
+      return gh('/contents/' + path, 'PUT', token, body).then(function (res) {
+        if (res.ok) return { ok: true };
+        if (res.status === 409 && !sha) {
+          return gh('/contents/' + path + '?ref=' + REPO_BRANCH, 'GET', token).then(function (g) {
+            return doPut(g.body && g.body.sha ? g.body.sha : null);
+          });
+        }
+        var errs = res.body && res.body.errors;
+        var msg = (res.body && res.body.message) || (errs && errs[0] && errs[0].message) || ('HTTP ' + res.status);
+        return { ok: false, error: msg };
+      });
+    }
+    return gh('/contents/' + path + '?ref=' + REPO_BRANCH, 'GET', token).then(function (g) {
+      return doPut(g.body && g.body.sha ? g.body.sha : null);
+    }).catch(function (e) { return { ok: false, error: String((e && e.message) || e) }; });
+  }
+
+  /** 读取个人收款码配置（公开，免鉴权） */
+  function readMembershipConfig() { return readJsonFile(MEMBER_CFG_PATH); }
+  /** 写入个人收款码配置（管理员令牌） */
+  function writeMembershipConfig(cfg) { return writeJsonFile(MEMBER_CFG_PATH, cfg || {}, 'chore(membership): update config'); }
+  /** 读取待开通记录（公开，免鉴权） */
+  function readClaims() {
+    return readJsonFile(MEMBER_CLAIMS_PATH).then(function (j) {
+      if (j && Array.isArray(j.claims)) return { ok: true, claims: j.claims };
+      return { ok: true, claims: [] };
+    });
+  }
+  /** 覆盖写入待开通记录（管理员令牌 / Worker 持 GH_PAT 调用） */
+  function writeClaims(claims) { return writeJsonFile(MEMBER_CLAIMS_PATH, { claims: Array.isArray(claims) ? claims : [] }, 'chore(membership): update claims'); }
 
   /** 登录：读注册表 → 校验密码 → 返回授权或状态。找不到用户返回 {} 让 auth.js 回落本地。 */
   function loginRemote(username, password) {
@@ -157,7 +208,8 @@
             trialUntil: acc.trialUntil || 0,
             quotaMonths: acc.quotaMonths || 0,
             disableDate: acc.disableDate || '',
-            registerDate: acc.registerDate || ''
+            registerDate: acc.registerDate || '',
+            payMembershipUntil: acc.payMembershipUntil || 0
           }
         };
       });
@@ -221,7 +273,14 @@
     approveRemote: approveRemote,
     rejectRemote: rejectRemote,
     disableRemote: disableRemote,
-    registerRemote: registerRemote
+    registerRemote: registerRemote,
+    // batch-A：会员个人收款码配置 + 待开通记录（公开读、令牌写）
+    MEMBER_CFG_PATH: MEMBER_CFG_PATH,
+    MEMBER_CLAIMS_PATH: MEMBER_CLAIMS_PATH,
+    readMembershipConfig: readMembershipConfig,
+    writeMembershipConfig: writeMembershipConfig,
+    readClaims: readClaims,
+    writeClaims: writeClaims
   };
 
   if (typeof module !== 'undefined' && module.exports) module.exports = global.Auth.Sync;
