@@ -4,12 +4,12 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>股市信息分析系统</title>
-  <link rel="stylesheet" href="css/style.css?v=20261006g">
+  <link rel="stylesheet" href="css/style.css?v=20261006h">
   <!-- Vue 3 全局构建版（v3.4.21 · 自托管）
        原先走 unpkg.com CDN：国内网络对 unpkg 的连通性不稳定，一旦该请求长时间挂起，
        <head> 里的阻塞脚本会让整页停在白屏、后续 auth-boot.js 根本不会执行。
        改为同源托管后，启动链路不再依赖任何第三方 CDN。 -->
-  <script src="js/vue.global.prod.js?v=20261006g"></script>
+  <script src="js/vue.global.prod.js?v=20261006h"></script>
 </head>
 <body class="auth-locked">
   <!-- ===== 登录关卡：登录通过前业务脚本不会被加载 ===== -->
@@ -2874,23 +2874,21 @@
           <div class="hot-top-row">
             <div class="hot-panel">
               <div class="panel-title-row">
-                <h3 class="panel-title" style="margin:0">🔥 当日热门板块</h3>
-                <button class="btn btn-sm" @click="refreshHotBoardsOnly" :disabled="hotBoardsLoading" title="只刷新「当日热门板块」，不影响其他子版块">
-                  <span v-if="hotBoardsLoading">⏳ 刷新中...</span>
+                <h3 class="panel-title" style="margin:0">🔍 豆包搜索热度榜</h3>
+                <button class="btn btn-sm" @click="refreshDoubaoOnly" :disabled="doubaoHotLoading" title="刷新豆包搜索股票热度榜（实时搜索结果，按相关度排序）">
+                  <span v-if="doubaoHotLoading">⏳ 刷新中...</span>
                   <span v-else>🔄 刷新数据</span>
                 </button>
               </div>
-              <div class="hot-list" v-if="hotBoards.length">
-                <div class="hot-item hot-item-click" v-for="(b, i) in hotBoards" :key="i"
-                     :class="{ active: hotBoardActive === b.name }"
-                     @click="askHotExclude({ type: 'board', board: b })"
-                     :title="'点击在下方「股票明细」中显示「' + b.name + '」的全部成分股'">
+              <div class="hot-list" v-if="doubaoHot.length">
+                <a class="hot-item" v-for="(r, i) in doubaoHot" :key="i" :href="r.url" target="_blank" rel="noopener"
+                   :title="r.snippet" style="text-decoration:none;color:inherit;display:flex;gap:8px;align-items:center;">
                   <span class="hot-rank">{{ i + 1 }}</span>
-                  <span class="hot-name">{{ b.name }}</span>
-                  <span class="hot-val" :class="pctClass(b.change)">{{ fmtPct(b.change) }}</span>
-                </div>
+                  <span class="hot-name" style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ r.title }}<span class="muted small">　{{ r.site }}</span></span>
+                </a>
               </div>
-              <div class="muted small" v-else>点击「获取热门板块」加载</div>
+              <div class="muted small" v-else-if="doubaoHotError">{{ doubaoHotError }}</div>
+              <div class="muted small" v-else>点击「获取热门板块」或右侧「刷新数据」加载</div>
             </div>
 
             <!-- 新上市股票（按上市天数升序，取前 50） -->
@@ -2974,71 +2972,43 @@
               <div class="muted small" v-else>点击「获取热门板块」加载</div>
             </div>
 
-            <!-- 尾盘买入法（按 8 项条件筛选当前「板块成分股」） -->
-            <div class="hot-panel tail-buy-panel">
-              <div class="panel-title-row">
-                <h3 class="panel-title" style="margin:0">📌 尾盘买入法</h3>
-                <!-- batch27：去除「全市场」项，仅保留「我的概念选股板块」 -->
-                <div class="filter-field tb-pool-pick">
-                  <label>筛选板块</label>
-                  <select v-model="tailPoolPick" @change="onTailPoolChange" :disabled="tailBuyLoading || allAFilter.loading"
-                          title="选择要展示成分股的板块：选「我的概念选股板块」的某个板块 → 其成分股显示在下方成分表中，再点「🔄 刷新筛选」按 8 项条件筛选">
-                    <option value="">— 请选择板块 —</option>
-                    <optgroup label="🧭 我的概念选股板块">
-                      <option v-for="sp in sortedSectorPools" :key="'tb-s-'+sp.id" :value="'s-'+sp.id">{{ sp.name }}（{{ (sp.stocks || []).length }}）</option>
-                    </optgroup>
-                  </select>
-                </div>
-                <button class="btn btn-sm" @click="runTailBuyFilter" :disabled="tailBuyLoading"
-                        title="按下方 8 项条件，从「板块成分股」里的股票中筛出符合条件的个股（需联网取实时行情与 20 日K线）">
-                  <span v-if="tailBuyLoading">⏳ 筛选中...</span>
-                  <span v-else>🔄 刷新筛选</span>
-                </button>
-              </div>
-              <div class="tail-buy-rubric">
-                <div class="tb-rule"><b>涨幅</b> 3%–5%</div>
-                <div class="tb-rule"><b>换手率</b> 5%–10%</div>
-                <div class="tb-rule"><b>量比</b> 1.5–2.5</div>
-                <div class="tb-rule"><b>市值</b> 50亿–200亿</div>
-                <div class="tb-rule"><b>均线</b> 20日线以上</div>
-                <div class="tb-rule"><b>成交量</b> 持续放大</div>
-                <div class="tb-rule"><b>分时</b> 均价线上方</div>
-                <div class="tb-rule"><b>尾盘</b> 回抽均价线</div>
-                <div class="tb-rule tb-rule-exclude"><b>剔除</b> 退市股</div>
-              </div>
-              <div class="muted small" style="margin:-2px 0 4px">🎯 筛选范围 = 下方<b>「板块成分股」</b>里的股票（不从全 A 股拉取，速度快、范围可控）。命中结果会在该表中<b style="color:#d32f2f">标红</b>。</div>
-              <div class="muted small" style="margin:-2px 0 4px">🚫 筛选前自动剔除<b>退市股票</b>（名称含「退」或已无有效行情），避免退市股进入结果。</div>
-              <div class="muted small" v-if="aiConfigured" title="已在「偏好设置 → AI 解读」配置接口：点击「刷新筛选」会把候选股的实时特征交给 AI，按上面 8 项条件精准判定">🤖 已启用 AI 精准筛选（需联网取实时行情与 20 日K线）</div>
-              <div class="muted small" v-else title="未配置 AI 接口时使用规则硬筛；在「偏好设置 → AI 解读」填写 API 地址、密钥、模型后即可 AI 精准筛选">未配置 AI 接口，使用规则筛选；配置后可 🤖 AI 精准筛选</div>
-              <div class="muted small" v-if="!tailBuyList.length && !tailBuyLoading">点「刷新筛选」按上面 8 项条件，从下方「板块成分股」中挑出符合条件的个股（命中后在表中标红）。</div>
-              <div class="muted small" v-else-if="tailBuyLoading">⏳ 正在联网筛选（实时行情 + 20日K线）…</div>
-              <div class="tail-buy-sum" v-else>🎯 命中 <b>{{ tailBuyList.length }}</b> / {{ tailBuyTotal }} 只<span class="muted small">（已在下方「板块成分股」中<b style="color:#d32f2f">标红</b>）</span><span v-if="tailBuyNote" class="muted small"> · {{ tailBuyNote }}</span></div>
-              <div class="hot-list tail-buy-list" v-if="tailBuyList.length">
-                <div class="hot-item" v-for="(t, i) in tailBuyList" :key="i" :title="t.tip">
-                  <span class="hot-rank">{{ i + 1 }}</span>
-                  <span class="hot-name">{{ t.name }}<span class="muted small"> {{ t.code }}</span></span>
-                  <span class="hot-val" :class="pctClass(t.changePercent)">{{ fmtPct(t.changePercent) }}</span>
-                </div>
-              </div>
-            </div>
-
-            <!-- 振幅板块（按板块振幅突然拉升排名） -->
+            <!-- 同花顺热度股票排行榜（20261006h）：反代 dq.10jqka.com.cn 热股榜 -->
             <div class="hot-panel">
               <div class="panel-title-row">
-                <h3 class="panel-title" style="margin:0">📈 振幅板块</h3>
-                <button class="btn btn-sm" @click="refreshAmplitudeBoards" :disabled="ampLoading" title="单独刷新振幅板块数据">
-                  <span v-if="ampLoading">⏳ 刷新中...</span>
+                <h3 class="panel-title" style="margin:0">🟠 同花顺热度榜</h3>
+                <button class="btn btn-sm" @click="refreshThsHotOnly" :disabled="thsHotLoading" title="刷新同花顺热股榜（按热度排名）">
+                  <span v-if="thsHotLoading">⏳ 刷新中...</span>
                   <span v-else>🔄 刷新数据</span>
                 </button>
               </div>
-              <div class="hot-list" v-if="amplitudeBoards.length">
-                <div class="hot-item hot-item-click" v-for="(b, i) in amplitudeBoards" :key="i"
-                     :class="{ active: hotBoardActive === b.name }"
-                     @click="askHotExclude({ type: 'board', board: b })"
-                     :title="'点击在下方「股票明细」中显示「' + b.name + '」的全部成分股（按板块振幅突然拉升排名）'">
-                  <span class="hot-rank">{{ i + 1 }}</span>
-                  <span class="hot-name">{{ b.name }}</span>
-                  <span class="hot-val" :class="pctClass(b.change)">{{ fmtPct(b.change) }}</span>
+              <div class="hot-list" v-if="thsHotStocks.length">
+                <div class="hot-item hot-item-click" v-for="(s, i) in thsHotStocks" :key="i"
+                     @click="askHotExclude({ type: 'stock', stock: { code: s.code, name: s.name } })"
+                     :title="'点击在下方「股票明细」中显示「' + s.name + '」详情｜热度 ' + s.heat">
+                  <span class="hot-rank">{{ s.rank }}</span>
+                  <span class="hot-name">{{ s.name }}<span class="muted small"> {{ s.code }}</span></span>
+                  <span class="hot-val" :class="pctClass(s.change)">{{ fmtPct(s.change) }}</span>
+                </div>
+              </div>
+              <div class="muted small" v-else>点击「获取热门板块」或右侧「刷新数据」加载</div>
+            </div>
+
+            <!-- 东方财富热度股票排行榜（20261006h）：反代 emappdata 人气榜 -->
+            <div class="hot-panel">
+              <div class="panel-title-row">
+                <h3 class="panel-title" style="margin:0">🟢 东方财富人气榜</h3>
+                <button class="btn btn-sm" @click="refreshEmHotOnly" :disabled="emHotLoading" title="刷新东方财富人气榜（按人气排名）">
+                  <span v-if="emHotLoading">⏳ 刷新中...</span>
+                  <span v-else>🔄 刷新数据</span>
+                </button>
+              </div>
+              <div class="hot-list" v-if="emHotStocks.length">
+                <div class="hot-item hot-item-click" v-for="(s, i) in emHotStocks" :key="i"
+                     @click="askHotExclude({ type: 'stock', stock: { code: s.code, name: s.name } })"
+                     :title="'点击在下方「股票明细」中显示「' + s.name + '」详情｜人气排名 ' + s.rank">
+                  <span class="hot-rank">{{ s.rank }}</span>
+                  <span class="hot-name">{{ s.name }}<span class="muted small"> {{ s.code }}</span></span>
+                  <span class="hot-val muted small">人气 {{ s.rank }}</span>
                 </div>
               </div>
               <div class="muted small" v-else>点击「获取热门板块」或右侧「刷新数据」加载</div>
@@ -4863,14 +4833,14 @@
     </transition>
   </div>
 
-  <script src="js/auth.js?v=20261006g"></script>
-  <script src="js/auth-sync.js?v=20261006g"></script>
+  <script src="js/auth.js?v=20261006h"></script>
+  <script src="js/auth-sync.js?v=20261006h"></script>
   <!-- 边缘加速默认站点（batch37 治本：Cloudflare Worker 代理东财/腾讯，缓解 JSONP 限流误报）。
        若你所在地区 workers.dev 访问慢，可在「设置 → 行情加速地址」清空即恢复纯直连。 -->
   <script>window.__SNT_ACCEL__ = 'https://sichina.dpdns.org';</script>
   <!-- 扫码支付二维码渲染库（第三方 qrcodejs，本地托管避免外链失效）。renderQr 会先检测全局 QRCode 是否存在。 -->
-  <script src="assets/qrcode.min.js?v=20261006g"></script>
-  <script src="js/auth-boot.js?v=20261006g"></script>
+  <script src="assets/qrcode.min.js?v=20261006h"></script>
+  <script src="js/auth-boot.js?v=20261006h"></script>
   <!-- store / stock-api / hot-topics / app 由 auth-boot.js 在登录通过后动态装载，
        未登录时它们不会被下载，业务数据也不会进入内存 -->
 </body>

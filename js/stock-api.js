@@ -2789,6 +2789,41 @@ const StockAPI = {
     return this._withCache('br:amp15', API_TTL.SECTOR, () => this._getAmplitudeBoardsRaw(), v => !!(v && v.length));
   },
 
+  // ============ 平台热度股票排行榜（20261006h：同花顺 / 东方财富 / 豆包搜索） ============
+  /** 热度榜路由的 Worker 基地址（与行情加速同源 sichina.dpdns.org） */
+  _rankBase() {
+    return (typeof window !== 'undefined' && window.__SNT_ACCEL__) || 'https://sichina.dpdns.org';
+  },
+  /** 同花顺热股榜：GET dq.10jqka.com.cn/fuyao/hot_list_data...；返回统一 {list:[{rank,code,name,heat,change,concepts}]} */
+  async getThsHotStocks() {
+    try {
+      const r = await fetch(this._rankBase() + '/rank/ths', { cache: 'no-store' });
+      if (!r.ok) throw new Error('ths ' + r.status);
+      const j = await r.json();
+      return (j && j.list) ? j.list : [];
+    } catch (e) { console.warn('同花顺热度榜获取失败', e); return []; }
+  },
+  /** 东方财富人气榜：Worker 端 POST emappdata.eastmoney.com 并补全名称；返回 {list:[{rank,code,name,heat}]} */
+  async getEmHotStocks() {
+    try {
+      const r = await fetch(this._rankBase() + '/rank/em', { method: 'POST', cache: 'no-store' });
+      if (!r.ok) throw new Error('em ' + r.status);
+      const j = await r.json();
+      return (j && j.list) ? j.list : [];
+    } catch (e) { console.warn('东方财富人气榜获取失败', e); return []; }
+  },
+  /** 豆包搜索热度榜：Worker 调豆包 Web 搜索 API（需 DOUBAO_API_KEY），返回 {list:[{rank,title,site,url,snippet}]} */
+  async getDoubaoHotStocks() {
+    const r = await fetch(this._rankBase() + '/rank/doubao', { cache: 'no-store' });
+    if (!r.ok) {
+      let msg = '豆包搜索榜获取失败(' + r.status + ')';
+      try { const j = await r.json(); if (j && j.error) msg = j.error; } catch (e) {}
+      throw new Error(msg);
+    }
+    const j = await r.json();
+    return (j && j.list) ? j.list : [];
+  },
+
   async _getAmplitudeBoardsRaw() {
     const results = [];
     try {

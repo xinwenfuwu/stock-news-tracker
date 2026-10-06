@@ -42,6 +42,9 @@ const Store = {
       hotStocks: [],          // 缓存最近一次热门股票
       preMarketBoards: [],    // 缓存最近一次盘前热点板块
       amplitudeBoards: [],    // 缓存最近一次振幅板块
+      thsHotStocks: [],       // 20261006h：同花顺热度榜
+      emHotStocks: [],        // 20261006h：东方财富人气榜
+      doubaoHot: [],          // 20261006h：豆包搜索热度榜
       settings: {
         categories: [...this.DEFAULT_CATEGORIES],
         proxyUrl: '',            // Cloudflare Worker 代理地址，用于一键抓取新闻

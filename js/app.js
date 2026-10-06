@@ -7271,12 +7271,15 @@ const app = createApp({
         new Promise(r => setTimeout(() => r(null), HOT_SRC_TIMEOUT))
       ]);
       try {
-        const [boards, stocks, preBoards, ampBoards, newListed] = await Promise.all([
+        const [boards, stocks, preBoards, ampBoards, newListed, ths, em, doubao] = await Promise.all([
           withTimeout(StockAPI.getBoardRanking()),
           withTimeout(StockAPI.getLimitUpStreak()),
           withTimeout(StockAPI.getPreMarketBoards()),
           withTimeout(StockAPI.getAmplitudeBoards()),
-          withTimeout(StockAPI.getNewListedStocks())
+          withTimeout(StockAPI.getNewListedStocks()),
+          withTimeout(StockAPI.getThsHotStocks()),
+          withTimeout(StockAPI.getEmHotStocks()),
+          withTimeout(StockAPI.getDoubaoHotStocks().catch(e => { doubaoHotError.value = e.message || String(e); return null; }))
         ]);
         // 各路独立落盘：某一路接口限流返回空时保留旧数据，避免「刷新一次反而清空已有内容」
         if (boards && boards.length) { hotBoards.value = boards; D.hotBoards = boards; }
@@ -7284,15 +7287,21 @@ const app = createApp({
         if (preBoards && preBoards.length) { preMarketBoards.value = preBoards; D.preMarketBoards = preBoards; }
         if (ampBoards && ampBoards.length) { amplitudeBoards.value = ampBoards; D.amplitudeBoards = ampBoards; }
         if (newListed && newListed.length) { newListedStocks.value = newListed; D.newListedStocks = newListed; }
+        // 20261006h：三平台热度榜独立落盘
+        if (ths && ths.length) { thsHotStocks.value = ths; D.thsHotStocks = ths; }
+        if (em && em.length) { emHotStocks.value = em; D.emHotStocks = em; }
+        if (doubao && doubao.length) { doubaoHot.value = doubao; D.doubaoHot = doubao; }
         // 任一当前有数据即视为成功（含历史残留），某一路限流不再误报整体失败
         const nBoards = hotBoards.value.length, nPre = preMarketBoards.value.length,
-              nAmp = amplitudeBoards.value.length, nStocks = hotStocks.value.length, nNew = newListedStocks.value.length;
+              nAmp = amplitudeBoards.value.length, nStocks = hotStocks.value.length, nNew = newListedStocks.value.length,
+              nThs = thsHotStocks.value.length, nEm = emHotStocks.value.length, nDoubao = doubaoHot.value.length;
         const gotNew = (boards && boards.length) || (stocks && stocks.length) || (preBoards && preBoards.length)
-                    || (ampBoards && ampBoards.length) || (newListed && newListed.length);
-        const nAll = nBoards + nPre + nAmp + nStocks + nNew;
+                    || (ampBoards && ampBoards.length) || (newListed && newListed.length)
+                    || (ths && ths.length) || (em && em.length) || (doubao && doubao.length);
+        const nAll = nBoards + nPre + nAmp + nStocks + nNew + nThs + nEm + nDoubao;
         if (nAll) {
           // 有数据即成功；本轮确实没拿到新数据时补一句「沿用上次」，避免用户误以为刷新没生效
-          showToast(`获取到 ${nBoards} 个当日板块、${nPre} 个盘前热点、${nAmp} 个振幅板块、${nStocks} 只连板股票、${nNew} 只新上市股票`
+          showToast(`获取到 ${nBoards} 个当日板块、${nPre} 个盘前热点、${nAmp} 个振幅板块、${nStocks} 只连板股票、${nNew} 只新上市股票、同花顺热度 ${nThs} 只、东财人气 ${nEm} 只、豆包搜索 ${nDoubao} 条`
             + (gotNew ? '' : '（本轮未获取到新数据，沿用上次结果）'), 'success');
         } else {
           // 全空：区分「本轮确实没拉到」与「真的一无所有」，给出可操作提示，不再使用已过时的 JSONP 措辞
@@ -7314,6 +7323,15 @@ const app = createApp({
     const newListedLoading = ref(false);
     const hotStocksLoading = ref(false);
     const preMarketLoading = ref(false);
+
+    // 20261006h：三平台热度股票排行榜（同花顺 / 东方财富 / 豆包搜索）
+    const thsHotStocks = ref([]);
+    const thsHotLoading = ref(false);
+    const emHotStocks = ref([]);
+    const emHotLoading = ref(false);
+    const doubaoHot = ref([]);
+    const doubaoHotLoading = ref(false);
+    const doubaoHotError = ref('');
 
     /** ① 只刷新「当日热门板块」 */
     async function refreshHotBoardsOnly() {
@@ -7339,6 +7357,49 @@ const app = createApp({
       } finally {
         hotBoardsLoading.value = false;
       }
+    }
+
+    /** 20261006h ③ 只刷新「同花顺热度榜」 */
+    async function refreshThsHotOnly() {
+      if (thsHotLoading.value) return;
+      thsHotLoading.value = true;
+      showToast('正在刷新同花顺热股榜...', 'info');
+      try {
+        const list = await StockAPI.getThsHotStocks();
+        if (list && list.length) { thsHotStocks.value = list; D.thsHotStocks = list; showToast(`已刷新 ${list.length} 只同花顺热股`, 'success'); }
+        else showToast('同花顺热股榜暂为空', 'info');
+      } catch (e) { showToast('同花顺热股榜刷新失败：' + (e.message || e), 'error'); }
+      finally { thsHotLoading.value = false; }
+    }
+    /** 20261006h ④ 只刷新「东方财富人气榜」 */
+    async function refreshEmHotOnly() {
+      if (emHotLoading.value) return;
+      emHotLoading.value = true;
+      showToast('正在刷新东方财富人气榜...', 'info');
+      try {
+        const list = await StockAPI.getEmHotStocks();
+        if (list && list.length) { emHotStocks.value = list; D.emHotStocks = list; showToast(`已刷新 ${list.length} 只东方财富人气股`, 'success'); }
+        else showToast('东方财富人气榜暂为空', 'info');
+      } catch (e) { showToast('东方财富人气榜刷新失败：' + (e.message || e), 'error'); }
+      finally { emHotLoading.value = false; }
+    }
+    /** 20261006h ⑤ 只刷新「豆包搜索热度榜」 */
+    async function refreshDoubaoOnly() {
+      if (doubaoHotLoading.value) return;
+      doubaoHotLoading.value = true; doubaoHotError.value = '';
+      showToast('正在刷新豆包搜索热度榜...', 'info');
+      try {
+        const list = await StockAPI.getDoubaoHotStocks();
+        if (list && list.length) {
+          doubaoHot.value = list; D.doubaoHot = list;
+          showToast(`已刷新豆包搜索热度榜 ${list.length} 条`, 'success');
+        } else {
+          doubaoHotError.value = '豆包搜索暂未返回结果'; showToast('豆包搜索暂未返回结果', 'info');
+        }
+      } catch (e) {
+        doubaoHotError.value = (e && e.message) || '豆包搜索榜获取失败';
+        showToast('豆包搜索榜获取失败：' + (e.message || e), 'error');
+      } finally { doubaoHotLoading.value = false; }
     }
 
     /** ② 只刷新「新上市股票」（失败时保留上次数据） */
@@ -7788,6 +7849,10 @@ const app = createApp({
     if (D.preMarketBoards && D.preMarketBoards.length) preMarketBoards.value = D.preMarketBoards;
     if (D.amplitudeBoards && D.amplitudeBoards.length) amplitudeBoards.value = D.amplitudeBoards;
     if (D.newListedStocks && D.newListedStocks.length) newListedStocks.value = D.newListedStocks;
+    // 20261006h：三平台热度榜缓存恢复
+    if (D.thsHotStocks && D.thsHotStocks.length) thsHotStocks.value = D.thsHotStocks;
+    if (D.emHotStocks && D.emHotStocks.length) emHotStocks.value = D.emHotStocks;
+    if (D.doubaoHot && D.doubaoHot.length) doubaoHot.value = D.doubaoHot;
 
     // ===== 尾盘买入法筛选（batch19 + batch22）：对当前「当日股票明细」按 8 项条件筛选 =====
     // 条件：涨幅 3%-5% / 换手率 5%-10% / 量比 1.5-2.5 / 市值 50亿-200亿 /
@@ -9311,6 +9376,10 @@ const app = createApp({
       // batch23（请求F）：六个子版块独立刷新按钮
       refreshHotBoardsOnly, hotBoardsLoading, refreshNewListedStocks, newListedLoading,
       refreshHotStocksOnly, hotStocksLoading, refreshPreMarketBoards, preMarketLoading,
+      // 20261006h：三平台热度股票排行榜（同花顺 / 东方财富 / 豆包搜索）
+      thsHotStocks, thsHotLoading, refreshThsHotOnly,
+      emHotStocks, emHotLoading, refreshEmHotOnly,
+      doubaoHot, doubaoHotLoading, doubaoHotError, refreshDoubaoOnly,
       // 全球信息页：火热话题 + 格隆汇每日快讯
       hotTopicsSources, hotTopicsMerged, hotTopicsLoading, hotTopicsUpdated, refreshHotTopics,
       dailyWinStart, dailyWinEnd, dailyWinText, refreshDailyTopics, resetDailyWin,
