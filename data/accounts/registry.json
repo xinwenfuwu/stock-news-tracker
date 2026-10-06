@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": 1790386556169,
+  "updatedAt": 1791264091814,
   "accounts": {
     "181": {
       "hash": "pbkdf2$150000$KjYyYMWup5jVGwvFBcCcOQ==$3U/UO6mfq2XHtEoimjRCc/0rz4seqfPAhnrte+JrXlw=",
@@ -85,6 +85,19 @@
       "registerDate": "2026-09-18",
       "createdAt": 1789697954397,
       "updatedAt": 1790210900404
+    },
+    "eadm_1791264090348": {
+      "hash": "pbkdf2$150000$C0rfeX16Sct7luUvPMm2kw==$14ujJL6Jvf2kHUgMzohlJxM+lsCLh8Q1Tsy2HhK10us=",
+      "role": "admin",
+      "status": "active",
+      "disabled": false,
+      "trialUntil": 1791350490552,
+      "quotaMonths": 0,
+      "disableDate": "",
+      "registerDate": "",
+      "payMembershipUntil": 0,
+      "createdAt": 1791264090552,
+      "updatedAt": 1791264091814
     }
   }
 }
