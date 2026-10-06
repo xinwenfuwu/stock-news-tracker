@@ -9347,7 +9347,7 @@ const app = createApp({
       holdingDays, holdingCost, holdingMarketValue, holdingChangePct, holdingProfit, holdingProfitPct,
       // 会员服务 / 扫码支付开通（batch84 + batch-A）
       membershipModal, membershipConfig, openMembershipService, genPayQr, syncMembership, submitMemberClaim, loadMembershipConfig,
-      selectPlan, backToPlans, claimsOfPlan
+      selectPlan, backToPlans, claimsOfPlan, planLabel
       ,
       // 用户须知
       userNoticeModal, openUserNotice
