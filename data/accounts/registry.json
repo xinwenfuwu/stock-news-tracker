@@ -98,19 +98,6 @@
       "payMembershipUntil": 0,
       "createdAt": 1791264090552,
       "updatedAt": 1791264091814
-    },
-    "eadm_1791288320799": {
-      "hash": "pbkdf2$150000$PpaD3VUEl00sCzabzOkOiw==$E6I0XCu953capiJhwMTVJcZC3Ip3aBBXIdcqnzYpbR8=",
-      "role": "admin",
-      "status": "active",
-      "disabled": false,
-      "trialUntil": 1791374720938,
-      "quotaMonths": 0,
-      "disableDate": "",
-      "registerDate": "",
-      "payMembershipUntil": 0,
-      "createdAt": 1791288320938,
-      "updatedAt": 1791288322339
     }
   }
 }
