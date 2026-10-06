@@ -27,7 +27,7 @@
   'use strict';
 
   // 与 index.html 中静态资源版本号保持一致，避免升级后命中旧缓存
-  var ASSET_V = '20261006f';
+  var ASSET_V = '20261006g';
 
   // 管理员点开「注册申请导入链接」后，申请码暂存在这里，等业务层（app.js）就绪后取走
   var IMPORT_KEY = 'snt-pending-import-v1';
@@ -329,6 +329,15 @@
   /** 单个脚本的最大尝试次数（含首次） */
   var LOAD_RETRIES = 3;
 
+  /**
+   * 静态资源加速域名（batch-A 域名绑定后可用）。
+   * github.io 在国内时快时慢，402KB 的 app.js 经常 20 秒拉不完 → 登录后「资源加载失败」。
+   * Worker 新增 /acc/* 路由把 GitHub Pages 的静态文件经 Cloudflare 边缘反代（sichina.dpdns.org 国内可达），
+   * 加载策略：第 1 次走同源（github.io），第 2 次起自动切换到加速域名——
+   * github.io 连不上时第 2 次就能成功，不需要用户手点「重试」三次。
+   */
+  var ACCEL_BASE = 'https://sichina.dpdns.org/acc/';
+
   /** 已成功装载的脚本（重试时跳过，避免重复注入触发 “已经声明过” 的语法错误） */
   var loadedScripts = [];
 
@@ -377,7 +386,9 @@
    */
   function loadOne(src, attempt) {
     return new Promise(function (resolve, reject) {
-      var url = src + '?v=' + ASSET_V + (attempt > 1 ? '&_r=' + attempt : '');
+      // 第 1 次尝试走同源（GitHub Pages）；第 2 次起切换到 Cloudflare 加速域名（见 ACCEL_BASE 注释）
+      var base = attempt >= 2 ? ACCEL_BASE : '';
+      var url = base + src + '?v=' + ASSET_V + (attempt > 1 ? '&_r=' + attempt : '');
       var s = document.createElement('script');
       var settled = false;
       var graceTimer = null;
