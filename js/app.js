@@ -330,6 +330,25 @@ const app = createApp({
       }
     }
 
+    // 用户管理「普通用户注册」板块：按用户名授权免费试用的输入框
+    const trialGrantName = ref('');
+    // 按用户名授权免费试用（用户管理「普通用户注册」板块用）
+    function grantUserTrialByName(name, days) {
+      const uname = (name || '').trim();
+      if (!uname) { showToast('请输入用户名', 'error'); return; }
+      if (!A) return;
+      const r = A.grantTrial(uname, days);
+      if (!r.ok) { showToast(r.error, 'error'); return; }
+      showToast('已给「' + uname + '」开通' + r.label + '试用（至 ' + r.untilText + '）', 'success');
+      if (r.approveCode) {
+        showApproveCodePanel({
+          title: '「' + uname + '」已开通' + r.label + '试用（至 ' + r.untilText + '）',
+          desc: '试用期只写在这台设备。若对方用其他设备登录，需把这串准入码发给他，他在登录页粘贴后本机才会有同一段试用期。',
+          code: r.approveCode
+        });
+      }
+    }
+
     function revokeUserTrial(u) {
       if (!A) return;
       const r = A.revokeTrial(u.username);
@@ -2094,7 +2113,8 @@ const app = createApp({
       untilTs: 0,          // 后端返回的会员到期时间戳(ms)
       mode: '',            // 收款方式：'personal' 个人码 | 'merchant' 商户 | '' 未配置
       claimMsg: '',        // 「我已支付」提交后的提示
-      claimed: false       // 本次是否已提交待开通
+      claimed: false,      // 本次是否已提交待开通
+      payStep: 'select'    // 会员服务二级页：'select' 选套餐 | 'pay' 付费页
     });
     // batch-A：个人收款码配置（来自公开文件 data/membership/config.json，免鉴权读取）
     const membershipConfig = reactive({ qrData: '', note: '', loaded: false });
@@ -2107,7 +2127,7 @@ const app = createApp({
       membershipConfig.loaded = true;
     }
     function fmtDate(ts) { const d = new Date(Number(ts) || Date.now()); const p = n => String(n).padStart(2, '0'); return d.getFullYear() + '-' + p(d.getMonth() + 1) + '-' + p(d.getDate()); }
-    function planMonths(plan) { return plan === '1y' ? 12 : 6; }
+    function planMonths(plan) { return plan === '1y' ? 12 : (plan === '2y' ? 24 : 6); }
     function memberApiBase() {
       const base = String((D && D.settings && D.settings.proxyUrl) || '').trim().replace(/\/+$/, '');
       return base || '';
@@ -2148,7 +2168,7 @@ const app = createApp({
       if (memberApiBase()) return 'merchant';
       return '';
     }
-    function planLabel(p) { return p === '1y' ? '1 年会员（¥2000）' : '6 个月会员（¥1000）'; }
+    function planLabel(p) { return p === '1y' ? '1 年会员（¥2000）' : (p === '2y' ? '2 年会员（¥4000）' : '6 个月会员（¥1000）'); }
     async function copyUsername() {
       const uname = (Auth && Auth.user && Auth.user.username) || '';
       try { await copyText(uname); } catch (e) {}
@@ -2198,10 +2218,20 @@ const app = createApp({
       membershipModal.aliQr = '';
       membershipModal.claimMsg = '';
       membershipModal.claimed = false;
+      membershipModal.payStep = 'select';
       if (!membershipConfig.loaded) await loadMembershipConfig();
       membershipModal.mode = resolvePayMode();
       await syncMembership();
     }
+    // 用户端二级页：选套餐后进入付费页
+    function selectPlan(p) {
+      membershipModal.plan = p;
+      membershipModal.payStep = 'pay';
+      membershipModal.claimed = false;
+      membershipModal.claimMsg = '';
+      membershipModal.error = '';
+    }
+    function backToPlans() { membershipModal.payStep = 'select'; }
     // 个人码方案：「我已支付」→ 经 Worker /pay/claim 写待开通记录；无 Worker/GH_PAT 则降级为复制用户名
     async function submitMemberClaim() {
       const uname = (Auth && Auth.user && Auth.user.username) || '';
@@ -2267,6 +2297,10 @@ const app = createApp({
     // ===== batch-A：会员后台（管理员） =====
     const memberClaims = reactive({ list: [], loading: false });
     const memberManual = reactive({ username: '', plan: '6m' });
+    // 按套餐期限过滤待开通记录（管理员界面分半年/一年/两年三区展示）
+    function claimsOfPlan(p) {
+      return memberClaims.list.filter(c => (c.plan || '6m') === p);
+    }
     // 拉取待开通记录（公开读 data/membership/claims.json）
     async function loadMemberClaims() {
       memberClaims.loading = true;
@@ -2282,7 +2316,7 @@ const app = createApp({
     // 管理员一键开通某条待开通记录
     async function grantMemberClaim(claim) {
       if (!A) return;
-      const months = claim.plan === '1y' ? 12 : 6;
+      const months = claim.plan === '1y' ? 12 : (claim.plan === '2y' ? 24 : 6);
       const r = A.grantMembership(claim.user, months);
       if (!r || !r.ok) { showToast((r && r.error) || '开通失败', 'error'); return; }
       // 标记该 claim 已处理（写回 claims.json；失败不影响已开通）
@@ -2300,7 +2334,7 @@ const app = createApp({
       if (!A) return;
       const uname = (memberManual.username || '').trim();
       if (!uname) { showToast('请输入用户名', 'error'); return; }
-      const months = memberManual.plan === '1y' ? 12 : 6;
+      const months = memberManual.plan === '1y' ? 12 : (memberManual.plan === '2y' ? 24 : 6);
       const r = A.grantMembership(uname, months);
       if (!r || !r.ok) { showToast((r && r.error) || '开通失败', 'error'); return; }
       showToast('已为「' + uname + '」开通会员', 'success');
@@ -9312,7 +9346,8 @@ const app = createApp({
       holdingSortKey, holdingSortDir, sortHoldingBy, holdingSortIcon,
       holdingDays, holdingCost, holdingMarketValue, holdingChangePct, holdingProfit, holdingProfitPct,
       // 会员服务 / 扫码支付开通（batch84 + batch-A）
-      membershipModal, membershipConfig, openMembershipService, genPayQr, syncMembership, submitMemberClaim, loadMembershipConfig
+      membershipModal, membershipConfig, openMembershipService, genPayQr, syncMembership, submitMemberClaim, loadMembershipConfig,
+      selectPlan, backToPlans, claimsOfPlan
       ,
       // 用户须知
       userNoticeModal, openUserNotice
@@ -9329,7 +9364,7 @@ const app = createApp({
       toggleUserDisabled, removeUserByAdmin,
       resetPw, openResetPassword, cancelResetPassword, genResetPassword, submitResetPassword,
       setUserRegisterDate, setUserQuota, isExpiredDate,
-      trialDayOptions, grantUserTrial, revokeUserTrial,
+      trialDayOptions, grantUserTrial, revokeUserTrial, grantUserTrialByName, trialGrantName,
       exportUsersTable, importUsersTable,
       pwModal, openChangePassword, submitChangePassword,
       // 登录档案与注册审核

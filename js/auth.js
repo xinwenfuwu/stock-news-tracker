@@ -1599,7 +1599,7 @@
     grantMembership: function (username, months) {
       if (!this.isAdmin()) return { ok: false, error: '仅管理员可开通会员' };
       var m = parseInt(months, 10);
-      if (!(m === 6 || m === 12)) return { ok: false, error: '套餐仅支持 6 或 12 个月' };
+      if (!(m === 6 || m === 12 || m === 24)) return { ok: false, error: '套餐仅支持 6、12 或 24 个月' };
       this.users = loadUsers();
       var u = findUser(this.users, username);
       if (!u) return { ok: false, error: '用户不存在' };

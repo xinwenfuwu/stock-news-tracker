@@ -4,12 +4,12 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>股市信息分析系统</title>
-  <link rel="stylesheet" href="css/style.css?v=20260930o">
+  <link rel="stylesheet" href="css/style.css?v=20261006a">
   <!-- Vue 3 全局构建版（v3.4.21 · 自托管）
        原先走 unpkg.com CDN：国内网络对 unpkg 的连通性不稳定，一旦该请求长时间挂起，
        <head> 里的阻塞脚本会让整页停在白屏、后续 auth-boot.js 根本不会执行。
        改为同源托管后，启动链路不再依赖任何第三方 CDN。 -->
-  <script src="js/vue.global.prod.js?v=20260930o"></script>
+  <script src="js/vue.global.prod.js?v=20261006a"></script>
 </head>
 <body class="auth-locked">
   <!-- ===== 登录关卡：登录通过前业务脚本不会被加载 ===== -->
@@ -1228,6 +1228,7 @@
             <span class="muted small" v-if="authUser">（{{ authUser.username }} 的持仓，仅你自己可见）</span>
           </div>
           <div class="toolbar-right">
+            <button class="btn btn-user" v-if="can('users.manage')" @click="openUserManage">👤 用户管理</button>
             <button class="btn btn-data" v-if="can('data.clear')" @click="openLocalData">🗄 本地数据</button>
             <button class="btn btn-notice" @click="openUserNotice">📋 用户须知</button>
             <button class="btn btn-vip" @click="openMembershipService">👑 会员服务</button>
@@ -1528,67 +1529,91 @@
               <button class="btn-icon" @click="membershipModal.show = false" title="关闭">✕</button>
             </div>
             <div class="membership-body">
-              <p class="membership-desc">新用户注册即享 1 天免费试用；试用结束后，扫描下方个人收款码支付即可开通会员，管理员核对账单后自动授权，无需等待审核。</p>
+              <p class="membership-desc">新用户注册即享 1 天免费试用；试用结束后，选择下方套餐并扫码支付即可开通会员，管理员核对账单后开通，无需等待审核。</p>
               <div class="member-status" v-if="membershipModal.statusText">
                 <span class="muted">当前状态：</span><b>{{ membershipModal.statusText }}</b>
                 <button class="btn btn-sm" :disabled="membershipModal.syncing" @click="syncMembership()">↻ 刷新</button>
               </div>
-              <div class="membership-plans">
-                <label class="plan-card" :class="{ active: membershipModal.plan === '6m' }">
-                  <input type="radio" value="6m" v-model="membershipModal.plan" style="position:absolute;opacity:0">
-                  <div class="plan-title">6 个月会员</div>
-                  <div class="plan-price">¥1000</div>
-                  <div class="plan-unit">/ 6 个月</div>
-                </label>
-                <label class="plan-card" :class="{ active: membershipModal.plan === '1y' }">
-                  <input type="radio" value="1y" v-model="membershipModal.plan" style="position:absolute;opacity:0">
-                  <div class="plan-title">1 年会员</div>
-                  <div class="plan-price">¥2000</div>
-                  <div class="plan-unit">/ 12 个月</div>
-                </label>
+
+              <!-- 一级页：选套餐 -->
+              <div v-if="membershipModal.payStep === 'select'">
+                <div class="membership-plans">
+                  <label class="plan-card" :class="{ active: membershipModal.plan === '6m' }" @click="selectPlan('6m')">
+                    <input type="radio" value="6m" v-model="membershipModal.plan" style="position:absolute;opacity:0">
+                    <div class="plan-title">6 个月会员</div>
+                    <div class="plan-price">¥1000</div>
+                    <div class="plan-unit">/ 6 个月</div>
+                  </label>
+                  <label class="plan-card" :class="{ active: membershipModal.plan === '1y' }" @click="selectPlan('1y')">
+                    <input type="radio" value="1y" v-model="membershipModal.plan" style="position:absolute;opacity:0">
+                    <div class="plan-title">1 年会员</div>
+                    <div class="plan-price">¥2000</div>
+                    <div class="plan-unit">/ 12 个月</div>
+                  </label>
+                  <label class="plan-card" :class="{ active: membershipModal.plan === '2y' }" @click="selectPlan('2y')">
+                    <input type="radio" value="2y" v-model="membershipModal.plan" style="position:absolute;opacity:0">
+                    <div class="plan-title">2 年会员</div>
+                    <div class="plan-price">¥4000</div>
+                    <div class="plan-unit">/ 24 个月</div>
+                  </label>
+                </div>
+                <button class="btn btn-primary plan-next" :disabled="!membershipModal.plan" @click="selectPlan(membershipModal.plan)">选择并去支付</button>
               </div>
 
-              <!-- 个人收款码方案（免费，无需商户资质） -->
-              <div class="membership-pay" v-if="membershipModal.mode === 'personal'">
-                <div class="qr-row" v-if="membershipConfig.qrData">
-                  <div class="qr-box qr-box-wide">
-                    <div class="qr-cap">个人微信收款码（扫码支付）</div>
-                    <img :src="membershipConfig.qrData" alt="个人微信收款码" class="qr-pay-img qr-pay-img-lg">
-                  </div>
+              <!-- 二级页：付费 -->
+              <div v-if="membershipModal.payStep === 'pay'">
+                <div class="pay-back">
+                  <button class="btn btn-sm" @click="backToPlans">← 重新选择套餐</button>
+                  <span class="muted small">已选：{{ planLabel(membershipModal.plan) }}</span>
                 </div>
-                <p class="muted small" v-if="membershipModal.plan === '6m'">请扫码支付 <b>¥1000</b>（6 个月会员）</p>
-                <p class="muted small" v-else>请扫码支付 <b>¥2000</b>（1 年会员）</p>
-                <p class="muted small" v-if="membershipConfig.note">{{ membershipConfig.note }}</p>
-                <button class="btn btn-primary" :disabled="membershipModal.loading || membershipModal.claimed" @click="submitMemberClaim()">
-                  {{ membershipModal.loading ? '提交中…' : (membershipModal.claimed ? '已提交，等待开通' : '我已支付（提交开通申请）') }}
-                </button>
-                <p class="error small" v-if="membershipModal.error">{{ membershipModal.error }}</p>
-                <p class="muted small" v-if="membershipModal.claimMsg">{{ membershipModal.claimMsg }}</p>
-                <p class="muted small" v-if="!membershipConfig.qrData">管理员尚未配置个人收款码，请联系管理员。</p>
-              </div>
 
-              <!-- 商户方案（微信/支付宝扫码，自动回调授权） -->
-              <div class="membership-pay" v-else>
-                <button class="btn btn-primary" :disabled="membershipModal.loading" @click="genPayQr()">
-                  {{ membershipModal.loading ? '正在生成收款码…' : '生成收款码（微信 / 支付宝）' }}
-                </button>
-                <p class="muted small" v-if="!membershipModal.wxQr && !membershipModal.aliQr && !membershipModal.error">
-                  选择套餐后点击上方按钮，将同时生成微信与支付宝收款码；手机扫码完成支付后，后台会自动把对应时长开通到当前账号。
-                </p>
-                <p class="error small" v-if="membershipModal.error">{{ membershipModal.error }}</p>
-                <div class="qr-row" v-if="membershipModal.wxQr || membershipModal.aliQr">
-                  <div class="qr-box" v-if="membershipModal.wxQr">
-                    <div class="qr-cap">微信支付</div>
-                    <img :src="membershipModal.wxQr" alt="微信支付二维码" class="qr-pay-img">
+                <!-- 个人收款码方案（免费，无需商户资质） -->
+                <div class="membership-pay" v-if="membershipModal.mode === 'personal'">
+                  <div class="qr-row" v-if="membershipConfig.qrData">
+                    <div class="qr-box qr-box-wide">
+                      <div class="qr-cap">个人微信收款码（扫码支付）</div>
+                      <img :src="membershipConfig.qrData" alt="个人微信收款码" class="qr-pay-img qr-pay-img-lg">
+                    </div>
                   </div>
-                  <div class="qr-box" v-if="membershipModal.aliQr">
-                    <div class="qr-cap">支付宝</div>
-                    <img :src="membershipModal.aliQr" alt="支付宝二维码" class="qr-pay-img">
+                  <p class="muted small" v-if="membershipModal.plan === '6m'">请扫码支付 <b>¥1000</b>（6 个月会员）</p>
+                  <p class="muted small" v-else-if="membershipModal.plan === '1y'">请扫码支付 <b>¥2000</b>（1 年会员）</p>
+                  <p class="muted small" v-else>请扫码支付 <b>¥4000</b>（2 年会员）</p>
+                  <p class="muted small" v-if="membershipConfig.note">{{ membershipConfig.note }}</p>
+                  <p class="pay-warn" v-if="!membershipModal.claimed">⚠ 如未支付勿点击「我已支付」</p>
+                  <div class="pay-actions">
+                    <button class="btn" :disabled="membershipModal.loading" @click="backToPlans">未支付，返回</button>
+                    <button class="btn btn-primary" :disabled="membershipModal.loading || membershipModal.claimed" @click="submitMemberClaim()">
+                      {{ membershipModal.loading ? '提交中…' : (membershipModal.claimed ? '已提交，等待开通' : '我已支付，请求核对开通') }}
+                    </button>
                   </div>
+                  <p class="error small" v-if="membershipModal.error">{{ membershipModal.error }}</p>
+                  <p class="muted small" v-if="membershipModal.claimMsg">{{ membershipModal.claimMsg }}</p>
+                  <p class="muted small" v-if="!membershipConfig.qrData">管理员尚未配置个人收款码，请联系管理员。</p>
                 </div>
-                <p class="muted small" v-if="membershipModal.wxQr || membershipModal.aliQr">
-                  支付成功后稍候，点「刷新」即可看到「已开通会员」状态。
-                </p>
+
+                <!-- 商户方案（微信/支付宝扫码，自动回调授权） -->
+                <div class="membership-pay" v-else>
+                  <button class="btn btn-primary" :disabled="membershipModal.loading" @click="genPayQr()">
+                    {{ membershipModal.loading ? '正在生成收款码…' : '生成收款码（微信 / 支付宝）' }}
+                  </button>
+                  <p class="muted small" v-if="!membershipModal.wxQr && !membershipModal.aliQr && !membershipModal.error">
+                    点击上方按钮，将同时生成微信与支付宝收款码；手机扫码完成支付后，后台会自动把对应时长开通到当前账号。
+                  </p>
+                  <p class="error small" v-if="membershipModal.error">{{ membershipModal.error }}</p>
+                  <div class="qr-row" v-if="membershipModal.wxQr || membershipModal.aliQr">
+                    <div class="qr-box" v-if="membershipModal.wxQr">
+                      <div class="qr-cap">微信支付</div>
+                      <img :src="membershipModal.wxQr" alt="微信支付二维码" class="qr-pay-img">
+                    </div>
+                    <div class="qr-box" v-if="membershipModal.aliQr">
+                      <div class="qr-cap">支付宝</div>
+                      <img :src="membershipModal.aliQr" alt="支付宝二维码" class="qr-pay-img">
+                    </div>
+                  </div>
+                  <p class="muted small" v-if="membershipModal.wxQr || membershipModal.aliQr">
+                    支付成功后稍候，点「刷新」即可看到「已开通会员」状态。
+                  </p>
+                </div>
               </div>
             </div>
             <div class="modal-actions">
@@ -4396,106 +4421,191 @@
           <button class="btn-icon" @click="userModal.show = false">✕</button>
         </div>
         <div class="modal-body">
-          <!-- ===== 待审核注册申请 ===== -->
-          <div class="um-pending" v-if="userModal.pending.length">
-            <div class="um-pending-head">
-              <span>🔔 待审核注册申请</span>
-              <span class="um-pending-count">{{ userModal.pending.length }} 人</span>
+          <!-- ============ 板块①：普通用户注册 ============ -->
+          <div class="um-section">
+            <div class="um-section-head">
+              <h4>① 普通用户注册</h4>
+              <span class="um-section-desc">新用户注册即免费授权使用 1 天；管理员可在此授权非支付会员用户免费试用天数。</span>
             </div>
-            <div class="um-pending-item" v-for="p in userModal.pending" :key="p.username">
-              <div class="um-pending-main">
-                <span class="um-name">{{ p.username }}</span>
-                <span class="um-pending-meta">提交于 {{ fmtDateTime(p.createdAt) }}</span>
-                <span class="um-pending-meta" v-if="p.regIp">来源 {{ p.regIp }}<template v-if="p.regLoc">（{{ p.regLoc }}）</template></span>
-                <span class="um-pending-meta" v-else>来源 IP 未取到</span>
-                <span class="um-pending-meta" v-if="p.regUa" :title="p.regUaRaw">· {{ p.regUa }}</span>
-              </div>
-              <div class="um-actions">
-                <select class="um-input" v-model="userModal.pendingRole[p.username]" :title="'通过后赋予的角色'">
-                  <option value="user">普通用户</option>
-                  <option value="admin">管理员</option>
-                </select>
-                <button class="btn btn-sm btn-primary" @click="approveUserByAdmin(p)">通过</button>
-                <button class="btn btn-sm btn-danger" @click="rejectUserByAdmin(p)">驳回</button>
-                <button class="btn btn-sm" @click="revealPendingPassword(p)" :title="'查看该申请设置的密码'">看密码</button>
-              </div>
-            </div>
-          </div>
 
-          <!-- ===== 跨设备待审（来自云端注册表，免码登录） ===== -->
-          <div class="um-pending" v-if="authAdminToken && authAdminToken.trim()">
-            <div class="um-pending-head">
-              <span>🌐 云端注册表待审</span>
-              <button class="btn btn-sm" @click="syncAllToRegistryByAdmin" title="把本机账号同步到云端注册表（公开文件，供对方免码登录）">📡 同步到云端</button>
-              <span class="um-pending-count" v-if="remotePendingLoading">加载中…</span>
-              <span class="um-pending-count" v-else-if="remotePending.length">{{ remotePending.length }} 人</span>
-              <span class="um-pending-count" v-else>无</span>
-            </div>
-            <div class="um-pending-item" v-for="p in remotePending" :key="'r-' + p.username">
-              <div class="um-pending-main">
-                <span class="um-name">{{ p.username }}</span>
-                <span class="um-pending-meta">提交于 {{ fmtDateTime(p.createdAt) }}</span>
+            <!-- 待审核注册申请 -->
+            <div class="um-pending" v-if="userModal.pending.length">
+              <div class="um-pending-head">
+                <span>🔔 待审核注册申请</span>
+                <span class="um-pending-count">{{ userModal.pending.length }} 人</span>
               </div>
-              <div class="um-actions">
-                <button class="btn btn-sm btn-primary" @click="approveRemoteByAdmin(p)">通过</button>
-                <button class="btn btn-sm btn-danger" @click="rejectRemoteByAdmin(p)">驳回</button>
+              <div class="um-pending-item" v-for="p in userModal.pending" :key="p.username">
+                <div class="um-pending-main">
+                  <span class="um-name">{{ p.username }}</span>
+                  <span class="um-pending-meta">提交于 {{ fmtDateTime(p.createdAt) }}</span>
+                  <span class="um-pending-meta" v-if="p.regIp">来源 {{ p.regIp }}<template v-if="p.regLoc">（{{ p.regLoc }}）</template></span>
+                  <span class="um-pending-meta" v-else>来源 IP 未取到</span>
+                  <span class="um-pending-meta" v-if="p.regUa" :title="p.regUaRaw">· {{ p.regUa }}</span>
+                </div>
+                <div class="um-actions">
+                  <select class="um-input" v-model="userModal.pendingRole[p.username]" :title="'通过后赋予的角色'">
+                    <option value="user">普通用户</option>
+                    <option value="admin">管理员</option>
+                  </select>
+                  <button class="btn btn-sm btn-primary" @click="approveUserByAdmin(p)">通过</button>
+                  <button class="btn btn-sm btn-danger" @click="rejectUserByAdmin(p)">驳回</button>
+                  <button class="btn btn-sm" @click="revealPendingPassword(p)" :title="'查看该申请设置的密码'">看密码</button>
+                </div>
               </div>
             </div>
-            <div class="um-hint" v-if="!remotePending.length && !remotePendingLoading && authAdminToken && authAdminToken.trim()">
-              云端注册表暂无待审。已通过 / 添加的账号会自动写进注册表；对方设备只需输入账号密码即可登录。
-            </div>
-          </div>
 
-          <!-- ===== 会员待开通（个人收款码方案 · 免费） ===== -->
-          <div class="um-pending" v-if="authAdminToken && authAdminToken.trim()">
-            <div class="um-pending-head">
-              <span>👑 会员待开通（个人收款码）</span>
-              <button class="btn btn-sm" @click="loadMemberClaims" title="重新拉取待开通记录">↻ 刷新</button>
-              <span class="um-pending-count" v-if="memberClaims.loading">加载中…</span>
-              <span class="um-pending-count" v-else-if="memberClaims.list.length">{{ memberClaims.list.length }} 条</span>
-              <span class="um-pending-count" v-else>无</span>
-            </div>
-            <div class="um-pending-item" v-for="c in memberClaims.list" :key="c.id || (c.user + '-' + c.ts)">
-              <div class="um-pending-main">
-                <span class="um-name">{{ c.user }}</span>
-                <span class="um-pending-meta">{{ c.plan === '1y' ? '1 年会员' : '6 个月会员' }}</span>
-                <span class="um-pending-meta">提交于 {{ fmtDateTime(c.ts) }}</span>
+            <!-- 跨设备待审 -->
+            <div class="um-pending" v-if="authAdminToken && authAdminToken.trim()">
+              <div class="um-pending-head">
+                <span>🌐 云端注册表待审</span>
+                <button class="btn btn-sm" @click="syncAllToRegistryByAdmin" title="把本机账号同步到云端注册表（公开文件，供对方免码登录）">📡 同步到云端</button>
+                <span class="um-pending-count" v-if="remotePendingLoading">加载中…</span>
+                <span class="um-pending-count" v-else-if="remotePending.length">{{ remotePending.length }} 人</span>
+                <span class="um-pending-count" v-else>无</span>
               </div>
-              <div class="um-actions">
-                <button class="btn btn-sm btn-primary" @click="grantMemberClaim(c)">开通</button>
+              <div class="um-pending-item" v-for="p in remotePending" :key="'r-' + p.username">
+                <div class="um-pending-main">
+                  <span class="um-name">{{ p.username }}</span>
+                  <span class="um-pending-meta">提交于 {{ fmtDateTime(p.createdAt) }}</span>
+                </div>
+                <div class="um-actions">
+                  <button class="btn btn-sm btn-primary" @click="approveRemoteByAdmin(p)">通过</button>
+                  <button class="btn btn-sm btn-danger" @click="rejectRemoteByAdmin(p)">驳回</button>
+                </div>
+              </div>
+              <div class="um-hint" v-if="!remotePending.length && !remotePendingLoading && authAdminToken && authAdminToken.trim()">
+                云端注册表暂无待审。已通过 / 添加的账号会自动写进注册表；对方设备只需输入账号密码即可登录。
               </div>
             </div>
-            <div class="um-pending-head" style="margin-top:10px"><span>手动开通（按用户名，无需待开通记录）</span></div>
+
+            <!-- 粘贴注册申请码 -->
             <div class="um-code-bar">
-              <input class="um-input um-grow" v-model="memberManual.username" placeholder="已付款的用户名" @keyup.enter="grantMemberManual">
-              <select class="um-input" v-model="memberManual.plan">
-                <option value="6m">6 个月</option>
-                <option value="1y">1 年</option>
+              <input class="um-input um-grow" v-model="userModal.reqCode"
+                     placeholder="用户发来的「注册申请码」（SNTREG1.…），跨设备注册时粘贴到这里"
+                     @keyup.enter="importRequestCode">
+              <button class="btn btn-sm" @click="importRequestCode">导入申请</button>
+            </div>
+
+            <!-- 管理员添加用户（注册） -->
+            <div class="um-toolbar">
+              <input class="um-input" v-model="userModal.newUsername" placeholder="用户名（2-20 位）" maxlength="20">
+              <input class="um-input" type="password" v-model="userModal.newPassword" placeholder="初始密码（8-64 位，含字母和数字）" maxlength="64">
+              <select class="um-input" v-model="userModal.newRole">
+                <option value="user">普通用户</option>
+                <option value="admin">管理员</option>
               </select>
-              <button class="btn btn-sm btn-primary" @click="grantMemberManual">开通</button>
+              <button class="btn btn-primary btn-sm" @click="addUserByAdmin">添加</button>
+              <div class="um-hint">
+                普通用户可以用全部业务页面，但不能改设置、导入/清空数据、管理账号。
+                账号存在本机浏览器：同一台设备上注册的账号会直接出现在上方待审核区；
+                其他设备注册的用户，需要把他发来的「申请码」粘到上面导入，通过后再把系统给出的「准入码」发回给他。
+              </div>
+            </div>
+
+            <!-- 授权免费试用（非支付会员用户） -->
+            <div class="um-pending">
+              <div class="um-pending-head"><span>授权免费试用（非支付会员用户）</span></div>
+              <div class="um-code-bar">
+                <input class="um-input um-grow" v-model="trialGrantName" placeholder="本机已有用户名">
+                <button class="btn btn-sm" v-for="d in trialDayOptions" :key="d.days"
+                        @click="grantUserTrialByName(trialGrantName, d.days)">试用{{ d.label }}</button>
+              </div>
+              <div class="um-hint">仅对「本机已有账号」生效，试用期内对方可用自己的密码直接登录（普通用户权限）。</div>
             </div>
           </div>
 
-          <!-- ===== 粘贴用户发来的注册申请码（跨设备场景） ===== -->
-          <div class="um-code-bar">
-            <input class="um-input um-grow" v-model="userModal.reqCode"
-                   placeholder="用户发来的「注册申请码」（SNTREG1.…），跨设备注册时粘贴到这里"
-                   @keyup.enter="importRequestCode">
-            <button class="btn btn-sm" @click="importRequestCode">导入申请</button>
+          <!-- ============ 板块②：会员管理 ============ -->
+          <div class="um-section" v-if="authAdminToken && authAdminToken.trim()">
+            <div class="um-section-head">
+              <h4>② 会员管理</h4>
+              <span class="um-section-desc">核对账号与支付费用开通期限，仅做核对与授权。</span>
+            </div>
+
+            <!-- 半年期 -->
+            <div class="um-pending">
+              <div class="um-pending-head">
+                <span>半年期（¥1000）待开通</span>
+                <button class="btn btn-sm" @click="loadMemberClaims" title="重新拉取待开通记录">↻ 刷新</button>
+                <span class="um-pending-count" v-if="memberClaims.loading">加载中…</span>
+                <span class="um-pending-count" v-else-if="claimsOfPlan('6m').length">{{ claimsOfPlan('6m').length }} 条</span>
+                <span class="um-pending-count" v-else>无</span>
+              </div>
+              <div class="um-pending-item" v-for="c in claimsOfPlan('6m')" :key="c.id || (c.user + '-' + c.ts)">
+                <div class="um-pending-main">
+                  <span class="um-name">{{ c.user }}</span>
+                  <span class="um-pending-meta">半年期（¥1000）</span>
+                  <span class="um-pending-meta">提交于 {{ fmtDateTime(c.ts) }}</span>
+                </div>
+                <div class="um-actions">
+                  <button class="btn btn-sm btn-primary" @click="grantMemberClaim(c)">核对并开通</button>
+                </div>
+              </div>
+              <div class="um-code-bar">
+                <input class="um-input um-grow" v-model="memberManual.username" placeholder="已付款的用户名" @keyup.enter="memberManual.plan='6m';grantMemberManual()">
+                <button class="btn btn-sm btn-primary" @click="memberManual.plan='6m';grantMemberManual()">开通半年期</button>
+              </div>
+            </div>
+
+            <!-- 一年期 -->
+            <div class="um-pending">
+              <div class="um-pending-head">
+                <span>一年期（¥2000）待开通</span>
+                <span class="um-pending-count" v-if="memberClaims.loading">加载中…</span>
+                <span class="um-pending-count" v-else-if="claimsOfPlan('1y').length">{{ claimsOfPlan('1y').length }} 条</span>
+                <span class="um-pending-count" v-else>无</span>
+              </div>
+              <div class="um-pending-item" v-for="c in claimsOfPlan('1y')" :key="c.id || (c.user + '-' + c.ts)">
+                <div class="um-pending-main">
+                  <span class="um-name">{{ c.user }}</span>
+                  <span class="um-pending-meta">一年期（¥2000）</span>
+                  <span class="um-pending-meta">提交于 {{ fmtDateTime(c.ts) }}</span>
+                </div>
+                <div class="um-actions">
+                  <button class="btn btn-sm btn-primary" @click="grantMemberClaim(c)">核对并开通</button>
+                </div>
+              </div>
+              <div class="um-code-bar">
+                <input class="um-input um-grow" v-model="memberManual.username" placeholder="已付款的用户名" @keyup.enter="memberManual.plan='1y';grantMemberManual()">
+                <button class="btn btn-sm btn-primary" @click="memberManual.plan='1y';grantMemberManual()">开通一年期</button>
+              </div>
+            </div>
+
+            <!-- 两年期 -->
+            <div class="um-pending">
+              <div class="um-pending-head">
+                <span>两年期（¥4000）待开通</span>
+                <span class="um-pending-count" v-if="memberClaims.loading">加载中…</span>
+                <span class="um-pending-count" v-else-if="claimsOfPlan('2y').length">{{ claimsOfPlan('2y').length }} 条</span>
+                <span class="um-pending-count" v-else>无</span>
+              </div>
+              <div class="um-pending-item" v-for="c in claimsOfPlan('2y')" :key="c.id || (c.user + '-' + c.ts)">
+                <div class="um-pending-main">
+                  <span class="um-name">{{ c.user }}</span>
+                  <span class="um-pending-meta">两年期（¥4000）</span>
+                  <span class="um-pending-meta">提交于 {{ fmtDateTime(c.ts) }}</span>
+                </div>
+                <div class="um-actions">
+                  <button class="btn btn-sm btn-primary" @click="grantMemberClaim(c)">核对并开通</button>
+                </div>
+              </div>
+              <div class="um-code-bar">
+                <input class="um-input um-grow" v-model="memberManual.username" placeholder="已付款的用户名" @keyup.enter="memberManual.plan='2y';grantMemberManual()">
+                <button class="btn btn-sm btn-primary" @click="memberManual.plan='2y';grantMemberManual()">开通两年期</button>
+              </div>
+            </div>
           </div>
 
-          <div class="um-toolbar">
-            <input class="um-input" v-model="userModal.newUsername" placeholder="用户名（2-20 位）" maxlength="20">
-            <input class="um-input" type="password" v-model="userModal.newPassword" placeholder="初始密码（8-64 位，含字母和数字）" maxlength="64">
-            <select class="um-input" v-model="userModal.newRole">
-              <option value="user">普通用户</option>
-              <option value="admin">管理员</option>
-            </select>
-            <button class="btn btn-primary btn-sm" @click="addUserByAdmin">添加</button>
-            <div class="um-hint">
-              普通用户可以用全部业务页面，但不能改设置、导入/清空数据、管理账号。
-              账号存在本机浏览器：同一台设备上注册的账号会直接出现在上方待审核区；
-              其他设备注册的用户，需要把他发来的「申请码」粘到上面导入，通过后再把系统给出的「准入码」发回给他。
+          <!-- ============ 板块③：支付码 ============ -->
+          <div class="um-section" v-if="authAdminToken && authAdminToken.trim()">
+            <div class="um-section-head">
+              <h4>③ 支付码</h4>
+              <span class="um-section-desc">会员个人收款码（免费方案），与「设置」页共用同一份配置（data/membership/config.json）。</span>
+            </div>
+            <div class="um-payqr">
+              <input type="file" accept="image/*" @change="onMembershipQrChange">
+              <input v-model="membershipQrNote" placeholder="收款备注（可选，如「付款请备注用户名」）">
+              <button class="btn btn-sm btn-primary" @click="saveMembershipQr">保存收款码到仓库</button>
+              <p class="muted small" v-if="membershipConfig.qrData">当前已配置收款码（用户端会员弹窗可见）。</p>
             </div>
           </div>
 
@@ -4728,14 +4838,14 @@
     </transition>
   </div>
 
-  <script src="js/auth.js?v=20260930o"></script>
-  <script src="js/auth-sync.js?v=20260930o"></script>
+  <script src="js/auth.js?v=20261006a"></script>
+  <script src="js/auth-sync.js?v=20261006a"></script>
   <!-- 边缘加速默认站点（batch37 治本：Cloudflare Worker 代理东财/腾讯，缓解 JSONP 限流误报）。
        若你所在地区 workers.dev 访问慢，可在「设置 → 行情加速地址」清空即恢复纯直连。 -->
   <script>window.__SNT_ACCEL__ = 'https://stock-edge.hui-zhou.workers.dev';</script>
   <!-- 扫码支付二维码渲染库（第三方 qrcodejs，本地托管避免外链失效）。renderQr 会先检测全局 QRCode 是否存在。 -->
-  <script src="assets/qrcode.min.js?v=20260930o"></script>
-  <script src="js/auth-boot.js?v=20260930o"></script>
+  <script src="assets/qrcode.min.js?v=20261006a"></script>
+  <script src="js/auth-boot.js?v=20261006a"></script>
   <!-- store / stock-api / hot-topics / app 由 auth-boot.js 在登录通过后动态装载，
        未登录时它们不会被下载，业务数据也不会进入内存 -->
 </body>
