@@ -4,12 +4,12 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>股市信息分析系统</title>
-  <link rel="stylesheet" href="css/style.css?v=20261006d">
+  <link rel="stylesheet" href="css/style.css?v=20261006e">
   <!-- Vue 3 全局构建版（v3.4.21 · 自托管）
        原先走 unpkg.com CDN：国内网络对 unpkg 的连通性不稳定，一旦该请求长时间挂起，
        <head> 里的阻塞脚本会让整页停在白屏、后续 auth-boot.js 根本不会执行。
        改为同源托管后，启动链路不再依赖任何第三方 CDN。 -->
-  <script src="js/vue.global.prod.js?v=20261006d"></script>
+  <script src="js/vue.global.prod.js?v=20261006e"></script>
 </head>
 <body class="auth-locked">
   <!-- ===== 登录关卡：登录通过前业务脚本不会被加载 ===== -->
@@ -37,7 +37,7 @@
 
       <!-- 自助注册：提交后进入待审核，需管理员通过 -->
       <form class="auth-form" id="auth-register-form" hidden autocomplete="off">
-        <input class="auth-input" type="text" id="reg-username" placeholder="用户名（2-20 位）" maxlength="20" autocomplete="username">
+        <input class="auth-input" type="text" id="reg-username" placeholder="用户名（2-20 位）" maxlength="20" autocomplete="off">
         <div class="auth-pw-wrap">
           <input class="auth-input" type="password" id="reg-password" placeholder="密码（8-64 位，含字母和数字）" maxlength="64" autocomplete="new-password">
           <button type="button" class="auth-pw-toggle" data-pw="reg-password" title="显示/隐藏密码" aria-label="显示或隐藏密码">👁️</button>
@@ -4482,14 +4482,15 @@
             <div class="um-code-bar">
               <input class="um-input um-grow" v-model="userModal.reqCode"
                      placeholder="用户发来的「注册申请码」（SNTREG1.…），跨设备注册时粘贴到这里"
+                     autocomplete="off"
                      @keyup.enter="importRequestCode">
               <button class="btn btn-sm" @click="importRequestCode">导入申请</button>
             </div>
 
             <!-- 管理员添加用户（注册） -->
             <div class="um-toolbar">
-              <input class="um-input" v-model="userModal.newUsername" placeholder="用户名（2-20 位）" maxlength="20">
-              <input class="um-input" type="password" v-model="userModal.newPassword" placeholder="初始密码（8-64 位，含字母和数字）" maxlength="64">
+              <input class="um-input" v-model="userModal.newUsername" placeholder="用户名（2-20 位）" maxlength="20" autocomplete="off">
+              <input class="um-input" type="password" v-model="userModal.newPassword" placeholder="初始密码（8-64 位，含字母和数字）" maxlength="64" autocomplete="new-password">
               <select class="um-input" v-model="userModal.newRole">
                 <option value="user">普通用户</option>
                 <option value="admin">管理员</option>
@@ -4506,7 +4507,7 @@
             <div class="um-pending">
               <div class="um-pending-head"><span>授权免费试用（非支付会员用户）</span></div>
               <div class="um-code-bar">
-                <input class="um-input um-grow" v-model="trialGrantName" placeholder="本机已有用户名">
+                <input class="um-input um-grow" v-model="trialGrantName" placeholder="本机已有用户名" autocomplete="off">
                 <button class="btn btn-sm" v-for="d in trialDayOptions" :key="d.days"
                         @click="grantUserTrialByName(trialGrantName, d.days)">试用{{ d.label }}</button>
               </div>
@@ -4541,7 +4542,7 @@
                 </div>
               </div>
               <div class="um-code-bar">
-                <input class="um-input um-grow" v-model="memberManual.username" placeholder="已付款的用户名" @keyup.enter="memberManual.plan='6m';grantMemberManual()">
+                <input class="um-input um-grow" v-model="memberManual.username" placeholder="已付款的用户名" autocomplete="off" @keyup.enter="memberManual.plan='6m';grantMemberManual()">
                 <button class="btn btn-sm btn-primary" @click="memberManual.plan='6m';grantMemberManual()">开通半年期</button>
               </div>
             </div>
@@ -4565,7 +4566,7 @@
                 </div>
               </div>
               <div class="um-code-bar">
-                <input class="um-input um-grow" v-model="memberManual.username" placeholder="已付款的用户名" @keyup.enter="memberManual.plan='1y';grantMemberManual()">
+                <input class="um-input um-grow" v-model="memberManual.username" placeholder="已付款的用户名" autocomplete="off" @keyup.enter="memberManual.plan='1y';grantMemberManual()">
                 <button class="btn btn-sm btn-primary" @click="memberManual.plan='1y';grantMemberManual()">开通一年期</button>
               </div>
             </div>
@@ -4589,7 +4590,7 @@
                 </div>
               </div>
               <div class="um-code-bar">
-                <input class="um-input um-grow" v-model="memberManual.username" placeholder="已付款的用户名" @keyup.enter="memberManual.plan='2y';grantMemberManual()">
+                <input class="um-input um-grow" v-model="memberManual.username" placeholder="已付款的用户名" autocomplete="off" @keyup.enter="memberManual.plan='2y';grantMemberManual()">
                 <button class="btn btn-sm btn-primary" @click="memberManual.plan='2y';grantMemberManual()">开通两年期</button>
               </div>
             </div>
@@ -4728,10 +4729,10 @@
                         <span class="um-reset-pwpair">
                           <label class="um-reset-lbl" for="um-reset-new">新密码</label>
                           <input id="um-reset-new" class="um-input um-reset-pw" :type="resetPw.reveal ? 'text' : 'password'"
-                                 v-model="resetPw.newPassword" placeholder="8-64 位，含字母和数字" maxlength="64">
+                                 v-model="resetPw.newPassword" placeholder="8-64 位，含字母和数字" maxlength="64" autocomplete="new-password">
                           <label class="um-reset-lbl" for="um-reset-cfm">确认</label>
                           <input id="um-reset-cfm" class="um-input um-reset-pw" :type="resetPw.reveal ? 'text' : 'password'"
-                                 v-model="resetPw.confirmPassword" placeholder="再输一次" maxlength="64">
+                                 v-model="resetPw.confirmPassword" placeholder="再输一次" maxlength="64" autocomplete="new-password">
                         </span>
                         <button class="btn-mini" @click="resetPw.reveal = !resetPw.reveal">{{ resetPw.reveal ? '隐藏' : '显示' }}</button>
                         <button class="btn-mini" @click="genResetPassword" title="生成 12 位随机密码并复制到剪贴板">🎲 随机</button>
@@ -4793,15 +4794,15 @@
           </div>
           <label class="um-field">
             <span>原密码</span>
-            <input class="um-input" type="password" v-model="pwModal.oldPassword" placeholder="请输入原密码" maxlength="128">
+            <input class="um-input" type="password" v-model="pwModal.oldPassword" placeholder="请输入原密码" maxlength="128" autocomplete="off">
           </label>
           <label class="um-field">
             <span>新密码</span>
-            <input class="um-input" id="pw-new" type="password" v-model="pwModal.newPassword" placeholder="8-64 位，须含字母和数字" maxlength="64">
+            <input class="um-input" id="pw-new" type="password" v-model="pwModal.newPassword" placeholder="8-64 位，须含字母和数字" maxlength="64" autocomplete="new-password">
           </label>
           <label class="um-field">
             <span>确认新密码</span>
-            <input class="um-input" id="pw-confirm" type="password" v-model="pwModal.confirmPassword" placeholder="再输入一次" maxlength="64">
+            <input class="um-input" id="pw-confirm" type="password" v-model="pwModal.confirmPassword" placeholder="再输入一次" maxlength="64" autocomplete="new-password">
           </label>
           <div class="info-box">改完密码后当前登录保持有效，其他设备上用旧密码的登录会失效。</div>
         </div>
@@ -4838,14 +4839,14 @@
     </transition>
   </div>
 
-  <script src="js/auth.js?v=20261006d"></script>
-  <script src="js/auth-sync.js?v=20261006d"></script>
+  <script src="js/auth.js?v=20261006e"></script>
+  <script src="js/auth-sync.js?v=20261006e"></script>
   <!-- 边缘加速默认站点（batch37 治本：Cloudflare Worker 代理东财/腾讯，缓解 JSONP 限流误报）。
        若你所在地区 workers.dev 访问慢，可在「设置 → 行情加速地址」清空即恢复纯直连。 -->
   <script>window.__SNT_ACCEL__ = 'https://sichina.dpdns.org';</script>
   <!-- 扫码支付二维码渲染库（第三方 qrcodejs，本地托管避免外链失效）。renderQr 会先检测全局 QRCode 是否存在。 -->
-  <script src="assets/qrcode.min.js?v=20261006d"></script>
-  <script src="js/auth-boot.js?v=20261006d"></script>
+  <script src="assets/qrcode.min.js?v=20261006e"></script>
+  <script src="js/auth-boot.js?v=20261006e"></script>
   <!-- store / stock-api / hot-topics / app 由 auth-boot.js 在登录通过后动态装载，
        未登录时它们不会被下载，业务数据也不会进入内存 -->
 </body>

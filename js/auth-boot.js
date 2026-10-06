@@ -27,7 +27,7 @@
   'use strict';
 
   // 与 index.html 中静态资源版本号保持一致，避免升级后命中旧缓存
-  var ASSET_V = '20261006d';
+  var ASSET_V = '20261006e';
 
   // 管理员点开「注册申请导入链接」后，申请码暂存在这里，等业务层（app.js）就绪后取走
   var IMPORT_KEY = 'snt-pending-import-v1';
@@ -129,6 +129,14 @@
     if (elRegDone) elRegDone.hidden = which !== 'regdone';
     if (elCodePanel) elCodePanel.hidden = which !== 'code';
     if (elSub) elSub.textContent = SUB_TEXT[which] || SUB_TEXT.login;
+    // 隐私要求：账号信息只允许出现在登录框。打开注册面板时清空一次，
+    // 防止个别浏览器无视 autocomplete="off" 把已保存账号自动填进注册表单。
+    if (which === 'register' && elRegisterForm) {
+      ['#reg-username', '#reg-password', '#reg-confirm'].forEach(function (s) {
+        var el = $(s);
+        if (el && el.value) el.value = '';
+      });
+    }
     var focusMap = {
       setup: '#setup-username',
       register: '#reg-username',
