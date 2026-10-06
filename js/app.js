@@ -2348,6 +2348,14 @@ const app = createApp({
       showToast('已为「' + uname + '」开通会员', 'success');
       memberManual.username = '';
     }
+    // 授权免费试用（非支付会员用户）：列出当前处于试用期的普通用户，供管理员核对 / 续期 / 撤销
+    function trialUsersList() {
+      return (userList.value || []).filter(u => {
+        if (u.role !== 'user') return false;
+        if (Number(u.payMembershipUntil) > Date.now()) return false; // 已是付费会员，排除
+        return !!u.trialActive;
+      });
+    }
 
     // ===== batch-A：管理员配置个人收款码 =====
     const membershipQrFile = ref('');
@@ -9382,7 +9390,7 @@ const app = createApp({
       authAdminToken, remotePending, remotePendingLoading,
       loadRemotePending, approveRemoteByAdmin, rejectRemoteByAdmin, syncAllToRegistryByAdmin,
       // batch-A：会员后台（个人码方案）
-      memberClaims, memberManual, loadMemberClaims, grantMemberClaim, grantMemberManual,
+      memberClaims, memberManual, loadMemberClaims, grantMemberClaim, grantMemberManual, trialUsersList,
       membershipQrFile, membershipQrNote, onMembershipQrChange, saveMembershipQr,
       showApproveCode, toggleRevealPassword, revealPendingPassword,
       copyPassword, toggleLoginLog,

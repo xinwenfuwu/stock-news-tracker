@@ -4,12 +4,12 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>股市信息分析系统</title>
-  <link rel="stylesheet" href="css/style.css?v=20261006e">
+  <link rel="stylesheet" href="css/style.css?v=20261006f">
   <!-- Vue 3 全局构建版（v3.4.21 · 自托管）
        原先走 unpkg.com CDN：国内网络对 unpkg 的连通性不稳定，一旦该请求长时间挂起，
        <head> 里的阻塞脚本会让整页停在白屏、后续 auth-boot.js 根本不会执行。
        改为同源托管后，启动链路不再依赖任何第三方 CDN。 -->
-  <script src="js/vue.global.prod.js?v=20261006e"></script>
+  <script src="js/vue.global.prod.js?v=20261006f"></script>
 </head>
 <body class="auth-locked">
   <!-- ===== 登录关卡：登录通过前业务脚本不会被加载 ===== -->
@@ -4522,6 +4522,7 @@
               <span class="um-section-desc">核对账号与支付费用开通期限，仅做核对与授权。</span>
             </div>
 
+            <div class="um-grid">
             <!-- 半年期 -->
             <div class="um-pending">
               <div class="um-pending-head">
@@ -4544,6 +4545,28 @@
               <div class="um-code-bar">
                 <input class="um-input um-grow" v-model="memberManual.username" placeholder="已付款的用户名" autocomplete="off" @keyup.enter="memberManual.plan='6m';grantMemberManual()">
                 <button class="btn btn-sm btn-primary" @click="memberManual.plan='6m';grantMemberManual()">开通半年期</button>
+              </div>
+            </div>
+
+            <!-- 授权免费试用（非支付会员用户） -->
+            <div class="um-pending um-pending-trial">
+              <div class="um-pending-head">
+                <span>授权免费试用（非支付会员用户）</span>
+                <span class="um-pending-count">{{ trialUsersList().length }} 人</span>
+              </div>
+              <div class="um-pending-item" v-for="u in trialUsersList()" :key="u.username">
+                <div class="um-pending-main">
+                  <span class="um-name">{{ u.username }}</span>
+                  <span class="um-pending-meta">试用 {{ u.trialDays }} 天</span>
+                  <span class="um-pending-meta">至 {{ u.trialUntilText }}</span>
+                </div>
+                <div class="um-actions">
+                  <button class="btn btn-sm" @click="revokeUserTrial(u)">撤销试用</button>
+                </div>
+              </div>
+              <div class="um-code-bar">
+                <input class="um-input um-grow" v-model="trialGrantName" placeholder="用户名" autocomplete="off">
+                <button class="btn btn-sm" v-for="o in trialDayOptions" :key="o.days" @click="grantUserTrialByName(trialGrantName, o.days)">试用{{ o.label }}</button>
               </div>
             </div>
 
@@ -4593,6 +4616,7 @@
                 <input class="um-input um-grow" v-model="memberManual.username" placeholder="已付款的用户名" autocomplete="off" @keyup.enter="memberManual.plan='2y';grantMemberManual()">
                 <button class="btn btn-sm btn-primary" @click="memberManual.plan='2y';grantMemberManual()">开通两年期</button>
               </div>
+            </div>
             </div>
           </div>
 
@@ -4839,14 +4863,14 @@
     </transition>
   </div>
 
-  <script src="js/auth.js?v=20261006e"></script>
-  <script src="js/auth-sync.js?v=20261006e"></script>
+  <script src="js/auth.js?v=20261006f"></script>
+  <script src="js/auth-sync.js?v=20261006f"></script>
   <!-- 边缘加速默认站点（batch37 治本：Cloudflare Worker 代理东财/腾讯，缓解 JSONP 限流误报）。
        若你所在地区 workers.dev 访问慢，可在「设置 → 行情加速地址」清空即恢复纯直连。 -->
   <script>window.__SNT_ACCEL__ = 'https://sichina.dpdns.org';</script>
   <!-- 扫码支付二维码渲染库（第三方 qrcodejs，本地托管避免外链失效）。renderQr 会先检测全局 QRCode 是否存在。 -->
-  <script src="assets/qrcode.min.js?v=20261006e"></script>
-  <script src="js/auth-boot.js?v=20261006e"></script>
+  <script src="assets/qrcode.min.js?v=20261006f"></script>
+  <script src="js/auth-boot.js?v=20261006f"></script>
   <!-- store / stock-api / hot-topics / app 由 auth-boot.js 在登录通过后动态装载，
        未登录时它们不会被下载，业务数据也不会进入内存 -->
 </body>

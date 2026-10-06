@@ -3049,7 +3049,10 @@ body.guest-mode #app { display: none; }
 .btn-vip { background: linear-gradient(135deg, #fff7e6, #ffe4b3); border: 1px solid #ffd699; color: #8c5a00; font-weight: 600; }
 .btn-vip:hover { background: linear-gradient(135deg, #ffefc2, #ffd699); }
 .membership-modal { width: 420px; max-width: 94vw; text-align: center; }
-.membership-body { padding: 6px 4px; }
+/* 弹窗内容区可滚动：移动端全屏时，二维码 + 文案较高，必须让 .membership-body 内部滚动，
+   否则底部的「我已支付」按钮会被裁到屏幕外（以前只在桌面 .modal-body 上做了 overflow，
+   而本弹窗用的是 .membership-body，导致手机上按钮不可达）。 */
+.membership-body { padding: 6px 4px; flex: 1 1 auto; min-height: 0; overflow-y: auto; -webkit-overflow-scrolling: touch; }
 .membership-desc { color: var(--text-2, #6b7280); font-size: 14px; margin-bottom: 18px; line-height: 1.6; }
 .membership-plans { display: flex; gap: 12px; justify-content: center; margin-bottom: 22px; }
 .plan-card { flex: 1; border: 1px solid var(--border); border-radius: var(--radius); padding: 16px 10px; background: #fff; }
@@ -3120,7 +3123,9 @@ body.guest-mode #app { display: none; }
 .pay-back { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
 .pay-warn { color: #b45309; background: #fffbeb; border: 1px solid #fde68a; border-radius: 8px;
   padding: 6px 10px; font-size: 12.5px; margin: 10px 0; }
-.pay-actions { display: flex; gap: 10px; margin-top: 12px; flex-wrap: wrap; }
+.pay-actions { display: flex; gap: 10px; margin-top: 12px; flex-wrap: wrap;
+  position: sticky; bottom: 0; background: var(--surface); padding-top: 8px; padding-bottom: 2px;
+  box-shadow: 0 -6px 8px -6px rgba(0,0,0,.18); }
 .pay-actions .btn { flex: 1; min-width: 130px; }
 
 /* ===== 用户管理三板块 ===== */
@@ -3129,6 +3134,11 @@ body.guest-mode #app { display: none; }
 .um-section-head h4 { margin: 0; font-size: 15px; color: var(--text); }
 .um-section-desc { font-size: 12.5px; color: var(--text-placeholder); flex: 1 1 100%; }
 .um-payqr { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+/* 会员管理四板块：响应式网格（桌面 2×2，窄屏单列），避免「标题并排挤在一行」的排版错误 */
+.um-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; }
+.um-pending-trial { background: #eff6ff; border-color: #bfdbfe; }
+.um-pending-trial .um-pending-head { color: #1e40af; }
+.um-pending-trial .um-pending-count { background: #bfdbfe; color: #1e40af; }
 .um-payqr input[type="file"] { max-width: 220px; }
 .um-payqr input:not([type]), .um-payqr input[type="text"] { flex: 1; min-width: 180px; }
 .ld-modal { width: 860px; max-width: 96vw; text-align: left; }
@@ -3345,6 +3355,7 @@ body.guest-mode #app { display: none; }
    若继续强制最小宽度会顶出容器（横向溢出）。这里改为「整组独占一行 + 输入框可收缩」，
    工具栏自然折成多行，不再溢出，字段表仍可左右滑动查看。 */
 @media (max-width: 768px) {
+  .um-grid { grid-template-columns: 1fr; }
   .pool-detail-summary { gap: 6px 8px; }
   .pool-detail-add { flex: 1 1 100%; }
   .pool-detail-add .pds-add-input { width: auto; flex: 1 1 140px; min-width: 0; }
