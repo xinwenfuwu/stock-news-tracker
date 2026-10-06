@@ -2132,9 +2132,17 @@ const app = createApp({
       const base = String((D && D.settings && D.settings.proxyUrl) || '').trim().replace(/\/+$/, '');
       return base || '';
     }
+    // 会员相关后端地址：优先用用户显式设置的加速/代理地址；未设置时回退到内置默认加速域名
+    // （window.__SNT_ACCEL__，现已指向国内可达的 sichina.dpdns.org），保证会员「我已支付」开箱即用。
+    function payApiBase() {
+      const b = String((D && D.settings && D.settings.proxyUrl) || '').trim().replace(/\/+$/, '');
+      if (b) return b;
+      const d = (typeof window !== 'undefined' && window.__SNT_ACCEL__) ? String(window.__SNT_ACCEL__).trim().replace(/\/+$/, '') : '';
+      return d || '';
+    }
     // 查询后端「我的会员到期时间」
     async function queryMembership(username) {
-      const base = memberApiBase();
+      const base = payApiBase();
       if (!base) return { ok: false, error: '未配置行情加速/代理地址（即会员服务后端），无法查询' };
       try {
         const r = await fetch(base + '/pay/membership?user=' + encodeURIComponent(username), { headers: { 'Accept': 'application/json' } });
@@ -2236,7 +2244,7 @@ const app = createApp({
     async function submitMemberClaim() {
       const uname = (Auth && Auth.user && Auth.user.username) || '';
       if (!uname) { membershipModal.error = '请先登录后再开通会员'; return; }
-      const base = memberApiBase();
+      const base = payApiBase();
       membershipModal.loading = true; membershipModal.claimMsg = ''; membershipModal.error = '';
       if (base) {
         try {
