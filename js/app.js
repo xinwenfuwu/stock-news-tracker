@@ -5720,6 +5720,9 @@ const app = createApp({
     const briefSourceInput = ref('格隆汇');
     const briefSourceCustom = ref(false);
     const briefSourcePresets = BRIEF_SOURCE_PRESETS;
+    // 有「实时拉取」路径的来源（如 同花顺：浏览器直连其 CORS 已放开的 7×24 接口）。
+    // 这类来源不走仓库静态快照文件（那个只有格隆汇），改为实时拉取最近快讯。
+    const LIVE_BRIEF_SOURCES = new Set(['同花顺']);
 
     // ===== 快讯分类维度（batch15）：题材归类 / 概念分类 / 行业分类 =====
     const briefDimModes = (typeof HotTopics !== 'undefined' && Array.isArray(HotTopics.BRIEF_MODES))
@@ -6267,6 +6270,21 @@ const app = createApp({
       briefLoading.value = true;
       briefError.value = '';
       try {
+        // 实时来源（同花顺等）：直接拉最新快讯；按所选日期过滤，无匹配则展示最近全部并提示
+        if (LIVE_BRIEF_SOURCES.has(src)) {
+          const items = await StockAPI.fetchThsLiveBriefs();
+          if (!items.length) {
+            briefItems.value = [];
+            briefError.value = `「${src}」实时快讯暂时拉取为空，请稍后重试`;
+            return;
+          }
+          const onDate = items.filter(it => (it.time || '').slice(0, 10) === date);
+          briefItems.value = onDate.length ? onDate : items;
+          briefError.value = onDate.length
+            ? ''
+            : `「${src}」为实时快讯（最近 ${items.length} 条），所选日期 ${date} 无历史快照，已展示最新快讯。`;
+          return;
+        }
         const r = await fetch(briefFileForSource(src, date), { cache: 'no-store' });
         if (!r.ok) throw new Error('HTTP ' + r.status);
         const j = await r.json();
@@ -6333,7 +6351,21 @@ const app = createApp({
     function resetLiveFetch() { _liveCache = []; _lastLiveFetchTs = 0; _liveJustFetched = false; }
     function liveFetchInfo() { return { ts: _lastLiveFetchTs, cacheLen: _liveCache.length, ageSec: _lastLiveFetchTs ? Math.round((Date.now() - _lastLiveFetchTs) / 1000) : -1 }; }
     const LIVE_THROTTLE_MS = 5 * 60 * 1000;   // 距上次实拉取超过 5 分钟才重新抓取，期间复用缓存
+    // 同花顺实时快讯：同样做 5 分钟节流缓存（与格隆汇同理；浏览器直连同花顺 CORS 已放开）
+    let _thsLiveCache = [];
+    let _thsLastLiveFetchTs = 0;
+    let _thsLiveJustFetched = false;
+    function resetThsLiveFetch() { _thsLiveCache = []; _thsLastLiveFetchTs = 0; _thsLiveJustFetched = false; }
     async function fetchLiveBriefsForWindow() {
+      if (briefSourceName.value === '同花顺') {
+        const now = Date.now();
+        _thsLiveJustFetched = false;
+        if (_thsLiveCache.length && now - _thsLastLiveFetchTs < LIVE_THROTTLE_MS) return _thsLiveCache;
+        let items = [];
+        try { items = await StockAPI.fetchThsLiveBriefs(); } catch (e) { items = []; }
+        if (items.length) { _thsLiveCache = items; _thsLastLiveFetchTs = now; _thsLiveJustFetched = true; }
+        return _thsLiveCache;
+      }
       if (briefSourceName.value !== '格隆汇') return [];
       const now = Date.now();
       _liveJustFetched = false;
@@ -6389,8 +6421,8 @@ const app = createApp({
         // 保证「最近时段」的快讯一条不漏；5 分钟内重复刷新复用缓存；直连失败则回退代理（若已配）。
         const liveItems = await fetchLiveBriefsForWindow();
         const chunks = await Promise.all(days.map(d => fetchBriefsFile(d, briefSourceName.value)));
-        if (_liveJustFetched && liveItems.length) {
-          showToast(`已实时拉取格隆汇最近 ${liveItems.length} 条快讯（5 分钟内刷新不再重复抓取）`, 'success');
+        if ((_liveJustFetched || _thsLiveJustFetched) && liveItems.length) {
+          showToast(`已实时拉取${briefSourceName.value}最近 ${liveItems.length} 条快讯（5 分钟内刷新不再重复抓取）`, 'success');
         }
         // 记录每个拉取日是否有数据（用于回退到「最近真正有数据的一天」）
         const daysWithData = [];
@@ -9385,7 +9417,7 @@ const app = createApp({
       refreshStreaks, streakBusy, newsStreakBusy,
       // 子类标注「颜色 / 备注」（仅新闻追踪页·概念归类/行业归类行最右侧）
       setCatColor, setCatNote, catColorPopKey, catPresetColors, toggleCatColorPop, pickPreset, clearCatColor,
-      fetchLiveBriefsForWindow, resetLiveFetch, liveFetchInfo,
+      fetchLiveBriefsForWindow, resetLiveFetch, resetThsLiveFetch, liveFetchInfo,
       loadHotData, fetchHotBoards, refreshHotStocks,
       refreshAmplitudeBoards, ampLoading, hotPanelsHidden, financePushHidden,
       // batch23（请求F）：六个子版块独立刷新按钮

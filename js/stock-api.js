@@ -5851,6 +5851,56 @@ const StockAPI = {
     , maxPages, 15, fetchVia);
   },
 
+  /**
+   * 同花顺 7×24 实时快讯（浏览器直连，CORS 已放开 access-control-allow-origin: *，无需代理/Worker）。
+   * 端点：https://news.10jqka.com.cn/tapp/news/push/stock/?page=1&tag=&track=website&pagesize=400
+   *   返回 {code,msg,time,data:{list:[{id,seq,title,digest,url,ctime,tags:[{id,name}],tag,stock:[{name,code}]}]}}
+   * 统一为每日快讯条目 [{id,time,text,url,stocks,subjects,cat}]，按北京时间倒序。
+   */
+  async fetchThsLiveBriefs(pagesize = 400) {
+    const u = 'https://news.10jqka.com.cn/tapp/news/push/stock/?page=1&tag=&track=website&pagesize=' + pagesize;
+    const ctrl = new AbortController();
+    const timer = setTimeout(() => ctrl.abort(), 12000);
+    try {
+      const resp = await fetch(u, {
+        signal: ctrl.signal, cache: 'no-store',
+        headers: {
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)',
+          'Referer': 'https://news.10jqka.com.cn/realtimenews.html'
+        }
+      });
+      if (!resp.ok) throw new Error('HTTP ' + resp.status);
+      const j = await resp.json();
+      const list = (j && j.data && Array.isArray(j.data.list)) ? j.data.list : [];
+      return this._mapThsNews(list);
+    } finally {
+      clearTimeout(timer);
+    }
+  },
+
+  /** 把同花顺 news/push/stock 的 list 映射成本应用快讯条目（与格隆汇 live 同一 time 口径：北京时间 'YYYY-MM-DD HH:mm'）。 */
+  _mapThsNews(list) {
+    const out = [];
+    if (!Array.isArray(list)) return out;
+    for (const it of list) {
+      const title = String(it.title || it.digest || '').replace(/<[^>]+>/g, '').replace(/\s+/g, ' ').trim();
+      if (!title) continue;
+      const ctime = Number(it.ctime || 0);
+      if (!ctime) continue;
+      const time = new Date((ctime + 8 * 3600) * 1000).toISOString().slice(0, 16).replace('T', ' ');
+      const stocks = Array.isArray(it.stock)
+        ? it.stock.map(s => (typeof s === 'string') ? s : ((s.name || '') + (s.code ? '(' + s.code + ')' : ''))).filter(Boolean).slice(0, 4)
+        : [];
+      const subjects = [];
+      if (it.tag) subjects.push(String(it.tag));
+      if (Array.isArray(it.tags)) it.tags.forEach(t => { const n = t && t.name; if (n) subjects.push(String(n)); });
+      const cat = (typeof HotTopics !== 'undefined' && HotTopics.classify) ? HotTopics.classify(title) : '财经';
+      out.push({ id: it.id || it.seq, time, text: title, url: it.url || '', stocks, subjects: subjects.slice(0, 4), cat });
+    }
+    out.sort((a, b) => String(b.time).localeCompare(String(a.time)));
+    return out;
+  },
+
   /** 经代理取文本（12s 超时，非 2xx 直接抛错） */
   async _proxyText(url) {    const ctrl = new AbortController();
     const timer = setTimeout(() => ctrl.abort(), 12000);
