@@ -7352,16 +7352,16 @@ const app = createApp({
       } catch (e) { showToast('东方财富人气榜刷新失败：' + (e.message || e), 'error'); }
       finally { emHotLoading.value = false; }
     }
-    /** 20261006h ⑤ 只刷新「豆包搜索热度榜」 */
+    /** 20261006h ⑤ 只刷新「豆包的新闻热度榜」（同时重算股票搜索排行榜） */
     async function refreshDoubaoOnly() {
       if (doubaoHotLoading.value) return;
       doubaoHotLoading.value = true; doubaoHotError.value = '';
-      showToast('正在刷新豆包搜索热度榜...', 'info');
+      showToast('正在刷新豆包的新闻热度榜...', 'info');
       try {
         const list = await StockAPI.getDoubaoHotStocks(D.settings.doubaoKey);
         if (list && list.length) {
           doubaoHot.value = list; D.doubaoHot = list;
-          showToast(`已刷新豆包搜索热度榜 ${list.length} 条`, 'success');
+          showToast(`已刷新豆包的新闻热度榜 ${list.length} 条`, 'success');
           ensureNameDict().then(ok => { if (ok) computeDoubaoStockRanking(); });
         } else {
           doubaoHotError.value = '豆包搜索暂未返回结果'; showToast('豆包搜索暂未返回结果', 'info');
@@ -7412,7 +7412,7 @@ const app = createApp({
         name: _codeToName[code] || code, code, count: counter[code]
       })).sort((a, b) => b.count - a.count || (a.name < b.name ? -1 : 1));
       doubaoStockRanking.value = arr;
-      doubaoStockRankNote.value = arr.length ? '' : '本次豆包搜索结果未识别出可匹配个股';
+      doubaoStockRankNote.value = arr.length ? '' : '当前时段豆包搜索结果未识别出可匹配个股';
     }
     // 启动即预热字典；字典就绪且已有豆包结果时补算一次
     ensureNameDict().then(ok => { if (ok && (doubaoHot.value || []).length) computeDoubaoStockRanking(); });

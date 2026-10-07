@@ -845,6 +845,8 @@ body {
   padding-bottom: 10px;
   border-bottom: 1px solid var(--border);
 }
+/* 豆包榜标题：强制横向、单行，避免窄列/个别浏览器下文字被竖排 */
+.doubao-title { writing-mode: horizontal-tb; text-orientation: mixed; white-space: nowrap; }
 .hot-list { display: flex; flex-direction: column; gap: 6px; max-height: 360px; overflow-y: auto; }
 .hot-item {
   display: flex;
