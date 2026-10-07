@@ -9395,7 +9395,7 @@ const app = createApp({
       thsHotStocks, thsHotLoading, refreshThsHotOnly,
       emHotStocks, emHotLoading, refreshEmHotOnly,
       doubaoHot, doubaoHotLoading, doubaoHotError, refreshDoubaoOnly,
-      doubaoStockRanking, doubaoStockRankNote,
+      doubaoStockRanking, doubaoStockRankNote, computeDoubaoStockRanking, ensureNameDict,
       doubaoKeyInput, doubaoKeyFormShow, doubaoGuideShow, doubaoKeyActive,
       toggleDoubaoKeyForm, saveDoubaoKey, clearDoubaoKey, openDoubaoGuide,
       // 全球信息页：火热话题 + 格隆汇每日快讯
