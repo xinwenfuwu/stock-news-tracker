@@ -2625,6 +2625,22 @@ const app = createApp({
       const catList = [cats.trial, cats['6m'], cats['1y'], cats['2y']];
       return { cats: cats, catList: catList, stats: stats };
     }
+    // 授权使用面板：某套餐下「已开通」的会员清单（只读展示，不再放审核/开通按钮，
+    // 因为审核与开通已统一收敛到「待审核用户」板块）。数据来自 adminClassify 的分类结果。
+    function authCatItems(plan) {
+      const ac = adminClassify();
+      return (ac.cats[plan] && ac.cats[plan].items) || [];
+    }
+    // 账户字段表（um-table）可见性：只显示已开通/授权的账号（管理员、付费会员、试用中），
+    // 屏蔽未激活的空壳测试账号（如 123 / 789 之类从未授权过的账户），让表格只呈现「开通后」的账户。
+    function isAccountShown(u) {
+      if (!u) return false;
+      if (u.role === 'admin') return true;
+      const now = Date.now();
+      if (Number(u.payMembershipUntil) > now) return true; // 付费会员
+      if (u.trialActive) return true;                      // 试用中
+      return false;
+    }
 
     // 管理员配置个人收款码（batch-A）随支付码功能删除；会员支付改为商户扫码方案。
 
@@ -9823,6 +9839,7 @@ const app = createApp({
       memberClaims, memberManual, loadMemberClaims, refreshMemberClaims, grantMemberClaim, grantMemberManual, trialUsersList, reviewClaims, umSearch, umSearchMatch,
       planAmount, planMonthsNum, planName, planMonthText, planOfUser, claimFields, trialFields, adminClassify,
       paidPlanOf, paidDateText, planCategoryText, quotaInputVal,
+      authCatItems, isAccountShown,
       showApproveCode, toggleRevealPassword, revealPendingPassword,
       copyPassword, toggleLoginLog,
       // batch16：准入码面板（管理员把授权转达给用户）
