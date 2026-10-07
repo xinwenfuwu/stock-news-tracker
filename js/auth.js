@@ -674,6 +674,7 @@
     o.registeredAt = u.createdAt || null;
     o.registerDate = u.registerDate || '';
     o.quotaMonths = u.quotaMonths || 0;
+    o.payMembershipUntil = Number(u.payMembershipUntil) || 0;   // 付费会员到期时间戳：供 planOfUser / trialUsersList 判定套餐与排除付费会员
     o.disableDate = disableDateOf(u) || '';
     o.autoDisabled = !!u.autoDisabled;
     o.disabledAt = u.disabledAt || null;

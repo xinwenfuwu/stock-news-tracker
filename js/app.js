@@ -2325,6 +2325,94 @@ const app = createApp({
       });
     }
 
+    // ===== 会员套餐映射 + 账号分类（管理员总览 / 授权使用字段）=====
+    function planAmount(plan) {
+      if (plan === '1y') return 2000;
+      if (plan === '2y') return 4000;
+      if (plan === '6m') return 1000;
+      return 0;
+    }
+    function planMonthsNum(plan) { return plan === '1y' ? 12 : (plan === '2y' ? 24 : 6); }
+    function planName(plan) {
+      return plan === '1y' ? '一年期（¥2000）' : (plan === '2y' ? '两年期（¥4000）' : '半年期（¥1000）');
+    }
+    // 由账号当前状态推断所属套餐（仅付费会员返回 6m/1y/2y，否则 null）
+    function planOfUser(u) {
+      const pmu = Number(u && u.payMembershipUntil) || 0;
+      const now = Date.now();
+      if (pmu <= now) return null;
+      if (u.quotaMonths >= 18) return '2y';
+      if (u.quotaMonths >= 9) return '1y';
+      if (u.quotaMonths > 0) return '6m';
+      const months = (pmu - now) / (30 * 24 * 60 * 60 * 1000);
+      if (months >= 18) return '2y';
+      if (months >= 9) return '1y';
+      return '6m';
+    }
+    // 把「待开通」claim 整理为展示字段：金额 / 账号名称 / 开始时间 / 结束时间 / 时段
+    function claimFields(c) {
+      const plan = c.plan || '6m';
+      const months = planMonthsNum(plan);
+      const startTs = Number(c.ts) || 0;
+      const endTs = startTs + months * 30 * 24 * 60 * 60 * 1000;
+      return {
+        金额: '¥' + planAmount(plan),
+        账号名称: c.user,
+        开始时间: startTs ? fmtDateTime(startTs) : '—',
+        结束时间: startTs ? fmtDateTime(endTs) : '—',
+        时段: planName(plan)
+      };
+    }
+    // 把试用用户整理为展示字段
+    function trialFields(u) {
+      const endTs = Number(u.trialUntil) || 0;
+      const days = Number(u.trialDays) || 0;
+      const startTs = endTs - days * 24 * 60 * 60 * 1000;
+      return {
+        金额: '免费（非支付会员）',
+        账号名称: u.username,
+        开始时间: startTs > 0 ? fmtDateTime(startTs) : '—',
+        结束时间: endTs ? fmtDateTime(endTs) : '—',
+        时段: '试用' + days + '天'
+      };
+    }
+    // 管理员总览：所有账号按会员类型精准分类 + 汇总统（分类和统计分析）
+    function adminClassify() {
+      const list = (userList.value || []);
+      const cats = {
+        trial: { key: 'trial', label: '授权免费试用（非支付会员用户）', amount: 0, items: [] },
+        '6m': { key: '6m', label: '半年期（¥1000）', amount: 1000, items: [] },
+        '1y': { key: '1y', label: '一年期（¥2000）', amount: 2000, items: [] },
+        '2y': { key: '2y', label: '两年期（¥4000）', amount: 4000, items: [] },
+        pending: { key: 'pending', label: '待审核', amount: 0, items: [] },
+        admin: { key: 'admin', label: '管理员', amount: 0, items: [] }
+      };
+      for (const u of list) {
+        if (u.role === 'admin') { cats.admin.items.push({ 账号名称: u.username, 角色: '管理员', 状态: u.statusName || u.status }); continue; }
+        if (u.status === 'pending') { cats.pending.items.push({ 账号名称: u.username, 角色: '普通用户', 状态: '待审核' }); continue; }
+        const plan = planOfUser(u);
+        if (plan) {
+          const pmu = Number(u.payMembershipUntil) || 0;
+          const ms = planMonthsNum(plan) * 30 * 24 * 60 * 60 * 1000;
+          cats[plan].items.push(claimFields({ user: u.username, plan: plan, ts: pmu - ms }));
+        } else if (u.trialActive) {
+          cats.trial.items.push(trialFields(u));
+        } else {
+          cats.trial.items.push({ 金额: '免费（非支付会员）', 账号名称: u.username, 开始时间: '—', 结束时间: '—', 时段: '未开通试用（非支付会员）' });
+        }
+      }
+      const stats = {
+        total: list.length,
+        paidCount: cats['6m'].items.length + cats['1y'].items.length + cats['2y'].items.length,
+        trialCount: cats.trial.items.length,
+        pendingCount: cats.pending.items.length,
+        adminCount: cats.admin.items.length,
+        revenue: cats['6m'].items.length * 1000 + cats['1y'].items.length * 2000 + cats['2y'].items.length * 4000
+      };
+      const catList = [cats.trial, cats['6m'], cats['1y'], cats['2y']];
+      return { cats: cats, catList: catList, stats: stats };
+    }
+
     // 管理员配置个人收款码（batch-A）随支付码功能删除；会员支付改为商户扫码方案。
 
     // 暴露给登录流程（auth-boot.js）在登录成功后做会员状态同步
@@ -9519,6 +9607,7 @@ const app = createApp({
       loadRemotePending, approveRemoteByAdmin, rejectRemoteByAdmin, syncAllToRegistryByAdmin,
       // batch-A：会员后台（个人码方案）
       memberClaims, memberManual, loadMemberClaims, grantMemberClaim, grantMemberManual, trialUsersList,
+      planAmount, planMonthsNum, planName, planOfUser, claimFields, trialFields, adminClassify,
       showApproveCode, toggleRevealPassword, revealPendingPassword,
       copyPassword, toggleLoginLog,
       // batch16：准入码面板（管理员把授权转达给用户）

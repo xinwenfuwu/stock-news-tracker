@@ -3457,3 +3457,17 @@ body.guest-mode #app { display: none; }
   transition: background .15s ease, transform .15s ease;
 }
 .back-top-btn:hover { background: #eef3fc; transform: translateY(-2px); }
+
+/* ===== 用户管理 · 管理员总览（分类 + 统计） ===== */
+.um-stats { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 16px; }
+.um-stat { flex: 1 1 120px; min-width: 110px; border: 1px solid var(--border); border-radius: var(--radius); padding: 12px 14px; background: var(--surface-alt); text-align: center; }
+.um-stat-num { display: block; font-size: 22px; font-weight: 700; color: var(--text); line-height: 1.2; }
+.um-stat-lbl { display: block; font-size: 12px; color: var(--text-placeholder); margin-top: 4px; }
+.um-stat-rev .um-stat-num { color: #b45309; }
+.um-cat { border: 1px solid var(--border); border-radius: var(--radius); margin-bottom: 14px; overflow: hidden; background: var(--surface); }
+.um-cat-head { display: flex; justify-content: space-between; align-items: center; padding: 10px 14px; background: var(--surface-alt); font-weight: 600; color: var(--text); border-bottom: 1px solid var(--border); }
+.um-cat-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.um-cat-table th, .um-cat-table td { padding: 7px 12px; border-bottom: 1px solid var(--border); text-align: left; }
+.um-cat-table th { background: var(--surface-alt); color: var(--text-secondary); font-weight: 600; }
+.um-cat-table tr:last-child td { border-bottom: none; }
+.um-pending-meta b { color: var(--text-placeholder); font-weight: 600; margin-right: 2px; }

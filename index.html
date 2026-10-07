@@ -4,12 +4,12 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>股市信息分析系统</title>
-  <link rel="stylesheet" href="css/style.css?v=20261007l">
+  <link rel="stylesheet" href="css/style.css?v=20261007m">
   <!-- Vue 3 全局构建版（v3.4.21 · 自托管）
        原先走 unpkg.com CDN：国内网络对 unpkg 的连通性不稳定，一旦该请求长时间挂起，
        <head> 里的阻塞脚本会让整页停在白屏、后续 auth-boot.js 根本不会执行。
        改为同源托管后，启动链路不再依赖任何第三方 CDN。 -->
-  <script src="js/vue.global.prod.js?v=20261007l"></script>
+  <script src="js/vue.global.prod.js?v=20261007m"></script>
 </head>
 <body class="auth-locked">
   <!-- ===== 登录关卡：登录通过前业务脚本不会被加载 ===== -->
@@ -4386,6 +4386,7 @@
         </div>
         <div class="um-layout">
           <div class="um-tabs">
+            <button class="um-tab" :class="{active: umTab==='admin'}" @click="umTab='admin'">管理员</button>
             <button class="um-tab" :class="{active: umTab==='register'}" @click="umTab='register'">普通用户注册</button>
             <button class="um-tab" :class="{active: umTab==='auth'}" @click="umTab='auth'">授权使用</button>
           </div>
@@ -4481,6 +4482,45 @@
           </div>
           </div><!-- /um-panel register -->
 
+          <!-- ============ 板块：管理员（所有账号分类 + 统计） ============ -->
+          <div class="um-panel" v-if="umTab==='admin'">
+          <div class="um-section">
+            <div class="um-section-head">
+              <h4>管理员 · 全账号分类与统计</h4>
+              <span class="um-section-desc">按会员类型对所有账号精准分类，并汇总金额与人数统计；金额、账号名称、开始时间、结束时间、时段均按返回信息记录。</span>
+            </div>
+
+            <!-- 统计概览 -->
+            <div class="um-stats" v-if="adminClassify().stats">
+              <div class="um-stat"><span class="um-stat-num">{{ adminClassify().stats.total }}</span><span class="um-stat-lbl">账号总数</span></div>
+              <div class="um-stat"><span class="um-stat-num">{{ adminClassify().stats.paidCount }}</span><span class="um-stat-lbl">付费会员</span></div>
+              <div class="um-stat"><span class="um-stat-num">{{ adminClassify().stats.trialCount }}</span><span class="um-stat-lbl">免费试用</span></div>
+              <div class="um-stat um-stat-rev"><span class="um-stat-num">¥{{ adminClassify().stats.revenue }}</span><span class="um-stat-lbl">累计应收</span></div>
+              <div class="um-stat"><span class="um-stat-num">{{ adminClassify().stats.pendingCount }}</span><span class="um-stat-lbl">待审核</span></div>
+              <div class="um-stat"><span class="um-stat-num">{{ adminClassify().stats.adminCount }}</span><span class="um-stat-lbl">管理员</span></div>
+            </div>
+
+            <!-- 四分类表格 -->
+            <div class="um-cat" v-for="cat in adminClassify().catList" :key="cat.key">
+              <div class="um-cat-head">
+                <span>{{ cat.label }}</span>
+                <span class="um-pending-count">{{ cat.items.length }} 人 · 金额 ¥{{ cat.amount }}</span>
+              </div>
+              <table class="um-cat-table" v-if="cat.items.length">
+                <thead><tr><th>金额</th><th>账号名称</th><th>开始时间</th><th>结束时间</th><th>时段</th></tr></thead>
+                <tbody>
+                  <tr v-for="(it, i) in cat.items" :key="cat.key + '-' + i">
+                    <td>{{ it['金额'] }}</td><td>{{ it['账号名称'] }}</td><td>{{ it['开始时间'] }}</td><td>{{ it['结束时间'] }}</td><td>{{ it['时段'] }}</td>
+                  </tr>
+                </tbody>
+              </table>
+              <div class="um-empty" v-else>暂无</div>
+            </div>
+
+            <div class="um-hint">说明：付费会员按套餐（半年¥1000 / 一年¥2000 / 两年¥4000）归类；普通用户未支付会员归入「授权免费试用」；待审核与管理员账号单列统计。「累计应收」= 各付费分类人数 × 对应金额。</div>
+          </div>
+          </div><!-- /um-panel admin -->
+
           <!-- ============ 授权使用面板 ============ -->
           <div class="um-panel" v-if="umTab==='auth'">
           <div class="um-section" v-if="umAuth==='6m'">
@@ -4500,8 +4540,7 @@
               <div class="um-pending-item" v-for="c in claimsOfPlan('6m')" :key="c.id || (c.user + '-' + c.ts)">
                 <div class="um-pending-main">
                   <span class="um-name">{{ c.user }}</span>
-                  <span class="um-pending-meta">半年期（¥1000）</span>
-                  <span class="um-pending-meta">提交于 {{ fmtDateTime(c.ts) }}</span>
+                  <span class="um-pending-meta" v-for="(val, key) in claimFields(c)" :key="key"><b>{{ key }}：</b>{{ val }}</span>
                 </div>
                 <div class="um-actions">
                   <button class="btn btn-sm btn-primary" @click="grantMemberClaim(c)">核对并开通</button>
@@ -4524,8 +4563,7 @@
               <div class="um-pending-item" v-for="u in trialUsersList()" :key="u.username">
                 <div class="um-pending-main">
                   <span class="um-name">{{ u.username }}</span>
-                  <span class="um-pending-meta">试用 {{ u.trialDays }} 天</span>
-                  <span class="um-pending-meta">至 {{ u.trialUntilText }}</span>
+                  <span class="um-pending-meta" v-for="(val, key) in trialFields(u)" :key="key"><b>{{ key }}：</b>{{ val }}</span>
                 </div>
                 <div class="um-actions">
                   <button class="btn btn-sm" @click="revokeUserTrial(u)">撤销试用</button>
@@ -4550,8 +4588,7 @@
               <div class="um-pending-item" v-for="c in claimsOfPlan('1y')" :key="c.id || (c.user + '-' + c.ts)">
                 <div class="um-pending-main">
                   <span class="um-name">{{ c.user }}</span>
-                  <span class="um-pending-meta">一年期（¥2000）</span>
-                  <span class="um-pending-meta">提交于 {{ fmtDateTime(c.ts) }}</span>
+                  <span class="um-pending-meta" v-for="(val, key) in claimFields(c)" :key="key"><b>{{ key }}：</b>{{ val }}</span>
                 </div>
                 <div class="um-actions">
                   <button class="btn btn-sm btn-primary" @click="grantMemberClaim(c)">核对并开通</button>
@@ -4576,8 +4613,7 @@
               <div class="um-pending-item" v-for="c in claimsOfPlan('2y')" :key="c.id || (c.user + '-' + c.ts)">
                 <div class="um-pending-main">
                   <span class="um-name">{{ c.user }}</span>
-                  <span class="um-pending-meta">两年期（¥4000）</span>
-                  <span class="um-pending-meta">提交于 {{ fmtDateTime(c.ts) }}</span>
+                  <span class="um-pending-meta" v-for="(val, key) in claimFields(c)" :key="key"><b>{{ key }}：</b>{{ val }}</span>
                 </div>
                 <div class="um-actions">
                   <button class="btn btn-sm btn-primary" @click="grantMemberClaim(c)">核对并开通</button>
@@ -4593,7 +4629,7 @@
 
           <!-- 板块③ 支付码（个人收款码功能）已按需求删除 -->
 
-          <table class="um-table" v-if="userList.length">
+          <table class="um-table" v-if="userList.length && umTab !== 'admin'">
             <thead>
               <tr>
                 <th>用户名</th><th>角色</th><th>状态</th>
@@ -4823,14 +4859,14 @@
     </transition>
   </div>
 
-  <script src="js/auth.js?v=20261007l"></script>
-  <script src="js/auth-sync.js?v=20261007l"></script>
+  <script src="js/auth.js?v=20261007m"></script>
+  <script src="js/auth-sync.js?v=20261007m"></script>
   <!-- 边缘加速默认站点（batch37 治本：Cloudflare Worker 代理东财/腾讯，缓解 JSONP 限流误报）。
        若你所在地区 workers.dev 访问慢，可在「设置 → 行情加速地址」清空即恢复纯直连。 -->
   <script>window.__SNT_ACCEL__ = 'https://sichina.dpdns.org';</script>
   <!-- 扫码支付二维码渲染库（第三方 qrcodejs，本地托管避免外链失效）。renderQr 会先检测全局 QRCode 是否存在。 -->
-  <script src="assets/qrcode.min.js?v=20261007l"></script>
-  <script src="js/auth-boot.js?v=20261007l"></script>
+  <script src="assets/qrcode.min.js?v=20261007m"></script>
+  <script src="js/auth-boot.js?v=20261007m"></script>
   <!-- store / stock-api / hot-topics / app 由 auth-boot.js 在登录通过后动态装载，
        未登录时它们不会被下载，业务数据也不会进入内存 -->
 </body>
