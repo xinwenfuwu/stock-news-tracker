@@ -7227,7 +7227,7 @@ const app = createApp({
           withTimeout(StockAPI.getNewListedStocks()),
           withTimeout(StockAPI.getThsHotStocks()),
           withTimeout(StockAPI.getEmHotStocks()),
-          withTimeout(StockAPI.getDoubaoHotStocks().catch(e => { doubaoHotError.value = e.message || String(e); return null; }))
+          withTimeout(StockAPI.getDoubaoHotStocks(D.settings.doubaoKey).catch(e => { doubaoHotError.value = e.message || String(e); return null; }))
         ]);
         // 各路独立落盘：某一路接口限流返回空时保留旧数据，避免「刷新一次反而清空已有内容」
         if (boards && boards.length) { hotBoards.value = boards; D.hotBoards = boards; }
@@ -7280,6 +7280,27 @@ const app = createApp({
     const doubaoHot = ref([]);
     const doubaoHotLoading = ref(false);
     const doubaoHotError = ref('');
+
+    // ============ 豆包榜「用户自带 Key」：每用户各自消耗自己账户 500 次/月免费额度 ============
+    const doubaoKeyInput = ref('');        // 输入框临时值（不进 localStorage，保存时才写 D.settings.doubaoKey）
+    const doubaoKeyFormShow = ref(false);  // 内联 Key 表单展开/收起
+    const doubaoGuideShow = ref(false);    // 「如何获取 Key」教程弹窗
+    const doubaoKeyActive = computed(() => !!(D.settings.doubaoKey && D.settings.doubaoKey.trim()));
+    function toggleDoubaoKeyForm() {
+      doubaoKeyFormShow.value = !doubaoKeyFormShow.value;
+      if (doubaoKeyFormShow.value) doubaoKeyInput.value = D.settings.doubaoKey || '';
+    }
+    function saveDoubaoKey() {
+      const v = (doubaoKeyInput.value || '').trim();
+      D.settings.doubaoKey = v; Store.save(); doubaoKeyFormShow.value = false;
+      if (v) { showToast('已保存你的专属 Key，豆包榜将使用你的额度', 'success'); refreshDoubaoOnly(); }
+      else showToast('已清除专属 Key，将使用共享额度', 'info');
+    }
+    function clearDoubaoKey() {
+      D.settings.doubaoKey = ''; doubaoKeyInput.value = ''; Store.save();
+      showToast('已清除专属 Key，将使用共享额度', 'info');
+    }
+    function openDoubaoGuide() { doubaoGuideShow.value = true; }
 
     /** ① 只刷新「当日热门板块」 */
     async function refreshHotBoardsOnly() {
@@ -7337,7 +7358,7 @@ const app = createApp({
       doubaoHotLoading.value = true; doubaoHotError.value = '';
       showToast('正在刷新豆包搜索热度榜...', 'info');
       try {
-        const list = await StockAPI.getDoubaoHotStocks();
+        const list = await StockAPI.getDoubaoHotStocks(D.settings.doubaoKey);
         if (list && list.length) {
           doubaoHot.value = list; D.doubaoHot = list;
           showToast(`已刷新豆包搜索热度榜 ${list.length} 条`, 'success');
@@ -9328,6 +9349,8 @@ const app = createApp({
       thsHotStocks, thsHotLoading, refreshThsHotOnly,
       emHotStocks, emHotLoading, refreshEmHotOnly,
       doubaoHot, doubaoHotLoading, doubaoHotError, refreshDoubaoOnly,
+      doubaoKeyInput, doubaoKeyFormShow, doubaoGuideShow, doubaoKeyActive,
+      toggleDoubaoKeyForm, saveDoubaoKey, clearDoubaoKey, openDoubaoGuide,
       // 全球信息页：火热话题 + 格隆汇每日快讯
       hotTopicsSources, hotTopicsMerged, hotTopicsLoading, hotTopicsUpdated, refreshHotTopics,
       dailyWinStart, dailyWinEnd, dailyWinText, refreshDailyTopics, resetDailyWin,

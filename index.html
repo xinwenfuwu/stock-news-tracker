@@ -4,12 +4,12 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>股市信息分析系统</title>
-  <link rel="stylesheet" href="css/style.css?v=20261006j">
+  <link rel="stylesheet" href="css/style.css?v=20261007a">
   <!-- Vue 3 全局构建版（v3.4.21 · 自托管）
        原先走 unpkg.com CDN：国内网络对 unpkg 的连通性不稳定，一旦该请求长时间挂起，
        <head> 里的阻塞脚本会让整页停在白屏、后续 auth-boot.js 根本不会执行。
        改为同源托管后，启动链路不再依赖任何第三方 CDN。 -->
-  <script src="js/vue.global.prod.js?v=20261006j"></script>
+  <script src="js/vue.global.prod.js?v=20261007a"></script>
 </head>
 <body class="auth-locked">
   <!-- ===== 登录关卡：登录通过前业务脚本不会被加载 ===== -->
@@ -1663,6 +1663,29 @@
           </div>
         </div>
 
+        <!-- 豆包榜：如何获取火山引擎联网搜索 Key 教程弹窗 -->
+        <div class="modal-overlay" v-if="doubaoGuideShow" @click.self="doubaoGuideShow = false">
+          <div class="modal notice-modal" style="max-width:720px">
+            <div class="modal-header">
+              <h3>📖 如何获取火山引擎「联网搜索」API Key</h3>
+              <button class="btn-icon" @click="doubaoGuideShow = false" title="关闭">✕</button>
+            </div>
+            <div class="notice-body" style="max-height:72vh;overflow:auto">
+              <p>豆包搜索热度榜默认使用<b>管理员共享额度</b>。若想用自己的额度（火山引擎账户每月 500 次免费调用），按下面步骤获取你自己的 Key，再在面板里点「🔑 设置我的 Key」一键填入即可。</p>
+              <div class="guide-step"><span class="guide-idx">1</span><div><b>打开火山引擎控制台</b><br/>浏览器访问 <code>https://console.volcengine.com/</code>，用你的火山引擎账号登录（没有就先用手机号注册）。</div></div>
+              <div class="guide-step"><span class="guide-idx">2</span><div><b>进入「联网搜索」产品</b><br/>顶部搜索框输入「联网搜索」，或在产品列表里找到「豆包搜索 / 联网搜索」，点进去。</div></div>
+              <div class="guide-step"><span class="guide-idx">3</span><div><b>开通服务</b><br/>首次进入会提示开通，点「开通」即可。<b>有免费额度</b>：每个账户每月 500 次免费调用，超出后按量计费（很便宜），可在账户里设置额度告警。</div></div>
+              <div class="guide-step"><span class="guide-idx">4</span><div><b>创建 API Key</b><br/>在左侧/顶部找到「API Key 管理」→ 点「创建 API Key」（按量后付费）→ 复制生成的 Key。</div></div>
+              <div class="guide-step guide-warn"><span class="guide-idx">!</span><div><b>注意 Key 类型</b><br/>要拿「<b>联网搜索 / 豆包搜索</b>」控制台的 Key；<b>不要</b>用方舟（ARK）的 <code>ark-</code> 开头 Key，那是给大模型用的，对不上这个搜索接口会报 invalid key。</div></div>
+              <div class="guide-step"><span class="guide-idx">5</span><div><b>回到本工具填入</b><br/>关闭本弹窗 → 在「🔍 豆包搜索热度榜」面板点「🔑 设置我的 Key」→ 粘贴 Key → 点「保存」。保存后该榜单即走你的额度，Key 只存在你本机浏览器，<b>不会上传到任何服务器</b>。</div></div>
+              <p class="muted small">提示：Key 仅保存在你当前设备的浏览器本地存储中。换设备 / 清理浏览器缓存后需重新填入。管理员看不到你的 Key。</p>
+            </div>
+            <div class="modal-actions">
+              <button class="btn btn-primary" @click="doubaoGuideShow = false">我知道了</button>
+            </div>
+          </div>
+        </div>
+
         <!-- 本地数据管理弹窗（入口在「用户须知」左侧） -->
         <div class="modal-overlay" v-if="localDataModal.show" @click.self="localDataModal.show = false">
           <div class="modal ld-modal">
@@ -2851,10 +2874,24 @@
             <div class="hot-panel">
               <div class="panel-title-row">
                 <h3 class="panel-title" style="margin:0">🔍 豆包搜索热度榜</h3>
+                <span class="doubao-mode-badge" v-if="doubaoKeyActive" title="正在使用你自己的火山引擎 Key，消耗你账户额度">✅ 我的Key</span>
+                <span class="doubao-mode-badge muted" v-else title="使用管理员共享额度">📡 共享额度</span>
                 <button class="btn btn-sm" @click="refreshDoubaoOnly" :disabled="doubaoHotLoading" title="刷新豆包搜索股票热度榜（实时搜索结果，按相关度排序）">
                   <span v-if="doubaoHotLoading">⏳ 刷新中...</span>
                   <span v-else>🔄 刷新数据</span>
                 </button>
+                <button class="btn btn-sm" @click="toggleDoubaoKeyForm" :title="doubaoKeyFormShow ? '收起' : '设置你自己的火山引擎联网搜索 Key'">🔑 {{ doubaoKeyFormShow ? '收起' : '设置我的Key' }}</button>
+                <button class="btn btn-sm" @click="openDoubaoGuide" title="查看如何获取火山引擎联网搜索 Key">📖 如何获取</button>
+              </div>
+
+              <!-- 用户自带 Key 表单（内联，仅存本地 localStorage，不传服务器） -->
+              <div class="doubao-key-form" v-if="doubaoKeyFormShow">
+                <p class="muted small">填入你自己的火山引擎「联网搜索」API Key，豆包榜将走你的账户额度（每月 500 次免费），<b>不经过任何服务器存储</b>。留空则使用共享额度。</p>
+                <div class="doubao-key-row">
+                  <input class="doubao-key-input" type="password" v-model="doubaoKeyInput" placeholder="粘贴火山引擎「联网搜索」API Key（sk-... 或一长串字符）" @keyup.enter="saveDoubaoKey" />
+                  <button class="btn btn-sm btn-primary" @click="saveDoubaoKey">保存</button>
+                  <button class="btn btn-sm" @click="clearDoubaoKey" :disabled="!doubaoKeyActive" title="清除后改用共享额度">清除</button>
+                </div>
               </div>
               <div class="hot-list" v-if="doubaoHot.length">
                 <a class="hot-item" v-for="(r, i) in doubaoHot" :key="i" :href="r.url" target="_blank" rel="noopener"
@@ -4798,14 +4835,14 @@
     </transition>
   </div>
 
-  <script src="js/auth.js?v=20261006j"></script>
-  <script src="js/auth-sync.js?v=20261006j"></script>
+  <script src="js/auth.js?v=20261007a"></script>
+  <script src="js/auth-sync.js?v=20261007a"></script>
   <!-- 边缘加速默认站点（batch37 治本：Cloudflare Worker 代理东财/腾讯，缓解 JSONP 限流误报）。
        若你所在地区 workers.dev 访问慢，可在「设置 → 行情加速地址」清空即恢复纯直连。 -->
   <script>window.__SNT_ACCEL__ = 'https://sichina.dpdns.org';</script>
   <!-- 扫码支付二维码渲染库（第三方 qrcodejs，本地托管避免外链失效）。renderQr 会先检测全局 QRCode 是否存在。 -->
-  <script src="assets/qrcode.min.js?v=20261006j"></script>
-  <script src="js/auth-boot.js?v=20261006j"></script>
+  <script src="assets/qrcode.min.js?v=20261007a"></script>
+  <script src="js/auth-boot.js?v=20261007a"></script>
   <!-- store / stock-api / hot-topics / app 由 auth-boot.js 在登录通过后动态装载，
        未登录时它们不会被下载，业务数据也不会进入内存 -->
 </body>

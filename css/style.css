@@ -1376,6 +1376,69 @@ body {
 .web-search-btn:hover { filter: brightness(1.08); color: #fff; }
 .web-search-input { min-width: 190px; }
 
+/* ---- 豆包榜：用户自带 Key 控件（20261007a） ---- */
+.doubao-mode-badge {
+  font-size: 12px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: rgba(34, 197, 94, 0.16);
+  color: #16a34a;
+  white-space: nowrap;
+}
+.doubao-mode-badge.muted {
+  background: var(--surface-alt, #eee);
+  color: var(--muted, #888);
+}
+.doubao-key-form {
+  margin: 8px 0 4px;
+  padding: 10px 12px;
+  background: var(--surface-alt, #f6f7f9);
+  border-radius: 8px;
+  border: 1px solid var(--border, #e5e7eb);
+}
+.doubao-key-row {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 6px;
+}
+.doubao-key-input {
+  flex: 1 1 240px;
+  min-width: 0;
+  padding: 7px 10px;
+  border: 1px solid var(--border, #e5e7eb);
+  border-radius: 6px;
+  background: var(--surface, #fff);
+  color: var(--text, #222);
+  font-size: 13px;
+}
+/* 教程弹窗步骤（20261007a） */
+.guide-step {
+  display: flex;
+  gap: 10px;
+  margin: 10px 0;
+  line-height: 1.6;
+}
+.guide-idx {
+  flex: 0 0 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--accent, #3d7eff);
+  color: #fff;
+  font-size: 12px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.guide-warn .guide-idx { background: #f59e0b; }
+.guide-step code {
+  background: var(--surface-alt, #f0f0f0);
+  padding: 1px 5px;
+  border-radius: 4px;
+  font-size: 12px;
+}
+
 /* ---- 热门板块：载入前的「去除股票」选项弹窗 ---- */
 .hot-exclude-modal { max-width: 520px; }
 .hot-exclude-opts {

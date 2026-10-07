@@ -51,7 +51,8 @@ const Store = {
         // AI 解读（可选）：OpenAI 兼容接口，浏览器端调用，密钥仅存本地
         aiEndpoint: '',          // 如 https://api.deepseek.com/v1/chat/completions
         aiKey: '',               // 用户自己的 LLM API Key（仅存本地 localStorage）
-        aiModel: ''              // 模型名，如 deepseek-chat
+        aiModel: '',             // 模型名，如 deepseek-chat
+        doubaoKey: ''            // 用户自己的火山引擎「联网搜索」API Key（仅存本地 localStorage，不传服务器；填入后豆包榜走各自账户 500 次/月免费额度）
       }
     };
   },
@@ -170,6 +171,7 @@ const Store = {
     if (!this.data.settings.proxyUrl) this.data.settings.proxyUrl = '';
     if (typeof this.data.settings.aiEndpoint !== 'string') this.data.settings.aiEndpoint = '';
     if (typeof this.data.settings.aiKey !== 'string') this.data.settings.aiKey = '';
+    if (typeof this.data.settings.doubaoKey !== 'string') this.data.settings.doubaoKey = '';
     if (typeof this.data.settings.aiModel !== 'string') this.data.settings.aiModel = '';
     // 快讯来源名（可在「全球信息」页右栏标题上改）与分类维度（题材/概念/行业）
     if (typeof this.data.settings.briefSource !== 'string' || !this.data.settings.briefSource.trim()) {

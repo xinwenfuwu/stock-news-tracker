@@ -2812,9 +2812,13 @@ const StockAPI = {
       return (j && j.list) ? j.list : [];
     } catch (e) { console.warn('东方财富人气榜获取失败', e); return []; }
   },
-  /** 豆包搜索热度榜：Worker 调豆包 Web 搜索 API（需 DOUBAO_API_KEY），返回 {list:[{rank,title,site,url,snippet}]} */
-  async getDoubaoHotStocks() {
-    const r = await fetch(this._rankBase() + '/rank/doubao', { cache: 'no-store' });
+  /** 豆包搜索热度榜：Worker 调豆包 Web 搜索 API。
+   *  @param {string} [doubaoKey] 普通用户自带 Key（可选）；传入时通过 X-Doubao-Key 头带给 Worker，各自消耗自己账户 500 次/月免费额度；不传则用 Worker 共享额度。 */
+  async getDoubaoHotStocks(doubaoKey) {
+    const opts = { cache: 'no-store' };
+    const k = (doubaoKey || '').trim();
+    if (k) opts.headers = { 'X-Doubao-Key': k };
+    const r = await fetch(this._rankBase() + '/rank/doubao', opts);
     if (!r.ok) {
       let msg = '豆包搜索榜获取失败(' + r.status + ')';
       try { const j = await r.json(); if (j && j.error) msg = j.error; } catch (e) {}
