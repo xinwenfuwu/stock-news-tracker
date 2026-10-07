@@ -4,12 +4,12 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>股市信息分析系统</title>
-  <link rel="stylesheet" href="css/style.css?v=20261006h">
+  <link rel="stylesheet" href="css/style.css?v=20261006i">
   <!-- Vue 3 全局构建版（v3.4.21 · 自托管）
        原先走 unpkg.com CDN：国内网络对 unpkg 的连通性不稳定，一旦该请求长时间挂起，
        <head> 里的阻塞脚本会让整页停在白屏、后续 auth-boot.js 根本不会执行。
        改为同源托管后，启动链路不再依赖任何第三方 CDN。 -->
-  <script src="js/vue.global.prod.js?v=20261006h"></script>
+  <script src="js/vue.global.prod.js?v=20261006i"></script>
 </head>
 <body class="auth-locked">
   <!-- ===== 登录关卡：登录通过前业务脚本不会被加载 ===== -->
@@ -1567,32 +1567,8 @@
                   <span class="muted small">已选：{{ planLabel(membershipModal.plan) }}</span>
                 </div>
 
-                <!-- 个人收款码方案（免费，无需商户资质） -->
-                <div class="membership-pay" v-if="membershipModal.mode === 'personal'">
-                  <div class="qr-row" v-if="membershipConfig.qrData">
-                    <div class="qr-box qr-box-wide">
-                      <div class="qr-cap">个人微信收款码（扫码支付）</div>
-                      <img :src="membershipConfig.qrData" alt="个人微信收款码" class="qr-pay-img qr-pay-img-lg">
-                    </div>
-                  </div>
-                  <p class="muted small" v-if="membershipModal.plan === '6m'">请扫码支付 <b>¥1000</b>（6 个月会员）</p>
-                  <p class="muted small" v-else-if="membershipModal.plan === '1y'">请扫码支付 <b>¥2000</b>（1 年会员）</p>
-                  <p class="muted small" v-else>请扫码支付 <b>¥4000</b>（2 年会员）</p>
-                  <p class="muted small" v-if="membershipConfig.note">{{ membershipConfig.note }}</p>
-                  <p class="pay-warn" v-if="!membershipModal.claimed">⚠ 如未支付勿点击「我已支付」</p>
-                  <div class="pay-actions">
-                    <button class="btn" :disabled="membershipModal.loading" @click="backToPlans">未支付，返回</button>
-                    <button class="btn btn-primary" :disabled="membershipModal.loading || membershipModal.claimed" @click="submitMemberClaim()">
-                      {{ membershipModal.loading ? '提交中…' : (membershipModal.claimed ? '已提交，等待开通' : '我已支付，请求核对开通') }}
-                    </button>
-                  </div>
-                  <p class="error small" v-if="membershipModal.error">{{ membershipModal.error }}</p>
-                  <p class="muted small" v-if="membershipModal.claimMsg">{{ membershipModal.claimMsg }}</p>
-                  <p class="muted small" v-if="!membershipConfig.qrData">管理员尚未配置个人收款码，请联系管理员。</p>
-                </div>
-
                 <!-- 商户方案（微信/支付宝扫码，自动回调授权） -->
-                <div class="membership-pay" v-else>
+                <div class="membership-pay">
                   <button class="btn btn-primary" :disabled="membershipModal.loading" @click="genPayQr()">
                     {{ membershipModal.loading ? '正在生成收款码…' : '生成收款码（微信 / 支付宝）' }}
                   </button>
@@ -2972,7 +2948,7 @@
               <div class="muted small" v-else>点击「获取热门板块」加载</div>
             </div>
 
-            <!-- 同花顺热度股票排行榜（20261006h）：反代 dq.10jqka.com.cn 热股榜 -->
+            <!-- 同花顺热度股票排行榜（20261006i）：反代 dq.10jqka.com.cn 热股榜 -->
             <div class="hot-panel">
               <div class="panel-title-row">
                 <h3 class="panel-title" style="margin:0">🟠 同花顺热度榜</h3>
@@ -2993,7 +2969,7 @@
               <div class="muted small" v-else>点击「获取热门板块」或右侧「刷新数据」加载</div>
             </div>
 
-            <!-- 东方财富热度股票排行榜（20261006h）：反代 emappdata 人气榜 -->
+            <!-- 东方财富热度股票排行榜（20261006i）：反代 emappdata 人气榜 -->
             <div class="hot-panel">
               <div class="panel-title-row">
                 <h3 class="panel-title" style="margin:0">🟢 东方财富人气榜</h3>
@@ -4226,13 +4202,6 @@
             <label>GitHub 令牌（仅管理员 · 用于把账号写入云端注册表）细粒度令牌，仅授权本仓库 <code>xinwenfuwu/stock-news-tracker</code> 的 Contents 读写即可。普通用户无需填写——他们只需在登录页输入账号密码。</label>
             <input type="password" v-model="authAdminToken" placeholder="ghp_... 或 github_pat_...">
           </div>
-          <div class="form-row" v-if="authUser && authUser.role === 'admin'">
-            <label>个人微信收款码（会员免费方案 · 可选）上传一张你的个人微信收款码图片，用户端「会员服务」弹窗会展示它，扫码付款后提交开通申请，你在「用户管理 → 会员待开通」里核对后一键开通。仅管理员可配置，存入仓库公开文件 <code>data/membership/config.json</code>。</label>
-            <input type="file" accept="image/*" @change="onMembershipQrChange">
-            <input v-model="membershipQrNote" placeholder="收款备注（可选，如「付款请备注用户名」）">
-            <button class="btn btn-sm btn-primary" @click="saveMembershipQr">保存收款码到仓库</button>
-            <p class="muted small" v-if="membershipConfig.qrData">当前已配置收款码（用户端会员弹窗可见）。</p>
-          </div>
           <div class="form-row">
             <label>数据存储</label>
             <div class="storage-info">
@@ -4384,13 +4353,24 @@
     </div>
 
     <!-- ===== 用户管理模态框（仅管理员可见） ===== -->
-    <div class="modal-overlay" v-if="userModal.show" @click.self="userModal.show = false">
+    <div class="modal-overlay um-overlay" v-if="userModal.show" @click.self="userModal.show = false">
       <div class="modal modal-um">
         <div class="modal-header">
           <h3>👤 用户管理</h3>
           <button class="btn-icon" @click="userModal.show = false">✕</button>
         </div>
-        <div class="modal-body">
+        <div class="um-layout">
+          <div class="um-tabs">
+            <button class="um-tab" :class="{active: umTab==='register'}" @click="umTab='register'">普通用户注册</button>
+            <button class="um-tab" :class="{active: umTab==='auth'}" @click="umTab='auth'">授权使用</button>
+          </div>
+          <div class="um-subtabs" v-if="umTab==='auth'">
+            <button class="um-tab um-subtab" :class="{active: umAuth==='trial'}" @click="umAuth='trial'">授权免费试用（非支付会员用户）</button>
+            <button class="um-tab um-subtab" :class="{active: umAuth==='6m'}" @click="umAuth='6m'">半年期（¥1000）待开通</button>
+            <button class="um-tab um-subtab" :class="{active: umAuth==='1y'}" @click="umAuth='1y'">一年期（¥2000）待开通</button>
+            <button class="um-tab um-subtab" :class="{active: umAuth==='2y'}" @click="umAuth='2y'">两年期（¥4000）待开通</button>
+          </div>
+          <div class="um-content">
           <!-- ============ 板块①：普通用户注册 ============ -->
           <div class="um-section">
             <div class="um-section-head">
@@ -4472,27 +4452,16 @@
                 其他设备注册的用户，需要把他发来的「申请码」粘到上面导入，通过后再把系统给出的「准入码」发回给他。
               </div>
             </div>
-
-            <!-- 授权免费试用（非支付会员用户） -->
-            <div class="um-pending">
-              <div class="um-pending-head"><span>授权免费试用（非支付会员用户）</span></div>
-              <div class="um-code-bar">
-                <input class="um-input um-grow" v-model="trialGrantName" placeholder="本机已有用户名" autocomplete="off">
-                <button class="btn btn-sm" v-for="d in trialDayOptions" :key="d.days"
-                        @click="grantUserTrialByName(trialGrantName, d.days)">试用{{ d.label }}</button>
-              </div>
-              <div class="um-hint">仅对「本机已有账号」生效，试用期内对方可用自己的密码直接登录（普通用户权限）。</div>
-            </div>
           </div>
+          </div><!-- /um-panel register -->
 
-          <!-- ============ 板块②：会员管理 ============ -->
-          <div class="um-section" v-if="authAdminToken && authAdminToken.trim()">
+          <!-- ============ 授权使用面板 ============ -->
+          <div class="um-panel" v-if="umTab==='auth'">
+          <div class="um-section" v-if="umAuth==='6m'">
             <div class="um-section-head">
-              <h4>② 会员管理</h4>
+              <h4>半年期（¥1000）待开通</h4>
               <span class="um-section-desc">核对账号与支付费用开通期限，仅做核对与授权。</span>
             </div>
-
-            <div class="um-grid">
             <!-- 半年期 -->
             <div class="um-pending">
               <div class="um-pending-head">
@@ -4517,8 +4486,10 @@
                 <button class="btn btn-sm btn-primary" @click="memberManual.plan='6m';grantMemberManual()">开通半年期</button>
               </div>
             </div>
+          </div><!-- /um-section 6m -->
 
-            <!-- 授权免费试用（非支付会员用户） -->
+            <!-- 授权使用：授权免费试用（非支付会员用户） -->
+            <div class="um-section" v-if="umAuth==='trial'">
             <div class="um-pending um-pending-trial">
               <div class="um-pending-head">
                 <span>授权免费试用（非支付会员用户）</span>
@@ -4539,8 +4510,10 @@
                 <button class="btn btn-sm" v-for="o in trialDayOptions" :key="o.days" @click="grantUserTrialByName(trialGrantName, o.days)">试用{{ o.label }}</button>
               </div>
             </div>
+          </div><!-- /um-section trial -->
 
             <!-- 一年期 -->
+            <div class="um-section" v-if="umAuth==='1y'">
             <div class="um-pending">
               <div class="um-pending-head">
                 <span>一年期（¥2000）待开通</span>
@@ -4563,8 +4536,10 @@
                 <button class="btn btn-sm btn-primary" @click="memberManual.plan='1y';grantMemberManual()">开通一年期</button>
               </div>
             </div>
+          </div><!-- /um-section 1y -->
 
             <!-- 两年期 -->
+            <div class="um-section" v-if="umAuth==='2y'">
             <div class="um-pending">
               <div class="um-pending-head">
                 <span>两年期（¥4000）待开通</span>
@@ -4587,22 +4562,10 @@
                 <button class="btn btn-sm btn-primary" @click="memberManual.plan='2y';grantMemberManual()">开通两年期</button>
               </div>
             </div>
-            </div>
-          </div>
+          </div><!-- /um-section 2y -->
+          </div><!-- /um-panel auth -->
 
-          <!-- ============ 板块③：支付码 ============ -->
-          <div class="um-section" v-if="authAdminToken && authAdminToken.trim()">
-            <div class="um-section-head">
-              <h4>③ 支付码</h4>
-              <span class="um-section-desc">会员个人收款码（免费方案），与「设置」页共用同一份配置（data/membership/config.json）。</span>
-            </div>
-            <div class="um-payqr">
-              <input type="file" accept="image/*" @change="onMembershipQrChange">
-              <input v-model="membershipQrNote" placeholder="收款备注（可选，如「付款请备注用户名」）">
-              <button class="btn btn-sm btn-primary" @click="saveMembershipQr">保存收款码到仓库</button>
-              <p class="muted small" v-if="membershipConfig.qrData">当前已配置收款码（用户端会员弹窗可见）。</p>
-            </div>
-          </div>
+          <!-- 板块③ 支付码（个人收款码功能）已按需求删除 -->
 
           <table class="um-table" v-if="userList.length">
             <thead>
@@ -4761,7 +4724,8 @@
             </tbody>
           </table>
           <div class="um-empty" v-else>暂无账号</div>
-        </div>
+        </div><!-- /um-content -->
+      </div><!-- /um-layout -->
         <div class="modal-footer">
           <button class="btn btn-sm" @click="exportUsersTable">导出账号表</button>
           <label class="btn btn-sm">
@@ -4833,14 +4797,14 @@
     </transition>
   </div>
 
-  <script src="js/auth.js?v=20261006h"></script>
-  <script src="js/auth-sync.js?v=20261006h"></script>
+  <script src="js/auth.js?v=20261006i"></script>
+  <script src="js/auth-sync.js?v=20261006i"></script>
   <!-- 边缘加速默认站点（batch37 治本：Cloudflare Worker 代理东财/腾讯，缓解 JSONP 限流误报）。
        若你所在地区 workers.dev 访问慢，可在「设置 → 行情加速地址」清空即恢复纯直连。 -->
   <script>window.__SNT_ACCEL__ = 'https://sichina.dpdns.org';</script>
   <!-- 扫码支付二维码渲染库（第三方 qrcodejs，本地托管避免外链失效）。renderQr 会先检测全局 QRCode 是否存在。 -->
-  <script src="assets/qrcode.min.js?v=20261006h"></script>
-  <script src="js/auth-boot.js?v=20261006h"></script>
+  <script src="assets/qrcode.min.js?v=20261006i"></script>
+  <script src="js/auth-boot.js?v=20261006i"></script>
   <!-- store / stock-api / hot-topics / app 由 auth-boot.js 在登录通过后动态装载，
        未登录时它们不会被下载，业务数据也不会进入内存 -->
 </body>
