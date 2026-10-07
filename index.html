@@ -4,12 +4,12 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>股市信息分析系统</title>
-  <link rel="stylesheet" href="css/style.css?v=20261007q">
+  <link rel="stylesheet" href="css/style.css?v=20261007r">
   <!-- Vue 3 全局构建版（v3.4.21 · 自托管）
        原先走 unpkg.com CDN：国内网络对 unpkg 的连通性不稳定，一旦该请求长时间挂起，
        <head> 里的阻塞脚本会让整页停在白屏、后续 auth-boot.js 根本不会执行。
        改为同源托管后，启动链路不再依赖任何第三方 CDN。 -->
-  <script src="js/vue.global.prod.js?v=20261007q"></script>
+  <script src="js/vue.global.prod.js?v=20261007r"></script>
 </head>
 <body class="auth-locked">
   <!-- ===== 登录关卡：登录通过前业务脚本不会被加载 ===== -->
@@ -4557,19 +4557,23 @@
           <div class="um-section">
             <div class="um-section-head">
               <h4>待审核用户</h4>
-              <span class="um-section-desc">用户在「会员服务」点「提交申请」后，申请信息回到这里待审核；核对无误后点「核对并开通」，账号即归类到对应支付板块。</span>
+              <span class="um-section-desc">用户在「会员服务」扫码支付后点「提交申请」，申请信息回到这里待审核；点右上「↻ 刷新」即可拉到最新申请，核对无误后点「核对并开通」，会员即从该用户的「支付时间」起算，账号自动归入「授权使用」的 6月期 / 12月期 / 24月期 用户分类。</span>
             </div>
             <div class="um-code-bar um-search-bar">
               <input class="um-input um-grow" v-model="umSearch" placeholder="🔍 搜索账号名称…" autocomplete="off">
               <button class="btn btn-sm" @click="umSearch=''" title="清除搜索" v-if="umSearch">清除</button>
-              <button class="btn btn-sm" @click="loadMemberClaims" title="重新拉取待审核申请">↻ 刷新</button>
             </div>
             <div class="um-pending">
               <div class="um-pending-head">
                 <span>会员支付申请 · 待审核</span>
-                <span class="um-pending-count" v-if="memberClaims.loading">加载中…</span>
-                <span class="um-pending-count" v-else-if="reviewClaims().length">{{ reviewClaims().length }} 条</span>
-                <span class="um-pending-count" v-else>无</span>
+                <!-- 刷新按钮：置于本行最右侧；点一下重新拉取「用户支付后提交的申请」，普通用户刚提交的会立即出现 -->
+                <span class="um-pending-right">
+                  <span class="um-pending-count" v-if="memberClaims.loading">加载中…</span>
+                  <span class="um-pending-count" v-else-if="reviewClaims().length">{{ reviewClaims().length }} 条</span>
+                  <span class="um-pending-count" v-else>无</span>
+                  <button class="btn btn-sm um-refresh-btn" @click="refreshMemberClaims" :disabled="memberClaims.loading"
+                          title="重新拉取用户提交的支付申请（普通用户支付后提交的申请会出现在这里）">{{ memberClaims.loading ? '刷新中…' : '↻ 刷新' }}</button>
+                </span>
               </div>
               <div class="um-pending-item" v-for="c in reviewClaims()" :key="c.id || (c.user + '-' + c.ts)">
                 <div class="um-pending-main">
@@ -4582,7 +4586,7 @@
               </div>
               <div class="um-empty" v-if="!memberClaims.loading && !reviewClaims().length">暂无待审核支付申请</div>
             </div>
-            <div class="um-hint">说明：「核对并开通」会按申请套餐为该账号开通会员，并自动归类到「授权使用」对应的 6月期 / 12月期 / 24月期 用户分类下；账号名称、开始时间、结束时间、时段、支付费用均按提交信息记录，支付日期与额度同时写入下方用户表。</div>
+            <div class="um-hint">说明：① 用户支付后在「会员服务」点「我已支付请求开通」提交，普通用户无需任何令牌即可提交成功；② 点右上「↻ 刷新」重新拉取最新申请；③「核对并开通」按申请套餐开通会员，<b>有效期从该用户的支付时间起算</b>（支付时间早于套餐月数的极少数补录情形，则从开通当天起算），并自动归类到「授权使用」对应的 6月期 / 12月期 / 24月期 用户分类下；④ 开通同时把该账号转为「已通过」，可正常登录使用网站全部功能；账号名称、开始时间、结束时间、时段、支付费用均按提交信息记录，支付日期与额度同时写入下方用户表。</div>
           </div>
           </div><!-- /um-panel review -->
 
@@ -4950,14 +4954,14 @@
     </transition>
   </div>
 
-  <script src="js/auth.js?v=20261007q"></script>
-  <script src="js/auth-sync.js?v=20261007q"></script>
+  <script src="js/auth.js?v=20261007r"></script>
+  <script src="js/auth-sync.js?v=20261007r"></script>
   <!-- 边缘加速默认站点（batch37 治本：Cloudflare Worker 代理东财/腾讯，缓解 JSONP 限流误报）。
        若你所在地区 workers.dev 访问慢，可在「设置 → 行情加速地址」清空即恢复纯直连。 -->
   <script>window.__SNT_ACCEL__ = 'https://sichina.dpdns.org';</script>
   <!-- 扫码支付二维码渲染库（第三方 qrcodejs，本地托管避免外链失效）。renderQr 会先检测全局 QRCode 是否存在。 -->
-  <script src="assets/qrcode.min.js?v=20261007q"></script>
-  <script src="js/auth-boot.js?v=20261007q"></script>
+  <script src="assets/qrcode.min.js?v=20261007r"></script>
+  <script src="js/auth-boot.js?v=20261007r"></script>
   <!-- store / stock-api / hot-topics / app 由 auth-boot.js 在登录通过后动态装载，
        未登录时它们不会被下载，业务数据也不会进入内存 -->
 </body>

@@ -2924,6 +2924,10 @@ body.guest-mode #app { display: none; }
   font-size: 11.5px;
   font-weight: 600;
 }
+/* 待审核头部右侧：计数 + 刷新按钮 成组靠右（刷新按钮在「待审核用户」区最右侧） */
+.um-pending-right { display: flex; align-items: center; gap: 8px; }
+.um-refresh-btn { white-space: nowrap; }
+.um-refresh-btn:disabled { opacity: .6; cursor: default; }
 .um-pending-item {
   display: flex;
   align-items: center;

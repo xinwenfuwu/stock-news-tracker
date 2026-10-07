@@ -2293,8 +2293,9 @@ const app = createApp({
       membershipModal.payAmount = '';
       membershipModal.claimError = '';
     }
-    // 用户提交「我已支付请求开通」：把 账号名称/开始时间/结束时间/时段/支付费用 + 必填的「填写支付金额」
-    // 写入管理员待开通记录（A.Sync.writeClaims），管理员在「授权使用」中核对账单后开通。
+    // 用户提交「我已支付请求开通」：优先 POST 会员后端 /pay/claim（普通用户没有 GitHub 令牌，
+    // 只有这条通道能真正写进共享的待开通记录）；失败再回落 GitHub 直写（管理员同设备时的兜底）。
+    // 管理员在「用户管理 → 待审核用户」点右上「↻ 刷新」即可看到这条申请。
     async function submitPaymentClaim() {
       const amt = Number(membershipModal.payAmount);
       if (!amt || amt <= 0) { membershipModal.claimError = '请填写支付金额（必填）'; return; }
@@ -2302,13 +2303,13 @@ const app = createApp({
       if (!uname) { membershipModal.claimError = '请先登录后再提交'; return; }
       const plan = membershipModal.plan || '6m';
       const months = planMonthsNum(plan);
-      const startTs = Date.now();
+      const startTs = Date.now();                         // 支付时间（用户填完金额点提交的时刻）
       const endTs = startTs + months * 30 * 24 * 60 * 60 * 1000;
       const claim = {
         id: 'clm_' + startTs + '_' + Math.random().toString(36).slice(2, 8),
         user: uname,
         plan: plan,
-        ts: startTs,
+        ts: startTs,                                  // 支付时间：管理员开通时按它起算会员有效期
         amount: amt,                                  // 用户填写的实际支付金额（必填）
         fee: planAmount(plan),                        // 应付费用（套餐价）
         startTs: startTs,
@@ -2318,18 +2319,41 @@ const app = createApp({
       };
       membershipModal.claimSubmitting = true;
       membershipModal.claimError = '';
-      try {
-        const rd = (A && A.Sync && A.Sync.readClaims) ? await A.Sync.readClaims() : { ok: true, claims: [] };
-        const all = (rd && rd.claims) || [];
-        all.push(claim);
-        if (A && A.Sync && A.Sync.writeClaims) await A.Sync.writeClaims(all);
-        membershipModal.claimMsg = '已提交，管理员核对账单后将为你开通「' + planName(plan) + '」。可在「用户管理 → 授权使用」看到你的申请。';
+      let ok = false, errMsg = '';
+      // 1) 会员后端（Cloudflare Worker /pay/claim）
+      const base = payApiBase();
+      if (base) {
+        try {
+          const r = await fetch(base + '/pay/claim', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+            body: JSON.stringify(claim)
+          });
+          const j = await r.json().catch(() => ({}));
+          if (r.ok && (!j || j.ok !== false)) ok = true;
+          else errMsg = (j && j.error) || ('提交失败(HTTP ' + r.status + ')');
+        } catch (e) { errMsg = '网络异常：' + (e && e.message ? e.message : e); }
+      } else {
+        errMsg = '未配置会员服务后端地址';
+      }
+      // 2) 兜底：管理员同设备（浏览器里存有 GitHub 令牌）直接写仓库待开通记录
+      if (!ok && A && A.Sync && A.Sync.writeClaims) {
+        try {
+          const rd = A.Sync.readClaims ? await A.Sync.readClaims() : { ok: true, claims: [] };
+          const all = (rd && rd.claims) || [];
+          all.push(claim);
+          const w = await A.Sync.writeClaims(all);
+          if (w && w.ok !== false) ok = true;
+          else if (!errMsg) errMsg = (w && w.error) || '写入待开通记录失败';
+        } catch (e) { if (!errMsg) errMsg = String((e && e.message) || e); }
+      }
+      membershipModal.claimSubmitting = false;
+      if (ok) {
+        membershipModal.claimMsg = '已提交，管理员核对账单后将按你的支付时间为你开通「' + planName(plan) + '」。';
         membershipModal.claimed = true;
         membershipModal.payAmount = '';
-      } catch (e) {
-        membershipModal.claimError = '提交失败：' + (e && e.message ? e.message : e);
-      } finally {
-        membershipModal.claimSubmitting = false;
+      } else {
+        membershipModal.claimError = '提交失败：' + (errMsg || '请稍后重试') + '（也可直接把用户名发给管理员）';
       }
     }
     // 生成收款码（微信 + 支付宝），并把原始支付串渲染为二维码图片
@@ -2374,7 +2398,7 @@ const app = createApp({
     function claimsOfPlan(p) {
       return memberClaims.list.filter(c => (c.plan || '6m') === p);
     }
-    // 拉取待开通记录（公开读 data/membership/claims.json）
+    // 拉取待开通记录（公开读 data/membership/claims.json；读接口自带时间戳参数，绕开 CDN 缓存）
     async function loadMemberClaims() {
       memberClaims.loading = true;
       try {
@@ -2387,11 +2411,30 @@ const app = createApp({
       } catch (e) { memberClaims.list = []; }
       finally { memberClaims.loading = false; }
     }
-    // 管理员一键开通某条待开通记录（20261007q：把申请里的支付时间/实付金额一并落进账号）
+    // 「待审核用户」区最右侧的刷新按钮：强制重拉最新申请并给出回执
+    async function refreshMemberClaims() {
+      await loadMemberClaims();
+      if (memberClaims.loading) return;
+      const n = reviewClaims().length;
+      showToast(n ? ('已刷新：' + n + ' 条待审核支付申请') : '已刷新：暂无待审核支付申请', n ? 'success' : 'info');
+    }
+    // 解析某条申请所属的套餐月数：优先用申请里带的套餐，其次按金额推断（普通用户提交的申请只有金额时也能对）
+    function claimMonths(c) {
+      const p = c && c.plan;
+      if (p === '1y') return 12;
+      if (p === '2y') return 24;
+      if (p === '6m') return 6;
+      const amt = Number(c && c.amount) || 0;
+      if (amt >= 4000) return 24;
+      if (amt >= 2000) return 12;
+      return 6;
+    }
+    // 管理员一键开通某条待审核申请：会员从「该用户的支付时间」起算，并归入对应月期分类
     async function grantMemberClaim(claim) {
       if (!A) return;
-      const months = claim.plan === '1y' ? 12 : (claim.plan === '2y' ? 24 : 6);
-      const r = A.grantMembership(claim.user, months, { paidAt: Number(claim.ts) || 0, amount: Number(claim.amount) || 0 });
+      const months = claimMonths(claim);
+      const payTs = Number(claim.ts) || 0;
+      const r = A.grantMembership(claim.user, months, { paidAt: payTs, amount: Number(claim.amount) || 0 });
       if (!r || !r.ok) { showToast((r && r.error) || '开通失败', 'error'); return; }
       // 标记该 claim 已处理（写回 claims.json；失败不影响已开通）
       try {
@@ -2400,7 +2443,8 @@ const app = createApp({
         const tgt = all.find(c => c.id === claim.id);
         if (tgt) { tgt.resolved = true; tgt.resolvedAt = Date.now(); await A.Sync.writeClaims(all); }
       } catch (e) { /* 会员已开通，仅未标记 */ }
-      showToast('已为「' + claim.user + '」开通会员', 'success');
+      const startText = payTs ? fmtDateNum(payTs) : fmtDateNum(Date.now());
+      showToast('已为「' + claim.user + '」开通 ' + months + ' 个月会员（自支付日 ' + startText + ' 起算）', 'success', 4200);
       refreshUserList();          // 表格同步显示支付日期 / 额度 / 期分类
       await loadMemberClaims();
     }
@@ -9747,7 +9791,7 @@ const app = createApp({
       authAdminToken, remotePending, remotePendingLoading,
       loadRemotePending, approveRemoteByAdmin, rejectRemoteByAdmin, syncAllToRegistryByAdmin,
       // batch-A：会员后台（个人码方案）
-      memberClaims, memberManual, loadMemberClaims, grantMemberClaim, grantMemberManual, trialUsersList, reviewClaims, umSearch, umSearchMatch,
+      memberClaims, memberManual, loadMemberClaims, refreshMemberClaims, grantMemberClaim, grantMemberManual, trialUsersList, reviewClaims, umSearch, umSearchMatch,
       planAmount, planMonthsNum, planName, planMonthText, planOfUser, claimFields, trialFields, adminClassify,
       paidPlanOf, paidDateText, planCategoryText, quotaInputVal,
       showApproveCode, toggleRevealPassword, revealPendingPassword,

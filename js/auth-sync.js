@@ -33,9 +33,11 @@
   }
   function isAdminConfigured() { return !!getToken(); }
 
-  /** 读取注册表：同源静态文件，免鉴权。失败返回空表，绝不抛异常。 */
+  /** 读取注册表：同源静态文件，免鉴权。失败返回空表，绝不抛异常。
+   *  加时间戳参数绕开 GitHub Pages 的 CDN 缓存 —— 否则管理员刚开通的会员 / 刚变更的状态
+   *  最长要等十几分钟才能在别的设备上看到。 */
   function readRegistry() {
-    return fetch(REGISTRY_PATH, { method: 'GET', cache: 'no-store' })
+    return fetch(REGISTRY_PATH + '?_=' + Date.now(), { method: 'GET', cache: 'no-store' })
       .then(function (r) {
         if (!r.ok) return { version: 1, updatedAt: null, accounts: {} };
         return r.json().catch(function () { return { version: 1, updatedAt: null, accounts: {} }; });
@@ -138,8 +140,10 @@
   var MEMBER_CFG_PATH = 'data/membership/config.json';
   var MEMBER_CLAIMS_PATH = 'data/membership/claims.json';
 
-  function readJsonFile(path) {
-    return fetch(path, { method: 'GET', cache: 'no-store' })
+  /** 读取静态 JSON 文件；bust=true 时追加时间戳参数，绕开 GitHub Pages 的 CDN 缓存。 */
+  function readJsonFile(path, bust) {
+    var url = path + (bust ? ((path.indexOf('?') >= 0 ? '&' : '?') + '_=' + Date.now()) : '');
+    return fetch(url, { method: 'GET', cache: 'no-store' })
       .then(function (r) {
         if (!r.ok) return null;
         return r.json().catch(function () { return null; });
@@ -174,9 +178,9 @@
   function readMembershipConfig() { return readJsonFile(MEMBER_CFG_PATH); }
   /** 写入个人收款码配置（管理员令牌） */
   function writeMembershipConfig(cfg) { return writeJsonFile(MEMBER_CFG_PATH, cfg || {}, 'chore(membership): update config'); }
-  /** 读取待开通记录（公开，免鉴权） */
+  /** 读取待开通记录（公开，免鉴权）。始终带时间戳参数，保证管理员点「刷新」拿到的是最新申请。 */
   function readClaims() {
-    return readJsonFile(MEMBER_CLAIMS_PATH).then(function (j) {
+    return readJsonFile(MEMBER_CLAIMS_PATH, true).then(function (j) {
       if (j && Array.isArray(j.claims)) return { ok: true, claims: j.claims };
       return { ok: true, claims: [] };
     });

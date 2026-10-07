@@ -1612,12 +1612,26 @@
       if (!u) return { ok: false, error: '用户不存在' };
       var now = Date.now();
       var ex = extra || {};
-      u.payMembershipUntil = now + m * 30 * 24 * 60 * 60 * 1000;
+      var span = m * 30 * 24 * 60 * 60 * 1000;
+      // 20261007r：会员有效期从「该用户的支付时间」起算（管理员「核对并开通」时传入申请里的 ts）。
+      // 补录等异常情形（支付时间早于「今天 − 套餐月数」）会算出已经过期，此时兜底为自开通当日起算。
+      var startTs = Number(ex.paidAt) > 0 ? Number(ex.paidAt) : now;
+      var until = startTs + span;
+      if (until <= now) until = now + span;
+      u.payMembershipUntil = until;
       // 支付信息落库：支付日期取用户提交申请的时间戳（没有则记本次开通时间），套餐与实付金额一并保存
-      u.paidAt = Number(ex.paidAt) || now;
+      u.paidAt = startTs;
       u.paidPlan = (m === 24 ? '2y' : (m === 12 ? '1y' : '6m'));
       u.paidAmount = Number(ex.amount) > 0 ? Number(ex.amount) : (m === 24 ? 4000 : (m === 12 ? 2000 : 1000));
       u.quotaMonths = m;                 // 额度随支付套餐落库（表格「额度」行 6 / 12 / 24 个月）
+      if (!u.registerDate) u.registerDate = localDateStr(startTs);
+      // 20261007r：审核通过 = 付费开通。此前停在「待审核 / 试用中」的账号一并转为「已通过」，
+      // 否则用户付了钱却因为还卡在注册审核而登不进来。
+      if (!u.disabled && statusOf(u) !== STATUS.ACTIVE) {
+        u.status = STATUS.ACTIVE;
+        u.approvedAt = now;
+        u.approvedBy = (this.user && this.user.username) || '';
+      }
       u.updatedAt = now;
       // 此前因会员到期被自动停用的账号，若开通后续期到今天之后，解除停用
       if (u.disabled && u.autoDisabled && !isMembershipExpired(u)) {
@@ -1625,7 +1639,7 @@
       }
       saveUsers(this.users);
       this._syncUserToRegistry(u);
-      return { ok: true, until: u.payMembershipUntil, user: adminUser(u) };
+      return { ok: true, until: u.payMembershipUntil, startAt: startTs, user: adminUser(u) };
     },
 
     /**
