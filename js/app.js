@@ -28,10 +28,10 @@ const app = createApp({
       { key: 'holdings', label: '用户', icon: '👤' },
       { key: 'news', label: '新闻追踪', icon: '📰' },
       { key: 'finance', label: '全球信息', icon: '🌐' },
+      { key: 'hot', label: '热门板块', icon: '🔥' },
       { key: 'pools', label: '股票池', icon: '📅' },
       { key: 'sector', label: '选股', icon: '🧭' },
-      { key: 'filter', label: '板块成分股', icon: '🎯' },
-      { key: 'hot', label: '热门板块', icon: '🔥' }
+      { key: 'filter', label: '板块成分股', icon: '🎯' }
     ];
     // batch52：每日快讯面板现在同时挂在「新闻追踪」页顶部与「全球信息」页右栏（同一份数据、同一套交互），
     // 因此这两个页面任一激活都要触发一次自动加载——原来只认 finance，会导致新闻页那份永远停在
