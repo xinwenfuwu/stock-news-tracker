@@ -4,12 +4,12 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>股市信息分析系统</title>
-  <link rel="stylesheet" href="css/style.css?v=20261007n">
+  <link rel="stylesheet" href="css/style.css?v=20261007o">
   <!-- Vue 3 全局构建版（v3.4.21 · 自托管）
        原先走 unpkg.com CDN：国内网络对 unpkg 的连通性不稳定，一旦该请求长时间挂起，
        <head> 里的阻塞脚本会让整页停在白屏、后续 auth-boot.js 根本不会执行。
        改为同源托管后，启动链路不再依赖任何第三方 CDN。 -->
-  <script src="js/vue.global.prod.js?v=20261007n"></script>
+  <script src="js/vue.global.prod.js?v=20261007o"></script>
 </head>
 <body class="auth-locked">
   <!-- ===== 登录关卡：登录通过前业务脚本不会被加载 ===== -->
@@ -1538,19 +1538,19 @@
               <!-- 一级页：选套餐 -->
               <div v-if="membershipModal.payStep === 'select'">
                 <div class="membership-plans">
-                  <label class="plan-card" :class="{ active: membershipModal.plan === '6m' }" @click="selectPlan('6m')">
+                  <label class="plan-card" :class="{ active: membershipModal.plan === '6m' }">
                     <input type="radio" value="6m" v-model="membershipModal.plan" style="position:absolute;opacity:0">
                     <div class="plan-title">6 个月会员</div>
                     <div class="plan-price">¥1000</div>
                     <div class="plan-unit">/ 6 个月</div>
                   </label>
-                  <label class="plan-card" :class="{ active: membershipModal.plan === '1y' }" @click="selectPlan('1y')">
+                  <label class="plan-card" :class="{ active: membershipModal.plan === '1y' }">
                     <input type="radio" value="1y" v-model="membershipModal.plan" style="position:absolute;opacity:0">
                     <div class="plan-title">1 年会员</div>
                     <div class="plan-price">¥2000</div>
                     <div class="plan-unit">/ 12 个月</div>
                   </label>
-                  <label class="plan-card" :class="{ active: membershipModal.plan === '2y' }" @click="selectPlan('2y')">
+                  <label class="plan-card" :class="{ active: membershipModal.plan === '2y' }">
                     <input type="radio" value="2y" v-model="membershipModal.plan" style="position:absolute;opacity:0">
                     <div class="plan-title">2 年会员</div>
                     <div class="plan-price">¥4000</div>
@@ -1560,24 +1560,19 @@
                 <button class="btn btn-primary plan-next" :disabled="!membershipModal.plan" @click="selectPlan(membershipModal.plan)">选择去支付</button>
               </div>
 
-              <!-- 二级页：付费（进入即直接显示收款码） -->
+              <!-- 二级页：付费（点「选择去支付」后进入，直接显示收款码） -->
               <div v-if="membershipModal.payStep === 'pay'">
                 <div class="pay-back">
                   <span class="muted small">已选：{{ planLabel(membershipModal.plan) }}</span>
                 </div>
 
-                <!-- 商户方案（微信/支付宝扫码） -->
+                <!-- 收款码（管理员提供的微信收款码） -->
                 <div class="membership-pay">
-                  <p class="muted small" v-if="membershipModal.loading">正在生成收款码…</p>
-                  <p class="error small" v-if="membershipModal.error">{{ membershipModal.error }}</p>
-                  <div class="qr-row" v-if="membershipModal.wxQr || membershipModal.aliQr">
-                    <div class="qr-box" v-if="membershipModal.wxQr">
-                      <div class="qr-cap">微信支付</div>
-                      <img :src="membershipModal.wxQr" alt="微信支付二维码" class="qr-pay-img">
-                    </div>
-                    <div class="qr-box" v-if="membershipModal.aliQr">
-                      <div class="qr-cap">支付宝</div>
-                      <img :src="membershipModal.aliQr" alt="支付宝二维码" class="qr-pay-img">
+                  <div class="qr-row">
+                    <div class="qr-box">
+                      <div class="qr-cap">推荐使用微信支付</div>
+                      <img src="assets/wechat-pay-qr.jpg" alt="微信支付收款码" class="qr-pay-img">
+                      <div class="qr-cap muted small">火柴盒网络服务</div>
                     </div>
                   </div>
                   <!-- 二维码下方两个按钮 -->
@@ -1585,7 +1580,7 @@
                     <button class="btn btn-sm" @click="backToPlans">返回重新选择套餐</button>
                     <button class="btn btn-primary" @click="openPaymentClaim">我已支付请求开通</button>
                   </div>
-                  <p class="muted small" v-if="membershipModal.wxQr || membershipModal.aliQr">
+                  <p class="muted small">
                     手机扫码支付完成后，点「我已支付请求开通」提交，管理员核对账单后为你开通；届时点上方「↻ 刷新」即可看到会员状态。
                   </p>
                 </div>
@@ -4884,14 +4879,14 @@
     </transition>
   </div>
 
-  <script src="js/auth.js?v=20261007n"></script>
-  <script src="js/auth-sync.js?v=20261007n"></script>
+  <script src="js/auth.js?v=20261007o"></script>
+  <script src="js/auth-sync.js?v=20261007o"></script>
   <!-- 边缘加速默认站点（batch37 治本：Cloudflare Worker 代理东财/腾讯，缓解 JSONP 限流误报）。
        若你所在地区 workers.dev 访问慢，可在「设置 → 行情加速地址」清空即恢复纯直连。 -->
   <script>window.__SNT_ACCEL__ = 'https://sichina.dpdns.org';</script>
   <!-- 扫码支付二维码渲染库（第三方 qrcodejs，本地托管避免外链失效）。renderQr 会先检测全局 QRCode 是否存在。 -->
-  <script src="assets/qrcode.min.js?v=20261007n"></script>
-  <script src="js/auth-boot.js?v=20261007n"></script>
+  <script src="assets/qrcode.min.js?v=20261007o"></script>
+  <script src="js/auth-boot.js?v=20261007o"></script>
   <!-- store / stock-api / hot-topics / app 由 auth-boot.js 在登录通过后动态装载，
        未登录时它们不会被下载，业务数据也不会进入内存 -->
 </body>

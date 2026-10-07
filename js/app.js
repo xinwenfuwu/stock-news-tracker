@@ -2231,8 +2231,8 @@ const app = createApp({
       membershipModal.mode = resolvePayMode();
       await syncMembership();
     }
-    // 用户端二级页：选套餐后进入付费页（进入即直接生成收款码，无需再点一次）
-    async function selectPlan(p) {
+    // 用户端二级页：点「选择去支付」进入付费页（收款码为管理员提供的静态图片，无需后端生成）
+    function selectPlan(p) {
       membershipModal.plan = p;
       membershipModal.payStep = 'pay';
       membershipModal.claimed = false;
@@ -2243,8 +2243,6 @@ const app = createApp({
       membershipModal.claimOpen = false;
       membershipModal.payAmount = '';
       membershipModal.claimError = '';
-      // 进入付费页直接拉起收款码（原「生成收款码」按钮已移除）
-      await genPayQr();
     }
     function backToPlans() {
       membershipModal.payStep = 'select';
