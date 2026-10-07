@@ -5894,8 +5894,11 @@ const StockAPI = {
       const subjects = [];
       if (it.tag) subjects.push(String(it.tag));
       if (Array.isArray(it.tags)) it.tags.forEach(t => { const n = t && t.name; if (n) subjects.push(String(n)); });
+      // 同花顺的 tag（主分类）常与 tags[0].name 重复，去重避免重复展示
+      const seenSubj = new Set();
+      const uniqSubjects = subjects.filter(s => { if (seenSubj.has(s)) return false; seenSubj.add(s); return true; });
       const cat = (typeof HotTopics !== 'undefined' && HotTopics.classify) ? HotTopics.classify(title) : '财经';
-      out.push({ id: it.id || it.seq, time, text: title, url: it.url || '', stocks, subjects: subjects.slice(0, 4), cat });
+      out.push({ id: it.id || it.seq, time, text: title, url: it.url || '', stocks, subjects: uniqSubjects.slice(0, 4), cat });
     }
     out.sort((a, b) => String(b.time).localeCompare(String(a.time)));
     return out;
