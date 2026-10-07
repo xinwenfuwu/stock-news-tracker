@@ -6174,7 +6174,8 @@ const app = createApp({
       hotTopicsLoading.value = true;
       try {
         const dates = HT.windowSnapshotDates(ws.getTime(), we.getTime());
-        const bySource = new Map();
+        const bySource = new Map();      // 时间窗过滤后条目
+        const rawBySource = new Map();   // 原始快照条目（兜底用，避免被严格时间窗误杀）
         let dayCount = 0;
         for (const d of dates) {
           // 优先仓库内置最新快照（服务端每 2 小时生成，含新增来源如华尔街见闻）；
@@ -6188,8 +6189,13 @@ const app = createApp({
           if (!snap || !snap.sources) continue;
           dayCount++;
           for (const s of snap.sources) {
-            if (!bySource.has(s.rank)) bySource.set(s.rank, { rank: s.rank, key: s.key, name: s.name, color: s.color, items: [] });
-            const items = (s.items || []).filter(it => {
+            if (!bySource.has(s.rank)) {
+              bySource.set(s.rank, { rank: s.rank, key: s.key, name: s.name, color: s.color, items: [] });
+              rawBySource.set(s.rank, { rank: s.rank, key: s.key, name: s.name, color: s.color, items: [] });
+            }
+            const all = (s.items || []);
+            rawBySource.get(s.rank).items.push(...all);
+            const items = all.filter(it => {
               if (it.time && HT.parseBriefTime && HT.inWindow) {
                 const ts = HT.parseBriefTime(it.time);
                 if (ts != null && !HT.inWindow(ts, ws.getTime(), we.getTime())) return false;
@@ -6197,6 +6203,16 @@ const app = createApp({
               return true;
             });
             bySource.get(s.rank).items.push(...items);
+          }
+        }
+        // 兜底：华尔街见闻等「最新 N 条」型来源，其快照时间戳集中在抓取时刻（常落在早上，
+        // 例如 08:28），而每日话题窗口为 [上一交易日15:00, 今日15:00) 起点在 15:00，
+        // 严格时间窗会把整批条目误杀成「该时间段内无数据」。
+        // 该来源的快照本就按窗口覆盖的日期取数，过滤后为空时放行其原始条目，保证来源不空洞。
+        for (const [rank, raw] of rawBySource) {
+          const cur = bySource.get(rank);
+          if (cur && cur.items.length === 0 && raw.items.length > 0) {
+            cur.items.push(...raw.items);
           }
         }
         const list = [...bySource.values()].sort((a, b) => a.rank - b.rank);
