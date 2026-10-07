@@ -481,9 +481,9 @@
    * 试用账号一律按「普通用户」对待，不继承管理员权限。
    */
 
-  /** 可选试用时长（天）：一天 / 三天 / 一周 */
-  var TRIAL_DAYS = [1, 3, 7];
-  var TRIAL_DAY_LABEL = { 1: '一天', 3: '三天', 7: '一周' };
+  /** 可选试用时长（天）：一天 / 三天 / 一周 / 一月 */
+  var TRIAL_DAYS = [1, 3, 7, 30];
+  var TRIAL_DAY_LABEL = { 1: '一天', 3: '三天', 7: '一周', 30: '一月' };
 
   /** 'YYYY-MM-DD HH:mm'（本地时区；本项目日期语义统一按北京时间） */
   function localMinStr(ts) {
@@ -675,6 +675,9 @@
     o.registerDate = u.registerDate || '';
     o.quotaMonths = u.quotaMonths || 0;
     o.payMembershipUntil = Number(u.payMembershipUntil) || 0;   // 付费会员到期时间戳：供 planOfUser / trialUsersList 判定套餐与排除付费会员
+    o.paidAt = Number(u.paidAt) || 0;                            // 20261007q：支付日期（用户提交支付申请 / 扫码回调落库）
+    o.paidPlan = u.paidPlan || '';                               // 20261007q：支付套餐 6m / 1y / 2y
+    o.paidAmount = Number(u.paidAmount) || 0;                    // 20261007q：实付金额
     o.disableDate = disableDateOf(u) || '';
     o.autoDisabled = !!u.autoDisabled;
     o.disabledAt = u.disabledAt || null;
@@ -1188,7 +1191,7 @@
     grantTrial: function (username, days) {
       if (!this.isAdmin()) return { ok: false, error: '仅管理员可开通试用' };
       var d = parseInt(days, 10);
-      if (TRIAL_DAYS.indexOf(d) < 0) return { ok: false, error: '试用时长只支持 一天 / 三天 / 一周' };
+      if (TRIAL_DAYS.indexOf(d) < 0) return { ok: false, error: '试用时长只支持 一天 / 三天 / 一周 / 一月' };
       this.users = loadUsers();
       var u = findUser(this.users, username);
       if (!u) return { ok: false, error: '用户不存在' };
@@ -1594,18 +1597,28 @@
     /**
      * batch-A：管理员后台手动开通会员（个人收款码方案，无需商户/无需回调）。
      * 直接把 payMembershipUntil 设为「现在 + months 个月」，复用既有登录门禁（disableDateOf 优先取它）。
+     * 20261007q：额外落「支付信息」——paidAt / paidPlan / paidAmount / quotaMonths，
+     * 供用户管理表格的「日期·支付日期」「额度·6/12/24 个月」「额度·6月期/12月期/24月期」自动显示。
      * @param {string} username
-     * @param {number} months 6 或 12
+     * @param {number} months 6 / 12 / 24
+     * @param {{paidAt?:number, amount?:number}} [extra] 来自用户提交的支付申请（申请时间戳 / 实付金额）
      */
-    grantMembership: function (username, months) {
+    grantMembership: function (username, months, extra) {
       if (!this.isAdmin()) return { ok: false, error: '仅管理员可开通会员' };
       var m = parseInt(months, 10);
       if (!(m === 6 || m === 12 || m === 24)) return { ok: false, error: '套餐仅支持 6、12 或 24 个月' };
       this.users = loadUsers();
       var u = findUser(this.users, username);
       if (!u) return { ok: false, error: '用户不存在' };
-      u.payMembershipUntil = Date.now() + m * 30 * 24 * 60 * 60 * 1000;
-      u.updatedAt = Date.now();
+      var now = Date.now();
+      var ex = extra || {};
+      u.payMembershipUntil = now + m * 30 * 24 * 60 * 60 * 1000;
+      // 支付信息落库：支付日期取用户提交申请的时间戳（没有则记本次开通时间），套餐与实付金额一并保存
+      u.paidAt = Number(ex.paidAt) || now;
+      u.paidPlan = (m === 24 ? '2y' : (m === 12 ? '1y' : '6m'));
+      u.paidAmount = Number(ex.amount) > 0 ? Number(ex.amount) : (m === 24 ? 4000 : (m === 12 ? 2000 : 1000));
+      u.quotaMonths = m;                 // 额度随支付套餐落库（表格「额度」行 6 / 12 / 24 个月）
+      u.updatedAt = now;
       // 此前因会员到期被自动停用的账号，若开通后续期到今天之后，解除停用
       if (u.disabled && u.autoDisabled && !isMembershipExpired(u)) {
         u.disabled = false; u.autoDisabled = false; u.disabledAt = null;
@@ -1631,6 +1644,9 @@
         return { ok: true, active: false };
       }
       u.payMembershipUntil = until;
+      // 20261007q：扫码支付回调路径没有套餐信息，首次拿到有效到期时间时补一个「支付日期」兜底，
+      // 套餐/额度由 planOfUser 从到期时间倒推（表格「额度」「期」据此显示）。
+      if (!Number(u.paidAt)) u.paidAt = Date.now();
       u.updatedAt = Date.now();
       // 此前因会员到期被自动停用的账号，若支付会员续期到今天之后，解除停用
       if (u.disabled && u.autoDisabled && !isMembershipExpired(u)) {
@@ -1756,6 +1772,9 @@
           disableDate: u.disableDate || '',
           registerDate: u.registerDate || '',
           payMembershipUntil: u.payMembershipUntil || 0,   // batch-A：后台/扫码开通的会员到期时间戳(ms)
+          paidAt: Number(u.paidAt) || 0,                   // 20261007q：支付日期(ms)
+          paidPlan: u.paidPlan || '',                      // 20261007q：支付套餐 6m / 1y / 2y
+          paidAmount: Number(u.paidAmount) || 0,           // 20261007q：实付金额
           createdAt: u.createdAt || Date.now(),
           updatedAt: Date.now()
         };

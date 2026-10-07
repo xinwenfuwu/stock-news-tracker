@@ -83,7 +83,7 @@ const app = createApp({
     const resetPw = reactive({ show: false, username: '', newPassword: '', confirmPassword: '', error: '', reveal: false });
     /* 用户管理全屏面板：左侧/顶部 Tab 状态。
        umTab: 'register' 普通用户注册 | 'auth' 授权使用
-       umAuth: 'trial' 授权免费试用 | '6m' 半年期 | '1y' 一年期 | '2y' 两年期 */
+       umAuth: 'trial' 授权免费试用 | '6m' 6月期 | '1y' 12月期 | '2y' 24月期 */
     const umTab = ref('register');
     const umAuth = ref('trial');
     // 会员搜索（管理员 / 普通用户注册 / 授权使用 / 待审核用户 各面板共用）
@@ -313,12 +313,13 @@ const app = createApp({
       refreshUserList();
     }
 
-    /* ---------- 试用（三层：一天 / 三天 / 一周） ---------- */
-    /** 三档试用时长；label 用于按钮文案「试用一天 / 试用三天 / 试用一周」 */
+    /* ---------- 试用（四档：一天 / 三天 / 一周 / 一月） ---------- */
+    /** 四档试用时长；label 用于按钮文案「试用一天 / 试用三天 / 试用一周 / 试用一月」 */
     const trialDayOptions = [
       { days: 1, label: '一天' },
       { days: 3, label: '三天' },
-      { days: 7, label: '一周' }
+      { days: 7, label: '一周' },
+      { days: 30, label: '一月' }
     ];
 
     /**
@@ -2139,7 +2140,9 @@ const app = createApp({
       claimSubmitting: false
     });
     // 个人收款码（支付码）功能已按需求整体删除；会员支付统一走商户扫码方案（createPayOrder / genPayQr / /pay/create）。
-    function fmtDate(ts) { const d = new Date(Number(ts) || Date.now()); const p = n => String(n).padStart(2, '0'); return d.getFullYear() + '-' + p(d.getMonth() + 1) + '-' + p(d.getDate()); }
+    // 时间戳(ms) → 'YYYY-MM-DD'。⚠️ 不能叫 fmtDate：本文件后面 6xxx 行还有同名 fmtDate(Date)，
+    // 同作用域内后面的函数声明会覆盖前者，使 fmtDate(number) 抛 d.getFullYear is not a function。
+    function fmtDateNum(ts) { const d = new Date(Number(ts) || Date.now()); const p = n => String(n).padStart(2, '0'); return d.getFullYear() + '-' + p(d.getMonth() + 1) + '-' + p(d.getDate()); }
     function planMonths(plan) { return plan === '1y' ? 12 : (plan === '2y' ? 24 : 6); }
     function memberApiBase() {
       const base = String((D && D.settings && D.settings.proxyUrl) || '').trim().replace(/\/+$/, '');
@@ -2209,7 +2212,7 @@ const app = createApp({
           membershipModal.syncing = false;
           membershipModal.untilTs = until;
           membershipModal.mode = resolvePayMode();
-          membershipModal.statusText = '已开通会员，有效期至 ' + fmtDate(until);
+          membershipModal.statusText = '已开通会员，有效期至 ' + fmtDateNum(until);
           return;
         }
       } catch (e) { /* 忽略，继续走商户路径 */ }
@@ -2220,7 +2223,7 @@ const app = createApp({
         if (A) A.applyRemoteMembership(uname, q.until);
         membershipModal.untilTs = q.until;
         membershipModal.mode = 'merchant';
-        membershipModal.statusText = '已开通会员，有效期至 ' + fmtDate(q.until);
+        membershipModal.statusText = '已开通会员，有效期至 ' + fmtDateNum(q.until);
       } else if (q.ok) {
         membershipModal.untilTs = 0;
         membershipModal.mode = resolvePayMode();
@@ -2378,16 +2381,17 @@ const app = createApp({
         const r = (A && A.Sync && A.Sync.readClaims) ? await A.Sync.readClaims() : { ok: true, claims: [] };
         const all = (r && r.claims) || [];
         memberClaims.list = all.filter(c => !c.resolved).map(c => ({
-          id: c.id, user: c.user, plan: c.plan || '6m', ts: c.ts || 0, resolved: !!c.resolved
+          id: c.id, user: c.user, plan: c.plan || '6m', ts: c.ts || 0,
+          amount: Number(c.amount) || 0, resolved: !!c.resolved
         }));
       } catch (e) { memberClaims.list = []; }
       finally { memberClaims.loading = false; }
     }
-    // 管理员一键开通某条待开通记录
+    // 管理员一键开通某条待开通记录（20261007q：把申请里的支付时间/实付金额一并落进账号）
     async function grantMemberClaim(claim) {
       if (!A) return;
       const months = claim.plan === '1y' ? 12 : (claim.plan === '2y' ? 24 : 6);
-      const r = A.grantMembership(claim.user, months);
+      const r = A.grantMembership(claim.user, months, { paidAt: Number(claim.ts) || 0, amount: Number(claim.amount) || 0 });
       if (!r || !r.ok) { showToast((r && r.error) || '开通失败', 'error'); return; }
       // 标记该 claim 已处理（写回 claims.json；失败不影响已开通）
       try {
@@ -2397,6 +2401,7 @@ const app = createApp({
         if (tgt) { tgt.resolved = true; tgt.resolvedAt = Date.now(); await A.Sync.writeClaims(all); }
       } catch (e) { /* 会员已开通，仅未标记 */ }
       showToast('已为「' + claim.user + '」开通会员', 'success');
+      refreshUserList();          // 表格同步显示支付日期 / 额度 / 期分类
       await loadMemberClaims();
     }
     // 管理员手动开通（按用户名，无需待开通记录）
@@ -2405,9 +2410,10 @@ const app = createApp({
       const uname = (memberManual.username || '').trim();
       if (!uname) { showToast('请输入用户名', 'error'); return; }
       const months = memberManual.plan === '1y' ? 12 : (memberManual.plan === '2y' ? 24 : 6);
-      const r = A.grantMembership(uname, months);
+      const r = A.grantMembership(uname, months, { paidAt: Date.now(), amount: planAmount(memberManual.plan) });
       if (!r || !r.ok) { showToast((r && r.error) || '开通失败', 'error'); return; }
       showToast('已为「' + uname + '」开通会员', 'success');
+      refreshUserList();
       memberManual.username = '';
     }
     // 授权免费试用（非支付会员用户）：列出当前处于试用期的普通用户，供管理员核对 / 续期 / 撤销
@@ -2428,7 +2434,11 @@ const app = createApp({
     }
     function planMonthsNum(plan) { return plan === '1y' ? 12 : (plan === '2y' ? 24 : 6); }
     function planName(plan) {
-      return plan === '1y' ? '一年期（¥2000）' : (plan === '2y' ? '两年期（¥4000）' : '半年期（¥1000）');
+      return plan === '1y' ? '12月期（¥2000）' : (plan === '2y' ? '24月期（¥4000）' : '6月期（¥1000）');
+    }
+    /** 套餐的额度月数文案：6个月 / 12个月 / 24个月 */
+    function planMonthText(plan) {
+      return plan ? (planMonthsNum(plan) + '个月') : '';
     }
     // 由账号当前状态推断所属套餐（仅付费会员返回 6m/1y/2y，否则 null）
     function planOfUser(u) {
@@ -2442,6 +2452,40 @@ const app = createApp({
       if (months >= 18) return '2y';
       if (months >= 9) return '1y';
       return '6m';
+    }
+    /* ===== 20261007q：用户管理表格的「日期 / 额度」派生显示 =====
+     * 数据来源：用户扫码支付后点「提交申请」提交的支付申请（plan / ts / amount），
+     * 管理员点「核对并开通 / 手动开通」时由 Auth.grantMembership 落进账号
+     * （paidAt / paidPlan / paidAmount / quotaMonths），此处只做展示派生。
+     * 扫码回调路径没有套餐信息时，用「会员到期时间 − 套餐月数」倒推支付日期、用当前额度推断套餐。 */
+    /** 账号的付费套餐：优先取落库的 paidPlan，否则按当前会员状态推断 */
+    function paidPlanOf(u) {
+      if (!u) return '';
+      if (u.paidPlan) return u.paidPlan;
+      if (Number(u.payMembershipUntil) > 0) return planOfUser(u) || '';
+      return '';
+    }
+    /** 支付日期 'YYYY-MM-DD'：优先 paidAt，其次由到期时间倒推；无付费记录返回 '' */
+    function paidDateText(u) {
+      if (!u || u.role !== 'user') return '';
+      const t = Number(u.paidAt) || 0;
+      if (t > 0) return fmtDateNum(t);
+      const plan = paidPlanOf(u);
+      const pmu = Number(u.payMembershipUntil) || 0;
+      if (plan && pmu > 0) return fmtDateNum(pmu - planMonthsNum(plan) * 30 * 24 * 60 * 60 * 1000);
+      return '';
+    }
+    /** 额度行「期」分类文案：6月期（¥1000） / 12月期（¥2000） / 24月期（¥4000）；非付费返回 '未开通' */
+    function planCategoryText(u) {
+      const plan = paidPlanOf(u);
+      return plan ? planName(plan) : '未开通';
+    }
+    /** 额度输入框回填值：管理员手填优先；为空时用付费套餐的月数（6 / 12 / 24）自动回填 */
+    function quotaInputVal(u) {
+      const q = Number(u && u.quotaMonths) || 0;
+      if (q > 0) return q;
+      const plan = paidPlanOf(u);
+      return plan ? planMonthsNum(plan) : 0;
     }
     // 把「待开通」claim 整理为展示字段：金额 / 账号名称 / 开始时间 / 结束时间 / 时段
     function claimFields(c) {
@@ -2477,9 +2521,9 @@ const app = createApp({
       const list = (userList.value || []);
       const cats = {
         trial: { key: 'trial', label: '授权免费试用（非支付会员用户）', amount: 0, items: [] },
-        '6m': { key: '6m', label: '半年期（¥1000）', amount: 1000, items: [] },
-        '1y': { key: '1y', label: '一年期（¥2000）', amount: 2000, items: [] },
-        '2y': { key: '2y', label: '两年期（¥4000）', amount: 4000, items: [] },
+        '6m': { key: '6m', label: '6月期（¥1000）用户', amount: 1000, items: [] },
+        '1y': { key: '1y', label: '12月期（¥2000）用户', amount: 2000, items: [] },
+        '2y': { key: '2y', label: '24月期（¥4000）用户', amount: 4000, items: [] },
         pending: { key: 'pending', label: '待审核', amount: 0, items: [] },
         admin: { key: 'admin', label: '管理员', amount: 0, items: [] }
       };
@@ -9704,7 +9748,8 @@ const app = createApp({
       loadRemotePending, approveRemoteByAdmin, rejectRemoteByAdmin, syncAllToRegistryByAdmin,
       // batch-A：会员后台（个人码方案）
       memberClaims, memberManual, loadMemberClaims, grantMemberClaim, grantMemberManual, trialUsersList, reviewClaims, umSearch, umSearchMatch,
-      planAmount, planMonthsNum, planName, planOfUser, claimFields, trialFields, adminClassify,
+      planAmount, planMonthsNum, planName, planMonthText, planOfUser, claimFields, trialFields, adminClassify,
+      paidPlanOf, paidDateText, planCategoryText, quotaInputVal,
       showApproveCode, toggleRevealPassword, revealPendingPassword,
       copyPassword, toggleLoginLog,
       // batch16：准入码面板（管理员把授权转达给用户）

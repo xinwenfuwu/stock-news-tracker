@@ -4,12 +4,12 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>股市信息分析系统</title>
-  <link rel="stylesheet" href="css/style.css?v=20261007p">
+  <link rel="stylesheet" href="css/style.css?v=20261007q">
   <!-- Vue 3 全局构建版（v3.4.21 · 自托管）
        原先走 unpkg.com CDN：国内网络对 unpkg 的连通性不稳定，一旦该请求长时间挂起，
        <head> 里的阻塞脚本会让整页停在白屏、后续 auth-boot.js 根本不会执行。
        改为同源托管后，启动链路不再依赖任何第三方 CDN。 -->
-  <script src="js/vue.global.prod.js?v=20261007p"></script>
+  <script src="js/vue.global.prod.js?v=20261007q"></script>
 </head>
 <body class="auth-locked">
   <!-- ===== 登录关卡：登录通过前业务脚本不会被加载 ===== -->
@@ -4413,9 +4413,9 @@
           </div>
           <div class="um-subtabs" v-if="umTab==='auth'">
             <button class="um-tab um-subtab" :class="{active: umAuth==='trial'}" @click="umAuth='trial'">授权免费试用（非支付会员用户）</button>
-            <button class="um-tab um-subtab" :class="{active: umAuth==='6m'}" @click="umAuth='6m'">半年期（¥1000）待开通</button>
-            <button class="um-tab um-subtab" :class="{active: umAuth==='1y'}" @click="umAuth='1y'">一年期（¥2000）待开通</button>
-            <button class="um-tab um-subtab" :class="{active: umAuth==='2y'}" @click="umAuth='2y'">两年期（¥4000）待开通</button>
+            <button class="um-tab um-subtab" :class="{active: umAuth==='6m'}" @click="umAuth='6m'">6月期（¥1000）用户</button>
+            <button class="um-tab um-subtab" :class="{active: umAuth==='1y'}" @click="umAuth='1y'">12月期（¥2000）用户</button>
+            <button class="um-tab um-subtab" :class="{active: umAuth==='2y'}" @click="umAuth='2y'">24月期（¥4000）用户</button>
           </div>
           <div class="um-content">
           <!-- ============ 板块①：普通用户注册 ============ -->
@@ -4548,7 +4548,7 @@
               <div class="um-empty" v-else>暂无</div>
             </div>
 
-            <div class="um-hint">说明：付费会员按套餐（半年¥1000 / 一年¥2000 / 两年¥4000）归类；普通用户未支付会员归入「授权免费试用」；待审核与管理员账号单列统计。「累计应收」= 各付费分类人数 × 对应金额。</div>
+            <div class="um-hint">说明：付费会员按套餐（6月期¥1000 / 12月期¥2000 / 24月期¥4000）归类；普通用户未支付会员归入「授权免费试用」；待审核与管理员账号单列统计。「累计应收」= 各付费分类人数 × 对应金额。</div>
           </div>
           </div><!-- /um-panel admin -->
 
@@ -4582,7 +4582,7 @@
               </div>
               <div class="um-empty" v-if="!memberClaims.loading && !reviewClaims().length">暂无待审核支付申请</div>
             </div>
-            <div class="um-hint">说明：「核对并开通」会按申请套餐为该账号开通会员，并自动归类到「授权使用」对应的半年期 / 一年期 / 两年期 待开通分类下；账号名称、开始时间、结束时间、时段、支付费用均按提交信息记录。</div>
+            <div class="um-hint">说明：「核对并开通」会按申请套餐为该账号开通会员，并自动归类到「授权使用」对应的 6月期 / 12月期 / 24月期 用户分类下；账号名称、开始时间、结束时间、时段、支付费用均按提交信息记录，支付日期与额度同时写入下方用户表。</div>
           </div>
           </div><!-- /um-panel review -->
 
@@ -4594,13 +4594,13 @@
           </div>
           <div class="um-section" v-if="umAuth==='6m'">
             <div class="um-section-head">
-              <h4>半年期（¥1000）待开通</h4>
+              <h4>6月期（¥1000）用户</h4>
               <span class="um-section-desc">核对账号与支付费用开通期限，仅做核对与授权。</span>
             </div>
-            <!-- 半年期 -->
+            <!-- 6月期 -->
             <div class="um-pending">
               <div class="um-pending-head">
-                <span>半年期（¥1000）待开通</span>
+                <span>6月期（¥1000）用户</span>
                 <button class="btn btn-sm" @click="loadMemberClaims" title="重新拉取待开通记录">↻ 刷新</button>
                 <span class="um-pending-count" v-if="memberClaims.loading">加载中…</span>
                 <span class="um-pending-count" v-else-if="claimsOfPlan('6m').length">{{ claimsOfPlan('6m').length }} 条</span>
@@ -4617,7 +4617,7 @@
               </div>
               <div class="um-code-bar">
                 <input class="um-input um-grow" v-model="memberManual.username" placeholder="已付款的用户名" autocomplete="off" @keyup.enter="memberManual.plan='6m';grantMemberManual()">
-                <button class="btn btn-sm btn-primary" @click="memberManual.plan='6m';grantMemberManual()">开通半年期</button>
+                <button class="btn btn-sm btn-primary" @click="memberManual.plan='6m';grantMemberManual()">开通6月期</button>
               </div>
             </div>
           </div><!-- /um-section 6m -->
@@ -4645,11 +4645,11 @@
             </div>
           </div><!-- /um-section trial -->
 
-            <!-- 一年期 -->
+            <!-- 12月期 -->
             <div class="um-section" v-if="umAuth==='1y'">
             <div class="um-pending">
               <div class="um-pending-head">
-                <span>一年期（¥2000）待开通</span>
+                <span>12月期（¥2000）用户</span>
                 <span class="um-pending-count" v-if="memberClaims.loading">加载中…</span>
                 <span class="um-pending-count" v-else-if="claimsOfPlan('1y').length">{{ claimsOfPlan('1y').length }} 条</span>
                 <span class="um-pending-count" v-else>无</span>
@@ -4665,16 +4665,16 @@
               </div>
               <div class="um-code-bar">
                 <input class="um-input um-grow" v-model="memberManual.username" placeholder="已付款的用户名" autocomplete="off" @keyup.enter="memberManual.plan='1y';grantMemberManual()">
-                <button class="btn btn-sm btn-primary" @click="memberManual.plan='1y';grantMemberManual()">开通一年期</button>
+                <button class="btn btn-sm btn-primary" @click="memberManual.plan='1y';grantMemberManual()">开通12月期</button>
               </div>
             </div>
           </div><!-- /um-section 1y -->
 
-            <!-- 两年期 -->
+            <!-- 24月期 -->
             <div class="um-section" v-if="umAuth==='2y'">
             <div class="um-pending">
               <div class="um-pending-head">
-                <span>两年期（¥4000）待开通</span>
+                <span>24月期（¥4000）用户</span>
                 <span class="um-pending-count" v-if="memberClaims.loading">加载中…</span>
                 <span class="um-pending-count" v-else-if="claimsOfPlan('2y').length">{{ claimsOfPlan('2y').length }} 条</span>
                 <span class="um-pending-count" v-else>无</span>
@@ -4690,7 +4690,7 @@
               </div>
               <div class="um-code-bar">
                 <input class="um-input um-grow" v-model="memberManual.username" placeholder="已付款的用户名" autocomplete="off" @keyup.enter="memberManual.plan='2y';grantMemberManual()">
-                <button class="btn btn-sm btn-primary" @click="memberManual.plan='2y';grantMemberManual()">开通两年期</button>
+                <button class="btn btn-sm btn-primary" @click="memberManual.plan='2y';grantMemberManual()">开通24月期</button>
               </div>
             </div>
           </div><!-- /um-section 2y -->
@@ -4702,9 +4702,9 @@
             <thead>
               <tr>
                 <th>用户名</th><th>角色</th><th>状态</th>
-                <th>注册日期</th><th>额度(月)</th><th>停用日期</th>
+                <th>日期</th><th>试用</th><th>额度</th>
                 <th>密码</th>
-                <th>试用</th><th>最近登录</th><th>使用时长</th><th>操作</th>
+                <th>最近登录</th><th>使用时长</th><th>操作</th>
               </tr>
             </thead>
             <tbody>
@@ -4723,43 +4723,28 @@
                   <td data-label="状态">
                     <span class="um-badge" :class="badgeClass(u)">{{ u.statusName }}</span>
                   </td>
-                  <td class="um-membership" data-label="注册日期">
+                  <!-- 日期列（三行：注册日期 / 支付日期 / 到期日期）；支付日期来自用户提交的支付申请，开通时落库 -->
+                  <td class="um-membership um-stack" data-label="日期">
                     <template v-if="u.role === 'user'">
-                      <input type="date" class="um-input um-date" :value="u.registerDate" @change="setUserRegisterDate(u, $event.target.value)" title="会员注册日期">
-                    </template>
-                    <template v-else>—</template>
-                  </td>
-                  <td class="um-membership" data-label="额度(月)">
-                    <template v-if="u.role === 'user'">
-                      <div class="um-quota">
-                        <input type="number" min="0" step="1" class="um-input um-num" :value="u.quotaMonths" @change="setUserQuota(u, $event.target.value)" title="会员额度（月），0 或留空为长期">
-                        <span class="um-unit">月</span>
+                      <div class="um-line">
+                        <span class="um-line-k">注册</span>
+                        <input type="date" class="um-input um-date" :value="u.registerDate" @change="setUserRegisterDate(u, $event.target.value)" title="会员注册日期">
+                      </div>
+                      <div class="um-line">
+                        <span class="um-line-k">支付</span>
+                        <span class="um-line-v">{{ paidDateText(u) || '—' }}</span>
+                      </div>
+                      <div class="um-line">
+                        <span class="um-line-k">到期</span>
+                        <span :class="['um-disable-date', { 'is-expired': u.disableDate && isExpiredDate(u.disableDate) }]">{{ u.disableDate || '长期' }}</span>
+                        <span v-if="u.autoDisabled" class="um-auto-tag" title="会员到期后由系统自动停用">已到期停用</span>
                       </div>
                     </template>
-                    <template v-else>—</template>
-                  </td>
-                  <td class="um-membership" data-label="停用日期">
-                    <span :class="['um-disable-date', { 'is-expired': u.role === 'user' && u.disableDate && isExpiredDate(u.disableDate) }]">
-                      {{ u.disableDate || (u.role === 'user' ? '长期' : '—') }}
-                    </span>
-                    <span v-if="u.autoDisabled" class="um-auto-tag" title="会员到期后由系统自动停用">已到期停用</span>
-                  </td>
-                  <td data-label="密码">
-                    <div class="um-pw">
-                      <!-- batch15：管理员自己这行（以及任何「改造前创建 / 账号表导入」、没有保存明文的账号）
-                           也要有「显示」按钮——点了会说明原因并直接打开重置面板，而不是什么都不给点。 -->
-                      <code class="um-pw-text" :class="{ 'is-empty': !u.hasPassword }">{{ passwordText(u) }}</code>
-                      <button class="btn-mini" @click="toggleRevealPassword(u)"
-                              :title="u.hasPassword ? '显示 / 隐藏该账号的密码' : '该账号没有保存可显示的密码，点这里用「重置密码」设一个新密码'">
-                        {{ revealedPw[u.username] ? '隐藏' : '显示' }}
-                      </button>
-                      <button class="btn-mini" @click="copyPassword(u)" title="复制密码">复制</button>
-                    </div>
-                    <div class="um-pw-note" v-if="!u.hasPassword">未保存明文，点「显示」去重置</div>
+                    <span v-else class="muted">—</span>
                   </td>
                   <td class="um-trial-cell" data-label="试用">
                     <template v-if="u.role === 'user'">
-                      <!-- 三层试用：点一下即开通，期间该用户（哪怕还在待审核）可以用自己的密码登录 -->
+                      <!-- 四档试用：一天 / 三天 / 一周 / 一月；点一下即开通，期间该用户（哪怕还在待审核）可以用自己的密码登录 -->
                       <div class="um-trial-btns">
                         <button v-for="d in trialDayOptions" :key="d.days"
                                 class="btn-mini btn-trial"
@@ -4778,6 +4763,43 @@
                       </div>
                     </template>
                     <span v-else class="muted">—</span>
+                  </td>
+                  <!-- 额度列（三行：额度月数 / 期分类 / 到期日期）；额度月数由支付返回值自动落库（6/12/24 个月） -->
+                  <td class="um-membership um-stack" data-label="额度">
+                    <template v-if="u.role === 'user'">
+                      <div class="um-line">
+                        <span class="um-line-k">额度</span>
+                        <div class="um-quota">
+                          <input type="number" min="0" step="1" class="um-input um-num" :value="quotaInputVal(u)" @change="setUserQuota(u, $event.target.value)" title="会员额度（月）：支付后自动填 6 / 12 / 24，也可手动修改；0 或留空为长期">
+                          <span class="um-unit">个月</span>
+                        </div>
+                      </div>
+                      <div class="um-line">
+                        <span class="um-line-k">期</span>
+                        <span class="um-plan-chip" :class="{ 'is-none': !paidPlanOf(u) }">{{ planCategoryText(u) }}</span>
+                      </div>
+                      <div class="um-line">
+                        <span class="um-line-k">到期</span>
+                        <span class="um-line-v">{{ u.disableDate || '长期' }}</span>
+                      </div>
+                    </template>
+                    <span v-else class="muted">—</span>
+                  </td>
+                  <!-- 密码列（两行：密码 / 显示·复制按钮） -->
+                  <td data-label="密码">
+                    <div class="um-pw-col">
+                      <!-- batch15：管理员自己这行（以及任何「改造前创建 / 账号表导入」、没有保存明文的账号）
+                           也要有「显示」按钮——点了会说明原因并直接打开重置面板，而不是什么都不给点。 -->
+                      <code class="um-pw-text" :class="{ 'is-empty': !u.hasPassword }">{{ passwordText(u) }}</code>
+                      <div class="um-pw-btns">
+                        <button class="btn-mini" @click="toggleRevealPassword(u)"
+                                :title="u.hasPassword ? '显示 / 隐藏该账号的密码' : '该账号没有保存可显示的密码，点这里用「重置密码」设一个新密码'">
+                          {{ revealedPw[u.username] ? '隐藏' : '显示' }}
+                        </button>
+                        <button class="btn-mini" @click="copyPassword(u)" title="复制密码">复制</button>
+                      </div>
+                    </div>
+                    <div class="um-pw-note" v-if="!u.hasPassword">未保存明文，点「显示」去重置</div>
                   </td>
                   <td class="muted" data-label="最近登录">
                     <div v-if="u.lastLoginAt">{{ fmtDateTime(u.lastLoginAt) }}</div>
@@ -4805,7 +4827,7 @@
                 </tr>
                 <!-- 重置密码：行内输入区（batch14 起替换掉 window.prompt） -->
                 <tr v-if="resetPw.show && resetPw.username === u.username" class="um-resetrow">
-                  <td colspan="11">
+                  <td colspan="10">
                     <div class="um-reset">
                       <div class="um-reset-head">
                         <span>🔑 为「<b>{{ u.username }}</b>」设置新密码</span>
@@ -4832,7 +4854,7 @@
                   </td>
                 </tr>
                 <tr v-if="expandedUser === u.username" class="um-logrow">
-                  <td colspan="11">
+                  <td colspan="10">
                     <div class="um-log-head">登录记录（最多保留最近 20 次）</div>
                     <table class="um-log-table" v-if="u.logins && u.logins.length">
                       <thead>
@@ -4928,14 +4950,14 @@
     </transition>
   </div>
 
-  <script src="js/auth.js?v=20261007p"></script>
-  <script src="js/auth-sync.js?v=20261007p"></script>
+  <script src="js/auth.js?v=20261007q"></script>
+  <script src="js/auth-sync.js?v=20261007q"></script>
   <!-- 边缘加速默认站点（batch37 治本：Cloudflare Worker 代理东财/腾讯，缓解 JSONP 限流误报）。
        若你所在地区 workers.dev 访问慢，可在「设置 → 行情加速地址」清空即恢复纯直连。 -->
   <script>window.__SNT_ACCEL__ = 'https://sichina.dpdns.org';</script>
   <!-- 扫码支付二维码渲染库（第三方 qrcodejs，本地托管避免外链失效）。renderQr 会先检测全局 QRCode 是否存在。 -->
-  <script src="assets/qrcode.min.js?v=20261007p"></script>
-  <script src="js/auth-boot.js?v=20261007p"></script>
+  <script src="assets/qrcode.min.js?v=20261007q"></script>
+  <script src="js/auth-boot.js?v=20261007q"></script>
   <!-- store / stock-api / hot-topics / app 由 auth-boot.js 在登录通过后动态装载，
        未登录时它们不会被下载，业务数据也不会进入内存 -->
 </body>
