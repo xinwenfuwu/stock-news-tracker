@@ -2353,7 +2353,9 @@ const app = createApp({
         membershipModal.claimed = true;
         membershipModal.payAmount = '';
       } else {
-        membershipModal.claimError = '提交失败：' + (errMsg || '请稍后重试') + '（也可直接把用户名发给管理员）';
+        // 后端返回的文案里可能已含「请直接把用户名发给管理员」的指引，避免重复拼接
+        const tip = /发给管理员/.test(errMsg || '') ? '' : '（也可直接把用户名发给管理员）';
+        membershipModal.claimError = '提交失败：' + (errMsg || '请稍后重试') + tip;
       }
     }
     // 生成收款码（微信 + 支付宝），并把原始支付串渲染为二维码图片
@@ -2402,9 +2404,22 @@ const app = createApp({
     async function loadMemberClaims() {
       memberClaims.loading = true;
       try {
-        const r = (A && A.Sync && A.Sync.readClaims) ? await A.Sync.readClaims() : { ok: true, claims: [] };
-        const all = (r && r.claims) || [];
-        memberClaims.list = all.filter(c => !c.resolved).map(c => ({
+        let raw = null;
+        // 1) 会员后端「实时读」（GET /pay/claims）：直接读仓库最新内容，绕开 GitHub Pages 的
+        //    构建/CDN 延迟，管理员点「刷新」即见刚提交的申请。
+        const base = payApiBase();
+        if (base) {
+          try {
+            const r = await fetch(base + '/pay/claims', { headers: { 'Accept': 'application/json' }, cache: 'no-store' });
+            if (r.ok) { const j = await r.json(); if (j && Array.isArray(j.claims)) raw = j.claims; }
+          } catch (e) { /* 后端不可用 → 回落静态文件 */ }
+        }
+        // 2) 回落：公开静态文件 data/membership/claims.json
+        if (!raw) {
+          const r2 = (A && A.Sync && A.Sync.readClaims) ? await A.Sync.readClaims() : { ok: true, claims: [] };
+          raw = (r2 && r2.claims) || [];
+        }
+        memberClaims.list = raw.filter(c => !c.resolved).map(c => ({
           id: c.id, user: c.user, plan: c.plan || '6m', ts: c.ts || 0,
           amount: Number(c.amount) || 0, resolved: !!c.resolved
         }));
@@ -2436,12 +2451,26 @@ const app = createApp({
       const payTs = Number(claim.ts) || 0;
       const r = A.grantMembership(claim.user, months, { paidAt: payTs, amount: Number(claim.amount) || 0 });
       if (!r || !r.ok) { showToast((r && r.error) || '开通失败', 'error'); return; }
-      // 标记该 claim 已处理（写回 claims.json；失败不影响已开通）
+      // 标记该 claim 已处理：优先走后端 /pay/claims/resolve（管理员浏览器没有 GitHub 令牌也能标记），
+      // 失败再回落管理员令牌直写；两者都失败也不影响已开通。
       try {
-        const rd = (A.Sync && A.Sync.readClaims) ? await A.Sync.readClaims() : { ok: true, claims: [] };
-        const all = (rd && rd.claims) || [];
-        const tgt = all.find(c => c.id === claim.id);
-        if (tgt) { tgt.resolved = true; tgt.resolvedAt = Date.now(); await A.Sync.writeClaims(all); }
+        let marked = false;
+        const base = payApiBase();
+        if (base) {
+          try {
+            const r = await fetch(base + '/pay/claims/resolve', {
+              method: 'POST', headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ id: claim.id })
+            });
+            if (r.ok) marked = true;
+          } catch (e) { /* 回落令牌直写 */ }
+        }
+        if (!marked && A.Sync && A.Sync.writeClaims) {
+          const rd = (A.Sync && A.Sync.readClaims) ? await A.Sync.readClaims() : { ok: true, claims: [] };
+          const all = (rd && rd.claims) || [];
+          const tgt = all.find(c => c.id === claim.id);
+          if (tgt) { tgt.resolved = true; tgt.resolvedAt = Date.now(); await A.Sync.writeClaims(all); }
+        }
       } catch (e) { /* 会员已开通，仅未标记 */ }
       const startText = payTs ? fmtDateNum(payTs) : fmtDateNum(Date.now());
       showToast('已为「' + claim.user + '」开通 ' + months + ' 个月会员（自支付日 ' + startText + ' 起算）', 'success', 4200);
