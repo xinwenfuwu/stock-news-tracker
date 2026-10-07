@@ -61,7 +61,9 @@
     { rank: 4, key: 'eastmoney', name: '东方财富', color: '#e63525', parse: 'news_eastmoney', endpoint: '', fallback: 'https://finance.eastmoney.com/', base: 'https://finance.eastmoney.com' },
     // 请求R：财联社 → 新浪财经 7x24 实时新闻（zhibo feed 接口，字段 create_time / rich_text）
     { rank: 5, key: 'sina', name: '新浪财经', color: '#e60012', parse: 'json_sina', endpoint: 'https://zhibo.sina.com.cn/api/zhibo/feed?page=1&page_size=50&zhibo_id=152&tag_id=0&dire=f&dpc=1', base: 'https://finance.sina.com.cn' },
-    { rank: 6, key: 'kaipanla', name: '开盘啦', color: '#f59e0b', parse: 'html_kaipanla', endpoint: 'https://www.kaipanla.com/', base: 'https://www.kaipanla.com' },
+    /* 请求：开盘啦(kaipanla) → 上海证券报(cnstock)。上海证券报官网=中国证券网 cnstock.com，UTF-8 无编码问题，
+     * 首页可抽到 15+ 条真实新闻标题，经通用 html 抽取（_extractFromHtml）即可，无需专门解析器。 */
+    { rank: 6, key: 'cnstock', name: '上海证券报', color: '#0a4ea2', parse: 'html_cnstock', endpoint: 'https://www.cnstock.com/', base: 'https://www.cnstock.com' },
     /* 请求T：投实官网**没有任何公开新闻流**——整站只有一个 App 产品落地页，
      * m. / api. 子域泛解析回同一页，/news 与 /api/telegraph 均 404，HTML 抽取只能抓到页脚备案号。
      * 故换成证券时报（stcn.com）：UTF-8 无编码问题，实测首页可抽到 195 条真实标题，A股/上市公司导向。 */
@@ -116,7 +118,7 @@
     /(加入我们|极调研|关于格隆汇)/,                // 站点介绍入口
     /(公众号矩阵|搜索结果|申请认证)/,
     /^[>\u00bb\u203a<\u00ab\u2039\u300a\u300b|\uFF5C\u00b7\u3001,\uFF0C.\u3002:\uFF1A;\uFF1B!！?？\-—_~…\s]+$/,
-    /* ↓↓↓ 请求T：网页页脚残留。HTML 抽取源（如证券时报/开盘啦/中国证券）会把页脚的备案号、
+    /* ↓↓↓ 请求T：网页页脚残留。HTML 抽取源（如证券时报/上海证券报/中国证券）会把页脚的备案号、
      * 版权声明、邮箱电话一起抽进来，之前没有对应规则，导致「京ICP备20001999号-1」被当成新闻。
      * 以下都做了防误伤处理：正常新闻标题不会有「备+5位数字+号」、邮箱或 11 位手机号。 */
     /ICP\s*备?\s*\d|备\s*\d{5,}\s*号|公安?备\s*\d/i,      // 京ICP备20001999号-1 / 京公网安备11010602007270号
