@@ -6177,15 +6177,14 @@ const app = createApp({
         const bySource = new Map();
         let dayCount = 0;
         for (const d of dates) {
-          const local = getLocalHotTopicSnapshot(d);
-          let snap = local;
-          if (!snap) {
-            try {
-              const r = await fetch(`./data/hot-topics/${d}.json`, { cache: 'no-store' });
-              if (!r.ok) continue;
-              snap = await r.json();
-            } catch (e) { continue; }
-          }
+          // 优先仓库内置最新快照（服务端每 2 小时生成，含新增来源如华尔街见闻）；
+          // 本地缓存仅作离线回退，避免陈旧缓存（缺 wscn 等新增源）覆盖最新数据。
+          let snap = null;
+          try {
+            const r = await fetch(`./data/hot-topics/${d}.json`, { cache: 'no-store' });
+            if (r.ok) snap = await r.json();
+          } catch (e) { /* 走本地回退 */ }
+          if (!snap || !snap.sources) snap = getLocalHotTopicSnapshot(d);
           if (!snap || !snap.sources) continue;
           dayCount++;
           for (const s of snap.sources) {
@@ -7092,32 +7091,22 @@ const app = createApp({
 
     /** 加载某日历史快照（优先本地快照，回退到仓库内置 data/hot-topics/YYYY-MM-DD.json） */
     async function loadHotTopicHistory(date) {
-      // 1) 优先本地快照（打开应用时自动积累）
-      const local = getLocalHotTopicSnapshot(date);
-      if (local) {
-        hotTopicDateHasData.value = true;
-        hotTopicsSources.value = (local.sources || []).map(s => ({ ...s, loading: false, error: (s.items && s.items.length) ? null : '该日该源无数据' }));
-        hotTopicsUpdated.value = (local.generatedAt ? new Date(local.generatedAt).toLocaleString('zh-CN', { hour12: false }) : date) + '（本地快照）';
-        return;
-      }
-      hotTopicsLoading.value = true;
+      // 优先仓库内置最新快照（服务端每 2 小时生成，含新增来源如华尔街见闻）；
+      // 本地缓存仅作离线回退，避免陈旧缓存（缺 wscn 等新增源）覆盖最新数据。
+      let snap = null, fromLocal = false;
       try {
         const resp = await fetch(`./data/hot-topics/${date}.json`, { cache: 'no-store' });
-        if (!resp.ok) {
-          hotTopicDateHasData.value = false;
-          hotTopicsSources.value = (typeof HotTopics !== 'undefined' ? HotTopics.SOURCE_ORDER : []).map(s => ({ ...s, items: [], loading: false, error: '该日暂无历史快照' }));
-          return;
-        }
-        const snap = await resp.json();
+        if (resp.ok) snap = await resp.json();
+      } catch (e) { /* 走本地回退 */ }
+      if (!snap || !snap.sources) { snap = getLocalHotTopicSnapshot(date); fromLocal = true; }
+      if (snap && snap.sources && snap.sources.length) {
         hotTopicDateHasData.value = true;
-        hotTopicsSources.value = (snap.sources || []).map(s => ({ ...s, loading: false, error: (s.items && s.items.length) ? null : '该日该源无数据' }));
-        hotTopicsUpdated.value = (snap.generatedAt ? new Date(snap.generatedAt).toLocaleString('zh-CN', { hour12: false }) : date) + '（历史）';
-      } catch (e) {
-        hotTopicDateHasData.value = false;
-        hotTopicsSources.value = [];
-      } finally {
-        hotTopicsLoading.value = false;
+        hotTopicsSources.value = snap.sources.map(s => ({ ...s, loading: false, error: (s.items && s.items.length) ? null : '该日该源无数据' }));
+        hotTopicsUpdated.value = (snap.generatedAt ? new Date(snap.generatedAt).toLocaleString('zh-CN', { hour12: false }) : date) + (fromLocal ? '（本地快照）' : '（历史）');
+        return;
       }
+      hotTopicDateHasData.value = false;
+      hotTopicsSources.value = (typeof HotTopics !== 'undefined' ? HotTopics.SOURCE_ORDER : []).map(s => ({ ...s, items: [], loading: false, error: '该日暂无历史快照' }));
     }
 
     function setHtMode(m) {
@@ -7162,13 +7151,12 @@ const app = createApp({
         }
         if (!dates.length) dates.push(fmtDate(new Date()));
         const snapshots = await Promise.all(dates.map(async d => {
-          const local = getLocalHotTopicSnapshot(d);
-          if (local) return local;
+          // 优先仓库最新快照（含新增来源），本地缓存仅作离线回退
           try {
             const r = await fetch(`./data/hot-topics/${d}.json`, { cache: 'no-store' });
-            if (!r.ok) return null;
-            return await r.json();
-          } catch (e) { return null; }
+            if (r.ok) return await r.json();
+          } catch (e) { /* 走本地回退 */ }
+          return getLocalHotTopicSnapshot(d);
         }));
         const flat = [];
         let dayCount = 0;
