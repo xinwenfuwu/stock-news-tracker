@@ -7362,6 +7362,7 @@ const app = createApp({
         if (list && list.length) {
           doubaoHot.value = list; D.doubaoHot = list;
           showToast(`已刷新豆包搜索热度榜 ${list.length} 条`, 'success');
+          ensureNameDict().then(ok => { if (ok) computeDoubaoStockRanking(); });
         } else {
           doubaoHotError.value = '豆包搜索暂未返回结果'; showToast('豆包搜索暂未返回结果', 'info');
         }
@@ -7370,6 +7371,51 @@ const app = createApp({
         showToast('豆包搜索榜获取失败：' + (e.message || e), 'error');
       } finally { doubaoHotLoading.value = false; }
     }
+
+    // ============ 豆包股票搜索排行榜：从豆包搜索结果抽取被提及股票，按提及次数从大到小排名 ============
+    const doubaoStockRanking = ref([]);   // [{name, code, count}] 已按 count 降序
+    const doubaoStockRankNote = ref('');  // 空结果/异常说明
+    let _nameScanList = null;             // [{name, lower, code}] 按名称长度降序，用于正文扫描
+    let _codeToName = null;               // code -> name
+    async function ensureNameDict() {
+      if (_nameScanList) return true;
+      try {
+        const list = await StockAPI.getAllStockNames();
+        if (!list || !list.length) { doubaoStockRankNote.value = '股票字典暂不可用，无法识别个股'; return false; }
+        _nameScanList = list
+          .filter(s => s.name && s.name.length >= 2 && /[一-龥]/.test(s.name))
+          .map(s => ({ name: s.name, lower: s.name.toLowerCase(), code: s.code }))
+          .sort((a, b) => b.name.length - a.name.length);
+        _codeToName = {};
+        for (const s of list) if (s.code) _codeToName[s.code] = s.name;
+        return true;
+      } catch (e) {
+        doubaoStockRankNote.value = '股票字典加载失败：' + (e && e.message ? e.message : e);
+        return false;
+      }
+    }
+    function computeDoubaoStockRanking() {
+      const results = doubaoHot.value || [];
+      if (!results.length) { doubaoStockRanking.value = []; return; }
+      if (!_nameScanList) { doubaoStockRankNote.value = '股票字典加载中…'; return; }
+      const counter = {};
+      for (const r of results) {
+        const text = ((r.title || '') + ' ' + (r.snippet || '')).toLowerCase();
+        const seen = new Set();
+        for (const s of _nameScanList) {
+          if (text.indexOf(s.lower) >= 0) {
+            if (!seen.has(s.code)) { seen.add(s.code); counter[s.code] = (counter[s.code] || 0) + 1; }
+          }
+        }
+      }
+      const arr = Object.keys(counter).map(code => ({
+        name: _codeToName[code] || code, code, count: counter[code]
+      })).sort((a, b) => b.count - a.count || (a.name < b.name ? -1 : 1));
+      doubaoStockRanking.value = arr;
+      doubaoStockRankNote.value = arr.length ? '' : '本次豆包搜索结果未识别出可匹配个股';
+    }
+    // 启动即预热字典；字典就绪且已有豆包结果时补算一次
+    ensureNameDict().then(ok => { if (ok && (doubaoHot.value || []).length) computeDoubaoStockRanking(); });
 
     /** ② 只刷新「新上市股票」（失败时保留上次数据） */
     async function refreshNewListedStocks() {
@@ -9349,6 +9395,7 @@ const app = createApp({
       thsHotStocks, thsHotLoading, refreshThsHotOnly,
       emHotStocks, emHotLoading, refreshEmHotOnly,
       doubaoHot, doubaoHotLoading, doubaoHotError, refreshDoubaoOnly,
+      doubaoStockRanking, doubaoStockRankNote,
       doubaoKeyInput, doubaoKeyFormShow, doubaoGuideShow, doubaoKeyActive,
       toggleDoubaoKeyForm, saveDoubaoKey, clearDoubaoKey, openDoubaoGuide,
       // 全球信息页：火热话题 + 格隆汇每日快讯

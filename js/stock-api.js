@@ -4110,9 +4110,47 @@ const StockAPI = {
     } catch (e) {
       console.debug('新上市股票（东财旧源）获取失败', e);
     }
-    const valid = results.filter(r => r.listingDays != null && !isNaN(r.listingDays) && r.listingDays >= 0);
-    valid.sort((a, b) => a.listingDays - b.listingDays);
-    return valid.slice(0, 50);
+        const valid = results.filter(r => r.listingDays != null && !isNaN(r.listingDays) && r.listingDays >= 0);
+        valid.sort((a, b) => a.listingDays - b.listingDays);
+        return valid.slice(0, 50);
+  },
+
+  /**
+   * 全量 A 股名称/代码字典（不依赖静态文件，实时分页拉取东财 clist/get）。
+   * 用于从任意文本（如豆包搜索结果）抽取被提及的股票。结果带 localStorage 缓存（7 天），避免每次加载都重拉。
+   * @returns {Promise<Array<{name,code}>>}
+   */
+  async getAllStockNames() {
+    try {
+      const cached = this._lsGetItem('snt.allStockNames.v2');
+      if (cached) {
+        const o = JSON.parse(cached);
+        if (o && Array.isArray(o.list) && o.list.length >= 1000 && (Date.now() - (o.t || 0) < 7 * 86400000)) {
+          return o.list;
+        }
+      }
+    } catch (e) { /* 缓存读失败忽略 */ }
+    const out = [];
+    try {
+      for (let pn = 1; pn <= 20; pn++) {
+        const url = `https://push2.eastmoney.com/api/qt/clist/get?pn=${pn}&pz=1000&po=1&np=1&fltt=2&invt=2&fid=f12&fs=m:0+t:6,m:0+t:80,m:1+t:2,m:1+t:23&fields=f12,f13,f14`;
+        const json = await this._eastGet(url);
+        const arr = this._diffArray(json);
+        if (!arr || !arr.length) break;
+        for (const it of arr) {
+          const pure = String(it.f12 || '').trim();
+          const name = String(it.f14 || '').trim();
+          if (!/^\d{6}$/.test(pure) || !name) continue;
+          const prefix = String(it.f13) === '1' ? 'sh' : 'sz';
+          out.push({ name, code: prefix + pure });
+        }
+        if (arr.length < 1000) break;
+      }
+    } catch (e) { /* 单页失败忽略，尽量返回已拿到的 */ }
+    if (out.length >= 1000) {
+      try { this._lsSetItem('snt.allStockNames.v2', JSON.stringify({ t: Date.now(), list: out })); } catch (e) { /* 超配额忽略 */ }
+    }
+    return out;
   },
 
   // ============ 连板股票（近 10 个交易日内涨停次数排行） ============
