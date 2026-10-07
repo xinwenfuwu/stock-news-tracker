@@ -2119,7 +2119,13 @@ const app = createApp({
       mode: '',            // 收款方式：'personal' 个人码 | 'merchant' 商户 | '' 未配置
       claimMsg: '',        // 「我已支付」提交后的提示
       claimed: false,      // 本次是否已提交待开通
-      payStep: 'select'    // 会员服务二级页：'select' 选套餐 | 'pay' 付费页
+      payStep: 'select',   // 会员服务二级页：'select' 选套餐 | 'pay' 付费页
+      // 「我已支付请求开通」表单状态（20261007n）
+      claimOpen: false,
+      claim: { user: '', period: '', startText: '', endText: '', fee: 0 },
+      payAmount: '',       // 填写支付金额（必填）
+      claimError: '',
+      claimSubmitting: false
     });
     // 个人收款码（支付码）功能已按需求整体删除；会员支付统一走商户扫码方案（createPayOrder / genPayQr / /pay/create）。
     function fmtDate(ts) { const d = new Date(Number(ts) || Date.now()); const p = n => String(n).padStart(2, '0'); return d.getFullYear() + '-' + p(d.getMonth() + 1) + '-' + p(d.getDate()); }
@@ -2225,16 +2231,95 @@ const app = createApp({
       membershipModal.mode = resolvePayMode();
       await syncMembership();
     }
-    // 用户端二级页：选套餐后进入付费页
-    function selectPlan(p) {
+    // 用户端二级页：选套餐后进入付费页（进入即直接生成收款码，无需再点一次）
+    async function selectPlan(p) {
       membershipModal.plan = p;
       membershipModal.payStep = 'pay';
       membershipModal.claimed = false;
       membershipModal.claimMsg = '';
       membershipModal.error = '';
+      membershipModal.wxQr = '';
+      membershipModal.aliQr = '';
+      membershipModal.claimOpen = false;
+      membershipModal.payAmount = '';
+      membershipModal.claimError = '';
+      // 进入付费页直接拉起收款码（原「生成收款码」按钮已移除）
+      await genPayQr();
     }
-    function backToPlans() { membershipModal.payStep = 'select'; }
+    function backToPlans() {
+      membershipModal.payStep = 'select';
+      membershipModal.wxQr = '';
+      membershipModal.aliQr = '';
+      membershipModal.error = '';
+      membershipModal.claimOpen = false;
+      membershipModal.payAmount = '';
+      membershipModal.claimError = '';
+    }
     // 个人收款码「我已支付」提交流程随支付码功能一并删除；会员开通统一由商户扫码（genPayQr）自动回调。
+
+    /* ---- 20261007n：「我已支付请求开通」表单（用户提交待开通申请，落到管理员「授权使用」分类）---- */
+    function openPaymentClaim() {
+      const uname = (Auth && Auth.user && Auth.user.username) || '';
+      const plan = membershipModal.plan || '6m';
+      const months = planMonthsNum(plan);
+      const startTs = Date.now();
+      const endTs = startTs + months * 30 * 24 * 60 * 60 * 1000;
+      membershipModal.claim = {
+        user: uname,
+        period: planName(plan),
+        startText: fmtDateTime(startTs),
+        endText: fmtDateTime(endTs),
+        fee: planAmount(plan)
+      };
+      membershipModal.payAmount = '';
+      membershipModal.claimError = '';
+      membershipModal.claimMsg = '';
+      membershipModal.claimOpen = true;
+    }
+    function closePaymentClaim() {
+      membershipModal.claimOpen = false;
+      membershipModal.payAmount = '';
+      membershipModal.claimError = '';
+    }
+    // 用户提交「我已支付请求开通」：把 账号名称/开始时间/结束时间/时段/支付费用 + 必填的「填写支付金额」
+    // 写入管理员待开通记录（A.Sync.writeClaims），管理员在「授权使用」中核对账单后开通。
+    async function submitPaymentClaim() {
+      const amt = Number(membershipModal.payAmount);
+      if (!amt || amt <= 0) { membershipModal.claimError = '请填写支付金额（必填）'; return; }
+      const uname = (Auth && Auth.user && Auth.user.username) || '';
+      if (!uname) { membershipModal.claimError = '请先登录后再提交'; return; }
+      const plan = membershipModal.plan || '6m';
+      const months = planMonthsNum(plan);
+      const startTs = Date.now();
+      const endTs = startTs + months * 30 * 24 * 60 * 60 * 1000;
+      const claim = {
+        id: 'clm_' + startTs + '_' + Math.random().toString(36).slice(2, 8),
+        user: uname,
+        plan: plan,
+        ts: startTs,
+        amount: amt,                                  // 用户填写的实际支付金额（必填）
+        fee: planAmount(plan),                        // 应付费用（套餐价）
+        startTs: startTs,
+        endTs: endTs,
+        period: planName(plan),
+        resolved: false
+      };
+      membershipModal.claimSubmitting = true;
+      membershipModal.claimError = '';
+      try {
+        const rd = (A && A.Sync && A.Sync.readClaims) ? await A.Sync.readClaims() : { ok: true, claims: [] };
+        const all = (rd && rd.claims) || [];
+        all.push(claim);
+        if (A && A.Sync && A.Sync.writeClaims) await A.Sync.writeClaims(all);
+        membershipModal.claimMsg = '已提交，管理员核对账单后将为你开通「' + planName(plan) + '」。可在「用户管理 → 授权使用」看到你的申请。';
+        membershipModal.claimed = true;
+        membershipModal.payAmount = '';
+      } catch (e) {
+        membershipModal.claimError = '提交失败：' + (e && e.message ? e.message : e);
+      } finally {
+        membershipModal.claimSubmitting = false;
+      }
+    }
     // 生成收款码（微信 + 支付宝），并把原始支付串渲染为二维码图片
     async function genPayQr() {
       const uname = (Auth && Auth.user && Auth.user.username) || '';
@@ -2355,8 +2440,10 @@ const app = createApp({
       const months = planMonthsNum(plan);
       const startTs = Number(c.ts) || 0;
       const endTs = startTs + months * 30 * 24 * 60 * 60 * 1000;
+      // 用户提交的「我已支付请求开通」带实际支付金额(amount)；有则优先显示，便于管理员核对账单
+      const money = (c.amount && Number(c.amount) > 0) ? '¥' + Number(c.amount) : '¥' + planAmount(plan);
       return {
-        金额: '¥' + planAmount(plan),
+        金额: money,
         账号名称: c.user,
         开始时间: startTs ? fmtDateTime(startTs) : '—',
         结束时间: startTs ? fmtDateTime(endTs) : '—',
@@ -9578,7 +9665,8 @@ const app = createApp({
       holdingDays, holdingCost, holdingMarketValue, holdingChangePct, holdingProfit, holdingProfitPct,
       // 会员服务 / 扫码支付开通（batch84 + batch-A）
       membershipModal, openMembershipService, genPayQr, syncMembership,
-      selectPlan, backToPlans, claimsOfPlan, planLabel
+      selectPlan, backToPlans, claimsOfPlan, planLabel,
+      openPaymentClaim, closePaymentClaim, submitPaymentClaim
       ,
       // 用户须知
       userNoticeModal, openUserNotice

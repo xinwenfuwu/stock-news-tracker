@@ -3203,6 +3203,24 @@ body.guest-mode #app { display: none; }
   box-shadow: 0 -6px 8px -6px rgba(0,0,0,.18); }
 .pay-actions .btn { flex: 1; min-width: 130px; }
 
+/* 20261007n：「我已支付请求开通」表单 */
+.claim-panel { margin-top: 6px; }
+.claim-form { border: 1px solid var(--border); border-radius: 12px; padding: 14px 16px; background: var(--bg); }
+.claim-row { display: flex; align-items: center; gap: 12px; padding: 9px 0; border-bottom: 1px dashed var(--border); }
+.claim-row:last-of-type { border-bottom: none; }
+.claim-k { width: 116px; flex: none; color: var(--text-muted); font-size: 13.5px; }
+.claim-v { font-weight: 600; color: var(--text); font-size: 14px; }
+.claim-row-input { align-items: flex-start; }
+.claim-row-input .claim-k { padding-top: 8px; }
+.claim-input { flex: 1; min-width: 0; padding: 8px 10px; border: 1px solid var(--border); border-radius: 8px;
+  background: var(--surface); color: var(--text); font-size: 14px; }
+.claim-input:focus { outline: none; border-color: var(--primary); }
+.req { color: #dc2626; font-style: normal; margin-left: 2px; }
+.claim-actions { margin-top: 14px; }
+.claim-actions .btn { width: 100%; }
+.claim-ok { margin-top: 10px; color: #15803d; background: #f0fdf4; border: 1px solid #bbf7d0;
+  border-radius: 8px; padding: 8px 10px; line-height: 1.5; }
+
 /* ===== 用户管理三板块 ===== */
 .um-section { border: 1px solid var(--border); border-radius: var(--radius); padding: 14px 16px; margin-bottom: 16px; background: var(--surface); }
 .um-section-head { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; margin-bottom: 12px; }

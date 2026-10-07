@@ -4,12 +4,12 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>股市信息分析系统</title>
-  <link rel="stylesheet" href="css/style.css?v=20261007m">
+  <link rel="stylesheet" href="css/style.css?v=20261007n">
   <!-- Vue 3 全局构建版（v3.4.21 · 自托管）
        原先走 unpkg.com CDN：国内网络对 unpkg 的连通性不稳定，一旦该请求长时间挂起，
        <head> 里的阻塞脚本会让整页停在白屏、后续 auth-boot.js 根本不会执行。
        改为同源托管后，启动链路不再依赖任何第三方 CDN。 -->
-  <script src="js/vue.global.prod.js?v=20261007m"></script>
+  <script src="js/vue.global.prod.js?v=20261007n"></script>
 </head>
 <body class="auth-locked">
   <!-- ===== 登录关卡：登录通过前业务脚本不会被加载 ===== -->
@@ -1529,7 +1529,7 @@
               <button class="btn-icon" @click="membershipModal.show = false" title="关闭">✕</button>
             </div>
             <div class="membership-body">
-              <p class="membership-desc">新用户注册即享 1 天免费试用；试用结束后，选择下方套餐并扫码支付即可开通会员，管理员核对账单后开通，无需等待审核。</p>
+              <p class="membership-desc">新用户注册即享 1 天免费试用；试用结束后，选择下方套餐扫码支付即可开通会员。支付完成后点「我已支付请求开通」提交，管理员核对账单后为你开通。</p>
               <div class="member-status" v-if="membershipModal.statusText">
                 <span class="muted">当前状态：</span><b>{{ membershipModal.statusText }}</b>
                 <button class="btn btn-sm" :disabled="membershipModal.syncing" @click="syncMembership()">↻ 刷新</button>
@@ -1557,24 +1557,18 @@
                     <div class="plan-unit">/ 24 个月</div>
                   </label>
                 </div>
-                <button class="btn btn-primary plan-next" :disabled="!membershipModal.plan" @click="selectPlan(membershipModal.plan)">选择并去支付</button>
+                <button class="btn btn-primary plan-next" :disabled="!membershipModal.plan" @click="selectPlan(membershipModal.plan)">选择去支付</button>
               </div>
 
-              <!-- 二级页：付费 -->
+              <!-- 二级页：付费（进入即直接显示收款码） -->
               <div v-if="membershipModal.payStep === 'pay'">
                 <div class="pay-back">
-                  <button class="btn btn-sm" @click="backToPlans">← 重新选择套餐</button>
                   <span class="muted small">已选：{{ planLabel(membershipModal.plan) }}</span>
                 </div>
 
-                <!-- 商户方案（微信/支付宝扫码，自动回调授权） -->
+                <!-- 商户方案（微信/支付宝扫码） -->
                 <div class="membership-pay">
-                  <button class="btn btn-primary" :disabled="membershipModal.loading" @click="genPayQr()">
-                    {{ membershipModal.loading ? '正在生成收款码…' : '生成收款码（微信 / 支付宝）' }}
-                  </button>
-                  <p class="muted small" v-if="!membershipModal.wxQr && !membershipModal.aliQr && !membershipModal.error">
-                    点击上方按钮，将同时生成微信与支付宝收款码；手机扫码完成支付后，后台会自动把对应时长开通到当前账号。
-                  </p>
+                  <p class="muted small" v-if="membershipModal.loading">正在生成收款码…</p>
                   <p class="error small" v-if="membershipModal.error">{{ membershipModal.error }}</p>
                   <div class="qr-row" v-if="membershipModal.wxQr || membershipModal.aliQr">
                     <div class="qr-box" v-if="membershipModal.wxQr">
@@ -1586,9 +1580,40 @@
                       <img :src="membershipModal.aliQr" alt="支付宝二维码" class="qr-pay-img">
                     </div>
                   </div>
+                  <!-- 二维码下方两个按钮 -->
+                  <div class="pay-actions">
+                    <button class="btn btn-sm" @click="backToPlans">返回重新选择套餐</button>
+                    <button class="btn btn-primary" @click="openPaymentClaim">我已支付请求开通</button>
+                  </div>
                   <p class="muted small" v-if="membershipModal.wxQr || membershipModal.aliQr">
-                    支付成功后稍候，点「刷新」即可看到「已开通会员」状态。
+                    手机扫码支付完成后，点「我已支付请求开通」提交，管理员核对账单后为你开通；届时点上方「↻ 刷新」即可看到会员状态。
                   </p>
+                </div>
+              </div>
+
+              <!-- 三级页：我已支付请求开通 -->
+              <div v-if="membershipModal.claimOpen" class="claim-panel">
+                <div class="pay-back">
+                  <button class="btn btn-sm" @click="closePaymentClaim">← 返回支付页</button>
+                  <span class="muted small">提交后，管理员将在「授权使用」中核对并开通</span>
+                </div>
+                <div class="claim-form">
+                  <div class="claim-row"><span class="claim-k">账号名称</span><span class="claim-v">{{ membershipModal.claim.user }}</span></div>
+                  <div class="claim-row"><span class="claim-k">时段</span><span class="claim-v">{{ membershipModal.claim.period }}</span></div>
+                  <div class="claim-row"><span class="claim-k">开始时间</span><span class="claim-v">{{ membershipModal.claim.startText }}</span></div>
+                  <div class="claim-row"><span class="claim-k">结束时间</span><span class="claim-v">{{ membershipModal.claim.endText }}</span></div>
+                  <div class="claim-row"><span class="claim-k">支付费用</span><span class="claim-v">¥{{ membershipModal.claim.fee }}</span></div>
+                  <div class="claim-row claim-row-input">
+                    <span class="claim-k">填写支付金额<em class="req">*</em></span>
+                    <input type="number" min="0" step="0.01" class="claim-input" v-model="membershipModal.payAmount" placeholder="请输入实际支付金额（必填）">
+                  </div>
+                  <p class="error small" v-if="membershipModal.claimError">{{ membershipModal.claimError }}</p>
+                  <div class="claim-actions">
+                    <button class="btn btn-primary" :disabled="membershipModal.claimSubmitting" @click="submitPaymentClaim">
+                      {{ membershipModal.claimSubmitting ? '提交中…' : '提交申请' }}
+                    </button>
+                  </div>
+                  <p class="muted small claim-ok" v-if="membershipModal.claimMsg">{{ membershipModal.claimMsg }}</p>
                 </div>
               </div>
             </div>
@@ -4859,14 +4884,14 @@
     </transition>
   </div>
 
-  <script src="js/auth.js?v=20261007m"></script>
-  <script src="js/auth-sync.js?v=20261007m"></script>
+  <script src="js/auth.js?v=20261007n"></script>
+  <script src="js/auth-sync.js?v=20261007n"></script>
   <!-- 边缘加速默认站点（batch37 治本：Cloudflare Worker 代理东财/腾讯，缓解 JSONP 限流误报）。
        若你所在地区 workers.dev 访问慢，可在「设置 → 行情加速地址」清空即恢复纯直连。 -->
   <script>window.__SNT_ACCEL__ = 'https://sichina.dpdns.org';</script>
   <!-- 扫码支付二维码渲染库（第三方 qrcodejs，本地托管避免外链失效）。renderQr 会先检测全局 QRCode 是否存在。 -->
-  <script src="assets/qrcode.min.js?v=20261007m"></script>
-  <script src="js/auth-boot.js?v=20261007m"></script>
+  <script src="assets/qrcode.min.js?v=20261007n"></script>
+  <script src="js/auth-boot.js?v=20261007n"></script>
   <!-- store / stock-api / hot-topics / app 由 auth-boot.js 在登录通过后动态装载，
        未登录时它们不会被下载，业务数据也不会进入内存 -->
 </body>
