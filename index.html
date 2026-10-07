@@ -4,12 +4,12 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>股市信息分析系统</title>
-  <link rel="stylesheet" href="css/style.css?v=20261007o">
+  <link rel="stylesheet" href="css/style.css?v=20261007p">
   <!-- Vue 3 全局构建版（v3.4.21 · 自托管）
        原先走 unpkg.com CDN：国内网络对 unpkg 的连通性不稳定，一旦该请求长时间挂起，
        <head> 里的阻塞脚本会让整页停在白屏、后续 auth-boot.js 根本不会执行。
        改为同源托管后，启动链路不再依赖任何第三方 CDN。 -->
-  <script src="js/vue.global.prod.js?v=20261007o"></script>
+  <script src="js/vue.global.prod.js?v=20261007p"></script>
 </head>
 <body class="auth-locked">
   <!-- ===== 登录关卡：登录通过前业务脚本不会被加载 ===== -->
@@ -4407,8 +4407,9 @@
         <div class="um-layout">
           <div class="um-tabs">
             <button class="um-tab" :class="{active: umTab==='admin'}" @click="umTab='admin'">管理员</button>
+            <button class="um-tab" :class="{active: umTab==='review'}" @click="umTab='review'; loadMemberClaims()">待审核用户</button>
             <button class="um-tab" :class="{active: umTab==='register'}" @click="umTab='register'">普通用户注册</button>
-            <button class="um-tab" :class="{active: umTab==='auth'}" @click="umTab='auth'">授权使用</button>
+            <button class="um-tab" :class="{active: umTab==='auth'}" @click="umTab='auth'; loadMemberClaims()">授权使用</button>
           </div>
           <div class="um-subtabs" v-if="umTab==='auth'">
             <button class="um-tab um-subtab" :class="{active: umAuth==='trial'}" @click="umAuth='trial'">授权免费试用（非支付会员用户）</button>
@@ -4425,13 +4426,18 @@
               <span class="um-section-desc">新用户注册即免费授权使用 1 天；管理员可在此授权非支付会员用户免费试用天数。</span>
             </div>
 
+            <div class="um-code-bar um-search-bar">
+              <input class="um-input um-grow" v-model="umSearch" placeholder="🔍 搜索账号名称…" autocomplete="off">
+              <button class="btn btn-sm" @click="umSearch=''" title="清除搜索" v-if="umSearch">清除</button>
+            </div>
+
             <!-- 待审核注册申请 -->
             <div class="um-pending" v-if="userModal.pending.length">
               <div class="um-pending-head">
                 <span>🔔 待审核注册申请</span>
                 <span class="um-pending-count">{{ userModal.pending.length }} 人</span>
               </div>
-              <div class="um-pending-item" v-for="p in userModal.pending" :key="p.username">
+              <div class="um-pending-item" v-for="p in userModal.pending.filter(x => umSearchMatch(x.username))" :key="p.username">
                 <div class="um-pending-main">
                   <span class="um-name">{{ p.username }}</span>
                   <span class="um-pending-meta">提交于 {{ fmtDateTime(p.createdAt) }}</span>
@@ -4510,6 +4516,11 @@
               <span class="um-section-desc">按会员类型对所有账号精准分类，并汇总金额与人数统计；金额、账号名称、开始时间、结束时间、时段均按返回信息记录。</span>
             </div>
 
+            <div class="um-code-bar um-search-bar">
+              <input class="um-input um-grow" v-model="umSearch" placeholder="🔍 搜索账号名称…" autocomplete="off">
+              <button class="btn btn-sm" @click="umSearch=''" title="清除搜索" v-if="umSearch">清除</button>
+            </div>
+
             <!-- 统计概览 -->
             <div class="um-stats" v-if="adminClassify().stats">
               <div class="um-stat"><span class="um-stat-num">{{ adminClassify().stats.total }}</span><span class="um-stat-lbl">账号总数</span></div>
@@ -4529,7 +4540,7 @@
               <table class="um-cat-table" v-if="cat.items.length">
                 <thead><tr><th>金额</th><th>账号名称</th><th>开始时间</th><th>结束时间</th><th>时段</th></tr></thead>
                 <tbody>
-                  <tr v-for="(it, i) in cat.items" :key="cat.key + '-' + i">
+                  <tr v-for="(it, i) in cat.items.filter(x => umSearchMatch(x['账号名称']))" :key="cat.key + '-' + i">
                     <td>{{ it['金额'] }}</td><td>{{ it['账号名称'] }}</td><td>{{ it['开始时间'] }}</td><td>{{ it['结束时间'] }}</td><td>{{ it['时段'] }}</td>
                   </tr>
                 </tbody>
@@ -4541,8 +4552,46 @@
           </div>
           </div><!-- /um-panel admin -->
 
+          <!-- ============ 板块：待审核用户（会员支付申请审核） ============ -->
+          <div class="um-panel" v-if="umTab==='review'">
+          <div class="um-section">
+            <div class="um-section-head">
+              <h4>待审核用户</h4>
+              <span class="um-section-desc">用户在「会员服务」点「提交申请」后，申请信息回到这里待审核；核对无误后点「核对并开通」，账号即归类到对应支付板块。</span>
+            </div>
+            <div class="um-code-bar um-search-bar">
+              <input class="um-input um-grow" v-model="umSearch" placeholder="🔍 搜索账号名称…" autocomplete="off">
+              <button class="btn btn-sm" @click="umSearch=''" title="清除搜索" v-if="umSearch">清除</button>
+              <button class="btn btn-sm" @click="loadMemberClaims" title="重新拉取待审核申请">↻ 刷新</button>
+            </div>
+            <div class="um-pending">
+              <div class="um-pending-head">
+                <span>会员支付申请 · 待审核</span>
+                <span class="um-pending-count" v-if="memberClaims.loading">加载中…</span>
+                <span class="um-pending-count" v-else-if="reviewClaims().length">{{ reviewClaims().length }} 条</span>
+                <span class="um-pending-count" v-else>无</span>
+              </div>
+              <div class="um-pending-item" v-for="c in reviewClaims()" :key="c.id || (c.user + '-' + c.ts)">
+                <div class="um-pending-main">
+                  <span class="um-name">{{ c.user }}</span>
+                  <span class="um-pending-meta" v-for="(val, key) in claimFields(c)" :key="key"><b>{{ key }}：</b>{{ val }}</span>
+                </div>
+                <div class="um-actions">
+                  <button class="btn btn-sm btn-primary" @click="grantMemberClaim(c)">核对并开通</button>
+                </div>
+              </div>
+              <div class="um-empty" v-if="!memberClaims.loading && !reviewClaims().length">暂无待审核支付申请</div>
+            </div>
+            <div class="um-hint">说明：「核对并开通」会按申请套餐为该账号开通会员，并自动归类到「授权使用」对应的半年期 / 一年期 / 两年期 待开通分类下；账号名称、开始时间、结束时间、时段、支付费用均按提交信息记录。</div>
+          </div>
+          </div><!-- /um-panel review -->
+
           <!-- ============ 授权使用面板 ============ -->
           <div class="um-panel" v-if="umTab==='auth'">
+          <div class="um-code-bar um-search-bar">
+            <input class="um-input um-grow" v-model="umSearch" placeholder="🔍 搜索账号名称…" autocomplete="off">
+            <button class="btn btn-sm" @click="umSearch=''" title="清除搜索" v-if="umSearch">清除</button>
+          </div>
           <div class="um-section" v-if="umAuth==='6m'">
             <div class="um-section-head">
               <h4>半年期（¥1000）待开通</h4>
@@ -4557,7 +4606,7 @@
                 <span class="um-pending-count" v-else-if="claimsOfPlan('6m').length">{{ claimsOfPlan('6m').length }} 条</span>
                 <span class="um-pending-count" v-else>无</span>
               </div>
-              <div class="um-pending-item" v-for="c in claimsOfPlan('6m')" :key="c.id || (c.user + '-' + c.ts)">
+              <div class="um-pending-item" v-for="c in claimsOfPlan('6m').filter(c => umSearchMatch(c.user))" :key="c.id || (c.user + '-' + c.ts)">
                 <div class="um-pending-main">
                   <span class="um-name">{{ c.user }}</span>
                   <span class="um-pending-meta" v-for="(val, key) in claimFields(c)" :key="key"><b>{{ key }}：</b>{{ val }}</span>
@@ -4580,7 +4629,7 @@
                 <span>授权免费试用（非支付会员用户）</span>
                 <span class="um-pending-count">{{ trialUsersList().length }} 人</span>
               </div>
-              <div class="um-pending-item" v-for="u in trialUsersList()" :key="u.username">
+              <div class="um-pending-item" v-for="u in trialUsersList().filter(u => umSearchMatch(u.username))" :key="u.username">
                 <div class="um-pending-main">
                   <span class="um-name">{{ u.username }}</span>
                   <span class="um-pending-meta" v-for="(val, key) in trialFields(u)" :key="key"><b>{{ key }}：</b>{{ val }}</span>
@@ -4605,7 +4654,7 @@
                 <span class="um-pending-count" v-else-if="claimsOfPlan('1y').length">{{ claimsOfPlan('1y').length }} 条</span>
                 <span class="um-pending-count" v-else>无</span>
               </div>
-              <div class="um-pending-item" v-for="c in claimsOfPlan('1y')" :key="c.id || (c.user + '-' + c.ts)">
+              <div class="um-pending-item" v-for="c in claimsOfPlan('1y').filter(c => umSearchMatch(c.user))" :key="c.id || (c.user + '-' + c.ts)">
                 <div class="um-pending-main">
                   <span class="um-name">{{ c.user }}</span>
                   <span class="um-pending-meta" v-for="(val, key) in claimFields(c)" :key="key"><b>{{ key }}：</b>{{ val }}</span>
@@ -4630,7 +4679,7 @@
                 <span class="um-pending-count" v-else-if="claimsOfPlan('2y').length">{{ claimsOfPlan('2y').length }} 条</span>
                 <span class="um-pending-count" v-else>无</span>
               </div>
-              <div class="um-pending-item" v-for="c in claimsOfPlan('2y')" :key="c.id || (c.user + '-' + c.ts)">
+              <div class="um-pending-item" v-for="c in claimsOfPlan('2y').filter(c => umSearchMatch(c.user))" :key="c.id || (c.user + '-' + c.ts)">
                 <div class="um-pending-main">
                   <span class="um-name">{{ c.user }}</span>
                   <span class="um-pending-meta" v-for="(val, key) in claimFields(c)" :key="key"><b>{{ key }}：</b>{{ val }}</span>
@@ -4659,7 +4708,7 @@
               </tr>
             </thead>
             <tbody>
-              <template v-for="u in userList" :key="u.username">
+              <template v-for="u in userList.filter(x => umSearchMatch(x.username))" :key="u.username">
                 <tr :class="{ 'um-row-pending': u.status === 'pending', 'um-row-off': u.disabled }">
                   <td data-label="用户名">
                     <span class="um-name">{{ u.username }}</span>
@@ -4879,14 +4928,14 @@
     </transition>
   </div>
 
-  <script src="js/auth.js?v=20261007o"></script>
-  <script src="js/auth-sync.js?v=20261007o"></script>
+  <script src="js/auth.js?v=20261007p"></script>
+  <script src="js/auth-sync.js?v=20261007p"></script>
   <!-- 边缘加速默认站点（batch37 治本：Cloudflare Worker 代理东财/腾讯，缓解 JSONP 限流误报）。
        若你所在地区 workers.dev 访问慢，可在「设置 → 行情加速地址」清空即恢复纯直连。 -->
   <script>window.__SNT_ACCEL__ = 'https://sichina.dpdns.org';</script>
   <!-- 扫码支付二维码渲染库（第三方 qrcodejs，本地托管避免外链失效）。renderQr 会先检测全局 QRCode 是否存在。 -->
-  <script src="assets/qrcode.min.js?v=20261007o"></script>
-  <script src="js/auth-boot.js?v=20261007o"></script>
+  <script src="assets/qrcode.min.js?v=20261007p"></script>
+  <script src="js/auth-boot.js?v=20261007p"></script>
   <!-- store / stock-api / hot-topics / app 由 auth-boot.js 在登录通过后动态装载，
        未登录时它们不会被下载，业务数据也不会进入内存 -->
 </body>

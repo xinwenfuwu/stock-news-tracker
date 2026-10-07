@@ -3202,6 +3202,8 @@ body.guest-mode #app { display: none; }
   position: sticky; bottom: 0; background: var(--surface); padding-top: 8px; padding-bottom: 2px;
   box-shadow: 0 -6px 8px -6px rgba(0,0,0,.18); }
 .pay-actions .btn { flex: 1; min-width: 130px; }
+/* 用户管理各面板的会员搜索框 */
+.um-search-bar { margin: 10px 0 12px; }
 
 /* 20261007n：「我已支付请求开通」表单 */
 .claim-panel { margin-top: 6px; }

@@ -86,6 +86,17 @@ const app = createApp({
        umAuth: 'trial' 授权免费试用 | '6m' 半年期 | '1y' 一年期 | '2y' 两年期 */
     const umTab = ref('register');
     const umAuth = ref('trial');
+    // 会员搜索（管理员 / 普通用户注册 / 授权使用 / 待审核用户 各面板共用）
+    const umSearch = ref('');
+    function umSearchMatch(s) {
+      const q = String(umSearch.value || '').trim().toLowerCase();
+      if (!q) return true;
+      return String(s || '').toLowerCase().includes(q);
+    }
+    // 待审核用户面板：用户在「会员服务」点「提交申请」后落地的未处理支付申请（按搜索过滤）
+    function reviewClaims() {
+      return memberClaims.list.filter(c => umSearchMatch(c.user));
+    }
 
     /* ===== 注册申请站内提醒（管理员） =====
      * 纯静态站没有服务端推送，所以这里监视「本机账号表」里的待审核记录：
@@ -2404,7 +2415,7 @@ const app = createApp({
       return (userList.value || []).filter(u => {
         if (u.role !== 'user') return false;
         if (Number(u.payMembershipUntil) > Date.now()) return false; // 已是付费会员，排除
-        return !!u.trialActive;
+        return true; // 所有未开通付费会员的普通用户（含试用期内与注册未开通）均归入「授权免费试用」
       });
     }
 
@@ -2483,7 +2494,7 @@ const app = createApp({
         } else if (u.trialActive) {
           cats.trial.items.push(trialFields(u));
         } else {
-          cats.trial.items.push({ 金额: '免费（非支付会员）', 账号名称: u.username, 开始时间: '—', 结束时间: '—', 时段: '未开通试用（非支付会员）' });
+          cats.trial.items.push({ 金额: '免费（非支付会员）', 账号名称: u.username, 开始时间: '—', 结束时间: '—', 时段: '未开通（非支付会员）' });
         }
       }
       const stats = {
@@ -9692,7 +9703,7 @@ const app = createApp({
       authAdminToken, remotePending, remotePendingLoading,
       loadRemotePending, approveRemoteByAdmin, rejectRemoteByAdmin, syncAllToRegistryByAdmin,
       // batch-A：会员后台（个人码方案）
-      memberClaims, memberManual, loadMemberClaims, grantMemberClaim, grantMemberManual, trialUsersList,
+      memberClaims, memberManual, loadMemberClaims, grantMemberClaim, grantMemberManual, trialUsersList, reviewClaims, umSearch, umSearchMatch,
       planAmount, planMonthsNum, planName, planOfUser, claimFields, trialFields, adminClassify,
       showApproveCode, toggleRevealPassword, revealPendingPassword,
       copyPassword, toggleLoginLog,
