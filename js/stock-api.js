@@ -5853,29 +5853,66 @@ const StockAPI = {
 
   /**
    * 同花顺 7×24 实时快讯（浏览器直连，CORS 已放开 access-control-allow-origin: *，无需代理/Worker）。
-   * 端点：https://news.10jqka.com.cn/tapp/news/push/stock/?page=1&tag=&track=website&pagesize=400
+   * 端点：https://news.10jqka.com.cn/tapp/news/push/stock/?page=N&tag=&track=website&pagesize=200
    *   返回 {code,msg,time,data:{list:[{id,seq,title,digest,url,ctime,tags:[{id,name}],tag,stock:[{name,code}]}]}}
-   * 统一为每日快讯条目 [{id,time,text,url,stocks,subjects,cat}]，按北京时间倒序。
+   * 重要事实（实测，2026-10-07）：
+   *   - 服务端**每页硬上限 200**：pagesize 填 400/1000 也都只回 200，前端填再大没用。
+   *   - 该接口是「滚动实时缓冲」，只保留最近约 40 页 / 8000 条（约最近 2~3 周），
+   *     更早的（如几个月前）在接口上根本不存在（page>=50 即返回空）。
+   *   因此「条数限制」只能从「只抓第 1 页」解除：本函数多页翻页累加，直到
+   *     · 某页返回空（缓冲到底）；或
+   *     · 当前页最旧一条已早于 untilTime（窗口起点，已覆盖所需历史）；或
+   *     · 达到 maxPages 安全阀。
+   *   这样「刷新」会一次性把接口能拿到的全部实时快讯取回（不再被 200 截断），
+   *   再由上层窗口过滤按需展示。无法突破接口本身 2~3 周的缓冲深度。
+   * @param {object} [opts]
+   * @param {number} [opts.maxPages=50] 最多翻页数（安全阀）
+   * @param {number|string|Date} [opts.untilTime=0] 窗口起点(ms)；>0 时一旦翻到早于它的页即停止
    */
-  async fetchThsLiveBriefs(pagesize = 400) {
-    const u = 'https://news.10jqka.com.cn/tapp/news/push/stock/?page=1&tag=&track=website&pagesize=' + pagesize;
-    const ctrl = new AbortController();
-    const timer = setTimeout(() => ctrl.abort(), 12000);
-    try {
-      const resp = await fetch(u, {
-        signal: ctrl.signal, cache: 'no-store',
-        headers: {
-          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)',
-          'Referer': 'https://news.10jqka.com.cn/realtimenews.html'
+  async fetchThsLiveBriefs(opts = {}) {
+    const maxPages = opts.maxPages || 50;
+    const untilMs = opts.untilTime ? new Date(opts.untilTime).getTime() : 0;
+    const out = [];
+    const seenId = new Set();
+    for (let page = 1; page <= maxPages; page++) {
+      const u = 'https://news.10jqka.com.cn/tapp/news/push/stock/?page=' + page + '&tag=&track=website&pagesize=200';
+      const ctrl = new AbortController();
+      const timer = setTimeout(() => ctrl.abort(), 12000);
+      let list = [];
+      try {
+        const resp = await fetch(u, {
+          signal: ctrl.signal, cache: 'no-store',
+          headers: {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)',
+            'Referer': 'https://news.10jqka.com.cn/realtimenews.html'
+          }
+        });
+        if (!resp.ok) break;
+        const j = await resp.json();
+        list = (j && j.data && Array.isArray(j.data.list)) ? j.data.list : [];
+      } catch (e) {
+        break;
+      } finally {
+        clearTimeout(timer);
+      }
+      if (!list.length) break;
+      const mapped = this._mapThsNews(list);
+      for (const it of mapped) {
+        if (it.id != null) {
+          if (seenId.has(it.id)) continue;   // 跨页去重
+          seenId.add(it.id);
         }
-      });
-      if (!resp.ok) throw new Error('HTTP ' + resp.status);
-      const j = await resp.json();
-      const list = (j && j.data && Array.isArray(j.data.list)) ? j.data.list : [];
-      return this._mapThsNews(list);
-    } finally {
-      clearTimeout(timer);
+        out.push(it);
+      }
+      // 当前页最旧一条已早于窗口起点 → 窗口前的历史都已覆盖，停止翻页
+      const last = mapped.length ? mapped[mapped.length - 1] : null;
+      if (untilMs && last && last.time) {
+        const et = Date.parse((last.time || '').replace(' ', 'T') + ':00');
+        if (et && et < untilMs) break;
+      }
     }
+    out.sort((a, b) => String(b.time).localeCompare(String(a.time)));
+    return out;
   },
 
   /** 把同花顺 news/push/stock 的 list 映射成本应用快讯条目（与格隆汇 live 同一 time 口径：北京时间 'YYYY-MM-DD HH:mm'）。 */

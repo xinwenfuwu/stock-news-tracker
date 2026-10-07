@@ -6354,16 +6354,20 @@ const app = createApp({
     // 同花顺实时快讯：同样做 5 分钟节流缓存（与格隆汇同理；浏览器直连同花顺 CORS 已放开）
     let _thsLiveCache = [];
     let _thsLastLiveFetchTs = 0;
+    let _thsCacheUntilMs = 0;
     let _thsLiveJustFetched = false;
-    function resetThsLiveFetch() { _thsLiveCache = []; _thsLastLiveFetchTs = 0; _thsLiveJustFetched = false; }
-    async function fetchLiveBriefsForWindow() {
+    function resetThsLiveFetch() { _thsLiveCache = []; _thsLastLiveFetchTs = 0; _thsCacheUntilMs = 0; _thsLiveJustFetched = false; }
+    async function fetchLiveBriefsForWindow(winStartMs) {
       if (briefSourceName.value === '同花顺') {
         const now = Date.now();
         _thsLiveJustFetched = false;
-        if (_thsLiveCache.length && now - _thsLastLiveFetchTs < LIVE_THROTTLE_MS) return _thsLiveCache;
+        const key = winStartMs || 0;
+        // 同窗口 5 分钟内复用缓存；窗口变了则重新翻页抓取（避免宽窗口拿到的是窄窗口缓存的子集）
+        if (_thsLiveCache.length && _thsCacheUntilMs === key && now - _thsLastLiveFetchTs < LIVE_THROTTLE_MS) return _thsLiveCache;
         let items = [];
-        try { items = await StockAPI.fetchThsLiveBriefs(); } catch (e) { items = []; }
-        if (items.length) { _thsLiveCache = items; _thsLastLiveFetchTs = now; _thsLiveJustFetched = true; }
+        // 翻页直到接口缓冲到底 / 翻过窗口起点 / 达到安全阀；解除原 page=1 的 200 条截断
+        try { items = await StockAPI.fetchThsLiveBriefs({ untilTime: key || 0, maxPages: 50 }); } catch (e) { items = []; }
+        if (items.length) { _thsLiveCache = items; _thsCacheUntilMs = key; _thsLastLiveFetchTs = now; _thsLiveJustFetched = true; }
         return _thsLiveCache;
       }
       if (briefSourceName.value !== '格隆汇') return [];
@@ -6419,7 +6423,7 @@ const app = createApp({
         // 实时叠加（20260930i）：不再依赖 GitHub 定时任务与代理——
         // 每次刷新时若距上次实拉取超过 5 分钟，浏览器直连格隆汇 v4 接口抓取最近快讯并叠加到窗口，
         // 保证「最近时段」的快讯一条不漏；5 分钟内重复刷新复用缓存；直连失败则回退代理（若已配）。
-        const liveItems = await fetchLiveBriefsForWindow();
+        const liveItems = await fetchLiveBriefsForWindow(w.start.getTime());
         const chunks = await Promise.all(days.map(d => fetchBriefsFile(d, briefSourceName.value)));
         if ((_liveJustFetched || _thsLiveJustFetched) && liveItems.length) {
           showToast(`已实时拉取${briefSourceName.value}最近 ${liveItems.length} 条快讯（5 分钟内刷新不再重复抓取）`, 'success');
