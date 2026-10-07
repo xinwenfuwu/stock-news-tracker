@@ -7292,12 +7292,12 @@ const app = createApp({
     }
     function saveDoubaoKey() {
       const v = (doubaoKeyInput.value || '').trim();
-      D.settings.doubaoKey = v; Store.save(); doubaoKeyFormShow.value = false;
+      D.settings.doubaoKey = v; Store.saveNow(); doubaoKeyFormShow.value = false;
       if (v) { showToast('已保存你的专属 Key，豆包榜将使用你的额度', 'success'); refreshDoubaoOnly(); }
       else showToast('已清除专属 Key，将使用共享额度', 'info');
     }
     function clearDoubaoKey() {
-      D.settings.doubaoKey = ''; doubaoKeyInput.value = ''; Store.save();
+      D.settings.doubaoKey = ''; doubaoKeyInput.value = ''; Store.saveNow();
       showToast('已清除专属 Key，将使用共享额度', 'info');
     }
     function openDoubaoGuide() { doubaoGuideShow.value = true; }
