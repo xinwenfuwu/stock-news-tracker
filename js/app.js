@@ -8011,6 +8011,46 @@ const app = createApp({
       recomputePoolAvg(sector);
       showToast(`已保存「${sector.name}」共 ${stocks.length} 只到「我的概念选股板块」`, 'success');
     }
+    /**
+     * 把当前「板块成分股」列（filterPoolStocks：热门板块成分股 / 概念板块 / 股票池）整批，
+     * 作为子版块添加到「我的概念选股板块」。点击入口：热门板块页板块成分股工具栏「刷新行情」左侧。
+     * 命名沿用手头板块名（热门板块名 / 概念板块名 / 股票池名），到板块页可改名。
+     */
+    function saveFilterStocksToBoard() {
+      const id = filterPanel.poolId;
+      const pool = filterPoolStocks.value || [];
+      if (!id) { showToast('请先在上方「板块筛选」选择板块，或点击热门板块载入成分股', 'error'); return; }
+      if (!pool.length) { showToast('当前板块成分股为空，无可添加的股票', 'error'); return; }
+      // 命名：优先用当前板块名
+      let label = '';
+      if (id === 'hot') label = hotBoardActive.value || '热门板块成分股';
+      else if (id.startsWith('s-')) { const sp = (D.sectorPools || []).find(p => 's-' + p.id === id); label = sp ? sp.name : '概念板块成分股'; }
+      else { const pp = (D.stockPools || []).find(p => 'p-' + p.id === id); label = pp ? pp.name : '股票池成分股'; }
+      const seen = new Set();
+      const stocks = [];
+      for (const s of pool) {
+        const code = s.code;
+        if (!code || seen.has(code)) continue;
+        seen.add(code);
+        stocks.push({
+          code,
+          name: s.name || '',
+          dailyChange: (s.dailyChange != null) ? s.dailyChange
+            : (s.changePercent != null ? s.changePercent : null)
+        });
+      }
+      if (!stocks.length) { showToast('当前板块成分股缺少股票代码，无法添加', 'error'); return; }
+      const sector = {
+        name: label,
+        bk: 'CONST_' + Date.now(),
+        type: '板块成分股',
+        date: Store.today(),
+        stocks
+      };
+      Store.addSectorPool(sector);
+      recomputePoolAvg(sector);
+      showToast(`已添加「${label}」共 ${stocks.length} 只到「我的概念选股板块」`, 'success');
+    }
     // 当前选中的热门板块名（用于高亮与表头提示）
     const hotBoardActive = ref('');
     const hotBoardLoading = ref(false);
@@ -9785,7 +9825,7 @@ const app = createApp({
       // 统一股票表（四表共用列定义与单元格渲染）
       getColumns, cellHtml, cellClass, isNumCol, onStockSort, stockSortIcon, onTableClick, onTableChange, STOCK_COLUMNS,
       filterIndustries, filterIndustryOpen,
-      filterRefreshing, refreshFilterStocks, filterFilterOpen, favPanelOpen,
+      filterRefreshing, refreshFilterStocks, saveFilterStocksToBoard, filterFilterOpen, favPanelOpen,
       sortedSectorPools, sortedPools,
       // 通用：收藏
       favorites, sortedFavorites, isFav, toggleFavorite, removeFavorite,

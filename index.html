@@ -4,12 +4,12 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>股市信息分析系统</title>
-  <link rel="stylesheet" href="css/style.css?v=20261007t">
+  <link rel="stylesheet" href="css/style.css?v=20261007u">
   <!-- Vue 3 全局构建版（v3.4.21 · 自托管）
        原先走 unpkg.com CDN：国内网络对 unpkg 的连通性不稳定，一旦该请求长时间挂起，
        <head> 里的阻塞脚本会让整页停在白屏、后续 auth-boot.js 根本不会执行。
        改为同源托管后，启动链路不再依赖任何第三方 CDN。 -->
-  <script src="js/vue.global.prod.js?v=20261007t"></script>
+  <script src="js/vue.global.prod.js?v=20261007u"></script>
 </head>
 <body class="auth-locked">
   <!-- ===== 登录关卡：登录通过前业务脚本不会被加载 ===== -->
@@ -3066,6 +3066,7 @@
               </div>
             </span>
             <button class="btn btn-sm" @click="filterInfoOpen = !filterInfoOpen" :title="filterInfoOpen ? '隐藏字段含义与计算规则' : '显示字段含义与计算规则'">{{ filterInfoOpen ? '🙈 隐藏说明' : '👁 字段含义' }}</button>
+            <button class="btn btn-sm btn-primary" @click="saveFilterStocksToBoard" :disabled="!filterPanel.poolId" :title="filterPanel.poolId ? '把当前板块成分股整批添加到「我的概念选股板块」（到选股页可改名）' : '请先在上方「板块筛选」选择板块或点击热门板块载入成分股'">➕ 添加到板块</button>
             <button class="btn btn-sm" @click="refreshFilterStocks" :disabled="filterRefreshing">
               <span v-if="filterRefreshing">⏳ 刷新中...</span>
               <span v-else>🔄 刷新行情</span>
@@ -4947,14 +4948,14 @@
     </transition>
   </div>
 
-  <script src="js/auth.js?v=20261007t"></script>
-  <script src="js/auth-sync.js?v=20261007t"></script>
+  <script src="js/auth.js?v=20261007u"></script>
+  <script src="js/auth-sync.js?v=20261007u"></script>
   <!-- 边缘加速默认站点（batch37 治本：Cloudflare Worker 代理东财/腾讯，缓解 JSONP 限流误报）。
        若你所在地区 workers.dev 访问慢，可在「设置 → 行情加速地址」清空即恢复纯直连。 -->
   <script>window.__SNT_ACCEL__ = 'https://sichina.dpdns.org';</script>
   <!-- 扫码支付二维码渲染库（第三方 qrcodejs，本地托管避免外链失效）。renderQr 会先检测全局 QRCode 是否存在。 -->
-  <script src="assets/qrcode.min.js?v=20261007t"></script>
-  <script src="js/auth-boot.js?v=20261007t"></script>
+  <script src="assets/qrcode.min.js?v=20261007u"></script>
+  <script src="js/auth-boot.js?v=20261007u"></script>
   <!-- store / stock-api / hot-topics / app 由 auth-boot.js 在登录通过后动态装载，
        未登录时它们不会被下载，业务数据也不会进入内存 -->
 </body>
