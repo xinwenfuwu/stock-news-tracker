@@ -740,27 +740,34 @@ const app = createApp({
       toast._t = setTimeout(() => (toast.show = false), ms);
     }
 
-    // ===== 数据刷新总开关（顶部「暂停」按钮） =====
-    // 语义：暂停的是「自动」发起的刷新——进入页面自动抓取热门话题、导入后自动补价、
-    // 板块详情自动补历史价、数据变化后自动云同步。手动点击的刷新按钮一律照常执行，
-    // 否则暂停后整个页面会变成「点什么都没反应」，那反而是个 bug。
+    // ===== 数据更新总开关（顶部「暂停」按钮） =====
+    // 语义（20261007v 起）：全局「数据更新暂停」——暂停后，自动刷新、手动刷新行情、
+    // 云同步、补价 一律停止发起任何外部请求/写入，供管理员安心做系统配置。
+    // 恢复后自动刷新照常；手动刷新/同步/补价须恢复后方可操作。
     if (typeof D.settings.dataPaused !== 'boolean') D.settings.dataPaused = false;
     const dataPaused = computed({
       get: () => !!D.settings.dataPaused,
       set: (v) => { D.settings.dataPaused = !!v; }
     });
-    /** 自动刷新是否已被暂停（各处自动刷新逻辑统一走这里判断） */
+    /** 数据更新是否被暂停（自动 + 手动统一走这里判断） */
     function autoRefreshPaused() { return !!D.settings.dataPaused; }
-    /** 被暂停时的统一提示（只在真正会发起自动请求的位置调用，避免刷屏） */
+    /** 暂停时为「手动」动作的统一守门：返回 true 表示「已拦截」，调用方应直接 return。
+     *  silent=true 时不弹提示（供内部静默调用场景，如补价补算）。 */
+    function guardDataUpdate(what, silent) {
+      if (!dataPaused.value) return false;
+      if (!silent) showToast(`数据更新已暂停：未执行${what || '数据更新'}。点顶部 ▶ 恢复后操作生效`, 'info');
+      return true;
+    }
+    /** 被暂停时的统一提示（自动路径使用） */
     function pauseHint(what) {
-      showToast(`已暂停数据自动刷新：未执行${what || '自动刷新'}。可点顶部 ▶ 恢复，或手动点刷新按钮`, 'info');
+      showToast(`已暂停数据更新：未执行${what || '数据更新'}。点顶部 ▶ 恢复后自动刷新将重新生效`, 'info');
     }
     function toggleDataPause() {
       dataPaused.value = !dataPaused.value;
       if (dataPaused.value) {
-        showToast('已暂停数据自动刷新（进入页面不再自动抓取、不再自动云同步；手动刷新按钮照常可用）', 'info');
+        showToast('已暂停数据更新（自动刷新、手动刷新行情、云同步、补价 全部停止）', 'info');
       } else {
-        showToast('已恢复数据自动刷新', 'success');
+        showToast('已恢复数据更新', 'success');
         if (currentPage.value === 'finance') autoLoadHotTopics();
         maybeAutoLoadBriefs(currentPage.value);
       }
@@ -2395,6 +2402,8 @@ const app = createApp({
     }
     // ===== batch-A：会员后台（管理员） =====
     const memberClaims = reactive({ list: [], loading: false });
+    // 已审核通过（开通）的 claim id：永久从「待审核」区移除，即使后端 / 前端标记偶发失败也不再回显
+    const resolvedClaimIds = new Set();
     const memberManual = reactive({ username: '', plan: '6m' });
     // 按套餐期限过滤待开通记录（管理员界面分半年/一年/两年三区展示）
     function claimsOfPlan(p) {
@@ -2419,7 +2428,7 @@ const app = createApp({
           const r2 = (A && A.Sync && A.Sync.readClaims) ? await A.Sync.readClaims() : { ok: true, claims: [] };
           raw = (r2 && r2.claims) || [];
         }
-        memberClaims.list = raw.filter(c => !c.resolved).map(c => ({
+        memberClaims.list = raw.filter(c => !c.resolved && !resolvedClaimIds.has(c.id)).map(c => ({
           id: c.id, user: c.user, plan: c.plan || '6m', ts: c.ts || 0,
           amount: Number(c.amount) || 0, resolved: !!c.resolved
         }));
@@ -2451,6 +2460,9 @@ const app = createApp({
       const payTs = Number(claim.ts) || 0;
       const r = A.grantMembership(claim.user, months, { paidAt: payTs, amount: Number(claim.amount) || 0 });
       if (!r || !r.ok) { showToast((r && r.error) || '开通失败', 'error'); return; }
+      // 审核通过：立即从「待审核」区移除该申请（乐观更新，确保无论后端标记是否成功都不再回显）
+      if (claim.id) resolvedClaimIds.add(claim.id);
+      memberClaims.list = memberClaims.list.filter(c => c.id !== claim.id);
       // 标记该 claim 已处理：优先走后端 /pay/claims/resolve（管理员浏览器没有 GitHub 令牌也能标记），
       // 失败再回落管理员令牌直写；两者都失败也不影响已开通。
       try {
@@ -3060,11 +3072,11 @@ const app = createApp({
         showToast('已按建仓日填入收盘价', 'success');
       } catch (e) { showToast('取价失败：' + e.message, 'error'); }
     }
-    /** 刷新全部持仓现价（用户手动触发；暂停时不发请求） */
+    /** 刷新全部持仓现价（用户手动触发；暂停时同样不发起请求） */
     async function refreshHoldingPrices() {
       const list = myHoldings.value;
       if (!list.length) return;
-      if (autoRefreshPaused()) { pauseHint('持仓现价刷新'); return; }
+      if (guardDataUpdate('持仓现价刷新')) return;
       holdingRefreshing.value = true;
       try {
         const codes = [...new Set(list.map(h => StockAPI.inferPrefix(h.code)).filter(Boolean))];
@@ -3087,6 +3099,7 @@ const app = createApp({
 
     // 为单条新闻补全股价
     async function fillPriceForNews(item, silent) {
+      if (guardDataUpdate('股价获取', silent)) return;
       const stocks = parseStocks(item.relatedStocks);
       if (!stocks.length) {
         if (!silent) showToast('该新闻未关联股票', 'error');
@@ -3127,6 +3140,7 @@ const app = createApp({
 
     // 批量刷新所有新闻股价
     async function refreshAllPrices() {
+      if (guardDataUpdate('批量补价')) return;
       const list = filteredNews.value.filter(n => parseStocks(n.relatedStocks).length);
       if (!list.length) {
         showToast('没有可刷新股价的新闻', 'error');
@@ -3701,6 +3715,7 @@ const app = createApp({
     const AUTO_ENRICH_MAX = 200;
 
     async function refreshPoolDetail(pool) {
+      if (guardDataUpdate('行情刷新')) return;
       showToast('正在刷新行情与财务数据...', 'info');
       const codes = pool.stocks.map(s => s.code).filter(Boolean);
       // 1) 实时行情（腾讯，稳定）—— 无 codes 也能返回空对象
@@ -5692,7 +5707,7 @@ const app = createApp({
           // 逐只补全要上千次请求 —— 页面会卡死，也等于在打爆免费接口。改为提示用户按需手动刷新。
           showToast(`该板块共 ${sector.stocks.length} 只，已跳过自动补全（避免大量请求）；需要时点「🔄 刷新行情」`, 'info');
         } else if (needHist && autoRefreshPaused()) {
-          // 暂停期间不自动补全，避免「打开弹窗」就偷偷发一堆请求；手动「刷新行情」仍可用
+          // 暂停期间不自动补全，避免「打开弹窗」就偷偷发一堆请求（暂停时手动「刷新行情」同样被拦截）
           pauseHint('板块详情历史价自动补全');
         } else if (needHist) {
           sectorLoading.value = true;
@@ -9215,6 +9230,7 @@ const app = createApp({
         showToast('请先选择板块', 'error');
         return;
       }
+      if (guardDataUpdate('行情刷新')) return;
       if (filterRefreshing.value) return;
       filterRefreshing.value = true;
       showToast(`正在刷新 ${list.length} 只股票...`, 'info');
@@ -9596,6 +9612,7 @@ const app = createApp({
     }
 
     async function syncToCloud() {
+      if (guardDataUpdate('云端同步')) return;
       if (!cloud.token) { showToast('请先登录', 'error'); return; }
       cloud.syncing = true;
       try {

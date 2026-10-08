@@ -4,12 +4,12 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>股市信息分析系统</title>
-  <link rel="stylesheet" href="css/style.css?v=20261007u">
+  <link rel="stylesheet" href="css/style.css?v=20261007v">
   <!-- Vue 3 全局构建版（v3.4.21 · 自托管）
        原先走 unpkg.com CDN：国内网络对 unpkg 的连通性不稳定，一旦该请求长时间挂起，
        <head> 里的阻塞脚本会让整页停在白屏、后续 auth-boot.js 根本不会执行。
        改为同源托管后，启动链路不再依赖任何第三方 CDN。 -->
-  <script src="js/vue.global.prod.js?v=20261007u"></script>
+  <script src="js/vue.global.prod.js?v=20261007v"></script>
 </head>
 <body class="auth-locked">
   <!-- ===== 登录关卡：登录通过前业务脚本不会被加载 ===== -->
@@ -125,7 +125,7 @@
             <a class="nav-item" data-need-login><span class="nav-icon">🎯</span><span>板块成分股</span></a>
           </nav>
           <div class="header-actions">
-            <button class="btn-icon" data-need-login title="暂停数据自动刷新">⏸</button>
+            <button class="btn-icon" data-need-login title="暂停数据更新（自动刷新 / 手动刷新行情 / 云同步 / 补价 全部停止）">⏸</button>
             <button class="btn-icon" data-need-login title="云端登录同步">☁️</button>
             <button class="btn-icon" data-need-login title="设置">⚙️</button>
             <button class="btn-icon" data-need-login title="导出数据">⬇️</button>
@@ -213,7 +213,7 @@
         </nav>
         <div class="header-actions">
           <button class="btn-icon pause-btn" :class="{ active: dataPaused }" @click="toggleDataPause"
-                  :title="dataPaused ? '数据自动刷新已暂停：进入页面不再自动抓取、不再自动云同步。点击恢复' : '一键暂停数据自动刷新（进入页面自动抓取、自动云同步、自动补价）'">
+                  :title="dataPaused ? '数据更新已暂停：自动刷新 / 手动刷新行情 / 云同步 / 补价 全部停止。点击恢复' : '一键暂停数据更新（自动刷新 / 手动刷新行情 / 云同步 / 补价 全部停止）'">
             <span v-if="dataPaused">▶</span>
             <span v-else>⏸</span>
             <em v-if="dataPaused">已暂停</em>
@@ -330,7 +330,7 @@
           <div class="brief-tip muted small" v-else-if="briefError">{{ briefError }}</div>
           <div class="brief-tip muted small" v-else-if="briefSearching && !briefFiltered.length">没有匹配「{{ briefKeyword }}」的快讯</div>
           <div class="brief-tip muted small" v-else-if="briefPaused">
-            ⏸ 自动加载已暂停（顶部「暂停」开关生效）
+            ⏸ 数据更新已暂停（顶部「暂停」开关生效；点 ▶ 恢复，或手动加载该日快讯）
             <button class="btn btn-sm" style="margin-left:6px" @click="loadBriefsNow">📥 加载该日快讯</button>
           </div>
 
@@ -2095,7 +2095,7 @@
             <div class="brief-tip muted small" v-else-if="briefError">{{ briefError }}</div>
             <div class="brief-tip muted small" v-else-if="briefSearching && !briefFiltered.length">没有匹配「{{ briefKeyword }}」的快讯</div>
             <div class="brief-tip muted small" v-else-if="briefPaused">
-              ⏸ 自动加载已暂停（顶部「暂停」开关生效）
+              ⏸ 数据更新已暂停（顶部「暂停」开关生效；点 ▶ 恢复，或手动加载该日快讯）
               <button class="btn btn-sm" style="margin-left:6px" @click="loadBriefsNow">📥 加载该日快讯</button>
             </div>
 
@@ -4696,6 +4696,11 @@
 
           <!-- 板块③ 支付码（个人收款码功能）已按需求删除 -->
 
+          <!-- 已审核通过的账户字段区：审核通过的支付申请(及管理员/试用)只在此呈现，不再出现在上方待审核区 -->
+          <div class="um-table-head" v-if="userList.length && umTab !== 'admin'">
+            <h4>已审核通过的账户（已授权用户）</h4>
+            <span class="um-section-desc">以下为已通过审核、已授权开通的账户（管理员 / 付费会员 / 试用中）。待审核支付申请只在上方「待审核用户」区显示与处理，审核通过后自动归入此处。</span>
+          </div>
           <table class="um-table" v-if="userList.length && umTab !== 'admin'">
             <thead>
               <tr>
@@ -4948,14 +4953,14 @@
     </transition>
   </div>
 
-  <script src="js/auth.js?v=20261007u"></script>
-  <script src="js/auth-sync.js?v=20261007u"></script>
+  <script src="js/auth.js?v=20261007v"></script>
+  <script src="js/auth-sync.js?v=20261007v"></script>
   <!-- 边缘加速默认站点（batch37 治本：Cloudflare Worker 代理东财/腾讯，缓解 JSONP 限流误报）。
        若你所在地区 workers.dev 访问慢，可在「设置 → 行情加速地址」清空即恢复纯直连。 -->
   <script>window.__SNT_ACCEL__ = 'https://sichina.dpdns.org';</script>
   <!-- 扫码支付二维码渲染库（第三方 qrcodejs，本地托管避免外链失效）。renderQr 会先检测全局 QRCode 是否存在。 -->
-  <script src="assets/qrcode.min.js?v=20261007u"></script>
-  <script src="js/auth-boot.js?v=20261007u"></script>
+  <script src="assets/qrcode.min.js?v=20261007v"></script>
+  <script src="js/auth-boot.js?v=20261007v"></script>
   <!-- store / stock-api / hot-topics / app 由 auth-boot.js 在登录通过后动态装载，
        未登录时它们不会被下载，业务数据也不会进入内存 -->
 </body>
