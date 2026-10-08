@@ -6800,8 +6800,15 @@ const app = createApp({
           })
           .sort((a, b) => String(b.time).localeCompare(String(a.time)));
         briefWindowItems.value = inWin;
-        loadPrevBriefStats();   // batch55：闭市周期窗口变化后，重算「上一个等长窗口」用于 序/增/数
-        loadLastBriefStats();    // batch73：同步拉取「上次」对比周期（「昨」排名窗口）
+        // batch73fix：「昨」窗口自动跟随「今」窗口推导 = [今开始 − 时长, 今开始]，
+        // 与 batch55「数/增」的前一周期保持同一口径，确保「昨」永远是「新闻统计开始时间」紧邻的前一个周期，
+        // 不再锚定到当前日期的闭市（否则改了「新闻统计开始时间」后「昨」会落到错误时段甚至为空）。
+        if (HT && HT.toLocalInputValue) {
+          const len = w.end - w.start;
+          const prevStart = new Date(w.start.getTime() - len);
+          briefPrevWinStart.value = HT.toLocalInputValue(prevStart);
+          briefPrevWinEnd.value = HT.toLocalInputValue(w.start);
+        }
         if (!inWin.length) {
           // 修复：窗口内无快讯时，回退到「最近一天真正有数据的日期」。
           // 旧逻辑曾把窗口推算出的未来日期（如明天）当 latest，导致回退到一个 404 空文件、页面全空。
@@ -6829,6 +6836,10 @@ const app = createApp({
           const hrs = (w.end - w.start) / 3600000;
           showToast(`已刷新：${startStr} → ${endStr}（约 ${hrs.toFixed(1)} 小时）共 ${inWin.length} 条${liveAdded ? '，其中实时叠加 ' + liveAdded + ' 条' : ''}`, 'success');
         }
+        // 窗口状态（briefWindow）已落定后再重算「数/增」(batch55) 与「昨」(batch73)，
+        // 这样 batch55 的前一周期会跟随「今」窗口推导（与「昨」同一口径），不会再错用默认闭市窗口。
+        loadPrevBriefStats();   // batch55：闭市周期窗口变化后，重算「上一个等长窗口」用于 序/增/数
+        loadLastBriefStats();    // batch73：同步拉取「上次」对比周期（「昨」排名窗口，现已自动跟随「今」）
       } catch (e) {
         briefWindowItems.value = [];
         briefError.value = '闭市周期刷新失败：' + (e && e.message ? e.message : e);

@@ -4,12 +4,12 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>股市信息分析系统</title>
-  <link rel="stylesheet" href="css/style.css?v=20261007v">
+  <link rel="stylesheet" href="css/style.css?v=20261008w">
   <!-- Vue 3 全局构建版（v3.4.21 · 自托管）
        原先走 unpkg.com CDN：国内网络对 unpkg 的连通性不稳定，一旦该请求长时间挂起，
        <head> 里的阻塞脚本会让整页停在白屏、后续 auth-boot.js 根本不会执行。
        改为同源托管后，启动链路不再依赖任何第三方 CDN。 -->
-  <script src="js/vue.global.prod.js?v=20261007v"></script>
+  <script src="js/vue.global.prod.js?v=20261008w"></script>
 </head>
 <body class="auth-locked">
   <!-- ===== 登录关卡：登录通过前业务脚本不会被加载 ===== -->
@@ -291,19 +291,19 @@
             <span class="sw-sep">-</span>
             <input type="datetime-local" class="sw-input" v-model="briefWinEnd" :disabled="briefLoading"
                    title="统计结束时间（默认本次闭市 15:00，可修改）">
-            <!-- batch73：上次对比周期（「昨」排名窗口），在刷新按钮左侧；默认=上次闭市前一交易日→上次闭市，可手动调整 -->
+            <!-- batch73fix：「昨」窗口自动跟随「新闻统计开始时间」推导（紧邻前一周期），不再锚定当前日期闭市 -->
             <span class="sw-label sw-label-prev">上次</span>
             <input type="datetime-local" class="sw-input" v-model="briefPrevWinStart" :disabled="briefLoading"
-                   title="上次对比周期开始（默认=上次闭市前一交易日 15:00）">
+                   title="上次对比周期开始（自动=『新闻统计开始时间』紧邻的前一周期起点；点「刷新」即按『今』窗口重算，手动修改会被刷新覆盖）">
             <span class="sw-sep">-</span>
             <input type="datetime-local" class="sw-input" v-model="briefPrevWinEnd" :disabled="briefLoading"
-                   title="上次对比周期结束（默认=上次闭市 15:00）">
+                   title="上次对比周期结束（自动=『新闻统计开始时间』起点；即『昨』=『今』紧邻的前一个周期）">
             <button class="sw-btn" :disabled="briefLoading" @click="refreshBriefCloseWindow"
-                    title="按上面这段时间重新统计（本板块独立刷新，不影响其他板块）；同时按「上次」周期算「昨」排名">
+                    title="按『新闻统计开始时间』窗口重算排名；『昨』自动取该窗口紧邻的前一个周期（与『数/增』同一口径）">
               🔄 {{ briefLoading ? '刷新中…' : '刷新' }}
             </button>
             <button class="sw-btn sw-btn-ghost" :disabled="briefLoading" @click="resetBriefWin"
-                    title="恢复默认：上次闭市 → 本次闭市（同步恢复「上次」对比周期）">重置</button>
+                    title="恢复默认：上次闭市 → 本次闭市（同步恢复「上次」对比周期为默认）">重置</button>
             <span class="sw-text" v-if="briefWinText">{{ briefWinText }}</span>
           </div>
 
@@ -4953,14 +4953,14 @@
     </transition>
   </div>
 
-  <script src="js/auth.js?v=20261007v"></script>
-  <script src="js/auth-sync.js?v=20261007v"></script>
+  <script src="js/auth.js?v=20261008w"></script>
+  <script src="js/auth-sync.js?v=20261008w"></script>
   <!-- 边缘加速默认站点（batch37 治本：Cloudflare Worker 代理东财/腾讯，缓解 JSONP 限流误报）。
        若你所在地区 workers.dev 访问慢，可在「设置 → 行情加速地址」清空即恢复纯直连。 -->
   <script>window.__SNT_ACCEL__ = 'https://sichina.dpdns.org';</script>
   <!-- 扫码支付二维码渲染库（第三方 qrcodejs，本地托管避免外链失效）。renderQr 会先检测全局 QRCode 是否存在。 -->
-  <script src="assets/qrcode.min.js?v=20261007v"></script>
-  <script src="js/auth-boot.js?v=20261007v"></script>
+  <script src="assets/qrcode.min.js?v=20261008w"></script>
+  <script src="js/auth-boot.js?v=20261008w"></script>
   <!-- store / stock-api / hot-topics / app 由 auth-boot.js 在登录通过后动态装载，
        未登录时它们不会被下载，业务数据也不会进入内存 -->
 </body>
