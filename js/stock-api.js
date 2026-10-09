@@ -2828,6 +2828,39 @@ const StockAPI = {
     return (j && j.list) ? j.list : [];
   },
 
+  /**
+   * 同花顺热门板块（行业 / 概念）：直接请求 dq.10jqka.com.cn 的 plate 接口。
+   * 该接口已开放 CORS（Access-Control-Allow-Origin: *），前端可直连，无需 Worker 代理。
+   * 返回统一结构 { industries:[{code,name,change,heat,hotTag,limitTag,order,etfName,etfChange}], concepts:[...] }：
+   *   change  = 板块涨跌幅(%)，heat = 热度(rate)，hotTag = 上榜标签（如「连续134天上榜」），
+   *   limitTag = 涨停统计（如「4家涨停」），order = 排名，etfName/etfChange = 关联 ETF 名/涨跌幅。
+   */
+  async getThsSectors() {
+    try {
+      const base = 'https://dq.10jqka.com.cn/fuyao/hot_list_data/out/hot_list/v1/plate?type=';
+      const [cR, iR] = await Promise.all([
+        fetch(base + 'concept', { headers: { 'User-Agent': 'Mozilla/5.0', 'Referer': 'https://www.10jqka.com.cn/' } }),
+        fetch(base + 'industry', { headers: { 'User-Agent': 'Mozilla/5.0', 'Referer': 'https://www.10jqka.com.cn/' } })
+      ]);
+      if (!cR.ok || !iR.ok) throw new Error('ths plate ' + cR.status + '/' + iR.status);
+      const cJ = await cR.json();
+      const iJ = await iR.json();
+      const norm = (arr, type) => ((arr && arr.data && arr.data.plate_list) || []).map(it => ({
+        code: String(it.code || ''),
+        name: it.name || '',
+        change: it.rise_and_fall != null ? Number(it.rise_and_fall) : null,
+        heat: it.rate != null ? Number(it.rate) : 0,
+        hotTag: it.hot_tag || '',
+        limitTag: it.tag || '',
+        order: it.order != null ? it.order : 0,
+        etfName: it.etf_name || '',
+        etfChange: it.etf_rise_and_fall != null ? Number(it.etf_rise_and_fall) : null,
+        type
+      }));
+      return { industries: norm(iJ, '行业'), concepts: norm(cJ, '概念') };
+    } catch (e) { console.warn('同花顺热门板块获取失败', e); return { industries: [], concepts: [] }; }
+  },
+
   async _getAmplitudeBoardsRaw() {
     const results = [];
     try {

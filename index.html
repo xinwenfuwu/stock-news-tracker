@@ -4,12 +4,12 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>股市信息分析系统</title>
-  <link rel="stylesheet" href="css/style.css?v=20261008w">
+  <link rel="stylesheet" href="css/style.css?v=20261009x">
   <!-- Vue 3 全局构建版（v3.4.21 · 自托管）
        原先走 unpkg.com CDN：国内网络对 unpkg 的连通性不稳定，一旦该请求长时间挂起，
        <head> 里的阻塞脚本会让整页停在白屏、后续 auth-boot.js 根本不会执行。
        改为同源托管后，启动链路不再依赖任何第三方 CDN。 -->
-  <script src="js/vue.global.prod.js?v=20261008w"></script>
+  <script src="js/vue.global.prod.js?v=20261009x"></script>
 </head>
 <body class="auth-locked">
   <!-- ===== 登录关卡：登录通过前业务脚本不会被加载 ===== -->
@@ -2912,27 +2912,39 @@
               <div class="muted small" v-else>点击「获取热门板块」或右侧「刷新数据」加载</div>
             </div>
 
-            <!-- 豆包股票搜索排行榜：当前时段内用户在豆包搜索的股票名称，按被提及次数从大到小排名（非新闻热度榜） -->
+            <!-- 同花顺热门板块（行业/概念）：刷新后显示当前同花顺热门行业与概念 -->
             <div class="hot-panel">
               <div class="panel-title-row">
-                <h3 class="panel-title doubao-title" style="margin:0">📊 豆包股票搜索排行榜</h3>
-                <button class="btn btn-sm" @click="refreshDoubaoOnly" :disabled="doubaoHotLoading" title="刷新豆包搜索并重算股票榜（按当前时段被提及/搜索次数从大到小排名）">
-                  <span v-if="doubaoHotLoading">⏳ 计算中...</span>
-                  <span v-else>🔄 刷新榜单</span>
+                <h3 class="panel-title" style="margin:0">🟠 同花顺热门板块</h3>
+                <button class="btn btn-sm" @click="refreshThsSectorsOnly" :disabled="thsSectorsLoading" title="刷新同花顺热门行业与概念（按热度排名）">
+                  <span v-if="thsSectorsLoading">⏳ 刷新中...</span>
+                  <span v-else>🔄 刷新数据</span>
                 </button>
               </div>
-              <p class="muted small" style="margin:-4px 0 10px">当前时段内用户在豆包搜索的股票名称排行榜（按被提及次数从大到小），非新闻热度榜。</p>
-              <div class="hot-list" v-if="doubaoStockRanking.length">
-                <div class="hot-item" v-for="(s, i) in doubaoStockRanking" :key="s.code || s.name"
-                     :title="s.name + (s.code ? '（' + s.code + '）' : '') + ' · 当前时段在豆包搜索结果中被提及 ' + s.count + ' 次'">
-                  <span class="hot-rank">{{ i + 1 }}</span>
-                  <span class="hot-name">{{ s.name }}<span class="muted small" v-if="s.code"> {{ s.code }}</span></span>
-                  <span class="hot-val">{{ s.count }} 次</span>
+              <p class="muted small" style="margin:-4px 0 10px">当前同花顺热门<b>行业</b>与<b>概念</b>板块（按热度排名，含涨跌幅 / 上榜标签 / 涨停统计）。数据来自同花顺。</p>
+              <template v-if="thsSectors.industries.length || thsSectors.concepts.length">
+                <div class="sub-title" style="margin:6px 0 4px;font-weight:600;">🏭 行业板块</div>
+                <div class="hot-list">
+                  <div class="hot-item" v-for="(s, i) in thsSectors.industries" :key="'i' + s.code"
+                       :title="s.name + ' · 热度 ' + s.heat + (s.hotTag ? ' · ' + s.hotTag : '') + (s.limitTag ? ' · ' + s.limitTag : '')">
+                    <span class="hot-rank">{{ s.order || (i + 1) }}</span>
+                    <span class="hot-name">{{ s.name }}<span class="muted small" v-if="s.code"> {{ s.code }}</span></span>
+                    <span class="hot-val" :class="pctClass(s.change)">{{ fmtPct(s.change) }}</span>
+                  </div>
                 </div>
-              </div>
-              <div class="muted small" v-else-if="doubaoHotLoading">正在加载豆包搜索并计算股票榜…</div>
-              <div class="muted small" v-else-if="doubaoStockRankNote">{{ doubaoStockRankNote }}</div>
-              <div class="muted small" v-else>点击「刷新榜单」或上方「获取热门板块」加载豆包搜索后，按当前时段被提及次数排名</div>
+                <div class="sub-title" style="margin:10px 0 4px;font-weight:600;">💡 概念板块</div>
+                <div class="hot-list">
+                  <div class="hot-item" v-for="(s, i) in thsSectors.concepts" :key="'c' + s.code"
+                       :title="s.name + ' · 热度 ' + s.heat + (s.hotTag ? ' · ' + s.hotTag : '') + (s.limitTag ? ' · ' + s.limitTag : '')">
+                    <span class="hot-rank">{{ s.order || (i + 1) }}</span>
+                    <span class="hot-name">{{ s.name }}<span class="muted small" v-if="s.code"> {{ s.code }}</span></span>
+                    <span class="hot-val" :class="pctClass(s.change)">{{ fmtPct(s.change) }}</span>
+                  </div>
+                </div>
+              </template>
+              <div class="muted small" v-else-if="thsSectorsLoading">正在加载同花顺热门板块…</div>
+              <div class="muted small" v-else-if="thsSectorsError">{{ thsSectorsError }}</div>
+              <div class="muted small" v-else>点击「刷新数据」加载当前同花顺热门行业与概念</div>
             </div>
 
             <!-- 连板股票（近 10 个交易日内涨停次数最多的股票，降序取前 25；原「当日热门股票」） -->
@@ -4953,14 +4965,14 @@
     </transition>
   </div>
 
-  <script src="js/auth.js?v=20261008w"></script>
-  <script src="js/auth-sync.js?v=20261008w"></script>
+  <script src="js/auth.js?v=20261009x"></script>
+  <script src="js/auth-sync.js?v=20261009x"></script>
   <!-- 边缘加速默认站点（batch37 治本：Cloudflare Worker 代理东财/腾讯，缓解 JSONP 限流误报）。
        若你所在地区 workers.dev 访问慢，可在「设置 → 行情加速地址」清空即恢复纯直连。 -->
   <script>window.__SNT_ACCEL__ = 'https://sichina.dpdns.org';</script>
   <!-- 扫码支付二维码渲染库（第三方 qrcodejs，本地托管避免外链失效）。renderQr 会先检测全局 QRCode 是否存在。 -->
-  <script src="assets/qrcode.min.js?v=20261008w"></script>
-  <script src="js/auth-boot.js?v=20261008w"></script>
+  <script src="assets/qrcode.min.js?v=20261009x"></script>
+  <script src="js/auth-boot.js?v=20261009x"></script>
   <!-- store / stock-api / hot-topics / app 由 auth-boot.js 在登录通过后动态装载，
        未登录时它们不会被下载，业务数据也不会进入内存 -->
 </body>
