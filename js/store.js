@@ -32,6 +32,7 @@ const Store = {
       conceptWatch: [],       // 收藏概念表：[{id, name, addDate, stocks:[{code,name,addPrice,curPrice,todayChange,sinceChange}]}]
       catMeta: {},             // 子类标注：{ "概念归类::人工智能": { color:'#ff0000', note:'重点' }, ... }（概念/行业归类行右侧颜色与备注）
       holdings: {},            // 用户持仓：{ [username]: [{id, code, name, entryDate, entryPrice, currentPrice, shares, direction, fee, note, createdAt, updatedAt}] }
+      tradeLogic: {},          // 交易逻辑记录表：{ [username]: [{id, date(锁定), marketEnv:[], goodSectors:[], goodStocks:[], turnEnv:[], turnSectors:[], turnStocks:[], createdAt, updatedAt}] }
       holdingColWidths: {},    // 持仓页：各列宽度(px)，按列位置索引
       financePush: { url: '', locked: false }, // 财经推送：右侧嵌入的财经网址（锁定后持久化）
       filterColWidths: {},      // 筛选板块：各列宽度(px)，按列位置索引（0,1,2...）
@@ -463,6 +464,35 @@ const Store = {
         it.updatedAt = Date.now();
       }
     }
+  },
+
+  // ===== 交易逻辑记录表（按用户名隔离，各自只看各自；普通用户的交易逻辑记录） =====
+  getUserTradeLogic(username) {
+    if (!username) return [];
+    if (!this.data.tradeLogic[username]) this.data.tradeLogic[username] = [];
+    return this.data.tradeLogic[username];
+  },
+  addTradeLogic(username, rec) {
+    if (!username) return null;
+    if (!this.data.tradeLogic[username]) this.data.tradeLogic[username] = [];
+    rec.id = this.uid('tl');
+    rec.createdAt = Date.now();
+    rec.updatedAt = Date.now();
+    this.data.tradeLogic[username].push(rec);
+    return rec;
+  },
+  updateTradeLogic(username, id, patch) {
+    const list = this.data.tradeLogic[username] || [];
+    const it = list.find(x => x.id === id);
+    if (it) { Object.assign(it, patch, { updatedAt: Date.now() }); return it; }
+    return null;
+  },
+  deleteTradeLogic(username, id) {
+    const list = this.data.tradeLogic[username];
+    if (!list) return false;
+    const i = list.findIndex(x => x.id === id);
+    if (i >= 0) { list.splice(i, 1); return true; }
+    return false;
   },
 
   // ===== 每日数据 =====

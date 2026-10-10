@@ -2124,6 +2124,17 @@ const app = createApp({
     }
     const holdingModal = reactive({ show: false, isEdit: false, data: blankHolding(), stockSearch: '', suggestions: [] });
     const holdingRefreshing = ref(false);
+
+    // ===== 交易逻辑记录表（普通用户交易逻辑；按用户名隔离，随 Gist 同步） =====
+    const tradeLogicOpen = ref(false);
+    const tradeLogicModal = reactive({
+      show: false, isEdit: false, id: null, date: '',
+      marketEnv: [], goodSectors: [], goodStocks: [],
+      turnEnv: [], turnSectors: [], turnStocks: []
+    });
+    const tradeLogicInputs = reactive({ marketEnv: '', goodSectors: '', goodStocks: '', turnEnv: '', turnSectors: '', turnStocks: '' });
+    const tradeLogicCtx = reactive({ show: false, x: 0, y: 0, concept: '' });      // 右键上下文菜单
+    const tradeLogicPicker = reactive({ open: false, field: '', concept: '' });     // 落点行选择器
     // batch84：会员服务 / 扫码支付开通面板状态
     const membershipModal = reactive({
       show: false,
@@ -2501,12 +2512,24 @@ const app = createApp({
       refreshUserList();
       memberManual.username = '';
     }
-    // 授权免费试用（非支付会员用户）：列出当前处于试用期的普通用户，供管理员核对 / 续期 / 撤销
+    // 授权免费试用（非支付会员用户）：仅列出「当前处于试用期」的普通用户，供管理员核对 / 续期 / 撤销。
+    // 注意：已注册但未开通会员的普通用户不再归入此处（见 registeredNoMemberList，统一收口到「普通用户注册」面板）。
     function trialUsersList() {
       return (userList.value || []).filter(u => {
         if (u.role !== 'user') return false;
         if (Number(u.payMembershipUntil) > Date.now()) return false; // 已是付费会员，排除
-        return true; // 所有未开通付费会员的普通用户（含试用期内与注册未开通）均归入「授权免费试用」
+        return !!u.trialActive; // 仅试用中（已注册未开通不再混入「免费试用」）
+      });
+    }
+    // 已注册未开通会员的普通用户：role=user、非待审核、无有效付费会员、不在试用期的账号。
+    // 这些账号统一在「① 普通用户注册」面板下的「已注册未开通会员普通用户」块呈现，便于管理员在此授权试用 / 开通。
+    function registeredNoMemberList() {
+      return (userList.value || []).filter(u => {
+        if (u.role !== 'user') return false;
+        if (u.status === 'pending') return false;                 // 待审核不算已注册
+        if (Number(u.payMembershipUntil) > Date.now()) return false; // 付费会员排除
+        if (u.trialActive) return false;                          // 试用中已在「免费试用」
+        return true;
       });
     }
 
@@ -2622,9 +2645,9 @@ const app = createApp({
           cats[plan].items.push(claimFields({ user: u.username, plan: plan, ts: pmu - ms }));
         } else if (u.trialActive) {
           cats.trial.items.push(trialFields(u));
-        } else {
-          cats.trial.items.push({ 金额: '免费（非支付会员）', 账号名称: u.username, 开始时间: '—', 结束时间: '—', 时段: '未开通（非支付会员）' });
         }
+        // 注意：已注册但未开通会员的普通用户（role=user、非 pending、非付费、非试用）不再归入「免费试用」，
+        // 而是统一在「① 普通用户注册」面板下的「已注册未开通会员普通用户」块呈现（见 registeredNoMemberList）。
       }
       const stats = {
         total: list.length,
@@ -2634,7 +2657,8 @@ const app = createApp({
         adminCount: cats.admin.items.length,
         revenue: cats['6m'].items.length * 1000 + cats['1y'].items.length * 2000 + cats['2y'].items.length * 4000
       };
-      const catList = [cats.trial, cats['6m'], cats['1y'], cats['2y']];
+      // 分类展示顺序：24月期（¥4000）→ 免费试用 → 6月期（¥1000）→ 12月期（¥2000）
+      const catList = [cats['2y'], cats.trial, cats['6m'], cats['1y']];
       return { cats: cats, catList: catList, stats: stats };
     }
     // 授权使用面板：某套餐下「已开通」的会员清单（只读展示，不再放审核/开通按钮，
@@ -3059,6 +3083,95 @@ const app = createApp({
       if (!confirm('确认删除该持仓？')) return;
       Store.deleteHolding(u, h.id);
       showToast('已删除', 'success');
+    }
+
+    // ===== 交易逻辑记录表：增删改 + 右键落点 =====
+    function blankTradeLogic() {
+      return { id: null, date: Store.today(), marketEnv: [], goodSectors: [], goodStocks: [], turnEnv: [], turnSectors: [], turnStocks: [] };
+    }
+    const tradeLogicRows = computed(() => Store.getUserTradeLogic(Store.account));
+    function openTradeLogicPanel() { tradeLogicOpen.value = !tradeLogicOpen.value; }
+    function openAddTradeLogic() {
+      Object.assign(tradeLogicModal, blankTradeLogic());
+      tradeLogicModal.isEdit = false; tradeLogicModal.show = true;
+      for (const k in tradeLogicInputs) tradeLogicInputs[k] = '';
+    }
+    function editTradeLogicRow(rec) {
+      Object.assign(tradeLogicModal, JSON.parse(JSON.stringify(rec)));
+      tradeLogicModal.isEdit = true; tradeLogicModal.show = true;
+      for (const k in tradeLogicInputs) tradeLogicInputs[k] = '';
+    }
+    function saveTradeLogic() {
+      const d = tradeLogicModal;
+      const u = Store.account;
+      if (!u) { showToast('未获取到当前用户', 'error'); return; }
+      if (!d.date) { showToast('请选择时间', 'error'); return; }
+      const rec = {
+        date: d.date,
+        marketEnv: [...d.marketEnv], goodSectors: [...d.goodSectors], goodStocks: [...d.goodStocks],
+        turnEnv: [...d.turnEnv], turnSectors: [...d.turnSectors], turnStocks: [...d.turnStocks]
+      };
+      if (d.isEdit) { Store.updateTradeLogic(u, d.id, rec); showToast('已更新交易逻辑', 'success'); }
+      else { Store.addTradeLogic(u, rec); showToast('已添加交易逻辑', 'success'); }
+      d.show = false;
+    }
+    function deleteTradeLogicRow(rec) {
+      const u = Store.account;
+      if (!u) return;
+      if (!confirm('确认删除该交易逻辑记录？')) return;
+      Store.deleteTradeLogic(u, rec.id);
+      showToast('已删除', 'success');
+    }
+    function addTradeLogicChip(field) {
+      const v = (tradeLogicInputs[field] || '').trim();
+      if (!v) return;
+      if (!tradeLogicModal[field].includes(v)) tradeLogicModal[field].push(v);
+      tradeLogicInputs[field] = '';
+    }
+    function removeTradeLogicChip(field, idx) {
+      const arr = tradeLogicModal[field];
+      if (arr && arr[idx] != null) arr.splice(idx, 1);
+    }
+    // 右键：在新闻追踪/全球信息归类项上右键 → 弹出菜单
+    function openTradeLogicCtx(c, ev) {
+      if (!authUser.value) return;
+      tradeLogicCtx.concept = (c && c.name) || '';
+      tradeLogicCtx.x = ev ? ev.clientX : 0;
+      tradeLogicCtx.y = ev ? ev.clientY : 0;
+      tradeLogicCtx.show = true;
+    }
+    function closeTradeLogicCtx() { tradeLogicCtx.show = false; }
+    // 菜单项：把概念加到 市场环境 / 转折环境，再弹窗选落点行
+    function ctxAddToField(field) {
+      const concept = tradeLogicCtx.concept;
+      tradeLogicCtx.show = false;
+      if (!concept) return;
+      tradeLogicPicker.field = field;
+      tradeLogicPicker.concept = concept;
+      tradeLogicPicker.open = true;
+    }
+    function tradeLogicRowOptions() {
+      return tradeLogicRows.value.map(r => ({ id: r.id, date: r.date }));
+    }
+    function pickerSelectRow(rowId) {
+      const u = Store.account, field = tradeLogicPicker.field, concept = tradeLogicPicker.concept;
+      const rec = tradeLogicRows.value.find(r => r.id === rowId);
+      if (rec) {
+        const arr = rec[field].includes(concept) ? rec[field] : [...rec[field], concept];
+        Store.updateTradeLogic(u, rowId, { [field]: arr });
+        showToast('已添加到「' + (field === 'marketEnv' ? '市场环境' : '转折环境') + '」', 'success');
+      }
+      tradeLogicPicker.open = false;
+    }
+    function pickerNewRow() {
+      const u = Store.account, field = tradeLogicPicker.field, concept = tradeLogicPicker.concept;
+      if (!u) return;
+      const rec = blankTradeLogic();
+      rec.date = Store.today();
+      rec[field] = [concept];
+      Store.addTradeLogic(u, rec);
+      tradeLogicPicker.open = false;
+      showToast('已新建一行并添加到「' + (field === 'marketEnv' ? '市场环境' : '转折环境') + '」', 'success');
     }
     /** 按建仓日取历史收盘价作为建仓价（不复权真实价） */
     async function fetchEntryPrice() {
@@ -9850,6 +9963,11 @@ const app = createApp({
       // 用户持仓
       myHoldings, sortedHoldings, holdingSummary, holdingModal, openAddHolding, editHolding,
       saveHolding, deleteHoldingRow, refreshHoldingPrices, holdingRefreshing,
+      // 交易逻辑记录表
+      tradeLogicOpen, tradeLogicModal, tradeLogicInputs, tradeLogicCtx, tradeLogicPicker, tradeLogicRows,
+      openTradeLogicPanel, openAddTradeLogic, editTradeLogicRow, saveTradeLogic, deleteTradeLogicRow,
+      addTradeLogicChip, removeTradeLogicChip, openTradeLogicCtx, closeTradeLogicCtx, ctxAddToField,
+      tradeLogicRowOptions, pickerSelectRow, pickerNewRow,
       onHoldingStockSearch, pickHoldingStock, fetchEntryPrice,
       holdingSortKey, holdingSortDir, sortHoldingBy, holdingSortIcon,
       holdingDays, holdingCost, holdingMarketValue, holdingChangePct, holdingProfit, holdingProfitPct,
@@ -9884,7 +10002,7 @@ const app = createApp({
       authAdminToken, remotePending, remotePendingLoading,
       loadRemotePending, approveRemoteByAdmin, rejectRemoteByAdmin, syncAllToRegistryByAdmin,
       // batch-A：会员后台（个人码方案）
-      memberClaims, memberManual, loadMemberClaims, refreshMemberClaims, grantMemberClaim, grantMemberManual, trialUsersList, reviewClaims, umSearch, umSearchMatch,
+      memberClaims, memberManual, loadMemberClaims, refreshMemberClaims, grantMemberClaim, grantMemberManual, trialUsersList, registeredNoMemberList, reviewClaims, umSearch, umSearchMatch,
       planAmount, planMonthsNum, planName, planMonthText, planOfUser, claimFields, trialFields, adminClassify,
       paidPlanOf, paidDateText, planCategoryText, quotaInputVal,
       authCatItems, isAccountShown,

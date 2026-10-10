@@ -4,12 +4,12 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>股市信息分析系统</title>
-  <link rel="stylesheet" href="css/style.css?v=20261009x">
+  <link rel="stylesheet" href="css/style.css?v=20261010y">
   <!-- Vue 3 全局构建版（v3.4.21 · 自托管）
        原先走 unpkg.com CDN：国内网络对 unpkg 的连通性不稳定，一旦该请求长时间挂起，
        <head> 里的阻塞脚本会让整页停在白屏、后续 auth-boot.js 根本不会执行。
        改为同源托管后，启动链路不再依赖任何第三方 CDN。 -->
-  <script src="js/vue.global.prod.js?v=20261009x"></script>
+  <script src="js/vue.global.prod.js?v=20261010y"></script>
 </head>
 <body class="auth-locked">
   <!-- ===== 登录关卡：登录通过前业务脚本不会被加载 ===== -->
@@ -353,7 +353,7 @@
               <div class="bcg-head">💡 概念归类 <span class="muted small">{{ briefConceptStats.length }} 类</span></div>
               <div class="brief-cats" v-if="briefConceptStats.length">
                 <div class="brief-cat" v-for="c in briefConceptStats" :key="c.key">
-                  <div class="brief-cat-head has-streak" :class="{ active: briefUi.open['concept::' + c.key], 'no-sort': currentPage !== 'news' }">
+                  <div class="brief-cat-head has-streak" :class="{ active: briefUi.open['concept::' + c.key], 'no-sort': currentPage !== 'news' }" @contextmenu.prevent="openTradeLogicCtx(c, $event)">
                     <span class="bc-caret" @click.stop="toggleBriefCat(c.key, 'concept')">{{ briefUi.open['concept::' + c.key] ? '▾' : '▸' }}</span>
                     <button type="button" class="bc-sort bc-inc" v-if="currentPage === 'news'" @click.stop="sortByBriefField('inc')" :title="'增 = 昨 − 今（昨=上次闭市周期内排名）'">{{ c.inc==null?'—':(c.inc>0?'+':'')+c.inc }}<i class="bsort" v-if="briefCatSort.field==='inc'">{{ briefCatSort.dir==='asc'?'↑':'↓' }}</i></button>
                     <button type="button" class="bc-sort bc-prev" v-if="currentPage === 'news'" @click.stop="sortByBriefField('prevSeq')" :title="'昨 = 上一个默认闭市周期内该概念的最终排名（点按排序）'">{{ c.prevSeq != null ? c.prevSeq : '—' }}<i class="bsort" v-if="briefCatSort.field==='prevSeq'">{{ briefCatSort.dir==='asc'?'↑':'↓' }}</i></button>
@@ -411,7 +411,7 @@
               <div class="bcg-head">🏭 行业归类 <span class="muted small">{{ briefIndustryStats.length }} 类</span></div>
               <div class="brief-cats" v-if="briefIndustryStats.length">
                 <div class="brief-cat" v-for="c in briefIndustryStats" :key="c.key">
-                  <div class="brief-cat-head has-streak" :class="{ active: briefUi.open['industry::' + c.key], 'no-sort': currentPage !== 'news' }">
+                  <div class="brief-cat-head has-streak" :class="{ active: briefUi.open['industry::' + c.key], 'no-sort': currentPage !== 'news' }" @contextmenu.prevent="openTradeLogicCtx(c, $event)">
                     <span class="bc-caret" @click.stop="toggleBriefCat(c.key, 'industry')">{{ briefUi.open['industry::' + c.key] ? '▾' : '▸' }}</span>
                     <button type="button" class="bc-sort bc-inc" v-if="currentPage === 'news'" @click.stop="sortByBriefField('inc')" :title="'增 = 昨 − 今（昨=上次闭市周期内排名）'">{{ c.inc==null?'—':(c.inc>0?'+':'')+c.inc }}<i class="bsort" v-if="briefCatSort.field==='inc'">{{ briefCatSort.dir==='asc'?'↑':'↓' }}</i></button>
                     <button type="button" class="bc-sort bc-prev" v-if="currentPage === 'news'" @click.stop="sortByBriefField('prevSeq')" :title="'昨 = 上一个默认闭市周期内该概念的最终排名（点按排序）'">{{ c.prevSeq != null ? c.prevSeq : '—' }}<i class="bsort" v-if="briefCatSort.field==='prevSeq'">{{ briefCatSort.dir==='asc'?'↑':'↓' }}</i></button>
@@ -1232,6 +1232,7 @@
             <button class="btn btn-data" v-if="can('data.clear')" @click="openLocalData">🗄 本地数据</button>
             <button class="btn btn-notice" @click="openUserNotice">📋 用户须知</button>
             <button class="btn btn-vip" @click="openMembershipService">👑 会员服务</button>
+            <button class="btn" @click="openTradeLogicPanel">📊 交易逻辑</button>
             <button class="btn btn-primary" @click="openAddHolding">➕ 添加持仓</button>
             <button class="btn" @click="refreshHoldingPrices" :disabled="holdingRefreshing">
               <span v-if="holdingRefreshing">⏳ 刷新中...</span>
@@ -1406,6 +1407,50 @@
           </div>
         </div>
 
+        <!-- 交易逻辑板块（普通用户交易逻辑记录表；入口在持仓页 toolbar「📊 交易逻辑」） -->
+        <div class="tl-panel" v-show="tradeLogicOpen">
+          <div class="tl-panel-header">
+            <h3 class="panel-title" style="margin:0">📊 交易逻辑</h3>
+            <div class="tl-add-row" style="margin:0">
+              <button class="btn btn-sm btn-primary" @click="openAddTradeLogic">＋ 新增交易逻辑</button>
+              <button class="btn btn-sm" @click="tradeLogicOpen = !tradeLogicOpen">🙈 收起</button>
+            </div>
+          </div>
+          <div class="tl-hint">普通用户的交易逻辑记录表：每行一条（时间 / 市场环境 / 利好板块 / 性价股票 / 转折环境 / 转折板块 / 性价股票）。在「新闻追踪 / 全球信息」的归类项上右键，可一键加入「市场环境 / 转折环境」。</div>
+          <div class="table-wrap table-scroll-x" v-if="tradeLogicRows.length">
+            <table class="data-table tl-table">
+              <thead>
+                <tr>
+                  <th>时间</th>
+                  <th>市场环境</th>
+                  <th>利好板块</th>
+                  <th>性价股票</th>
+                  <th>转折环境</th>
+                  <th>转折板块</th>
+                  <th>性价股票</th>
+                  <th class="col-actions">操作</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="r in tradeLogicRows" :key="r.id">
+                  <td data-label="时间">{{ r.date }}</td>
+                  <td data-label="市场环境"><span class="tl-chip" v-for="(x,i) in r.marketEnv" :key="'m'+i">{{ x }}</span><span class="tl-empty" v-if="!r.marketEnv.length">—</span></td>
+                  <td data-label="利好板块"><span class="tl-chip" v-for="(x,i) in r.goodSectors" :key="'g'+i">{{ x }}</span><span class="tl-empty" v-if="!r.goodSectors.length">—</span></td>
+                  <td data-label="性价股票"><span class="tl-chip" v-for="(x,i) in r.goodStocks" :key="'gs'+i">{{ x }}</span><span class="tl-empty" v-if="!r.goodStocks.length">—</span></td>
+                  <td data-label="转折环境"><span class="tl-chip" v-for="(x,i) in r.turnEnv" :key="'t'+i">{{ x }}</span><span class="tl-empty" v-if="!r.turnEnv.length">—</span></td>
+                  <td data-label="转折板块"><span class="tl-chip" v-for="(x,i) in r.turnSectors" :key="'ts'+i">{{ x }}</span><span class="tl-empty" v-if="!r.turnSectors.length">—</span></td>
+                  <td data-label="性价股票"><span class="tl-chip" v-for="(x,i) in r.turnStocks" :key="'tt'+i">{{ x }}</span><span class="tl-empty" v-if="!r.turnStocks.length">—</span></td>
+                  <td class="col-actions" data-label="操作">
+                    <button class="btn-icon-sm" @click="editTradeLogicRow(r)" title="编辑">✏️</button>
+                    <button class="btn-icon-sm" @click="deleteTradeLogicRow(r)" title="删除">🗑</button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="tl-empty-block" v-else>暂无交易逻辑记录，点击「＋ 新增交易逻辑」开始记录。</div>
+        </div>
+
         <!-- 收藏板块（已从热门板块页移入，置于用户页持仓表下方） -->
         <div class="fav-panel" v-show="favPanelOpen">
           <div class="fav-panel-header">
@@ -1517,6 +1562,90 @@
             <div class="modal-actions">
               <button class="btn btn-primary" @click="saveHolding">💾 保存</button>
               <button class="btn" @click="holdingModal.show = false">取消</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- 交易逻辑：新增/编辑 弹窗 -->
+        <div class="modal-overlay" v-if="tradeLogicModal.show" @click.self="tradeLogicModal.show = false">
+          <div class="modal tl-modal">
+            <div class="modal-header">
+              <h3>{{ tradeLogicModal.isEdit ? '✏️ 编辑交易逻辑' : '📊 新增交易逻辑' }}</h3>
+              <button class="btn-icon" @click="tradeLogicModal.show = false" title="关闭">✕</button>
+            </div>
+            <div class="form-row">
+              <label>时间</label>
+              <input type="date" v-model="tradeLogicModal.date" :disabled="tradeLogicModal.isEdit" title="保存后不可修改">
+              <span class="muted small" v-if="tradeLogicModal.isEdit">（已锁定）</span>
+            </div>
+            <div class="form-row">
+              <label>市场环境</label>
+              <div class="tl-chips">
+                <span class="tl-chip" v-for="(x,i) in tradeLogicModal.marketEnv" :key="'m'+i">{{ x }}<button class="tl-chip-x" @click="removeTradeLogicChip('marketEnv', i)" title="移除">✕</button></span>
+                <span class="tl-add"><input class="cell-input" v-model="tradeLogicInputs.marketEnv" @keyup.enter="addTradeLogicChip('marketEnv')" placeholder="输入后点 ＋"><button class="btn btn-sm" @click="addTradeLogicChip('marketEnv')">＋</button></span>
+              </div>
+            </div>
+            <div class="form-row">
+              <label>利好板块</label>
+              <div class="tl-chips">
+                <span class="tl-chip" v-for="(x,i) in tradeLogicModal.goodSectors" :key="'g'+i">{{ x }}<button class="tl-chip-x" @click="removeTradeLogicChip('goodSectors', i)" title="移除">✕</button></span>
+                <span class="tl-add"><input class="cell-input" v-model="tradeLogicInputs.goodSectors" @keyup.enter="addTradeLogicChip('goodSectors')" placeholder="输入后点 ＋"><button class="btn btn-sm" @click="addTradeLogicChip('goodSectors')">＋</button></span>
+              </div>
+            </div>
+            <div class="form-row">
+              <label>性价股票</label>
+              <div class="tl-chips">
+                <span class="tl-chip" v-for="(x,i) in tradeLogicModal.goodStocks" :key="'gs'+i">{{ x }}<button class="tl-chip-x" @click="removeTradeLogicChip('goodStocks', i)" title="移除">✕</button></span>
+                <span class="tl-add"><input class="cell-input" v-model="tradeLogicInputs.goodStocks" @keyup.enter="addTradeLogicChip('goodStocks')" placeholder="输入后点 ＋"><button class="btn btn-sm" @click="addTradeLogicChip('goodStocks')">＋</button></span>
+              </div>
+            </div>
+            <div class="form-row">
+              <label>转折环境</label>
+              <div class="tl-chips">
+                <span class="tl-chip" v-for="(x,i) in tradeLogicModal.turnEnv" :key="'t'+i">{{ x }}<button class="tl-chip-x" @click="removeTradeLogicChip('turnEnv', i)" title="移除">✕</button></span>
+                <span class="tl-add"><input class="cell-input" v-model="tradeLogicInputs.turnEnv" @keyup.enter="addTradeLogicChip('turnEnv')" placeholder="输入后点 ＋"><button class="btn btn-sm" @click="addTradeLogicChip('turnEnv')">＋</button></span>
+              </div>
+            </div>
+            <div class="form-row">
+              <label>转折板块</label>
+              <div class="tl-chips">
+                <span class="tl-chip" v-for="(x,i) in tradeLogicModal.turnSectors" :key="'ts'+i">{{ x }}<button class="tl-chip-x" @click="removeTradeLogicChip('turnSectors', i)" title="移除">✕</button></span>
+                <span class="tl-add"><input class="cell-input" v-model="tradeLogicInputs.turnSectors" @keyup.enter="addTradeLogicChip('turnSectors')" placeholder="输入后点 ＋"><button class="btn btn-sm" @click="addTradeLogicChip('turnSectors')">＋</button></span>
+              </div>
+            </div>
+            <div class="form-row">
+              <label>性价股票</label>
+              <div class="tl-chips">
+                <span class="tl-chip" v-for="(x,i) in tradeLogicModal.turnStocks" :key="'tt'+i">{{ x }}<button class="tl-chip-x" @click="removeTradeLogicChip('turnStocks', i)" title="移除">✕</button></span>
+                <span class="tl-add"><input class="cell-input" v-model="tradeLogicInputs.turnStocks" @keyup.enter="addTradeLogicChip('turnStocks')" placeholder="输入后点 ＋"><button class="btn btn-sm" @click="addTradeLogicChip('turnStocks')">＋</button></span>
+              </div>
+            </div>
+            <div class="modal-actions">
+              <button class="btn btn-primary" @click="saveTradeLogic">💾 保存</button>
+              <button class="btn" @click="tradeLogicModal.show = false">取消</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- 右键上下文菜单：新闻追踪/全球信息归类项右键 → 添加到市场环境/转折环境 -->
+        <div class="tl-ctx-backdrop" v-if="tradeLogicCtx.show" @click="closeTradeLogicCtx"></div>
+        <div class="tl-ctx" v-if="tradeLogicCtx.show" :style="{ left: tradeLogicCtx.x + 'px', top: tradeLogicCtx.y + 'px' }" @click.stop>
+          <div class="tl-ctx-title">「{{ tradeLogicCtx.concept }}」加入：</div>
+          <button class="tl-ctx-item" @click="ctxAddToField('marketEnv')">📌 市场环境</button>
+          <button class="tl-ctx-item" @click="ctxAddToField('turnEnv')">🔄 转折环境</button>
+        </div>
+
+        <!-- 落点行选择器：右键添加后选已有行或新建 -->
+        <div class="modal-overlay" v-if="tradeLogicPicker.open" @click.self="tradeLogicPicker.open = false">
+          <div class="modal tl-picker-modal">
+            <div class="modal-header">
+              <h3>选择落点行</h3>
+              <button class="btn-icon" @click="tradeLogicPicker.open = false">✕</button>
+            </div>
+            <p class="muted small">把「{{ tradeLogicPicker.concept }}」加入「{{ tradeLogicPicker.field === 'marketEnv' ? '市场环境' : '转折环境' }}」，请选择已有交易逻辑行：</p>
+            <div class="tl-picker-list">
+              <div class="tl-picker-item" v-for="o in tradeLogicRowOptions()" :key="o.id" @click="pickerSelectRow(o.id)">📅 {{ o.date }}</div>
+              <div class="tl-picker-item tl-picker-new" @click="pickerNewRow">➕ 新建一行（今天）</div>
             </div>
           </div>
         </div>
@@ -2115,7 +2244,7 @@
                 <div class="bcg-head">🧩 题材归类 <span class="muted small">{{ briefThemeStats.length }} 类</span></div>
                 <div class="brief-cats" v-if="briefThemeStats.length">
                   <div class="brief-cat" v-for="c in briefThemeStats" :key="c.key">
-                    <div class="brief-cat-head" :class="{ active: briefUi.open['theme::' + c.key], 'no-sort': currentPage !== 'news' }">
+                    <div class="brief-cat-head" :class="{ active: briefUi.open['theme::' + c.key], 'no-sort': currentPage !== 'news' }" @contextmenu.prevent="openTradeLogicCtx(c, $event)">
                       <span class="bc-caret" @click.stop="toggleBriefCat(c.key, 'theme')">{{ briefUi.open['theme::' + c.key] ? '▾' : '▸' }}</span>
                       <button type="button" class="bc-sort bc-inc" v-if="currentPage === 'news'" @click.stop="sortByBriefField('inc')" :title="'增 = 昨 − 今（昨=上次闭市周期内排名）'">{{ c.inc==null?'—':(c.inc>0?'+':'')+c.inc }}<i class="bsort" v-if="briefCatSort.field==='inc'">{{ briefCatSort.dir==='asc'?'↑':'↓' }}</i></button>
                       <button type="button" class="bc-sort bc-prev" v-if="currentPage === 'news'" @click.stop="sortByBriefField('prevSeq')" :title="'昨 = 上一个默认闭市周期内该概念的最终排名（点按排序）'">{{ c.prevSeq != null ? c.prevSeq : '—' }}<i class="bsort" v-if="briefCatSort.field==='prevSeq'">{{ briefCatSort.dir==='asc'?'↑':'↓' }}</i></button>
@@ -2185,7 +2314,7 @@
                 <div class="bcg-head">💡 概念归类 <span class="muted small">{{ briefConceptStats.length }} 类</span></div>
                 <div class="brief-cats" v-if="briefConceptStats.length">
                   <div class="brief-cat" v-for="c in briefConceptStats" :key="c.key">
-                    <div class="brief-cat-head" :class="{ active: briefUi.open['concept::' + c.key], 'no-sort': currentPage !== 'news' }">
+                    <div class="brief-cat-head" :class="{ active: briefUi.open['concept::' + c.key], 'no-sort': currentPage !== 'news' }" @contextmenu.prevent="openTradeLogicCtx(c, $event)">
                       <span class="bc-caret" @click.stop="toggleBriefCat(c.key, 'concept')">{{ briefUi.open['concept::' + c.key] ? '▾' : '▸' }}</span>
                       <button type="button" class="bc-sort bc-inc" v-if="currentPage === 'news'" @click.stop="sortByBriefField('inc')" :title="'增 = 昨 − 今（昨=上次闭市周期内排名）'">{{ c.inc==null?'—':(c.inc>0?'+':'')+c.inc }}<i class="bsort" v-if="briefCatSort.field==='inc'">{{ briefCatSort.dir==='asc'?'↑':'↓' }}</i></button>
                       <button type="button" class="bc-sort bc-prev" v-if="currentPage === 'news'" @click.stop="sortByBriefField('prevSeq')" :title="'昨 = 上一个默认闭市周期内该概念的最终排名（点按排序）'">{{ c.prevSeq != null ? c.prevSeq : '—' }}<i class="bsort" v-if="briefCatSort.field==='prevSeq'">{{ briefCatSort.dir==='asc'?'↑':'↓' }}</i></button>
@@ -2227,7 +2356,7 @@
                 <div class="bcg-head">🏭 行业归类 <span class="muted small">{{ briefIndustryStats.length }} 类</span></div>
                 <div class="brief-cats" v-if="briefIndustryStats.length">
                   <div class="brief-cat" v-for="c in briefIndustryStats" :key="c.key">
-                    <div class="brief-cat-head" :class="{ active: briefUi.open['industry::' + c.key], 'no-sort': currentPage !== 'news' }">
+                    <div class="brief-cat-head" :class="{ active: briefUi.open['industry::' + c.key], 'no-sort': currentPage !== 'news' }" @contextmenu.prevent="openTradeLogicCtx(c, $event)">
                       <span class="bc-caret" @click.stop="toggleBriefCat(c.key, 'industry')">{{ briefUi.open['industry::' + c.key] ? '▾' : '▸' }}</span>
                       <button type="button" class="bc-sort bc-inc" v-if="currentPage === 'news'" @click.stop="sortByBriefField('inc')" :title="'增 = 昨 − 今（昨=上次闭市周期内排名）'">{{ c.inc==null?'—':(c.inc>0?'+':'')+c.inc }}<i class="bsort" v-if="briefCatSort.field==='inc'">{{ briefCatSort.dir==='asc'?'↑':'↓' }}</i></button>
                       <button type="button" class="bc-sort bc-prev" v-if="currentPage === 'news'" @click.stop="sortByBriefField('prevSeq')" :title="'昨 = 上一个默认闭市周期内该概念的最终排名（点按排序）'">{{ c.prevSeq != null ? c.prevSeq : '—' }}<i class="bsort" v-if="briefCatSort.field==='prevSeq'">{{ briefCatSort.dir==='asc'?'↑':'↓' }}</i></button>
@@ -4425,10 +4554,10 @@
             <button class="um-tab" :class="{active: umTab==='auth'}" @click="umTab='auth'; loadMemberClaims()">授权使用</button>
           </div>
           <div class="um-subtabs" v-if="umTab==='auth'">
+            <button class="um-tab um-subtab" :class="{active: umAuth==='2y'}" @click="umAuth='2y'">24月期（¥4000）用户</button>
             <button class="um-tab um-subtab" :class="{active: umAuth==='trial'}" @click="umAuth='trial'">授权免费试用（非支付会员用户）</button>
             <button class="um-tab um-subtab" :class="{active: umAuth==='6m'}" @click="umAuth='6m'">6月期（¥1000）用户</button>
             <button class="um-tab um-subtab" :class="{active: umAuth==='1y'}" @click="umAuth='1y'">12月期（¥2000）用户</button>
-            <button class="um-tab um-subtab" :class="{active: umAuth==='2y'}" @click="umAuth='2y'">24月期（¥4000）用户</button>
           </div>
           <div class="um-content">
           <!-- ============ 板块①：普通用户注册 ============ -->
@@ -4518,6 +4647,25 @@
                 其他设备注册的用户，需要把他发来的「申请码」粘到上面导入，通过后再把系统给出的「准入码」发回给他。
               </div>
             </div>
+
+            <!-- 已注册未开通会员普通用户：统一收口到「普通用户注册」面板（不再混入「免费试用」） -->
+            <div class="um-pending um-pending-trial" v-if="registeredNoMemberList().length">
+              <div class="um-pending-head">
+                <span>👤 已注册未开通会员普通用户</span>
+                <span class="um-pending-count">{{ registeredNoMemberList().length }} 人</span>
+              </div>
+              <div class="um-pending-item" v-for="u in registeredNoMemberList().filter(u => umSearchMatch(u.username))" :key="u.username">
+                <div class="um-pending-main">
+                  <span class="um-name">{{ u.username }}</span>
+                  <span class="um-pending-meta">注册：{{ u.registerDate || '—' }}</span>
+                  <span class="um-pending-meta">状态：{{ u.statusName || u.status }}</span>
+                </div>
+                <div class="um-actions">
+                  <button class="btn btn-sm" v-for="o in trialDayOptions" :key="o.days" @click="grantUserTrialByName(u.username, o.days)">试用{{ o.label }}</button>
+                </div>
+              </div>
+            </div>
+            <div class="um-hint" v-else>暂无「已注册未开通会员」的普通用户（所有普通用户均已付费或处于试用期）。</div>
           </div>
           </div><!-- /um-panel register -->
 
@@ -4561,7 +4709,7 @@
               <div class="um-empty" v-else>暂无</div>
             </div>
 
-            <div class="um-hint">说明：付费会员按套餐（6月期¥1000 / 12月期¥2000 / 24月期¥4000）归类；普通用户未支付会员归入「授权免费试用」；待审核与管理员账号单列统计。「累计应收」= 各付费分类人数 × 对应金额。</div>
+            <div class="um-hint">说明：付费会员按套餐（24月期¥4000 / 6月期¥1000 / 12月期¥2000）归类到「授权使用」对应子标签；已进入试用期的用户归入「授权免费试用」；<b>已注册但尚未开通任何会员的普通用户不计入上述任何分类，统一收口到「普通用户注册」面板下的「已注册未开通会员普通用户」块</b>，由管理员在此授权试用或等待其支付开通；待审核与管理员账号单列统计。「累计应收」= 各付费分类人数 × 对应金额。</div>
           </div>
           </div><!-- /um-panel admin -->
 
@@ -4965,14 +5113,14 @@
     </transition>
   </div>
 
-  <script src="js/auth.js?v=20261009x"></script>
-  <script src="js/auth-sync.js?v=20261009x"></script>
+  <script src="js/auth.js?v=20261010y"></script>
+  <script src="js/auth-sync.js?v=20261010y"></script>
   <!-- 边缘加速默认站点（batch37 治本：Cloudflare Worker 代理东财/腾讯，缓解 JSONP 限流误报）。
        若你所在地区 workers.dev 访问慢，可在「设置 → 行情加速地址」清空即恢复纯直连。 -->
   <script>window.__SNT_ACCEL__ = 'https://sichina.dpdns.org';</script>
   <!-- 扫码支付二维码渲染库（第三方 qrcodejs，本地托管避免外链失效）。renderQr 会先检测全局 QRCode 是否存在。 -->
-  <script src="assets/qrcode.min.js?v=20261009x"></script>
-  <script src="js/auth-boot.js?v=20261009x"></script>
+  <script src="assets/qrcode.min.js?v=20261010y"></script>
+  <script src="js/auth-boot.js?v=20261010y"></script>
   <!-- store / stock-api / hot-topics / app 由 auth-boot.js 在登录通过后动态装载，
        未登录时它们不会被下载，业务数据也不会进入内存 -->
 </body>
