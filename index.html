@@ -4,12 +4,12 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>股市信息分析系统</title>
-  <link rel="stylesheet" href="css/style.css?v=20261011a">
+  <link rel="stylesheet" href="css/style.css?v=20261011b">
   <!-- Vue 3 全局构建版（v3.4.21 · 自托管）
        原先走 unpkg.com CDN：国内网络对 unpkg 的连通性不稳定，一旦该请求长时间挂起，
        <head> 里的阻塞脚本会让整页停在白屏、后续 auth-boot.js 根本不会执行。
        改为同源托管后，启动链路不再依赖任何第三方 CDN。 -->
-  <script src="js/vue.global.prod.js?v=20261011a"></script>
+  <script src="js/vue.global.prod.js?v=20261011b"></script>
 </head>
 <body class="auth-locked">
   <!-- ===== 登录关卡：登录通过前业务脚本不会被加载 ===== -->
@@ -1317,69 +1317,12 @@
           <div class="tl-panel-header">
             <h3 class="panel-title" style="margin:0">📊 交易逻辑</h3>
             <div class="tl-add-row" style="margin:0">
-              <button class="btn btn-sm btn-primary" @click="startAddTradeLogic" v-if="!tradeLogicForm.show">＋ 新增交易逻辑</button>
               <button class="btn btn-sm" @click="tradeLogicOpen = !tradeLogicOpen">🙈 收起</button>
             </div>
           </div>
-          <div class="tl-hint">普通用户的交易逻辑记录表：每行一条（时间 / 市场环境 / 利好板块 / 性价股票 / 转折环境 / 转折板块 / 性价股票）。在「新闻追踪 / 全球信息」的归类项上右键，可一键加入「市场环境 / 转折环境」。点击表头「时间」可按日期排序。</div>
+          <div class="tl-hint">普通用户的交易逻辑记录表：每行一条（时间 / 市场环境 / 利好板块 / 性价股票 / 转折环境 / 转折板块 / 性价股票）。在「新闻追踪 / 全球信息」的归类项上右键，可一键加入「市场环境 / 转折环境」。点击表头「时间」可按日期排序。表格最后一行即为录入行——直接像单元格一样填写后点「保存」即可，无需点击新增。</div>
 
-          <!-- 内联新增/编辑表单：直接在交易逻辑页面操作，不弹窗 -->
-          <div class="tl-form" v-if="tradeLogicForm.show">
-            <div class="tl-form-title">{{ tradeLogicForm.isEdit ? '✏️ 编辑交易逻辑' : '📊 新增交易逻辑' }}</div>
-            <div class="form-row">
-              <label>时间</label>
-              <input type="date" v-model="tradeLogicForm.date" :disabled="tradeLogicForm.isEdit" title="保存后不可修改">
-              <span class="muted small" v-if="tradeLogicForm.isEdit">（已锁定）</span>
-            </div>
-            <div class="form-row">
-              <label>市场环境</label>
-              <div class="tl-chips">
-                <span class="tl-chip" v-for="(x,i) in tradeLogicForm.marketEnv" :key="'m'+i">{{ x }}<button class="tl-chip-x" @click="removeTradeLogicChip('marketEnv', i)" title="移除">✕</button></span>
-                <span class="tl-add"><input class="cell-input" v-model="tradeLogicInputs.marketEnv" @keyup.enter="addTradeLogicChip('marketEnv')" placeholder="输入后点 ＋"><button class="btn btn-sm" @click="addTradeLogicChip('marketEnv')">＋</button></span>
-              </div>
-            </div>
-            <div class="form-row">
-              <label>利好板块</label>
-              <div class="tl-chips">
-                <span class="tl-chip" v-for="(x,i) in tradeLogicForm.goodSectors" :key="'g'+i">{{ x }}<button class="tl-chip-x" @click="removeTradeLogicChip('goodSectors', i)" title="移除">✕</button></span>
-                <span class="tl-add"><input class="cell-input" v-model="tradeLogicInputs.goodSectors" @keyup.enter="addTradeLogicChip('goodSectors')" placeholder="输入后点 ＋"><button class="btn btn-sm" @click="addTradeLogicChip('goodSectors')">＋</button></span>
-              </div>
-            </div>
-            <div class="form-row">
-              <label>性价股票</label>
-              <div class="tl-chips">
-                <span class="tl-chip" v-for="(x,i) in tradeLogicForm.goodStocks" :key="'gs'+i">{{ x }}<button class="tl-chip-x" @click="removeTradeLogicChip('goodStocks', i)" title="移除">✕</button></span>
-                <span class="tl-add"><input class="cell-input" v-model="tradeLogicInputs.goodStocks" @keyup.enter="addTradeLogicChip('goodStocks')" placeholder="输入后点 ＋"><button class="btn btn-sm" @click="addTradeLogicChip('goodStocks')">＋</button></span>
-              </div>
-            </div>
-            <div class="form-row">
-              <label>转折环境</label>
-              <div class="tl-chips">
-                <span class="tl-chip" v-for="(x,i) in tradeLogicForm.turnEnv" :key="'t'+i">{{ x }}<button class="tl-chip-x" @click="removeTradeLogicChip('turnEnv', i)" title="移除">✕</button></span>
-                <span class="tl-add"><input class="cell-input" v-model="tradeLogicInputs.turnEnv" @keyup.enter="addTradeLogicChip('turnEnv')" placeholder="输入后点 ＋"><button class="btn btn-sm" @click="addTradeLogicChip('turnEnv')">＋</button></span>
-              </div>
-            </div>
-            <div class="form-row">
-              <label>转折板块</label>
-              <div class="tl-chips">
-                <span class="tl-chip" v-for="(x,i) in tradeLogicForm.turnSectors" :key="'ts'+i">{{ x }}<button class="tl-chip-x" @click="removeTradeLogicChip('turnSectors', i)" title="移除">✕</button></span>
-                <span class="tl-add"><input class="cell-input" v-model="tradeLogicInputs.turnSectors" @keyup.enter="addTradeLogicChip('turnSectors')" placeholder="输入后点 ＋"><button class="btn btn-sm" @click="addTradeLogicChip('turnSectors')">＋</button></span>
-              </div>
-            </div>
-            <div class="form-row">
-              <label>性价股票</label>
-              <div class="tl-chips">
-                <span class="tl-chip" v-for="(x,i) in tradeLogicForm.turnStocks" :key="'tt'+i">{{ x }}<button class="tl-chip-x" @click="removeTradeLogicChip('turnStocks', i)" title="移除">✕</button></span>
-                <span class="tl-add"><input class="cell-input" v-model="tradeLogicInputs.turnStocks" @keyup.enter="addTradeLogicChip('turnStocks')" placeholder="输入后点 ＋"><button class="btn btn-sm" @click="addTradeLogicChip('turnStocks')">＋</button></span>
-              </div>
-            </div>
-            <div class="modal-actions">
-              <button class="btn btn-primary" @click="saveTradeLogic">💾 保存</button>
-              <button class="btn" @click="cancelTradeLogicForm">取消</button>
-            </div>
-          </div>
-
-          <div class="table-wrap table-scroll-x" v-if="tradeLogicRows.length">
+          <div class="table-wrap table-scroll-x">
             <table class="data-table tl-table">
               <thead>
                 <tr>
@@ -1394,7 +1337,7 @@
                 </tr>
               </thead>
               <tbody>
-                <tr v-for="r in tradeLogicRows" :key="r.id">
+                <tr v-for="r in tradeLogicRows" :key="r.id" :class="{ 'tl-row-edit-target': tradeLogicForm.isEdit && tradeLogicForm.id === r.id }">
                   <td data-label="时间">{{ r.date }}</td>
                   <td data-label="市场环境"><span class="tl-chip" v-for="(x,i) in r.marketEnv" :key="'m'+i">{{ x }}</span><span class="tl-empty" v-if="!r.marketEnv.length">—</span></td>
                   <td data-label="利好板块"><span class="tl-chip" v-for="(x,i) in r.goodSectors" :key="'g'+i">{{ x }}</span><span class="tl-empty" v-if="!r.goodSectors.length">—</span></td>
@@ -1407,10 +1350,57 @@
                     <button class="btn-icon-sm" @click="deleteTradeLogicRow(r)" title="删除">🗑</button>
                   </td>
                 </tr>
+                <!-- 录入行：始终可见，像单元格一样直接填写 -->
+                <tr class="tl-input-row">
+                  <td data-label="时间">
+                    <input type="date" class="cell-input tl-date" v-model="tradeLogicForm.date" :disabled="tradeLogicForm.isEdit" title="保存后不可修改">
+                    <span class="muted small" v-if="tradeLogicForm.isEdit">（已锁定）</span>
+                  </td>
+                  <td data-label="市场环境">
+                    <div class="tl-chips">
+                      <span class="tl-chip" v-for="(x,i) in tradeLogicForm.marketEnv" :key="'m'+i">{{ x }}<button class="tl-chip-x" @click="removeTradeLogicChip('marketEnv', i)" title="移除">✕</button></span>
+                      <span class="tl-add"><input class="cell-input" v-model="tradeLogicInputs.marketEnv" @keyup.enter="addTradeLogicChip('marketEnv')" placeholder="输入后点 ＋"><button class="btn btn-sm" @click="addTradeLogicChip('marketEnv')">＋</button></span>
+                    </div>
+                  </td>
+                  <td data-label="利好板块">
+                    <div class="tl-chips">
+                      <span class="tl-chip" v-for="(x,i) in tradeLogicForm.goodSectors" :key="'g'+i">{{ x }}<button class="tl-chip-x" @click="removeTradeLogicChip('goodSectors', i)" title="移除">✕</button></span>
+                      <span class="tl-add"><input class="cell-input" v-model="tradeLogicInputs.goodSectors" @keyup.enter="addTradeLogicChip('goodSectors')" placeholder="输入后点 ＋"><button class="btn btn-sm" @click="addTradeLogicChip('goodSectors')">＋</button></span>
+                    </div>
+                  </td>
+                  <td data-label="性价股票">
+                    <div class="tl-chips">
+                      <span class="tl-chip" v-for="(x,i) in tradeLogicForm.goodStocks" :key="'gs'+i">{{ x }}<button class="tl-chip-x" @click="removeTradeLogicChip('goodStocks', i)" title="移除">✕</button></span>
+                      <span class="tl-add"><input class="cell-input" v-model="tradeLogicInputs.goodStocks" @keyup.enter="addTradeLogicChip('goodStocks')" placeholder="输入后点 ＋"><button class="btn btn-sm" @click="addTradeLogicChip('goodStocks')">＋</button></span>
+                    </div>
+                  </td>
+                  <td data-label="转折环境">
+                    <div class="tl-chips">
+                      <span class="tl-chip" v-for="(x,i) in tradeLogicForm.turnEnv" :key="'t'+i">{{ x }}<button class="tl-chip-x" @click="removeTradeLogicChip('turnEnv', i)" title="移除">✕</button></span>
+                      <span class="tl-add"><input class="cell-input" v-model="tradeLogicInputs.turnEnv" @keyup.enter="addTradeLogicChip('turnEnv')" placeholder="输入后点 ＋"><button class="btn btn-sm" @click="addTradeLogicChip('turnEnv')">＋</button></span>
+                    </div>
+                  </td>
+                  <td data-label="转折板块">
+                    <div class="tl-chips">
+                      <span class="tl-chip" v-for="(x,i) in tradeLogicForm.turnSectors" :key="'ts'+i">{{ x }}<button class="tl-chip-x" @click="removeTradeLogicChip('turnSectors', i)" title="移除">✕</button></span>
+                      <span class="tl-add"><input class="cell-input" v-model="tradeLogicInputs.turnSectors" @keyup.enter="addTradeLogicChip('turnSectors')" placeholder="输入后点 ＋"><button class="btn btn-sm" @click="addTradeLogicChip('turnSectors')">＋</button></span>
+                    </div>
+                  </td>
+                  <td data-label="性价股票">
+                    <div class="tl-chips">
+                      <span class="tl-chip" v-for="(x,i) in tradeLogicForm.turnStocks" :key="'tt'+i">{{ x }}<button class="tl-chip-x" @click="removeTradeLogicChip('turnStocks', i)" title="移除">✕</button></span>
+                      <span class="tl-add"><input class="cell-input" v-model="tradeLogicInputs.turnStocks" @keyup.enter="addTradeLogicChip('turnStocks')" placeholder="输入后点 ＋"><button class="btn btn-sm" @click="addTradeLogicChip('turnStocks')">＋</button></span>
+                    </div>
+                  </td>
+                  <td class="col-actions" data-label="操作">
+                    <button class="btn btn-sm btn-primary" @click="saveTradeLogic">{{ tradeLogicForm.isEdit ? '💾 更新' : '💾 保存' }}</button>
+                    <button class="btn btn-sm" @click="resetTradeLogicForm">{{ tradeLogicForm.isEdit ? '取消' : '清空' }}</button>
+                  </td>
+                </tr>
+                <tr v-if="!tradeLogicRows.length"><td colspan="8" class="tl-empty-block">暂无交易逻辑记录，在下方录入行直接填写后点「保存」即可。</td></tr>
               </tbody>
             </table>
           </div>
-          <div class="tl-empty-block" v-else>暂无交易逻辑记录，点击「＋ 新增交易逻辑」开始记录。</div>
         </div>
 
         <!-- 收藏板块（已从热门板块页移入，置于用户页持仓表下方） -->
@@ -5014,14 +5004,14 @@
     </transition>
   </div>
 
-  <script src="js/auth.js?v=20261011a"></script>
-  <script src="js/auth-sync.js?v=20261011a"></script>
+  <script src="js/auth.js?v=20261011b"></script>
+  <script src="js/auth-sync.js?v=20261011b"></script>
   <!-- 边缘加速默认站点（batch37 治本：Cloudflare Worker 代理东财/腾讯，缓解 JSONP 限流误报）。
        若你所在地区 workers.dev 访问慢，可在「设置 → 行情加速地址」清空即恢复纯直连。 -->
   <script>window.__SNT_ACCEL__ = 'https://sichina.dpdns.org';</script>
   <!-- 扫码支付二维码渲染库（第三方 qrcodejs，本地托管避免外链失效）。renderQr 会先检测全局 QRCode 是否存在。 -->
-  <script src="assets/qrcode.min.js?v=20261011a"></script>
-  <script src="js/auth-boot.js?v=20261011a"></script>
+  <script src="assets/qrcode.min.js?v=20261011b"></script>
+  <script src="js/auth-boot.js?v=20261011b"></script>
   <!-- store / stock-api / hot-topics / app 由 auth-boot.js 在登录通过后动态装载，
        未登录时它们不会被下载，业务数据也不会进入内存 -->
 </body>

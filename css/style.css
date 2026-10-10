@@ -3160,9 +3160,12 @@ body.guest-mode #app { display: none; }
 .tl-panel { margin: 16px 0; border: 1px solid var(--border); border-radius: var(--radius); background: var(--card-bg, #fff); padding: 14px 16px; }
 .tl-panel-header { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 8px; }
 .tl-add-row { display: flex; gap: 8px; }
-/* 内联新增/编辑表单：直接在交易逻辑页面操作，不弹窗 */
-.tl-form { border: 1px dashed var(--border); border-radius: var(--radius); background: #fafbff; padding: 14px 16px; margin-bottom: 12px; }
-.tl-form-title { font-weight: 600; font-size: 14px; margin-bottom: 10px; color: var(--primary, #4338ca); }
+/* 录入行：始终可见，像单元格一样直接填写（替代独立的"新增"表单） */
+.tl-input-row { background: #f3f6ff; border-top: 2px solid var(--primary, #4338ca); }
+.tl-input-row:hover { background: #eef2ff; }
+.tl-input-row td { vertical-align: top; padding-top: 8px; padding-bottom: 8px; }
+.tl-date { width: 150px; }
+.tl-row-edit-target { outline: 2px solid #f59e0b; outline-offset: -2px; }
 .tl-hint { font-size: 12px; color: var(--text-2, #6b7280); margin-bottom: 10px; line-height: 1.6; }
 .tl-table { min-width: 980px; }
 .tl-table td { vertical-align: top; }

@@ -1960,7 +1960,7 @@ const app = createApp({
     // ===== 交易逻辑记录表（普通用户交易逻辑；按用户名隔离，随 Gist 同步） =====
     const tradeLogicOpen = ref(false);
     const tradeLogicForm = reactive({
-      show: false, isEdit: false, id: null, date: '',
+      isEdit: false, id: null, date: (typeof Store !== 'undefined' && Store.today) ? Store.today() : '',
       marketEnv: [], goodSectors: [], goodStocks: [],
       turnEnv: [], turnSectors: [], turnStocks: []
     });
@@ -2939,16 +2939,15 @@ const app = createApp({
       tradeLogicSortDir.value = cur === 'none' ? 'desc' : (cur === 'desc' ? 'asc' : 'none');
     }
     function openTradeLogicPanel() { tradeLogicOpen.value = !tradeLogicOpen.value; }
-    // 新增/编辑改成「页面内联表单」，不再弹窗
-    function startAddTradeLogic() {
+    // 录入行始终可见（表格最后一行），无需点击新增；resetTradeLogicForm 复位为空白新增态
+    function resetTradeLogicForm() {
       Object.assign(tradeLogicForm, blankTradeLogic());
-      tradeLogicForm.isEdit = false; tradeLogicForm.show = true;
+      tradeLogicForm.isEdit = false;
       for (const k in tradeLogicInputs) tradeLogicInputs[k] = '';
     }
-    function cancelTradeLogicForm() { tradeLogicForm.show = false; }
     function editTradeLogicRow(rec) {
       Object.assign(tradeLogicForm, JSON.parse(JSON.stringify(rec)));
-      tradeLogicForm.isEdit = true; tradeLogicForm.show = true;
+      tradeLogicForm.isEdit = true;
       for (const k in tradeLogicInputs) tradeLogicInputs[k] = '';
     }
     function saveTradeLogic() {
@@ -2963,7 +2962,7 @@ const app = createApp({
       };
       if (d.isEdit) { Store.updateTradeLogic(u, d.id, rec); showToast('已更新交易逻辑', 'success'); }
       else { Store.addTradeLogic(u, rec); showToast('已添加交易逻辑', 'success'); }
-      d.show = false;
+      resetTradeLogicForm();
     }
     function deleteTradeLogicRow(rec) {
       const u = Store.account;
@@ -9809,7 +9808,7 @@ const app = createApp({
       // 交易逻辑记录表
       tradeLogicOpen, tradeLogicForm, tradeLogicInputs, tradeLogicCtx, tradeLogicPicker, tradeLogicRows,
       tradeLogicSortDir, tradeLogicSortIcon, toggleTradeLogicSort,
-      openTradeLogicPanel, startAddTradeLogic, cancelTradeLogicForm, editTradeLogicRow, saveTradeLogic, deleteTradeLogicRow,
+      openTradeLogicPanel, resetTradeLogicForm, editTradeLogicRow, saveTradeLogic, deleteTradeLogicRow,
       addTradeLogicChip, removeTradeLogicChip, openTradeLogicCtx, closeTradeLogicCtx, ctxAddToField,
       tradeLogicRowOptions, pickerSelectRow, pickerNewRow,
       onHoldingStockSearch, pickHoldingStock, fetchEntryPrice,
