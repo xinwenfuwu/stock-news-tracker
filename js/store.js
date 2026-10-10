@@ -29,7 +29,6 @@ const Store = {
       stockPools: [],
       sectorPools: [],        // 概念/行业选股板块：[{id, name, bk, type, date, stocks: [...]}]
       favorites: [],          // 收藏股票：[{code, name, favDate, note}]
-      conceptWatch: [],       // 收藏概念表：[{id, name, addDate, stocks:[{code,name,addPrice,curPrice,todayChange,sinceChange}]}]
       catMeta: {},             // 子类标注：{ "概念归类::人工智能": { color:'#ff0000', note:'重点' }, ... }（概念/行业归类行右侧颜色与备注）
       holdings: {},            // 用户持仓：{ [username]: [{id, code, name, entryDate, entryPrice, currentPrice, shares, direction, fee, note, createdAt, updatedAt}] }
       tradeLogic: {},          // 交易逻辑记录表：{ [username]: [{id, date(锁定), marketEnv:[], goodSectors:[], goodStocks:[], turnEnv:[], turnSectors:[], turnStocks:[], createdAt, updatedAt}] }
@@ -196,7 +195,6 @@ const Store = {
     if (!this.data.stockPools) this.data.stockPools = [];
     if (!this.data.sectorPools) this.data.sectorPools = [];
     if (!this.data.favorites) this.data.favorites = [];
-    if (!this.data.conceptWatch) this.data.conceptWatch = [];
     if (!this.data.news) this.data.news = [];
     if (!this.data.financePush || typeof this.data.financePush !== 'object') {
       this.data.financePush = { url: '', locked: false };
@@ -375,56 +373,6 @@ const Store = {
     const f = this.data.favorites.find(f => f.id === id);
     if (f) { f.note = note; return true; }
     return false;
-  },
-
-  // ===== 收藏概念表（概念 + 备选股票）=====
-  addConceptWatch(item) {
-    const cw = {
-      id: this.uid('cw'),
-      name: String(item.name || '').trim(),
-      addDate: item.addDate || this.today(),
-      stocks: []
-    };
-    this.data.conceptWatch.push(cw);
-    return cw;
-  },
-  updateConceptWatch(id, patch) {
-    const c = this.data.conceptWatch.find(x => x.id === id);
-    if (c) { Object.assign(c, patch); return c; }
-    return null;
-  },
-  deleteConceptWatch(id) {
-    const i = this.data.conceptWatch.findIndex(x => x.id === id);
-    if (i >= 0) { this.data.conceptWatch.splice(i, 1); return true; }
-    return false;
-  },
-  /** 给概念追加一只备选股票（最多 2 只：上=股票A，下=股票B）。stock: {code,name,addPrice,curPrice,todayChange,sinceChange} */
-  addConceptStock(conceptId, stock) {
-    const c = this.data.conceptWatch.find(x => x.id === conceptId);
-    if (!c) return false;
-    if (!c.stocks) c.stocks = [];
-    if (c.stocks.length >= 2) return false;   // 上限 2 只
-    c.stocks.push({
-      code: stock.code || '',
-      name: stock.name || stock.code || '',
-      addPrice: (stock.addPrice != null && !isNaN(stock.addPrice)) ? +stock.addPrice : null,
-      curPrice: (stock.curPrice != null && !isNaN(stock.curPrice)) ? +stock.curPrice : null,
-      todayChange: (stock.todayChange != null && !isNaN(stock.todayChange)) ? +stock.todayChange : null,
-      sinceChange: (stock.sinceChange != null && !isNaN(stock.sinceChange)) ? +stock.sinceChange : null
-    });
-    return true;
-  },
-  removeConceptStock(conceptId, index) {
-    const c = this.data.conceptWatch.find(x => x.id === conceptId);
-    if (!c || !c.stocks || index < 0 || index >= c.stocks.length) return false;
-    c.stocks.splice(index, 1);
-    return true;
-  },
-  updateConceptStock(conceptId, index, patch) {
-    const c = this.data.conceptWatch.find(x => x.id === conceptId);
-    if (!c || !c.stocks || index < 0 || index >= c.stocks.length) return false;
-    Object.assign(c.stocks[index], patch);
-    return true;
   },
 
   // ===== 用户持仓（按用户名隔离，各自只看各自） =====

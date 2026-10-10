@@ -4,12 +4,12 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>股市信息分析系统</title>
-  <link rel="stylesheet" href="css/style.css?v=20261010y">
+  <link rel="stylesheet" href="css/style.css?v=20261011a">
   <!-- Vue 3 全局构建版（v3.4.21 · 自托管）
        原先走 unpkg.com CDN：国内网络对 unpkg 的连通性不稳定，一旦该请求长时间挂起，
        <head> 里的阻塞脚本会让整页停在白屏、后续 auth-boot.js 根本不会执行。
        改为同源托管后，启动链路不再依赖任何第三方 CDN。 -->
-  <script src="js/vue.global.prod.js?v=20261010y"></script>
+  <script src="js/vue.global.prod.js?v=20261011a"></script>
 </head>
 <body class="auth-locked">
   <!-- ===== 登录关卡：登录通过前业务脚本不会被加载 ===== -->
@@ -1312,116 +1312,78 @@
         <div class="page-footer">共 {{ sortedHoldings.length }} 条持仓</div>
 
 
-        <!-- 收藏概念字段表（置于收藏板块上方） -->
-        <div class="cw-panel" v-show="cwPanelOpen">
-          <div class="cw-panel-header">
-            <h3 class="panel-title" style="margin:0">📌 收藏概念表</h3>
-            <div class="cw-add-row" style="margin:0">
-              <input v-model="cwAddName" list="cw-concept-source" class="cell-input" placeholder="概念名称（来源：每日快讯各归类子类）" style="width:240px">
-              <datalist id="cw-concept-source">
-                <option v-for="c in allBriefConceptNames" :key="c" :value="c"></option>
-              </datalist>
-              <button class="btn btn-sm" @click="addConceptWatchManual" :disabled="cwAdding" title="从下方来源名称或自定义输入，一键添加概念">
-                <span v-if="cwAdding">⏳</span>＋ 添加概念
-              </button>
-              <button class="btn btn-sm" @click="cwInfoOpen = !cwInfoOpen" :title="cwInfoOpen ? '隐藏字段含义与计算规则' : '显示字段含义与计算规则'">{{ cwInfoOpen ? '🙈 隐藏说明' : '👁 字段含义' }}</button>
-              <button class="btn btn-sm" @click="refreshConceptWatch" :disabled="cwRefreshing" title="刷新所有概念的备选股票行情，重算今日涨跌与距今涨跌">
-                <span v-if="cwRefreshing">⏳ 刷新中...</span>
-                <span v-else>🔄 刷新数据</span>
-              </button>
-              <button class="btn btn-sm" @click="cwPanelOpen = !cwPanelOpen" :title="cwPanelOpen ? '隐藏收藏概念表' : '显示收藏概念表'">{{ cwPanelOpen ? '🙈 收起' : '👁 展开' }}</button>
-            </div>
-          </div>
-          <div class="table-wrap table-scroll-x" v-if="sortedConceptWatch.length">
-            <table class="data-table cw-table">
-              <thead>
-                <tr>
-                  <th class="sortable" @click="onCwSort('name')">概念名称<span class="sort-ic">{{ cwSortIcon('name') }}</span></th>
-                  <th class="sortable" @click="onCwSort('addDate')">添加日期<span class="sort-ic">{{ cwSortIcon('addDate') }}</span></th>
-                  <th>备选股票<br><span class="muted tiny">（上=股票A，下=股票B）</span></th>
-                  <th>添加股价</th>
-                  <th class="sortable" @click="onCwSort('todayChange')">今日涨跌<span class="sort-ic">{{ cwSortIcon('todayChange') }}</span></th>
-                  <th class="sortable" @click="onCwSort('sinceChange')">距今涨跌<span class="sort-ic">{{ cwSortIcon('sinceChange') }}</span></th>
-                  <th>操作</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr v-for="cw in sortedConceptWatch" :key="cw.id">
-                  <td>{{ cw.name }}</td>
-                  <td>{{ cw.addDate }}</td>
-                  <!-- 备选股票：上下两格（A/B） -->
-                  <td class="cw-dual">
-                    <template v-if="cw.stocks.length">
-                      <div class="cw-cell" v-for="(s,si) in cw.stocks" :key="si">
-                        <span class="stock-name">{{ s.name || s.code }}</span>
-                        <span class="stock-code muted small">{{ s.code }}</span>
-                        <button class="icon-btn" title="删除该备选股票" @click="removeConceptStock(cw, si)">✕</button>
-                      </div>
-                    </template>
-                    <div v-else class="muted small">—</div>
-                    <button class="btn btn-xs" v-if="cw.stocks.length < 2" @click="startAddConceptStock(cw)" title="添加备选股票（最多2只）">＋ 加股票</button>
-                    <div v-if="cwAddStockFor === cw.id" class="cw-add-stock">
-                      <input v-model="cwAddStockCode" class="cell-input" placeholder="代码" style="width:90px">
-                      <input v-model="cwAddStockName" class="cell-input" placeholder="名称" style="width:110px">
-                      <button class="btn btn-xs" @click="confirmAddConceptStock(cw)" :disabled="cwAdding">确定</button>
-                      <button class="btn btn-xs" @click="cancelAddConceptStock">取消</button>
-                    </div>
-                  </td>
-                  <!-- 添加股价：上下两格 -->
-                  <td class="cw-dual">
-                    <template v-if="cw.stocks.length">
-                      <div class="cw-cell" v-for="(s,si) in cw.stocks" :key="si">{{ fmt(s.addPrice) }}</div>
-                    </template>
-                    <div v-else class="muted small">—</div>
-                  </td>
-                  <!-- 今日涨跌：上下两格 -->
-                  <td class="cw-dual">
-                    <template v-if="cw.stocks.length">
-                      <div class="cw-cell num-col" v-for="(s,si) in cw.stocks" :key="si" :class="pctClass(s.todayChange)">{{ fmtPct(s.todayChange) }}</div>
-                    </template>
-                    <div v-else class="muted small">—</div>
-                  </td>
-                  <!-- 距今涨跌：上下两格 -->
-                  <td class="cw-dual">
-                    <template v-if="cw.stocks.length">
-                      <div class="cw-cell num-col" v-for="(s,si) in cw.stocks" :key="si" :class="pctClass(s.sinceChange)">{{ fmtPct(s.sinceChange) }}</div>
-                    </template>
-                    <div v-else class="muted small">—</div>
-                  </td>
-                  <td class="col-actions">
-                    <button class="icon-btn" title="删除该概念" @click="deleteConceptWatch(cw)">🗑</button>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-          <div class="muted small" v-else>暂无收藏概念。在上方输入「概念名称」（可取自每日快讯各归类子类），点「＋ 添加概念」即可建立一行。</div>
-          <div class="info-box small" v-show="cwInfoOpen">
-            <p>💡 <b>字段含义与计算规则</b>：<br>
-            · 概念名称：建议取自「每日快讯」各归类的子类（题材/概念/行业），输入框带联想下拉，也可自填。<br>
-            · 添加日期：概念加入本表的日期。<br>
-            · 备选股票：每个概念最多 2 只（上下两格分别为股票A、股票B），可增删。<br>
-            · 添加股价：股票加入当天的价格（添加时按当时现价自动快照并冻结，刷新不再变动）。<br>
-            · 今日涨跌：刷新时腾讯接口取到的当日涨跌幅(%)。<br>
-            · 距今涨跌(%) = (当前价 − 添加日股价) ÷ 添加日股价 × 100。当前价=刷新时取到的该股票最新价；添加日股价=加入当天的快照价（addPrice）。</p>
-          </div>
-        </div>
-
         <!-- 交易逻辑板块（普通用户交易逻辑记录表；入口在持仓页 toolbar「📊 交易逻辑」） -->
         <div class="tl-panel" v-show="tradeLogicOpen">
           <div class="tl-panel-header">
             <h3 class="panel-title" style="margin:0">📊 交易逻辑</h3>
             <div class="tl-add-row" style="margin:0">
-              <button class="btn btn-sm btn-primary" @click="openAddTradeLogic">＋ 新增交易逻辑</button>
+              <button class="btn btn-sm btn-primary" @click="startAddTradeLogic" v-if="!tradeLogicForm.show">＋ 新增交易逻辑</button>
               <button class="btn btn-sm" @click="tradeLogicOpen = !tradeLogicOpen">🙈 收起</button>
             </div>
           </div>
-          <div class="tl-hint">普通用户的交易逻辑记录表：每行一条（时间 / 市场环境 / 利好板块 / 性价股票 / 转折环境 / 转折板块 / 性价股票）。在「新闻追踪 / 全球信息」的归类项上右键，可一键加入「市场环境 / 转折环境」。</div>
+          <div class="tl-hint">普通用户的交易逻辑记录表：每行一条（时间 / 市场环境 / 利好板块 / 性价股票 / 转折环境 / 转折板块 / 性价股票）。在「新闻追踪 / 全球信息」的归类项上右键，可一键加入「市场环境 / 转折环境」。点击表头「时间」可按日期排序。</div>
+
+          <!-- 内联新增/编辑表单：直接在交易逻辑页面操作，不弹窗 -->
+          <div class="tl-form" v-if="tradeLogicForm.show">
+            <div class="tl-form-title">{{ tradeLogicForm.isEdit ? '✏️ 编辑交易逻辑' : '📊 新增交易逻辑' }}</div>
+            <div class="form-row">
+              <label>时间</label>
+              <input type="date" v-model="tradeLogicForm.date" :disabled="tradeLogicForm.isEdit" title="保存后不可修改">
+              <span class="muted small" v-if="tradeLogicForm.isEdit">（已锁定）</span>
+            </div>
+            <div class="form-row">
+              <label>市场环境</label>
+              <div class="tl-chips">
+                <span class="tl-chip" v-for="(x,i) in tradeLogicForm.marketEnv" :key="'m'+i">{{ x }}<button class="tl-chip-x" @click="removeTradeLogicChip('marketEnv', i)" title="移除">✕</button></span>
+                <span class="tl-add"><input class="cell-input" v-model="tradeLogicInputs.marketEnv" @keyup.enter="addTradeLogicChip('marketEnv')" placeholder="输入后点 ＋"><button class="btn btn-sm" @click="addTradeLogicChip('marketEnv')">＋</button></span>
+              </div>
+            </div>
+            <div class="form-row">
+              <label>利好板块</label>
+              <div class="tl-chips">
+                <span class="tl-chip" v-for="(x,i) in tradeLogicForm.goodSectors" :key="'g'+i">{{ x }}<button class="tl-chip-x" @click="removeTradeLogicChip('goodSectors', i)" title="移除">✕</button></span>
+                <span class="tl-add"><input class="cell-input" v-model="tradeLogicInputs.goodSectors" @keyup.enter="addTradeLogicChip('goodSectors')" placeholder="输入后点 ＋"><button class="btn btn-sm" @click="addTradeLogicChip('goodSectors')">＋</button></span>
+              </div>
+            </div>
+            <div class="form-row">
+              <label>性价股票</label>
+              <div class="tl-chips">
+                <span class="tl-chip" v-for="(x,i) in tradeLogicForm.goodStocks" :key="'gs'+i">{{ x }}<button class="tl-chip-x" @click="removeTradeLogicChip('goodStocks', i)" title="移除">✕</button></span>
+                <span class="tl-add"><input class="cell-input" v-model="tradeLogicInputs.goodStocks" @keyup.enter="addTradeLogicChip('goodStocks')" placeholder="输入后点 ＋"><button class="btn btn-sm" @click="addTradeLogicChip('goodStocks')">＋</button></span>
+              </div>
+            </div>
+            <div class="form-row">
+              <label>转折环境</label>
+              <div class="tl-chips">
+                <span class="tl-chip" v-for="(x,i) in tradeLogicForm.turnEnv" :key="'t'+i">{{ x }}<button class="tl-chip-x" @click="removeTradeLogicChip('turnEnv', i)" title="移除">✕</button></span>
+                <span class="tl-add"><input class="cell-input" v-model="tradeLogicInputs.turnEnv" @keyup.enter="addTradeLogicChip('turnEnv')" placeholder="输入后点 ＋"><button class="btn btn-sm" @click="addTradeLogicChip('turnEnv')">＋</button></span>
+              </div>
+            </div>
+            <div class="form-row">
+              <label>转折板块</label>
+              <div class="tl-chips">
+                <span class="tl-chip" v-for="(x,i) in tradeLogicForm.turnSectors" :key="'ts'+i">{{ x }}<button class="tl-chip-x" @click="removeTradeLogicChip('turnSectors', i)" title="移除">✕</button></span>
+                <span class="tl-add"><input class="cell-input" v-model="tradeLogicInputs.turnSectors" @keyup.enter="addTradeLogicChip('turnSectors')" placeholder="输入后点 ＋"><button class="btn btn-sm" @click="addTradeLogicChip('turnSectors')">＋</button></span>
+              </div>
+            </div>
+            <div class="form-row">
+              <label>性价股票</label>
+              <div class="tl-chips">
+                <span class="tl-chip" v-for="(x,i) in tradeLogicForm.turnStocks" :key="'tt'+i">{{ x }}<button class="tl-chip-x" @click="removeTradeLogicChip('turnStocks', i)" title="移除">✕</button></span>
+                <span class="tl-add"><input class="cell-input" v-model="tradeLogicInputs.turnStocks" @keyup.enter="addTradeLogicChip('turnStocks')" placeholder="输入后点 ＋"><button class="btn btn-sm" @click="addTradeLogicChip('turnStocks')">＋</button></span>
+              </div>
+            </div>
+            <div class="modal-actions">
+              <button class="btn btn-primary" @click="saveTradeLogic">💾 保存</button>
+              <button class="btn" @click="cancelTradeLogicForm">取消</button>
+            </div>
+          </div>
+
           <div class="table-wrap table-scroll-x" v-if="tradeLogicRows.length">
             <table class="data-table tl-table">
               <thead>
                 <tr>
-                  <th>时间</th>
+                  <th class="sortable" @click="toggleTradeLogicSort">时间<span class="sort-ic">{{ tradeLogicSortIcon }}</span></th>
                   <th>市场环境</th>
                   <th>利好板块</th>
                   <th>性价股票</th>
@@ -1562,67 +1524,6 @@
             <div class="modal-actions">
               <button class="btn btn-primary" @click="saveHolding">💾 保存</button>
               <button class="btn" @click="holdingModal.show = false">取消</button>
-            </div>
-          </div>
-        </div>
-
-        <!-- 交易逻辑：新增/编辑 弹窗 -->
-        <div class="modal-overlay" v-if="tradeLogicModal.show" @click.self="tradeLogicModal.show = false">
-          <div class="modal tl-modal">
-            <div class="modal-header">
-              <h3>{{ tradeLogicModal.isEdit ? '✏️ 编辑交易逻辑' : '📊 新增交易逻辑' }}</h3>
-              <button class="btn-icon" @click="tradeLogicModal.show = false" title="关闭">✕</button>
-            </div>
-            <div class="form-row">
-              <label>时间</label>
-              <input type="date" v-model="tradeLogicModal.date" :disabled="tradeLogicModal.isEdit" title="保存后不可修改">
-              <span class="muted small" v-if="tradeLogicModal.isEdit">（已锁定）</span>
-            </div>
-            <div class="form-row">
-              <label>市场环境</label>
-              <div class="tl-chips">
-                <span class="tl-chip" v-for="(x,i) in tradeLogicModal.marketEnv" :key="'m'+i">{{ x }}<button class="tl-chip-x" @click="removeTradeLogicChip('marketEnv', i)" title="移除">✕</button></span>
-                <span class="tl-add"><input class="cell-input" v-model="tradeLogicInputs.marketEnv" @keyup.enter="addTradeLogicChip('marketEnv')" placeholder="输入后点 ＋"><button class="btn btn-sm" @click="addTradeLogicChip('marketEnv')">＋</button></span>
-              </div>
-            </div>
-            <div class="form-row">
-              <label>利好板块</label>
-              <div class="tl-chips">
-                <span class="tl-chip" v-for="(x,i) in tradeLogicModal.goodSectors" :key="'g'+i">{{ x }}<button class="tl-chip-x" @click="removeTradeLogicChip('goodSectors', i)" title="移除">✕</button></span>
-                <span class="tl-add"><input class="cell-input" v-model="tradeLogicInputs.goodSectors" @keyup.enter="addTradeLogicChip('goodSectors')" placeholder="输入后点 ＋"><button class="btn btn-sm" @click="addTradeLogicChip('goodSectors')">＋</button></span>
-              </div>
-            </div>
-            <div class="form-row">
-              <label>性价股票</label>
-              <div class="tl-chips">
-                <span class="tl-chip" v-for="(x,i) in tradeLogicModal.goodStocks" :key="'gs'+i">{{ x }}<button class="tl-chip-x" @click="removeTradeLogicChip('goodStocks', i)" title="移除">✕</button></span>
-                <span class="tl-add"><input class="cell-input" v-model="tradeLogicInputs.goodStocks" @keyup.enter="addTradeLogicChip('goodStocks')" placeholder="输入后点 ＋"><button class="btn btn-sm" @click="addTradeLogicChip('goodStocks')">＋</button></span>
-              </div>
-            </div>
-            <div class="form-row">
-              <label>转折环境</label>
-              <div class="tl-chips">
-                <span class="tl-chip" v-for="(x,i) in tradeLogicModal.turnEnv" :key="'t'+i">{{ x }}<button class="tl-chip-x" @click="removeTradeLogicChip('turnEnv', i)" title="移除">✕</button></span>
-                <span class="tl-add"><input class="cell-input" v-model="tradeLogicInputs.turnEnv" @keyup.enter="addTradeLogicChip('turnEnv')" placeholder="输入后点 ＋"><button class="btn btn-sm" @click="addTradeLogicChip('turnEnv')">＋</button></span>
-              </div>
-            </div>
-            <div class="form-row">
-              <label>转折板块</label>
-              <div class="tl-chips">
-                <span class="tl-chip" v-for="(x,i) in tradeLogicModal.turnSectors" :key="'ts'+i">{{ x }}<button class="tl-chip-x" @click="removeTradeLogicChip('turnSectors', i)" title="移除">✕</button></span>
-                <span class="tl-add"><input class="cell-input" v-model="tradeLogicInputs.turnSectors" @keyup.enter="addTradeLogicChip('turnSectors')" placeholder="输入后点 ＋"><button class="btn btn-sm" @click="addTradeLogicChip('turnSectors')">＋</button></span>
-              </div>
-            </div>
-            <div class="form-row">
-              <label>性价股票</label>
-              <div class="tl-chips">
-                <span class="tl-chip" v-for="(x,i) in tradeLogicModal.turnStocks" :key="'tt'+i">{{ x }}<button class="tl-chip-x" @click="removeTradeLogicChip('turnStocks', i)" title="移除">✕</button></span>
-                <span class="tl-add"><input class="cell-input" v-model="tradeLogicInputs.turnStocks" @keyup.enter="addTradeLogicChip('turnStocks')" placeholder="输入后点 ＋"><button class="btn btn-sm" @click="addTradeLogicChip('turnStocks')">＋</button></span>
-              </div>
-            </div>
-            <div class="modal-actions">
-              <button class="btn btn-primary" @click="saveTradeLogic">💾 保存</button>
-              <button class="btn" @click="tradeLogicModal.show = false">取消</button>
             </div>
           </div>
         </div>
@@ -5113,14 +5014,14 @@
     </transition>
   </div>
 
-  <script src="js/auth.js?v=20261010y"></script>
-  <script src="js/auth-sync.js?v=20261010y"></script>
+  <script src="js/auth.js?v=20261011a"></script>
+  <script src="js/auth-sync.js?v=20261011a"></script>
   <!-- 边缘加速默认站点（batch37 治本：Cloudflare Worker 代理东财/腾讯，缓解 JSONP 限流误报）。
        若你所在地区 workers.dev 访问慢，可在「设置 → 行情加速地址」清空即恢复纯直连。 -->
   <script>window.__SNT_ACCEL__ = 'https://sichina.dpdns.org';</script>
   <!-- 扫码支付二维码渲染库（第三方 qrcodejs，本地托管避免外链失效）。renderQr 会先检测全局 QRCode 是否存在。 -->
-  <script src="assets/qrcode.min.js?v=20261010y"></script>
-  <script src="js/auth-boot.js?v=20261010y"></script>
+  <script src="assets/qrcode.min.js?v=20261011a"></script>
+  <script src="js/auth-boot.js?v=20261011a"></script>
   <!-- store / stock-api / hot-topics / app 由 auth-boot.js 在登录通过后动态装载，
        未登录时它们不会被下载，业务数据也不会进入内存 -->
 </body>
