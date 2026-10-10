@@ -3179,18 +3179,6 @@ body.guest-mode #app { display: none; }
 .tl-chip-x:hover { color: #dc2626; }
 .tl-add { display: inline-flex; align-items: center; gap: 4px; }
 .tl-add .cell-input { width: 160px; }
-/* 右键上下文菜单 */
-.tl-ctx-backdrop { position: fixed; inset: 0; z-index: 90; }
-.tl-ctx { position: fixed; z-index: 95; min-width: 160px; background: #fff; border: 1px solid var(--border); border-radius: 8px; box-shadow: 0 8px 24px rgba(0,0,0,.18); padding: 6px; }
-.tl-ctx-title { font-size: 12px; color: var(--text-2); padding: 4px 6px 6px; border-bottom: 1px solid #f0f0f0; margin-bottom: 4px; }
-.tl-ctx-item { display: block; width: 100%; text-align: left; padding: 7px 8px; border: none; background: transparent; cursor: pointer; font-size: 13px; border-radius: 6px; }
-.tl-ctx-item:hover { background: #f2f5ff; }
-/* 落点行选择器 */
-.tl-picker-modal { width: 360px; max-width: 94vw; }
-.tl-picker-list { max-height: 320px; overflow: auto; margin-top: 10px; }
-.tl-picker-item { padding: 10px 12px; border: 1px solid var(--border); border-radius: 8px; margin-bottom: 8px; cursor: pointer; font-size: 14px; }
-.tl-picker-item:hover { background: #f2f5ff; }
-.tl-picker-new { color: #2563eb; font-weight: 600; border-style: dashed; }
 
 /* 会员服务 */
 .btn-vip { background: linear-gradient(135deg, #fff7e6, #ffe4b3); border: 1px solid #ffd699; color: #8c5a00; font-weight: 600; }

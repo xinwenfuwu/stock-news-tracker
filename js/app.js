@@ -1965,8 +1965,6 @@ const app = createApp({
       turnEnv: [], turnSectors: [], turnStocks: []
     });
     const tradeLogicInputs = reactive({ marketEnv: '', goodSectors: '', goodStocks: '', turnEnv: '', turnSectors: '', turnStocks: '' });
-    const tradeLogicCtx = reactive({ show: false, x: 0, y: 0, concept: '' });      // 右键上下文菜单
-    const tradeLogicPicker = reactive({ open: false, field: '', concept: '' });     // 落点行选择器
     const tradeLogicSortDir = ref('none');  // 'none' 默认(插入序) | 'desc' 最新在前 | 'asc' 最早在前
     // batch84：会员服务 / 扫码支付开通面板状态
     const membershipModal = reactive({
@@ -2980,47 +2978,6 @@ const app = createApp({
     function removeTradeLogicChip(field, idx) {
       const arr = tradeLogicForm[field];
       if (arr && arr[idx] != null) arr.splice(idx, 1);
-    }
-    // 右键：在新闻追踪/全球信息归类项上右键 → 弹出菜单
-    function openTradeLogicCtx(c, ev) {
-      if (!authUser.value) return;
-      tradeLogicCtx.concept = (c && c.name) || '';
-      tradeLogicCtx.x = ev ? ev.clientX : 0;
-      tradeLogicCtx.y = ev ? ev.clientY : 0;
-      tradeLogicCtx.show = true;
-    }
-    function closeTradeLogicCtx() { tradeLogicCtx.show = false; }
-    // 菜单项：把概念加到 市场环境 / 转折环境，再弹窗选落点行
-    function ctxAddToField(field) {
-      const concept = tradeLogicCtx.concept;
-      tradeLogicCtx.show = false;
-      if (!concept) return;
-      tradeLogicPicker.field = field;
-      tradeLogicPicker.concept = concept;
-      tradeLogicPicker.open = true;
-    }
-    function tradeLogicRowOptions() {
-      return tradeLogicRows.value.map(r => ({ id: r.id, date: r.date }));
-    }
-    function pickerSelectRow(rowId) {
-      const u = Store.account, field = tradeLogicPicker.field, concept = tradeLogicPicker.concept;
-      const rec = tradeLogicRows.value.find(r => r.id === rowId);
-      if (rec) {
-        const arr = rec[field].includes(concept) ? rec[field] : [...rec[field], concept];
-        Store.updateTradeLogic(u, rowId, { [field]: arr });
-        showToast('已添加到「' + (field === 'marketEnv' ? '市场环境' : '转折环境') + '」', 'success');
-      }
-      tradeLogicPicker.open = false;
-    }
-    function pickerNewRow() {
-      const u = Store.account, field = tradeLogicPicker.field, concept = tradeLogicPicker.concept;
-      if (!u) return;
-      const rec = blankTradeLogic();
-      rec.date = Store.today();
-      rec[field] = [concept];
-      Store.addTradeLogic(u, rec);
-      tradeLogicPicker.open = false;
-      showToast('已新建一行并添加到「' + (field === 'marketEnv' ? '市场环境' : '转折环境') + '」', 'success');
     }
     /** 按建仓日取历史收盘价作为建仓价（不复权真实价） */
     async function fetchEntryPrice() {
@@ -9806,11 +9763,10 @@ const app = createApp({
       myHoldings, sortedHoldings, holdingSummary, holdingModal, openAddHolding, editHolding,
       saveHolding, deleteHoldingRow, refreshHoldingPrices, holdingRefreshing,
       // 交易逻辑记录表
-      tradeLogicOpen, tradeLogicForm, tradeLogicInputs, tradeLogicCtx, tradeLogicPicker, tradeLogicRows,
+      tradeLogicOpen, tradeLogicForm, tradeLogicInputs, tradeLogicRows,
       tradeLogicSortDir, tradeLogicSortIcon, toggleTradeLogicSort,
       openTradeLogicPanel, resetTradeLogicForm, editTradeLogicRow, saveTradeLogic, deleteTradeLogicRow,
-      addTradeLogicChip, removeTradeLogicChip, openTradeLogicCtx, closeTradeLogicCtx, ctxAddToField,
-      tradeLogicRowOptions, pickerSelectRow, pickerNewRow,
+      addTradeLogicChip, removeTradeLogicChip,
       onHoldingStockSearch, pickHoldingStock, fetchEntryPrice,
       holdingSortKey, holdingSortDir, sortHoldingBy, holdingSortIcon,
       holdingDays, holdingCost, holdingMarketValue, holdingChangePct, holdingProfit, holdingProfitPct,

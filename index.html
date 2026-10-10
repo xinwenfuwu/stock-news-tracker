@@ -4,12 +4,12 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>股市信息分析系统</title>
-  <link rel="stylesheet" href="css/style.css?v=20261011b">
+  <link rel="stylesheet" href="css/style.css?v=20261011c">
   <!-- Vue 3 全局构建版（v3.4.21 · 自托管）
        原先走 unpkg.com CDN：国内网络对 unpkg 的连通性不稳定，一旦该请求长时间挂起，
        <head> 里的阻塞脚本会让整页停在白屏、后续 auth-boot.js 根本不会执行。
        改为同源托管后，启动链路不再依赖任何第三方 CDN。 -->
-  <script src="js/vue.global.prod.js?v=20261011b"></script>
+  <script src="js/vue.global.prod.js?v=20261011c"></script>
 </head>
 <body class="auth-locked">
   <!-- ===== 登录关卡：登录通过前业务脚本不会被加载 ===== -->
@@ -353,7 +353,7 @@
               <div class="bcg-head">💡 概念归类 <span class="muted small">{{ briefConceptStats.length }} 类</span></div>
               <div class="brief-cats" v-if="briefConceptStats.length">
                 <div class="brief-cat" v-for="c in briefConceptStats" :key="c.key">
-                  <div class="brief-cat-head has-streak" :class="{ active: briefUi.open['concept::' + c.key], 'no-sort': currentPage !== 'news' }" @contextmenu.prevent="openTradeLogicCtx(c, $event)">
+                  <div class="brief-cat-head has-streak" :class="{ active: briefUi.open['concept::' + c.key], 'no-sort': currentPage !== 'news' }">
                     <span class="bc-caret" @click.stop="toggleBriefCat(c.key, 'concept')">{{ briefUi.open['concept::' + c.key] ? '▾' : '▸' }}</span>
                     <button type="button" class="bc-sort bc-inc" v-if="currentPage === 'news'" @click.stop="sortByBriefField('inc')" :title="'增 = 昨 − 今（昨=上次闭市周期内排名）'">{{ c.inc==null?'—':(c.inc>0?'+':'')+c.inc }}<i class="bsort" v-if="briefCatSort.field==='inc'">{{ briefCatSort.dir==='asc'?'↑':'↓' }}</i></button>
                     <button type="button" class="bc-sort bc-prev" v-if="currentPage === 'news'" @click.stop="sortByBriefField('prevSeq')" :title="'昨 = 上一个默认闭市周期内该概念的最终排名（点按排序）'">{{ c.prevSeq != null ? c.prevSeq : '—' }}<i class="bsort" v-if="briefCatSort.field==='prevSeq'">{{ briefCatSort.dir==='asc'?'↑':'↓' }}</i></button>
@@ -411,7 +411,7 @@
               <div class="bcg-head">🏭 行业归类 <span class="muted small">{{ briefIndustryStats.length }} 类</span></div>
               <div class="brief-cats" v-if="briefIndustryStats.length">
                 <div class="brief-cat" v-for="c in briefIndustryStats" :key="c.key">
-                  <div class="brief-cat-head has-streak" :class="{ active: briefUi.open['industry::' + c.key], 'no-sort': currentPage !== 'news' }" @contextmenu.prevent="openTradeLogicCtx(c, $event)">
+                  <div class="brief-cat-head has-streak" :class="{ active: briefUi.open['industry::' + c.key], 'no-sort': currentPage !== 'news' }">
                     <span class="bc-caret" @click.stop="toggleBriefCat(c.key, 'industry')">{{ briefUi.open['industry::' + c.key] ? '▾' : '▸' }}</span>
                     <button type="button" class="bc-sort bc-inc" v-if="currentPage === 'news'" @click.stop="sortByBriefField('inc')" :title="'增 = 昨 − 今（昨=上次闭市周期内排名）'">{{ c.inc==null?'—':(c.inc>0?'+':'')+c.inc }}<i class="bsort" v-if="briefCatSort.field==='inc'">{{ briefCatSort.dir==='asc'?'↑':'↓' }}</i></button>
                     <button type="button" class="bc-sort bc-prev" v-if="currentPage === 'news'" @click.stop="sortByBriefField('prevSeq')" :title="'昨 = 上一个默认闭市周期内该概念的最终排名（点按排序）'">{{ c.prevSeq != null ? c.prevSeq : '—' }}<i class="bsort" v-if="briefCatSort.field==='prevSeq'">{{ briefCatSort.dir==='asc'?'↑':'↓' }}</i></button>
@@ -1320,7 +1320,7 @@
               <button class="btn btn-sm" @click="tradeLogicOpen = !tradeLogicOpen">🙈 收起</button>
             </div>
           </div>
-          <div class="tl-hint">普通用户的交易逻辑记录表：每行一条（时间 / 市场环境 / 利好板块 / 性价股票 / 转折环境 / 转折板块 / 性价股票）。在「新闻追踪 / 全球信息」的归类项上右键，可一键加入「市场环境 / 转折环境」。点击表头「时间」可按日期排序。表格最后一行即为录入行——直接像单元格一样填写后点「保存」即可，无需点击新增。</div>
+          <div class="tl-hint">普通用户的交易逻辑记录表：每行一条（时间 / 市场环境 / 利好板块 / 性价股票 / 转折环境 / 转折板块 / 性价股票）。点击表头「时间」可按日期排序。表格最后一行即为录入行——直接像单元格一样填写后点「保存」即可，无需点击新增。</div>
 
           <div class="table-wrap table-scroll-x">
             <table class="data-table tl-table">
@@ -1514,29 +1514,6 @@
             <div class="modal-actions">
               <button class="btn btn-primary" @click="saveHolding">💾 保存</button>
               <button class="btn" @click="holdingModal.show = false">取消</button>
-            </div>
-          </div>
-        </div>
-
-        <!-- 右键上下文菜单：新闻追踪/全球信息归类项右键 → 添加到市场环境/转折环境 -->
-        <div class="tl-ctx-backdrop" v-if="tradeLogicCtx.show" @click="closeTradeLogicCtx"></div>
-        <div class="tl-ctx" v-if="tradeLogicCtx.show" :style="{ left: tradeLogicCtx.x + 'px', top: tradeLogicCtx.y + 'px' }" @click.stop>
-          <div class="tl-ctx-title">「{{ tradeLogicCtx.concept }}」加入：</div>
-          <button class="tl-ctx-item" @click="ctxAddToField('marketEnv')">📌 市场环境</button>
-          <button class="tl-ctx-item" @click="ctxAddToField('turnEnv')">🔄 转折环境</button>
-        </div>
-
-        <!-- 落点行选择器：右键添加后选已有行或新建 -->
-        <div class="modal-overlay" v-if="tradeLogicPicker.open" @click.self="tradeLogicPicker.open = false">
-          <div class="modal tl-picker-modal">
-            <div class="modal-header">
-              <h3>选择落点行</h3>
-              <button class="btn-icon" @click="tradeLogicPicker.open = false">✕</button>
-            </div>
-            <p class="muted small">把「{{ tradeLogicPicker.concept }}」加入「{{ tradeLogicPicker.field === 'marketEnv' ? '市场环境' : '转折环境' }}」，请选择已有交易逻辑行：</p>
-            <div class="tl-picker-list">
-              <div class="tl-picker-item" v-for="o in tradeLogicRowOptions()" :key="o.id" @click="pickerSelectRow(o.id)">📅 {{ o.date }}</div>
-              <div class="tl-picker-item tl-picker-new" @click="pickerNewRow">➕ 新建一行（今天）</div>
             </div>
           </div>
         </div>
@@ -2135,7 +2112,7 @@
                 <div class="bcg-head">🧩 题材归类 <span class="muted small">{{ briefThemeStats.length }} 类</span></div>
                 <div class="brief-cats" v-if="briefThemeStats.length">
                   <div class="brief-cat" v-for="c in briefThemeStats" :key="c.key">
-                    <div class="brief-cat-head" :class="{ active: briefUi.open['theme::' + c.key], 'no-sort': currentPage !== 'news' }" @contextmenu.prevent="openTradeLogicCtx(c, $event)">
+                    <div class="brief-cat-head" :class="{ active: briefUi.open['theme::' + c.key], 'no-sort': currentPage !== 'news' }">
                       <span class="bc-caret" @click.stop="toggleBriefCat(c.key, 'theme')">{{ briefUi.open['theme::' + c.key] ? '▾' : '▸' }}</span>
                       <button type="button" class="bc-sort bc-inc" v-if="currentPage === 'news'" @click.stop="sortByBriefField('inc')" :title="'增 = 昨 − 今（昨=上次闭市周期内排名）'">{{ c.inc==null?'—':(c.inc>0?'+':'')+c.inc }}<i class="bsort" v-if="briefCatSort.field==='inc'">{{ briefCatSort.dir==='asc'?'↑':'↓' }}</i></button>
                       <button type="button" class="bc-sort bc-prev" v-if="currentPage === 'news'" @click.stop="sortByBriefField('prevSeq')" :title="'昨 = 上一个默认闭市周期内该概念的最终排名（点按排序）'">{{ c.prevSeq != null ? c.prevSeq : '—' }}<i class="bsort" v-if="briefCatSort.field==='prevSeq'">{{ briefCatSort.dir==='asc'?'↑':'↓' }}</i></button>
@@ -2205,7 +2182,7 @@
                 <div class="bcg-head">💡 概念归类 <span class="muted small">{{ briefConceptStats.length }} 类</span></div>
                 <div class="brief-cats" v-if="briefConceptStats.length">
                   <div class="brief-cat" v-for="c in briefConceptStats" :key="c.key">
-                    <div class="brief-cat-head" :class="{ active: briefUi.open['concept::' + c.key], 'no-sort': currentPage !== 'news' }" @contextmenu.prevent="openTradeLogicCtx(c, $event)">
+                    <div class="brief-cat-head" :class="{ active: briefUi.open['concept::' + c.key], 'no-sort': currentPage !== 'news' }">
                       <span class="bc-caret" @click.stop="toggleBriefCat(c.key, 'concept')">{{ briefUi.open['concept::' + c.key] ? '▾' : '▸' }}</span>
                       <button type="button" class="bc-sort bc-inc" v-if="currentPage === 'news'" @click.stop="sortByBriefField('inc')" :title="'增 = 昨 − 今（昨=上次闭市周期内排名）'">{{ c.inc==null?'—':(c.inc>0?'+':'')+c.inc }}<i class="bsort" v-if="briefCatSort.field==='inc'">{{ briefCatSort.dir==='asc'?'↑':'↓' }}</i></button>
                       <button type="button" class="bc-sort bc-prev" v-if="currentPage === 'news'" @click.stop="sortByBriefField('prevSeq')" :title="'昨 = 上一个默认闭市周期内该概念的最终排名（点按排序）'">{{ c.prevSeq != null ? c.prevSeq : '—' }}<i class="bsort" v-if="briefCatSort.field==='prevSeq'">{{ briefCatSort.dir==='asc'?'↑':'↓' }}</i></button>
@@ -2247,7 +2224,7 @@
                 <div class="bcg-head">🏭 行业归类 <span class="muted small">{{ briefIndustryStats.length }} 类</span></div>
                 <div class="brief-cats" v-if="briefIndustryStats.length">
                   <div class="brief-cat" v-for="c in briefIndustryStats" :key="c.key">
-                    <div class="brief-cat-head" :class="{ active: briefUi.open['industry::' + c.key], 'no-sort': currentPage !== 'news' }" @contextmenu.prevent="openTradeLogicCtx(c, $event)">
+                    <div class="brief-cat-head" :class="{ active: briefUi.open['industry::' + c.key], 'no-sort': currentPage !== 'news' }">
                       <span class="bc-caret" @click.stop="toggleBriefCat(c.key, 'industry')">{{ briefUi.open['industry::' + c.key] ? '▾' : '▸' }}</span>
                       <button type="button" class="bc-sort bc-inc" v-if="currentPage === 'news'" @click.stop="sortByBriefField('inc')" :title="'增 = 昨 − 今（昨=上次闭市周期内排名）'">{{ c.inc==null?'—':(c.inc>0?'+':'')+c.inc }}<i class="bsort" v-if="briefCatSort.field==='inc'">{{ briefCatSort.dir==='asc'?'↑':'↓' }}</i></button>
                       <button type="button" class="bc-sort bc-prev" v-if="currentPage === 'news'" @click.stop="sortByBriefField('prevSeq')" :title="'昨 = 上一个默认闭市周期内该概念的最终排名（点按排序）'">{{ c.prevSeq != null ? c.prevSeq : '—' }}<i class="bsort" v-if="briefCatSort.field==='prevSeq'">{{ briefCatSort.dir==='asc'?'↑':'↓' }}</i></button>
@@ -5004,14 +4981,14 @@
     </transition>
   </div>
 
-  <script src="js/auth.js?v=20261011b"></script>
-  <script src="js/auth-sync.js?v=20261011b"></script>
+  <script src="js/auth.js?v=20261011c"></script>
+  <script src="js/auth-sync.js?v=20261011c"></script>
   <!-- 边缘加速默认站点（batch37 治本：Cloudflare Worker 代理东财/腾讯，缓解 JSONP 限流误报）。
        若你所在地区 workers.dev 访问慢，可在「设置 → 行情加速地址」清空即恢复纯直连。 -->
   <script>window.__SNT_ACCEL__ = 'https://sichina.dpdns.org';</script>
   <!-- 扫码支付二维码渲染库（第三方 qrcodejs，本地托管避免外链失效）。renderQr 会先检测全局 QRCode 是否存在。 -->
-  <script src="assets/qrcode.min.js?v=20261011b"></script>
-  <script src="js/auth-boot.js?v=20261011b"></script>
+  <script src="assets/qrcode.min.js?v=20261011c"></script>
+  <script src="js/auth-boot.js?v=20261011c"></script>
   <!-- store / stock-api / hot-topics / app 由 auth-boot.js 在登录通过后动态装载，
        未登录时它们不会被下载，业务数据也不会进入内存 -->
 </body>
