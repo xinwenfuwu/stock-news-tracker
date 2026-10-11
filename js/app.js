@@ -6080,12 +6080,18 @@ const app = createApp({
       }
       setBriefSource(v);
       showToast('快讯来源已改为「' + v + '」', 'success');
-      if (briefDate.value) loadBriefs(briefDate.value, v);   // 切换来源立即加载对应平台数据
+      // 切换来源后必须重算数据（用户反馈：变更统计平台后没重新计算）。
+      // 已处于「闭市周期窗口」（点过「刷新」）时，直接重算窗口——refreshBriefCloseWindow 本身会覆盖
+      // 「按日全部」回退加载，不要再先调 loadBriefs（其 loading 守卫会误杀本次窗口重算）；
+      // 非窗口态才按新来源加载当日数据。
+      if (briefWindow.on) refreshBriefCloseWindow();
+      else if (briefDate.value) loadBriefs(briefDate.value, v);
     }
     function commitBriefSource() {
       setBriefSource(briefSourceInput.value);
       showToast('快讯来源已改为「' + briefSourceName.value + '」', 'success');
-      if (briefDate.value) loadBriefs(briefDate.value, briefSourceName.value);
+      if (briefWindow.on) refreshBriefCloseWindow();   // 窗口激活：重算，避免统计滞留旧来源
+      else if (briefDate.value) loadBriefs(briefDate.value, briefSourceName.value);
     }
     /** 切换分类维度：换维度后原展开项已不属于当前维度，收起更干净 */
     function setBriefDim(mode) {
