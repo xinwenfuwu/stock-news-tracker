@@ -2281,8 +2281,19 @@ const app = createApp({
     }
     // ===== batch-A：会员后台（管理员） =====
     const memberClaims = reactive({ list: [], loading: false });
-    // 已审核通过（开通）的 claim id：永久从「待审核」区移除，即使后端 / 前端标记偶发失败也不再回显
-    const resolvedClaimIds = new Set();
+    // 已审核通过（开通）的 claim id：永久从「待审核」区移除，即使后端 / 前端标记偶发失败也不再回显。
+    // 20261011k：改为 localStorage 持久化，避免刷新页面后 in-memory Set 丢失、导致已通过的申请又回显到「审核区」。
+    const RESOLVED_CLAIM_KEY = 'snt-resolved-claims-v1';
+    function loadResolvedClaims() {
+      try {
+        const arr = JSON.parse(localStorage.getItem(RESOLVED_CLAIM_KEY) || '[]');
+        return new Set(Array.isArray(arr) ? arr.filter(x => typeof x === 'string') : []);
+      } catch (e) { return new Set(); }
+    }
+    const resolvedClaimIds = loadResolvedClaims();
+    function persistResolvedClaims() {
+      try { localStorage.setItem(RESOLVED_CLAIM_KEY, JSON.stringify(Array.from(resolvedClaimIds))); } catch (e) {}
+    }
     const memberManual = reactive({ username: '', plan: '6m' });
     // 按套餐期限过滤待开通记录（管理员界面分半年/一年/两年三区展示）
     function claimsOfPlan(p) {
@@ -2340,7 +2351,7 @@ const app = createApp({
       const r = A.grantMembership(claim.user, months, { paidAt: payTs, amount: Number(claim.amount) || 0 });
       if (!r || !r.ok) { showToast((r && r.error) || '开通失败', 'error'); return; }
       // 审核通过：立即从「待审核」区移除该申请（乐观更新，确保无论后端标记是否成功都不再回显）
-      if (claim.id) resolvedClaimIds.add(claim.id);
+      if (claim.id) { resolvedClaimIds.add(claim.id); persistResolvedClaims(); }
       memberClaims.list = memberClaims.list.filter(c => c.id !== claim.id);
       // 标记该 claim 已处理：优先走后端 /pay/claims/resolve（管理员浏览器没有 GitHub 令牌也能标记），
       // 失败再回落管理员令牌直写；两者都失败也不影响已开通。
