@@ -27,7 +27,7 @@
   'use strict';
 
   // 与 index.html 中静态资源版本号保持一致，避免升级后命中旧缓存
-  var ASSET_V = '20261011e';
+  var ASSET_V = '20261011f';
 
   // 管理员点开「注册申请导入链接」后，申请码暂存在这里，等业务层（app.js）就绪后取走
   var IMPORT_KEY = 'snt-pending-import-v1';
@@ -822,9 +822,20 @@
     var box = document.getElementById('auth-accounts');
     if (!box) return;
     if (!sessions || !sessions.length) { box.hidden = true; box.innerHTML = ''; return; }
+    // 当前查看者角色：仅当「当前激活账号是管理员」时才允许在切换列表里看到管理员账号，
+    // 杜绝普通会员在登录页看到 / 切换到管理员账号（防止管理员账号信息泄露给普通会员）。
+    var curRole = '';
+    for (var i = 0; i < sessions.length; i++) {
+      if (sessions[i].username === activeName) { curRole = sessions[i].role; break; }
+    }
+    var visible = sessions.filter(function (s) {
+      if (s.role === 'admin') return curRole === 'admin';
+      return true;
+    });
+    if (!visible.length) { box.hidden = true; box.innerHTML = ''; return; }
     box.hidden = false;
     var html = '<div class="auth-accounts-title">本机已登录的账号（点「切换」即可换号，无需重新输入密码）</div>';
-    sessions.forEach(function (s) {
+    visible.forEach(function (s) {
       var cur = (s.username === activeName);
       html += '<div class="auth-account' + (cur ? ' is-current' : '') + '">'
         + '<span class="auth-account-name">' + escHtml(s.username) + '</span>'

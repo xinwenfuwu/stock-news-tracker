@@ -77,8 +77,14 @@ const app = createApp({
       if (userMenuOpen.value) {
         try {
           const me = (authUser.value && authUser.value.username) || '';
+          const meIsAdmin = !!(authUser.value && authUser.value.role === 'admin');
           otherAccounts.value = (Auth.listSessions ? Auth.listSessions() : [])
-            .filter(a => a.username !== me);
+            .filter(a => {
+              if (a.username === me) return false;
+              // 普通会员看不到管理员账号：防止管理员账号信息（用户名等）泄露给普通会员
+              if (a.role === 'admin' && !meIsAdmin) return false;
+              return true;
+            });
         } catch (e) { otherAccounts.value = []; }
       }
     }
@@ -2402,14 +2408,19 @@ const app = createApp({
     function planMonthText(plan) {
       return plan ? (planMonthsNum(plan) + '个月') : '';
     }
-    // 由账号当前状态推断所属套餐（仅付费会员返回 6m/1y/2y，否则 null）
+    // 由账号当前状态推断所属套餐（仅付费会员返回 6m/1y/2y，否则 null）。
+    // 必须以「真实付费会员」权威字段 payMembershipUntil + paidPlan 判定，
+    // 不能优先取可编辑的 quotaMonths —— 否则管理员在用户表改「额度」列（只写 quotaMonths、未真实付费）
+    // 会把「试用 / 未付费」账号错分进付费桶，破坏分类互斥与「分类清晰」要求。
     function planOfUser(u) {
-      const pmu = Number(u && u.payMembershipUntil) || 0;
+      if (!u) return null;
+      const pmu = Number(u.payMembershipUntil) || 0;
       const now = Date.now();
-      if (pmu <= now) return null;
-      if (u.quotaMonths >= 18) return '2y';
-      if (u.quotaMonths >= 9) return '1y';
-      if (u.quotaMonths > 0) return '6m';
+      if (pmu <= now) return null;            // 无有效真实付费会员（即使 quotaMonths 被改过也不按付费分类）
+      if (u.paidPlan === '2y') return '2y';
+      if (u.paidPlan === '1y') return '1y';
+      if (u.paidPlan === '6m') return '6m';
+      // 兜底：没有 paidPlan 时按剩余时长倒推（扫码回调等无套餐信息的路径）
       const months = (pmu - now) / (30 * 24 * 60 * 60 * 1000);
       if (months >= 18) return '2y';
       if (months >= 9) return '1y';

@@ -1182,6 +1182,12 @@
       if (!username) return false;
       var map = sessionsMap();
       if (!map || !map[username]) return false;
+      // 越权守卫：目标为「管理员账号」时，仅允许「当前已登录者本身是管理员」才能切换；
+      // 普通会员（或游客）无论是点切换按钮还是控制台直接调用，一律返回 false，
+      // 杜绝普通会员越权拿到管理员会话、获取管理员账号信息。
+      var curName = getActive();
+      var curRole = (curName && map[curName] && map[curName].role) || (this.user && this.user.role) || '';
+      if (map[username].role === ROLE.ADMIN && curRole !== ROLE.ADMIN) return false;
       setActive(username); setLastActive(username);
       return true;
     },
@@ -1699,6 +1705,22 @@
         var q = parseInt(opts.quotaMonths, 10);
         if (isNaN(q) || q < 0) q = 0;
         u.quotaMonths = q;
+        // 额度即真实会员：编辑「额度」列即真实开通 / 撤销会员，与 grantMembership 口径统一，
+        // 保证「分类」与「登录门禁」始终一致、分类严格互斥（不再出现试用/未付费被错分进付费桶）。
+        if (q > 0) {
+          var p = String(u.registerDate || '').split('-');
+          var by = parseInt(p[0], 10), bm = parseInt(p[1], 10) - 1, bd = parseInt(p[2], 10);
+          var base = (isNaN(by) || isNaN(bm) || isNaN(bd)) ? Date.now() : new Date(by, bm, bd).getTime();
+          u.payMembershipUntil = base + q * 30 * 24 * 60 * 60 * 1000;
+          u.paidPlan = (q >= 18 ? '2y' : (q >= 9 ? '1y' : '6m'));
+          u.paidAmount = (q >= 18 ? 4000 : (q >= 9 ? 2000 : 1000));
+          if (!Number(u.paidAt)) u.paidAt = base;
+        } else {
+          // 额度清零 = 撤销会员，避免「额度=0 却仍显示付费/可登录」的分类与门禁错配
+          u.payMembershipUntil = 0;
+          u.paidPlan = '';
+          u.paidAmount = 0;
+        }
       }
       u.updatedAt = Date.now();
       // 此前因到期被自动停用的账号，若额度调整后续期到今天之后，则解除停用
