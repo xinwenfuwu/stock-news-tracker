@@ -5679,27 +5679,15 @@ const app = createApp({
       if (typeof clearSectorTailBuy === 'function') clearSectorTailBuy();
       // 打开新板块时重置详情内筛选区间（已固定则保留）
       if (!sectorFilter.locked) resetSectorFilter();
-      // 【修复】选股页点击子版块后，「今年高价/距高价/今年低价/距低价/年涨跌/924涨跌」
-      // 六个依赖历史价的字段长期空白。根因：热门板块在 openHotBoard 后会自动 await refreshHotStocks()
-      // 补全历史价，而本页 openSectorDetail 仅打开弹窗、不触发任何补全，须用户手动点「刷新行情」。
-      // 这里在打开时检测：若成分股尚未补全历史价（yearStartPrice/yearHighPrice/price924 缺失），
-      // 自动触发 refreshSectorDetail → refreshPoolDetail 补全，体验与热门板块一致。
-      // 已补全过则跳过，避免重复请求触发接口限流。
+      // 20261011q：应要求关闭「打开子版块即自动刷新/补全数据」——
+      // 历史价（今年高价/距高价/今年低价/距低价/年涨跌/924涨跌）若尚未补全，
+      // 不再自动发请求补全，改由用户手动点详情里的「🔄 刷新行情」。
+      // 仅在确实需要补全时给一句非网络提示，引导用户手动刷新，不再触发任何自动请求。
       if (sector.stocks && sector.stocks.length) {
         const needHist = sector.stocks.some(s =>
           s.yearStartPrice == null || s.yearHighPrice == null || s.price924 == null);
-        if (needHist && sector.stocks.length > AUTO_ENRICH_MAX) {
-          // batch53：大板块（如「人工智能」751 只、语义结果保存的板块常有数百只）**不自动补全**。
-          // 逐只补全要上千次请求 —— 页面会卡死，也等于在打爆免费接口。改为提示用户按需手动刷新。
-          showToast(`该板块共 ${sector.stocks.length} 只，已跳过自动补全（避免大量请求）；需要时点「🔄 刷新行情」`, 'info');
-        } else if (needHist && autoRefreshPaused()) {
-          // 暂停期间不自动补全，避免「打开弹窗」就偷偷发一堆请求（暂停时手动「刷新行情」同样被拦截）
-          pauseHint('板块详情历史价自动补全');
-        } else if (needHist) {
-          sectorLoading.value = true;
-          refreshSectorDetail(sector)
-            .catch(e => console.warn('板块详情历史价自动补全失败', sector.name, e))
-            .finally(() => { sectorLoading.value = false; });
+        if (needHist) {
+          showToast('该板块历史价字段尚未补全，需要时点「🔄 刷新行情」', 'info');
         }
       }
     }

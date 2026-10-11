@@ -713,11 +713,11 @@ body {
   top: 12px;
   right: 12px;
   display: flex;
-  gap: 4px;
-  opacity: 0;
+  align-items: center;
+  gap: 6px;
+  opacity: 1;
   transition: opacity 0.15s;
 }
-.pool-card:hover .pool-actions { opacity: 1; }
 .empty-state {
   text-align: center;
   padding: 60px 20px;
