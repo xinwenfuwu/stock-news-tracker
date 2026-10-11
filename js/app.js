@@ -69,6 +69,29 @@ const app = createApp({
       authUser.value = (A && A.user) ? A.user : null;
     });
     const userMenuOpen = ref(false);
+    // 本机其他已登录账号（下拉菜单里切换用）
+    const otherAccounts = ref([]);
+    /** 打开/关闭账号菜单时，刷新「其他已登录账号」列表 */
+    function openUserMenu() {
+      userMenuOpen.value = !userMenuOpen.value;
+      if (userMenuOpen.value) {
+        try {
+          const me = (authUser.value && authUser.value.username) || '';
+          otherAccounts.value = (Auth.listSessions ? Auth.listSessions() : [])
+            .filter(a => a.username !== me);
+        } catch (e) { otherAccounts.value = []; }
+      }
+    }
+    /** 切换到指定已登录账号（保留当前账号，可随时切回） */
+    function switchAccount(name) {
+      userMenuOpen.value = false;
+      if (typeof AuthUI !== 'undefined' && AuthUI.switchAccount) AuthUI.switchAccount(name);
+    }
+    /** 登录其他账号（保留当前账号，回到登录页去登录另一个） */
+    function addAccount() {
+      userMenuOpen.value = false;
+      if (typeof AuthUI !== 'undefined' && AuthUI.addAccount) AuthUI.addAccount();
+    }
     const userList = ref([]);
     const userModal = reactive({
       show: false, newUsername: '', newPassword: '', newRole: 'user',
@@ -9786,6 +9809,7 @@ const app = createApp({
       ,
       // 登录账号与权限
       authUser, authInitial, authExpiryText, can, fmtDateTime, doLogout, userMenuOpen,
+      otherAccounts, openUserMenu, switchAccount, addAccount,
       userModal, userList, openUserManage, addUserByAdmin, changeUserRole,
       umTab, umAuth,
       toggleUserDisabled, removeUserByAdmin,

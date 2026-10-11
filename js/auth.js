@@ -18,7 +18,16 @@
   'use strict';
 
   var USERS_KEY = 'snt-auth-users-v1';
+  // 旧版单会话键（仅用于迁移，不再写入）
   var SESSION_KEY = 'snt-auth-session-v1';
+  // 多账号：用户名 -> 会话对象（同一浏览器可同时保存多个已登录账号）
+  var SESSIONS_KEY = 'snt-auth-sessions-v1';
+  // 当前标签页正在使用的账号（sessionStorage，按标签页独立）
+  var ACTIVE_KEY = 'snt-auth-active-v1';
+  // 最近使用的账号（localStorage，新标签页/重开浏览器时的默认账号）
+  var LAST_ACTIVE_KEY = 'snt-auth-last-v1';
+  // 一次性标记：进入时停留在登录页（切换账号 / 退出当前账号 / 登录其他账号时使用）
+  var SHOW_GATE_KEY = 'snt-show-gate-v1';
 
   var ITERATIONS = 150000;
   var SALT_BYTES = 16;
@@ -108,6 +117,28 @@
     try { storage().setItem(key, JSON.stringify(val)); return true; }
     catch (e) { return false; }
   }
+
+  /* ================= 当前标签页 / 最近账号 指针 ================= */
+
+  function activeStore() {
+    try {
+      if (typeof global.sessionStorage !== 'undefined' && global.sessionStorage) return global.sessionStorage;
+    } catch (e) { /* 隐私模式 / 无 sessionStorage：退化为内存 */ }
+    return null;
+  }
+
+  function setActive(name) { var s = activeStore(); if (s) { try { s.setItem(ACTIVE_KEY, name); } catch (e) {} } }
+  function getActive() { var s = activeStore(); if (s) { try { return s.getItem(ACTIVE_KEY) || ''; } catch (e) {} } return ''; }
+  function clearActive() { var s = activeStore(); if (s) { try { s.removeItem(ACTIVE_KEY); } catch (e) {} } }
+  function setLastActive(name) { try { storage().setItem(LAST_ACTIVE_KEY, name); } catch (e) {} }
+  function getLastActive() { try { return storage().getItem(LAST_ACTIVE_KEY) || ''; } catch (e) { return ''; } }
+  function clearLastActive() { try { storage().removeItem(LAST_ACTIVE_KEY); } catch (e) {} }
+
+  function sessionsMap() {
+    var m = readJSON(SESSIONS_KEY, {});
+    return (m && typeof m === 'object') ? m : {};
+  }
+  function sessionsCountLocal() { return Object.keys(sessionsMap()).length; }
 
   /* ================= 加密原语 ================= */
 
@@ -474,6 +505,34 @@
     return localDateStr(now) > dd;
   }
 
+  /** 会员是否有效（未到期）：无额度/无到期时间视为「没有会员」→ false */
+  function isMembershipValid(u, now) {
+    var dd = disableDateOf(u);
+    if (!dd) return false;
+    return localDateStr(now) <= dd;
+  }
+
+  /**
+   * 普通账号的访问门禁（登录 / 恢复会话都会走这里）：
+   *   管理员 → 始终放行（除非被停用）。
+   *   普通用户 → 仅在「试用中」或「会员未到期」时放行；
+   *              其余一律拒绝（待审核 / 试用已结束 / 既无试用也无会员 / 被停用）。
+   * 这是「普通账号没有试用期限权限也没有支付会员，就无法使用或登录」的强制落地。
+   * @returns {string|null} 拒绝原因（非空）；null 表示允许登录
+   */
+  function accessDeny(u, now) {
+    if (!u) return '账号不存在';
+    var t = Number(now) || Date.now();
+    if (u.disabled) return '该账号已被停用，请联系管理员';
+    if (u.role === ROLE.ADMIN) return null;   // 管理员始终可登录
+    var tr = trialState(u, t);
+    if (tr.active) return null;                // 试用中 → 放行
+    if (isMembershipValid(u, t)) return null;  // 会员未到期 → 放行
+    if (tr.granted && tr.expired) return '试用已结束，请开通会员后继续使用';
+    if (statusOf(u) === STATUS.PENDING) return '该账号待管理员审核通过后才能使用';
+    return '该账号暂无有效的试用或会员，无法使用，请扫码支付开通会员';
+  }
+
   /* ============ 试用（普通用户可先试用、后审核） ============
    * 语义：管理员在「用户管理 → 试用」点一下，给这个普通用户开一段试用期；
    * 试用期内即使账号还停在「待审核」，也能用他自己的密码登录；
@@ -707,24 +766,35 @@
     return sha256Hex([sess.username, sess.role, sess.issuedAt, sess.exp, cred, SIGN_SALT].join('|'));
   }
 
-  /** 签发登录态；loginAt 指向本次登录在用户档案里对应的那条登录记录 */
+  /** 签发登录态；loginAt 指向本次登录在用户档案里对应的那条登录记录。
+   *  写入「多账号会话表」而非单一键，并记住当前标签页账号与最近账号。 */
   function issueSession(user, ttl, loginAt) {
     var now = Date.now();
     var sess = { username: user.username, role: user.role, issuedAt: now, exp: now + ttl, loginAt: loginAt || now };
     return signSession(sess, user.hash).then(function (sig) {
       sess.sig = sig;
       Auth.session = sess;
-      writeJSON(SESSION_KEY, sess);
+      var map = sessionsMap();
+      map[user.username] = sess;
+      writeJSON(SESSIONS_KEY, map);
+      setActive(user.username);
+      setLastActive(user.username);
       return sess;
     });
   }
 
-  function clearSession() {
+  /** 清除某个账号的会话（默认清当前标签页账号）；不误伤其他已登录账号 */
+  function clearSession(username) {
+    var uname = username || getActive() || (Auth.session && Auth.session.username) || '';
     Auth.session = null;
-    try { storage().removeItem(SESSION_KEY); } catch (e) { /* ignore */ }
+    try {
+      var map = sessionsMap();
+      if (uname && map[uname]) { delete map[uname]; writeJSON(SESSIONS_KEY, map); }
+    } catch (e) { /* ignore */ }
+    if (uname && uname === getActive()) clearActive();
   }
 
-  /** 校验登录态：过期、账号被删 / 停用 / 未过审、角色被改、签名被伪造，全部拦下 */
+  /** 校验登录态：过期、账号被删 / 停用 / 无试用且无会员 / 角色被改 / 签名被伪造，全部拦下 */
   function verifySession(sess, users) {
     if (!sess || typeof sess !== 'object') return Promise.resolve({ ok: false, error: '未登录' });
     if (!sess.username || !sess.role || !sess.exp || !sess.sig) {
@@ -734,24 +804,9 @@
     var list = users || loadUsers();
     var u = findUser(list, sess.username);
     if (!u) return Promise.resolve({ ok: false, error: '账号不存在或已被移除' });
-    // 「试用中」的普通账号持有会话也放行；试用一结束立刻拦下（会话随即失效）
-    var tr = trialState(u);
-    if (statusOf(u) === STATUS.PENDING && !tr.active) {
-      return Promise.resolve({
-        ok: false,
-        error: tr.expired ? '试用已结束，账号已回到待审核状态' : '账号待管理员审核通过后才能使用'
-      });
-    }
-    if (statusOf(u) === STATUS.REJECTED && !tr.active) {
-      return Promise.resolve({ ok: false, error: '注册申请未通过审核' });
-    }
-    // 会员额度到期：后台自动停用，持有旧会话也会被踢回登录页
-    if (!u.disabled && isMembershipExpired(u)) {
-      u.disabled = true; u.autoDisabled = true; u.disabledAt = Date.now(); u.updatedAt = Date.now();
-      saveUsers(list);
-      return Promise.resolve({ ok: false, error: '会员已到期，账号已被自动停用，请联系管理员' });
-    }
-    if (u.disabled) return Promise.resolve({ ok: false, error: '账号已被停用' });
+    // 统一门禁：普通账号必须处于「试用中」或「会员未到期」，否则拒绝登录/使用
+    var deny = accessDeny(u, Date.now());
+    if (deny) return Promise.resolve({ ok: false, error: deny });
     if (u.role !== sess.role) return Promise.resolve({ ok: false, error: '登录态校验失败' });
     return signSession(sess, u.hash).then(function (expect) {
       if (!timingSafeEqual(expect, sess.sig)) return { ok: false, error: '登录态校验失败' };
@@ -796,7 +851,17 @@
 
     init: function () {
       this.users = loadUsers();
-      this.session = readJSON(SESSION_KEY, null);
+      // 迁移：旧版单会话键 -> 多账号会话表，避免老用户登录态丢失
+      var old = readJSON(SESSION_KEY, null);
+      var map = sessionsMap();
+      if (old && old.username && (!map[old.username])) {
+        map[old.username] = old;
+        writeJSON(SESSIONS_KEY, map);
+        try { storage().removeItem(SESSION_KEY); } catch (e) { /* ignore */ }
+      }
+      var activeName = getActive() || getLastActive() || '';
+      var sess = activeName ? (map[activeName] || null) : null;
+      this.session = sess;
       this.user = null;
       return this;
     },
@@ -898,10 +963,12 @@
           return { ok: true, user: publicUser(ur), requestCode: makeRequestCode(ur) };
         }
         // 全新用户：注册即自动开通 1 天试用（trial），无需管理员审核、无需复制申请码。
+        // 状态置为 pending（待审核语义），但凭借 trialUntil 在试用期内可正常登录；
+        // 试用一到期即被 accessDeny 拦截，账号回到「待审核」状态，符合「无试用且无会员无法使用」。
         var u = {
           username: v.username, role: ROLE.USER, hash: hash,
           pwSeal: sealPassword(v.password),
-          disabled: false, status: STATUS.TRIAL,
+          disabled: false, status: STATUS.PENDING,
           trialUntil: now + 24 * 60 * 60 * 1000,
           createdAt: now, updatedAt: now,
           logins: []
@@ -962,36 +1029,21 @@
         });
       }
 
-      this.users = loadUsers();
+        this.users = loadUsers();
       var u = findUser(this.users, uname);
       var stored = u ? u.hash : DUMMY_HASH;
       return verifyPassword(password, stored).then(function (okPwd) {
         if (!u || !okPwd) return { ok: false, error: '用户名或密码不正确' };
-        // 审核门禁：密码对也不行，必须已通过审核 —— 但「试用中」的普通用户可直接登录
-        var st = statusOf(u);
         var tr = trialState(u);
-        if (st === STATUS.PENDING && !tr.active) {
-          return {
-            ok: false, status: STATUS.PENDING,
-            error: tr.expired ? '试用已结束，请等待管理员审核通过后再登录' : '该账号正在等待管理员审核，通过后即可登录'
-          };
-        }
-        if (st === STATUS.REJECTED && !tr.active) {
-          return { ok: false, error: '该注册申请未通过审核，请联系管理员', status: STATUS.REJECTED };
-        }
-        // 会员额度到期：后台自动停用，无法登录（试用中的账号还没走会员额度，不受影响）
-        if (!u.disabled && isMembershipExpired(u)) {
-          u.disabled = true; u.autoDisabled = true; u.disabledAt = Date.now(); u.updatedAt = Date.now();
-          saveUsers(self.users);
-          return { ok: false, error: '会员已到期（停用日期 ' + disableDateOf(u) + '），无法登录，请联系管理员', status: 'expired' };
-        }
-        if (u.disabled) return { ok: false, error: '该账号已被停用，请联系管理员' };
         // 试用中的账号一律按普通用户放行，避免「待审核 + 管理员角色」这种组合直接拿到后台权限
-        if (tr.active && st !== STATUS.ACTIVE && u.role !== ROLE.USER) {
+        if (tr.active && u.role !== ROLE.USER) {
           u.role = ROLE.USER;
           u.updatedAt = Date.now();
           saveUsers(self.users);
         }
+        // 统一门禁：普通账号必须处于「试用中」或「会员未到期」，否则拒绝登录
+        var deny = accessDeny(u, Date.now());
+        if (deny) return { ok: false, error: deny, status: statusOf(u) };
         var ttl = remember ? TTL_REMEMBER : TTL_DEFAULT;
         var rec = pushLoginRecord(u, { ua: localUA() });
         u.lastLoginAt = rec.at;
@@ -1028,6 +1080,9 @@
         applyGrant(u, grant);         // 同步服务端授权（试用 / 会员额度）
         u.updatedAt = Date.now();
         if (!saveUsers(self.users)) return { ok: false, error: '保存失败：浏览器本地存储不可用' };
+        // 统一门禁：普通账号必须处于「试用中」或「会员未到期」，否则拒绝登录
+        var deny = accessDeny(u, Date.now());
+        if (deny) return { ok: false, error: deny, status: statusOf(u) };
         var ttl = remember ? TTL_REMEMBER : TTL_DEFAULT;
         var rec = pushLoginRecord(u, { ua: localUA() });
         u.lastLoginAt = rec.at;
@@ -1043,46 +1098,107 @@
     restore: function () {
       var self = this;
       this.users = loadUsers();
-      var sess = readJSON(SESSION_KEY, null);
+      var map = sessionsMap();
+      var activeName = getActive() || getLastActive() || '';
+      var sess = activeName ? (map[activeName] || null) : null;
+      // 若 active 不在会话表，退一步取最近签发的会话
+      if (!sess) {
+        var best = null, bestName = '';
+        for (var k in map) {
+          if (!Object.prototype.hasOwnProperty.call(map, k)) continue;
+          var s = map[k];
+          if (!best || (s && s.issuedAt && s.issuedAt > best.issuedAt)) { best = s; bestName = k; }
+        }
+        sess = best; activeName = bestName;
+      }
       if (!sess) { this.session = null; this.user = null; return Promise.resolve({ ok: false, error: '未登录' }); }
 
       // 第二阶段：远端验签（不可达时静默回退本地校验）
       if (this.remote && typeof this.remote.verify === 'function') {
         return Promise.resolve(this.remote.verify(sess)).then(function (r) {
           if (r && r.ok) {
-            self.session = sess;
-            self.user = r.user || null;
+            self.session = sess; self.user = r.user || null;
+            setActive(activeName); setLastActive(activeName);
             return { ok: true, user: self.user };
           }
           return verifySession(sess, self.users).then(function (lr) {
-            if (lr.ok) { self.session = sess; self.user = lr.user; return lr; }
-            self.user = null; clearSession();
-            return r && r.error ? r : lr;
+            if (lr.ok) { self.session = sess; self.user = lr.user; setActive(activeName); setLastActive(activeName); return lr; }
+            self.user = null; clearSession(sess.username); return r && r.error ? r : lr;
           });
         }).catch(function () {
           return verifySession(sess, self.users).then(function (lr) {
-            if (lr.ok) { self.session = sess; self.user = lr.user; return lr; }
-            self.user = null; clearSession();
-            return lr;
+            if (lr.ok) { self.session = sess; self.user = lr.user; setActive(activeName); setLastActive(activeName); return lr; }
+            self.user = null; clearSession(sess.username); return lr;
           });
         });
       }
 
       return verifySession(sess, this.users).then(function (r) {
-        if (!r.ok) { self.user = null; clearSession(); return r; }
-        self.session = sess;
-        self.user = r.user;
+        if (!r.ok) { self.user = null; clearSession(sess.username); return r; }
+        self.session = sess; self.user = r.user;
+        setActive(activeName); setLastActive(activeName);
         return r;
       });
     },
 
-    logout: function () {
+    /** 退出指定账号（默认当前标签页账号）；只移除该账号，不影响其他已登录账号 */
+    logout: function (username) {
+      var uname = username || getActive() || (this.session && this.session.username) || '';
       this.user = null;
-      clearSession();
+      this.session = null;
+      clearSession(uname);
+      if (!sessionsCountLocal()) clearLastActive();
       if (this.remote && typeof this.remote.logout === 'function') {
         try { this.remote.logout(); } catch (e) { /* ignore */ }
       }
-      return { ok: true };
+      return { ok: true, username: uname };
+    },
+
+    /** 已登录账号数量（同一浏览器可同时多个） */
+    sessionsCount: function () { return sessionsCountLocal(); },
+
+    /** 本机已登录的账号列表（供切换菜单使用） */
+    listSessions: function () {
+      var self = this;
+      var map = sessionsMap();
+      this.users = loadUsers();
+      return Object.keys(map).map(function (k) {
+        var u = findUser(self.users, k);
+        return {
+          username: k,
+          role: (u && u.role) || (map[k] && map[k].role) || 'user',
+          roleName: ROLE_NAME[(u && u.role) || (map[k] && map[k].role)] || '普通用户',
+          statusName: u ? statusName(u) : '',
+          trialActive: u ? trialState(u).active : false
+        };
+      });
+    },
+
+    /** 当前标签页正在使用的账号 */
+    getActive: function () { return getActive(); },
+
+    /** 切换到指定已登录账号（仅设置指针，调用方负责刷新页面） */
+    switchAccount: function (username) {
+      if (!username) return false;
+      var map = sessionsMap();
+      if (!map || !map[username]) return false;
+      setActive(username); setLastActive(username);
+      return true;
+    },
+
+    /** 一次性：进入时停留在登录页（切换账号 / 退出当前 / 登录其他账号） */
+    hasGateFlag: function () {
+      var s = activeStore();
+      if (s) { try { return !!s.getItem(SHOW_GATE_KEY); } catch (e) {} }
+      return false;
+    },
+    setGateFlag: function () {
+      var s = activeStore();
+      if (s) { try { s.setItem(SHOW_GATE_KEY, '1'); } catch (e) {} }
+    },
+    clearGateFlag: function () {
+      var s = activeStore();
+      if (s) { try { s.removeItem(SHOW_GATE_KEY); } catch (e) {} }
     },
 
     isLoggedIn: function () { return !!this.user; },

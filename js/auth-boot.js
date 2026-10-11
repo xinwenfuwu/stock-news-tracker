@@ -27,10 +27,14 @@
   'use strict';
 
   // 与 index.html 中静态资源版本号保持一致，避免升级后命中旧缓存
-  var ASSET_V = '20261011c';
+  var ASSET_V = '20261011d';
 
   // 管理员点开「注册申请导入链接」后，申请码暂存在这里，等业务层（app.js）就绪后取走
   var IMPORT_KEY = 'snt-pending-import-v1';
+
+  // 多账号会话表键（与 auth.js 保持一致）
+  var SESSIONS_KEY = 'snt-auth-sessions-v1';
+  var SHOW_GATE_KEY = 'snt-show-gate-v1';
 
   // 业务脚本装载顺序（Vue 已在 <head> 静态加载，不在此列）
   var APP_SCRIPTS = [
@@ -799,18 +803,42 @@
       if (document.getElementById('guest-view')) leaveGuest();
     });
 
-    // 会话在别的标签页被变更时，本页同步：登出或切换到其他账号都应即时生效，
-    // 保证「同一浏览器多标签页」下每个账户的登录态互相独立、刷新/切换后保持一致。
+    // 会话在别的标签页被变更时，本页同步：当前账号的会话被移除（在别处退出）时即时退回登录页，
+    // 保证「同一浏览器多标签页」下每个账户的登录态互相独立、互不误踢。
     global.addEventListener('storage', function (e) {
-      if (e.key !== 'snt-auth-session-v1') return;
-      if (!document.getElementById('auth-gate')) {
-        if (!e.newValue) { location.reload(); return; }   // 被登出
-        var cur = Auth.session && Auth.session.username;
-        try {
-          var nv = e.newValue ? JSON.parse(e.newValue) : null;
-          if (!nv || !nv.username || nv.username !== cur) location.reload();  // 切换了账号
-        } catch (e2) { location.reload(); }
-      }
+      if (e.key !== SESSIONS_KEY) return;
+      if (document.getElementById('auth-gate')) return;   // 已在登录页，无需处理
+      var cur = (Auth.session && Auth.session.username) || (Auth.getActive ? Auth.getActive() : '');
+      var map = {};
+      try { map = e.newValue ? JSON.parse(e.newValue) : {}; } catch (e2) { map = {}; }
+      if (!cur || !map[cur]) location.reload();   // 当前账号的会话已不存在 → 退回登录页
+    });
+  }
+
+  /* ---------------- 多账号切换：登录页列出本机已登录账号 ---------------- */
+
+  /** 在登录页渲染「本机已登录的账号」，可一键切换 / 退出（多账号共存） */
+  function renderAccounts(sessions, activeName) {
+    var box = document.getElementById('auth-accounts');
+    if (!box) return;
+    if (!sessions || !sessions.length) { box.hidden = true; box.innerHTML = ''; return; }
+    box.hidden = false;
+    var html = '<div class="auth-accounts-title">本机已登录的账号（点「切换」即可换号，无需重新输入密码）</div>';
+    sessions.forEach(function (s) {
+      var cur = (s.username === activeName);
+      html += '<div class="auth-account' + (cur ? ' is-current' : '') + '">'
+        + '<span class="auth-account-name">' + escHtml(s.username) + '</span>'
+        + '<span class="auth-account-role">' + escHtml(s.roleName || '普通用户') + '</span>'
+        + (cur
+            ? '<span class="auth-account-cur">当前</span>'
+            : '<button type="button" class="auth-account-switch" data-name="' + escHtml(s.username) + '">切换</button>')
+        + '</div>';
+    });
+    box.innerHTML = html;
+    Array.prototype.forEach.call(box.querySelectorAll('.auth-account-switch'), function (b) {
+      b.addEventListener('click', function () {
+        if (Auth.switchAccount(b.getAttribute('data-name'))) location.reload();
+      });
     });
   }
 
@@ -843,26 +871,24 @@
     bind();
     Auth.init();
 
-    if (!Auth.hasUsers()) {
-      // 首次使用：直接展示「登录」表单（含「注册新账号」「已通过审核？粘贴准入码」两个入口）。
-      // 不再强制注册表单——否则本机还没有任何账号的用户（例如跨设备免码登录、
-      // 或已拿到管理员准入码的人）会被困在注册页，点「返回登录」也回不去，
-      // 表现成「初次登录没有准入码入口」。注册入口仍在登录表单内，新用户点一下即可。
-      //
-      // 🔴 但「注册直达链接」(#register / #signup) 必须例外（batch47 修）：
-      //    本机没有任何账号 = hasUsers() 为 false，**正是新用户的常态**——
-      //    管理员把注册链接发给一个从没用过本站的人，对方就是「全新设备」。
-      //    原来这里无条件 showForm('login')，等于把这条链接在新设备上直接作废
-      //    （线上实测：全新浏览器打开 #register 落回登录页）。
-      //    所以只要 URL 明确带了 #register / #signup，就尊重意图，直接给注册表单。
+    // 一次性标记：本次进入停留在登录页（切换账号 / 退出当前 / 登录其他账号）
+    var showGate = false;
+    try { if (global.sessionStorage && global.sessionStorage.getItem(SHOW_GATE_KEY)) { showGate = true; global.sessionStorage.removeItem(SHOW_GATE_KEY); } } catch (e) { /* ignore */ }
+
+    var sessions = (typeof Auth.listSessions === 'function') ? Auth.listSessions() : [];
+    var activeName = (typeof Auth.getActive === 'function') ? Auth.getActive() : '';
+    renderAccounts(sessions, activeName);
+
+    if (!sessions.length) {
+      // 本机没有任何已登录账号：首次使用或已全部退出 → 直接展示「登录」表单
       showForm(askRegister ? 'register' : 'login');
       return;
     }
 
+    // 已有登录账号：尝试恢复当前账号；若带 showGate 标记（主动切换/退出）则停留在登录页
     Auth.restore().then(function (r) {
-      if (r.ok) { enterApp(); return; }
+      if (r.ok && !showGate) { enterApp(); return; }
       var hint = (r.error && r.error !== '未登录') ? r.error : '';
-      // 带 #register 链接进来的（多半是管理员发给新用户的）优先显示注册表单
       showForm(askRegister ? 'register' : 'login');
       if (importCode) showMsg('已收到用户发来的注册申请，请先用管理员账号登录，登录后会自动打开用户管理并填好申请码', 'warn');
       else if (hint) showMsg(hint, 'warn');
@@ -872,16 +898,29 @@
     });
   }
 
-  /** 供业务层调用：退出登录（重新加载即可回到登录界面，业务脚本不会再装入） */
+  /** 供业务层调用：退出当前账号（只移除当前账号，保留其他已登录账号），回到登录页 */
   function logout() {
-    Auth.logout();
-    try { sessionStorage.clear(); } catch (e) { /* ignore */ }
+    Auth.logout();              // 移除当前标签页账号，不影响其他已登录账号
+    try { if (global.sessionStorage) global.sessionStorage.setItem(SHOW_GATE_KEY, '1'); } catch (e) { /* ignore */ }
+    location.reload();          // 重新加载 → 登录页列出剩余账号，可一键切换其他号
+  }
+
+  /** 供业务层调用：登录其他账号（保留当前账号，回到登录页去登录另一个） */
+  function addAccount() {
+    try { if (global.sessionStorage) global.sessionStorage.setItem(SHOW_GATE_KEY, '1'); } catch (e) { /* ignore */ }
     location.reload();
+  }
+
+  /** 供业务层调用：切换到指定已登录账号 */
+  function switchAccount(username) {
+    if (Auth.switchAccount(username)) location.reload();
   }
 
   global.AuthUI = {
     start: start,
     logout: logout,
+    addAccount: addAccount,
+    switchAccount: switchAccount,
     enterApp: enterApp,
     enterGuest: enterGuest,
     leaveGuest: leaveGuest,

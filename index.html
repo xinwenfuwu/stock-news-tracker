@@ -4,12 +4,12 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>股市信息分析系统</title>
-  <link rel="stylesheet" href="css/style.css?v=20261011c">
+  <link rel="stylesheet" href="css/style.css?v=20261011d">
   <!-- Vue 3 全局构建版（v3.4.21 · 自托管）
        原先走 unpkg.com CDN：国内网络对 unpkg 的连通性不稳定，一旦该请求长时间挂起，
        <head> 里的阻塞脚本会让整页停在白屏、后续 auth-boot.js 根本不会执行。
        改为同源托管后，启动链路不再依赖任何第三方 CDN。 -->
-  <script src="js/vue.global.prod.js?v=20261011c"></script>
+  <script src="js/vue.global.prod.js?v=20261011d"></script>
 </head>
 <body class="auth-locked">
   <!-- ===== 登录关卡：登录通过前业务脚本不会被加载 ===== -->
@@ -20,6 +20,9 @@
         <h1 class="auth-title"><span>股市信息</span><span>分析系统</span></h1>
         <p class="auth-sub" id="auth-sub">请登录后使用</p>
       </div>
+
+      <!-- 本机已登录的账号（可一键切换 / 退出，多账号共存） -->
+      <div id="auth-accounts" class="auth-accounts" hidden></div>
 
       <form class="auth-form" id="auth-login-form" hidden autocomplete="off">
         <input class="auth-input" type="text" id="login-username" placeholder="用户名" maxlength="20" autocomplete="username">
@@ -228,7 +231,7 @@
             ⬆️<input type="file" accept=".json" @change="importData" hidden>
           </label>
           <div class="user-menu-wrap" v-if="authUser">
-            <button class="user-chip" @click.stop="userMenuOpen = !userMenuOpen"
+            <button class="user-chip" @click.stop="openUserMenu"
                     :class="{ 'has-pending': pendingCount > 0 }"
                     :title="'当前登录：' + authUser.username + (pendingCount > 0 ? '（有 ' + pendingCount + ' 份注册申请待审核）' : '')">
               <span class="user-avatar">{{ authInitial }}</span>
@@ -249,7 +252,18 @@
                 <span>用户管理</span>
                 <span class="user-dd-badge" v-if="pendingCount > 0">{{ pendingCount }} 份待审</span>
               </button>
-              <button class="user-dd-item is-danger" @click="doLogout">退出登录</button>
+              <template v-if="otherAccounts.length">
+                <div class="user-dd-sep"></div>
+                <div class="user-dd-sep-label">切换账号</div>
+                <button class="user-dd-item user-dd-account" v-for="oa in otherAccounts" :key="oa.username"
+                        @click="switchAccount(oa.username)">
+                  <span class="user-dd-acc-name">{{ oa.username }}</span>
+                  <span class="user-dd-acc-role" :class="{ 'is-admin': oa.role === 'admin' }">{{ oa.roleName }}</span>
+                </button>
+              </template>
+              <div class="user-dd-sep"></div>
+              <button class="user-dd-item" @click="addAccount">＋ 登录其他账号</button>
+              <button class="user-dd-item is-danger" @click="doLogout">退出当前账号</button>
             </div>
           </div>
         </div>
@@ -4981,14 +4995,14 @@
     </transition>
   </div>
 
-  <script src="js/auth.js?v=20261011c"></script>
-  <script src="js/auth-sync.js?v=20261011c"></script>
+  <script src="js/auth.js?v=20261011d"></script>
+  <script src="js/auth-sync.js?v=20261011d"></script>
   <!-- 边缘加速默认站点（batch37 治本：Cloudflare Worker 代理东财/腾讯，缓解 JSONP 限流误报）。
        若你所在地区 workers.dev 访问慢，可在「设置 → 行情加速地址」清空即恢复纯直连。 -->
   <script>window.__SNT_ACCEL__ = 'https://sichina.dpdns.org';</script>
   <!-- 扫码支付二维码渲染库（第三方 qrcodejs，本地托管避免外链失效）。renderQr 会先检测全局 QRCode 是否存在。 -->
-  <script src="assets/qrcode.min.js?v=20261011c"></script>
-  <script src="js/auth-boot.js?v=20261011c"></script>
+  <script src="assets/qrcode.min.js?v=20261011d"></script>
+  <script src="js/auth-boot.js?v=20261011d"></script>
   <!-- store / stock-api / hot-topics / app 由 auth-boot.js 在登录通过后动态装载，
        未登录时它们不会被下载，业务数据也不会进入内存 -->
 </body>
