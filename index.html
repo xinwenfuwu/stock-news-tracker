@@ -4,12 +4,12 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>股市信息分析系统</title>
-  <link rel="stylesheet" href="css/style.css?v=20261011k">
+  <link rel="stylesheet" href="css/style.css?v=20261011l">
   <!-- Vue 3 全局构建版（v3.4.21 · 自托管）
        原先走 unpkg.com CDN：国内网络对 unpkg 的连通性不稳定，一旦该请求长时间挂起，
        <head> 里的阻塞脚本会让整页停在白屏、后续 auth-boot.js 根本不会执行。
        改为同源托管后，启动链路不再依赖任何第三方 CDN。 -->
-  <script src="js/vue.global.prod.js?v=20261011k"></script>
+  <script src="js/vue.global.prod.js?v=20261011l"></script>
 </head>
 <body class="auth-locked">
   <!-- ===== 登录关卡：登录通过前业务脚本不会被加载 ===== -->
@@ -4642,27 +4642,11 @@
           <div class="um-section" v-if="umAuth==='6m'">
             <div class="um-section-head">
               <h4>6月期（¥1000）用户</h4>
-              <span class="um-section-desc">已开通的 6月期（¥1000）付费会员清单（只读）。新会员的开通与审核统一在「待审核用户」板块完成，此处不再重复审核。</span>
+              <span class="um-section-desc">已审核通过的 6月期（¥1000）会员统一在下方「审核通过区」表格中查看与管理（含角色 / 状态 / 日期 / 额度 / 试用等），此处仅保留管理员手动开通入口。</span>
             </div>
-            <!-- 6月期：只读展示已开通会员 -->
-            <div class="um-pending">
-              <div class="um-pending-head">
-                <span>6月期审核区</span>
-                <span class="um-pending-count">{{ authCatItems('6m').length }} 人</span>
-              </div>
-              <div class="um-pending-item" v-for="it in authCatItems('6m').filter(x => umSearchMatch(x['账号名称']))" :key="it['账号名称']">
-                <div class="um-pending-main">
-                  <span class="um-name">{{ it['账号名称'] }}</span>
-                  <template v-for="(val, key) in it" :key="key">
-                    <span class="um-pending-meta" v-if="key !== '账号名称'"><b>{{ key }}：</b>{{ val }}</span>
-                  </template>
-                </div>
-              </div>
-              <div class="um-empty" v-if="!authCatItems('6m').length">暂无已开通的 6月期用户</div>
-              <div class="um-code-bar">
-                <input class="um-input um-grow" v-model="memberManual.username" placeholder="已付款的用户名（管理员可直接开通）" autocomplete="off" @keyup.enter="memberManual.plan='6m';grantMemberManual()">
-                <button class="btn btn-sm btn-primary" @click="memberManual.plan='6m';grantMemberManual()">开通6月期</button>
-              </div>
+            <div class="um-code-bar">
+              <input class="um-input um-grow" v-model="memberManual.username" placeholder="已付款的用户名（管理员可直接开通）" autocomplete="off" @keyup.enter="memberManual.plan='6m';grantMemberManual()">
+              <button class="btn btn-sm btn-primary" @click="memberManual.plan='6m';grantMemberManual()">开通6月期</button>
             </div>
           </div><!-- /um-section 6m -->
 
@@ -4691,47 +4675,25 @@
 
             <!-- 12月期 -->
             <div class="um-section" v-if="umAuth==='1y'">
-            <div class="um-pending">
-              <div class="um-pending-head">
-                <span>12月期审核区</span>
-                <span class="um-pending-count">{{ authCatItems('1y').length }} 人</span>
-              </div>
-              <div class="um-pending-item" v-for="it in authCatItems('1y').filter(x => umSearchMatch(x['账号名称']))" :key="it['账号名称']">
-                <div class="um-pending-main">
-                  <span class="um-name">{{ it['账号名称'] }}</span>
-                  <template v-for="(val, key) in it" :key="key">
-                    <span class="um-pending-meta" v-if="key !== '账号名称'"><b>{{ key }}：</b>{{ val }}</span>
-                  </template>
-                </div>
-              </div>
-              <div class="um-empty" v-if="!authCatItems('1y').length">暂无已开通的 12月期用户</div>
-              <div class="um-code-bar">
-                <input class="um-input um-grow" v-model="memberManual.username" placeholder="已付款的用户名（管理员可直接开通）" autocomplete="off" @keyup.enter="memberManual.plan='1y';grantMemberManual()">
-                <button class="btn btn-sm btn-primary" @click="memberManual.plan='1y';grantMemberManual()">开通12月期</button>
-              </div>
+            <div class="um-section-head">
+              <h4>12月期（¥2000）用户</h4>
+              <span class="um-section-desc">已审核通过的 12月期（¥2000）会员统一在下方「审核通过区」表格中查看与管理，此处仅保留管理员手动开通入口。</span>
+            </div>
+            <div class="um-code-bar">
+              <input class="um-input um-grow" v-model="memberManual.username" placeholder="已付款的用户名（管理员可直接开通）" autocomplete="off" @keyup.enter="memberManual.plan='1y';grantMemberManual()">
+              <button class="btn btn-sm btn-primary" @click="memberManual.plan='1y';grantMemberManual()">开通12月期</button>
             </div>
           </div><!-- /um-section 1y -->
 
             <!-- 24月期 -->
             <div class="um-section" v-if="umAuth==='2y'">
-            <div class="um-pending">
-              <div class="um-pending-head">
-                <span>24月期审核区</span>
-                <span class="um-pending-count">{{ authCatItems('2y').length }} 人</span>
-              </div>
-              <div class="um-pending-item" v-for="it in authCatItems('2y').filter(x => umSearchMatch(x['账号名称']))" :key="it['账号名称']">
-                <div class="um-pending-main">
-                  <span class="um-name">{{ it['账号名称'] }}</span>
-                  <template v-for="(val, key) in it" :key="key">
-                    <span class="um-pending-meta" v-if="key !== '账号名称'"><b>{{ key }}：</b>{{ val }}</span>
-                  </template>
-                </div>
-              </div>
-              <div class="um-empty" v-if="!authCatItems('2y').length">暂无已开通的 24月期用户</div>
-              <div class="um-code-bar">
-                <input class="um-input um-grow" v-model="memberManual.username" placeholder="已付款的用户名（管理员可直接开通）" autocomplete="off" @keyup.enter="memberManual.plan='2y';grantMemberManual()">
-                <button class="btn btn-sm btn-primary" @click="memberManual.plan='2y';grantMemberManual()">开通24月期</button>
-              </div>
+            <div class="um-section-head">
+              <h4>24月期（¥4000）用户</h4>
+              <span class="um-section-desc">已审核通过的 24月期（¥4000）会员统一在下方「审核通过区」表格中查看与管理，此处仅保留管理员手动开通入口。</span>
+            </div>
+            <div class="um-code-bar">
+              <input class="um-input um-grow" v-model="memberManual.username" placeholder="已付款的用户名（管理员可直接开通）" autocomplete="off" @keyup.enter="memberManual.plan='2y';grantMemberManual()">
+              <button class="btn btn-sm btn-primary" @click="memberManual.plan='2y';grantMemberManual()">开通24月期</button>
             </div>
           </div><!-- /um-section 2y -->
           </div><!-- /um-panel auth -->
@@ -4748,7 +4710,7 @@
                 <button class="btn btn-sm um-refresh-btn" @click="refreshApprovedZone" title="重新读取本机账号表，刷新审核通过区的分类">↻ 刷新</button>
               </span>
             </div>
-            <span class="um-section-desc" v-if="umTab==='auth'">以下为「{{ umAuth==='2y' ? '24月期（¥4000）' : umAuth==='1y' ? '12月期（¥2000）' : umAuth==='6m' ? '6月期（¥1000）' : '授权免费试用' }}」子标签对应的审核通过区：仅显示该套餐下、经审核后通过会员审核的账户，绝不混入其他月期 / 试用 / 管理员。待审核申请只在上方「审核区」显示与处理，审核通过后点右侧「↻ 刷新」即归入本子标签对应套餐。</span>
+            <span class="um-section-desc" v-if="umTab==='auth'">以下为「{{ umAuth==='2y' ? '24月期（¥4000）' : umAuth==='1y' ? '12月期（¥2000）' : umAuth==='6m' ? '6月期（¥1000）' : '授权免费试用' }}」子标签对应的审核通过区：仅显示该套餐下、经审核后通过会员审核的账户，绝不混入其他月期 / 试用 / 管理员。待审核支付申请在「待审核用户」面板显示与处理，审核通过后点右侧「↻ 刷新」即归入本子标签对应套餐。</span>
             <span class="um-section-desc" v-else>以下为审核通过区：已注册、经审核后获得试用或通过会员审核、可正常使用的账户（管理员 / 付费会员 / 试用中）。待审核申请只在上方「审核区」显示与处理。</span>
           </div>
           <table class="um-table" v-if="approvedZoneList().length && umTab !== 'admin'">
@@ -5003,14 +4965,14 @@
     </transition>
   </div>
 
-  <script src="js/auth.js?v=20261011k"></script>
-  <script src="js/auth-sync.js?v=20261011k"></script>
+  <script src="js/auth.js?v=20261011l"></script>
+  <script src="js/auth-sync.js?v=20261011l"></script>
   <!-- 边缘加速默认站点（batch37 治本：Cloudflare Worker 代理东财/腾讯，缓解 JSONP 限流误报）。
        若你所在地区 workers.dev 访问慢，可在「设置 → 行情加速地址」清空即恢复纯直连。 -->
   <script>window.__SNT_ACCEL__ = 'https://sichina.dpdns.org';</script>
   <!-- 扫码支付二维码渲染库（第三方 qrcodejs，本地托管避免外链失效）。renderQr 会先检测全局 QRCode 是否存在。 -->
-  <script src="assets/qrcode.min.js?v=20261011k"></script>
-  <script src="js/auth-boot.js?v=20261011k"></script>
+  <script src="assets/qrcode.min.js?v=20261011l"></script>
+  <script src="js/auth-boot.js?v=20261011l"></script>
   <!-- store / stock-api / hot-topics / app 由 auth-boot.js 在登录通过后动态装载，
        未登录时它们不会被下载，业务数据也不会进入内存 -->
 </body>
