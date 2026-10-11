@@ -45,6 +45,7 @@ const Store = {
       thsHotStocks: [],       // 20261006h：同花顺热度榜
       emHotStocks: [],        // 20261006h：东方财富人气榜
       doubaoHot: [],          // 20261006h：豆包搜索热度榜
+      doubaoHotDate: '',      // 豆包搜索热度榜对应的数据日期（所选日期当天）
       settings: {
         categories: [...this.DEFAULT_CATEGORIES],
         proxyUrl: '',            // Cloudflare Worker 代理地址，用于一键抓取新闻

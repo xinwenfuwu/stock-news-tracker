@@ -7602,7 +7602,10 @@ const app = createApp({
           withTimeout(StockAPI.getNewListedStocks()),
           withTimeout(StockAPI.getThsHotStocks()),
           withTimeout(StockAPI.getEmHotStocks()),
-          withTimeout(StockAPI.getDoubaoHotStocks(D.settings.doubaoKey).catch(e => { doubaoHotError.value = e.message || String(e); return null; }))
+          withTimeout(StockAPI.getDoubaoHotStocks(D.settings.doubaoKey, hotDate.value).then(res => {
+            if (res) { doubaoHotDate.value = res.date || hotDate.value || ''; D.doubaoHotDate = doubaoHotDate.value; }
+            return res ? res.list : null;
+          }).catch(e => { doubaoHotError.value = e.message || String(e); return null; }))
         ]);
         // 各路独立落盘：某一路接口限流返回空时保留旧数据，避免「刷新一次反而清空已有内容」
         if (boards && boards.length) { hotBoards.value = boards; D.hotBoards = boards; }
@@ -7624,7 +7627,7 @@ const app = createApp({
         const nAll = nBoards + nPre + nAmp + nStocks + nNew + nThs + nEm + nDoubao;
         if (nAll) {
           // 有数据即成功；本轮确实没拿到新数据时补一句「沿用上次」，避免用户误以为刷新没生效
-          showToast(`获取到 ${nBoards} 个当日板块、${nPre} 个盘前热点、${nAmp} 个振幅板块、${nStocks} 只连板股票、${nNew} 只新上市股票、同花顺热度 ${nThs} 只、东财人气 ${nEm} 只、豆包搜索 ${nDoubao} 条`
+          showToast(`获取到 ${nBoards} 个当日板块、${nPre} 个盘前热点、${nAmp} 个振幅板块、${nStocks} 只连板股票、${nNew} 只新上市股票、同花顺热度 ${nThs} 只、东财人气 ${nEm} 只、豆包搜索热度 ${nDoubao} 条`
             + (gotNew ? '' : '（本轮未获取到新数据，沿用上次结果）'), 'success');
         } else {
           // 全空：区分「本轮确实没拉到」与「真的一无所有」，给出可操作提示，不再使用已过时的 JSONP 措辞
@@ -7655,6 +7658,11 @@ const app = createApp({
     const doubaoHot = ref([]);
     const doubaoHotLoading = ref(false);
     const doubaoHotError = ref('');
+    const doubaoHotDate = ref('');   // 豆包搜索热度榜对应的「数据日期」（所选日期当天）；切换上方日期自动按新日期重算
+    // 切换「新闻统计开始时间」后，若豆包面板已有数据，则按新日期自动重算搜索热度榜（满足「按所选日期当天」）
+    watch(hotDate, (nd) => {
+      if (doubaoHot.value.length && !doubaoHotLoading.value) refreshDoubaoOnly();
+    });
 
     // ============ 豆包榜「用户自带 Key」：每用户各自消耗自己账户 500 次/月免费额度 ============
     const doubaoKeyInput = ref('');        // 输入框临时值（不进 localStorage，保存时才写 D.settings.doubaoKey）
@@ -7727,16 +7735,19 @@ const app = createApp({
       } catch (e) { showToast('东方财富人气榜刷新失败：' + (e.message || e), 'error'); }
       finally { emHotLoading.value = false; }
     }
-    /** 20261006h ⑤ 只刷新「豆包的新闻热度榜」（同时重算股票搜索排行榜） */
+    /** 20261006h ⑤ 只刷新「豆包搜索热度榜」（按所选日期当天搜索，同时重算股票搜索排行榜） */
     async function refreshDoubaoOnly() {
       if (doubaoHotLoading.value) return;
       doubaoHotLoading.value = true; doubaoHotError.value = '';
-      showToast('正在刷新豆包的新闻热度榜...', 'info');
+      const theDate = hotDate.value;
+      showToast('正在刷新豆包搜索热度榜（' + (theDate || '今日') + '）...', 'info');
       try {
-        const list = await StockAPI.getDoubaoHotStocks(D.settings.doubaoKey);
+        const res = await StockAPI.getDoubaoHotStocks(D.settings.doubaoKey, theDate);
+        const list = res.list;
         if (list && list.length) {
           doubaoHot.value = list; D.doubaoHot = list;
-          showToast(`已刷新豆包的新闻热度榜 ${list.length} 条`, 'success');
+          doubaoHotDate.value = res.date || theDate || ''; D.doubaoHotDate = doubaoHotDate.value;
+          showToast(`已刷新豆包搜索热度榜 ${list.length} 条（${doubaoHotDate.value || '今日'}）`, 'success');
         } else {
           doubaoHotError.value = '豆包搜索暂未返回结果'; showToast('豆包搜索暂未返回结果', 'info');
         }
@@ -8261,6 +8272,7 @@ const app = createApp({
     if (D.thsHotStocks && D.thsHotStocks.length) thsHotStocks.value = D.thsHotStocks;
     if (D.emHotStocks && D.emHotStocks.length) emHotStocks.value = D.emHotStocks;
     if (D.doubaoHot && D.doubaoHot.length) doubaoHot.value = D.doubaoHot;
+    if (D.doubaoHotDate) doubaoHotDate.value = D.doubaoHotDate;
     // 同花顺热门板块（行业/概念）缓存恢复
     if (D.thsSectors && ((D.thsSectors.industries || []).length || (D.thsSectors.concepts || []).length)) thsSectors.value = D.thsSectors;
 
@@ -9791,7 +9803,7 @@ const app = createApp({
       // 20261006h：三平台热度股票排行榜（同花顺 / 东方财富 / 豆包搜索）
       thsHotStocks, thsHotLoading, refreshThsHotOnly,
       emHotStocks, emHotLoading, refreshEmHotOnly,
-      doubaoHot, doubaoHotLoading, doubaoHotError, refreshDoubaoOnly,
+      doubaoHot, doubaoHotLoading, doubaoHotError, doubaoHotDate, refreshDoubaoOnly,
       thsSectors, thsSectorsLoading, thsSectorsError, refreshThsSectorsOnly,
       doubaoKeyInput, doubaoKeyFormShow, doubaoGuideShow, doubaoKeyActive,
       toggleDoubaoKeyForm, saveDoubaoKey, clearDoubaoKey, openDoubaoGuide,
