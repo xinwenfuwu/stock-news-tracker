@@ -235,20 +235,26 @@ const Store = {
 
   _setupAutosave(Vue) {
     let timer = null;
+    const flush = () => {
+      try {
+        localStorage.setItem(this.STORAGE_KEY, JSON.stringify(this.data));
+      } catch (e) {
+        console.error('保存失败（可能超出存储上限）', e);
+      }
+    };
     Vue.watch(
       () => JSON.stringify(this.data),
       () => {
         clearTimeout(timer);
-        timer = setTimeout(() => {
-          try {
-            localStorage.setItem(this.STORAGE_KEY, JSON.stringify(this.data));
-          } catch (e) {
-            console.error('保存失败（可能超出存储上限）', e);
-          }
-        }, 300);
+        timer = setTimeout(flush, 300);
       },
       { deep: true }
     );
+    // 关闭 / 刷新页面前立即落盘：兜底防抖窗口内（300ms）的数据不会因页面卸载而丢失
+    if (typeof window !== 'undefined') {
+      window.addEventListener('beforeunload', flush);
+      window.addEventListener('pagehide', flush);
+    }
   },
 
   /** 立即同步持久化（列宽拖拽等需要即时落盘的场景，绕过自动保存的 300ms 防抖） */
@@ -428,19 +434,21 @@ const Store = {
     rec.createdAt = Date.now();
     rec.updatedAt = Date.now();
     this.data.tradeLogic[username].push(rec);
+    // 立即落盘：避免依赖 300ms 防抖，用户「保存后马上刷新」也会丢数据的竞态
+    this.saveNow();
     return rec;
   },
   updateTradeLogic(username, id, patch) {
     const list = this.data.tradeLogic[username] || [];
     const it = list.find(x => x.id === id);
-    if (it) { Object.assign(it, patch, { updatedAt: Date.now() }); return it; }
+    if (it) { Object.assign(it, patch, { updatedAt: Date.now() }); this.saveNow(); return it; }
     return null;
   },
   deleteTradeLogic(username, id) {
     const list = this.data.tradeLogic[username];
     if (!list) return false;
     const i = list.findIndex(x => x.id === id);
-    if (i >= 0) { list.splice(i, 1); return true; }
+    if (i >= 0) { list.splice(i, 1); this.saveNow(); return true; }
     return false;
   },
 

@@ -3337,6 +3337,9 @@ const app = createApp({
     function togglePoolPin(pool) {
       if (!pool || !pool.id) return;
       pool.pinned = !pool.pinned;
+      // 「置顶」= 排到最前：记录置顶时刻（pinSeq 越大越靠前），再次点击置顶会把它顶到最前；
+      // 取消置顶时保留 pinSeq，使板块不会跳回原始位置（排序见 sortedSectorPools / sortedPools）。
+      if (pool.pinned) pool.pinSeq = Date.now();
       const nm = pool.name || '未命名板块';
       showToast(pool.pinned ? `已置顶「${nm}」` : `已取消置顶「${nm}」`, 'success');
     }
@@ -5060,7 +5063,8 @@ const app = createApp({
 
     // 已保存板块顺序：一旦用户拖动过卡片（所有板块都有显式 order），就按 order 升序；
     // 否则沿用旧的「按创建时间倒序」（新板块在最前），保证老数据的观感不变。
-    // batch41：无论哪种基准，一键置顶（pinned）的板块都恒排在最前，组内顺序保持基准顺序不变。
+    // 置顶语义：pinned 板块恒在最前，组内按 pinSeq 倒序（最新置顶的排最前，实现「排到最前」）；
+    // 取消置顶不回原位置：unpinned 同样按 pinSeq 倒序（曾置顶的保持在前面），其余回退到基准顺序（拖动排序仍生效）。
     const sortedSectorPools = computed(() => {
       const list = [...D.sectorPools];
       const ordered = list.length > 0 && list.every(p => typeof p.order === 'number' && isFinite(p.order));
@@ -5070,7 +5074,10 @@ const app = createApp({
             .map((p, i) => ({ p, i }))
             .sort((a, b) => ((b.p.createdAt || 0) - (a.p.createdAt || 0)) || (b.i - a.i))
             .map(x => x.p);
-      return base.filter(p => p.pinned).concat(base.filter(p => !p.pinned));
+      const byPinSeq = (a, b) => (b.pinSeq || 0) - (a.pinSeq || 0);
+      const pinned = base.filter(p => p.pinned).sort(byPinSeq);
+      const unpinned = base.filter(p => !p.pinned).sort(byPinSeq);
+      return pinned.concat(unpinned);
     });
 
     // ===== 板块卡片拖动排序 =====
@@ -9642,6 +9649,20 @@ const app = createApp({
       if (data.amplitudeBoards) D.amplitudeBoards = data.amplitudeBoards;
       // 新上市股票：保留云端最后一次刷新的数据（与热门板块同口径恢复）
       if (data.newListedStocks) { D.newListedStocks = data.newListedStocks; newListedStocks.value = data.newListedStocks; }
+      // 交易逻辑记录表：云端按用户名隔离；本地已有记录按 id 保留，云端同 id 覆盖（合并而非整份替换）
+      if (data.tradeLogic && typeof data.tradeLogic === 'object') {
+        const local = D.tradeLogic || {};
+        const merged = Object.assign({}, local);
+        for (const uname of Object.keys(data.tradeLogic)) {
+          const remoteList = data.tradeLogic[uname];
+          if (!Array.isArray(remoteList)) continue;
+          const localList = Array.isArray(local[uname]) ? local[uname] : [];
+          const map = new Map(localList.map(r => [r.id, r]));
+          for (const r of remoteList) { if (r && r.id) map.set(r.id, r); }
+          merged[uname] = Array.from(map.values());
+        }
+        D.tradeLogic = merged;
+      }
       // 迁移 relatedStocks
       D.news.forEach(n => {
         if (typeof n.relatedStocks === 'string') n.relatedStocks = StockAPI.parseStockInput(n.relatedStocks);
