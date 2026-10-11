@@ -286,6 +286,14 @@ const app = createApp({
       // 新增/导入/通过/驳回 都会走到这里，顺带同步角标
       scanPending();
     }
+    // 审核通过区（底部合并表）刷新按钮：重新读取本机账号表，
+    // 确保「审核区」刚通过审核的用户立即按套餐归类出现在对应月期的「审核通过区」字段表中
+    // （分类互斥由 planOfUser 保证，已在 20261011f 修复）。
+    function refreshApprovedZone() {
+      refreshUserList();
+      scanPending();
+      showToast('已刷新审核通过区', 'success');
+    }
 
     function openUserManage() {
       userMenuOpen.value = false;
@@ -9839,7 +9847,7 @@ const app = createApp({
       memberClaims, memberManual, loadMemberClaims, refreshMemberClaims, grantMemberClaim, grantMemberManual, trialUsersList, registeredNoMemberList, reviewClaims, umSearch, umSearchMatch,
       planAmount, planMonthsNum, planName, planMonthText, planOfUser, claimFields, trialFields, adminClassify,
       paidPlanOf, paidDateText, planCategoryText, quotaInputVal,
-      authCatItems, isAccountShown,
+      authCatItems, isAccountShown, refreshApprovedZone,
       showApproveCode, toggleRevealPassword, revealPendingPassword,
       copyPassword, toggleLoginLog,
       // batch16：准入码面板（管理员把授权转达给用户）
