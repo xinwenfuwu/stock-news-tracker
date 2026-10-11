@@ -4,12 +4,12 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>股市信息分析系统</title>
-  <link rel="stylesheet" href="css/style.css?v=20261011n">
+  <link rel="stylesheet" href="css/style.css?v=20261011o">
   <!-- Vue 3 全局构建版（v3.4.21 · 自托管）
        原先走 unpkg.com CDN：国内网络对 unpkg 的连通性不稳定，一旦该请求长时间挂起，
        <head> 里的阻塞脚本会让整页停在白屏、后续 auth-boot.js 根本不会执行。
        改为同源托管后，启动链路不再依赖任何第三方 CDN。 -->
-  <script src="js/vue.global.prod.js?v=20261011n"></script>
+  <script src="js/vue.global.prod.js?v=20261011o"></script>
 </head>
 <body class="auth-locked">
   <!-- ===== 登录关卡：登录通过前业务脚本不会被加载 ===== -->
@@ -1423,8 +1423,8 @@
           <div class="fav-panel-header">
             <h3 class="panel-title" style="margin:0">⭐ 收藏板块</h3>
             <div class="fav-add-row" style="margin:0">
-              <input v-model="favAddCode" class="cell-input" placeholder="股票代码（如 600519）" style="width:130px">
-              <input v-model="favAddName" class="cell-input" placeholder="股票名称（如 贵州茅台）" style="width:160px">
+              <input v-model="favAddCode" class="cell-input" placeholder="股票代码（如 600519）" style="width:130px" autocomplete="off">
+              <input v-model="favAddName" class="cell-input" placeholder="股票名称（如 贵州茅台）" style="width:160px" autocomplete="off">
               <button class="btn btn-sm" @click="addFavoriteManual" :disabled="favAdding" title="代码与名称填任意一个即可添加到收藏板块">
                 <span v-if="favAdding">⏳</span>＋ 添加
               </button>
@@ -2908,7 +2908,7 @@
               <div class="doubao-key-form" v-if="doubaoKeyFormShow">
                 <p class="muted small">填入你自己的火山引擎「联网搜索」API Key，豆包榜将走你的账户额度（每月 500 次免费），<b>不经过任何服务器存储</b>。留空则使用共享额度。</p>
                 <div class="doubao-key-row">
-                  <input class="doubao-key-input" type="password" v-model="doubaoKeyInput" placeholder="粘贴火山引擎「联网搜索」API Key（sk-... 或一长串字符）" @keyup.enter="saveDoubaoKey" />
+                  <input class="doubao-key-input" type="password" v-model="doubaoKeyInput" placeholder="粘贴火山引擎「联网搜索」API Key（sk-... 或一长串字符）" @keyup.enter="saveDoubaoKey" autocomplete="new-password" />
                   <button class="btn btn-sm btn-primary" @click="saveDoubaoKey">保存</button>
                   <button class="btn btn-sm" @click="clearDoubaoKey" :disabled="!doubaoKeyActive" title="清除后改用共享额度">清除</button>
                 </div>
@@ -4270,7 +4270,7 @@
           </div>
           <div class="form-row" v-if="authUser && authUser.role === 'admin'">
             <label>GitHub 令牌（仅管理员 · 用于把账号写入云端注册表）细粒度令牌，仅授权本仓库 <code>xinwenfuwu/stock-news-tracker</code> 的 Contents 读写即可。普通用户无需填写——他们只需在登录页输入账号密码。</label>
-            <input type="password" v-model="authAdminToken" placeholder="ghp_... 或 github_pat_...">
+            <input type="password" v-model="authAdminToken" placeholder="ghp_... 或 github_pat_..." autocomplete="new-password">
           </div>
           <div class="form-row">
             <label>数据存储</label>
@@ -4334,7 +4334,7 @@
             <input v-model="aiEndpoint" placeholder="https://api.deepseek.com/v1/chat/completions">
           </div>
           <div class="form-row-3">
-            <div><label>API Key</label><input type="password" v-model="aiKey" placeholder="sk-...（仅存本地浏览器）"></div>
+            <div><label>API Key</label><input type="password" v-model="aiKey" placeholder="sk-...（仅存本地浏览器）" autocomplete="new-password"></div>
             <div><label>模型名</label><input v-model="aiModel" placeholder="如 deepseek-chat"></div>
             <div><label>状态</label><span :class="['ai-state', aiConfigured ? 'ok' : 'warn']">{{ aiConfigured ? '✅ 已配置' : '⚠️ 未配置' }}</span></div>
           </div>
@@ -4374,7 +4374,7 @@
             </div>
             <div class="form-row">
               <label>GitHub 个人访问令牌（Token）</label>
-              <input type="password" v-model="cloudModal.token" placeholder="ghp_... 或 github_pat_...">
+              <input type="password" v-model="cloudModal.token" placeholder="ghp_... 或 github_pat_..." autocomplete="new-password">
             </div>
             <div class="info-box small">
               <p>Token 获取：打开 <a href="https://github.com/settings/tokens/new?scopes=gist" target="_blank">github.com/settings/tokens</a> → 勾选 <code>gist</code> → 生成 → 复制。仅需要 gist 权限即可。</p>
@@ -4966,14 +4966,14 @@
     </transition>
   </div>
 
-  <script src="js/auth.js?v=20261011n"></script>
-  <script src="js/auth-sync.js?v=20261011n"></script>
+  <script src="js/auth.js?v=20261011o"></script>
+  <script src="js/auth-sync.js?v=20261011o"></script>
   <!-- 边缘加速默认站点（batch37 治本：Cloudflare Worker 代理东财/腾讯，缓解 JSONP 限流误报）。
        若你所在地区 workers.dev 访问慢，可在「设置 → 行情加速地址」清空即恢复纯直连。 -->
   <script>window.__SNT_ACCEL__ = 'https://sichina.dpdns.org';</script>
   <!-- 扫码支付二维码渲染库（第三方 qrcodejs，本地托管避免外链失效）。renderQr 会先检测全局 QRCode 是否存在。 -->
-  <script src="assets/qrcode.min.js?v=20261011n"></script>
-  <script src="js/auth-boot.js?v=20261011n"></script>
+  <script src="assets/qrcode.min.js?v=20261011o"></script>
+  <script src="js/auth-boot.js?v=20261011o"></script>
   <!-- store / stock-api / hot-topics / app 由 auth-boot.js 在登录通过后动态装载，
        未登录时它们不会被下载，业务数据也不会进入内存 -->
 </body>

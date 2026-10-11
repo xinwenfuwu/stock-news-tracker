@@ -9890,3 +9890,42 @@ const app = createApp({
 });
 
 app.mount('#app');
+
+/* ---------- 禁用浏览器「已保存账号/密码」自动填充下拉（20261011o）----------
+ * 用户反馈：同一设备浏览器保存过多个账号后，在收藏板块股票名称输入框、云端同步
+ * GitHub Token 输入框点击时会弹出已保存的账号/密码候选列表——若普通用户共用该设备，
+ * 会看到管理员的其它账号密码，非常危险。
+ * 原理：浏览器密码管理器会对「没有 autocomplete 声明」的输入框做用户名/密码启发式识别并弹候选。
+ * 处理（仅作用于应用主界面 #app 内的输入框）：
+ *   · type=password 的非登录输入框（GitHub Token / API Key / 改密码等）→ autocomplete="new-password"
+ *     （官方语义：这不是登录框，禁止回填已保存的账号密码，下拉不再出现）；
+ *   · 普通文本/其它输入框 → autocomplete="off"，杜绝被识别为用户名框；
+ *   · 附带 1Password（data-1p-ignore）/ LastPass（data-lpignore）/ Bitwarden（data-bwignore）忽略标记。
+ * 登录门（#auth-gate）的登录/注册表单不在此范围，浏览器保存密码登录的体验完全不受影响。 */
+function hardenAutofill() {
+  const scope = document.getElementById('app');
+  if (!scope) return;
+  const fields = scope.querySelectorAll('input, textarea');
+  for (let i = 0; i < fields.length; i++) {
+    const el = fields[i];
+    const type = String(el.getAttribute('type') || '').toLowerCase();
+    if (type === 'password') {
+      if (el.getAttribute('autocomplete') !== 'new-password') el.setAttribute('autocomplete', 'new-password');
+    } else if (!el.getAttribute('autocomplete')) {
+      el.setAttribute('autocomplete', 'off');
+    }
+    if (!el.hasAttribute('data-1p-ignore')) el.setAttribute('data-1p-ignore', '');
+    if (!el.hasAttribute('data-lpignore')) el.setAttribute('data-lpignore', 'true');
+    if (!el.hasAttribute('data-bwignore')) el.setAttribute('data-bwignore', '');
+  }
+}
+// Vue 全程动态渲染：挂载后先处理一遍当前 DOM，再用 MutationObserver 兜底后续新增/重建的输入框。
+// 设置 attribute 不会触发 childList 观察器，无死循环；用微任务合并同一帧的批量渲染，避免反复全表扫描。
+let _afPending = false;
+const _afObserver = new MutationObserver(() => {
+  if (_afPending) return;
+  _afPending = true;
+  Promise.resolve().then(() => { _afPending = false; hardenAutofill(); });
+});
+_afObserver.observe(document.getElementById('app'), { childList: true, subtree: true });
+hardenAutofill();
