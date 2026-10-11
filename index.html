@@ -4,12 +4,12 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>股市信息分析系统</title>
-  <link rel="stylesheet" href="css/style.css?v=20261011l">
+  <link rel="stylesheet" href="css/style.css?v=20261011m">
   <!-- Vue 3 全局构建版（v3.4.21 · 自托管）
        原先走 unpkg.com CDN：国内网络对 unpkg 的连通性不稳定，一旦该请求长时间挂起，
        <head> 里的阻塞脚本会让整页停在白屏、后续 auth-boot.js 根本不会执行。
        改为同源托管后，启动链路不再依赖任何第三方 CDN。 -->
-  <script src="js/vue.global.prod.js?v=20261011l"></script>
+  <script src="js/vue.global.prod.js?v=20261011m"></script>
 </head>
 <body class="auth-locked">
   <!-- ===== 登录关卡：登录通过前业务脚本不会被加载 ===== -->
@@ -50,6 +50,7 @@
           <button type="button" class="auth-pw-toggle" data-pw="reg-confirm" title="显示/隐藏密码" aria-label="显示或隐藏密码">👁️</button>
         </div>
         <div class="auth-strength" id="reg-strength" hidden><em><i></i></em><span></span></div>
+        <p class="auth-device-hint" id="reg-device-hint" hidden style="color:#c0392b;font-size:12px;line-height:1.5;margin:8px 0 0;"></p>
         <button class="auth-btn" type="submit">提交注册申请</button>
         <p class="auth-tip">密码须为 8-64 位且同时包含字母和数字。<b>本系统不会自动通知管理员</b>，提交后请把生成的申请信息发给他。若管理员已开启云端同步，审核通过后你直接用账号密码登录即可，无需准入码。</p>
         <div class="auth-links">
@@ -4965,14 +4966,14 @@
     </transition>
   </div>
 
-  <script src="js/auth.js?v=20261011l"></script>
-  <script src="js/auth-sync.js?v=20261011l"></script>
+  <script src="js/auth.js?v=20261011m"></script>
+  <script src="js/auth-sync.js?v=20261011m"></script>
   <!-- 边缘加速默认站点（batch37 治本：Cloudflare Worker 代理东财/腾讯，缓解 JSONP 限流误报）。
        若你所在地区 workers.dev 访问慢，可在「设置 → 行情加速地址」清空即恢复纯直连。 -->
   <script>window.__SNT_ACCEL__ = 'https://sichina.dpdns.org';</script>
   <!-- 扫码支付二维码渲染库（第三方 qrcodejs，本地托管避免外链失效）。renderQr 会先检测全局 QRCode 是否存在。 -->
-  <script src="assets/qrcode.min.js?v=20261011l"></script>
-  <script src="js/auth-boot.js?v=20261011l"></script>
+  <script src="assets/qrcode.min.js?v=20261011m"></script>
+  <script src="js/auth-boot.js?v=20261011m"></script>
   <!-- store / stock-api / hot-topics / app 由 auth-boot.js 在登录通过后动态装载，
        未登录时它们不会被下载，业务数据也不会进入内存 -->
 </body>

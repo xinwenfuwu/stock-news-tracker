@@ -27,7 +27,7 @@
   'use strict';
 
   // 与 index.html 中静态资源版本号保持一致，避免升级后命中旧缓存
-  var ASSET_V = '20261011l';
+  var ASSET_V = '20261011m';
 
   // 管理员点开「注册申请导入链接」后，申请码暂存在这里，等业务层（app.js）就绪后取走
   var IMPORT_KEY = 'snt-pending-import-v1';
@@ -140,6 +140,18 @@
         var el = $(s);
         if (el && el.value) el.value = '';
       });
+      // 设备注册锁提示：本机已注册过账号时，提前告知「每台设备仅允许注册一个」
+      var devHint = document.getElementById('reg-device-hint');
+      if (devHint) {
+        var dn = (Auth && typeof Auth.deviceRegisteredUser === 'function') ? Auth.deviceRegisteredUser() : null;
+        if (dn) {
+          devHint.hidden = false;
+          devHint.textContent = '提示：本机已注册账号「' + dn + '」，每台设备仅允许注册一个账号；如需更换，请由管理员删除该账号后再注册。';
+        } else {
+          devHint.hidden = true;
+          devHint.textContent = '';
+        }
+      }
     }
     var focusMap = {
       setup: '#setup-username',
@@ -659,6 +671,17 @@
         var u = $('#reg-username') ? $('#reg-username').value : '';
         var p = $('#reg-password') ? $('#reg-password').value : '';
         var c = $('#reg-confirm') ? $('#reg-confirm').value : '';
+        // 设备注册锁：一台设备仅允许自助注册一个账号。
+        // 已注册且仍存在于本机的账号 → 阻止注册其它账号（同一账号重新申请 / 取回申请码放行）。
+        var devRegName = (Auth && typeof Auth.deviceRegisteredUser === 'function') ? Auth.deviceRegisteredUser() : null;
+        if (devRegName) {
+          var wantName = String(u || '').trim().toLowerCase();
+          if (wantName !== String(devRegName).toLowerCase()) {
+            setBusy('');
+            showMsg('本机已自助注册账号「' + devRegName + '」，每台设备仅允许注册一个账号。如需更换，请由管理员删除「' + devRegName + '」后再试。', 'error');
+            return;
+          }
+        }
         // 先在本地把密码规则与二次确认校验掉，避免为一个必然失败的表单去算哈希
         var vw = Auth.validateUsername(u);
         if (!vw.ok) { showMsg(vw.error, 'error'); return; }

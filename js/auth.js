@@ -28,6 +28,8 @@
   var LAST_ACTIVE_KEY = 'snt-auth-last-v1';
   // 一次性标记：进入时停留在登录页（切换账号 / 退出当前账号 / 登录其他账号时使用）
   var SHOW_GATE_KEY = 'snt-show-gate-v1';
+  // 设备注册锁：本设备自助注册过的普通账号（每台设备/浏览器仅允许自助注册一个）
+  var DEVICE_REG_KEY = 'snt-device-reg-v1';
 
   var ITERATIONS = 150000;
   var SALT_BYTES = 16;
@@ -691,6 +693,40 @@
     return null;
   }
 
+  /* ================= 设备注册锁（每台设备仅允许自助注册一个账号） ================= */
+
+  /**
+   * 读取本设备自助注册过的账号名。
+   * 带「自愈」：若该账号已从本机账号表移除（管理员删除 / 用户清缓存），
+   * 则自动释放锁，避免遗留死锁导致再也注册不了。
+   * @returns {string|null} 已注册账号名；无则返回 null
+   */
+  function deviceRegisteredUser() {
+    var name;
+    try { name = storage().getItem(DEVICE_REG_KEY) || ''; } catch (e) { name = ''; }
+    if (!name) return null;
+    var users = loadUsers();
+    if (!findUser(users, name)) {
+      try { storage().removeItem(DEVICE_REG_KEY); } catch (e) {}
+      return null;
+    }
+    return name;
+  }
+
+  function setDeviceRegisteredUser(username) {
+    if (!username) return;
+    try { storage().setItem(DEVICE_REG_KEY, String(username)); } catch (e) {}
+  }
+
+  function clearDeviceRegisteredUser(username) {
+    var cur;
+    try { cur = storage().getItem(DEVICE_REG_KEY) || ''; } catch (e) { cur = ''; }
+    if (!cur) return;
+    if (!username || cur === String(username)) {
+      try { storage().removeItem(DEVICE_REG_KEY); } catch (e) {}
+    }
+  }
+
   function publicUser(u) {
     var last = lastLogin(u);
     var tr = trialState(u);
@@ -941,6 +977,8 @@
             }
             if (!exist.pwSeal) exist.pwSeal = sealPassword(v.password);
             exist.updatedAt = Date.now();
+            exist.registeredOnDevice = true;          // 本机自助注册的账号，标记设备锁
+            setDeviceRegisteredUser(v.username);
             saveUsers(self.users);
             return {
               ok: true, user: publicUser(exist),
@@ -954,12 +992,14 @@
             username: v.username, role: ROLE.USER, hash: hash,
             pwSeal: sealPassword(v.password),
             disabled: false, status: STATUS.PENDING,
+            registeredOnDevice: true,               // 本机自助注册的账号，标记设备锁
             createdAt: exist.createdAt || now, updatedAt: now,
             logins: []
           };
           var ri = self.users.indexOf(exist);
           if (ri >= 0) self.users[ri] = ur; else self.users.push(ur);
           if (!saveUsers(self.users)) return { ok: false, error: '保存失败：浏览器本地存储不可用' };
+          setDeviceRegisteredUser(v.username);
           return { ok: true, user: publicUser(ur), requestCode: makeRequestCode(ur) };
         }
         // 全新用户：注册即自动开通 1 天试用（trial），无需管理员审核、无需复制申请码。
@@ -969,18 +1009,29 @@
           username: v.username, role: ROLE.USER, hash: hash,
           pwSeal: sealPassword(v.password),
           disabled: false, status: STATUS.PENDING,
+          registeredOnDevice: true,                 // 本机自助注册的账号，标记设备锁
           trialUntil: now + 24 * 60 * 60 * 1000,
           createdAt: now, updatedAt: now,
           logins: []
         };
         self.users.push(u);
         if (!saveUsers(self.users)) return { ok: false, error: '保存失败：浏览器本地存储不可用' };
+        setDeviceRegisteredUser(v.username);        // 设备注册锁：本机已自助注册一个账号
         return {
           ok: true, user: publicUser(u), autoTrial: true,
           trialUntil: u.trialUntil, trialDays: 1
         };
       });
     },
+
+    /**
+     * 本设备已自助注册、且仍存在于本机的账号名；无（或已删除）则返回 null。
+     * 供注册页「一台设备只准自助注册一个账号」的拦截逻辑使用。
+     */
+    deviceRegisteredUser: function () { return deviceRegisteredUser(); },
+
+    /** 本设备是否还能自助注册（false = 已有一账号，需管理员删除后才能再注册） */
+    canSelfRegister: function () { return !deviceRegisteredUser(); },
 
     /**
      * 登录：优先走云端注册表实现「跨设备免码」。
@@ -1646,6 +1697,8 @@
       }
       this.users = this.users.filter(function (x) { return x !== u; });
       saveUsers(this.users);
+      // 设备注册锁：管理员在本机删除了该自助注册账号 → 释放本机设备锁，允许重新注册
+      clearDeviceRegisteredUser(username);
       return { ok: true };
     },
 
