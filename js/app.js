@@ -2550,6 +2550,20 @@ const app = createApp({
       if (u.trialActive) return true;                      // 试用中
       return false;
     }
+    // 审核通过区（底部字段表）按当前上下文过滤：
+    // - 在「授权使用」面板下，只显示当前子标签(umAuth)对应套餐的已通过账户，
+    //   保证「24月期（¥4000）用户」页面的审核通过区只含支付¥4000的24月期账户，
+    //   不混入其他月期 / 试用 / 管理员（分类严格互斥，与 planOfUser 口径一致）。
+    // - 在「待审核用户 / 普通用户注册」面板下，显示全部已通过账户（isAccountShown），维持原总览行为。
+    function approvedZoneList() {
+      const all = (userList.value || []);
+      if (umTab.value === 'auth') {
+        const sub = umAuth.value;
+        if (sub === 'trial') return trialUsersList();        // 授权免费试用：仅试用中且非付费
+        return all.filter(u => planOfUser(u) === sub);        // 付费套餐：仅该套餐
+      }
+      return all.filter(u => isAccountShown(u));
+    }
 
     // 管理员配置个人收款码（batch-A）随支付码功能删除；会员支付改为商户扫码方案。
 
@@ -9847,7 +9861,7 @@ const app = createApp({
       memberClaims, memberManual, loadMemberClaims, refreshMemberClaims, grantMemberClaim, grantMemberManual, trialUsersList, registeredNoMemberList, reviewClaims, umSearch, umSearchMatch,
       planAmount, planMonthsNum, planName, planMonthText, planOfUser, claimFields, trialFields, adminClassify,
       paidPlanOf, paidDateText, planCategoryText, quotaInputVal,
-      authCatItems, isAccountShown, refreshApprovedZone,
+      authCatItems, isAccountShown, approvedZoneList, refreshApprovedZone,
       showApproveCode, toggleRevealPassword, revealPendingPassword,
       copyPassword, toggleLoginLog,
       // batch16：准入码面板（管理员把授权转达给用户）

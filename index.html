@@ -4,12 +4,12 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>股市信息分析系统</title>
-  <link rel="stylesheet" href="css/style.css?v=20261011i">
+  <link rel="stylesheet" href="css/style.css?v=20261011j">
   <!-- Vue 3 全局构建版（v3.4.21 · 自托管）
        原先走 unpkg.com CDN：国内网络对 unpkg 的连通性不稳定，一旦该请求长时间挂起，
        <head> 里的阻塞脚本会让整页停在白屏、后续 auth-boot.js 根本不会执行。
        改为同源托管后，启动链路不再依赖任何第三方 CDN。 -->
-  <script src="js/vue.global.prod.js?v=20261011i"></script>
+  <script src="js/vue.global.prod.js?v=20261011j"></script>
 </head>
 <body class="auth-locked">
   <!-- ===== 登录关卡：登录通过前业务脚本不会被加载 ===== -->
@@ -4738,18 +4738,20 @@
 
           <!-- 板块③ 支付码（个人收款码功能）已按需求删除 -->
 
-          <!-- 审核通过区：审核通过的支付申请(及管理员/试用)只在此呈现，不再出现在上方审核区 -->
-          <div class="um-table-head" v-if="userList.length && umTab !== 'admin'">
+          <!-- 审核通过区：在「授权使用」面板下按当前子标签(umAuth)只显示该套餐已通过账户；
+               在「待审核用户 / 普通用户注册」面板下显示全部已通过账户 -->
+          <div class="um-table-head" v-if="approvedZoneList().length && umTab !== 'admin'">
             <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
               <h4 style="margin:0;">审核通过区</h4>
               <span class="um-pending-right">
-                <span class="um-pending-count">{{ userList.filter(x => isAccountShown(x)).length }} 人</span>
-                <button class="btn btn-sm um-refresh-btn" @click="refreshApprovedZone" title="重新读取本机账号表，刷新各月期审核通过区的分类">↻ 刷新</button>
+                <span class="um-pending-count">{{ approvedZoneList().length }} 人</span>
+                <button class="btn btn-sm um-refresh-btn" @click="refreshApprovedZone" title="重新读取本机账号表，刷新审核通过区的分类">↻ 刷新</button>
               </span>
             </div>
-            <span class="um-section-desc">以下为审核通过区：已注册、经审核后获得试用或通过会员审核、可正常使用的账户（管理员 / 付费会员 / 试用中）。待审核申请只在上方「审核区」显示与处理，审核通过后点右侧「↻ 刷新」即可按套餐归类到对应月期（24月期 / 授权免费试用 / 6月期 / 12月期），分类严格互斥。</span>
+            <span class="um-section-desc" v-if="umTab==='auth'">以下为「{{ umAuth==='2y' ? '24月期（¥4000）' : umAuth==='1y' ? '12月期（¥2000）' : umAuth==='6m' ? '6月期（¥1000）' : '授权免费试用' }}」子标签对应的审核通过区：仅显示该套餐下、经审核后通过会员审核的账户，绝不混入其他月期 / 试用 / 管理员。待审核申请只在上方「审核区」显示与处理，审核通过后点右侧「↻ 刷新」即归入本子标签对应套餐。</span>
+            <span class="um-section-desc" v-else>以下为审核通过区：已注册、经审核后获得试用或通过会员审核、可正常使用的账户（管理员 / 付费会员 / 试用中）。待审核申请只在上方「审核区」显示与处理。</span>
           </div>
-          <table class="um-table" v-if="userList.length && umTab !== 'admin'">
+          <table class="um-table" v-if="approvedZoneList().length && umTab !== 'admin'">
             <thead>
               <tr>
                 <th>用户名</th><th>角色</th><th>状态</th>
@@ -4759,7 +4761,7 @@
               </tr>
             </thead>
             <tbody>
-              <template v-for="u in userList.filter(x => umSearchMatch(x.username) && isAccountShown(x))" :key="u.username">
+              <template v-for="u in approvedZoneList().filter(x => umSearchMatch(x.username))" :key="u.username">
                 <tr :class="{ 'um-row-pending': u.status === 'pending', 'um-row-off': u.disabled }">
                   <td data-label="用户名">
                     <span class="um-name">{{ u.username }}</span>
@@ -5001,14 +5003,14 @@
     </transition>
   </div>
 
-  <script src="js/auth.js?v=20261011i"></script>
-  <script src="js/auth-sync.js?v=20261011i"></script>
+  <script src="js/auth.js?v=20261011j"></script>
+  <script src="js/auth-sync.js?v=20261011j"></script>
   <!-- 边缘加速默认站点（batch37 治本：Cloudflare Worker 代理东财/腾讯，缓解 JSONP 限流误报）。
        若你所在地区 workers.dev 访问慢，可在「设置 → 行情加速地址」清空即恢复纯直连。 -->
   <script>window.__SNT_ACCEL__ = 'https://sichina.dpdns.org';</script>
   <!-- 扫码支付二维码渲染库（第三方 qrcodejs，本地托管避免外链失效）。renderQr 会先检测全局 QRCode 是否存在。 -->
-  <script src="assets/qrcode.min.js?v=20261011i"></script>
-  <script src="js/auth-boot.js?v=20261011i"></script>
+  <script src="assets/qrcode.min.js?v=20261011j"></script>
+  <script src="js/auth-boot.js?v=20261011j"></script>
   <!-- store / stock-api / hot-topics / app 由 auth-boot.js 在登录通过后动态装载，
        未登录时它们不会被下载，业务数据也不会进入内存 -->
 </body>
