@@ -3028,6 +3028,8 @@ const app = createApp({
       if (d.isEdit) { Store.updateTradeLogic(u, d.id, rec); showToast('已更新交易逻辑', 'success'); }
       else { Store.addTradeLogic(u, rec); showToast('已添加交易逻辑', 'success'); }
       resetTradeLogicForm();
+      // 已登录云端则立即同步上传，确保云端也留存最新交易逻辑（避免云端为空数组时加载覆盖本地）
+      if (cloud && cloud.loggedIn) { try { syncToCloud(); } catch (_) {} }
     }
     function deleteTradeLogicRow(rec) {
       const u = Store.account;
@@ -9661,13 +9663,14 @@ const app = createApp({
       if (data.amplitudeBoards) D.amplitudeBoards = data.amplitudeBoards;
       // 新上市股票：保留云端最后一次刷新的数据（与热门板块同口径恢复）
       if (data.newListedStocks) { D.newListedStocks = data.newListedStocks; newListedStocks.value = data.newListedStocks; }
-      // 交易逻辑记录表：云端按用户名隔离；本地已有记录按 id 保留，云端同 id 覆盖（合并而非整份替换）
+      // 交易逻辑记录表：云端按用户名隔离；本地已有记录按 id 保留，云端同 id 覆盖（合并而非整份替换）。
+      // 注意：云端该用户若是「空数组」视为「未提供该用户数据」，绝不能据此清空本地（否则历史上传遗留的空数组会在刷新时抹掉本地记录）。
       if (data.tradeLogic && typeof data.tradeLogic === 'object') {
         const local = D.tradeLogic || {};
         const merged = Object.assign({}, local);
         for (const uname of Object.keys(data.tradeLogic)) {
           const remoteList = data.tradeLogic[uname];
-          if (!Array.isArray(remoteList)) continue;
+          if (!Array.isArray(remoteList) || remoteList.length === 0) continue; // 空数组/非数组：本地优先，不覆盖
           const localList = Array.isArray(local[uname]) ? local[uname] : [];
           const map = new Map(localList.map(r => [r.id, r]));
           for (const r of remoteList) { if (r && r.id) map.set(r.id, r); }
@@ -9680,6 +9683,8 @@ const app = createApp({
         if (typeof n.relatedStocks === 'string') n.relatedStocks = StockAPI.parseStockInput(n.relatedStocks);
         else if (!Array.isArray(n.relatedStocks)) n.relatedStocks = [];
       });
+      // 云端覆盖后立即落盘，避免依赖 300ms 防抖 watch（否则刷新时可能读到的还是覆盖前/覆盖中的旧值）
+      Store.saveNow();
     }
 
     function cloudLogout() {
@@ -9732,7 +9737,7 @@ const app = createApp({
       AI_PRESETS, applyAiPreset, aiTesting, aiTestResult, aiTestConnection,
       exportData, importData,
       // 云端同步
-      cloud, cloudModal, openCloudModal, cloudLogin, syncToCloud, syncFromCloud, cloudLogout, toggleAutoSync,
+      cloud, cloudModal, openCloudModal, cloudLogin, syncToCloud, syncFromCloud, loadCloudData, cloudLogout, toggleAutoSync,
       // 页面1
       newsFilter, selectedNewsIds, sortedNews, filteredNews,
       newsWinStart, newsWinEnd, newsWinText, applyNewsWin, resetNewsWin,
