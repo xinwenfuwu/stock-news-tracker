@@ -5,11 +5,13 @@
       "user": "huyun2",
       "plan": "2y",
       "ts": 1791383950326,
-      "resolved": false,
+      "resolved": true,
       "amount": 4000,
       "startTs": 1791383950326,
       "endTs": 1853591950326,
-      "period": "24月期（¥4000）"
+      "period": "24月期（¥4000）",
+      "resolvedAt": 1791822740931,
+      "resolvedBy": "ops-script"
     }
   ]
 }
