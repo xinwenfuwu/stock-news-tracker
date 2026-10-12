@@ -5712,6 +5712,18 @@ const app = createApp({
       Store.deleteSectorPool(id);
       showToast('已删除', 'success');
     }
+    // 一键复制板块内全部股票代码+名称，格式：300369 绿盟科技 002912 中新赛克
+    function copyPoolStocks(pool) {
+      if (!pool || !Array.isArray(pool.stocks) || !pool.stocks.length) {
+        showToast('该板块暂无股票', 'error');
+        return;
+      }
+      const pure = (c) => (StockAPI && StockAPI.pureCode) ? StockAPI.pureCode(c) : (c || '');
+      const text = pool.stocks
+        .map(s => (pure(s.code) + ' ' + (s.name || '')).trim())
+        .join(' ');
+      copyText(text, `已复制「${pool.name || '板块'}」全部 ${pool.stocks.length} 只股票代码`);
+    }
 
     /** 取板块详情某列的排序值（含计算字段） */
     function sectorVal(s, key) {
@@ -9762,7 +9774,7 @@ const app = createApp({
       sectorSel, sectorSelCount, sectorSelIntersecting, sectorSelError,
       addSubSector, removeSubSector, clearSectorSel, startIntersectFilter, openSectorSelPick,
       loadSectorStocks, refreshSectorDetail, openSectorDetail, startEditSectorName,
-      saveSectorName, deleteSectorPool, removeSectorStock,
+      saveSectorName, deleteSectorPool, removeSectorStock, copyPoolStocks,
       sortedSectorDetailStocks, sortSectorDetailBy, sectorSortIcon,
       sectorFilter, sectorDetailIndustries, filteredSectorDetailStocks,
       resetSectorFilter, toggleSectorFilterLock, sectorIndustryOpen,
