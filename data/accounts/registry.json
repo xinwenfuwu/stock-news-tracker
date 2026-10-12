@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": 1791294638439,
+  "updatedAt": 1791822740931,
   "accounts": {
     "181": {
       "hash": "pbkdf2$150000$KjYyYMWup5jVGwvFBcCcOQ==$3U/UO6mfq2XHtEoimjRCc/0rz4seqfPAhnrte+JrXlw=",
@@ -111,6 +111,23 @@
       "payMembershipUntil": 0,
       "createdAt": 1791294636949,
       "updatedAt": 1791294638439
+    },
+    "huyun2": {
+      "hash": "",
+      "role": "user",
+      "status": "active",
+      "disabled": false,
+      "trialUntil": 0,
+      "trialDays": 0,
+      "quotaMonths": 24,
+      "disableDate": "",
+      "registerDate": "2026-10-07",
+      "payMembershipUntil": 1853591950326,
+      "paidAt": 1791383950326,
+      "paidPlan": "2y",
+      "paidAmount": 4000,
+      "createdAt": 1791383950326,
+      "updatedAt": 1791822740931
     }
   }
 }
