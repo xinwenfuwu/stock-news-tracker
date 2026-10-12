@@ -13,6 +13,14 @@ const app = createApp({
       : null);
     const D = Store.data;
 
+    // 20261012e：会员后端基地址跟随用户在设置里填的代理/加速地址，
+    // 供登录门禁的「云端会员兜底」查询使用（js_auth-sync.js 的 queryMembershipRemote）。
+    // 不填则用 index.html 里注入的 __SNT_ACCEL__（默认国内可达的 sichina.dpdns.org）。
+    try {
+      const _px = String((D && D.settings && D.settings.proxyUrl) || '').trim().replace(/\/+$/, '');
+      if (_px && typeof window !== 'undefined') window.__SNT_MEMBER_API__ = _px;
+    } catch (e) { /* 忽略：保持默认加速域名 */ }
+
     // ===== 数据迁移：relatedStocks 字符串 → 数组 =====
     D.news.forEach(n => {
       if (typeof n.relatedStocks === 'string') {
@@ -339,6 +347,14 @@ const app = createApp({
       if (!r.ok) { showToast(r.error, 'error'); return; }
       showToast(`「${u.username}」已${u.disabled ? '启用' : '停用'}`, 'success');
       refreshUserList();
+      // 20261012e：停用/启用也要传到云端，否则对方设备仍能登录——失败要告知
+      if (r.sync) {
+        Promise.resolve(r.sync).then(sr => {
+          if (sr && !sr.ok && !sr.skip) {
+            showToast(`「${u.username}」的停用状态未同步到云端：${sr.error || '写入失败'}`, 'warn', 8000);
+          }
+        }).catch(() => {});
+      }
     }
 
     function removeUserByAdmin(u) {
@@ -422,13 +438,22 @@ const app = createApp({
 
     function setUserQuota(u, val) {
       if (!A) return;
-      const r = A.setUserMembership(u.username, { quotaMonths: val });
+      const q = parseInt(val, 10);
+      const r = A.setUserMembership(u.username, { quotaMonths: q });
       if (!r.ok) { showToast(r.error, 'error'); refreshUserList(); return; }
-      if (r.user && r.user.disabled && r.user.autoDisabled) {
-        showToast(`「${u.username}」会员已到期，系统已自动停用`, 'warn');
-      } else {
-        showToast(`「${u.username}」会员额度已更新`, 'success');
-      }
+      // 20261012e：额度即真实会员——同样要传播到云端注册表，否则用户在自己设备登不上
+      const months = isNaN(q) || q < 0 ? 0 : q;
+      propagateMembershipGrant(u.username).then(prop => {
+        if (r.user && r.user.disabled && r.user.autoDisabled) {
+          showToast(`「${u.username}」会员已到期，系统已自动停用`, 'warn');
+        } else if (months > 0 && !prop.ok) {
+          showToast(`「${u.username}」会员额度已更新（本机）；但云端同步失败：${prop.error}`, 'warn', 9000);
+        } else if (months > 0) {
+          showToast(`「${u.username}」会员额度已更新，并已同步云端`, 'success');
+        } else {
+          showToast(`「${u.username}」会员额度已更新`, 'success');
+        }
+      });
       refreshUserList();
     }
 
@@ -510,29 +535,34 @@ const app = createApp({
       if (!r.ok) { showToast(r.error, 'error'); refreshUserList(); return; }
       refreshUserList();
       const code = r.approveCode || '';
-      // 是否已配置 GitHub 令牌：决定云端注册表是否可写、对方能否「免准入码」直接登录。
-      // approveUser 内部已自动把该账号同步进云端注册表（_syncUserToRegistry），无需手动再点。
-      const cloudReady = !!(A.Sync && A.Sync.isAdminConfigured && A.Sync.isAdminConfigured());
-      if (cloudReady) {
-        // 审核通过的同时账号已写入云端，对方设备登录时用账号密码直接读取、免准入码。
-        // 不再强制弹准入码面板，避免诱导管理员去发码、用户去抄码。
-        showToast(`已通过「${u.username}」并已同步到云端，对方现在可用账号密码直接登录（免准入码）`, 'success');
-        return;
-      }
-      // 未配置令牌：云端同步不可用，退回准入码流程（与历史行为一致，保证可用）。
-      if (code) {
-        copyText(code, `已通过「${u.username}」，准入码已复制到剪贴板`);
-        showApproveCodePanel({
-          title: `已通过「${u.username}」的注册申请`,
-          desc: '本账号在这台设备上已直接生效。\n\n'
-            + '⚠️ 如果对方用的是别的手机 / 电脑，他那边并不会自动通过——'
-            + '请务必把这串「准入码」发给他，他在登录页点「已通过审核？粘贴准入码」粘贴后，'
-            + '用注册时设置的密码即可登录。不转发的话，他那边会一直提示「等待管理员审核」。',
-          code: code
-        });
-      } else {
+      // 20261012e：以「注册表是否真的写成功」为准（不再用有没有配令牌想当然——
+      // 令牌过期 / 写入失败时同样上不了云，那会儿必须退回准入码流程，否则对方永远登不上）。
+      const syncP = r.sync ? Promise.resolve(r.sync) : Promise.resolve(null);
+      syncP.then(sr => {
+        const synced = !!(sr && sr.ok);
+        if (synced) {
+          // 审核通过的同时账号已写入云端，对方设备登录时用账号密码直接读取、免准入码。
+          // 不再强制弹准入码面板，避免诱导管理员去发码、用户去抄码。
+          showToast(`已通过「${u.username}」并已同步到云端，对方现在可用账号密码直接登录（免准入码）`, 'success');
+          return;
+        }
+        if (code) {
+          const why = (sr && sr.error) ? ('（云端同步失败：' + sr.error + '）') : '';
+          copyText(code, `已通过「${u.username}」，准入码已复制到剪贴板`);
+          showApproveCodePanel({
+            title: `已通过「${u.username}」的注册申请${why}`,
+            desc: '本账号在这台设备上已直接生效。\n\n'
+              + '⚠️ 云端注册表没有写上' + why + '，对方用别的手机 / 电脑时不会自动通过——'
+              + '请务必把这串「准入码」发给他，他在登录页点「已通过审核？粘贴准入码」粘贴后，'
+              + '用注册时设置的密码即可登录。不转发的话，他那边会一直提示「等待管理员审核」。',
+            code: code
+          });
+        } else {
+          showToast(`已通过「${u.username}」${sr && sr.error ? ('（云端同步失败：' + sr.error + '）') : ''}`, 'warn', 8000);
+        }
+      }).catch(() => {
         showToast(`已通过「${u.username}」`, 'success');
-      }
+      });
     }
 
     function rejectUserByAdmin(u) {
@@ -543,6 +573,13 @@ const app = createApp({
       if (!r.ok) { showToast(r.error, 'error'); return; }
       showToast(`已驳回「${u.username}」的注册申请`, 'success');
       refreshUserList();
+      if (r.sync) {
+        Promise.resolve(r.sync).then(sr => {
+          if (sr && !sr.ok && !sr.skip) {
+            showToast(`「${u.username}」的驳回状态未同步到云端：${sr.error || '写入失败'}`, 'warn', 8000);
+          }
+        }).catch(() => {});
+      }
     }
 
     function importRequestCode() {
@@ -2039,6 +2076,9 @@ const app = createApp({
     function payApiBase() {
       const b = String((D && D.settings && D.settings.proxyUrl) || '').trim().replace(/\/+$/, '');
       if (b) return b;
+      // 20261012e：登录门禁兜底可能已按设置回填过该注入值，保持一致
+      const inj = (typeof window !== 'undefined' && window.__SNT_MEMBER_API__) ? String(window.__SNT_MEMBER_API__).trim().replace(/\/+$/, '') : '';
+      if (inj) return inj;
       const d = (typeof window !== 'undefined' && window.__SNT_ACCEL__) ? String(window.__SNT_ACCEL__).trim().replace(/\/+$/, '') : '';
       return d || '';
     }
@@ -2343,6 +2383,25 @@ const app = createApp({
       if (amt >= 2000) return 12;
       return 6;
     }
+    /**
+     * 20261012e：把「管理员已开通 / 已调整额度」传播到云端注册表。
+     * 注册表是普通用户设备登录与门禁的权威数据源——不写上去，用户在自己设备登录时
+     * 仍会提示「试用已结束」（正是本次故障根因：开通只落在管理员本机）。
+     * 写失败（典型：没配 GitHub 令牌 / 令牌过期）时由调用方 toast 明确告知，
+     * 不再静默——避免「本机显示已开通、用户却登不上」且无人知道。
+     * @returns {Promise<{ok:boolean, error:string}>}
+     */
+    async function propagateMembershipGrant(username) {
+      if (!A) return { ok: false, error: '鉴权模块未就绪' };
+      if (typeof A.syncUserToRegistry !== 'function') return { ok: false, error: '当前版本不支持云端同步' };
+      try {
+        const r = await A.syncUserToRegistry(username);
+        if (r && r.ok) return { ok: true, error: '' };
+        return { ok: false, error: (r && r.error) || '注册表写入失败' };
+      } catch (e) {
+        return { ok: false, error: String((e && e.message) || e) };
+      }
+    }
     // 管理员一键开通某条待审核申请：会员从「该用户的支付时间」起算，并归入对应月期分类
     async function grantMemberClaim(claim) {
       if (!A) return;
@@ -2350,6 +2409,8 @@ const app = createApp({
       const payTs = Number(claim.ts) || 0;
       const r = A.grantMembership(claim.user, months, { paidAt: payTs, amount: Number(claim.amount) || 0 });
       if (!r || !r.ok) { showToast((r && r.error) || '开通失败', 'error'); return; }
+      // 云端传播：写注册表，让用户在自己设备登录时能立刻拿到会员（失败要显式告知）
+      const prop = await propagateMembershipGrant(claim.user);
       // 审核通过：立即从「待审核」区移除该申请（乐观更新，确保无论后端标记是否成功都不再回显）
       if (claim.id) { resolvedClaimIds.add(claim.id); persistResolvedClaims(); }
       memberClaims.list = memberClaims.list.filter(c => c.id !== claim.id);
@@ -2375,19 +2436,26 @@ const app = createApp({
         }
       } catch (e) { /* 会员已开通，仅未标记 */ }
       const startText = payTs ? fmtDateNum(payTs) : fmtDateNum(Date.now());
-      showToast('已为「' + claim.user + '」开通 ' + months + ' 个月会员（自支付日 ' + startText + ' 起算）', 'success', 4200);
+      let msg = '已为「' + claim.user + '」开通 ' + months + ' 个月会员（自支付日 ' + startText + ' 起算）';
+      if (prop.ok) {
+        msg += '，已同步云端，对方现在即可登录';
+      } else {
+        msg += '；但云端注册表同步失败（' + prop.error + '），用户在其他设备可能仍无法登录';
+      }
+      showToast(msg, prop.ok ? 'success' : 'warn', prop.ok ? 4200 : 9000);
       refreshUserList();          // 表格同步显示支付日期 / 额度 / 期分类
       await loadMemberClaims();
     }
     // 管理员手动开通（按用户名，无需待开通记录）
-    function grantMemberManual() {
+    async function grantMemberManual() {
       if (!A) return;
       const uname = (memberManual.username || '').trim();
       if (!uname) { showToast('请输入用户名', 'error'); return; }
       const months = memberManual.plan === '1y' ? 12 : (memberManual.plan === '2y' ? 24 : 6);
       const r = A.grantMembership(uname, months, { paidAt: Date.now(), amount: planAmount(memberManual.plan) });
       if (!r || !r.ok) { showToast((r && r.error) || '开通失败', 'error'); return; }
-      showToast('已为「' + uname + '」开通会员', 'success');
+      const prop = await propagateMembershipGrant(uname);
+      showToast(prop.ok ? '已为「' + uname + '」开通会员，并已同步云端' : '已为「' + uname + '」开通会员；但云端同步失败（' + prop.error + '）', prop.ok ? 'success' : 'warn', prop.ok ? 3000 : 9000);
       refreshUserList();
       memberManual.username = '';
     }

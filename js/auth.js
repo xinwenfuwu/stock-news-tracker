@@ -377,6 +377,16 @@
     if (g.registerDate) u.registerDate = g.registerDate;
     if (g.quotaMonths > 0) u.quotaMonths = g.quotaMonths;
     if (g.disableDate) u.disableDate = g.disableDate;
+    // 20261012e：会员字段同步——修复「管理员已核对并通过，用户在自己设备登录仍提示试用已结束」。
+    // 注册表/服务端是会员的权威来源：云端有有效到期时间就落到本机，登录门禁据此放行。
+    // 云端为 0/缺省而本机已有值时保留本机（管理员可能刚在本机开通、尚未同步上云，不能因此收回权限）。
+    var gpmu = Number(g.payMembershipUntil) || 0;
+    if (gpmu > 0) {
+      u.payMembershipUntil = gpmu;
+      if (Number(g.paidAt) > 0) u.paidAt = Number(g.paidAt);
+      if (g.paidPlan) u.paidPlan = String(g.paidPlan);
+      if (Number(g.paidAmount) > 0) u.paidAmount = Number(g.paidAmount);
+    }
   }
 
   /* ================= 设备 / 时段 ================= */
@@ -533,6 +543,67 @@
     if (tr.granted && tr.expired) return '试用已结束，请开通会员后继续使用';
     if (statusOf(u) === STATUS.PENDING) return '该账号待管理员审核通过后才能使用';
     return '该账号暂无有效的试用或会员，无法使用，请扫码支付开通会员';
+  }
+
+  /**
+   * 20261012e：查「云端会员到期时间」——管理员核对并通过后的权威数据源。
+   *   ① 仓库公开注册表 data/accounts/registry.json（管理员设备/Worker 写入，任何设备可读）
+   *   ② 会员后端 /pay/membership（商户扫码支付回调写入的 KV，Auth.remoteMembershipQuery 注入）
+   * 两个源并行查询，取「最晚」的到期时间；全部失败返回 0（调用方按无会员处理，不放松门禁）。
+   */
+  function remoteMembershipUntil(username) {
+    return new Promise(function (resolve) {
+      var best = 0;
+      var left = 2;
+      function done() { if (--left <= 0) resolve(best); }
+      // ① 注册表
+      try {
+        var S = (typeof Auth !== 'undefined') ? Auth.Sync : null;
+        if (S && typeof S.readRegistry === 'function') {
+          Promise.resolve(S.readRegistry()).then(function (reg) {
+            var acc = reg && reg.accounts && reg.accounts[String(username)];
+            var until = acc ? (Number(acc.payMembershipUntil) || 0) : 0;
+            if (until > best) best = until;
+          }).catch(function () { /* 忽略，走下一个源 */ }).then(done);
+        } else done();
+      } catch (e) { done(); }
+      // ② 会员后端 KV
+      try {
+        var q = (typeof Auth !== 'undefined' && typeof Auth.remoteMembershipQuery === 'function')
+          ? Auth.remoteMembershipQuery(username) : null;
+        if (q && typeof q.then === 'function') {
+          q.then(function (r) {
+            var until = r ? (Number(r.until) || 0) : 0;
+            if (until > best) best = until;
+          }).catch(function () { /* 忽略 */ }).then(done);
+        } else done();
+      } catch (e) { done(); }
+    });
+  }
+
+  /**
+   * 20261012e：门禁 + 云端会员校正（以云端为权威，但不制造误锁）：
+   *   · 云端有「未来」的到期时间 → 落本机并放行（管理员核对并通过后，用户在自己设备立刻能登录）；
+   *   · 云端已过期、且本机也不算有效 → 一并按过期处理（自然到期：本地值与云端同步变过去，照样关门）；
+   *   · 云端已过期但本机有效 → 保留本机（典型：管理员刚在本机开通、尚未同步上云，此时若信云端
+   *     反而会把已付费用户锁在门外——正是本次故障要避免的）；
+   *   · 云端为 0 / 查不到（含网络失败）→ 保留本机现值。
+   * 管理员 / 被停用账号不参与（无谓请求，且逻辑分叉没有意义）。
+   * @returns {Promise<string|null>} null 放行；否则拒绝原因
+   */
+  function accessDenyWithRemote(u, now) {
+    var deny = accessDeny(u, now);
+    if (!u || u.role === ROLE.ADMIN || u.disabled) return Promise.resolve(deny);
+    return remoteMembershipUntil(u.username).then(function (cloudUntil) {
+      var localValid = Number(u.payMembershipUntil) > Date.now();
+      if (cloudUntil > 0 && (cloudUntil > Date.now() || !localValid)) {
+        if (typeof Auth.applyRemoteMembership === 'function') Auth.applyRemoteMembership(u.username, cloudUntil);
+        // 双保险：直接改当前对象（applyRemoteMembership 内部按 Auth.users 查找，可能因表未重读而漏掉本条）。
+        // 只写「未来」值——过去的到期时间交给 applyRemoteMembership 清零，避免把过期值留在内存里。
+        if (cloudUntil > Date.now()) u.payMembershipUntil = cloudUntil;
+      }
+      return accessDeny(u, Date.now());
+    });
   }
 
   /* ============ 试用（普通用户可先试用、后审核） ============
@@ -840,13 +911,16 @@
     var list = users || loadUsers();
     var u = findUser(list, sess.username);
     if (!u) return Promise.resolve({ ok: false, error: '账号不存在或已被移除' });
-    // 统一门禁：普通账号必须处于「试用中」或「会员未到期」，否则拒绝登录/使用
-    var deny = accessDeny(u, Date.now());
-    if (deny) return Promise.resolve({ ok: false, error: deny });
-    if (u.role !== sess.role) return Promise.resolve({ ok: false, error: '登录态校验失败' });
-    return signSession(sess, u.hash).then(function (expect) {
-      if (!timingSafeEqual(expect, sess.sig)) return { ok: false, error: '登录态校验失败' };
-      return { ok: true, user: publicUser(u) };
+    // 统一门禁：普通账号必须处于「试用中」或「会员未到期」，否则拒绝登录/使用。
+    // 20261012e：本机判不过时先查云端会员源（管理员可能刚在别的设备核对并通过），
+    // 拿到有效会员即落本机放行——保证刷新页面不会把「已开通会员」的用户重新挡在门外。
+    return accessDenyWithRemote(u, Date.now()).then(function (deny) {
+      if (deny) return { ok: false, error: deny };
+      if (u.role !== sess.role) return Promise.resolve({ ok: false, error: '登录态校验失败' });
+      return signSession(sess, u.hash).then(function (expect) {
+        if (!timingSafeEqual(expect, sess.sig)) return { ok: false, error: '登录态校验失败' };
+        return { ok: true, user: publicUser(u) };
+      });
     });
   }
 
@@ -1092,16 +1166,18 @@
           u.updatedAt = Date.now();
           saveUsers(self.users);
         }
-        // 统一门禁：普通账号必须处于「试用中」或「会员未到期」，否则拒绝登录
-        var deny = accessDeny(u, Date.now());
-        if (deny) return { ok: false, error: deny, status: statusOf(u) };
-        var ttl = remember ? TTL_REMEMBER : TTL_DEFAULT;
-        var rec = pushLoginRecord(u, { ua: localUA() });
-        u.lastLoginAt = rec.at;
-        saveUsers(self.users);
-        return issueSession(u, ttl, rec.at).then(function () {
-          self.user = publicUser(u);
-          return { ok: true, user: self.user, loginAt: rec.at, trial: tr.active };
+        // 统一门禁：普通账号必须处于「试用中」或「会员未到期」，否则拒绝登录。
+        // 20261012e：本机判不过时查云端会员源（管理员核对并通过后写入注册表/KV），拿到有效会员即放行。
+        return accessDenyWithRemote(u, Date.now()).then(function (deny) {
+          if (deny) return { ok: false, error: deny, status: statusOf(u) };
+          var ttl = remember ? TTL_REMEMBER : TTL_DEFAULT;
+          var rec = pushLoginRecord(u, { ua: localUA() });
+          u.lastLoginAt = rec.at;
+          saveUsers(self.users);
+          return issueSession(u, ttl, rec.at).then(function () {
+            self.user = publicUser(u);
+            return { ok: true, user: self.user, loginAt: rec.at, trial: tr.active };
+          });
         });
       });
     },
@@ -1128,19 +1204,21 @@
         // 否则：本机已有该账号 —— 角色以「本机」为准，注册表绝不覆盖（保证同一浏览器账户独立性）
         u.status = STATUS.ACTIVE;
         u.disabled = false;
-        applyGrant(u, grant);         // 同步服务端授权（试用 / 会员额度）
+        applyGrant(u, grant);         // 同步服务端授权（试用 / 会员额度 / 会员到期时间）
         u.updatedAt = Date.now();
         if (!saveUsers(self.users)) return { ok: false, error: '保存失败：浏览器本地存储不可用' };
-        // 统一门禁：普通账号必须处于「试用中」或「会员未到期」，否则拒绝登录
-        var deny = accessDeny(u, Date.now());
-        if (deny) return { ok: false, error: deny, status: statusOf(u) };
-        var ttl = remember ? TTL_REMEMBER : TTL_DEFAULT;
-        var rec = pushLoginRecord(u, { ua: localUA() });
-        u.lastLoginAt = rec.at;
-        saveUsers(self.users);
-        return issueSession(u, ttl, rec.at).then(function () {
-          self.user = publicUser(u);
-          return { ok: true, user: self.user, loginAt: rec.at, trial: trialState(u).active, remote: true };
+        // 统一门禁：普通账号必须处于「试用中」或「会员未到期」，否则拒绝登录。
+        // 20261012e：注册表授权里可能没有会员字段（旧数据），再查一次云端会员源兜底。
+        return accessDenyWithRemote(u, Date.now()).then(function (deny) {
+          if (deny) return { ok: false, error: deny, status: statusOf(u) };
+          var ttl = remember ? TTL_REMEMBER : TTL_DEFAULT;
+          var rec = pushLoginRecord(u, { ua: localUA() });
+          u.lastLoginAt = rec.at;
+          saveUsers(self.users);
+          return issueSession(u, ttl, rec.at).then(function () {
+            self.user = publicUser(u);
+            return { ok: true, user: self.user, loginAt: rec.at, trial: trialState(u).active, remote: true };
+          });
         });
       });
     },
@@ -1319,8 +1397,10 @@
       u.reviewedBy = (this.user && this.user.username) || '';
       u.updatedAt = now;
       saveUsers(this.users);
-      this._syncUserToRegistry(u);
-      return { ok: true, user: publicUser(u), approveCode: makeApproveCode(u) };
+      // 20261012e：把同步 Promise 一并返回，调用方可确认「云端注册表是否真的写成功」，
+      // 不再用「有没有配令牌」想当然（令牌过期/写失败时同样上不了云）。
+      var syncP = this._syncUserToRegistry(u);
+      return { ok: true, user: publicUser(u), approveCode: makeApproveCode(u), sync: syncP };
     },
 
     /** 驳回注册申请：pending → rejected（留有被驳回标记，用户可重新申请） */
@@ -1335,8 +1415,8 @@
       u.reviewedBy = (this.user && this.user.username) || '';
       u.updatedAt = Date.now();
       saveUsers(this.users);
-      this._syncUserToRegistry(u);
-      return { ok: true, user: publicUser(u) };
+      var syncP2 = this._syncUserToRegistry(u);
+      return { ok: true, user: publicUser(u), sync: syncP2 };
     },
 
     /** 重新取某个已通过账号的准入码（补发场景） */
@@ -1739,8 +1819,8 @@
       u.disabledAt = off ? (u.disabledAt || Date.now()) : null;
       u.updatedAt = Date.now();
       saveUsers(this.users);
-      this._syncUserToRegistry(u);
-      return { ok: true, user: publicUser(u) };
+      var syncP3 = this._syncUserToRegistry(u);
+      return { ok: true, user: publicUser(u), sync: syncP3 };
     },
 
     /**
@@ -1781,7 +1861,8 @@
         u.disabled = false; u.autoDisabled = false; u.disabledAt = null;
       }
       saveUsers(this.users);
-      this._syncUserToRegistry(u);
+      // 20261012e：注册表同步改为「调用方显式 await Auth.syncUserToRegistry(username)」——
+      // 这里不再静默 fire-and-forget，避免「本机显示已开通、云端没写上、用户却登不上」且无人知晓。
       return { ok: true, user: adminUser(u) };
     },
 
@@ -1829,7 +1910,8 @@
         u.disabled = false; u.autoDisabled = false; u.disabledAt = null;
       }
       saveUsers(this.users);
-      this._syncUserToRegistry(u);
+      // 20261012e：注册表同步改为「调用方显式 await Auth.syncUserToRegistry(username)」——
+      // 这里不再静默 fire-and-forget，避免「本机显示已开通、云端没写上、用户却登不上」且无人知晓。
       return { ok: true, until: u.payMembershipUntil, startAt: startTs, user: adminUser(u) };
     },
 
@@ -1845,7 +1927,21 @@
       if (!u) return { ok: false, error: '用户不存在' };
       var until = Number(untilTs) || 0;
       if (!until || until <= Date.now()) {
-        if (u.payMembershipUntil) { u.payMembershipUntil = 0; u.updatedAt = Date.now(); saveUsers(this.users); }
+        // 20261012e：云端明确返回「已过期」时，保留这个过去的到期时间，不要清零。
+        // 清零会让 disableDateOf 回退到 legacy 口径（registerDate + quotaMonths×30天），
+        // 把「精确会员已过期」的账号误判成仍有效（配额日期还在未来）——门禁被绕过。
+        // 保留过去时间戳后：门禁按已到期拦截，与管理端「到期即关闭登录权限」的语义一致；
+        // 展示上也与「自然过期」完全一致（停用日期显示过去的日期 + is-expired 样式）。
+        // 从未有过精确会员（until 传入 0 / 无值）时才清零，语义仍是「无会员」。
+        if (until > 0 && u.payMembershipUntil !== until) {
+          u.payMembershipUntil = until;
+          u.updatedAt = Date.now();
+          saveUsers(this.users);
+        } else if (!until && u.payMembershipUntil) {
+          u.payMembershipUntil = 0;
+          u.updatedAt = Date.now();
+          saveUsers(this.users);
+        }
         return { ok: true, active: false };
       }
       u.payMembershipUntil = until;
@@ -1963,9 +2059,9 @@
      */
     _syncUserToRegistry: function (u) {
       try {
-        if (!u || !u.hash || u.hash.indexOf('pbkdf2$') !== 0) return Promise.resolve({ ok: false, skip: true });
-        if (typeof Auth === 'undefined' || !Auth.Sync || !Auth.Sync.writeUser) return Promise.resolve({ ok: false, skip: true });
-        if (!Auth.Sync.isAdminConfigured || !Auth.Sync.isAdminConfigured()) return Promise.resolve({ ok: false, skip: true });
+        if (!u || !u.hash || u.hash.indexOf('pbkdf2$') !== 0) return Promise.resolve({ ok: false, skip: true, error: '账号缺少密码哈希，无法同步' });
+        if (typeof Auth === 'undefined' || !Auth.Sync || !Auth.Sync.writeUser) return Promise.resolve({ ok: false, skip: true, error: '同步模块未加载' });
+        if (!Auth.Sync.isAdminConfigured || !Auth.Sync.isAdminConfigured()) return Promise.resolve({ ok: false, skip: true, error: '未配置 GitHub 令牌（设置 → 云端同步）' });
         var rec = {
           username: u.username,
           hash: u.hash,
@@ -1985,6 +2081,19 @@
         };
         return Promise.resolve(Auth.Sync.writeUser(rec));
       } catch (e) { return Promise.resolve({ ok: false, error: String(e && e.message || e) }); }
+    },
+
+    /**
+     * 把本机某个账号同步进 GitHub 注册表（跨设备登录 / 会员开通的写入侧）。
+     * 20261012e：暴露给业务层，让「核对并开通」能确认云端是否真的写成功——
+     * 避免「本机显示已开通、用户在其他设备却登不上」的静默失败。
+     * @returns {Promise<{ok:boolean, error?:string, skip?:boolean}>}
+     */
+    syncUserToRegistry: function (username) {
+      this.users = loadUsers();
+      var u = findUser(this.users, username);
+      if (!u) return Promise.resolve({ ok: false, error: '用户不存在' });
+      return this._syncUserToRegistry(u);
     },
 
     /** 管理员把自己的账号同步进注册表（登录后自动调用，确保管理员也能跨设备登录） */

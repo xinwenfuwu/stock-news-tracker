@@ -27,7 +27,7 @@
   'use strict';
 
   // 与 index.html 中静态资源版本号保持一致，避免升级后命中旧缓存
-  var ASSET_V = '20261012d';
+  var ASSET_V = '20261012e';
 
   // 管理员点开「注册申请导入链接」后，申请码暂存在这里，等业务层（app.js）就绪后取走
   var IMPORT_KEY = 'snt-pending-import-v1';
@@ -926,7 +926,13 @@
     try { if (global.sessionStorage && global.sessionStorage.getItem(SHOW_GATE_KEY)) { showGate = true; global.sessionStorage.removeItem(SHOW_GATE_KEY); } } catch (e) { /* ignore */ }
 
     var sessions = (typeof Auth.listSessions === 'function') ? Auth.listSessions() : [];
-    var activeName = (typeof Auth.getActive === 'function') ? Auth.getActive() : '';
+    // 当前账号：优先本标签页指针，回退「最近登录账号」（与 Auth.restore 的取值口径一致）。
+    // 不能只认 sessionStorage——新开标签页 / 刷新后它是空的，会让「本机已登录的账号」
+    // 丢失当前账号上下文（管理员本人回来时连自己的账号行都看不到）。
+    var activeName = (typeof Auth.getActive === 'function') ? (Auth.getActive() || '') : '';
+    if (!activeName) {
+      try { activeName = (global.localStorage && global.localStorage.getItem('snt-auth-last-v1')) || ''; } catch (e) { /* ignore */ }
+    }
     renderAccounts(sessions, activeName);
 
     if (!sessions.length) {

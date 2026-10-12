@@ -125,10 +125,14 @@
         status: record.status || 'pending',
         disabled: !!record.disabled,
         trialUntil: record.trialUntil || 0,
+        trialDays: record.trialDays || 0,
         quotaMonths: record.quotaMonths || 0,
         disableDate: record.disableDate || '',
         registerDate: record.registerDate || '',
         payMembershipUntil: record.payMembershipUntil || 0,   // batch-A：扫码/后台开通的会员到期时间戳(ms)
+        paidAt: Number(record.paidAt) || 0,                   // 20261007q：支付日期(ms)
+        paidPlan: record.paidPlan || '',                      // 20261007q：支付套餐 6m / 1y / 2y
+        paidAmount: Number(record.paidAmount) || 0,           // 20261007q：实付金额
         createdAt: record.createdAt || Date.now(),
         updatedAt: Date.now()
       };
@@ -178,6 +182,35 @@
   function readMembershipConfig() { return readJsonFile(MEMBER_CFG_PATH); }
   /** 写入个人收款码配置（管理员令牌） */
   function writeMembershipConfig(cfg) { return writeJsonFile(MEMBER_CFG_PATH, cfg || {}, 'chore(membership): update config'); }
+
+  /* ---------- 20261012e：会员到期时间查询（登录门禁兜底用） ---------- */
+
+  /** 会员后端基地址：优先页面注入的 __SNT_MEMBER_API__（业务层按用户设置回填），否则用加速域名 */
+  function memberApiBase() {
+    var b = (typeof window !== 'undefined' && window.__SNT_MEMBER_API__) ? String(window.__SNT_MEMBER_API__).trim().replace(/\/+$/, '') : '';
+    if (b) return b;
+    var a = (typeof window !== 'undefined' && window.__SNT_ACCEL__) ? String(window.__SNT_ACCEL__).trim().replace(/\/+$/, '') : '';
+    return a || '';
+  }
+
+  /**
+   * 查会员后端（Cloudflare Worker KV）里某用户的会员到期时间。
+   * 商户扫码支付成功回调会写这个 KV；管理员「核对并开通」也会尽量同步到这里。
+   * 任何失败都返回 { ok:false, until:0 }，绝不抛异常（门禁兜底不能把用户挡在门外）。
+   */
+  function queryMembershipRemote(username) {
+    var base = memberApiBase();
+    var uname = String(username == null ? '' : username).trim();
+    if (!base || !uname) return Promise.resolve({ ok: false, until: 0 });
+    return fetch(base + '/pay/membership?user=' + encodeURIComponent(uname), {
+      headers: { 'Accept': 'application/json' }, cache: 'no-store'
+    }).then(function (r) {
+      if (!r.ok) return { ok: false, until: 0 };
+      return r.json().catch(function () { return {}; });
+    }).then(function (j) {
+      return { ok: true, until: Number(j && j.until) || 0 };
+    }).catch(function () { return { ok: false, until: 0 }; });
+  }
   /** 读取待开通记录（公开，免鉴权）。始终带时间戳参数，保证管理员点「刷新」拿到的是最新申请。 */
   function readClaims() {
     return readJsonFile(MEMBER_CLAIMS_PATH, true).then(function (j) {
@@ -208,12 +241,16 @@
         return {
           ok: true,
           grant: {
+            role: acc.role || 'user',           // 20261012e：跨设备首次落地时角色以注册表为准
             trialDays: acc.trialDays || 0,
             trialUntil: acc.trialUntil || 0,
             quotaMonths: acc.quotaMonths || 0,
             disableDate: acc.disableDate || '',
             registerDate: acc.registerDate || '',
-            payMembershipUntil: acc.payMembershipUntil || 0
+            payMembershipUntil: acc.payMembershipUntil || 0,
+            paidAt: Number(acc.paidAt) || 0,
+            paidPlan: acc.paidPlan || '',
+            paidAmount: Number(acc.paidAmount) || 0
           }
         };
       });
@@ -263,6 +300,9 @@
   }
 
   global.Auth = global.Auth || {};
+  // 20261012e：登录门禁的云端会员兜底查询（auth.js 的 accessDenyWithRemote 会调用）。
+  // 单独挂到 Auth 上（不进 Sync），让 auth.js 不依赖同步模块的加载顺序。
+  global.Auth.remoteMembershipQuery = queryMembershipRemote;
   global.Auth.Sync = {
     TOKEN_KEY: TOKEN_KEY,
     adminToken: getToken,
@@ -284,7 +324,10 @@
     readMembershipConfig: readMembershipConfig,
     writeMembershipConfig: writeMembershipConfig,
     readClaims: readClaims,
-    writeClaims: writeClaims
+    writeClaims: writeClaims,
+    // 20261012e：会员到期时间查询 + 后端基地址（业务层复用同一基地址）
+    memberApiBase: memberApiBase,
+    queryMembershipRemote: queryMembershipRemote
   };
 
   if (typeof module !== 'undefined' && module.exports) module.exports = global.Auth.Sync;
