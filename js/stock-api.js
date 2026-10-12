@@ -5980,6 +5980,155 @@ const StockAPI = {
     return out;
   },
 
+  /**
+   * 东方财富 7×24 实时快讯（每日快讯来源切到「东方财富」时走这里）。
+   * 关键事实（实测 2026-10-12）：
+   *  - newsapi.eastmoney.com **不回 CORS 头**（浏览器直连 fetch 会被拦截），
+   *    但其响应本身就是一段可执行 JS：`var ajaxResult={...}` —— 用 <script> 注入即可跨域读取
+   *    （经典 JSONP 手法），无需任何代理 / Worker，国内直连稳定快速，华为浏览器同样适用。
+   *  - 每页 50 条，翻页参数在 URL 末段（getlist_102_ajaxResult_50_<page>_.html）；
+   *    实测缓冲深度 ≥ 9 天（page=80 仍可取到约 9 天前），覆盖闭市周期窗口足够。
+   *  - 若用户已配置「新闻代理地址」，JSONP 失败时回退 Worker /proxy 原样转发同一端点。
+   * @param {object} [opts]
+   * @param {number} [opts.maxPages=50] 最多翻页数（安全阀）
+   * @param {number|string|Date} [opts.untilTime=0] 窗口起点(ms)；>0 时翻到早于它的页即停止
+   * @param {string} [opts.proxyUrl] 可选代理（JSONP 失败时的回退路径）
+   */
+  async fetchEmLiveBriefs(opts = {}) {
+    const maxPages = opts.maxPages || 50;
+    const untilMs = opts.untilTime ? new Date(opts.untilTime).getTime() : 0;
+    const proxyUrl = opts.proxyUrl || '';
+    const out = [];
+    const seenId = new Set();
+    for (let page = 1; page <= maxPages; page++) {
+      let list = [];
+      try { list = await this._fetchEmPage(page, proxyUrl); } catch (e) { break; }
+      if (!list.length) break;
+      const mapped = this._mapEmNews(list);
+      for (const it of mapped) {
+        if (it.id != null) {
+          const k = String(it.id);
+          if (seenId.has(k)) continue;   // 跨页去重
+          seenId.add(k);
+        }
+        out.push(it);
+      }
+      // 当前页最旧一条已早于窗口起点 → 更早历史不需覆盖，停止翻页
+      const last = mapped.length ? mapped[mapped.length - 1] : null;
+      if (untilMs && last && last.time) {
+        const et = Date.parse((last.time || '').replace(' ', 'T') + ':00');
+        if (et && et < untilMs) break;
+      }
+    }
+    out.sort((a, b) => String(b.time).localeCompare(String(a.time)));
+    return out;
+  },
+
+  /** 取东财快讯一页：优先 JSONP（script 注入读 window.ajaxResult）；失败回退代理转发同一端点 */
+  async _fetchEmPage(page, proxyUrl) {
+    const url = 'https://newsapi.eastmoney.com/kuaixun/v1/getlist_102_ajaxResult_50_' + page + '_.html';
+    if (typeof document !== 'undefined') {
+      try { return await this._emJsonpPage(url); } catch (e) { /* 落入回退 */ }
+    } else {
+      // Node / 无 DOM 环境（单测）：直接 fetch 文本解析
+      try { return this._parseEmText(await this._emTextFetch(url)); } catch (e) { /* 落入回退 */ }
+    }
+    const base = String(proxyUrl || '').trim().replace(/\/+$/, '');
+    if (base) {
+      try { return this._parseEmText(await this._proxyText(base + '/proxy?url=' + encodeURIComponent(url))); } catch (e) { /* ignore */ }
+    }
+    return [];
+  },
+
+  /** JSONP：注入 <script>，响应 `var ajaxResult={...}` 执行后读取 window.ajaxResult；12s 超时。
+   *  串行执行（window.ajaxResult 是共享全局，并发会互相覆盖）。 */
+  _emJsonpPage(url) {
+    const run = () => new Promise((resolve, reject) => {
+      const prev = window.ajaxResult;
+      window.ajaxResult = null;
+      const script = document.createElement('script');
+      let settled = false;
+      const timer = setTimeout(() => {
+        if (settled) return;
+        settled = true;
+        if (script.parentNode) script.parentNode.removeChild(script);
+        window.ajaxResult = prev;
+        reject(new Error('jsonp timeout'));
+      }, 12000);
+      const done = (ok) => {
+        if (settled) return;
+        settled = true;
+        clearTimeout(timer);
+        const data = window.ajaxResult;
+        if (script.parentNode) script.parentNode.removeChild(script);
+        window.ajaxResult = prev;
+        if (ok) {
+          const list = (data && Array.isArray(data.LivesList)) ? data.LivesList : [];
+          resolve(list);
+        } else reject(new Error('jsonp error'));
+      };
+      script.onload = () => done(true);
+      script.onerror = () => done(false);
+      script.src = url;
+      document.head.appendChild(script);
+    });
+    // 串行链：避免并发 JSONP 争抢共享全局 ajaxResult
+    const chained = (this._emJsonpChain || Promise.resolve()).then(run, run);
+    this._emJsonpChain = chained.then(() => {}, () => {});
+    return chained;
+  },
+
+  /** 直连取东财快讯文本（Node 单测路径；浏览器侧走 JSONP） */
+  async _emTextFetch(url) {
+    const ctrl = new AbortController();
+    const timer = setTimeout(() => ctrl.abort(), 12000);
+    try {
+      const resp = await fetch(url, {
+        signal: ctrl.signal, cache: 'no-store',
+        headers: {
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)',
+          'Referer': 'https://kuaixun.eastmoney.com/'
+        }
+      });
+      if (!resp.ok) throw new Error('HTTP ' + resp.status);
+      return await resp.text();
+    } finally { clearTimeout(timer); }
+  },
+
+  /** 解析 `var ajaxResult={...};` 文本 → LivesList 数组 */
+  _parseEmText(txt) {
+    const m = String(txt || '').match(/=\s*(\{[\s\S]*\})\s*;?\s*$/);
+    if (!m) return [];
+    try {
+      const j = JSON.parse(m[1]);
+      return (j && Array.isArray(j.LivesList)) ? j.LivesList : [];
+    } catch (e) { return []; }
+  },
+
+  /** 东财快讯 LivesList → 本应用快讯条目（time 口径与服务端快照一致：'YYYY-MM-DD HH:mm'） */
+  _mapEmNews(list) {
+    const out = [];
+    if (!Array.isArray(list)) return out;
+    for (const it of list) {
+      const title = String(it.title || '').replace(/<[^>]+>/g, '').replace(/\s+/g, ' ').trim();
+      if (!title) continue;
+      const st = String(it.showtime || it.showTime || '');
+      if (!/^\d{4}-\d{2}-\d{2}[ T]\d{2}:\d{2}/.test(st)) continue;
+      const time = st.slice(0, 16);   // 'YYYY-MM-DD HH:mm:ss' → 'YYYY-MM-DD HH:mm'
+      out.push({
+        id: it.id || it.newsid || ('em_' + time + '_' + title.slice(0, 12)),
+        time,
+        text: title,
+        url: it.url_unique || it.url_w || it.url_m || '',
+        stocks: [],
+        subjects: [],
+        cat: (typeof HotTopics !== 'undefined' && HotTopics.classify) ? HotTopics.classify(title) : '财经'
+      });
+    }
+    out.sort((a, b) => String(b.time).localeCompare(String(a.time)));
+    return out;
+  },
+
   /** 经代理取文本（12s 超时，非 2xx 直接抛错） */
   async _proxyText(url) {    const ctrl = new AbortController();
     const timer = setTimeout(() => ctrl.abort(), 12000);

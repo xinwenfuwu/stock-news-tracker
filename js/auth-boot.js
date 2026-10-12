@@ -27,7 +27,7 @@
   'use strict';
 
   // 与 index.html 中静态资源版本号保持一致，避免升级后命中旧缓存
-  var ASSET_V = '20261012c';
+  var ASSET_V = '20261012d';
 
   // 管理员点开「注册申请导入链接」后，申请码暂存在这里，等业务层（app.js）就绪后取走
   var IMPORT_KEY = 'snt-pending-import-v1';
@@ -605,9 +605,25 @@
     var slowHint = setTimeout(function () {
       if (busy) setBusy('网络较慢，正在重试加载…请稍候');
     }, 12000);
-    enteringPromise = loadScripts(APP_SCRIPTS, function (src, idx, total) {
-      if (!busy) return;
-      setBusy('正在加载数据… (' + idx + '/' + total + ')');
+    // 兜底：装载业务脚本前必须确保当前账号已就绪（Auth.user 非空）。
+    // 否则 app.js 顶层的 Store.init 会拿到空账号 → 落到「共享数据分区」（resolveKey 的 BASE_KEY），
+    // 表现为「刷新后设置/数据像换了一个人」（账号隔离失效）。
+    // 会触发该问题的真实路径：restore 尚未返回时，其它入口（如加载失败后的「重试」按钮）抢先 enterApp。
+    // 正常路径（restore 成功 / 登录成功）user 已就绪，这里立即放行。
+    var ready;
+    if (Auth && !Auth.user && typeof Auth.restore === 'function') {
+      ready = Promise.resolve(Auth.restore()).then(function (r) {
+        if (!(r && r.ok)) throw new Error('登录态已失效，请重新登录');
+        return true;
+      });
+    } else {
+      ready = Promise.resolve(true);
+    }
+    enteringPromise = ready.then(function () {
+      return loadScripts(APP_SCRIPTS, function (src, idx, total) {
+        if (!busy) return;
+        setBusy('正在加载数据… (' + idx + '/' + total + ')');
+      });
     }).then(function () {
       clearTimeout(slowHint);
       setBusy('');
@@ -618,7 +634,7 @@
           detail: { user: Auth.currentUser }
         }));
       } catch (e) { /* 老浏览器不支持 CustomEvent 构造器时忽略 */ }
-      }).catch(function (err) {
+    }).catch(function (err) {
       clearTimeout(slowHint);
       setBusy('');
       showMsg(String(err && err.message ? err.message : err), 'error');

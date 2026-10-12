@@ -6047,9 +6047,18 @@ const app = createApp({
     const briefSourceInput = ref('格隆汇');
     const briefSourceCustom = ref(false);
     const briefSourcePresets = BRIEF_SOURCE_PRESETS;
-    // 有「实时拉取」路径的来源（如 同花顺：浏览器直连其 CORS 已放开的 7×24 接口）。
-    // 这类来源不走仓库静态快照文件（那个只有格隆汇），改为实时拉取最近快讯。
-    const LIVE_BRIEF_SOURCES = new Set(['同花顺']);
+    // 有「实时拉取」路径的来源（浏览器直连其 7×24 快讯接口，不走仓库静态快照文件）：
+    //   · 同花顺：news.10jqka.com.cn（CORS 已放开）
+    //   · 东方财富：newsapi.eastmoney.com（无 CORS 头，但响应是 `var ajaxResult={...}` 可执行 JS，
+    //     用 JSONP script 注入读取，无需代理；已配置新闻代理时失败可回退 Worker 转发）
+    const LIVE_BRIEF_SOURCES = new Set(['同花顺', '东方财富']);
+
+    /** 实时来源分发：按来源名调对应 7×24 快讯接口；未知来源返回空数组 */
+    function fetchLiveBySource(src, opts) {
+      if (src === '东方财富') return StockAPI.fetchEmLiveBriefs(opts || {});
+      if (src === '同花顺') return StockAPI.fetchThsLiveBriefs(opts || {});
+      return Promise.resolve([]);
+    }
 
     // ===== 快讯分类维度（batch15）：题材归类 / 概念分类 / 行业分类 =====
     const briefDimModes = (typeof HotTopics !== 'undefined' && Array.isArray(HotTopics.BRIEF_MODES))
@@ -6618,9 +6627,15 @@ const app = createApp({
       briefLoading.value = true;
       briefError.value = '';
       try {
-        // 实时来源（同花顺等）：直接拉最新快讯；按所选日期过滤，无匹配则展示最近全部并提示
+        // 实时来源（同花顺 / 东方财富）：直接拉最新快讯；按所选日期过滤，无匹配则展示最近全部并提示
         if (LIVE_BRIEF_SOURCES.has(src)) {
-          const items = await StockAPI.fetchThsLiveBriefs();
+          // untilTime=所选日期 0 点（固定 +08:00，与快讯 time 的北京口径一致），翻页覆盖到该日为止；
+          // 所选日期超出接口缓冲深度（东财约 9 天 / 同花顺约 2~3 周）时展示最新快讯并提示。
+          const dayStart = Date.parse(date + 'T00:00:00+08:00');
+          const items = await fetchLiveBySource(src, {
+            untilTime: dayStart, maxPages: 30,
+            proxyUrl: (D.settings && D.settings.proxyUrl) || ''
+          });
           if (!items.length) {
             briefItems.value = [];
             briefError.value = `「${src}」实时快讯暂时拉取为空，请稍后重试`;
@@ -6705,7 +6720,30 @@ const app = createApp({
     let _thsCacheUntilMs = 0;
     let _thsLiveJustFetched = false;
     function resetThsLiveFetch() { _thsLiveCache = []; _thsLastLiveFetchTs = 0; _thsCacheUntilMs = 0; _thsLiveJustFetched = false; }
+    // 东方财富实时快讯：JSONP 翻页取数，同样 5 分钟同窗节流（与同花顺同款语义）
+    let _emLiveCache = [];
+    let _emLastLiveFetchTs = 0;
+    let _emCacheUntilMs = 0;
+    let _emLiveJustFetched = false;
+    function resetEmLiveFetch() { _emLiveCache = []; _emLastLiveFetchTs = 0; _emCacheUntilMs = 0; _emLiveJustFetched = false; }
     async function fetchLiveBriefsForWindow(winStartMs) {
+      if (briefSourceName.value === '东方财富') {
+        const now = Date.now();
+        _emLiveJustFetched = false;
+        const key = winStartMs || 0;
+        // 同窗口 5 分钟内复用缓存；窗口变了则重新翻页抓取（避免宽窗口拿到的是窄窗口缓存的子集）
+        if (_emLiveCache.length && _emCacheUntilMs === key && now - _emLastLiveFetchTs < LIVE_THROTTLE_MS) return _emLiveCache;
+        let items = [];
+        // 翻页直到接口缓冲到底 / 翻过窗口起点 / 达到安全阀（maxPages=50，覆盖约 9 天缓冲）
+        try {
+          items = await fetchLiveBySource('东方财富', {
+            untilTime: key || 0, maxPages: 50,
+            proxyUrl: (D.settings && D.settings.proxyUrl) || ''
+          });
+        } catch (e) { items = []; }
+        if (items.length) { _emLiveCache = items; _emCacheUntilMs = key; _emLastLiveFetchTs = now; _emLiveJustFetched = true; }
+        return _emLiveCache;
+      }
       if (briefSourceName.value === '同花顺') {
         const now = Date.now();
         _thsLiveJustFetched = false;
@@ -6773,7 +6811,7 @@ const app = createApp({
         // 保证「最近时段」的快讯一条不漏；5 分钟内重复刷新复用缓存；直连失败则回退代理（若已配）。
         const liveItems = await fetchLiveBriefsForWindow(w.start.getTime());
         const chunks = await Promise.all(days.map(d => fetchBriefsFile(d, briefSourceName.value)));
-        if ((_liveJustFetched || _thsLiveJustFetched) && liveItems.length) {
+        if ((_liveJustFetched || _thsLiveJustFetched || _emLiveJustFetched) && liveItems.length) {
           showToast(`已实时拉取${briefSourceName.value}最近 ${liveItems.length} 条快讯（5 分钟内刷新不再重复抓取）`, 'success');
         }
         // 记录每个拉取日是否有数据（用于回退到「最近真正有数据的一天」）
@@ -9820,7 +9858,7 @@ const app = createApp({
       refreshStreaks, streakBusy, newsStreakBusy,
       // 子类标注「颜色 / 备注」（仅新闻追踪页·概念归类/行业归类行最右侧）
       setCatColor, setCatNote, catColorPopKey, catPresetColors, toggleCatColorPop, pickPreset, clearCatColor,
-      fetchLiveBriefsForWindow, resetLiveFetch, resetThsLiveFetch, liveFetchInfo,
+      fetchLiveBriefsForWindow, resetLiveFetch, resetThsLiveFetch, resetEmLiveFetch, liveFetchInfo,
       loadHotData, fetchHotBoards, refreshHotStocks,
       refreshAmplitudeBoards, ampLoading, hotPanelsHidden, financePushHidden,
       // batch23（请求F）：六个子版块独立刷新按钮
