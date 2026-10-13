@@ -1617,13 +1617,21 @@ const StockAPI = {
    * 东财 push2 接口，部分网络/地区可能受限
    * @returns {number|null} 主力净流入(元)
    */
+  /**
+   * 获取资金流向（近一日主力净流入）
+   * 东财 fflow 接口。🔴 20261012g：原实现直连 push2.eastmoney.com 主节点，
+   * 实测该节点在浏览器侧网络层不可达（clist/fflow 一律 Failed to fetch），
+   * 导致「资金流入」列永远显示「—」。现改走 _eastGet：
+   * 内部按 push2his → push2delay → push2 顺序多 host 尝试 + JSONP 兜底 + 整体重试，
+   * push2his 实测 200 且数据完整（主力净流入 f52）。
+   * @returns {number|null} 主力净流入(元)
+   */
   async getCapitalFlow(code) {
     const secid = this.toEastSecid(code);
     const url = `https://push2.eastmoney.com/api/qt/stock/fflow/daykline/get?secid=${secid}&lmt=1&klt=101&fields1=f1,f2,f3,f7&fields2=f51,f52,f53,f54,f55,f56,f57,f58`;
     try {
-      const resp = await fetch(url, { cache: 'no-store' });
-      const json = await resp.json();
-      const kls = json.data && json.data.klines;
+      const json = await this._eastGet(url);
+      const kls = json && json.data && json.data.klines;
       if (kls && kls.length) {
         const last = kls[kls.length - 1].split(',');
         // f52:主力净流入
@@ -2460,9 +2468,18 @@ const StockAPI = {
       // data:{klines:[]} 这类「成功但空」的响应。若把 push2 排在最前，_eastGet 会把它当成成功
       // 直接短路返回，导致「今年高价/距高价/今年低价/距低价/年涨跌/924涨跌」永远取不到数据。
       // 故 K 线请求跳过 push2，且只在确有 klines 时才算成功（空数据继续尝试下一节点）。
+      //
+      // 🔴 20261012g 实测（线上站点真实浏览器，连测 5 次）：
+      //    push2.eastmoney.com 主节点对 clist/get、fflow 等**全部网络层不可达**
+      //    （fetch 直接 TypeError: Failed to fetch，JSONP script 同样 onerror，不是 CORS 问题）；
+      //    而 push2his / push2delay 的同名接口一律 200 且数据完整（板块成分 41 只、板块榜 496 个、
+      //    全 A 1642 只、个股资金流 klines、K 线全部实测通过）。
+      //    旧顺序把 push2 排第一 → 每次请求必先失败一轮（fetch ~100ms + JSONP 兜底再等一次失败），
+      //    叠加「3 次整体重试」→ 热门板块/成分股刷新体感就是「刷不出、卡半天」。
+      //    故非 K 线也改为 push2his 优先，push2 主节点降为最后保底（防 his/delay 哪天变更）。
       hosts = isKline
         ? ['push2his.eastmoney.com', 'push2delay.eastmoney.com']
-        : ['push2.eastmoney.com', 'push2delay.eastmoney.com', 'push2his.eastmoney.com'];
+        : ['push2his.eastmoney.com', 'push2delay.eastmoney.com', 'push2.eastmoney.com'];
     } else {
       hosts = [null];   // 非 push2 域名（如 datacenter-web）不做替换
     }
@@ -3355,6 +3372,58 @@ const StockAPI = {
       }
       return [...acc.values()].slice(0, maxCodes);
     }, v => !!(v && v.length));
+  },
+
+  /**
+   * 东财 BK 板块成分股 —— push2his clist 直查（fs=b:BKxxxx），一次响应即含
+   * 名称 + 现价 + 涨跌幅 + 总市值，无需再走「报表名单 + 腾讯批量补价」两跳。
+   *
+   * 🔴 20261012g 实测（线上站点真实浏览器）：push2his / push2delay 的 clist/get
+   *    一律 200 且数据完整（板块成分 41 只 / 板块榜 496 个 / 全 A 1642 只），
+   *    只有 push2.eastmoney.com 主节点网络层不可达。故作为 BK 板块的第一档；
+   *    接口若哪天变更/被风控，调用方会自动回落数据中心报表 → 本站快照 → 新浪按名。
+   *
+   * @param {string} bk 板块代码（BKxxxx）
+   * @returns {Promise<Array<{code,name,pureCode,price,changePercent,marketCap}>>}
+   *          code 为带市场前缀格式；失败返回 []（由调用方决定下一档）
+   */
+  async _eastBoardStocksViaClist(bk) {
+    const code = String(bk || '').trim().toUpperCase();
+    if (!/^BK\d+$/.test(code)) return [];
+    const out = [];
+    const seen = new Set();
+    // 🔴 东财 clist 每页硬上限 100 条（pz 传 1000 也只回 100，20261012g 实测），
+    //    必须按 data.total 翻页才能拿全（半导体 219 只要 3 页）。
+    for (let pn = 1; pn <= 20; pn++) {
+      const url = 'https://push2.eastmoney.com/api/qt/clist/get?pn=' + pn + '&pz=100'
+        + '&po=1&np=1&fltt=2&invt=2&fid=f3&fs=b:' + code
+        + '&fields=f12,f14,f2,f3,f20';
+      let j = null;
+      try { j = await this._eastGet(url); } catch (e) { break; }
+      const arr = this._diffArray(j) || [];
+      const total = (j && j.data && j.data.total) || 0;
+      if (!arr.length) break;
+      for (const it of arr) {
+        const pure = String(it.f12 || '').trim();
+        if (!/^\d{6}$/.test(pure) || seen.has(pure)) continue;
+        seen.add(pure);
+        const full = this.inferPrefix(pure);
+        if (!/^(sh|sz|bj)\d{6}$/.test(full)) continue;
+        const price = it.f2 != null ? parseFloat(it.f2) : NaN;
+        const chg = it.f3 != null ? parseFloat(it.f3) : NaN;
+        const cap = it.f20 != null ? parseFloat(it.f20) : NaN;
+        out.push({
+          code: full,
+          name: String(it.f14 || '').trim() || pure,
+          pureCode: pure,
+          price: isNaN(price) ? null : price,
+          changePercent: isNaN(chg) ? null : chg,
+          marketCap: isNaN(cap) ? null : cap      // fltt=2 下 f20 单位为元
+        });
+      }
+      if (arr.length < 100 || (total > 0 && out.length >= total)) break;
+    }
+    return out;
   },
 
   // ==================================================================
@@ -4929,14 +4998,20 @@ const StockAPI = {
   //        而「交集筛选」生成的板块代码恰好是 `INTERSECT_<时间戳>` → 必然落到这里 → 必然返回 0 →
   //        用户看到「未获取到该板块成分股」。
   //
-  // 新链路（**已彻底移除 push2**，只保留不限流/免第三方的来源）：
+  // 新链路（**已彻底移除 push2 主节点**，只保留不限流/免第三方的来源）：
   //   0) `INTERSECT_*` 虚拟板块 → 立即短路（无公开接口，由上层复用已保存的成分股 / 重算交集）
   //   1) 新浪板块（gn_/new_）→ 新浪成分股接口（`<script>` 直载，天然无 CORS 限制）
   //   2) 6 位指数 → 东财数据中心「指数成分」报表
-  //   3) 东财 BK 板块 → 东财数据中心「板块成分」报表（一次拿全，**不限流**，与 push2 是两套链路）
+  //   3) 东财 BK 板块 → **push2his clist 直查**（fs=b:BKxxxx；20261012g 实测浏览器侧 200 稳定，
+  //      一次响应含名称/现价/涨跌幅/总市值）→ 回落东财数据中心「板块成分」报表（不限流）
   //   4) **本站 CDN 静态快照**（`data/board-members.json`）→ 零第三方 API、零限流、零配额，
   //      随站点发布、被 CDN 边缘缓存 —— 这是「能承载一万用户」的那条免费链路
   //   5) **新浪按板块名**兜底（`Market_Center.getHQNodeData`，非东财 / 免费 / CORS 开放 / 不限流）
+  //
+  // 为什么不再用 push2.eastmoney.com 主节点（20261012g 线上站点真实浏览器连测 5 次）：
+  //   该节点对 clist/get、fflow 等**全部网络层不可达**（fetch 直接 Failed to fetch，
+  //   JSONP script 同样 onerror，不是 CORS 问题）；而 push2his / push2delay 同名接口一律 200。
+  //   旧代码把它排第一 → 每次请求必先失败一轮，再叠加整体重试，体感就是「刷不出、卡半天」。
   //
   // 每一档都会把结果记进 `_sectorDiag`，由 `lastSectorDiag()` 给出**精确诊断**，
   // 不再让用户只看到一句无信息量的「未获取到该板块成分股」。
@@ -5134,9 +5209,17 @@ const StockAPI = {
       } catch (e) { tried.push({ src: '指数报表', note: '异常 ' + (e && e.message || e) }); }
     }
 
-    // 3) 东财 BK 板块：数据中心「板块成分」报表（BOARDTYPE，一次拿全 719 只这种量级）。
-    //    实测该通道 200 + CORS + **不限流**，与 push2 是两套完全不同的链路；1 次请求 + 1 次批量行情。
+    // 3) 东财 BK 板块：clist 直查（fs=b:BKxxxx，一次拿全且自带名称/现价/涨跌幅/总市值）。
+    //    20261012g 起为第一档——实测 push2his/push2delay 的 clist 在浏览器侧 200 稳定，
+    //    比「报表名单 + 腾讯批量补价」少一跳、快一倍以上；接口异常时自动回落下一档。
     if (/^BK\d+$/i.test(code)) {
+      try {
+        const cl = await this._eastBoardStocksViaClist(code);
+        tried.push({ src: '东财clist', note: cl.length ? `${cl.length} 只` : '0 只' });
+        if (cl.length) return cl;
+      } catch (e) { tried.push({ src: '东财clist', note: '异常 ' + (e && e.message || e) }); }
+      // 3b) 东财数据中心「板块成分」报表（BOARDTYPE，一次拿全 719 只这种量级）。
+      //     实测该通道 200 + CORS + **不限流**，与 push2 是两套完全不同的链路。
       try {
         const dc = await this._dcBoardStocks(code, 5000);
         tried.push({ src: '东财报表', note: dc.length ? `${dc.length} 只` : '0 只' });
@@ -5193,9 +5276,14 @@ const StockAPI = {
       const idx = await this._getIndexConstituents(code);
       if (idx.length) return idx;
     }
-    // 🔴 batch53：BK 板块优先数据中心报表（一次拿全）。**已移除 push2 兜底**——
-    //   该接口限流且在浏览器侧已直接 Failed to fetch，留着只会让「编辑板块后重算」静默变 0 条。
+    // 🔴 20261012g：BK 板块优先 push2his clist 直查（一次拿全且含量价市值）；
+    //   实测 push2his/push2delay 浏览器侧 200 稳定（仅 push2 主节点不可达，故走 _eastGet 多 host）。
+    //   失败回落数据中心报表 → 本站快照 → 新浪按名。
     if (/^BK\d+$/i.test(code)) {
+      try {
+        const cl = await this._eastBoardStocksViaClist(code);
+        if (cl.length) return cl;
+      } catch (e) { /* 接口异常：回落下一档 */ }
       const dc = await this._attachQuotes(await this._dcBoardStocks(code, 5000));
       if (dc.length) return dc;
     }
