@@ -7656,21 +7656,65 @@ const app = createApp({
         }));
         const flat = [];
         let dayCount = 0;
+        // 窗口精筛后按源聚合；同时保留原始条目做兜底（避免严格时间窗把整源误杀成「无数据」）
+        const winBySource = new Map();
+        const rawBySource = new Map();
+        const _ensureSrc = (m, s) => {
+          if (!m.has(s.key)) m.set(s.key, { rank: s.rank, key: s.key, name: s.name, color: s.color, items: [] });
+          return m.get(s.key);
+        };
         for (const snap of snapshots) {
           if (!snap || !snap.sources) continue;
           dayCount++;
           for (const s of snap.sources) {
             for (const it of (s.items || [])) {
+              const base = {
+                sourceRank: s.rank, sourceKey: s.key, sourceName: s.name,
+                text: it.text, time: it.time, url: it.url, cat: it.cat || '财经', date: snap.date
+              };
+              _ensureSrc(rawBySource, s).items.push(base);
               // batch16：有逐条时间戳的按窗口精筛；历史快照没有 time，只能整日纳入（避免丢数据）
               if (winStartMs != null && it.time && HT && HT.parseBriefTime && HT.inWindow) {
                 const ts = HT.parseBriefTime(it.time);
                 if (ts != null && !HT.inWindow(ts, winStartMs, winEndMs)) continue;
               }
-              flat.push({
-                sourceRank: s.rank, sourceKey: s.key, sourceName: s.name,
-                text: it.text, time: it.time, url: it.url, cat: it.cat || '财经', date: snap.date
-              });
+              _ensureSrc(winBySource, s).items.push(base);
             }
+          }
+        }
+        for (const [, _v] of winBySource) flat.push(..._v.items);
+        // 兜底：某源窗口精筛后为空、但原始有数据 → 放行原始条目（防止「该时间段内无数据」误判）
+        for (const [key, _raw] of rawBySource) {
+          if (!winBySource.has(key) || winBySource.get(key).items.length === 0) flat.push(..._raw.items);
+        }
+        // 实时叠加：已配置代理 → 拉取十个平台此刻真实热点，按 源+文本 去重合并（修复「刷新不拉实时」）
+        let liveAdded = 0;
+        const _proxies = String(D.settings.proxyUrl || '').split(/[\s,;]+/).map(x => x.trim()).filter(Boolean);
+        if (_proxies.length) {
+          const _seen = new Set(flat.map(it => it.sourceKey + ' ' + String(it.text || '').trim()));
+          for (const _p of _proxies) {
+            try {
+              const _ht = await StockAPI.fetchHotTopics(_p);
+              if (_ht && _ht.sources && _ht.sources.some(s => s.items && s.items.length)) {
+                for (const s of _ht.sources) {
+                  for (const it of (s.items || [])) {
+                    if (winStartMs != null && it.time && HT && HT.parseBriefTime && HT.inWindow) {
+                      const ts = HT.parseBriefTime(it.time);
+                      if (ts != null && !HT.inWindow(ts, winStartMs, winEndMs)) continue;
+                    }
+                    const _k = (s.key || '') + ' ' + String(it.text || '').trim();
+                    if (_seen.has(_k)) continue;
+                    _seen.add(_k);
+                    flat.push({
+                      sourceRank: s.rank, sourceKey: s.key, sourceName: s.name,
+                      text: it.text, time: it.time, url: it.url, cat: it.cat || '财经', date: 'live'
+                    });
+                    liveAdded++;
+                  }
+                }
+                break; // 第一个成功代理即可
+              }
+            } catch (e) { /* 尝试下一个代理 */ }
           }
         }
         const clusters = (typeof HotTopics !== 'undefined' ? HotTopics.clusterItems(flat) : []).map(c => ({ ...c, _open: false }));
@@ -7689,6 +7733,11 @@ const app = createApp({
           ? flat.filter(it => it && it.text).length
           : flat.length;
         analysisResult.value = { clusters, siteStats, themeStats, dayCount, totalItems: flat.length, themeBaseTotal };
+        const _rangeLabel = winMode
+          ? (HT.fmtWindowCN(winStartMs) + ' → ' + HT.fmtWindowCN(winEndMs))
+          : (opt && opt.label || '近 N 天');
+        if (flat.length === 0) showToast(`时间段（${_rangeLabel}）内没有热点数据`, 'info');
+        else showToast(`已统计 ${_rangeLabel} 共 ${flat.length} 条${liveAdded ? '，其中实时叠加 ' + liveAdded + ' 条' : ''}`, 'success');
       } catch (e) {
         showToast('统计分析失败：' + (e && e.message ? e.message : e), 'error');
       } finally {
