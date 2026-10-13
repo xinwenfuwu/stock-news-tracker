@@ -6810,13 +6810,13 @@ const app = createApp({
     let _emCacheUntilMs = 0;
     let _emLiveJustFetched = false;
     function resetEmLiveFetch() { _emLiveCache = []; _emLastLiveFetchTs = 0; _emCacheUntilMs = 0; _emLiveJustFetched = false; }
-    async function fetchLiveBriefsForWindow(winStartMs) {
+    async function fetchLiveBriefsForWindow(winStartMs, force = false) {
       if (briefSourceName.value === '东方财富') {
         const now = Date.now();
         _emLiveJustFetched = false;
         const key = winStartMs || 0;
         // 同窗口 5 分钟内复用缓存；窗口变了则重新翻页抓取（避免宽窗口拿到的是窄窗口缓存的子集）
-        if (_emLiveCache.length && _emCacheUntilMs === key && now - _emLastLiveFetchTs < LIVE_THROTTLE_MS) return _emLiveCache;
+        if (_emLiveCache.length && _emCacheUntilMs === key && !force && now - _emLastLiveFetchTs < LIVE_THROTTLE_MS) return _emLiveCache;
         let items = [];
         // 翻页直到接口缓冲到底 / 翻过窗口起点 / 达到安全阀（maxPages=50，覆盖约 9 天缓冲）
         try {
@@ -6833,7 +6833,7 @@ const app = createApp({
         _thsLiveJustFetched = false;
         const key = winStartMs || 0;
         // 同窗口 5 分钟内复用缓存；窗口变了则重新翻页抓取（避免宽窗口拿到的是窄窗口缓存的子集）
-        if (_thsLiveCache.length && _thsCacheUntilMs === key && now - _thsLastLiveFetchTs < LIVE_THROTTLE_MS) return _thsLiveCache;
+        if (_thsLiveCache.length && _thsCacheUntilMs === key && !force && now - _thsLastLiveFetchTs < LIVE_THROTTLE_MS) return _thsLiveCache;
         let items = [];
         // 翻页直到接口缓冲到底 / 翻过窗口起点 / 达到安全阀；解除原 page=1 的 200 条截断
         try { items = await StockAPI.fetchThsLiveBriefs({ untilTime: key || 0, maxPages: 50 }); } catch (e) { items = []; }
@@ -6843,18 +6843,18 @@ const app = createApp({
       if (briefSourceName.value !== '格隆汇') return [];
       const now = Date.now();
       _liveJustFetched = false;
-      if (_liveCache.length && now - _lastLiveFetchTs < LIVE_THROTTLE_MS) {
-        return _liveCache;   // 5 分钟内：直接复用，避免重复抓取
+      if (_liveCache.length && !force && now - _lastLiveFetchTs < LIVE_THROTTLE_MS) {
+        return _liveCache;   // 5 分钟内：直接复用，避免重复抓取（force=true 时用户主动刷新，强制重拉）
       }
       // 直连（CORS 已放开，无需代理）
       let items = [];
-      try { items = await StockAPI.fetchGelonghuiLiveBriefsDirect(3, 30); } catch (e) { items = []; }
+      try { items = await StockAPI.fetchGelonghuiLiveBriefsDirect(12, 50); } catch (e) { items = []; }
       // 直连失败（极端网络）则回退代理（若已配）
       if (!items.length) {
         const proxyUrl = String((D.settings && D.settings.proxyUrl) || '')
           .split(/[\s,;]+/).map(s => s.trim()).filter(Boolean)[0] || '';
         if (proxyUrl) {
-          try { items = await StockAPI.fetchGelonghuiLiveBriefs(proxyUrl, 3); } catch (_) { items = []; }
+          try { items = await StockAPI.fetchGelonghuiLiveBriefs(proxyUrl, 12); } catch (_) { items = []; }
         }
       }
       if (items.length) { _liveCache = items; _lastLiveFetchTs = now; _liveJustFetched = true; }
@@ -6893,7 +6893,7 @@ const app = createApp({
         // 实时叠加（20260930i）：不再依赖 GitHub 定时任务与代理——
         // 每次刷新时若距上次实拉取超过 5 分钟，浏览器直连格隆汇 v4 接口抓取最近快讯并叠加到窗口，
         // 保证「最近时段」的快讯一条不漏；5 分钟内重复刷新复用缓存；直连失败则回退代理（若已配）。
-        const liveItems = await fetchLiveBriefsForWindow(w.start.getTime());
+        const liveItems = await fetchLiveBriefsForWindow(w.start.getTime(), true);
         const chunks = await Promise.all(days.map(d => fetchBriefsFile(d, briefSourceName.value)));
         if ((_liveJustFetched || _thsLiveJustFetched || _emLiveJustFetched) && liveItems.length) {
           showToast(`已实时拉取${briefSourceName.value}最近 ${liveItems.length} 条快讯（5 分钟内刷新不再重复抓取）`, 'success');

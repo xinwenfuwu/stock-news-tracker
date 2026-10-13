@@ -6006,7 +6006,7 @@ const StockAPI = {
   /** 格隆汇实时快讯（浏览器直连，无需任何代理）：格隆汇 v4 接口已放开 CORS（access-control-allow-origin: *），
    *  故刷新「按时间段」时可直接抓取最近快讯叠加到窗口，秒级新鲜、不依赖 GitHub 定时任务，也不会漏掉最近时段的快讯。
    *  翻页按服务端同款游标（liveId = 上一页最小 id）；单次失败抛错由调用方兜底。 */
-  async fetchGelonghuiLiveBriefsDirect(maxPages = 3, limit = 30) {
+  async fetchGelonghuiLiveBriefsDirect(maxPages = 12, limit = 50) {
     const GH = 'https://www.gelonghui.com/api/live-channels/all/lives/v4';
     return this._fetchGelonghuiV4Pages((cursor) =>
       GH + '?category=all' + (cursor != null ? '&liveId=' + cursor : '') + '&limit=' + limit + '&timestamp=' + Date.now()
@@ -6015,7 +6015,7 @@ const StockAPI = {
 
   /** 格隆汇实时快讯（经 Worker /proxy 转发，作为直连的回退路径）：仅当直连失败时、且用户已配代理才用。
    *  未配置代理返回 []；翻页按服务端同款游标。 */
-  async fetchGelonghuiLiveBriefs(proxyUrl, maxPages = 3) {
+  async fetchGelonghuiLiveBriefs(proxyUrl, maxPages = 12) {
     const base = String(proxyUrl || '').trim().replace(/\/+$/, '');
     if (!base) return [];
     const GH = 'https://www.gelonghui.com/api/live-channels/all/lives/v4';
