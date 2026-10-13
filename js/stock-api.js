@@ -2884,6 +2884,36 @@ const StockAPI = {
     } catch (e) { console.warn('同花顺热门板块获取失败', e); return { industries: [], concepts: [] }; }
   },
 
+  /**
+   * 同花顺板块成分股：按板块代码拉取该板块（行业/概念）下的全部成分股。
+   * 端点：https://d.10jqka.com.cn/v2/blockrank/{code}/199112/d1000.js（JSONP，CORS 开放，浏览器可直连）。
+   * 与 getThsSectors（板块列表，dq.10jqka.com.cn）同为同花顺公开源；199112 为同花顺「最新」魔法日期令牌，
+   * d1000 = 按涨跌幅降序（排序只影响顺序，不影响成分股集合）。
+   * 字段：items[].5 = 股票代码，items[].55 = 股票名称；现价/涨跌幅复用腾讯实时行情补全（_attachQuotes）。
+   * @param {string} code 同花顺板块代码（如 881281 行业 / 886032 概念）
+   * @param {string} [name] 板块名（仅用于诊断/日志）
+   * @returns {Promise<Array<{code,name,price,changePercent,marketCap}>>}
+   */
+  async getThsPlateStocks(code, name) {
+    const c = String(code || '').trim();
+    if (!c) return [];
+    return this._withCache('thsp:' + c, API_TTL.SECTOR, async () => {
+      const url = 'https://d.10jqka.com.cn/v2/blockrank/' + encodeURIComponent(c) + '/199112/d1000.js';
+      const r = await fetch(url, { cache: 'no-store' });
+      if (!r.ok) throw new Error('ths blockrank ' + r.status);
+      const t = await r.text();
+      const s = t.indexOf('{'), e = t.lastIndexOf('}');
+      if (s < 0 || e <= s) throw new Error('ths blockrank 响应非预期');
+      const j = JSON.parse(t.slice(s, e + 1));
+      const items = (j && j.items) || [];
+      const raw = items
+        .map(it => ({ code: String(it['5'] || '').trim(), name: it['55'] != null ? String(it['55']) : '' }))
+        .filter(x => /^\d{6}$/.test(x.code));
+      if (!raw.length) return [];
+      return this._attachQuotes(raw);
+    }, v => !!(v && v.length));
+  },
+
   async _getAmplitudeBoardsRaw() {
     const results = [];
     try {
@@ -5189,6 +5219,18 @@ const StockAPI = {
       return [];
     }
 
+    // 3.5) 同花顺板块（代码带 THS: 前缀，来自「同花顺热门板块」面板点击）：直连 d.10jqka.com.cn blockrank 拉成分股。
+    //      该源 CORS 开放、浏览器可直连；返回后由 _attachQuotes 补现价/涨跌幅/总市值。
+    if (code.indexOf('THS:') === 0) {
+      const thsCode = code.slice(4);
+      try {
+        const list = await this.getThsPlateStocks(thsCode, name);
+        tried.push({ src: '同花顺板块', note: list.length ? `${list.length} 只` : '0 只' });
+        if (list.length) return list;
+      } catch (e) { tried.push({ src: '同花顺板块', note: '异常 ' + (e && e.message || e) }); }
+      return [];
+    }
+
     // 1) 新浪板块（行业 new_xxxx / 概念 gn_xxxx）：新浪成分股接口（<script> 直载，天然无 CORS 限制）
     if (this._isSinaBoard(code)) {
       try {
@@ -5266,6 +5308,11 @@ const StockAPI = {
     const code = this._normalizeBoardCode(bk);
     // 交集筛选生成的虚拟板块：无公开接口，短路（语义搜索重算时由源板块负责）
     if (this._isVirtualBoard(code)) return [];
+    // 同花顺板块（THS: 前缀）：直连 blockrank 拉成分股（含总市值），与 getSectorStocks 同源
+    if (code.indexOf('THS:') === 0) {
+      const list = await this.getThsPlateStocks(code.slice(4), name);
+      if (list.length) return list;
+    }
     // 新浪板块：同源走新浪成分股（含总市值），保证语义搜索的「核心/龙头」排序可用
     if (this._isSinaBoard(code)) {
       const list = await this._sinaSectorStocks(code, maxPages);
