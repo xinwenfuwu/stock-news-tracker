@@ -6763,6 +6763,12 @@ const app = createApp({
       briefWindow.start = '';
       briefWindow.end = '';
       briefWindowItems.value = [];
+      // 「上期」对比数据（上一个等长窗口 / 上次对比周期）只在闭市周期窗口视图有意义：
+      // 回到按日视图后若不清空，「数 = 本期 − 上期」会拿本日全天的数去减一个已失效窗口的数 → 清空后显示「—」
+      prevBriefItems.value = [];
+      lastBriefItems.value = [];
+      _prevKey = '';
+      _lastKey = '';
     }
     /** 拉取某日快讯文件；文件不存在或拉取失败都返回空数组（跨天合并时允许缺一天） */
     async function fetchBriefsFile(date, source) {
@@ -6983,15 +6989,20 @@ const app = createApp({
     }
     /** 当前展示的数据源：闭市周期窗口优先（跨天合并），否则为所选那天的全部快讯 */
     const briefBase = computed(() => (briefWindow.on ? briefWindowItems.value : briefItems.value));
+    /** 关键词命中判定（正文 / 关联股票 / 关联主题都参与匹配；空关键词视为全部命中）。
+     *  本期统计与「上期」对比统计共用，保证搜索状态下两期口径一致。 */
+    function briefKeywordHit(it, kw) {
+      const k = String(kw || '').toLowerCase();
+      if (!k) return true;
+      return String(it.text || '').toLowerCase().includes(k) ||
+        (it.stocks || []).some(s => String(s).toLowerCase().includes(k)) ||
+        (it.subjects || []).some(s => String(s).toLowerCase().includes(k));
+    }
     /** 关键词过滤（正文 / 关联股票 / 关联主题都参与匹配） */
     const briefFiltered = computed(() => {
       const kw = briefKeyword.value.trim();
       if (!kw) return briefBase.value;
-      const k = kw.toLowerCase();
-      return briefBase.value.filter(it =>
-        String(it.text || '').toLowerCase().includes(k) ||
-        (it.stocks || []).some(s => String(s).toLowerCase().includes(k)) ||
-        (it.subjects || []).some(s => String(s).toLowerCase().includes(k)));
+      return briefBase.value.filter(it => briefKeywordHit(it, kw));
     });
     const briefSearching = computed(() => !!briefKeyword.value.trim());
 
@@ -7003,8 +7014,11 @@ const app = createApp({
     const prevBriefLoading = ref(false);
     let _prevKey = '';
     const prevStats = computed(() => {
-      const items = prevBriefItems.value;
-      const out = { map: {}, max: { theme: 1, concept: 1, industry: 1 }, hasData: items.length > 0 };
+      // 与本期同口径：关键词过滤后再统计（否则搜索状态下「数」会拿过滤后的本期数去减未过滤的上期数）
+      const kw = briefKeyword.value.trim();
+      const raw = prevBriefItems.value;
+      const items = kw ? raw.filter(it => briefKeywordHit(it, kw)) : raw;
+      const out = { map: {}, max: { theme: 1, concept: 1, industry: 1 }, hasData: raw.length > 0 };
       if (!out.hasData) return out;
       for (const m of ['theme', 'concept', 'industry']) {
         const arr = HotTopics.briefStats(items, m);
@@ -7056,8 +7070,11 @@ const app = createApp({
     const lastBriefLoading = ref(false);
     let _lastKey = '';
     const lastStats = computed(() => {
-      const items = lastBriefItems.value;
-      const out = { map: {}, max: { theme: 1, concept: 1, industry: 1 }, hasData: items.length > 0 };
+      // 与本期同口径：关键词过滤后再统计（保证搜索状态下 昨/增 与 数 的上期口径一致）
+      const kw = briefKeyword.value.trim();
+      const raw = lastBriefItems.value;
+      const items = kw ? raw.filter(it => briefKeywordHit(it, kw)) : raw;
+      const out = { map: {}, max: { theme: 1, concept: 1, industry: 1 }, hasData: raw.length > 0 };
       if (!out.hasData) return out;
       for (const m of ['theme', 'concept', 'industry']) {
         const arr = HotTopics.briefStats(items, m);
@@ -7320,7 +7337,9 @@ const app = createApp({
      *  seq(今) = 当前窗口内、本归类下、按新闻出现次数占比由大到小排序后的名次（1 起）。
      *  prevSeq(昨) = 上一个默认闭市周期内、该概念的最终排名（来自「上次对比周期」统计，默认=上次闭市前一交易日→上次闭市）。无数据则 null。
      *  inc(增) = 昨 − 今（prevSeq − seq）：正=今名次比昨更靠后（热度下降），负=更靠前（热度上升）。无「昨」数据则 null。
-     *  cnt(数) = 本次该子类新闻数量 − 上次默认时间段该归类下最大数量。无上期数据则 null。
+     *  cnt(数) = 本次该子类新闻数量 − 上次时间段内同一子类的新闻数量（本期减上期，同子类相比）；
+     *            「上次时间段」= 新闻统计开始时间紧邻的前一个等长周期（如本次 10/12 15:00→10/13 15:00，
+     *            上次 = 10/11 15:00→10/12 15:00）。上期无该子类（本期新出现）按 0 计；无上期数据则 null（显示「—」）。
      */
     function buildBriefStats(items, mode) {
       const base = (typeof HotTopics !== 'undefined' && HotTopics.briefStats) ? HotTopics.briefStats(items, mode) : [];
@@ -7337,7 +7356,8 @@ const app = createApp({
         // 增 = 昨 − 今（prevSeq − seq）；无「昨」数据时 null
         const inc = (prevSeq != null) ? (prevSeq - seq) : null;
         const prev = pv.hasData ? pv.map[mode + '::' + c.key] : null;
-        const cnt = pv.hasData ? (c.count - pv.max[mode]) : null;
+        // 数 = 本子类本期新闻数 − 本子类上期（上次时间段）新闻数；上期无该子类（本期新出现）按 0 计
+        const cnt = pv.hasData ? (c.count - (prev ? prev.count : 0)) : null;
         // 天 / 闻：板块连涨连跌天数、新闻热度连升连降天数（供排序与展示；响应式读取以触发重排）
         const sk = boardStreak[mode + '::' + c.key];
         const nk = newsStreak[mode + '::' + c.key];
