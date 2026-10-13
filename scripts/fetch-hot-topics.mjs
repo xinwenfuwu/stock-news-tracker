@@ -413,18 +413,40 @@ async function main() {
   mkdirSync(dir, { recursive: true });
 
   // ===== 10 个金融软件热点榜（只能取"当前实时榜单"，无法回溯历史）=====
+  // 请求R3：由「每 2h 覆盖写」改为「按天累积去重」——否则当天早中段出现的
+  // 热点会被后续 run 覆盖丢失，时间窗统计覆盖不全（正是用户反馈"远少于平台实际"的残余根因之一）。
+  const SOURCE_ACCUM_MAX = 200;   // 单源单日累积上限（12 次/天 × 50 兜底），约束仓库体积
   const sources = [];
   if (isToday) {
-    console.log(`开始抓取 ${DATE} 的 10 个金融软件热点...`);
+    // 读取已有当日快照，按「源 key + 文本」去重累积；保留更早抓到的 time（补全实时接口缺失的时间戳）
+    const prevByKey = {};
+    const prevFile = join(dir, `${DATE}.json`);
+    try {
+      const prev = JSON.parse(readFileSync(prevFile, 'utf8'));
+      if (prev && Array.isArray(prev.sources)) {
+        for (const ps of prev.sources) prevByKey[ps.key] = new Map((ps.items || []).map(it => [it.text, it]));
+      }
+    } catch (e) { /* 首次生成 */ }
+    console.log(`开始抓取 ${DATE} 的 10 个金融软件热点（累积模式）...`);
     for (const s of ht.SOURCE_ORDER) {
-      const items = await fetchSource(s);
-      sources.push({ rank: s.rank, key: s.key, name: s.name, color: s.color, items });
-      console.log(`  ${s.rank}. ${s.name}: ${items.length} 条`);
+      let items = [];
+      try { items = await fetchSource(s); }
+      catch (e) { console.warn(`  [${s.name}] 抓取异常: ${e.message}`); }
+      const m = prevByKey[s.key] || new Map();
+      for (const it of items) {
+        const ex = m.get(it.text);
+        if (ex) { if (!ex.time && it.time) ex.time = it.time; }   // 补全时间戳，提升窗口精筛命中
+        else m.set(it.text, it);
+      }
+      let merged = [...m.values()];
+      if (merged.length > SOURCE_ACCUM_MAX) merged = merged.slice(0, SOURCE_ACCUM_MAX);
+      sources.push({ rank: s.rank, key: s.key, name: s.name, color: s.color, items: merged });
+      console.log(`  ${s.rank}. ${s.name}: 本次 ${items.length} 条，累积 ${merged.length} 条`);
     }
     const snapshot = { date: DATE, generatedAt: new Date().toISOString(), sources };
     const file = join(dir, `${DATE}.json`);
     writeFileSync(file, JSON.stringify(snapshot, null, 2), 'utf8');
-    console.log(`已写入 ${file}`);
+    console.log(`已写入 ${file}（累积模式）`);
   } else {
     console.log(`跳过「10 个金融软件热点」：目标日 ${DATE} 不是今天（${todayStr()}）。`);
     console.log('  各来源只提供"当前实时榜单"，没有历史接口；若照写会把今天的榜单盖上昨天的日期，污染历史快照。');
