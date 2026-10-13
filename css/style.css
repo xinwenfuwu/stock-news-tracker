@@ -2352,6 +2352,10 @@ a.brief-text:hover { color: var(--primary); text-decoration: underline; }
 .cat-filter { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 12px; }
 .cat-chip { border: 1px solid var(--border); background: var(--surface); color: var(--muted); border-radius: 999px; padding: 3px 12px; font-size: 12px; cursor: pointer; }
 .cat-chip.active { color: #fff; }
+.ht-daily-limit { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 12px; padding: 6px 10px; background: var(--surface); border: 1px solid var(--border); border-radius: 8px; }
+.ht-daily-limit input[type="range"] { flex: 1 1 160px; min-width: 120px; accent-color: var(--primary); cursor: pointer; }
+.ht-daily-limit .ht-limit-val { flex: 0 0 auto; min-width: 48px; font-weight: 700; color: var(--primary); }
+.ht-daily-limit .muted.small { flex: 1 1 100%; margin-top: 2px; }
 .snapshot-dates { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; margin: -4px 0 12px; }
 .snap-date { border: 1px solid var(--border); background: var(--surface); color: var(--muted); border-radius: 6px; padding: 2px 8px; font-size: 12px; cursor: pointer; }
 .snap-date:hover { border-color: var(--accent); color: var(--accent); }

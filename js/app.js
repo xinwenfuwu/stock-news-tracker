@@ -6200,6 +6200,16 @@ const app = createApp({
     const hotTopicDateHasData = ref(false);
     const htCatFilter = ref('');
     const htCategories = (typeof HotTopics !== 'undefined') ? HotTopics.CATEGORIES : [];
+    /* 请求T（20261013）：每日话题「各平台只展示前 N 条 + 滑动条显示全部」。
+     * 数据层 refreshDailyTopics 已全量拉取时间段内全部新闻（无上限）；
+     * 这里只控制「展示条数」——默认 20，滑块可上探到各平台最大条数（上不封顶），配「全部」按钮。 */
+    const htDailyLimit = ref(20);
+    const htDailyMax = computed(() => {
+      const l = hotTopicsSources.value || [];
+      let m = 20;
+      for (const s of l) { const n = (s.items || []).length; if (n > m) m = n; }
+      return m;
+    });
     /* 请求R：原「1天内」改为「时段」——选中时严格统计上方「新闻统计开始时间」起止区间内的新闻；
      * 其余选项仍是「近 N 天」整日纳入（不套窗口）。 */
     const htRangeOptions = [
@@ -7749,7 +7759,10 @@ const app = createApp({
         if (ampBoards && ampBoards.length) { amplitudeBoards.value = ampBoards; D.amplitudeBoards = ampBoards; }
         if (newListed && newListed.length) { newListedStocks.value = newListed; D.newListedStocks = newListed; }
         // 20261006h：三平台热度榜独立落盘
-        if (ths && ths.length) { thsHotStocks.value = ths; D.thsHotStocks = ths; }
+        if (ths && ths.length) {
+          thsHotStocks.value = ths; D.thsHotStocks = ths;
+          try { await enrichThsChange(thsHotStocks.value); } catch (e) { console.warn('同花顺热股实时涨跌幅补全失败', e); }
+        }
         if (em && em.length) { emHotStocks.value = em; D.emHotStocks = em; }
         if (doubao && doubao.length) { doubaoHot.value = doubao; D.doubaoHot = doubao; }
         // 任一当前有数据即视为成功（含历史残留），某一路限流不再误报整体失败
@@ -7846,6 +7859,30 @@ const app = createApp({
       }
     }
 
+    /** 20261013：同花顺热度榜「涨跌幅」实时化。
+     * 旧问题：s.change 直接来自 Worker /rank/ths 的 rise_and_fall（同花顺热股榜是小时级快照，
+     * 盘中基本不变），点「刷新数据」后涨跌幅看起来永远不更新。
+     * 修复：用腾讯实时行情 getQuotes 补 real-time 涨跌幅覆盖快照值（快照值作兜底）。
+     * 同花顺返回的 code 是纯数字（如 600519），需 inferPrefix 补 sh/sz/bj 前缀才能查腾讯行情。 */
+    async function enrichThsChange(list) {
+      if (!list || !list.length) return;
+      const map = Object.create(null);
+      for (const s of list) {
+        const fc = (StockAPI.inferPrefix && StockAPI.inferPrefix(s.code)) || s.code;
+        if (fc) map[fc] = s;
+      }
+      const codes = Object.keys(map);
+      if (!codes.length) return;
+      try {
+        const quotes = await StockAPI.getQuotes(codes);
+        for (const fc of codes) {
+          const q = quotes[fc], s = map[fc];
+          if (!q) continue;
+          if (q.changePercent != null) s.change = q.changePercent;  // 实时涨跌幅覆盖快照值
+          if (q.price != null) s.price = q.price;
+        }
+      } catch (e) { console.warn('同花顺热股实时涨跌幅补全失败', e); }
+    }
     /** 20261006h ③ 只刷新「同花顺热度榜」 */
     async function refreshThsHotOnly() {
       if (thsHotLoading.value) return;
@@ -7853,7 +7890,11 @@ const app = createApp({
       showToast('正在刷新同花顺热股榜...', 'info');
       try {
         const list = await StockAPI.getThsHotStocks();
-        if (list && list.length) { thsHotStocks.value = list; D.thsHotStocks = list; showToast(`已刷新 ${list.length} 只同花顺热股`, 'success'); }
+        if (list && list.length) {
+          await enrichThsChange(list);   // 先补实时涨跌幅，再整体替换（避免先显示旧值）
+          thsHotStocks.value = list; D.thsHotStocks = list;
+          showToast(`已刷新 ${list.length} 只同花顺热股`, 'success');
+        }
         else showToast('同花顺热股榜暂为空', 'info');
       } catch (e) { showToast('同花顺热股榜刷新失败：' + (e.message || e), 'error'); }
       finally { thsHotLoading.value = false; }
@@ -9975,6 +10016,7 @@ const app = createApp({
       briefPrevWinStart, briefPrevWinEnd, lastBriefLoading, loadLastBriefStats,
       onBriefDateChange, toggleBriefCat, moreBriefNews, hlBrief, autoLoadBriefs, loadBriefsNow,
       htTab, htMode, htLiveNote, hotTopicDate, hotTopicDateHasData, htCatFilter, htCategories, htRangeOptions, localSnapshotDates,
+      htDailyLimit, htDailyMax,
       analysisRange, analysisLoading, analysisResult, filteredHotSources,
       siteStatsDim, siteCatDimOptions, siteStatModal, openSiteStatNews, closeSiteStatNews, recomputeSiteStats, scDimName, scDimColor,
       // batch16：统计分析的统计时间窗口（15:00 换日，与快讯板块同口径）

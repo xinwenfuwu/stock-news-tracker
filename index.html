@@ -4,12 +4,12 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>股市信息分析系统</title>
-  <link rel="stylesheet" href="css/style.css?v=20261012g">
+  <link rel="stylesheet" href="css/style.css?v=20261012h">
   <!-- Vue 3 全局构建版（v3.4.21 · 自托管）
        原先走 unpkg.com CDN：国内网络对 unpkg 的连通性不稳定，一旦该请求长时间挂起，
        <head> 里的阻塞脚本会让整页停在白屏、后续 auth-boot.js 根本不会执行。
        改为同源托管后，启动链路不再依赖任何第三方 CDN。 -->
-  <script src="js/vue.global.prod.js?v=20261012g"></script>
+  <script src="js/vue.global.prod.js?v=20261012h"></script>
 </head>
 <body class="auth-locked">
   <!-- ===== 登录关卡：登录通过前业务脚本不会被加载 ===== -->
@@ -1844,6 +1844,13 @@
                         :style="htCatFilter === c ? { background: catColor(c), color: '#fff', borderColor: catColor(c) } : {}"
                         @click="htCatFilter = (htCatFilter === c ? '' : c)">{{ c }}</button>
               </div>
+              <div class="ht-daily-limit" v-if="htDailyMax > 20">
+                <span class="muted small">每平台展示</span>
+                <input type="range" min="10" :max="htDailyMax" step="1" v-model.number="htDailyLimit" title="拖动调整每个平台显示的条数（前 N 条，按时间倒序）">
+                <span class="ht-limit-val">{{ htDailyLimit }} 条</span>
+                <button class="sw-btn sw-btn-ghost" @click="htDailyLimit = htDailyMax">全部（上不封顶）</button>
+                <span class="muted small">各平台共 {{ htDailyMax }} 条/上限，拖动滑块或点「全部」即可显示该平台全部新闻</span>
+              </div>
 
               <div class="source-grid">
                 <div class="source-card" v-for="s in filteredHotSources" :key="s.key">
@@ -1856,7 +1863,7 @@
                     <span class="src-status" v-else>{{ (htCatFilter ? s.filteredCount : s.items.length) }} 条</span>
                   </div>
                   <ol class="source-items" v-if="(htCatFilter ? s.filteredItems : s.items).length">
-                    <li v-for="(it, i) in (htCatFilter ? s.filteredItems : s.items)" :key="i">
+                    <li v-for="(it, i) in ((htCatFilter ? s.filteredItems : s.items).slice(0, htDailyLimit))" :key="i">
                       <span class="item-rank">{{ i + 1 }}</span>
                       <a v-if="it.url" :href="it.url" target="_blank" rel="noopener" :title="it.text" class="item-text">{{ it.text }}</a>
                       <span v-else class="item-text" :title="it.text">{{ it.text }}</span>
@@ -4969,14 +4976,14 @@
     </transition>
   </div>
 
-  <script src="js/auth.js?v=20261012g"></script>
-  <script src="js/auth-sync.js?v=20261012g"></script>
+  <script src="js/auth.js?v=20261012h"></script>
+  <script src="js/auth-sync.js?v=20261012h"></script>
   <!-- 边缘加速默认站点（batch37 治本：Cloudflare Worker 代理东财/腾讯，缓解 JSONP 限流误报）。
        若你所在地区 workers.dev 访问慢，可在「设置 → 行情加速地址」清空即恢复纯直连。 -->
   <script>window.__SNT_ACCEL__ = 'https://sichina.dpdns.org';</script>
   <!-- 扫码支付二维码渲染库（第三方 qrcodejs，本地托管避免外链失效）。renderQr 会先检测全局 QRCode 是否存在。 -->
-  <script src="assets/qrcode.min.js?v=20261012g"></script>
-  <script src="js/auth-boot.js?v=20261012g"></script>
+  <script src="assets/qrcode.min.js?v=20261012h"></script>
+  <script src="js/auth-boot.js?v=20261012h"></script>
   <!-- store / stock-api / hot-topics / app 由 auth-boot.js 在登录通过后动态装载，
        未登录时它们不会被下载，业务数据也不会进入内存 -->
 </body>
