@@ -1516,7 +1516,8 @@ const StockAPI = {
         close,
         high: parseFloat(p[3]),
         low: parseFloat(p[4]),
-        volume: parseFloat(p[5])
+        volume: parseFloat(p[5]),
+        amount: parseFloat(p[6])   // 成交额(元)；腾讯K线无此字段，仅东财返回
       });
     }
     return out;
@@ -1608,6 +1609,38 @@ const StockAPI = {
       console.debug('东财K线亦失败', code, e);
     }
     return [];
+  },
+
+  // 东财日K线（带成交额 amount，用于「缩量金额」列）。优先于腾讯使用以确保成交额可得；失败由调用方回退。
+  async _eastKline(code, startDate, endDate, count) {
+    const secid = this.toEastSecid(code);
+    const beg = String(startDate || '').replace(/-/g, '');
+    const end = String(endDate || '').replace(/-/g, '');
+    const url = `https://push2his.eastmoney.com/api/qt/stock/kline/get?ut=fa5fd1943c7b386f172d6893dbfba10b&secid=${secid}` +
+      `&fields1=f1,f2,f3,f4,f5,f6&fields2=f51,f52,f53,f54,f55,f56,f57,f58` +
+      `&klt=101&fqt=0&beg=${beg}&end=${end}&lmt=1000`;
+    try {
+      const json = await this._eastGet(url);
+      const kl = json && json.data && json.data.klines;
+      if (kl && kl.length) {
+        const out = this._parseEastKline(kl);
+        if (out.length) return out;
+      }
+    } catch (e) {
+      console.debug('东财K线(amount)获取失败', code, e);
+    }
+    return [];
+  },
+
+  // 判断当前是否处于盘中交易时段（用于「缩量3日窗口」是否计入今日）
+  _isIntraday(now) {
+    const h = now.getHours(), m = now.getMinutes();
+    const t = h * 60 + m;
+    const inMorning = t >= 9 * 60 + 30 && t <= 11 * 60 + 30;
+    const inAfternoon = t >= 13 * 60 && t <= 15 * 60;
+    const dow = now.getDay();
+    const weekday = dow >= 1 && dow <= 5;
+    return weekday && (inMorning || inAfternoon);
   },
 
   // ============ 东方财富 补充数据（best-effort） ============
@@ -2379,17 +2412,23 @@ const StockAPI = {
     const start = '2024-09-01';
     const end = this.fmtDate(new Date());
     const n = this._barCount(start, end);
+    // 优先用东财K线（含成交额 amount，供「缩量金额」列）；东财不可达时回退腾讯K线（仅有成交量，自动降级为量差）。
     let data = [];
     try {
-      data = await this.getKline(code, start, end, n);
-    } catch (e) {
-      data = [];
+      data = await this._eastKline(code, start, end, n);
+    } catch (e) { data = []; }
+    if (!data || !data.length) {
+      try { data = await this.getKline(code, start, end, n); } catch (e) { data = []; }
     }
-    // 腾讯接口语义为「最近 N 个交易日」，若根数不足导致未覆盖到 924，则加大根数重试一次
+    // 若根数不足导致未覆盖到 924，加大根数重试（先东财，后腾讯兜底）
     if (data.length && data[0].date > start) {
       try {
-        const more = await this.getKline(code, start, end, 1600);
+        const more = await this._eastKline(code, start, end, 1600);
         if (more && more.length && more[0].date < data[0].date) data = more;
+        else {
+          const more2 = await this.getKline(code, start, end, 1600);
+          if (more2 && more2.length && more2[0].date < data[0].date) data = more2;
+        }
       } catch (e) { /* 重试失败则沿用原数据 */ }
     }
     if (!data || !data.length) return out;
@@ -2424,29 +2463,43 @@ const StockAPI = {
     };
     out.weekAgoClose = back(5);
     out.monthAgoClose = back(20);
-    // ===== 缩量统计（基于日 K 线成交量，与「换手率」相邻展示）=====
-    // 缩量定义：当日成交量 < 前一交易日成交量。
-    // 取最近 4 个交易日，按末尾偏移标注为「今天/昨天/前天/大前天」（非交易日时「今天」即最近一个交易日）。
-    // 1=缩量，-1=放量，0=平量，null=数据不足。
-    const volArr = data.map(k => +k.volume || 0);
-    const shrinkArr = volArr.map((v, i) => i === 0 ? null
-      : (v < volArr[i - 1] ? 1 : (v > volArr[i - 1] ? -1 : 0)));
-    const _N = volArr.length;
-    const shrinkAt = (off) => { const i = _N - 1 - off; return i >= 0 ? shrinkArr[i] : null; };
-    out.volShrinkD0 = shrinkAt(0); // 今天
-    out.volShrinkD1 = shrinkAt(1); // 昨天
-    out.volShrinkD2 = shrinkAt(2); // 前天
-    out.volShrinkD3 = shrinkAt(3); // 大前天
-    // 3日/缩量 = 近 3 个交易日中缩量天数 / 3。
-    // 规则：盘中(当日未收盘)今日不计入 3 日；盘后(>=15:00)且当日为交易日，今日计入。
+    // ===== 缩量金额（基于日K线成交额/成交量，与「换手率」相邻展示）=====
+    // 单日列：当日值 − 前一交易日值（带符号）。负值=缩(绿)，正值=放(红)，≈0=平(灰)。
+    // 3日/缩量 = 近3交易日中「缩量(绿)」的天数 / 这些绿日缩量差值之和（带符号，绿色）。
+    // 窗口规则：盘中(当日未收盘)今日不计入3日；盘前或盘后(>=15:00)今日计入。
+    const _hasAmt = data.some(k => k.amount != null && !isNaN(k.amount) && k.amount > 0);
+    let _fldType = 'vol', _amtScale = 1;
+    if (_hasAmt) {
+      const _vals = data.map(k => +k.amount).filter(v => v > 0).sort((a, b) => a - b);
+      const _med = _vals.length ? _vals[Math.floor(_vals.length / 2)] : 0;
+      // 东财 kline f57 成交额通常为元；个别返回万时按量级自适应（<100万判为万，×1e4 转元）
+      _amtScale = (_med > 0 && _med < 1e6) ? 1e4 : 1;
+      _fldType = 'amt';
+    }
+    const _arr = data.map(k => (+k[_fldType === 'amt' ? 'amount' : 'volume'] || 0) * _amtScale);
+    const _deltaAt = (off) => {
+      const i = _arr.length - 1 - off;
+      if (i < 1) return null;
+      return _arr[i] - _arr[i - 1];
+    };
+    out.volShrinkD3 = _deltaAt(3); // 大前天
+    out.volShrinkD2 = _deltaAt(2); // 前天
+    out.volShrinkD1 = _deltaAt(1); // 昨天
+    out.volShrinkD0 = _deltaAt(0); // 今天
+    // 3日窗口：盘中当日不计入；盘前/盘后计入
     const _now = new Date();
-    const _lastIsToday = _N > 0 && data[_N - 1].date === this._todayStr();
-    const _afterClose = _now.getHours() >= 15;
-    const _todayCounts = _lastIsToday && _afterClose;
+    const _lastIsToday = data.length > 0 && data[data.length - 1].date === this._todayStr();
+    const _intraday = this._isIntraday(_now);
+    const _todayCounts = _lastIsToday && !_intraday;
     const _win = _todayCounts ? [0, 1, 2] : [1, 2, 3];
-    let _sc = 0;
-    for (const o of _win) { if (shrinkAt(o) === 1) _sc++; }
-    out.volShrink3d = _sc;
+    let _green = 0, _greenSum = 0;
+    for (const o of _win) {
+      const d = _deltaAt(o);
+      if (d != null && d < 0) { _green++; _greenSum += d; }
+    }
+    out.volShrink3d = _green;        // 绿(缩量)天数，用于排序
+    out.volShrink3dSum = _greenSum;  // 绿日缩量差值之和（带符号）
+    out.volShrinkUnit = _fldType;    // 'amt' | 'vol'，供渲染选择单位
     // ===== 右侧交易信号（字段 1-5 + 右侧汇总 + 量比 + 连板），由已抓取的日K线零额外请求算出 =====
     const _rs = this._computeRightSide(data, code);
     if (_rs) Object.assign(out, _rs);

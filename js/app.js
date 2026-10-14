@@ -894,6 +894,20 @@ const app = createApp({
       if (v == null || isNaN(v)) return '—';
       return (+v / 1e8).toFixed(2) + '亿';
     }
+    /** 缩量/放量金额差值格式化：unit='amt'(元) 或 'vol'(股/手)，带符号 */
+    function fmtShrinkVal(v, unit) {
+      if (v == null || isNaN(v)) return '—';
+      const a = Math.abs(v);
+      const sign = v < 0 ? '-' : (v > 0 ? '+' : '');
+      if (unit === 'amt') {
+        if (a >= 1e8) return sign + (a / 1e8).toFixed(2) + '亿';
+        if (a >= 1e4) return sign + (a / 1e4).toFixed(2) + '万';
+        return sign + a.toFixed(0) + '元';
+      }
+      if (a >= 1e8) return sign + (a / 1e8).toFixed(2) + '亿手';
+      if (a >= 1e4) return sign + (a / 1e4).toFixed(2) + '万手';
+      return sign + a.toFixed(0) + '手';
+    }
     /** 亿元数字 */
     function yiVal(v) {
       return v == null || isNaN(v) ? null : +(v / 1e8);
@@ -1194,6 +1208,8 @@ const app = createApp({
           if (hb.volShrinkD1 != null) s.volShrinkD1 = hb.volShrinkD1;
           if (hb.volShrinkD0 != null) s.volShrinkD0 = hb.volShrinkD0;
           if (hb.volShrink3d != null) s.volShrink3d = hb.volShrink3d;
+          if (hb.volShrink3dSum != null) s.volShrink3dSum = hb.volShrink3dSum;
+          if (hb.volShrinkUnit != null) s.volShrinkUnit = hb.volShrinkUnit;
           for (const k of ['rsBreak', 'rsVol', 'rsStrong', 'rsReso', 'rsPull', 'rsRight', 'volRatio', 'limitUpStreak']) {
             if (hb[k] != null) s[k] = hb[k];
           }
@@ -3909,6 +3925,8 @@ const app = createApp({
             if (hb.volShrinkD1 != null) s.volShrinkD1 = hb.volShrinkD1;
             if (hb.volShrinkD0 != null) s.volShrinkD0 = hb.volShrinkD0;
             if (hb.volShrink3d != null) s.volShrink3d = hb.volShrink3d;
+            if (hb.volShrink3dSum != null) s.volShrink3dSum = hb.volShrink3dSum;
+            if (hb.volShrinkUnit != null) s.volShrinkUnit = hb.volShrinkUnit;
             for (const k of ['rsBreak', 'rsVol', 'rsStrong', 'rsReso', 'rsPull', 'rsRight', 'volRatio', 'limitUpStreak']) {
               if (hb[k] != null) s[k] = hb[k];
             }
@@ -4196,14 +4214,15 @@ const app = createApp({
       { key: 'yearHighDays', label: '距高天', width: 64, sortable: true, type: 'days' },
       { key: 'yearLowPrice', label: '今年低价', width: 78, sortable: true, type: 'price' },
       { key: 'yearLowDays', label: '距低天', width: 64, sortable: true, type: 'days' },
-      // 缩量系列（基于日 K 线成交量，置于「换手率」左侧）：
-      // 大前天/前天/昨天/今天缩量 = 对应交易日成交量是否小于前一交易日（1=缩量 -1=放量 0=平量）。
-      // 3日/缩量 = 近 3 个交易日缩量天数 / 3（盘中当日不计入，盘后>=15:00 且当日为交易日则计入）。
-      { key: 'volShrinkD3', label: '大前天缩量', width: 72, sortable: false, type: 'volshrink' },
-      { key: 'volShrinkD2', label: '前天缩量', width: 72, sortable: false, type: 'volshrink' },
-      { key: 'volShrinkD1', label: '昨天缩量', width: 72, sortable: false, type: 'volshrink' },
-      { key: 'volShrinkD0', label: '今天缩量', width: 72, sortable: false, type: 'volshrink' },
-      { key: 'volShrink3d', label: '3日/缩量', width: 60, sortable: true, type: 'volshrink3' },
+      // 缩量金额系列（基于日 K 线成交额/成交量，置于「换手率」左侧）：
+      // 大前天/前天/昨天/今天缩量 = 当日成交额(或成交量) − 前一交易日对应值（带符号；负=缩绿 / 正=放红 / 平=灰）。
+      // 3日/缩量 = 近 3 个交易日中「缩量(绿)」天数 / 这些绿日缩量金额之差的和（带符号，绿色）；
+      //           盘中(当日未收盘)今日不计入3日，盘前或盘后(>=15:00)今日计入。
+      { key: 'volShrinkD3', label: '大前天缩量', width: 86, sortable: false, type: 'volshrink' },
+      { key: 'volShrinkD2', label: '前天缩量', width: 86, sortable: false, type: 'volshrink' },
+      { key: 'volShrinkD1', label: '昨天缩量', width: 86, sortable: false, type: 'volshrink' },
+      { key: 'volShrinkD0', label: '今天缩量', width: 86, sortable: false, type: 'volshrink' },
+      { key: 'volShrink3d', label: '3日/缩量', width: 92, sortable: true, type: 'volshrink3' },
       { key: 'turnover', label: '换手率', width: 70, sortable: true, type: 'num2pct' },
       // ===== 右侧交易信号（字段 1-5 + 板块 + 右侧汇总）置于换手率右侧；其后为辅助确认字段 =====
       { key: 'rsBreak', label: '突破', width: 52, sortable: true, type: 'flag' },
@@ -4370,16 +4389,20 @@ const app = createApp({
           if (val == null || isNaN(val)) return '—';
           return '<span class="' + numClass(val) + '">' + fmtYi(val) + '</span>';
         }
-        // 缩量标记：1=缩量(蓝) -1=放量(橙) 0=平量(灰) null=无数据
+        // 缩量金额：负=缩(绿) 正=放(红) 平=灰；单位由 s.volShrinkUnit 决定（amt=元 / vol=手）
         case 'volshrink': {
-          const c = s[col.key];
-          if (c == null) return '—';
-          if (c === 1) return '<span class="vol-shrink">缩</span>';
-          if (c === -1) return '<span class="vol-expand">放</span>';
-          return '<span class="vol-flat">平</span>';
+          const v = s[col.key];
+          if (v == null || isNaN(v)) return '—';
+          const cls = v < 0 ? 'vol-shrink' : (v > 0 ? 'vol-expand' : 'vol-flat');
+          return '<span class="' + cls + '">' + fmtShrinkVal(v, s.volShrinkUnit) + '</span>';
         }
-        // 3日/缩量：近 3 个交易日缩量天数 / 3（数值用于排序）
-        case 'volshrink3': { const x = s[col.key]; return (x != null && !isNaN(x)) ? (x + '/3') : '—'; }
+        // 3日/缩量 = 近3交易日缩量(绿)天数 / 绿日缩量金额之差的和（带符号，绿色）
+        case 'volshrink3': {
+          const cnt = s.volShrink3d, sum = s.volShrink3dSum;
+          if (cnt == null || isNaN(cnt)) return '—';
+          const cls = cnt > 0 ? 'vol-shrink' : 'vol-flat';
+          return '<span class="' + cls + '">' + cnt + '/' + fmtShrinkVal(sum, s.volShrinkUnit) + '</span>';
+        }
         // 右侧信号布尔列：符合=红✓，不符合=灰—
         case 'flag': {
           let on = false, title = '';
@@ -9627,6 +9650,8 @@ const app = createApp({
               if (hb.volShrinkD1 != null) s.volShrinkD1 = hb.volShrinkD1;
               if (hb.volShrinkD0 != null) s.volShrinkD0 = hb.volShrinkD0;
               if (hb.volShrink3d != null) s.volShrink3d = hb.volShrink3d;
+              if (hb.volShrink3dSum != null) s.volShrink3dSum = hb.volShrink3dSum;
+              if (hb.volShrinkUnit != null) s.volShrinkUnit = hb.volShrinkUnit;
               for (const k of ['rsBreak', 'rsVol', 'rsStrong', 'rsReso', 'rsPull', 'rsRight', 'volRatio', 'limitUpStreak']) {
                 if (hb[k] != null) s[k] = hb[k];
               }

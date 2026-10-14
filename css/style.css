@@ -3583,9 +3583,9 @@ body.guest-mode #app { display: none; }
 
 /* ===== 缩量标记（换手率左侧系列列）===== */
 .center-cell { text-align: center; }
-.vol-shrink { color: #0969da; font-weight: 600; }   /* 缩量：蓝 */
-.vol-expand { color: #bc4c00; font-weight: 600; }   /* 放量：橙 */
-.vol-flat  { color: #6e7781; }                       /* 平量：灰 */
+.vol-shrink { color: #1a7f37; font-weight: 600; }   /* 缩量：绿(负) */
+.vol-expand { color: #e23b3b; font-weight: 600; }   /* 放量：红(正) */
+.vol-flat  { color: #9aa0a6; }                       /* 平量：灰 */
 
 /* ===== 右侧交易信号列 ===== */
 .flag-ok  { color: #e23b3b; font-weight: 700; }      /* 符合：红 */
