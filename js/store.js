@@ -44,10 +44,9 @@ const Store = {
       amplitudeBoards: [],    // 缓存最近一次振幅板块
       thsHotStocks: [],       // 20261006h：同花顺热度榜
       emHotStocks: [],        // 20261006h：东方财富人气榜
-      adRaw: { douyin: [], toutiao: [] }, // 20261014：广告投放排行榜原始搜索结果（抖音/头条）
-      adDouyin: [],           // 抖音：上市公司排名 [{code,name,count}]
-      adToutiao: [],          // 头条：上市公司排名
-      adDate: '',             // 广告排行榜对应的数据日期（所选日期当天）
+      adSpend: [],            // 20261015：广告投放力度榜（按上市公司最新财报「销售费用」排名，免费·准确）[{rank,code,name,saleExpense,operateIncome,reportDate}]
+      adDate: '',             // 榜单生成时间（generatedAt）
+      adCount: 0,             // 参与排名的有销售费用公司数
       settings: {
         categories: [...this.DEFAULT_CATEGORIES],
         proxyUrl: '',            // Cloudflare Worker 代理地址，用于一键抓取新闻

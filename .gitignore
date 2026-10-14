@@ -1,0 +1,9 @@
+# 依赖（E2E 用的 node_modules 是到受管 workspace 的目录联接，勿提交）
+node_modules/
+
+# Cloudflare Worker 部署临时脚本/备份（可能含 Token，勿提交）
+_cf_backup_stock-edge.js
+_cf_deploy.js
+
+# 本地临时报告
+_adspend_report.txt

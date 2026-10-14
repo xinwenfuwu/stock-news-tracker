@@ -4,12 +4,12 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>股市信息分析系统</title>
-  <link rel="stylesheet" href="css/style.css?v=20261014e">
+  <link rel="stylesheet" href="css/style.css?v=20261015a">
   <!-- Vue 3 全局构建版（v3.4.21 · 自托管）
        原先走 unpkg.com CDN：国内网络对 unpkg 的连通性不稳定，一旦该请求长时间挂起，
        <head> 里的阻塞脚本会让整页停在白屏、后续 auth-boot.js 根本不会执行。
        改为同源托管后，启动链路不再依赖任何第三方 CDN。 -->
-  <script src="js/vue.global.prod.js?v=20261014e"></script>
+  <script src="js/vue.global.prod.js?v=20261015a"></script>
 </head>
 <body class="auth-locked">
   <!-- ===== 登录关卡：登录通过前业务脚本不会被加载 ===== -->
@@ -2901,52 +2901,46 @@
           <div class="hot-top-row">
             <div class="hot-panel">
               <div class="panel-title-row">
-                <h3 class="panel-title doubao-title" style="margin:0">📢 广告排行榜</h3>
-                <span class="doubao-mode-badge" v-if="doubaoKeyActive" title="正在使用你自己的火山引擎 Key，消耗你账户额度">✅ 我的Key</span>
-                <span class="doubao-mode-badge muted" v-else title="使用管理员共享额度">📡 共享额度</span>
-                <button class="btn btn-sm" @click="refreshAdBoard" :disabled="adLoading" title="刷新广告排行榜（按上方所选日期当天的抖音/头条广告搜索结果，抽取上市公司并按提及次数排名）">
+                <h3 class="panel-title" style="margin:0">📢 广告投放力度榜</h3>
+                <button class="btn btn-sm" @click="refreshAdBoard" :disabled="adLoading" title="按上市公司最新财报「销售费用」刷新榜单（免费·准确，非实时投放额）">
                   <span v-if="adLoading">⏳ 刷新中...</span>
                   <span v-else>🔄 刷新数据</span>
                 </button>
-                <button class="btn btn-sm" @click="toggleDoubaoKeyForm" :title="doubaoKeyFormShow ? '收起' : '设置你自己的火山引擎联网搜索 Key'">🔑 {{ doubaoKeyFormShow ? '收起' : '设置我的Key' }}</button>
-                <button class="btn btn-sm" @click="openDoubaoGuide" title="查看如何获取火山引擎联网搜索 Key">📖 如何获取</button>
               </div>
 
-              <p class="muted small" style="margin:-2px 0 10px">📅 数据日期：<b>{{ adDate || hotDate || '今日' }}</b>　·　按所选日期当天的抖音/头条「广告投放 上市公司」搜索结果，抽取上市公司并按提及次数排名（切换日期自动按该日重算；非上市公司不计入）</p>
+              <p class="muted small" style="margin:-2px 0 10px">
+                📅 榜单生成时间：<b>{{ adDate || '—' }}</b>　·　共 <b>{{ adCount }}</b> 家上市公司参与排名<br/>
+                <b>口径说明：</b>抖音/头条是中国最大的广告渠道，上市公司最新财报「销售费用」越高，代表在抖音/头条等渠道投广告越多——这是<b>免费且准确</b>的代理指标（真实投放额是字节跳动的付费商业数据，搜索引擎抓不到）。按销售费用从大到小排名。
+              </p>
 
-              <!-- 用户自带 Key 表单（内联，仅存本地 localStorage，不传服务器） -->
-              <div class="doubao-key-form" v-if="doubaoKeyFormShow">
-                <p class="muted small">填入你自己的火山引擎「联网搜索」API Key，豆包榜将走你的账户额度（每月 500 次免费），<b>不经过任何服务器存储</b>。留空则使用共享额度。</p>
-                <div class="doubao-key-row">
-                  <input class="doubao-key-input" type="password" v-model="doubaoKeyInput" placeholder="粘贴火山引擎「联网搜索」API Key（sk-... 或一长串字符）" @keyup.enter="saveDoubaoKey" autocomplete="new-password" />
-                  <button class="btn btn-sm btn-primary" @click="saveDoubaoKey">保存</button>
-                  <button class="btn btn-sm" @click="clearDoubaoKey" :disabled="!doubaoKeyActive" title="清除后改用共享额度">清除</button>
-                </div>
-              </div>
-              <div v-if="adDouyin.length || adToutiao.length">
-                <div class="ad-board">
-                  <div class="ad-board-title">🎵 抖音广告投放排行榜</div>
-                  <div class="hot-list">
-                    <div class="hot-item" v-for="(c, i) in adDouyin" :key="'dy' + c.code" style="display:flex;gap:8px;align-items:center;">
-                      <span class="hot-rank">{{ i + 1 }}</span>
-                      <span class="hot-name" style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">📢 广告·{{ c.name }}<span class="muted small">　提及{{ c.count }}次</span></span>
-                    </div>
-                    <div class="muted small" v-if="!adDouyin.length">抖音：暂未抽取到上市公司</div>
-                  </div>
-                </div>
-                <div class="ad-board">
-                  <div class="ad-board-title">📰 头条广告投放排行榜</div>
-                  <div class="hot-list">
-                    <div class="hot-item" v-for="(c, i) in adToutiao" :key="'tt' + c.code" style="display:flex;gap:8px;align-items:center;">
-                      <span class="hot-rank">{{ i + 1 }}</span>
-                      <span class="hot-name" style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">📢 广告·{{ c.name }}<span class="muted small">　提及{{ c.count }}次</span></span>
-                    </div>
-                    <div class="muted small" v-if="!adToutiao.length">头条：暂未抽取到上市公司</div>
-                  </div>
+              <!-- 20261015：单榜——按销售费用排名（源自东财利润表 SALE_EXPENSE） -->
+              <div v-if="adSpend.length" class="hot-list ad-spend-list">
+                <div class="hot-item" v-for="(c, i) in adSpend" :key="c.code" style="display:flex;gap:8px;align-items:center;">
+                  <span class="hot-rank">{{ c.rank || (i + 1) }}</span>
+                  <span class="hot-name" style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ c.name }}<span class="muted small">　{{ c.code }}</span></span>
+                  <span class="ad-spend-val" style="font-weight:600;white-space:nowrap;">销售费用 {{ (c.saleExpense / 1e8).toFixed(1) }} 亿</span>
+                  <span class="muted small" style="margin-left:8px;white-space:nowrap;">{{ c.reportDate }}</span>
                 </div>
               </div>
               <div class="muted small" v-else-if="adError">{{ adError }}</div>
               <div class="muted small" v-else>点击「获取热门板块」或右侧「刷新数据」加载</div>
+
+              <!-- 豆包联网搜索 Key（独立功能，用于豆包榜/联网搜索，与上方广告投放力度榜无关） -->
+              <div style="margin-top:14px;border-top:1px dashed #e0e0e0;padding-top:10px;">
+                <div class="panel-title-row">
+                  <h4 class="panel-title" style="margin:0;font-size:14px;">🔑 豆包联网搜索 Key（独立功能）</h4>
+                  <button class="btn btn-sm" @click="toggleDoubaoKeyForm" :title="doubaoKeyFormShow ? '收起' : '设置你自己的火山引擎联网搜索 Key'">{{ doubaoKeyFormShow ? '收起' : '设置我的Key' }}</button>
+                  <button class="btn btn-sm" @click="openDoubaoGuide" title="查看如何获取火山引擎联网搜索 Key">📖 如何获取</button>
+                </div>
+                <div class="doubao-key-form" v-if="doubaoKeyFormShow">
+                  <p class="muted small">填入你自己的火山引擎「联网搜索」API Key，豆包榜/联网搜索将走你的账户额度（每月 500 次免费），<b>不经过任何服务器存储</b>。留空则使用共享额度。</p>
+                  <div class="doubao-key-row">
+                    <input class="doubao-key-input" type="password" v-model="doubaoKeyInput" placeholder="粘贴火山引擎「联网搜索」API Key（sk-... 或一长串字符）" @keyup.enter="saveDoubaoKey" autocomplete="new-password" />
+                    <button class="btn btn-sm btn-primary" @click="saveDoubaoKey">保存</button>
+                    <button class="btn btn-sm" @click="clearDoubaoKey" :disabled="!doubaoKeyActive" title="清除后改用共享额度">清除</button>
+                  </div>
+                </div>
+              </div>
             </div>
 
             <!-- 同花顺热门板块（行业/概念）：刷新后显示当前同花顺热门行业与概念 -->
@@ -4993,14 +4987,14 @@
     </transition>
   </div>
 
-  <script src="js/auth.js?v=20261014e"></script>
-  <script src="js/auth-sync.js?v=20261014e"></script>
+  <script src="js/auth.js?v=20261015a"></script>
+  <script src="js/auth-sync.js?v=20261015a"></script>
   <!-- 边缘加速默认站点（batch37 治本：Cloudflare Worker 代理东财/腾讯，缓解 JSONP 限流误报）。
        若你所在地区 workers.dev 访问慢，可在「设置 → 行情加速地址」清空即恢复纯直连。 -->
   <script>window.__SNT_ACCEL__ = 'https://sichina.dpdns.org';</script>
   <!-- 扫码支付二维码渲染库（第三方 qrcodejs，本地托管避免外链失效）。renderQr 会先检测全局 QRCode 是否存在。 -->
-  <script src="assets/qrcode.min.js?v=20261014e"></script>
-  <script src="js/auth-boot.js?v=20261014e"></script>
+  <script src="assets/qrcode.min.js?v=20261015a"></script>
+  <script src="js/auth-boot.js?v=20261015a"></script>
   <!-- store / stock-api / hot-topics / app 由 auth-boot.js 在登录通过后动态装载，
        未登录时它们不会被下载，业务数据也不会进入内存 -->
 </body>
