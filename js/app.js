@@ -7902,7 +7902,7 @@ const app = createApp({
         new Promise(r => setTimeout(() => r(null), HOT_SRC_TIMEOUT))
       ]);
       try {
-        const [boards, stocks, preBoards, ampBoards, newListed, ths, em, doubao] = await Promise.all([
+        const [boards, stocks, preBoards, ampBoards, newListed, ths, em, ad] = await Promise.all([
           withTimeout(StockAPI.getBoardRanking()),
           withTimeout(StockAPI.getLimitUpStreak()),
           withTimeout(StockAPI.getPreMarketBoards()),
@@ -7910,10 +7910,10 @@ const app = createApp({
           withTimeout(StockAPI.getNewListedStocks()),
           withTimeout(StockAPI.getThsHotStocks()),
           withTimeout(StockAPI.getEmHotStocks()),
-          withTimeout(StockAPI.getDoubaoHotStocks(D.settings.doubaoKey, hotDate.value).then(res => {
-            if (res) { doubaoHotDate.value = res.date || hotDate.value || ''; D.doubaoHotDate = doubaoHotDate.value; }
-            return res ? res.list : null;
-          }).catch(e => { doubaoHotError.value = e.message || String(e); return null; }))
+          withTimeout(StockAPI.getAdBoard(D.settings.doubaoKey, hotDate.value).then(res => {
+            if (res) { adDate.value = res.date || hotDate.value || ''; D.adDate = adDate.value; }
+            return res ? res : null;
+          }).catch(e => { adError.value = e.message || String(e); return null; }))
         ]);
         // 各路独立落盘：某一路接口限流返回空时保留旧数据，避免「刷新一次反而清空已有内容」
         if (boards && boards.length) { hotBoards.value = boards; D.hotBoards = boards; }
@@ -7927,18 +7927,24 @@ const app = createApp({
           try { await enrichThsChange(thsHotStocks.value); } catch (e) { console.warn('同花顺热股实时涨跌幅补全失败', e); }
         }
         if (em && em.length) { emHotStocks.value = em; D.emHotStocks = em; }
-        if (doubao && doubao.length) { doubaoHot.value = doubao; D.doubaoHot = doubao; }
+        // 20261014：广告投放排行榜（抖音 / 头条）独立落盘（原始结果 + 抽取后的上市公司排名）
+        if (ad && ((ad.douyin && ad.douyin.length) || (ad.toutiao && ad.toutiao.length))) {
+          adRaw.value = { douyin: ad.douyin || [], toutiao: ad.toutiao || [] }; D.adRaw = adRaw.value;
+          adDouyin.value = await buildAdRanking(ad.douyin || []); D.adDouyin = adDouyin.value;
+          adToutiao.value = await buildAdRanking(ad.toutiao || []); D.adToutiao = adToutiao.value;
+        }
         // 任一当前有数据即视为成功（含历史残留），某一路限流不再误报整体失败
         const nBoards = hotBoards.value.length, nPre = preMarketBoards.value.length,
               nAmp = amplitudeBoards.value.length, nStocks = hotStocks.value.length, nNew = newListedStocks.value.length,
-              nThs = thsHotStocks.value.length, nEm = emHotStocks.value.length, nDoubao = doubaoHot.value.length;
+              nThs = thsHotStocks.value.length, nEm = emHotStocks.value.length,
+              nDoubao = (adRaw.value.douyin ? adRaw.value.douyin.length : 0) + (adRaw.value.toutiao ? adRaw.value.toutiao.length : 0);
         const gotNew = (boards && boards.length) || (stocks && stocks.length) || (preBoards && preBoards.length)
                     || (ampBoards && ampBoards.length) || (newListed && newListed.length)
-                    || (ths && ths.length) || (em && em.length) || (doubao && doubao.length);
+                    || (ths && ths.length) || (em && em.length) || (ad && ((ad.douyin && ad.douyin.length) || (ad.toutiao && ad.toutiao.length)));
         const nAll = nBoards + nPre + nAmp + nStocks + nNew + nThs + nEm + nDoubao;
         if (nAll) {
           // 有数据即成功；本轮确实没拿到新数据时补一句「沿用上次」，避免用户误以为刷新没生效
-          showToast(`获取到 ${nBoards} 个当日板块、${nPre} 个盘前热点、${nAmp} 个振幅板块、${nStocks} 只连板股票、${nNew} 只新上市股票、同花顺热度 ${nThs} 只、东财人气 ${nEm} 只、豆包搜索热度 ${nDoubao} 条`
+          showToast(`获取到 ${nBoards} 个当日板块、${nPre} 个盘前热点、${nAmp} 个振幅板块、${nStocks} 只连板股票、${nNew} 只新上市股票、同花顺热度 ${nThs} 只、东财人气 ${nEm} 只、广告排行榜 ${nDoubao} 条（抖音 ${adDouyin.value.length}/头条 ${adToutiao.value.length}）`
             + (gotNew ? '' : '（本轮未获取到新数据，沿用上次结果）'), 'success');
         } else {
           // 全空：区分「本轮确实没拉到」与「真的一无所有」，给出可操作提示，不再使用已过时的 JSONP 措辞
@@ -7966,13 +7972,16 @@ const app = createApp({
     const thsHotLoading = ref(false);
     const emHotStocks = ref([]);
     const emHotLoading = ref(false);
-    const doubaoHot = ref([]);
-    const doubaoHotLoading = ref(false);
-    const doubaoHotError = ref('');
-    const doubaoHotDate = ref('');   // 豆包搜索热度榜对应的「数据日期」（所选日期当天）；切换上方日期自动按新日期重算
+    // 广告投放排行榜（抖音 / 头条）：adRaw=原始搜索结果，adDouyin/adToutiao=抽取上市公司并按提及次数排名
+    const adRaw = ref({ douyin: [], toutiao: [] });
+    const adDouyin = ref([]);        // 抖音：上市公司排名 [{code,name,count}]
+    const adToutiao = ref([]);       // 头条：上市公司排名
+    const adLoading = ref(false);
+    const adError = ref('');
+    const adDate = ref('');          // 广告排行榜对应的「数据日期」（所选日期当天）；切换上方日期自动按新日期重算
     // 切换「新闻统计开始时间」后，若豆包面板已有数据，则按新日期自动重算搜索热度榜（满足「按所选日期当天」）
     watch(hotDate, (nd) => {
-      if (doubaoHot.value.length && !doubaoHotLoading.value) refreshDoubaoOnly();
+      if ((adRaw.value.douyin.length || adRaw.value.toutiao.length) && !adLoading.value) refreshAdBoard();
     });
 
     // ============ 豆包榜「用户自带 Key」：每用户各自消耗自己账户 500 次/月免费额度 ============
@@ -7987,7 +7996,7 @@ const app = createApp({
     function saveDoubaoKey() {
       const v = (doubaoKeyInput.value || '').trim();
       D.settings.doubaoKey = v; Store.saveNow(); doubaoKeyFormShow.value = false;
-      if (v) { showToast('已保存你的专属 Key，豆包榜将使用你的额度', 'success'); refreshDoubaoOnly(); }
+      if (v) { showToast('已保存你的专属 Key，广告排行榜将使用你的额度', 'success'); refreshAdBoard(); }
       else showToast('已清除专属 Key，将使用共享额度', 'info');
     }
     function clearDoubaoKey() {
@@ -8074,26 +8083,60 @@ const app = createApp({
       } catch (e) { showToast('东方财富人气榜刷新失败：' + (e.message || e), 'error'); }
       finally { emHotLoading.value = false; }
     }
-    /** 20261006h ⑤ 只刷新「豆包搜索热度榜」（按所选日期当天搜索，同时重算股票搜索排行榜） */
-    async function refreshDoubaoOnly() {
-      if (doubaoHotLoading.value) return;
-      doubaoHotLoading.value = true; doubaoHotError.value = '';
+    /** 从搜索结果中抽取「上市公司」并按提及次数排名（非上市公司不计入）。
+     *  @param {Array<{title,site,url,snippet}>} rawList 某平台原始搜索结果
+     *  @returns {Promise<Array<{code,name,count}>>} 降序取前 20 */
+    async function buildAdRanking(rawList) {
+      if (!rawList || !rawList.length) return [];
+      // 全量 A 股名称/代码字典（带 7 天缓存）；只匹配其中的上市公司，天然过滤掉非上市公司
+      const names = await StockAPI.getAllStockNames();
+      if (!names || !names.length) return [];
+      // 名称→代码 映射，并按名称长度降序匹配（优先命中更长的全称，避免短名被长名截断）
+      const byName = new Map();
+      for (const n of names) if (n.name && n.code) byName.set(n.name, n.code);
+      const sortedNames = [...byName.keys()].sort((a, b) => b.length - a.length);
+      const tally = new Map(); // code -> { code, name, count }
+      for (const it of rawList) {
+        const text = ((it && it.title) || '') + ' ' + ((it && it.snippet) || '') + ' ' + ((it && it.site) || '');
+        if (!text.trim()) continue;
+        const hit = new Set();
+        for (const nm of sortedNames) {
+          if (nm.length < 3) continue;            // 跳过 2 字名（如「银行」「证券」易误命中），降低噪声
+          if (text.includes(nm)) hit.add(byName.get(nm));
+        }
+        for (const code of hit) {
+          const t = tally.get(code) || { code, name: byName.get(code), count: 0 };
+          t.count++;
+          tally.set(code, t);
+        }
+      }
+      return [...tally.values()].sort((a, b) => b.count - a.count || a.name.localeCompare(b.name, 'zh-Hans-CN')).slice(0, 20);
+    }
+
+    /** 20261014：刷新「广告投放排行榜」（抖音 / 头条），按所选日期当天搜索，抽取上市公司并按提及次数排名 */
+    async function refreshAdBoard() {
+      if (adLoading.value) return;
+      adLoading.value = true; adError.value = '';
       const theDate = hotDate.value;
-      showToast('正在刷新豆包搜索热度榜（' + (theDate || '今日') + '）...', 'info');
+      showToast('正在刷新广告排行榜（' + (theDate || '今日') + '）...', 'info');
       try {
-        const res = await StockAPI.getDoubaoHotStocks(D.settings.doubaoKey, theDate);
-        const list = res.list;
-        if (list && list.length) {
-          doubaoHot.value = list; D.doubaoHot = list;
-          doubaoHotDate.value = res.date || theDate || ''; D.doubaoHotDate = doubaoHotDate.value;
-          showToast(`已刷新豆包搜索热度榜 ${list.length} 条（${doubaoHotDate.value || '今日'}）`, 'success');
+        const res = await StockAPI.getAdBoard(D.settings.doubaoKey, theDate);
+        const dy = res.douyin || [], tt = res.toutiao || [];
+        if (dy.length || tt.length) {
+          adRaw.value = { douyin: dy, toutiao: tt };
+          D.adRaw = adRaw.value;
+          adDouyin.value = await buildAdRanking(dy);
+          adToutiao.value = await buildAdRanking(tt);
+          D.adDouyin = adDouyin.value; D.adToutiao = adToutiao.value;
+          adDate.value = res.date || theDate || ''; D.adDate = adDate.value;
+          showToast(`已刷新广告排行榜（抖音 ${adDouyin.value.length} / 头条 ${adToutiao.value.length} 家上市公司）`, 'success');
         } else {
-          doubaoHotError.value = '豆包搜索暂未返回结果'; showToast('豆包搜索暂未返回结果', 'info');
+          adError.value = '广告排行榜暂未返回结果'; showToast('广告排行榜暂未返回结果', 'info');
         }
       } catch (e) {
-        doubaoHotError.value = (e && e.message) || '豆包搜索榜获取失败';
-        showToast('豆包搜索榜获取失败：' + (e.message || e), 'error');
-      } finally { doubaoHotLoading.value = false; }
+        adError.value = (e && e.message) || '广告排行榜获取失败';
+        showToast('广告排行榜获取失败：' + (e.message || e), 'error');
+      } finally { adLoading.value = false; }
     }
 
     // ============ 同花顺热门板块（行业 / 概念）：刷新后显示当前同花顺热门行业与概念 ============
@@ -8610,8 +8653,11 @@ const app = createApp({
     // 20261006h：三平台热度榜缓存恢复
     if (D.thsHotStocks && D.thsHotStocks.length) thsHotStocks.value = D.thsHotStocks;
     if (D.emHotStocks && D.emHotStocks.length) emHotStocks.value = D.emHotStocks;
-    if (D.doubaoHot && D.doubaoHot.length) doubaoHot.value = D.doubaoHot;
-    if (D.doubaoHotDate) doubaoHotDate.value = D.doubaoHotDate;
+    // 20261014：广告投放排行榜缓存恢复
+    if (D.adRaw && (D.adRaw.douyin || D.adRaw.toutiao)) adRaw.value = D.adRaw;
+    if (D.adDouyin && D.adDouyin.length) adDouyin.value = D.adDouyin;
+    if (D.adToutiao && D.adToutiao.length) adToutiao.value = D.adToutiao;
+    if (D.adDate) adDate.value = D.adDate;
     // 同花顺热门板块（行业/概念）缓存恢复
     if (D.thsSectors && ((D.thsSectors.industries || []).length || (D.thsSectors.concepts || []).length)) thsSectors.value = D.thsSectors;
 
@@ -10172,7 +10218,7 @@ const app = createApp({
       // 20261006h：三平台热度股票排行榜（同花顺 / 东方财富 / 豆包搜索）
       thsHotStocks, thsHotLoading, refreshThsHotOnly,
       emHotStocks, emHotLoading, refreshEmHotOnly,
-      doubaoHot, doubaoHotLoading, doubaoHotError, doubaoHotDate, refreshDoubaoOnly,
+      adRaw, adLoading, adError, adDate, adDouyin, adToutiao, refreshAdBoard,
       thsSectors, thsSectorsLoading, thsSectorsError, refreshThsSectorsOnly,
       doubaoKeyInput, doubaoKeyFormShow, doubaoGuideShow, doubaoKeyActive,
       toggleDoubaoKeyForm, saveDoubaoKey, clearDoubaoKey, openDoubaoGuide,

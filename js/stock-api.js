@@ -3155,6 +3155,31 @@ const StockAPI = {
   },
 
   /**
+   * 广告投放排行榜（抖音 / 头条）：Worker 调豆包 Web 搜索 API（火山引擎联网搜索）。
+   *  @param {string} [doubaoKey] 普通用户自带 Key（可选）；传入时通过 X-Doubao-Key 头带给 Worker，各自消耗自己账户 500 次/月免费额度；不传则用 Worker 共享额度。
+   *  @param {string} [date] 可选日期 YYYY-MM-DD；传入后 Worker 按「该日当天」搜索，未传则回退「今日」。
+   *  @returns {Promise<{douyin:Array, toutiao:Array, date:string}>}
+   *          douyin/toutiao 为各自平台的原始搜索结果数组（{title,site,url,snippet}），date 为数据实际对应的日期（Worker 回传）。 */
+  async getAdBoard(doubaoKey, date) {
+    const opts = { cache: 'no-store' };
+    const k = (doubaoKey || '').trim();
+    if (k) opts.headers = { 'X-Doubao-Key': k };
+    let url = this._rankBase() + '/rank/adboard';
+    if (date) url += '?date=' + encodeURIComponent(date);
+    const r = await fetch(url, opts);
+    if (!r.ok) {
+      let msg = '广告排行榜获取失败(' + r.status + ')';
+      try { const j = await r.json(); if (j && j.error) msg = j.error; } catch (e) {}
+      throw new Error(msg);
+    }
+    const j = await r.json();
+    const douyin = (j && j.douyin) ? j.douyin : [];
+    const toutiao = (j && j.toutiao) ? j.toutiao : [];
+    const reflectedDate = (j && j.date) || date || '';
+    return { douyin, toutiao, date: reflectedDate };
+  },
+
+  /**
    * 同花顺热门板块（行业 / 概念）：直接请求 dq.10jqka.com.cn 的 plate 接口。
    * 该接口已开放 CORS（Access-Control-Allow-Origin: *），前端可直连，无需 Worker 代理。
    * 返回统一结构 { industries:[{code,name,change,heat,hotTag,limitTag,order,etfName,etfChange}], concepts:[...] }：

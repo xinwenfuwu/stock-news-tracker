@@ -3598,3 +3598,33 @@ body.guest-mode #app { display: none; }
 .env-down { color: #2faa6b; }                        /* 大盘环境偏弱：绿 */
 .vol-ratio-hi { color: #e23b3b; font-weight: 600; } /* 量比放大 */
 .streak-hi { color: #e23b3b; font-weight: 700; }     /* 连板 */
+
+/* ===== 广告排行榜（20261014）：抖音 / 头条 两板块 ===== */
+.ad-board { margin: 10px 0; border: 1px solid var(--border, #e5e7eb); border-radius: 10px; background: var(--surface, #fff); overflow: hidden; }
+.ad-board-title {
+  font-weight: 600;
+  color: var(--text, #222);
+  padding: 9px 12px;
+  background: var(--surface-alt, #f6f7f9);
+  border-bottom: 1px solid var(--border, #e5e7eb);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.ad-board-title .ad-badge {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 1px 7px;
+  border-radius: 999px;
+  background: rgba(226, 59, 59, 0.12);
+  color: #e23b3b;
+}
+.ad-board ol { list-style: none; margin: 0; padding: 6px 12px 10px; }
+.ad-board li { display: flex; align-items: center; gap: 8px; padding: 5px 0; border-bottom: 1px dashed var(--border, #eee); font-size: 13px; }
+.ad-board li:last-child { border-bottom: none; }
+.ad-rank { flex: 0 0 22px; height: 22px; border-radius: 50%; background: var(--accent, #3d7eff); color: #fff; font-size: 12px; font-weight: 700; display: flex; align-items: center; justify-content: center; }
+.ad-rank.top { background: #e23b3b; }
+.ad-name { font-weight: 600; color: var(--text, #222); }
+.ad-count { margin-left: auto; color: var(--text-secondary, #666); font-size: 12px; white-space: nowrap; }
+.ad-empty { padding: 12px; color: var(--text-placeholder, #999); font-size: 13px; }
+.ad-board .ad-tip { padding: 0 12px 8px; color: var(--text-placeholder, #999); font-size: 12px; }
