@@ -322,7 +322,7 @@ const main = async () => {
     check('每个区间字段也变成「标签在左、控件在右」一行',
       await page.evaluate(() => {
         const f = [...document.querySelectorAll('.sector-detail-modal .sector-filter-bar .filter-field')]
-          .find(x => /市净比/.test(x.textContent));
+          .find(x => /市净率/.test(x.textContent));
         if (!f) return false;
         const lab = f.querySelector('label'), inp = f.querySelector('input');
         if (!lab || !inp) return false;

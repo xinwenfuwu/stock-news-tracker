@@ -1684,7 +1684,7 @@ const StockAPI = {
    *   revenue,          // 营业收入(元)
    *   profitYoY,        // 利润同比增长率(%)
    *   revenueYoY,       // 同比增长率(营收同比 %)
-   *   hbGrowth,         // 环比增长率(净利润环比 %)
+   *   hbGrowth,         // 环比增长率(净利环比 %)
    *   kcfYoY,           // 扣非净利润同比增长率(%)
    *   revHb,            // 营收环比增长率(%)
    *   kcfHb,            // 扣非净利润环比增长率(%)
@@ -1714,7 +1714,7 @@ const StockAPI = {
         result.revenue = row.TOTALOPERATEREVE != null ? parseFloat(row.TOTALOPERATEREVE) : null;       // 营业收入(元)
         result.profitYoY = row.PARENTNETPROFITTZ != null ? parseFloat(row.PARENTNETPROFITTZ) : null;   // 利润同比增长(%)
         result.revenueYoY = row.TOTALOPERATEREVETZ != null ? parseFloat(row.TOTALOPERATEREVETZ) : null;// 营收同比增长(%)
-        result.hbGrowth = row.NETPROFITRPHBZC != null ? parseFloat(row.NETPROFITRPHBZC) : null;        // 净利润环比(%)
+        result.hbGrowth = row.NETPROFITRPHBZC != null ? parseFloat(row.NETPROFITRPHBZC) : null;        // 净利环比(%)
         result.kcfYoY = row.KCFJCXSYJLRTZ != null ? parseFloat(row.KCFJCXSYJLRTZ) : null;               // 扣非净利润同比增长(%)
         result.revHb = row.YYZSRGDHBZC != null ? parseFloat(row.YYZSRGDHBZC) : null;                    // 营收环比增长(%)
         result.kcfHb = row.KFJLRGDHBZC != null ? parseFloat(row.KFJLRGDHBZC) : null;                    // 扣非净利润环比增长(%)
@@ -2266,7 +2266,7 @@ const StockAPI = {
 
   /**
    * 获取季报营收/扣非累计值序列，计算「今年最新报告期 vs 2024年同期」的增长率。
-   * 用于「24营比」和「24扣比」字段。
+   * 用于「24营率」和「24扣率」字段。
    * @param {string} code sh600519
    * @returns {Promise<{q24Rev: number|null, q24Kcf: number|null}>}
    *   q24Rev：最新报告期营业收入 vs 2024年同期营业收入 的同比增长率(%)

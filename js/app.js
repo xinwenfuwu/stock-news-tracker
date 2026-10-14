@@ -922,18 +922,18 @@ const app = createApp({
      * 市值类比值计算。
      * 统一用「亿元」：总市值=totalMarketCap(亿)，净利润/扣非/营收=元→转亿（yiVal）。
      * 量纲必然自洽（亿 ÷ 亿 = 倍数），所以三个「市值比」**一律不再做任何缩放**：
-     * 市净比(pbRatio) = 总市值 ÷ 净利润
-     * 市扣比(pkRatio) = 总市值 ÷ 扣非净利润
-     * 市营比(prRatio) = 总市值 ÷ 营业收入
-     * 🔴 batch54：市净比/市扣比原先各有一个 `÷ 10` 的历史缩放，已按用户要求删除
-     *    —— 它与量纲无关，会把 12.5 倍的市净比错显示成 1.25；改前请先确认三个字段
+     * 市净率(pbRatio) = 总市值 ÷ 净利润
+     * 市扣率(pkRatio) = 总市值 ÷ 扣非净利润
+     * 市营率(prRatio) = 总市值 ÷ 营业收入
+     * 🔴 batch54：市净率/市扣率原先各有一个 `÷ 10` 的历史缩放，已按用户要求删除
+     *    —— 它与量纲无关，会把 12.5 倍的市净率错显示成 1.25；改前请先确认三个字段
      *    的取值来源单位（市值=亿、财务三项=元后转亿），别再引入新的系数。
-     * 市净同比(pyRatio) = 总市值 ÷ 净利润同比增长率(profitYoY)
-     * 市扣同比(pk2Ratio) = 总市值 ÷ 扣非净利润同比增长率(kcfYoY)
-     * 市营同比(prrRatio) = 总市值 ÷ 营收同比增长率(revenueYoY)
-     * 市净环比(ph2Ratio) = 总市值 ÷ 净利润环比增长率(hbGrowth)
-     * 市扣环比(pkHbRatio) = 总市值 ÷ 扣非净利润环比增长率(kcfHb)
-     * 市营环比(phRatio) = 总市值 ÷ 营收环比增长率(revHb)
+     * 市净同率(pyRatio) = 总市值 ÷ 净利同比增长率(profitYoY)
+     * 市扣同率(pk2Ratio) = 总市值 ÷ 扣非净利同比增长率(kcfYoY)
+     * 市营同率(prrRatio) = 总市值 ÷ 营收同比增长率(revenueYoY)
+     * 市净环率(ph2Ratio) = 总市值 ÷ 净利环比增长率(hbGrowth)
+     * 市扣环率(pkHbRatio) = 总市值 ÷ 扣非净利环比增长率(kcfHb)
+     * 市营环率(phRatio) = 总市值 ÷ 营收环比增长率(revHb)
      */
     function sRatio(s) {
       const cap = s.totalMarketCap;
@@ -944,20 +944,20 @@ const app = createApp({
       const k = ratio(cap, kcf);           // 总市值/扣非净利润
       const pr = ratio(cap, rev);          // 总市值/营业收入
       // 三个「市值比」同口径：都是「市值(亿) ÷ 财务项(亿)」的倍数，不再有额外系数
-      const pRatio = p != null ? +p.toFixed(2) : null;          // 市净比
-      const kRatio = k != null ? +k.toFixed(2) : null;          // 市扣比
-      const prRatio = pr != null ? +pr.toFixed(2) : null;       // 市营比
-      // 市净同比 = 总市值 ÷ 净利润同比增长率(profitYoY)
+      const pRatio = p != null ? +p.toFixed(2) : null;          // 市净率
+      const kRatio = k != null ? +k.toFixed(2) : null;          // 市扣率
+      const prRatio = pr != null ? +pr.toFixed(2) : null;       // 市营率
+      // 市净同率 = 总市值 ÷ 净利同比增长率(profitYoY)
       const py = s.profitYoY != null && +s.profitYoY !== 0 ? +(+cap / +s.profitYoY).toFixed(2) : null;
-      // 市扣同比 = 总市值 ÷ 扣非净利润同比增长率(kcfYoY)
+      // 市扣同率 = 总市值 ÷ 扣非净利同比增长率(kcfYoY)
       const pk2 = s.kcfYoY != null && +s.kcfYoY !== 0 ? +(+cap / +s.kcfYoY).toFixed(2) : null;
-      // 市营同比 = 总市值 ÷ 营收同比增长率(revenueYoY)
+      // 市营同率 = 总市值 ÷ 营收同比增长率(revenueYoY)
       const prrRatio = s.revenueYoY != null && +s.revenueYoY !== 0 ? +(+cap / +s.revenueYoY).toFixed(2) : null;
-      // 市净环比 = 总市值 ÷ 净利润环比增长率(hbGrowth)
+      // 市净环率 = 总市值 ÷ 净利环比增长率(hbGrowth)
       const ph2 = s.hbGrowth != null && +s.hbGrowth !== 0 ? +(+cap / +s.hbGrowth).toFixed(2) : null;
-      // 市扣环比 = 总市值 ÷ 扣非净利润环比增长率(kcfHb)
+      // 市扣环率 = 总市值 ÷ 扣非净利环比增长率(kcfHb)
       const pkHb = s.kcfHb != null && +s.kcfHb !== 0 ? +(+cap / +s.kcfHb).toFixed(2) : null;
-      // 市营环比 = 总市值 ÷ 营收环比增长率(revHb)
+      // 市营环率 = 总市值 ÷ 营收环比增长率(revHb)
       const ph = s.revHb != null && +s.revHb !== 0 ? +(+cap / +s.revHb).toFixed(2) : null;
       return { pbRatio: pRatio, pkRatio: kRatio, pyRatio: py, pk2Ratio: pk2, phRatio: ph, prRatio, prrRatio, ph2Ratio: ph2, pkHbRatio: pkHb };
     }
@@ -3471,11 +3471,11 @@ const app = createApp({
         profitYoY: null,
         revenueYoY: null,
         hbGrowth: null,
-        kcfYoY: null,        // 扣非净利润同比增长率(%)
+        kcfYoY: null,        // 扣非净利同比增长率(%)
         revHb: null,         // 营收环比增长率(%)
-        kcfHb: null,         // 扣非净利润环比增长率(%)
-        q24Rev: null,        // 24营比：最新营收 vs 2024同期 增长率(%)
-        q24Kcf: null,        // 24扣比：最新扣非 vs 2024同期 增长率(%)
+        kcfHb: null,         // 扣非净利环比增长率(%)
+        q24Rev: null,        // 24营率：最新营收 vs 2024同期 增长率(%)
+        q24Kcf: null,        // 24扣率：最新扣非 vs 2024同期 增长率(%)
         ztLastYear: null,    // 去年(上一年)涨停天数（腾讯日线按自然年统计，best-effort）
         ztThisYear: null,    // 今年涨停天数
         netProfit: null,       // 净利润(元)
@@ -3891,7 +3891,7 @@ const app = createApp({
         } catch (e) {
           console.warn('主营构成获取失败', s.code, e);
         }
-        // 24营比 / 24扣比（季报营收/扣非对比2024同期）
+        // 24营率 / 24扣率（季报营收/扣非对比2024同期）
         try {
           const q24 = await StockAPI.getQuarterlyFinance(s.code);
           if (q24.q24Rev != null) s.q24Rev = q24.q24Rev;
@@ -4162,8 +4162,8 @@ const app = createApp({
       { key: 'code', label: '代码', fixed: true, fixedIndex: 1, width: 72, sortable: true, type: 'code' },
       { key: 'name', label: '股票名称', fixed: true, fixedIndex: 2, width: 92, sortable: true, type: 'name' },
       { key: 'positiveCount', label: '统计', fixed: true, fixedIndex: 3, width: 60, sortable: true, type: 'pos' },
-      // 财务估值段：净利润 / 扣非 / 相关度 / 市营比 / 市净比 / 市扣比
-      // 按需求：24营比、24扣比 紧随「市扣比」之后；「相关度」列位于「市营比」左侧（来自 AI 语义搜索的营收占比相关度）
+      // 财务估值段：净利润 / 扣非 / 相关度 / 市营率 / 市净率 / 市扣率
+      // 按需求：24营率、24扣率 紧随「市扣率」之后；「相关度」列位于「市营率」左侧（来自 AI 语义搜索的营收占比相关度）
       { key: 'netProfit', label: '净利润', width: 82, sortable: true, type: 'money' },
       // batch46：列名由「扣非净利润」缩短为「扣非」（**仅改显示名**，key=kcfjcxjlr 与取值口径不变）
       { key: 'kcfjcxjlr', label: '扣非', width: 82, sortable: true, type: 'money' },
@@ -4174,14 +4174,14 @@ const app = createApp({
       //   注：hitBusiness 这份**数据**仍在 bizRelevanceOf/applyBizRelevance 里照常计算并写回股票对象，
       //       只是不再单独占一列（「板块成分股」勾选弹窗的悬浮提示仍在用它）。
       { key: 'mainBusiness', label: '主业与主要产品', width: 186, sortable: false, type: 'mainbiz' },
-      { key: 'prRatio', label: '市营比', width: 72, sortable: true, type: 'ratio' },
-      { key: 'pbRatio', label: '市净比', width: 72, sortable: true, type: 'ratio' },
-      { key: 'pkRatio', label: '市扣比', width: 72, sortable: true, type: 'ratio' },
-      { key: 'q24Rev', label: '24营比', width: 74, sortable: true, type: 'pct' },
-      { key: 'q24Kcf', label: '24扣比', width: 74, sortable: true, type: 'pct' },
-      // 924涨跌 / 年涨跌：按需求置于「24扣比」右侧（紧贴 24扣比），二者位置互换
+      { key: 'prRatio', label: '市营率', width: 72, sortable: true, type: 'ratio' },
+      { key: 'pbRatio', label: '市净率', width: 72, sortable: true, type: 'ratio' },
+      { key: 'pkRatio', label: '市扣率', width: 72, sortable: true, type: 'ratio' },
+      { key: 'q24Rev', label: '24营率', width: 74, sortable: true, type: 'pct' },
+      { key: 'q24Kcf', label: '24扣率', width: 74, sortable: true, type: 'pct' },
+      // 924涨跌 / 年涨跌：按需求置于「24扣率」右侧（紧贴 24扣率），二者位置互换
       { key: 'change924', label: '924涨跌', width: 78, sortable: true, type: 'pct' },
-      // 估值：=(24营比+24扣比)/2（即 924涨跌 与「业绩增幅均值」的比较基准；>0 表示业绩正增长）
+      // 估值：=(24营率+24扣率)/2（即 924涨跌 与「业绩增幅均值」的比较基准；>0 表示业绩正增长）
       { key: 'valuation', label: '估值', width: 76, sortable: true, type: 'pct' },
       { key: 'yearChange', label: '年涨跌', width: 78, sortable: true, type: 'pct' },
       // 现价：今日实时股价，固定红色显示，便于与各项涨跌幅直接对照
@@ -4193,14 +4193,14 @@ const app = createApp({
       { key: 'monthChange', label: '一月涨跌', width: 78, sortable: true, type: 'pct' },
       { key: 'distToYearHigh', label: '距高价', width: 78, sortable: true, type: 'pct' },
       { key: 'distToYearLow', label: '距低价', width: 78, sortable: true, type: 'pct' },
-      { key: 'pyRatio', label: '市净同比', width: 78, sortable: true, type: 'num2' },
-      { key: 'pk2Ratio', label: '市扣同比', width: 78, sortable: true, type: 'num2' },
-      { key: 'prrRatio', label: '市营同比', width: 78, sortable: true, type: 'num2' },
-      { key: 'phRatio', label: '市净环比', width: 78, sortable: true, type: 'num2' },
-      { key: 'pkHbRatio', label: '市扣环比', width: 78, sortable: true, type: 'num2' },
-      { key: 'ph2Ratio', label: '市营环比', width: 78, sortable: true, type: 'num2' },
-      { key: 'profitYoY', label: '净利润同比', width: 86, sortable: true, type: 'pct' },
-      { key: 'hbGrowth', label: '净利润环比', width: 86, sortable: true, type: 'pct' },
+      { key: 'pyRatio', label: '市净同率', width: 78, sortable: true, type: 'num2' },
+      { key: 'pk2Ratio', label: '市扣同率', width: 78, sortable: true, type: 'num2' },
+      { key: 'prrRatio', label: '市营同率', width: 78, sortable: true, type: 'num2' },
+      { key: 'phRatio', label: '市净环率', width: 78, sortable: true, type: 'num2' },
+      { key: 'pkHbRatio', label: '市扣环率', width: 78, sortable: true, type: 'num2' },
+      { key: 'ph2Ratio', label: '市营环率', width: 78, sortable: true, type: 'num2' },
+      { key: 'profitYoY', label: '净利同比', width: 86, sortable: true, type: 'pct' },
+      { key: 'hbGrowth', label: '净利环比', width: 86, sortable: true, type: 'pct' },
       { key: 'kcfYoY', label: '扣非同比', width: 78, sortable: true, type: 'pct' },
       { key: 'kcfHb', label: '扣非环比', width: 78, sortable: true, type: 'pct' },
       { key: 'revenueYoY', label: '营收同比', width: 78, sortable: true, type: 'pct' },
@@ -4257,17 +4257,20 @@ const app = createApp({
       { key: '__note', label: '备注', width: 240, sortable: false, type: 'note' }
     ];
     /**
-     * 正数统计所覆盖的字段集合：日涨跌 + 财务/估值 + 涨跌幅 + 今年高低价 + 同比/环比系列。
+     * 统计（正数统计）所覆盖的字段集合（按用户指定口径，共 26 个）：
+     * 净利润 / 扣非 / 市营率 / 市净率 / 市扣率 / 24营率 / 24扣率 /
+     * 924涨跌 / 年涨跌 / 一周涨跌 / 一月涨跌 / 距高价 / 距低价 /
+     * 市净同率 / 市扣同率 / 市营同率 / 市净环率 / 市扣环率 / 市营环率 /
+     * 净利同比 / 净利环比 / 扣非同比 / 扣非环比 / 营收同比 / 营收环比 / 散户差额。
      * 【注意】这里用显式清单而非按列顺序切片 —— 列顺序会随需求调整，
      * 若用切片，调整列顺序就会悄悄改变「统计」列的口径。
      */
     const POSITIVE_KEYS = [
-      'dailyChange', 'totalMarketCap', 'revenue', 'netProfit', 'kcfjcxjlr',
-      'prRatio', 'pbRatio', 'pkRatio', 'q24Rev', 'q24Kcf',
-      'todayPrice', 'weekChange', 'monthChange', 'yearChange', 'change924', 'valuation',
-      'distToYearHigh', 'distToYearLow', 'yearHighPrice', 'yearLowPrice',
+      'netProfit', 'kcfjcxjlr', 'prRatio', 'pbRatio', 'pkRatio', 'q24Rev', 'q24Kcf',
+      'change924', 'yearChange', 'weekChange', 'monthChange', 'distToYearHigh', 'distToYearLow',
       'pyRatio', 'pk2Ratio', 'prrRatio', 'phRatio', 'pkHbRatio', 'ph2Ratio',
-      'profitYoY', 'hbGrowth', 'kcfYoY', 'kcfHb', 'revenueYoY', 'revHb'
+      'profitYoY', 'hbGrowth', 'kcfYoY', 'kcfHb', 'revenueYoY', 'revHb',
+      'shareholderDiff'
     ];
     // 收藏板块专属附加列（保留原有「收藏日期/距今」，置于末尾，不丢数据；备注已并入 STOCK_COLUMNS 标准列）
     const FAV_EXTRA_COLUMNS = [
@@ -4556,7 +4559,7 @@ const app = createApp({
       }, true);
     }
 
-    /** 取股票池详情某列的排序值（含计算字段 市净比/市扣比/市营比/同比/环比系列、散户差额、正数统计） */
+    /** 取股票池详情某列的排序值（含计算字段 市净率/市扣率/市营率/同比/环比系列、散户差额、正数统计） */
     function poolVal(s, key) {
       // 兼容当日股票明细快照里的旧字段名：changePercent→dailyChange、price→todayPrice
       // （否则排序/显示读到 undefined，导致「点列头排序无反应」「数值列显示 —」）
@@ -9060,11 +9063,11 @@ const app = createApp({
       show: false,
       poolId: '',       // 's-板块id' 或 'p-股票池id'
       locked: false,      // 是否固定筛选区间（切换板块/重置时保持不变）
-      pbMin: null, pbMax: null,   // 市净比区间
-      pkMin: null, pkMax: null,   // 市扣比区间
-      prMin: null, prMax: null,   // 市营比区间
-      q24Min: null, q24Max: null,   // 24营比区间
-      q24kMin: null, q24kMax: null, // 24扣比区间
+      pbMin: null, pbMax: null,   // 市净率区间
+      pkMin: null, pkMax: null,   // 市扣率区间
+      prMin: null, prMax: null,   // 市营率区间
+      q24Min: null, q24Max: null,   // 24营率区间
+      q24kMin: null, q24kMax: null, // 24扣率区间
       posMin: null, posMax: null,   // 正数统计区间（今涨跌→扣非环比 中为正的字段个数）
       autoCalc: { key: 'valuation', op1: 'gt', num1: null, conn: 'and', op2: 'lt', num2: null },  // 自动计算筛选（原「比值筛选」升级）
       industry: '',                  // 行业筛选（单选下拉，兼容旧值）
@@ -9303,7 +9306,7 @@ const app = createApp({
       }
       return true;
     }
-    /** 按板块 + 市净比/市扣比/市营比/24营比/24扣比区间过滤后的股票 */
+    /** 按板块 + 市净率/市扣率/市营率/24营率/24扣率区间过滤后的股票 */
     const filteredFilterStocks = computed(() => {
       return filterPoolStocks.value.filter(s => passFilter(s, filterPanel));
     });
@@ -9625,7 +9628,7 @@ const app = createApp({
           } catch (e) {
             console.warn('主营构成获取失败', s.code, e);
           }
-          // 24营比 / 24扣比（季报对比2024同期）
+          // 24营率 / 24扣率（季报对比2024同期）
           try {
             const q24 = await StockAPI.getQuarterlyFinance(s.code);
             if (q24.q24Rev != null) s.q24Rev = q24.q24Rev;
