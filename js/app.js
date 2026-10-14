@@ -1189,6 +1189,11 @@ const app = createApp({
           if (hb.yearLowDate != null) s.yearLowDate = hb.yearLowDate;
           if (hb.weekAgoClose != null) s.weekAgoClose = hb.weekAgoClose;
           if (hb.monthAgoClose != null) s.monthAgoClose = hb.monthAgoClose;
+          if (hb.volShrinkD3 != null) s.volShrinkD3 = hb.volShrinkD3;
+          if (hb.volShrinkD2 != null) s.volShrinkD2 = hb.volShrinkD2;
+          if (hb.volShrinkD1 != null) s.volShrinkD1 = hb.volShrinkD1;
+          if (hb.volShrinkD0 != null) s.volShrinkD0 = hb.volShrinkD0;
+          if (hb.volShrink3d != null) s.volShrink3d = hb.volShrink3d;
         }
       } catch (e) { console.warn('历史价批量获取失败', s.code, e); }
       if (s.yearStartPrice == null) {
@@ -3893,6 +3898,11 @@ const app = createApp({
             if (hb.yearLowDate != null) s.yearLowDate = hb.yearLowDate;
             if (hb.weekAgoClose != null) s.weekAgoClose = hb.weekAgoClose;
             if (hb.monthAgoClose != null) s.monthAgoClose = hb.monthAgoClose;
+            if (hb.volShrinkD3 != null) s.volShrinkD3 = hb.volShrinkD3;
+            if (hb.volShrinkD2 != null) s.volShrinkD2 = hb.volShrinkD2;
+            if (hb.volShrinkD1 != null) s.volShrinkD1 = hb.volShrinkD1;
+            if (hb.volShrinkD0 != null) s.volShrinkD0 = hb.volShrinkD0;
+            if (hb.volShrink3d != null) s.volShrink3d = hb.volShrink3d;
           }
         } catch (e) { console.warn('历史价批量获取失败', s.code, e); }
         if (s.yearStartPrice == null) {
@@ -4174,6 +4184,14 @@ const app = createApp({
       { key: 'yearHighDays', label: '距高天', width: 64, sortable: true, type: 'days' },
       { key: 'yearLowPrice', label: '今年低价', width: 78, sortable: true, type: 'price' },
       { key: 'yearLowDays', label: '距低天', width: 64, sortable: true, type: 'days' },
+      // 缩量系列（基于日 K 线成交量，置于「换手率」左侧）：
+      // 大前天/前天/昨天/今天缩量 = 对应交易日成交量是否小于前一交易日（1=缩量 -1=放量 0=平量）。
+      // 3日/缩量 = 近 3 个交易日缩量天数 / 3（盘中当日不计入，盘后>=15:00 且当日为交易日则计入）。
+      { key: 'volShrinkD3', label: '大前天缩量', width: 72, sortable: false, type: 'volshrink' },
+      { key: 'volShrinkD2', label: '前天缩量', width: 72, sortable: false, type: 'volshrink' },
+      { key: 'volShrinkD1', label: '昨天缩量', width: 72, sortable: false, type: 'volshrink' },
+      { key: 'volShrinkD0', label: '今天缩量', width: 72, sortable: false, type: 'volshrink' },
+      { key: 'volShrink3d', label: '3日/缩量', width: 60, sortable: true, type: 'volshrink3' },
       { key: 'turnover', label: '换手率', width: 70, sortable: true, type: 'num2pct' },
       // 按需求：总市值、营业收入 移至「资金流入」左侧
       { key: 'totalMarketCap', label: '总市值', width: 82, sortable: true, type: 'cap' },
@@ -4327,6 +4345,16 @@ const app = createApp({
           if (val == null || isNaN(val)) return '—';
           return '<span class="' + numClass(val) + '">' + fmtYi(val) + '</span>';
         }
+        // 缩量标记：1=缩量(蓝) -1=放量(橙) 0=平量(灰) null=无数据
+        case 'volshrink': {
+          const c = s[col.key];
+          if (c == null) return '—';
+          if (c === 1) return '<span class="vol-shrink">缩</span>';
+          if (c === -1) return '<span class="vol-expand">放</span>';
+          return '<span class="vol-flat">平</span>';
+        }
+        // 3日/缩量：近 3 个交易日缩量天数 / 3（数值用于排序）
+        case 'volshrink3': { const x = s[col.key]; return (x != null && !isNaN(x)) ? (x + '/3') : '—'; }
         case 'favDate': return esc(s.favDate || '—');
         // 距添加：自加入收藏以来的涨跌幅 (现价-添加日股价)/添加日股价
         case 'favGain': { const val = favGainPct(s); return (val != null && !isNaN(val)) ? '<span class="' + pctClass(val) + '">' + fmtPct(val) + '</span>' : '—'; }
@@ -4377,6 +4405,7 @@ const app = createApp({
       if (col.type === 'pct') cls.push(pctClass(poolVal(s, col.key)));
       if (col.type === 'favGain') cls.push(pctClass(favGainPct(s)));
       if (col.type === 'flow') cls.push(numClass(s[col.key]));
+      if (col.type === 'volshrink' || col.type === 'volshrink3') cls.push('center-cell');
       return cls.join(' ');
     }
 
@@ -9534,6 +9563,11 @@ const app = createApp({
               if (hb.yearLowDate != null) s.yearLowDate = hb.yearLowDate;
               if (hb.weekAgoClose != null) s.weekAgoClose = hb.weekAgoClose;
               if (hb.monthAgoClose != null) s.monthAgoClose = hb.monthAgoClose;
+              if (hb.volShrinkD3 != null) s.volShrinkD3 = hb.volShrinkD3;
+              if (hb.volShrinkD2 != null) s.volShrinkD2 = hb.volShrinkD2;
+              if (hb.volShrinkD1 != null) s.volShrinkD1 = hb.volShrinkD1;
+              if (hb.volShrinkD0 != null) s.volShrinkD0 = hb.volShrinkD0;
+              if (hb.volShrink3d != null) s.volShrink3d = hb.volShrink3d;
             }
           } catch (e) {
             console.warn('历史价批量获取失败', s.code, e);

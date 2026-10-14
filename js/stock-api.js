@@ -2344,6 +2344,29 @@ const StockAPI = {
     };
     out.weekAgoClose = back(5);
     out.monthAgoClose = back(20);
+    // ===== 缩量统计（基于日 K 线成交量，与「换手率」相邻展示）=====
+    // 缩量定义：当日成交量 < 前一交易日成交量。
+    // 取最近 4 个交易日，按末尾偏移标注为「今天/昨天/前天/大前天」（非交易日时「今天」即最近一个交易日）。
+    // 1=缩量，-1=放量，0=平量，null=数据不足。
+    const volArr = data.map(k => +k.volume || 0);
+    const shrinkArr = volArr.map((v, i) => i === 0 ? null
+      : (v < volArr[i - 1] ? 1 : (v > volArr[i - 1] ? -1 : 0)));
+    const _N = volArr.length;
+    const shrinkAt = (off) => { const i = _N - 1 - off; return i >= 0 ? shrinkArr[i] : null; };
+    out.volShrinkD0 = shrinkAt(0); // 今天
+    out.volShrinkD1 = shrinkAt(1); // 昨天
+    out.volShrinkD2 = shrinkAt(2); // 前天
+    out.volShrinkD3 = shrinkAt(3); // 大前天
+    // 3日/缩量 = 近 3 个交易日中缩量天数 / 3。
+    // 规则：盘中(当日未收盘)今日不计入 3 日；盘后(>=15:00)且当日为交易日，今日计入。
+    const _now = new Date();
+    const _lastIsToday = _N > 0 && data[_N - 1].date === this._todayStr();
+    const _afterClose = _now.getHours() >= 15;
+    const _todayCounts = _lastIsToday && _afterClose;
+    const _win = _todayCounts ? [0, 1, 2] : [1, 2, 3];
+    let _sc = 0;
+    for (const o of _win) { if (shrinkAt(o) === 1) _sc++; }
+    out.volShrink3d = _sc;
     return out;
   },
 
