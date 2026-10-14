@@ -1875,6 +1875,86 @@ const StockAPI = {
   },
 
   /**
+   * 大盘环境（上证指数 / 创业板指 当日涨跌幅），供「右侧」信号的「环境配合」判定。
+   * 一次请求取两指数，按日缓存；best-effort：取不到返回 ok:false。
+   * @returns {Promise<{sh:number|null, cyb:number|null, ok:boolean, label:string, rsEnvOk:boolean}>}
+   */
+  async getMarketEnv() {
+    const dayKey = this._todayStr();
+    return this._withCache('env:' + dayKey, 60 * 60 * 1000, async () => {
+      const idxs = [['1.000001', '上证'], ['0.399006', '创业板指']];
+      const res = {};
+      await Promise.all(idxs.map(async ([secid, name]) => {
+        try {
+          const url = `https://push2.eastmoney.com/api/qt/stock/get?secid=${secid}&fields=f43,f57,f58,f170`;
+          const json = await this._eastGet(url);
+          const d = json && json.data;
+          res[name] = d && d.f170 != null ? parseFloat(d.f170) : null;
+        } catch (e) { res[name] = null; }
+      }));
+      const sh = res['上证'], cyb = res['创业板指'];
+      const ok = sh != null || cyb != null;
+      const fmt = (x) => (x == null ? '—' : (x >= 0 ? '+' : '') + x.toFixed(2) + '%');
+      return {
+        sh, cyb, ok,
+        label: '沪' + fmt(sh) + ' 创' + fmt(cyb),
+        rsEnvOk: (sh != null && sh > 0)
+      };
+    }, v => v && v.ok);
+  },
+
+  /**
+   * 个股所属板块画像（完整版「板块配合」）：取个股主营构成 → 本地匹配东财板块 → 读取该板块
+   * 领涨股(涨停?) + 上涨/下跌家数(梯队)。全部走缓存，best-effort：取不到返回 null。
+   * @returns {Promise<{boardName,change,leader,leaderChg,upCount,downCount,ok,rsSector:boolean}|null>}
+   */
+  async getStockSectorProfile(code) {
+    const c = this.pureCode(code);
+    if (!c) return null;
+    const dayKey = this._todayStr();
+    return this._withCache('ssp:' + c + ':' + dayKey, API_TTL.SECTOR, async () => {
+      const mb = await this.getMainBusiness(code);
+      if (!mb || !mb.length) return null;
+      const all = await this.getAllSectors();
+      const boardCodes = [];
+      for (const seg of mb.slice(0, 6)) {
+        const boards = this._matchSegmentBoards(seg.name, 12);
+        for (const b of boards.slice(0, 2)) if (b.bk && boardCodes.indexOf(b.bk) < 0) boardCodes.push(b.bk);
+      }
+      if (!boardCodes.length) return null;
+      const prof = await this.getBoardLeaderEchelon(boardCodes[0]);
+      return prof ? Object.assign({ boardBk: boardCodes[0] }, prof) : null;
+    }, v => v != null);
+  },
+
+  /**
+   * 板块领涨/梯队画像：以东财板块行情(secid=90.BKxxxx)读取涨跌幅、领涨股及涨幅、上涨/下跌家数。
+   * 字段：f170 涨跌幅 / f58 板块名 / f128 领涨股 / f135 领涨股涨幅 / f104 涨家数 / f105 跌家数。
+   * 板块「符合」= 板块上涨 且 领涨股涨停(≥9.8%) 且 涨家数≥5 且 涨>跌（龙头领涨 + 梯队完整）。
+   */
+  async getBoardLeaderEchelon(bk) {
+    const code = this._normalizeBoardCode(bk);
+    return this._withCache('ble:' + code, API_TTL.SECTOR, async () => {
+      const secid = '90.' + code.replace(/^BK/i, 'BK');
+      const url = `https://push2.eastmoney.com/api/qt/stock/get?secid=${secid}&fields=f58,f170,f128,f135,f136,f104,f105`;
+      const json = await this._eastGet(url);
+      const d = json && json.data; if (!d) return null;
+      const change = d.f170 != null ? parseFloat(d.f170) : null;
+      const leaderChg = d.f135 != null ? parseFloat(d.f135) : null;
+      const upCount = d.f104 != null ? parseInt(d.f104, 10) : null;
+      const downCount = d.f105 != null ? parseInt(d.f105, 10) : null;
+      const boardName = d.f58 || '';
+      return {
+        boardName, change,
+        leader: d.f128 || '', leaderChg, upCount, downCount,
+        ok: (change != null && leaderChg != null && upCount != null),
+        rsSector: !!(change != null && change > 0 && leaderChg != null && leaderChg >= 9.8 &&
+          upCount != null && upCount >= 5 && downCount != null && upCount > downCount)
+      };
+    }, v => v != null);
+  },
+
+  /**
    * 反推业务：输入一只股票（代码或名称），反推出它的主营构成中各个业务/产品的
    * 营收占比（相关度），并对每个业务映射其所属东财板块、统计该板块成分股数量作为「热度」。
    *
@@ -2367,7 +2447,154 @@ const StockAPI = {
     let _sc = 0;
     for (const o of _win) { if (shrinkAt(o) === 1) _sc++; }
     out.volShrink3d = _sc;
+    // ===== 右侧交易信号（字段 1-5 + 右侧汇总 + 量比 + 连板），由已抓取的日K线零额外请求算出 =====
+    const _rs = this._computeRightSide(data, code);
+    if (_rs) Object.assign(out, _rs);
     return out;
+  },
+
+  /**
+   * 右侧交易信号计算：突破 / 量放大 / 转强 / 共振 / 回踩 / 右侧汇总 / 量比 / 连板。
+   * 全部由已抓取的日K线（data: 升序 {date,open,close,high,low,volume}）算出，零额外请求。
+   * 返回键：rsBreak,rsVol,rsStrong,rsReso,rsPull(布尔/ null), rsRight(0-5 整数),
+   *         volRatio(数值), limitUpStreak(数值)。
+   * 口径见需求：突破(实体阳线破前高+幅度>3%或站稳≥3日)、量放大(突破量≥1.5×均量且上涨放量)、
+   * 转强(MA5>MA10>MA20 且 MA5 向上，且金叉或站上60线)、共振(≥2类:MACD/RSI/形态)、
+   * 回踩(突破后缩量不破再放量上攻)。
+   */
+  _computeRightSide(data, code) {
+    const out = { rsBreak: null, rsVol: null, rsStrong: null, rsReso: null, rsPull: null, rsRight: null, volRatio: null, limitUpStreak: null };
+    if (!data || data.length < 25) return out;
+    const n = data.length;
+    const C = data.map(d => +d.close);
+    const V = data.map(d => +d.volume || 0);
+    const H = data.map(d => +d.high);
+    const O = data.map(d => +d.open);
+
+    // ---- 移动平均 ----
+    const sma = (arr, p, i) => { if (i < p - 1) return null; let s = 0; for (let k = i - p + 1; k <= i; k++) s += arr[k]; return s / p; };
+    const ma5 = i => sma(C, 5, i), ma10 = i => sma(C, 10, i), ma20 = i => sma(C, 20, i), ma60 = i => sma(C, 60, i);
+
+    // ---- MACD (EMA12/26, DEA=EMA(DIF,9)) ----
+    const ema = (arr, p) => { const k = 2 / (p + 1); let e = arr[0]; const o = [e]; for (let i = 1; i < arr.length; i++) { e = arr[i] * k + e * (1 - k); o.push(e); } return o; };
+    const e12 = ema(C, 12), e26 = ema(C, 26);
+    const dif = C.map((c, i) => c - e26[i]);
+    const dea = ema(dif, 9);
+
+    // ---- RSI14 (Wilder) ----
+    const rsiArr = []; let g = 0, l = 0; const RP = 14;
+    for (let i = 1; i < C.length; i++) {
+      const ch = C[i] - C[i - 1];
+      if (i <= RP) { g += Math.max(ch, 0); l += Math.max(-ch, 0); if (i === RP) { g /= RP; l /= RP; rsiArr.push(l === 0 ? 100 : 100 - 100 / (1 + g / l)); } }
+      else { g = (g * (RP - 1) + Math.max(ch, 0)) / RP; l = (l * (RP - 1) + Math.max(-ch, 0)) / RP; rsiArr.push(l === 0 ? 100 : 100 - 100 / (1 + g / l)); }
+    }
+
+    // ---- 突破位 L：前 ~54 个交易日（排除最近 5 日）最高价 ----
+    const start = Math.max(0, n - 60), end = n - 6;
+    let L = -Infinity;
+    for (let i = start; i <= end; i++) if (H[i] > L) L = H[i];
+    if (!isFinite(L)) return out;
+
+    const t = data[n - 1];
+    const isYang = t.close > t.open;
+    const broke = t.close > L;
+    const mag = broke ? (t.close - L) / L : 0;
+    let held = 0; for (let i = n - 1; i >= 0; i--) { if (C[i] > L) held++; else break; }
+    out.rsBreak = !!(broke && isYang && (mag > 0.03 || held >= 3));
+
+    // ---- 量放大 ----
+    if (n >= 22) {
+      let s = 0; for (let i = n - 21; i <= n - 2; i++) s += V[i];
+      const vol20 = s / 20;
+      let bi = -1; for (let i = n - 1; i >= Math.max(0, n - 15); i--) if (C[i] > L) { bi = i; break; }
+      const breakVol = bi >= 0 ? V[bi] : V[n - 1];
+      let upS = 0, upN = 0, dnS = 0, dnN = 0;
+      for (let i = n - 5; i <= n - 1; i++) {
+        if (C[i] > C[i - 1]) { upS += V[i]; upN++; } else if (C[i] < C[i - 1]) { dnS += V[i]; dnN++; }
+      }
+      const upAvg = upN ? upS / upN : 0, dnAvg = dnN ? dnS / dnN : 0;
+      out.rsVol = !!(vol20 > 0 && breakVol >= 1.5 * vol20 && upAvg >= dnAvg);
+    }
+
+    // ---- 转强 ----
+    const a = ma5(n - 1), b = ma10(n - 1), c = ma20(n - 1), d = ma60(n - 1);
+    const ma5Up = ma5(n - 1) != null && ma5(n - 6) != null && ma5(n - 1) > ma5(n - 6);
+    let gc = false;
+    for (let i = n - 1; i >= Math.max(1, n - 11); i--) {
+      if (ma5(i) != null && ma10(i) != null && ma5(i - 1) != null && ma10(i - 1) != null && ma5(i) >= ma10(i) && ma5(i - 1) < ma10(i - 1)) { gc = true; break; }
+    }
+    const bull = a != null && b != null && c != null && a > b && b > c;
+    const above60 = c != null && d != null && t.close > d && (ma60(n - 1) != null && ma60(n - 6) != null && ma60(n - 1) > ma60(n - 6));
+    out.rsStrong = !!(bull && ma5Up && (gc || above60));
+
+    // ---- 共振 ----
+    let macdGC = false;
+    for (let i = n - 1; i >= Math.max(1, n - 11); i--) { if (dif[i] >= dea[i] && dif[i - 1] < dea[i - 1]) { macdGC = true; break; } }
+    const macdRed = dif[n - 1] > dea[n - 1] && (dif[n - 1] - dea[n - 1]) > 0;
+    const rsiOK = rsiArr.length ? rsiArr[rsiArr.length - 1] > 50 : false;
+    const pattern = this._detectReversalPattern(data);
+    let rc = 0; if (macdGC || macdRed) rc++; if (rsiOK) rc++; if (pattern) rc++;
+    out.rsReso = rc >= 2;
+
+    // ---- 回踩 ----
+    let bi2 = -1; for (let i = n - 1; i >= Math.max(0, n - 15); i--) if (C[i] > L) { bi2 = i; break; }
+    if (bi2 >= 0) {
+      let minC = Infinity; for (let i = bi2 + 1; i <= n - 2; i++) if (C[i] < minC) minC = C[i];
+      const heldPull = minC >= L * 0.97;
+      const reUp = V[n - 1] >= V[n - 2] && V[n - 2] >= V[n - 3] && C[n - 1] > C[n - 2] && C[n - 2] >= C[n - 3];
+      out.rsPull = !!(heldPull && reUp);
+    }
+
+    // ---- 右侧汇总（1-5 符合数）----
+    out.rsRight = [out.rsBreak, out.rsVol, out.rsStrong, out.rsReso, out.rsPull].filter(Boolean).length;
+
+    // ---- 量比（今日量 / 近 5 日均量）----
+    if (n >= 6) {
+      let s = 0; for (let i = n - 6; i <= n - 2; i++) s += V[i];
+      const v5 = s / 5; out.volRatio = v5 > 0 ? +(V[n - 1] / v5).toFixed(2) : null;
+    }
+
+    // ---- 连板数（最近连续涨停天数）----
+    const bd = typeof boardOf === 'function' ? boardOf(code) : 'main';
+    const thr = (bd === 'cyb' || bd === 'star') ? 19.8 : (bd === 'bse' ? 29.8 : 9.8);
+    let streak = 0;
+    for (let i = n - 1; i >= 1; i--) {
+      const prev = C[i - 1]; if (!prev) break;
+      const pct = (C[i] - prev) / prev * 100;
+      if (pct >= thr && H[i] === C[i] && C[i] > O[i]) streak++; else break;
+    }
+    out.limitUpStreak = streak;
+
+    return out;
+  },
+
+  /** K线反转形态检测（近 ~15/40 日）：阳包阴 / 启明星 / 红三兵 / W底。命中任一种返回 true。 */
+  _detectReversalPattern(data) {
+    const n = data.length; if (n < 3) return false;
+    const C = data.map(d => +d.close), O = data.map(d => +d.open), H = data.map(d => +d.high);
+    if (n >= 2) { // 阳包阴
+      const y = data[n - 2], t = data[n - 1];
+      if (t.close > t.open && y.close < y.open && t.close > y.open && t.open < y.close) return true;
+    }
+    if (n >= 3) { // 红三兵
+      let ok = true; for (let i = n - 3; i <= n - 1; i++) if (!(C[i] > O[i])) { ok = false; break; }
+      if (ok && C[n - 1] > C[n - 2] && C[n - 2] > C[n - 3]) return true;
+    }
+    if (n >= 3) { // 启明星
+      const d0 = data[n - 3], d2 = data[n - 1];
+      if (d0.close < d0.open && d2.close > d2.open && d2.close > d0.open) return true;
+    }
+    if (n >= 20) { // W底：近 ~40 日两个低点相互在 3% 内，且当前收盘较低点反弹 >3%
+      const w = 40, lo = []; const s0 = Math.max(0, n - w);
+      for (let i = s0 + 1; i < n - 1; i++) if (C[i] < C[i - 1] && C[i] <= C[i + 1]) lo.push(C[i]);
+      if (lo.length >= 2) {
+        for (let i = 0; i < lo.length; i++) for (let j = i + 1; j < lo.length; j++) {
+          const base = Math.max(lo[i], lo[j]);
+          if (Math.abs(lo[i] - lo[j]) / base <= 0.03 && C[n - 1] > base * 1.03) return true;
+        }
+      }
+    }
+    return false;
   },
 
   /** 转换 SECUCODE：sh600519 → 600519.SH，sz000001 → 000001.SZ，bj → .BJ */

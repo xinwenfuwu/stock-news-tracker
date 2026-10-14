@@ -3586,3 +3586,15 @@ body.guest-mode #app { display: none; }
 .vol-shrink { color: #0969da; font-weight: 600; }   /* 缩量：蓝 */
 .vol-expand { color: #bc4c00; font-weight: 600; }   /* 放量：橙 */
 .vol-flat  { color: #6e7781; }                       /* 平量：灰 */
+
+/* ===== 右侧交易信号列 ===== */
+.flag-ok  { color: #e23b3b; font-weight: 700; }      /* 符合：红 */
+.flag-no  { color: #9aa0a6; }                        /* 不符合：灰 */
+.rs-5     { color: #e23b3b; font-weight: 700; }      /* 右侧 ≥4/5：红 */
+.rs-3     { color: #ef8a1f; font-weight: 700; }      /* 右侧 =3/5：橙 */
+.rs-low   { color: #9aa0a6; }                        /* 右侧 ≤2/5：灰 */
+.rs-cell-5 > .rs-5, .rs-cell-3 > .rs-3 { font-weight: 700; }
+.env-up   { color: #e23b3b; font-weight: 600; }      /* 大盘环境偏多：红 */
+.env-down { color: #2faa6b; }                        /* 大盘环境偏弱：绿 */
+.vol-ratio-hi { color: #e23b3b; font-weight: 600; } /* 量比放大 */
+.streak-hi { color: #e23b3b; font-weight: 700; }     /* 连板 */

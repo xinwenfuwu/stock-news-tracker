@@ -1194,8 +1194,14 @@ const app = createApp({
           if (hb.volShrinkD1 != null) s.volShrinkD1 = hb.volShrinkD1;
           if (hb.volShrinkD0 != null) s.volShrinkD0 = hb.volShrinkD0;
           if (hb.volShrink3d != null) s.volShrink3d = hb.volShrink3d;
+          for (const k of ['rsBreak', 'rsVol', 'rsStrong', 'rsReso', 'rsPull', 'rsRight', 'volRatio', 'limitUpStreak']) {
+            if (hb[k] != null) s[k] = hb[k];
+          }
         }
       } catch (e) { console.warn('历史价批量获取失败', s.code, e); }
+      // 右侧信号：大盘环境（全局，按日缓存）+ 板块配合（完整版：龙头涨停+梯队，best-effort）
+      try { const env = await StockAPI.getMarketEnv(); if (env) s.rsEnv = env; } catch (e) { /* 忽略 */ }
+      try { const sp = await StockAPI.getStockSectorProfile(s.code); if (sp) s.rsSector = sp; } catch (e) { /* 忽略 */ }
       if (s.yearStartPrice == null) {
         try {
           const yp = await StockAPI.getYearStartPrice(s.code);
@@ -3903,8 +3909,14 @@ const app = createApp({
             if (hb.volShrinkD1 != null) s.volShrinkD1 = hb.volShrinkD1;
             if (hb.volShrinkD0 != null) s.volShrinkD0 = hb.volShrinkD0;
             if (hb.volShrink3d != null) s.volShrink3d = hb.volShrink3d;
+            for (const k of ['rsBreak', 'rsVol', 'rsStrong', 'rsReso', 'rsPull', 'rsRight', 'volRatio', 'limitUpStreak']) {
+              if (hb[k] != null) s[k] = hb[k];
+            }
           }
         } catch (e) { console.warn('历史价批量获取失败', s.code, e); }
+        // 右侧信号：大盘环境（全局，按日缓存）+ 板块配合（完整版：龙头涨停+梯队，best-effort）
+        try { const env = await StockAPI.getMarketEnv(); if (env) s.rsEnv = env; } catch (e) { /* 忽略 */ }
+        try { const sp = await StockAPI.getStockSectorProfile(s.code); if (sp) s.rsSector = sp; } catch (e) { /* 忽略 */ }
         if (s.yearStartPrice == null) {
           try {
             const yp = await StockAPI.getYearStartPrice(s.code);
@@ -4193,6 +4205,19 @@ const app = createApp({
       { key: 'volShrinkD0', label: '今天缩量', width: 72, sortable: false, type: 'volshrink' },
       { key: 'volShrink3d', label: '3日/缩量', width: 60, sortable: true, type: 'volshrink3' },
       { key: 'turnover', label: '换手率', width: 70, sortable: true, type: 'num2pct' },
+      // ===== 右侧交易信号（字段 1-5 + 板块 + 右侧汇总）置于换手率右侧；其后为辅助确认字段 =====
+      { key: 'rsBreak', label: '突破', width: 52, sortable: true, type: 'flag' },
+      { key: 'rsVol', label: '量放大', width: 60, sortable: true, type: 'flag' },
+      { key: 'rsStrong', label: '转强', width: 52, sortable: true, type: 'flag' },
+      { key: 'rsReso', label: '共振', width: 52, sortable: true, type: 'flag' },
+      { key: 'rsPull', label: '回踩', width: 52, sortable: true, type: 'flag' },
+      { key: 'rsSector', label: '板块', width: 52, sortable: false, type: 'flag' },
+      { key: 'rsRight', label: '右侧', width: 60, sortable: true, type: 'rightside' },
+      // ===== 辅助确认字段（提升右侧信号确定性）=====
+      { key: 'volRatio', label: '量比', width: 56, sortable: true, type: 'volratio' },
+      { key: 'rsFund', label: '资金共振', width: 64, sortable: false, type: 'flag' },
+      { key: 'rsEnv', label: '大盘环境', width: 110, sortable: false, type: 'rsenv' },
+      { key: 'limitUpStreak', label: '连板', width: 48, sortable: true, type: 'streak' },
       // 按需求：总市值、营业收入 移至「资金流入」左侧
       { key: 'totalMarketCap', label: '总市值', width: 82, sortable: true, type: 'cap' },
       { key: 'revenue', label: '营业收入', width: 86, sortable: true, type: 'money' },
@@ -4355,6 +4380,38 @@ const app = createApp({
         }
         // 3日/缩量：近 3 个交易日缩量天数 / 3（数值用于排序）
         case 'volshrink3': { const x = s[col.key]; return (x != null && !isNaN(x)) ? (x + '/3') : '—'; }
+        // 右侧信号布尔列：符合=红✓，不符合=灰—
+        case 'flag': {
+          let on = false, title = '';
+          if (col.key === 'rsFund') { on = !!(s.capitalFlow != null && s.capitalFlow > 0); title = '主力净流入' + (on ? '为正' : '为负/无'); }
+          else if (col.key === 'rsSector') {
+            const p = s.rsSector;
+            on = !!(p && p.rsSector);
+            if (p) title = (p.boardName || '') + ' ' + (p.change != null ? (p.change >= 0 ? '+' : '') + p.change.toFixed(2) + '%' : '') +
+              ' 领涨:' + (p.leader || '—') + (p.leaderChg != null ? ('+' + p.leaderChg.toFixed(2) + '%') : '') +
+              ' 涨/跌家:' + (p.upCount != null ? p.upCount : '—') + '/' + (p.downCount != null ? p.downCount : '—');
+          } else { on = !!s[col.key]; }
+          if (on) return '<span class="flag-ok" title="' + esc(title) + '">✓</span>';
+          return '<span class="flag-no" title="' + esc(title) + '">—</span>';
+        }
+        // 右侧汇总：前 5 项符合数 /5，≥4 红、=3 橙、≤2 灰
+        case 'rightside': {
+          const v = s[col.key];
+          if (v == null || isNaN(v)) return '—';
+          const cls = v >= 4 ? 'rs-5' : (v === 3 ? 'rs-3' : 'rs-low');
+          return '<span class="' + cls + '">' + v + '/5</span>';
+        }
+        // 量比
+        case 'volratio': { const v = s[col.key]; return (v != null && !isNaN(v)) ? (v >= 1.5 ? '<span class="vol-ratio-hi">' + v.toFixed(2) + '</span>' : v.toFixed(2)) : '—'; }
+        // 连板
+        case 'streak': { const v = s[col.key]; return (v && v > 0) ? '<span class="streak-hi">' + v + '板</span>' : '—'; }
+        // 大盘环境
+        case 'rsenv': {
+          const e = s.rsEnv;
+          if (!e || !e.ok) return '<span class="muted small">—</span>';
+          const cls = e.rsEnvOk ? 'env-up' : 'env-down';
+          return '<span class="' + cls + '" title="上证:' + (e.sh != null ? e.sh.toFixed(2) + '%' : '—') + ' 创业板:' + (e.cyb != null ? e.cyb.toFixed(2) + '%' : '—') + '">' + esc(e.label) + '</span>';
+        }
         case 'favDate': return esc(s.favDate || '—');
         // 距添加：自加入收藏以来的涨跌幅 (现价-添加日股价)/添加日股价
         case 'favGain': { const val = favGainPct(s); return (val != null && !isNaN(val)) ? '<span class="' + pctClass(val) + '">' + fmtPct(val) + '</span>' : '—'; }
@@ -4406,6 +4463,8 @@ const app = createApp({
       if (col.type === 'favGain') cls.push(pctClass(favGainPct(s)));
       if (col.type === 'flow') cls.push(numClass(s[col.key]));
       if (col.type === 'volshrink' || col.type === 'volshrink3') cls.push('center-cell');
+      if (col.type === 'flag' || col.type === 'rightside' || col.type === 'volratio' || col.type === 'streak' || col.type === 'rsenv') cls.push('center-cell');
+      if (col.type === 'rightside') { const v = s[col.key]; if (v >= 4) cls.push('rs-cell-5'); else if (v === 3) cls.push('rs-cell-3'); }
       return cls.join(' ');
     }
 
@@ -9568,10 +9627,16 @@ const app = createApp({
               if (hb.volShrinkD1 != null) s.volShrinkD1 = hb.volShrinkD1;
               if (hb.volShrinkD0 != null) s.volShrinkD0 = hb.volShrinkD0;
               if (hb.volShrink3d != null) s.volShrink3d = hb.volShrink3d;
+              for (const k of ['rsBreak', 'rsVol', 'rsStrong', 'rsReso', 'rsPull', 'rsRight', 'volRatio', 'limitUpStreak']) {
+                if (hb[k] != null) s[k] = hb[k];
+              }
             }
           } catch (e) {
             console.warn('历史价批量获取失败', s.code, e);
           }
+          // 右侧信号：大盘环境（全局，按日缓存）+ 板块配合（完整版：龙头涨停+梯队，best-effort）
+          try { const env = await StockAPI.getMarketEnv(); if (env) s.rsEnv = env; } catch (e) { /* 忽略 */ }
+          try { const sp = await StockAPI.getStockSectorProfile(s.code); if (sp) s.rsSector = sp; } catch (e) { /* 忽略 */ }
           if (s.yearStartPrice == null) {
             try {
               const yp = await StockAPI.getYearStartPrice(s.code);
