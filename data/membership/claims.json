@@ -12,6 +12,17 @@
       "period": "24月期（¥4000）",
       "resolvedAt": 1791822740931,
       "resolvedBy": "ops-script"
+    },
+    {
+      "id": "c_1792158225541_259617",
+      "user": "yh123",
+      "plan": "2y",
+      "ts": 1792158224666,
+      "resolved": false,
+      "amount": 4000,
+      "startTs": 1792158224666,
+      "endTs": 1854366224666,
+      "period": "24月期（¥4000）"
     }
   ]
 }
