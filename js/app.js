@@ -377,6 +377,14 @@ const app = createApp({
         showToast(`已添加用户「${r.user.username}」`, 'success');
         userModal.newUsername = ''; userModal.newPassword = ''; userModal.newRole = 'user';
         refreshUserList();
+        // 20261016d：确认云端注册表是否真的写成功——写不上对方设备就登不来，必须显式告知
+        if (r.sync) {
+          Promise.resolve(r.sync).then(sr => {
+            if (sr && !sr.ok && !sr.skip) {
+              showToast(`「${r.user.username}」未同步到云端注册表：${sr.error || '写入失败'}（对方设备可能无法登录）`, 'warn', 9000);
+            }
+          }).catch(() => {});
+        }
       }).catch(e => showToast('添加失败：' + e.message, 'error'));
     }
 
@@ -386,6 +394,14 @@ const app = createApp({
       if (!r.ok) { showToast(r.error, 'error'); refreshUserList(); return; }
       showToast(`「${u.username}」已设为${A.roleName(role)}`, 'success');
       refreshUserList();
+      // 20261016d：角色变更也要传到云端，否则对方设备登录时仍按旧角色授权；失败要告知
+      if (r.sync) {
+        Promise.resolve(r.sync).then(sr => {
+          if (sr && !sr.ok && !sr.skip) {
+            showToast(`「${u.username}」的角色变更未同步到云端：${sr.error || '写入失败'}`, 'warn', 8000);
+          }
+        }).catch(() => {});
+      }
     }
 
     function toggleUserDisabled(u) {
@@ -411,6 +427,14 @@ const app = createApp({
       if (!r.ok) { showToast(r.error, 'error'); return; }
       showToast('已删除用户', 'success');
       refreshUserList();
+      // 20261016d：删除必须同步到云端注册表，否则下次打开用户管理时该账号会被「从云端恢复」重新合并回来
+      if (r.sync) {
+        Promise.resolve(r.sync).then(sr => {
+          if (sr && !sr.ok && !sr.skip) {
+            showToast(`「${u.username}」未从云端注册表删除：${sr.error || '写入失败'}（该账号之后可能再次出现）`, 'warn', 9000);
+          }
+        }).catch(() => {});
+      }
     }
 
     /* ---------- 试用（四档：一天 / 三天 / 一周 / 一月） ---------- */
@@ -2481,8 +2505,26 @@ const app = createApp({
       if (!A) return;
       const months = claimMonths(claim);
       const payTs = Number(claim.ts) || 0;
-      const r = A.grantMembership(claim.user, months, { paidAt: payTs, amount: Number(claim.amount) || 0 });
-      if (!r || !r.ok) { showToast((r && r.error) || '开通失败', 'error'); return; }
+      // 20261016d：跨设备注册的用户不在管理员本机账号表里，直接开理会报「用户不存在」。
+      // 先从云端注册表把该账号合并回本机（只读云端、按用户名 upsert，绝不动云端），再重试——
+      // 保证「普通用户注册 → 提交支付申请 → 管理员一键核对并开通」闭环可用，且用的就是对方注册时的用户名。
+      let r = A.grantMembership(claim.user, months, { paidAt: payTs, amount: Number(claim.amount) || 0 });
+      if ((!r || !r.ok) && r && r.error === '用户不存在' && typeof A.recoverFromRegistry === 'function') {
+        try {
+          const rec = await A.recoverFromRegistry();
+          if (rec && rec.ok && rec.recovered > 0) {
+            refreshUserList();
+            r = A.grantMembership(claim.user, months, { paidAt: payTs, amount: Number(claim.amount) || 0 });
+          }
+        } catch (e) { /* 忽略，走下面的错误提示 */ }
+      }
+      if (!r || !r.ok) {
+        const err = (r && r.error) || '开通失败';
+        showToast(err === '用户不存在'
+          ? '云端注册表里也没有「' + claim.user + '」。请确认对方注册时用的用户名；或让对方把「申请码」发给你，在「待审核用户 → 注册审核 / 账号导入」区导入后再开通'
+          : err, 'error', 9000);
+        return;
+      }
       // 云端传播：写注册表，让用户在自己设备登录时能立刻拿到会员（失败要显式告知）
       const prop = await propagateMembershipGrant(claim.user);
       // 审核通过：立即从「待审核」区移除该申请（乐观更新，确保无论后端标记是否成功都不再回显）

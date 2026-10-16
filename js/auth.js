@@ -1091,6 +1091,12 @@
         self.users.push(u);
         if (!saveUsers(self.users)) return { ok: false, error: '保存失败：浏览器本地存储不可用' };
         setDeviceRegisteredUser(v.username);        // 设备注册锁：本机已自助注册一个账号
+        // 20261016d：全新注册也写云端注册表（仅本机配有 GitHub 令牌时真正落地，即管理员设备）；
+        // 普通用户设备没有令牌，_syncUserToRegistry 静默跳过，行为与之前完全一致。
+        // 目的：保证「普通用户注册后，管理员在任何设备的用户管理里都以**相同用户名**看到该账号」，
+        // 杜绝「只存在本机 → 管理员看不到 → 手动添加成另一个名字」的用户名分裂。
+        // 同步的是真实状态（active + 1天试用），对方设备登录时经 loginRemote 直接放行。
+        try { self._syncUserToRegistry(u).catch(function () { /* 离线兜底，不影响注册结果 */ }); } catch (e) { /* ignore */ }
         return {
           ok: true, user: publicUser(u), autoTrial: true,
           trialUntil: u.trialUntil, trialDays: 1
@@ -1758,8 +1764,10 @@
         };
         self.users.push(u);
         if (!saveUsers(self.users)) return { ok: false, error: '保存失败：浏览器本地存储不可用' };
-        self._syncUserToRegistry(u);
-        return { ok: true, user: publicUser(u) };
+        // 20261016d：把 sync Promise 一并返回，调用方可确认云端是否真的写成功
+        // （令牌过期 / 写入失败时同样上不了云，管理员应被告知，否则对方设备登不上）。
+        var syncP = self._syncUserToRegistry(u);
+        return { ok: true, user: publicUser(u), sync: syncP };
       });
     },
 
@@ -1779,7 +1787,13 @@
       saveUsers(this.users);
       // 设备注册锁：管理员在本机删除了该自助注册账号 → 释放本机设备锁，允许重新注册
       clearDeviceRegisteredUser(username);
-      return { ok: true };
+      // 20261016d：删除必须同步到云端注册表，否则 recoverFromRegistry 会把该账号重新合并回本机，
+      // 管理员会看到「删了又出现」的幽灵账号（且名字可能与新注册账号混淆）。
+      // 删除失败（无令牌 / 写失败）时由调用方 toast 告知，不再静默。
+      var delP = (typeof Auth !== 'undefined' && Auth.Sync && Auth.Sync.deleteUser)
+        ? Auth.Sync.deleteUser(username)
+        : Promise.resolve({ ok: false, skip: true, error: '同步模块未加载' });
+      return { ok: true, sync: delP };
     },
 
     setUserRole: function (username, role) {
@@ -1798,7 +1812,10 @@
       u.role = roleVal;
       u.updatedAt = Date.now();
       saveUsers(this.users);
-      return { ok: true, user: publicUser(u) };
+      // 20261016d：角色变更同样传播到云端注册表——否则对方设备登录时 loginRemote 仍按旧角色授权，
+      // 管理员在本机提权/降权在别的设备不生效（与 approveUser/setUserDisabled 口径统一）。
+      var syncP4 = this._syncUserToRegistry(u);
+      return { ok: true, user: publicUser(u), sync: syncP4 };
     },
 
     setUserDisabled: function (username, disabled) {

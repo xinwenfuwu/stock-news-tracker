@@ -253,7 +253,13 @@
         ? global.Auth.verifyPassword(password, acc.hash)
         : Promise.resolve(false);
       return Promise.resolve(verify).then(function (ok) {
-        if (!ok) return { ok: false, error: '用户名或密码不正确' };
+        if (!ok) {
+          // 20261016d：注册表里的哈希与所输密码不符（典型：用户在别的设备改过密码但没同步上去 /
+          // 管理员手动添加时设了另一套密码）→ 不再硬报「用户名或密码不正确」把用户锁死，
+          // 改为返回 {} 让 auth.js 回落本机校验：本机账号表里有正确哈希就能正常登录。
+          // 本机也没有该账号时，_localLogin 会给出同样的错误提示，安全性不变。
+          return {};
+        }
         var st = acc.status || 'pending';
         var disabled = !!acc.disabled;
         if (st === 'pending') return { ok: false, status: 'pending', error: '该账号正在等待管理员审核，通过后即可直接登录' };
@@ -310,6 +316,23 @@
   function disableRemote(username, hash, disabled) {
     return writeUser({ username: username, hash: hash || '', role: 'user', status: 'active', disabled: !!disabled });
   }
+  /**
+   * 20261016d：从注册表删除某个账号（管理员删除用户时调用）。
+   * 没有令牌时返回 skip（调用方据此决定是否提示）；删除失败绝不抛异常。
+   */
+  function deleteUser(username) {
+    var uname = String(username == null ? '' : username).trim();
+    if (!uname) return Promise.resolve({ ok: false, error: '缺少用户名' });
+    if (!isAdminConfigured()) return Promise.resolve({ ok: false, skip: true, error: '未配置 GitHub 令牌（设置 → 云端同步）' });
+    return readRegistry().then(function (reg) {
+      if (!reg.accounts || !reg.accounts[uname]) return { ok: true, skipped: true }; // 云端本来就没有，视为成功
+      delete reg.accounts[uname];
+      reg.updatedAt = Date.now();
+      return writeRegistry(reg).then(function (w) {
+        return w.ok ? { ok: true } : { ok: false, error: w.error || '注册表删除失败' };
+      });
+    }).catch(function (e) { return { ok: false, error: String((e && e.message) || e) }; });
+  }
   /** 注册写注册表需要令牌；没有令牌（普通用户设备）静默跳过，回落本地 + 准入码流程 */
   function registerRemote(username, password) {
     if (!isAdminConfigured()) return Promise.resolve({ ok: false, local: true });
@@ -338,6 +361,7 @@
     approveRemote: approveRemote,
     rejectRemote: rejectRemote,
     disableRemote: disableRemote,
+    deleteUser: deleteUser,
     registerRemote: registerRemote,
     // batch-A：会员个人收款码配置 + 待开通记录（公开读、令牌写）
     MEMBER_CFG_PATH: MEMBER_CFG_PATH,
