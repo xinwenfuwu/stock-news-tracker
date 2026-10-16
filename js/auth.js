@@ -2235,6 +2235,98 @@
       });
     },
 
+    /**
+     * 20261016h：导出账号「快照」——供用户提交支付申请时附带。
+     * 背景：普通用户在自己设备注册（无 GitHub 令牌）时账号只存本机，从不进云端注册表，
+     * 管理员设备上「核对并开通」必然报「用户不存在」（用户实测 yh123）。
+     * 现在申请里自带账号快照，管理员一键开通时若找不到账号，就用快照原样创建
+     * （含对方注册时的真实密码哈希），闭环「注册 → 扫码支付 → 管理员开通」。
+     *
+     * 快照含密码哈希（pbkdf2$iter$salt$hash 自包含字符串，盐在内）——
+     * 与注册表 / 准入码同等的公开暴露级别（见 auth-sync.js 顶部安全说明），
+     * claims.json 本就落在同一公开仓库，不引入新的暴露面。
+     *
+     * @param {string} [username] 省略时取当前登录账号
+     * @returns {{ok:boolean, snapshot?:object, error?:string}}
+     */
+    accountSnapshot: function (username) {
+      var uname = String(username == null ? '' : username).trim()
+        || (this.session && this.session.username)
+        || (this.user && this.user.username) || '';
+      if (!uname) return { ok: false, error: '未登录' };
+      this.users = loadUsers();
+      var u = findUser(this.users, uname);
+      if (!u) return { ok: false, error: '本机没有该账号（仅注册时所用设备可导出账号信息）' };
+      return {
+        ok: true,
+        snapshot: {
+          username: u.username,
+          hash: u.hash || '',
+          role: u.role || ROLE.USER,
+          status: u.status || STATUS.ACTIVE,
+          disabled: !!u.disabled,
+          trialUntil: Number(u.trialUntil) || 0,
+          trialDays: Number(u.trialDays) || 0,
+          quotaMonths: Number(u.quotaMonths) || 0,
+          registerDate: u.registerDate || '',
+          payMembershipUntil: Number(u.payMembershipUntil) || 0,
+          paidAt: Number(u.paidAt) || 0,
+          paidPlan: u.paidPlan || '',
+          paidAmount: Number(u.paidAmount) || 0,
+          createdAt: Number(u.createdAt) || Date.now()
+        }
+      };
+    },
+
+    /**
+     * 20261016h：用支付申请附带的账号快照在本机创建（或补全）账号，并同步云端注册表。
+     * 仅管理员可调。角色一律按普通用户落地——会员申请绝不带来管理员权限（防伪造申请提权）。
+     * 账号已存在时保留本机既有哈希（对方可能已改密），只补状态 / 会员字段。
+     * @returns {{ok:boolean, created?:boolean, user?:object, sync?:Promise, error?:string}}
+     */
+    createAccountFromSnapshot: function (snap) {
+      var self = this;
+      if (!this.isAdmin()) return { ok: false, error: '仅管理员可执行该操作' };
+      if (!snap || typeof snap !== 'object') return { ok: false, error: '申请里没有账号信息' };
+      var uname = String(snap.username == null ? '' : snap.username).trim();
+      if (!uname) return { ok: false, error: '申请里没有账号信息' };
+      this.users = loadUsers();
+      var u = findUser(this.users, uname);
+      var now = Date.now();
+      var isNew = !u;
+      if (!u) {
+        // 没有可用哈希就不创建半成品账号（否则用户任何设备都登不进来）
+        if (!snap.hash || String(snap.hash).indexOf('pbkdf2$') !== 0) {
+          return { ok: false, error: '申请里的账号信息不完整（缺密码哈希）' };
+        }
+        u = {
+          username: uname, role: ROLE.USER, hash: String(snap.hash),
+          disabled: false, status: STATUS.ACTIVE,
+          createdAt: Number(snap.createdAt) || now,
+          updatedAt: now, logins: [],
+          recoveredFrom: 'claim'
+        };
+        self.users.push(u);
+      }
+      // 状态 / 试用 / 会员字段：以快照为准补全（本机已有更大值时不覆盖，防回退）
+      if (!u.registerDate && snap.registerDate) u.registerDate = String(snap.registerDate);
+      if (Number(snap.trialUntil) > Number(u.trialUntil || 0)) u.trialUntil = Number(snap.trialUntil);
+      if (Number(snap.trialDays) > Number(u.trialDays || 0)) u.trialDays = Number(snap.trialDays);
+      if (Number(snap.payMembershipUntil) > Number(u.payMembershipUntil || 0)) {
+        u.payMembershipUntil = Number(snap.payMembershipUntil);
+        if (!u.paidAt && snap.paidAt) u.paidAt = Number(snap.paidAt);
+        if (!u.paidPlan && snap.paidPlan) u.paidPlan = String(snap.paidPlan);
+        if (!u.paidAmount && snap.paidAmount) u.paidAmount = Number(snap.paidAmount);
+      }
+      u.updatedAt = now;
+      if (!saveUsers(self.users)) return { ok: false, error: '保存失败：浏览器本地存储不可用' };
+      // 同步云端注册表：用户在自己设备登录时经 loginRemote 直接放行（哈希即对方注册时那份）
+      var syncP = (typeof Auth !== 'undefined' && Auth.Sync && Auth.Sync.writeUser)
+        ? Auth.Sync.writeUser(u)
+        : Promise.resolve({ ok: false, skip: true, error: '同步模块未加载' });
+      return { ok: true, created: isNew, user: adminUser(u), sync: syncP };
+    },
+
     /* ---------- 底层原语，供外部复用 ---------- */
     makePasswordHash: makePasswordHash,
     verifyPassword: verifyPassword,

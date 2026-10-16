@@ -2989,6 +2989,9 @@ body.guest-mode #app { display: none; }
 .um-pending-item:first-of-type { border-top: none; padding-top: 0; }
 .um-pending-main { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; min-width: 260px; }
 .um-pending-meta { font-size: 12px; color: #a16207; }
+/* 20261016h：支付申请的账号信息徽标（审核区） */
+.um-claim-noacct { color: #b45309; background: #fef3c7; border: 1px solid #fde68a; border-radius: 4px; padding: 0 6px; cursor: help; }
+.um-claim-hasacct { color: #15803d; background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 4px; padding: 0 6px; cursor: help; }
 
 .um-code-bar { display: flex; gap: 8px; align-items: center; margin-bottom: 12px; }
 

@@ -2355,6 +2355,14 @@ const app = createApp({
       const months = planMonthsNum(plan);
       const startTs = Date.now();                         // 支付时间（用户填完金额点提交的时刻）
       const endTs = startTs + months * 30 * 24 * 60 * 60 * 1000;
+      // 20261016h：附带账号快照——管理员「核对并开通」时若本机/云端都没有该账号，
+      // 用它原样创建（含对方注册时的真实密码哈希），用户任何设备都能用原密码登录。
+      // 仅本机存在该账号时能导出（即用户注册时所用的设备）；导出失败不阻挡提交。
+      let acct = null;
+      try {
+        const sr = (A && typeof A.accountSnapshot === 'function') ? A.accountSnapshot() : null;
+        if (sr && sr.ok && sr.snapshot) acct = sr.snapshot;
+      } catch (e) { /* 忽略，退回无快照提交 */ }
       const claim = {
         id: 'clm_' + startTs + '_' + Math.random().toString(36).slice(2, 8),
         user: uname,
@@ -2365,7 +2373,8 @@ const app = createApp({
         startTs: startTs,
         endTs: endTs,
         period: planName(plan),
-        resolved: false
+        resolved: false,
+        ...(acct ? { acct: acct } : {})
       };
       membershipModal.claimSubmitting = true;
       membershipModal.claimError = '';
@@ -2484,7 +2493,8 @@ const app = createApp({
         }
         memberClaims.list = raw.filter(c => !c.resolved && !resolvedClaimIds.has(c.id)).map(c => ({
           id: c.id, user: c.user, plan: c.plan || '6m', ts: c.ts || 0,
-          amount: Number(c.amount) || 0, resolved: !!c.resolved
+          amount: Number(c.amount) || 0, resolved: !!c.resolved,
+          acct: (c.acct && typeof c.acct === 'object') ? c.acct : null
         }));
       } catch (e) { memberClaims.list = []; }
       finally { memberClaims.loading = false; }
@@ -2542,13 +2552,41 @@ const app = createApp({
             refreshUserList();
             r = A.grantMembership(claim.user, months, { paidAt: payTs, amount: Number(claim.amount) || 0 });
           }
-        } catch (e) { /* 忽略，走下面的错误提示 */ }
+        } catch (e) { /* 忽略，走下面的创建/提示 */ }
+      }
+      // 20261016h：仍找不到账号——用申请里附带的账号快照原样创建（含对方注册时的密码哈希），
+      // 再开通。解决「普通用户在自己设备注册（无令牌、从不进云端注册表）→ 管理员设备
+      // 看不到 → 核对并开通报用户不存在」（用户实测 yh123）。
+      // 20261016h：记录本次是否「按申请信息新建了账号」，用于成功提示
+      let createdFromClaim = false;
+      if ((!r || !r.ok) && r && r.error === '用户不存在' && claim.acct && typeof A.createAccountFromSnapshot === 'function') {
+        try {
+          const cr = A.createAccountFromSnapshot(claim.acct);
+          if (cr && cr.ok) {
+            createdFromClaim = !!cr.created;
+            // 云端同步失败不阻断开通（对方在自己设备仍可登录），但要显式告知
+            if (cr.sync && typeof cr.sync.then === 'function') {
+              cr.sync.then(function (sr) {
+                if (sr && !sr.ok && !sr.skip) {
+                  showToast('账号「' + claim.user + '」已按申请信息创建，但同步云端注册表失败：' + (sr.error || '未知错误'), 'error', 9000);
+                }
+              }).catch(function () { /* 忽略 */ });
+            }
+            refreshUserList();
+            r = A.grantMembership(claim.user, months, { paidAt: payTs, amount: Number(claim.amount) || 0 });
+          } else if (cr && cr.error) {
+            showToast('用申请里的账号信息创建「' + claim.user + '」失败：' + cr.error, 'error', 9000);
+            return;
+          }
+        } catch (e) { /* 走下面统一错误提示 */ }
       }
       if (!r || !r.ok) {
         const err = (r && r.error) || '开通失败';
         showToast(err === '用户不存在'
-          ? '云端注册表里也没有「' + claim.user + '」。请确认对方注册时用的用户名；或让对方把「申请码」发给你，在「待审核用户 → 注册审核 / 账号导入」区导入后再开通'
-          : err, 'error', 9000);
+          ? (claim.acct
+              ? '已尝试用申请里的账号信息创建「' + claim.user + '」，但仍开通失败，请重试；若持续失败，请让对方在登录页「👑 会员服务」重新提交一次申请'
+              : '云端注册表里也没有「' + claim.user + '」，且这条申请没有附带账号信息（旧版提交）。请让对方在登录页「👑 会员服务（开通/续费）」里重新提交一次申请（新版会自动附带账号信息，即可一键开通）；或让对方把「申请码」发给你，在「待审核用户 → 注册审核 / 账号导入」区导入后再开通')
+          : err, 'error', 12000);
         return;
       }
       // 云端传播：写注册表，让用户在自己设备登录时能立刻拿到会员（失败要显式告知）
@@ -2579,6 +2617,7 @@ const app = createApp({
       } catch (e) { /* 会员已开通，仅未标记 */ }
       const startText = payTs ? fmtDateNum(payTs) : fmtDateNum(Date.now());
       let msg = '已为「' + claim.user + '」开通 ' + months + ' 个月会员（自支付日 ' + startText + ' 起算）';
+      if (createdFromClaim) msg += '；账号已按申请信息创建，对方用注册时的密码即可登录';
       if (prop.ok) {
         msg += '，已同步云端，对方现在即可登录';
       } else {
