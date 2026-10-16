@@ -7010,43 +7010,59 @@ const app = createApp({
     // 同花顺实时快讯：同样做 5 分钟节流缓存（与格隆汇同理；浏览器直连同花顺 CORS 已放开）
     let _thsLiveCache = [];
     let _thsLastLiveFetchTs = 0;
-    let _thsCacheUntilMs = 0;
+    // 20261016e：缓存键改为「窗口起点:终点」复合串——只按起点键会在「同起点改终点」时复用错窗口的缓存
+    let _thsCacheWinKey = '';
     let _thsLiveJustFetched = false;
-    function resetThsLiveFetch() { _thsLiveCache = []; _thsLastLiveFetchTs = 0; _thsCacheUntilMs = 0; _thsLiveJustFetched = false; }
+    function resetThsLiveFetch() { _thsLiveCache = []; _thsLastLiveFetchTs = 0; _thsCacheWinKey = ''; _thsLiveJustFetched = false; }
     // 东方财富实时快讯：JSONP 翻页取数，同样 5 分钟同窗节流（与同花顺同款语义）
     let _emLiveCache = [];
     let _emLastLiveFetchTs = 0;
-    let _emCacheUntilMs = 0;
+    let _emCacheWinKey = '';
     let _emLiveJustFetched = false;
-    function resetEmLiveFetch() { _emLiveCache = []; _emLastLiveFetchTs = 0; _emCacheUntilMs = 0; _emLiveJustFetched = false; }
-    async function fetchLiveBriefsForWindow(winStartMs, force = false) {
+    function resetEmLiveFetch() { _emLiveCache = []; _emLastLiveFetchTs = 0; _emCacheWinKey = ''; _emLiveJustFetched = false; }
+    /**
+     * 按「新闻统计开始时间 ~ 结束时间」窗口实时抓取快讯（20261016e）。
+     * 口径（用户指定）：刷新时的此刻重新抓取，只抓 [winStartMs, winEndMs] 区间内的新闻，
+     * 区间外新闻不获取、不参与计算：
+     *   · untilTime = 窗口起点：翻页到更旧即停（不再往回拉历史）；
+     *   · endTime   = 窗口终点：晚于它的条目不入列。
+     * 格隆汇 v4 / 同花顺 / 东财都是「从最新往回翻」的接口，窗口终点在过去时，
+     * 最新若干页必然落在窗口外——这些页的 HTTP 拉取无法跳过，但其条目不会被纳入结果。
+     * @param {number} winStartMs 窗口起点(ms)
+     * @param {boolean} [force=false] true=用户主动刷新，绕过 5 分钟节流强制重拉
+     * @param {number} [winEndMs=0] 窗口终点(ms)；0 表示不设上界（兼容旧调用）
+     */
+    async function fetchLiveBriefsForWindow(winStartMs, force = false, winEndMs = 0) {
+      const winStart = winStartMs || 0;
+      const winEnd = winEndMs || 0;
+      const winOpts = { untilTime: winStart, endTime: winEnd };
       if (briefSourceName.value === '东方财富') {
         const now = Date.now();
         _emLiveJustFetched = false;
-        const key = winStartMs || 0;
-        // 同窗口 5 分钟内复用缓存；窗口变了则重新翻页抓取（避免宽窗口拿到的是窄窗口缓存的子集）
-        if (_emLiveCache.length && _emCacheUntilMs === key && !force && now - _emLastLiveFetchTs < LIVE_THROTTLE_MS) return _emLiveCache;
+        const key = winStart + ':' + winEnd;
+        // 同窗口 5 分钟内复用缓存；窗口变了（含只改终点）则重新翻页抓取（避免宽窗口拿到的是窄窗口缓存的子集）
+        if (_emLiveCache.length && _emCacheWinKey === key && !force && now - _emLastLiveFetchTs < LIVE_THROTTLE_MS) return _emLiveCache;
         let items = [];
         // 翻页直到接口缓冲到底 / 翻过窗口起点 / 达到安全阀（maxPages=50，覆盖约 9 天缓冲）
         try {
-          items = await fetchLiveBySource('东方财富', {
-            untilTime: key || 0, maxPages: 50,
+          items = await fetchLiveBySource('东方财富', Object.assign({
+            maxPages: 50,
             proxyUrl: (D.settings && D.settings.proxyUrl) || ''
-          });
+          }, winOpts));
         } catch (e) { items = []; }
-        if (items.length) { _emLiveCache = items; _emCacheUntilMs = key; _emLastLiveFetchTs = now; _emLiveJustFetched = true; }
+        if (items.length) { _emLiveCache = items; _emCacheWinKey = key; _emLastLiveFetchTs = now; _emLiveJustFetched = true; }
         return _emLiveCache;
       }
       if (briefSourceName.value === '同花顺') {
         const now = Date.now();
         _thsLiveJustFetched = false;
-        const key = winStartMs || 0;
-        // 同窗口 5 分钟内复用缓存；窗口变了则重新翻页抓取（避免宽窗口拿到的是窄窗口缓存的子集）
-        if (_thsLiveCache.length && _thsCacheUntilMs === key && !force && now - _thsLastLiveFetchTs < LIVE_THROTTLE_MS) return _thsLiveCache;
+        const key = winStart + ':' + winEnd;
+        // 同窗口 5 分钟内复用缓存；窗口变了（含只改终点）则重新翻页抓取（避免宽窗口拿到的是窄窗口缓存的子集）
+        if (_thsLiveCache.length && _thsCacheWinKey === key && !force && now - _thsLastLiveFetchTs < LIVE_THROTTLE_MS) return _thsLiveCache;
         let items = [];
         // 翻页直到接口缓冲到底 / 翻过窗口起点 / 达到安全阀；解除原 page=1 的 200 条截断
-        try { items = await StockAPI.fetchThsLiveBriefs({ untilTime: key || 0, maxPages: 50 }); } catch (e) { items = []; }
-        if (items.length) { _thsLiveCache = items; _thsCacheUntilMs = key; _thsLastLiveFetchTs = now; _thsLiveJustFetched = true; }
+        try { items = await StockAPI.fetchThsLiveBriefs(Object.assign({ maxPages: 50 }, winOpts)); } catch (e) { items = []; }
+        if (items.length) { _thsLiveCache = items; _thsCacheWinKey = key; _thsLastLiveFetchTs = now; _thsLiveJustFetched = true; }
         return _thsLiveCache;
       }
       if (briefSourceName.value !== '格隆汇') return [];
@@ -7055,15 +7071,15 @@ const app = createApp({
       if (_liveCache.length && !force && now - _lastLiveFetchTs < LIVE_THROTTLE_MS) {
         return _liveCache;   // 5 分钟内：直接复用，避免重复抓取（force=true 时用户主动刷新，强制重拉）
       }
-      // 直连（CORS 已放开，无需代理）
+      // 直连（CORS 已放开，无需代理）；untilMs=窗口起点（翻到更旧即停）、endMs=窗口终点（更新的不入列）
       let items = [];
-      try { items = await StockAPI.fetchGelonghuiLiveBriefsDirect(12, 50); } catch (e) { items = []; }
+      try { items = await StockAPI.fetchGelonghuiLiveBriefsDirect(12, 50, { untilMs: winStart, endMs: winEnd }); } catch (e) { items = []; }
       // 直连失败（极端网络）则回退代理（若已配）
       if (!items.length) {
         const proxyUrl = String((D.settings && D.settings.proxyUrl) || '')
           .split(/[\s,;]+/).map(s => s.trim()).filter(Boolean)[0] || '';
         if (proxyUrl) {
-          try { items = await StockAPI.fetchGelonghuiLiveBriefs(proxyUrl, 12); } catch (_) { items = []; }
+          try { items = await StockAPI.fetchGelonghuiLiveBriefs(proxyUrl, 12, { untilMs: winStart, endMs: winEnd }); } catch (_) { items = []; }
         }
       }
       if (items.length) { _liveCache = items; _lastLiveFetchTs = now; _liveJustFetched = true; }
@@ -7071,8 +7087,11 @@ const app = createApp({
     }
 
     /**
-     * 用户主动「刷新（闭市周期）」：重新拉取窗口跨越的那几天快讯（绕开浏览器缓存），
-     * 合并后按时间过滤，只保留 [最近一个 15:00, 现在] 的新闻。
+     * 用户主动「刷新（闭市周期）」：以「新闻统计开始时间 ~ 结束时间」为区间，
+     * 在刷新时的此刻重新抓取新闻（实时接口 + 窗口覆盖天的仓库快照），
+     * 只保留区间内的新闻参与统计计算，区间外新闻不纳入（20261016e）。
+     * 实时接口按 [start, end] 双界抓取（翻到窗口起点即停、晚于终点的条目不入列）；
+     * 仓库快照按「天」成文件、只能整份拉取，故按窗口交集的自然日取最小文件集，再由条级时间戳精筛。
      * 属于用户主动触发，因此顶部「暂停自动刷新」开关生效时依然可用（与「📥 加载该日快讯」同理）。
      */
     async function refreshBriefCloseWindow() {
@@ -7099,10 +7118,10 @@ const app = createApp({
       briefPaused.value = false;
       _briefLoaded = true;
       try {
-        // 实时叠加（20260930i）：不再依赖 GitHub 定时任务与代理——
-        // 每次刷新时若距上次实拉取超过 5 分钟，浏览器直连格隆汇 v4 接口抓取最近快讯并叠加到窗口，
-        // 保证「最近时段」的快讯一条不漏；5 分钟内重复刷新复用缓存；直连失败则回退代理（若已配）。
-        const liveItems = await fetchLiveBriefsForWindow(w.start.getTime(), true);
+        // 实时叠加（20260930i → 20261016e）：刷新时的此刻重新抓取，
+        // 且只抓 [窗口起点, 窗口终点] 区间内的快讯（untilTime 翻到即停、endTime 晚于终点不入列），
+        // 区间外新闻不获取、不参与计算；5 分钟内重复刷新复用缓存（force=true 已强制重拉）。
+        const liveItems = await fetchLiveBriefsForWindow(w.start.getTime(), true, w.end.getTime());
         const chunks = await Promise.all(days.map(d => fetchBriefsFile(d, briefSourceName.value)));
         if ((_liveJustFetched || _thsLiveJustFetched || _emLiveJustFetched) && liveItems.length) {
           showToast(`已实时拉取${briefSourceName.value}最近 ${liveItems.length} 条快讯（5 分钟内刷新不再重复抓取）`, 'success');
@@ -7166,7 +7185,7 @@ const app = createApp({
           briefWindow.end = endStr;
           Object.keys(briefUi.open).forEach(k => { briefUi.open[k] = false; });   // 换窗口后分类先收起
           const hrs = (w.end - w.start) / 3600000;
-          showToast(`已刷新：${startStr} → ${endStr}（约 ${hrs.toFixed(1)} 小时）共 ${inWin.length} 条${liveAdded ? '，其中实时叠加 ' + liveAdded + ' 条' : ''}`, 'success');
+          showToast(`已刷新：${startStr} → ${endStr}（约 ${hrs.toFixed(1)} 小时）共 ${inWin.length} 条${liveAdded ? '，其中实时叠加 ' + liveAdded + ' 条' : ''}；仅统计该区间内新闻，区间外不纳入`, 'success');
         }
         // 窗口状态（briefWindow）已落定后再重算「数/增」(batch55) 与「昨」(batch73)，
         // 这样 batch55 的前一周期会跟随「今」窗口推导（与「昨」同一口径），不会再错用默认闭市窗口。

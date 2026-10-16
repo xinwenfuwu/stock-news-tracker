@@ -6301,8 +6301,16 @@ const StockAPI = {
     return out;
   },
 
-  /** 翻页抓取格隆汇 v4 live（带游标），合并去重后返回。fetcher(u) 返回文本；不传则用浏览器直连（带 UA + 12s 超时）。 */
-  async _fetchGelonghuiV4Pages(buildUrl, maxPages, limit, fetcher) {
+  /** 翻页抓取格隆汇 v4 live（带游标），合并去重后返回。fetcher(u) 返回文本；不传则用浏览器直连（带 UA + 12s 超时）。
+   *  opts（20261016e，窗口边界，与 THS/EM 同口径）：
+   *   · untilMs：窗口起点(ms)。>0 时一旦某页最旧一条早于它即停止翻页——更早历史都不在窗口内，无需再拉；
+   *   · endMs：窗口终点(ms)。>0 时晚于它的条目不入列——区间外新闻不参与计算。
+   *  二者为 0 时行为与之前完全一致（只按 maxPages 拉取）。 */
+  async _fetchGelonghuiV4Pages(buildUrl, maxPages, limit, fetcher, opts) {
+    opts = opts || {};
+    const untilMs = opts.untilMs ? new Date(opts.untilMs).getTime() : 0;
+    const endMs = opts.endMs ? new Date(opts.endMs).getTime() : 0;
+    const briefTimeMs = (t) => { const v = Date.parse(String(t || '').replace(' ', 'T') + ':00'); return v || 0; };
     const fetchFn = fetcher || (async (u) => {
       const ctrl = new AbortController();
       const timer = setTimeout(() => ctrl.abort(), 12000);
@@ -6320,7 +6328,17 @@ const StockAPI = {
       const j = JSON.parse(txt);
       const arr = (j && j.result) || [];
       if (!Array.isArray(arr) || !arr.length) break;
-      out.push(...this._mapGelonghuiV4Items(arr));
+      const mapped = this._mapGelonghuiV4Items(arr);
+      // 只保留 [untilMs, endMs] 区间内的条目；无时间戳的保守保留（交由上层窗口精筛）
+      for (const it of mapped) {
+        const t = it && it.time ? briefTimeMs(it.time) : 0;
+        if (t && untilMs && t < untilMs) continue;
+        if (t && endMs && t > endMs) continue;
+        out.push(it);
+      }
+      // 本页最旧一条（过滤前）已早于窗口起点 → 更早历史都不在窗口内，停止翻页
+      const oldest = mapped.length ? mapped[mapped.length - 1] : null;
+      if (untilMs && oldest && oldest.time && briefTimeMs(oldest.time) < untilMs) break;
       const ids = arr.map(x => Number(x.id)).filter(n => !isNaN(n));
       if (!ids.length) break;
       cursor = Math.min.apply(null, ids);
@@ -6330,24 +6348,25 @@ const StockAPI = {
 
   /** 格隆汇实时快讯（浏览器直连，无需任何代理）：格隆汇 v4 接口已放开 CORS（access-control-allow-origin: *），
    *  故刷新「按时间段」时可直接抓取最近快讯叠加到窗口，秒级新鲜、不依赖 GitHub 定时任务，也不会漏掉最近时段的快讯。
-   *  翻页按服务端同款游标（liveId = 上一页最小 id）；单次失败抛错由调用方兜底。 */
-  async fetchGelonghuiLiveBriefsDirect(maxPages = 12, limit = 50) {
+   *  翻页按服务端同款游标（liveId = 上一页最小 id）；单次失败抛错由调用方兜底。
+   *  opts（20261016e）：{ untilMs, endMs } 窗口起止；传入后只拉取/保留区间内条目（详见 _fetchGelonghuiV4Pages）。 */
+  async fetchGelonghuiLiveBriefsDirect(maxPages = 12, limit = 50, opts = {}) {
     const GH = 'https://www.gelonghui.com/api/live-channels/all/lives/v4';
     return this._fetchGelonghuiV4Pages((cursor) =>
       GH + '?category=all' + (cursor != null ? '&liveId=' + cursor : '') + '&limit=' + limit + '&timestamp=' + Date.now()
-    , maxPages, limit);
+    , maxPages, limit, null, opts || {});
   },
 
   /** 格隆汇实时快讯（经 Worker /proxy 转发，作为直连的回退路径）：仅当直连失败时、且用户已配代理才用。
-   *  未配置代理返回 []；翻页按服务端同款游标。 */
-  async fetchGelonghuiLiveBriefs(proxyUrl, maxPages = 12) {
+   *  未配置代理返回 []；翻页按服务端同款游标。opts（20261016e）：{ untilMs, endMs } 窗口起止，透传同直连。 */
+  async fetchGelonghuiLiveBriefs(proxyUrl, maxPages = 12, opts = {}) {
     const base = String(proxyUrl || '').trim().replace(/\/+$/, '');
     if (!base) return [];
     const GH = 'https://www.gelonghui.com/api/live-channels/all/lives/v4';
     const fetchVia = (u) => this._proxyText(base + '/proxy?url=' + encodeURIComponent(u));
     return this._fetchGelonghuiV4Pages((cursor) =>
       GH + '?category=all' + (cursor != null ? '&liveId=' + cursor : '') + '&limit=15&timestamp=' + Date.now()
-    , maxPages, 15, fetchVia);
+    , maxPages, 15, fetchVia, opts || {});
   },
 
   /**
@@ -6366,11 +6385,13 @@ const StockAPI = {
    *   再由上层窗口过滤按需展示。无法突破接口本身 2~3 周的缓冲深度。
    * @param {object} [opts]
    * @param {number} [opts.maxPages=50] 最多翻页数（安全阀）
-   * @param {number|string|Date} [opts.untilTime=0] 窗口起点(ms)；>0 时一旦翻到早于它的页即停止
+   * @param {number|string|Date} [opts.untilTime=0] 窗口起点(ms)；>0 时翻到早于它的页即停止，且早于它的条目不纳入
+   * @param {number|string|Date} [opts.endTime=0] 窗口终点(ms)；>0 时晚于它的条目不纳入（区间外新闻不参与计算）
    */
   async fetchThsLiveBriefs(opts = {}) {
     const maxPages = opts.maxPages || 50;
     const untilMs = opts.untilTime ? new Date(opts.untilTime).getTime() : 0;
+    const endMs = opts.endTime ? new Date(opts.endTime).getTime() : 0;
     const out = [];
     const seenId = new Set();
     for (let page = 1; page <= maxPages; page++) {
@@ -6397,6 +6418,13 @@ const StockAPI = {
       if (!list.length) break;
       const mapped = this._mapThsNews(list);
       for (const it of mapped) {
+        // 20261016e：只纳入 [窗口起点, 窗口终点] 区间内的条目——区间外新闻不参与计算。
+        // untilTime 同时是翻页停止条件（某页最旧一条早于它即停），末页里早于起点的残余在此剔除。
+        if ((untilMs || endMs) && it.time) {
+          const t = Date.parse(String(it.time).replace(' ', 'T') + ':00');
+          if (t && untilMs && t < untilMs) continue;
+          if (t && endMs && t > endMs) continue;
+        }
         if (it.id != null) {
           if (seenId.has(it.id)) continue;   // 跨页去重
           seenId.add(it.id);
@@ -6453,10 +6481,12 @@ const StockAPI = {
    * @param {number} [opts.maxPages=50] 最多翻页数（安全阀）
    * @param {number|string|Date} [opts.untilTime=0] 窗口起点(ms)；>0 时翻到早于它的页即停止
    * @param {string} [opts.proxyUrl] 可选代理（JSONP 失败时的回退路径）
+   * @param {number|string|Date} [opts.endTime=0] 窗口终点(ms)；>0 时晚于它的条目不纳入（区间外新闻不参与计算）
    */
   async fetchEmLiveBriefs(opts = {}) {
     const maxPages = opts.maxPages || 50;
     const untilMs = opts.untilTime ? new Date(opts.untilTime).getTime() : 0;
+    const endMs = opts.endTime ? new Date(opts.endTime).getTime() : 0;
     const proxyUrl = opts.proxyUrl || '';
     const out = [];
     const seenId = new Set();
@@ -6466,6 +6496,13 @@ const StockAPI = {
       if (!list.length) break;
       const mapped = this._mapEmNews(list);
       for (const it of mapped) {
+        // 20261016e：只纳入 [窗口起点, 窗口终点] 区间内的条目——区间外新闻不参与计算。
+        // untilTime 同时是翻页停止条件（某页最旧一条早于它即停），末页里早于起点的残余在此剔除。
+        if ((untilMs || endMs) && it.time) {
+          const t = Date.parse(String(it.time).replace(' ', 'T') + ':00');
+          if (t && untilMs && t < untilMs) continue;
+          if (t && endMs && t > endMs) continue;
+        }
         if (it.id != null) {
           const k = String(it.id);
           if (seenId.has(k)) continue;   // 跨页去重
