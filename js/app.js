@@ -75,7 +75,33 @@ const app = createApp({
     // 否则切换账号后模板（如 v-if="can('settings.write')"）不会重渲染，齿轮/管理员入口会停留在上一次登录的角色。
     document.addEventListener('auth:ready', function () {
       authUser.value = (A && A.user) ? A.user : null;
+      startAccessRecheck();   // 20261016f：会员/试用到期即时失效（用户规范：过期即无法使用）
     });
+    /* 20261016f：运行时门禁复查（用户规范落地）——
+     * 「管理员审核并通过授权以后，在有效期内均可正常使用；过了有效期以后，该账号需要无法使用」。
+     * 登录态校验（verifySession）只在「登录/刷新页面」时跑；会员若在会话存续期间到期，
+     * 需要这个定时器补上「立即失效」：每 60 秒调 Auth.recheckAccess()，
+     * 确认失效即清会话 + toast + 刷新回登录页（重新支付经管理员开通后可再登录）。
+     * 仅普通用户参与；管理员无过期概念，不起定时器。本地仍有效时 recheckAccess 零网络开销。 */
+    let _accessRecheckTimer = 0;
+    function stopAccessRecheck() {
+      if (_accessRecheckTimer) { clearInterval(_accessRecheckTimer); _accessRecheckTimer = 0; }
+    }
+    function startAccessRecheck() {
+      stopAccessRecheck();
+      if (!authUser.value || authUser.value.role === 'admin') return;   // 游客/管理员不复查
+      _accessRecheckTimer = setInterval(async () => {
+        if (!A || typeof A.recheckAccess !== 'function') return;
+        try {
+          const r = await A.recheckAccess();
+          if (r && r.ok === false) {
+            stopAccessRecheck();
+            showToast((r.error || '试用/会员已到期') + '，账号已退出；请重新扫码支付，经管理员审核开通后使用', 'error', 12000);
+            setTimeout(() => { try { location.reload(); } catch (e) {} }, 2000);
+          }
+        } catch (e) { /* 单次异常（如存储不可用）不影响下个周期 */ }
+      }, 60000);
+    }
     const userMenuOpen = ref(false);
     // 本机其他已登录账号（下拉菜单里切换用）
     const otherAccounts = ref([]);

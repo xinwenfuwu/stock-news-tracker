@@ -27,7 +27,7 @@
   'use strict';
 
   // 与 index.html 中静态资源版本号保持一致，避免升级后命中旧缓存
-  var ASSET_V = '20261016f';
+  var ASSET_V = '20261016g';
 
   // 管理员点开「注册申请导入链接」后，申请码暂存在这里，等业务层（app.js）就绪后取走
   var IMPORT_KEY = 'snt-pending-import-v1';
@@ -50,6 +50,8 @@
   var elGate, elSub, elMsg, elLoading, elLoadingText, elRetry;
   var elLoginForm, elRegisterForm, elRegDone, elCodePanel;
   var elRegCode, elCodeInput, elStrength;
+  // 会员服务（开通/续费）面板（20261016f）
+  var elRenew, elRenewPlans, elRenewQr, elRenewWx, elRenewAli, elRenewUser, elRenewAmount, elRenewMsg;
   var busy = false;
   // 最近一次注册成功的信息，供「📨 复制申请信息」按钮使用
   var lastReg = { username: '', code: '' };
@@ -107,13 +109,181 @@
     });
   }
 
+  /* ============ 会员服务（开通/续费）面板（20261016f） ============
+   * 用户规范：「试用/会员到期后账号无法使用；重新支付会员，经管理员审核开通后使用」。
+   * 会员一旦过期，账号被登录门禁拦在门外，主界面「会员服务」进不去 —— 这里在登录页
+   * 提供同口径的自助通道：选套餐 → 扫码 → 填金额提交申请 → 管理员在
+   * 「用户管理 → 待审核用户 → 审核区」核对并通过（与 app.js submitPaymentClaim 同一后端）。
+   * 后端优先取用户设置的加速/代理地址；登录页阶段 Store 未加载，用注入的加速域名兜底。 */
+  var RENEW_PLANS = [
+    { key: '6m', label: '6 个月会员', amount: 1000, months: 6 },
+    { key: '1y', label: '12 个月会员', amount: 2000, months: 12 },
+    { key: '2y', label: '24 个月会员', amount: 4000, months: 24 }
+  ];
+  var renewPlan = '6m';
+
+  function renewMsg(text, type) {
+    if (!elRenewMsg) return;
+    if (!text) { elRenewMsg.hidden = true; elRenewMsg.textContent = ''; elRenewMsg.className = 'auth-msg'; return; }
+    elRenewMsg.hidden = false;
+    elRenewMsg.textContent = text;
+    elRenewMsg.className = 'auth-msg auth-msg-' + (type || 'info');
+  }
+  function renewPayBase() {
+    var inj = (typeof window !== 'undefined' && window.__SNT_MEMBER_API__) ? String(window.__SNT_MEMBER_API__).trim().replace(/\/+$/, '') : '';
+    if (inj) return inj;
+    var acc = (typeof window !== 'undefined' && window.__SNT_ACCEL__) ? String(window.__SNT_ACCEL__).trim().replace(/\/+$/, '') : '';
+    return acc || '';
+  }
+  function renewPlanOf(key) {
+    for (var i = 0; i < RENEW_PLANS.length; i++) if (RENEW_PLANS[i].key === key) return RENEW_PLANS[i];
+    return RENEW_PLANS[0];
+  }
+  /** 渲染套餐按钮（点选后立即生成收款码） */
+  function renderRenewPlans() {
+    if (!elRenewPlans) return;
+    elRenewPlans.innerHTML = '';
+    RENEW_PLANS.forEach(function (p) {
+      var b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'auth-renew-plan' + (p.key === renewPlan ? ' active' : '');
+      b.innerHTML = '<span>' + p.label + '</span><b>¥' + p.amount + '</b>';
+      b.addEventListener('click', function () {
+        renewPlan = p.key;
+        renderRenewPlans();
+        renewCreateOrder();
+      });
+      elRenewPlans.appendChild(b);
+    });
+  }
+  /** 把支付串渲染为二维码 data URL（依赖全局 QRCode；失败返回空串） */
+  function renewRenderQr(text) {
+    return new Promise(function (resolve) {
+      if (!text || typeof QRCode === 'undefined') { resolve(''); return; }
+      var el = document.createElement('div');
+      el.style.cssText = 'position:absolute;left:-99999px;top:-99999px;';
+      document.body.appendChild(el);
+      try {
+        new QRCode(el, { text: String(text), width: 240, height: 240, correctLevel: QRCode.CorrectLevel.M });
+        setTimeout(function () {
+          var img = el.querySelector('img');
+          var canvas = el.querySelector('canvas');
+          var src = (img && img.src) || (canvas && canvas.toDataURL && canvas.toDataURL('image/png')) || '';
+          if (el.parentNode) document.body.removeChild(el);
+          resolve(src);
+        }, 60);
+      } catch (e) {
+        if (el.parentNode) document.body.removeChild(el);
+        resolve('');
+      }
+    });
+  }
+  /** 生成收款码（与主界面 createPayOrder 同一接口） */
+  function renewCreateOrder() {
+    var uname = elRenewUser ? String(elRenewUser.value || '').trim() : '';
+    if (!uname) { renewMsg('请先填写用户名（你注册时用的）', 'error'); return; }
+    var plan = renewPlanOf(renewPlan);
+    var base = renewPayBase();
+    if (!base) { renewMsg('未配置会员服务后端地址，请联系管理员开通', 'error'); return; }
+    setBusy('正在生成收款码…');
+    renewMsg('');
+    fetch(base + '/pay/create', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+      body: JSON.stringify({ user: uname, plan: plan.key, months: plan.months })
+    }).then(function (r) {
+      return r.json().catch(function () { return {}; }).then(function (j) {
+        if (!r.ok) throw new Error((j && j.error) || ('生成失败(HTTP ' + r.status + ')'));
+        return j;
+      });
+    }).then(function (j) {
+      return Promise.all([renewRenderQr(j.wxQr || ''), renewRenderQr(j.aliQr || '')]).then(function (arr) {
+        if (elRenewWx) elRenewWx.src = arr[0] || (j.wxQr || '');
+        if (elRenewAli) elRenewAli.src = arr[1] || (j.aliQr || '');
+        if (elRenewQr) elRenewQr.hidden = !(arr[0] || arr[1]);
+        renewMsg('请扫码支付「' + plan.label + '（¥' + plan.amount + '）」，支付成功后填写金额并点「我已支付」', 'info');
+      });
+    }).catch(function (e) {
+      renewMsg('生成收款码失败：' + (e && e.message ? e.message : e) + '（也可联系管理员直接开通）', 'error');
+    }).then(function () { setBusy(''); });
+  }
+  /** 提交「我已支付」申请（与主界面 submitPaymentClaim 同一接口与字段） */
+  function renewSubmitClaim() {
+    var uname = elRenewUser ? String(elRenewUser.value || '').trim() : '';
+    if (!uname) { renewMsg('请先填写用户名', 'error'); return; }
+    var amt = elRenewAmount ? Number(String(elRenewAmount.value || '').trim()) : 0;
+    if (!amt || amt <= 0) { renewMsg('请填写支付金额（必填）', 'error'); return; }
+    var plan = renewPlanOf(renewPlan);
+    var startTs = Date.now();
+    var claim = {
+      id: 'clm_' + startTs + '_' + Math.random().toString(36).slice(2, 8),
+      user: uname,
+      plan: plan.key,
+      ts: startTs,
+      amount: amt,
+      fee: plan.amount,
+      startTs: startTs,
+      endTs: startTs + plan.months * 30 * 24 * 60 * 60 * 1000,
+      period: plan.label + '（¥' + plan.amount + '）',
+      resolved: false
+    };
+    setBusy('正在提交…');
+    renewMsg('');
+    var base = renewPayBase();
+    var ok = false, errMsg = '';
+    var chain = Promise.resolve();
+    if (base) {
+      chain = fetch(base + '/pay/claim', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+        body: JSON.stringify(claim)
+      }).then(function (r) {
+        return r.json().catch(function () { return {}; }).then(function (j) {
+          if (r.ok && (!j || j.ok !== false)) { ok = true; return; }
+          errMsg = (j && j.error) || ('提交失败(HTTP ' + r.status + ')');
+        });
+      }).catch(function (e) { errMsg = '网络异常：' + (e && e.message ? e.message : e); });
+    } else {
+      errMsg = '未配置会员服务后端地址';
+    }
+    // 兜底：管理员同设备（浏览器里存有 GitHub 令牌）直接写仓库待开通记录
+    chain = chain.then(function () {
+      if (ok) return;
+      if (!(typeof Auth !== 'undefined' && Auth.Sync && Auth.Sync.writeClaims)) return;
+      var rd = Auth.Sync.readClaims ? Auth.Sync.readClaims() : Promise.resolve({ ok: true, claims: [] });
+      return Promise.resolve(rd).then(function (r) {
+        var all = (r && r.claims) || [];
+        all.push(claim);
+        return Promise.resolve(Auth.Sync.writeClaims(all)).then(function (w) {
+          if (w && w.ok !== false) ok = true;
+          else if (!errMsg) errMsg = (w && w.error) || '写入待开通记录失败';
+        });
+      }).catch(function (e) { if (!errMsg) errMsg = String(e && e.message || e); });
+    });
+    chain.then(function () {
+      setBusy('');
+      if (ok) {
+        if (elRenewAmount) elRenewAmount.value = '';
+        renewMsg('✅ 已提交，管理员核对账单后将按你的支付时间为你开通「' + plan.label + '」。开通后即可登录使用。', 'ok');
+      } else {
+        var tip = /发给管理员/.test(errMsg || '') ? '' : '（也可直接把用户名发给管理员，由管理员手动开通）';
+        renewMsg('提交失败：' + (errMsg || '请稍后重试') + tip, 'error');
+      }
+    });
+  }
+  /** 绑定会员面板事件（在 bind() 里调用） */
+  function bindRenewPanel() {
+    var submitBtn = document.getElementById('auth-renew-submit');
+    if (submitBtn) submitBtn.addEventListener('click', renewSubmitClaim);
+    renderRenewPlans();
+  }
+
   function setBusy(text) {
     busy = !!text;
     if (elLoading) {
       elLoading.hidden = !busy;
       if (elLoadingText) elLoadingText.textContent = text || '';
-    }
-    [elLoginForm, elRegisterForm, elCodePanel].forEach(function (f) {
+    }    [elLoginForm, elRegisterForm, elCodePanel, elRenew].forEach(function (f) {
       if (!f) return;
       Array.prototype.forEach.call(f.querySelectorAll('input, button'), function (el) { el.disabled = busy; });
     });
@@ -124,7 +294,8 @@
     login: '请登录后使用',
     register: '注册新账号 · 提交后需管理员审核',
     regdone: '注册申请已提交',
-    code: '粘贴管理员发来的准入码'
+    code: '粘贴管理员发来的准入码',
+    renew: '会员服务 · 开通 / 续费'
   };
 
   function showForm(which) {
@@ -132,6 +303,7 @@
     if (elRegisterForm) elRegisterForm.hidden = which !== 'register';
     if (elRegDone) elRegDone.hidden = which !== 'regdone';
     if (elCodePanel) elCodePanel.hidden = which !== 'code';
+    if (elRenew) elRenew.hidden = which !== 'renew';
     if (elSub) elSub.textContent = SUB_TEXT[which] || SUB_TEXT.login;
     // 隐私要求：账号信息只允许出现在登录框。打开注册面板时清空一次，
     // 防止个别浏览器无视 autocomplete="off" 把已保存账号自动填进注册表单。
@@ -157,7 +329,8 @@
       setup: '#setup-username',
       register: '#reg-username',
       code: '#auth-code-input',
-      login: '#login-username'
+      login: '#login-username',
+      renew: '#auth-renew-user'
     };
     var sel = focusMap[which];
     var first = sel ? $(sel) : null;
@@ -650,6 +823,7 @@
   /* ---------------- 事件绑定 ---------------- */
 
   function bind() {
+    bindRenewPanel();   // 20261016f：会员服务（开通/续费）面板
     if (elLoginForm) {
       elLoginForm.addEventListener('submit', function (e) {
         e.preventDefault();
@@ -664,6 +838,24 @@
             setBusy('');
             // 待审核：给出可操作的下一步（粘贴准入码 / 重新取申请码），而不是干等
             if (r.status === Auth.STATUS.PENDING) showPendingGuide(u);
+            // 20261016f：门禁类错误（试用结束 / 会员过期 / 被停用）——直接给「去会员服务续费」的出路，
+            // 落实用户规范「过期后重新支付 → 管理员审核开通后使用」
+            else if (/试用已结束|暂无有效|无法使用|已被停用/.test(String(r.error || ''))) {
+              showMsgHtml(
+                '<div class="auth-guide-title">🔒 ' + escHtml(r.error) + '</div>'
+                + '<div class="auth-guide-text">你可以在登录页「👑 会员服务（开通/续费）」重新扫码支付并提交申请，'
+                + '管理员核对账单后按你的支付时间开通；也可把用户名发给管理员，由他直接开通。</div>'
+                + '<div class="auth-msg-actions">'
+                + '<button type="button" class="auth-guide-btn" id="auth-guide-renew">👑 去会员服务（开通/续费）</button>'
+                + '</div>', 'error');
+              var rb = document.getElementById('auth-guide-renew');
+              if (rb) rb.addEventListener('click', function () {
+                showMsg('');
+                showForm('renew');
+                var lu = $('#login-username');
+                if (lu && lu.value && elRenewUser && !elRenewUser.value) elRenewUser.value = lu.value;
+              });
+            }
             else showMsg(r.error, 'error');
             return;
           }
@@ -770,11 +962,19 @@
     }
 
     /* ----- 视图切换 ----- */
-    [['#auth-to-register', 'register'], ['#auth-to-code', 'code']].forEach(function (pair) {
+    [['#auth-to-register', 'register'], ['#auth-to-code', 'code'], ['#auth-to-renew', 'renew']].forEach(function (pair) {
       var btn = $(pair[0]);
-      if (btn) btn.addEventListener('click', function () { showMsg(''); showForm(pair[1]); });
+      if (btn) btn.addEventListener('click', function () {
+        showMsg('');
+        showForm(pair[1]);
+        // 打开会员面板时预填登录框里的用户名（被门禁拦下的用户刚输入过）
+        if (pair[1] === 'renew' && elRenewUser) {
+          var lu = $('#login-username');
+          if (lu && lu.value && !elRenewUser.value) elRenewUser.value = lu.value;
+        }
+      });
     });
-    ['#auth-reg-back', '#auth-reg-done-back', '#auth-code-back'].forEach(function (sel) {
+    ['#auth-reg-back', '#auth-reg-done-back', '#auth-code-back', '#auth-renew-back'].forEach(function (sel) {
       var btn = $(sel);
       if (btn) btn.addEventListener('click', function () {
         showMsg('');
@@ -904,6 +1104,14 @@
     elRegisterForm = $('#auth-register-form');
     elRegDone = $('#auth-reg-done');
     elCodePanel = $('#auth-code-panel');
+    elRenew = $('#auth-renew');
+    elRenewPlans = $('#auth-renew-plans');
+    elRenewQr = $('#auth-renew-qr');
+    elRenewWx = document.getElementById('auth-renew-wx');
+    elRenewAli = document.getElementById('auth-renew-ali');
+    elRenewUser = document.getElementById('auth-renew-user');
+    elRenewAmount = document.getElementById('auth-renew-amount');
+    elRenewMsg = document.getElementById('auth-renew-msg');
     elRegCode = $('#reg-code');
     elCodeInput = $('#auth-code-input');
     elStrength = $('#reg-strength');

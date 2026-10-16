@@ -506,6 +506,13 @@
     if (u && u.payMembershipUntil && Number(u.payMembershipUntil) > 0) {
       return localDateStr(Number(u.payMembershipUntil));
     }
+    // 20261016f：曾开通过扫码/后台会员（payMembershipUntil 落过的值，含被清零的 0）→ 只认精确到期日，
+    // 不再回落 registerDate+quotaMonths 推算。否则「过期会员」会被额度兜底继续判成有效，
+    // 违反用户规范「过了有效期以后，该账号需要无法使用」——grantMembership 会同时写
+    // payMembershipUntil 与 quotaMonths，会员自然过期后两者日期差出一个窗口，门禁据此放行。
+    if (u && 'payMembershipUntil' in u) {
+      return Number(u.payMembershipUntil) > 0 ? localDateStr(Number(u.payMembershipUntil)) : null;
+    }
     if (!u || !u.registerDate || !u.quotaMonths || u.quotaMonths <= 0) return null;
     return addMonthsToDateStr(u.registerDate, u.quotaMonths);
   }
@@ -1291,6 +1298,39 @@
 
     /** 已登录账号数量（同一浏览器可同时多个） */
     sessionsCount: function () { return sessionsCountLocal(); },
+
+    /**
+     * 20261016f：运行时门禁复查（由 app.js 定时器周期调用）——
+     * 落实用户规范「过了有效期以后，该账号需要无法使用」：
+     * 会员/试用在「会话存续期间」到期时立即结束会话并给出原因，
+     * 不再等到用户下次刷新页面（verifySession）才拦截。
+     *   · 管理员始终放行（无过期概念）；
+     *   · 普通用户先走纯本地门禁（零网络）：本地仍有效 → 直接放行
+     *     （云端会员校正由刷新页面时的 verifySession/accessDenyWithRemote 负责，避免定时器高频请求）；
+     *   · 本地已判失效 → 再查一次云端会员源确认，防止把「管理员刚在别的设备开通、
+     *     本机尚未同步」的已付费用户误踢出；
+     *   · 确认失效 → 清会话（账号数据保留：重新支付并经管理员审核开通后可再登录）。
+     * @returns {Promise<{ok:boolean,error:string}>}
+     */
+    recheckAccess: function () {
+      var self = this;
+      var uname = (this.session && this.session.username) || (this.user && this.user.username) || '';
+      if (!uname) return Promise.resolve({ ok: false, error: '未登录' });
+      this.users = loadUsers();          // 重读本机账号表：别的路径（如另一标签页开通）可能刚改过
+      var u = findUser(this.users, uname);
+      if (!u) return Promise.resolve({ ok: false, error: '账号不存在或已被移除' });
+      if (u.role === ROLE.ADMIN) return Promise.resolve({ ok: true });
+      var deny = accessDeny(u, Date.now());          // 纯本地门禁（零网络）
+      if (!deny) return Promise.resolve({ ok: true });
+      // 本地已失效：云端会员源再确认一次（防误踢刚开通的用户）
+      return accessDenyWithRemote(u, Date.now()).then(function (deny2) {
+        if (!deny2) return { ok: true };
+        self.user = null;
+        self.session = null;
+        clearSession(uname);
+        return { ok: false, error: deny2 };
+      });
+    },
 
     /** 本机已登录的账号列表（供切换菜单使用） */
     listSessions: function () {

@@ -2819,6 +2819,20 @@ body.guest-mode #app { display: none; }
 .auth-link:hover { text-decoration: underline; }
 .auth-link:disabled { color: var(--text-placeholder); cursor: not-allowed; text-decoration: none; }
 
+/* 登录页：会员服务（开通/续费）面板（20261016f） */
+.auth-renew-plans { display: flex; flex-direction: column; gap: 8px; margin: 12px 0 4px; }
+.auth-renew-plan {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 10px 12px; border: 1px solid var(--border, #dcdfe6); border-radius: 8px;
+  background: var(--bg-2, #f5f7fa); cursor: pointer; font-size: 13.5px; color: var(--text-1, #303133);
+}
+.auth-renew-plan:hover { border-color: var(--primary); }
+.auth-renew-plan.active { border-color: var(--primary); background: color-mix(in srgb, var(--primary) 10%, transparent); font-weight: 600; }
+.auth-renew-plan b { color: var(--primary); }
+.auth-renew-qr { display: flex; gap: 16px; justify-content: center; margin: 12px 0 4px; }
+.auth-renew-qrbox { display: flex; flex-direction: column; align-items: center; gap: 6px; font-size: 12px; color: var(--text-2); }
+.auth-renew-qrbox img { width: 160px; height: 160px; border: 1px solid var(--border, #dcdfe6); border-radius: 8px; background: #fff; }
+
 /* 登录页：本机已登录账号列表（多账号共存 / 一键切换） */
 .auth-accounts { display: flex; flex-direction: column; gap: 8px; margin: 4px 0 14px; }
 .auth-accounts-title { font-size: 12px; color: var(--text-2); line-height: 1.4; }

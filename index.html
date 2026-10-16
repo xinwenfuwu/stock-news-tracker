@@ -4,12 +4,12 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>股市信息分析系统</title>
-  <link rel="stylesheet" href="css/style.css?v=20261016f">
+  <link rel="stylesheet" href="css/style.css?v=20261016g">
   <!-- Vue 3 全局构建版（v3.4.21 · 自托管）
        原先走 unpkg.com CDN：国内网络对 unpkg 的连通性不稳定，一旦该请求长时间挂起，
        <head> 里的阻塞脚本会让整页停在白屏、后续 auth-boot.js 根本不会执行。
        改为同源托管后，启动链路不再依赖任何第三方 CDN。 -->
-  <script src="js/vue.global.prod.js?v=20261016f"></script>
+  <script src="js/vue.global.prod.js?v=20261016g"></script>
 </head>
 <body class="auth-locked">
   <!-- ===== 登录关卡：登录通过前业务脚本不会被加载 ===== -->
@@ -35,6 +35,7 @@
         <div class="auth-links">
           <button type="button" class="auth-link" id="auth-to-register">注册新账号</button>
           <button type="button" class="auth-link" id="auth-to-code">已通过审核？粘贴准入码</button>
+          <button type="button" class="auth-link" id="auth-to-renew">👑 会员服务（开通/续费）</button>
         </div>
       </form>
 
@@ -83,6 +84,25 @@
         <div class="auth-links">
           <button type="button" class="auth-link" id="auth-code-back">返回登录</button>
         </div>
+      </div>
+
+      <!-- 会员服务（开通/续费）：20261016f —— 会员到期或试用结束后账号被门禁拦在登录外，
+           此处提供「重新支付 → 提交申请 → 管理员审核开通」的自助入口（与主界面会员服务同口径） -->
+      <div class="auth-form" id="auth-renew" hidden>
+        <div class="auth-done-title">👑 会员服务（开通 / 续费）</div>
+        <p class="auth-tip">试用结束或会员到期后账号将无法使用。选择套餐扫码支付，支付完成后填写金额并点「我已支付」，管理员核对账单后按你的支付时间开通；开通后在有效期内无需再次审核。</p>
+        <input class="auth-input" type="text" id="auth-renew-user" placeholder="用户名（你注册时用的）" maxlength="20" autocomplete="off">
+        <div class="auth-renew-plans" id="auth-renew-plans"></div>
+        <div class="auth-renew-qr" id="auth-renew-qr" hidden>
+          <div class="auth-renew-qrbox"><img id="auth-renew-wx" alt="微信支付二维码"><span>微信支付</span></div>
+          <div class="auth-renew-qrbox"><img id="auth-renew-ali" alt="支付宝二维码"><span>支付宝</span></div>
+        </div>
+        <input class="auth-input" type="text" id="auth-renew-amount" inputmode="decimal" placeholder="支付金额（必填，如 1000）" autocomplete="off">
+        <button class="auth-btn auth-btn-primary" type="button" id="auth-renew-submit">我已支付，提交开通申请</button>
+        <div class="auth-links">
+          <button type="button" class="auth-link" id="auth-renew-back">返回登录</button>
+        </div>
+        <div class="auth-msg" id="auth-renew-msg" hidden></div>
       </div>
 
       <div class="auth-msg" id="auth-msg" hidden></div>
@@ -4965,14 +4985,14 @@
     </transition>
   </div>
 
-  <script src="js/auth.js?v=20261016f"></script>
-  <script src="js/auth-sync.js?v=20261016f"></script>
+  <script src="js/auth.js?v=20261016g"></script>
+  <script src="js/auth-sync.js?v=20261016g"></script>
   <!-- 边缘加速默认站点（batch37 治本：Cloudflare Worker 代理东财/腾讯，缓解 JSONP 限流误报）。
        若你所在地区 workers.dev 访问慢，可在「设置 → 行情加速地址」清空即恢复纯直连。 -->
   <script>window.__SNT_ACCEL__ = 'https://sichina.dpdns.org';</script>
   <!-- 扫码支付二维码渲染库（第三方 qrcodejs，本地托管避免外链失效）。renderQr 会先检测全局 QRCode 是否存在。 -->
-  <script src="assets/qrcode.min.js?v=20261016f"></script>
-  <script src="js/auth-boot.js?v=20261016f"></script>
+  <script src="assets/qrcode.min.js?v=20261016g"></script>
+  <script src="js/auth-boot.js?v=20261016g"></script>
   <!-- store / stock-api / hot-topics / app 由 auth-boot.js 在登录通过后动态装载，
        未登录时它们不会被下载，业务数据也不会进入内存 -->
 </body>
