@@ -2786,6 +2786,12 @@ body.guest-mode #app { display: none; }
 .um-badge.admin { background: #fef3c7; color: #92400e; }
 .um-badge.user { background: var(--surface-alt); color: var(--text-secondary); border: 1px solid var(--border); }
 .um-badge.off { background: #fef2f2; color: var(--danger); }
+/* 账户信息表「状态」列：注册 / 试用 / 6月 / 12月 / 24月 五态配色（替代原「已通过」） */
+.um-badge.reg { background: var(--surface-alt); color: var(--text-secondary); border: 1px solid var(--border); }
+.um-badge.trial { background: #dbeafe; color: #1e40af; }
+.um-badge.m6 { background: #dcfce7; color: #166534; }
+.um-badge.m12 { background: #e0e7ff; color: #3730a3; }
+.um-badge.m24 { background: #fef3c7; color: #92400e; }
 .um-actions { display: flex; gap: 6px; flex-wrap: wrap; }
 .um-empty { padding: 22px; text-align: center; font-size: 13px; color: var(--text-placeholder); }
 .um-field { display: flex; flex-direction: column; gap: 6px; margin-bottom: 14px; font-size: 13px; color: var(--text-secondary); }

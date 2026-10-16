@@ -1077,12 +1077,12 @@
           return { ok: true, user: publicUser(ur), requestCode: makeRequestCode(ur) };
         }
         // 全新用户：注册即自动开通 1 天试用（trial），无需管理员审核、无需复制申请码。
-        // 状态置为 pending（待审核语义），但凭借 trialUntil 在试用期内可正常登录；
-        // 试用一到期即被 accessDeny 拦截，账号回到「待审核」状态，符合「无试用且无会员无法使用」。
+        // 状态直接置为 active：试用期内可正常登录；试用一到期即被 accessDeny 拦截，
+        // 账号归入「已注册未开通会员普通用户」（符合规则③：注册后自动 1 天免费、之后无付费则进入未开通会员分类，无需管理员审核）。
         var u = {
           username: v.username, role: ROLE.USER, hash: hash,
           pwSeal: sealPassword(v.password),
-          disabled: false, status: STATUS.PENDING,
+          disabled: false, status: STATUS.ACTIVE,
           registeredOnDevice: true,                 // 本机自助注册的账号，标记设备锁
           trialUntil: now + 24 * 60 * 60 * 1000,
           createdAt: now, updatedAt: now,

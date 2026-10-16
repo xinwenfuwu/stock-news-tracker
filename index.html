@@ -4,12 +4,12 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>股市信息分析系统</title>
-  <link rel="stylesheet" href="css/style.css?v=20261016a">
+  <link rel="stylesheet" href="css/style.css?v=20261016c">
   <!-- Vue 3 全局构建版（v3.4.21 · 自托管）
        原先走 unpkg.com CDN：国内网络对 unpkg 的连通性不稳定，一旦该请求长时间挂起，
        <head> 里的阻塞脚本会让整页停在白屏、后续 auth-boot.js 根本不会执行。
        改为同源托管后，启动链路不再依赖任何第三方 CDN。 -->
-  <script src="js/vue.global.prod.js?v=20261016a"></script>
+  <script src="js/vue.global.prod.js?v=20261016c"></script>
 </head>
 <body class="auth-locked">
   <!-- ===== 登录关卡：登录通过前业务脚本不会被加载 ===== -->
@@ -4455,7 +4455,6 @@
           <div class="um-tabs">
             <button class="um-tab" :class="{active: umTab==='admin'}" @click="umTab='admin'">管理员</button>
             <button class="um-tab" :class="{active: umTab==='review'}" @click="umTab='review'; loadMemberClaims()">待审核用户</button>
-            <button class="um-tab" :class="{active: umTab==='register'}" @click="umTab='register'">普通用户注册</button>
             <button class="um-tab" :class="{active: umTab==='auth'}" @click="umTab='auth'; loadMemberClaims()">授权使用</button>
           </div>
           <div class="um-subtabs" v-if="umTab==='auth'">
@@ -4463,116 +4462,11 @@
             <button class="um-tab um-subtab" :class="{active: umAuth==='trial'}" @click="umAuth='trial'">授权免费试用（非支付会员用户）</button>
             <button class="um-tab um-subtab" :class="{active: umAuth==='6m'}" @click="umAuth='6m'">6月期（¥1000）用户</button>
             <button class="um-tab um-subtab" :class="{active: umAuth==='1y'}" @click="umAuth='1y'">12月期（¥2000）用户</button>
+            <button class="um-tab um-subtab" :class="{active: umAuth==='none'}" @click="umAuth='none'">未开通使用</button>
           </div>
           <div class="um-content">
-          <!-- ============ 板块①：普通用户注册 ============ -->
-          <div class="um-panel" v-if="umTab==='register'">
-          <div class="um-section">
-            <div class="um-section-head">
-              <h4>① 普通用户注册</h4>
-              <span class="um-section-desc">新用户注册即免费授权使用 1 天；管理员可在此授权非支付会员用户免费试用天数。</span>
-            </div>
+                    <!-- 板块①：普通用户注册（已按要求删除；其「待审核注册申请 / 跨设备待审 / 导入申请码 / 管理员添加用户」已并入「待审核用户」板块的「注册审核 / 账号导入」区） -->
 
-            <div class="um-code-bar um-search-bar">
-              <input class="um-input um-grow" v-model="umSearch" placeholder="🔍 搜索账号名称…" autocomplete="off">
-              <button class="btn btn-sm" @click="umSearch=''" title="清除搜索" v-if="umSearch">清除</button>
-            </div>
-
-            <!-- 待审核注册申请 -->
-            <div class="um-pending" v-if="userModal.pending.length">
-              <div class="um-pending-head">
-                <span>🔔 待审核注册申请</span>
-                <span class="um-pending-count">{{ userModal.pending.length }} 人</span>
-              </div>
-              <div class="um-pending-item" v-for="p in userModal.pending.filter(x => umSearchMatch(x.username))" :key="p.username">
-                <div class="um-pending-main">
-                  <span class="um-name">{{ p.username }}</span>
-                  <span class="um-pending-meta">提交于 {{ fmtDateTime(p.createdAt) }}</span>
-                  <span class="um-pending-meta" v-if="p.regIp">来源 {{ p.regIp }}<template v-if="p.regLoc">（{{ p.regLoc }}）</template></span>
-                  <span class="um-pending-meta" v-else>来源 IP 未取到</span>
-                  <span class="um-pending-meta" v-if="p.regUa" :title="p.regUaRaw">· {{ p.regUa }}</span>
-                </div>
-                <div class="um-actions">
-                  <select class="um-input" v-model="userModal.pendingRole[p.username]" :title="'通过后赋予的角色'">
-                    <option value="user">普通用户</option>
-                    <option value="admin">管理员</option>
-                  </select>
-                  <button class="btn btn-sm btn-primary" @click="approveUserByAdmin(p)">通过</button>
-                  <button class="btn btn-sm btn-danger" @click="rejectUserByAdmin(p)">驳回</button>
-                  <button class="btn btn-sm" @click="revealPendingPassword(p)" :title="'查看该申请设置的密码'">看密码</button>
-                </div>
-              </div>
-            </div>
-
-            <!-- 跨设备待审 -->
-            <div class="um-pending" v-if="authAdminToken && authAdminToken.trim()">
-              <div class="um-pending-head">
-                <span>🌐 云端注册表待审</span>
-                <button class="btn btn-sm" @click="syncAllToRegistryByAdmin" title="把本机账号同步到云端注册表（公开文件，供对方免码登录）">📡 同步到云端</button>
-                <span class="um-pending-count" v-if="remotePendingLoading">加载中…</span>
-                <span class="um-pending-count" v-else-if="remotePending.length">{{ remotePending.length }} 人</span>
-                <span class="um-pending-count" v-else>无</span>
-              </div>
-              <div class="um-pending-item" v-for="p in remotePending" :key="'r-' + p.username">
-                <div class="um-pending-main">
-                  <span class="um-name">{{ p.username }}</span>
-                  <span class="um-pending-meta">提交于 {{ fmtDateTime(p.createdAt) }}</span>
-                </div>
-                <div class="um-actions">
-                  <button class="btn btn-sm btn-primary" @click="approveRemoteByAdmin(p)">通过</button>
-                  <button class="btn btn-sm btn-danger" @click="rejectRemoteByAdmin(p)">驳回</button>
-                </div>
-              </div>
-              <div class="um-hint" v-if="!remotePending.length && !remotePendingLoading && authAdminToken && authAdminToken.trim()">
-                云端注册表暂无待审。已通过 / 添加的账号会自动写进注册表；对方设备只需输入账号密码即可登录。
-              </div>
-            </div>
-
-            <!-- 粘贴注册申请码 -->
-            <div class="um-code-bar">
-              <input class="um-input um-grow" v-model="userModal.reqCode"
-                     placeholder="用户发来的「注册申请码」（SNTREG1.…），跨设备注册时粘贴到这里"
-                     autocomplete="off"
-                     @keyup.enter="importRequestCode">
-              <button class="btn btn-sm" @click="importRequestCode">导入申请</button>
-            </div>
-
-            <!-- 管理员添加用户（注册） -->
-            <div class="um-toolbar">
-              <input class="um-input" v-model="userModal.newUsername" placeholder="用户名（2-20 位）" maxlength="20" autocomplete="off">
-              <input class="um-input" type="password" v-model="userModal.newPassword" placeholder="初始密码（8-64 位，含字母和数字）" maxlength="64" autocomplete="new-password">
-              <select class="um-input" v-model="userModal.newRole">
-                <option value="user">普通用户</option>
-                <option value="admin">管理员</option>
-              </select>
-              <button class="btn btn-primary btn-sm" @click="addUserByAdmin">添加</button>
-              <div class="um-hint">
-                普通用户可以用全部业务页面，但不能改设置、导入/清空数据、管理账号。
-                账号存在本机浏览器：同一台设备上注册的账号会直接出现在上方待审核区；
-                其他设备注册的用户，需要把他发来的「申请码」粘到上面导入，通过后再把系统给出的「准入码」发回给他。
-              </div>
-            </div>
-
-            <!-- 已注册未开通会员普通用户：统一收口到「普通用户注册」面板（不再混入「免费试用」） -->
-            <div class="um-pending um-pending-trial" v-if="registeredNoMemberList().length">
-              <div class="um-pending-head">
-                <span>👤 已注册未开通会员普通用户</span>
-                <span class="um-pending-count">{{ registeredNoMemberList().length }} 人</span>
-              </div>
-              <div class="um-pending-item" v-for="u in registeredNoMemberList().filter(u => umSearchMatch(u.username))" :key="u.username">
-                <div class="um-pending-main">
-                  <span class="um-name">{{ u.username }}</span>
-                  <span class="um-pending-meta">注册：{{ u.registerDate || '—' }}</span>
-                  <span class="um-pending-meta">状态：{{ u.statusName || u.status }}</span>
-                </div>
-                <div class="um-actions">
-                  <button class="btn btn-sm" v-for="o in trialDayOptions" :key="o.days" @click="grantUserTrialByName(u.username, o.days)">试用{{ o.label }}</button>
-                </div>
-              </div>
-            </div>
-            <div class="um-hint" v-else>暂无「已注册未开通会员」的普通用户（所有普通用户均已付费或处于试用期）。</div>
-          </div>
-          </div><!-- /um-panel register -->
 
           <!-- ============ 板块：管理员（所有账号分类 + 统计） ============ -->
           <div class="um-panel" v-if="umTab==='admin'">
@@ -4614,7 +4508,7 @@
               <div class="um-empty" v-else>暂无</div>
             </div>
 
-            <div class="um-hint">说明：付费会员按套餐（24月期¥4000 / 6月期¥1000 / 12月期¥2000）归类到「授权使用」对应子标签；已进入试用期的用户归入「授权免费试用」；<b>已注册但尚未开通任何会员的普通用户不计入上述任何分类，统一收口到「普通用户注册」面板下的「已注册未开通会员普通用户」块</b>，由管理员在此授权试用或等待其支付开通；待审核与管理员账号单列统计。「累计应收」= 各付费分类人数 × 对应金额。</div>
+            <div class="um-hint">说明：付费会员按套餐（24月期¥4000 / 6月期¥1000 / 12月期¥2000）归类到「授权使用」对应子标签；已进入试用期的用户归入「授权免费试用」；<b>已注册但尚未开通任何会员、也未处于试用期的普通用户统一归入「授权使用 → 未开通使用」子标签</b>，由管理员在此授权试用（一天 / 三天 / 一周 / 一月）或等待其支付开通；待审核与管理员账号单列统计。「累计应收」= 各付费分类人数 × 对应金额。</div>
           </div>
           </div><!-- /um-panel admin -->
 
@@ -4654,6 +4548,77 @@
             </div>
             <div class="um-hint">说明：① 用户支付后在「会员服务」点「我已支付请求开通」提交，普通用户无需任何令牌即可提交成功；② 点右上「↻ 刷新」重新拉取最新申请；③「核对并开通」按申请套餐开通会员，<b>有效期从该用户的支付时间起算</b>（支付时间早于套餐月数的极少数补录情形，则从开通当天起算），并自动归入「审核通过区」（同时在「授权使用」按套餐分列）；④ 开通同时把该账号转为「已通过」，可正常登录使用网站全部功能；账号名称、开始时间、结束时间、时段、支付费用均按提交信息记录，支付日期与额度同时写入下方用户表。</div>
           </div>
+            <!-- 注册审核 / 账号导入（原「普通用户注册」板块已删除，相关能力并入此处） -->
+            <div class="um-pending um-pending-trial">
+              <div class="um-pending-head">
+                <span>🔔 待审核注册申请</span>
+                <span class="um-pending-count">{{ userModal.pending.length }} 人</span>
+              </div>
+              <div class="um-pending-item" v-for="p in userModal.pending.filter(x => umSearchMatch(x.username))" :key="p.username">
+                <div class="um-pending-main">
+                  <span class="um-name">{{ p.username }}</span>
+                  <span class="um-pending-meta">提交于 {{ fmtDateTime(p.createdAt) }}</span>
+                  <span class="um-pending-meta" v-if="p.regIp">来源 {{ p.regIp }}<template v-if="p.regLoc">（{{ p.regLoc }}）</template></span>
+                  <span class="um-pending-meta" v-else>来源 IP 未取到</span>
+                  <span class="um-pending-meta" v-if="p.regUa" :title="p.regUaRaw">· {{ p.regUa }}</span>
+                </div>
+                <div class="um-actions">
+                  <select class="um-input" v-model="userModal.pendingRole[p.username]" :title="'通过后赋予的角色'">
+                    <option value="user">普通用户</option>
+                    <option value="admin">管理员</option>
+                  </select>
+                  <button class="btn btn-sm btn-primary" @click="approveUserByAdmin(p)">通过</button>
+                  <button class="btn btn-sm btn-danger" @click="rejectUserByAdmin(p)">驳回</button>
+                  <button class="btn btn-sm" @click="revealPendingPassword(p)" :title="'查看该申请设置的密码'">看密码</button>
+                </div>
+              </div>
+            </div>
+
+            <div class="um-pending" v-if="authAdminToken && authAdminToken.trim()">
+              <div class="um-pending-head">
+                <span>🌐 云端注册表待审</span>
+                <button class="btn btn-sm" @click="syncAllToRegistryByAdmin" title="把本机账号同步到云端注册表（公开文件，供对方免码登录）">📡 同步到云端</button>
+                <span class="um-pending-count" v-if="remotePendingLoading">加载中…</span>
+                <span class="um-pending-count" v-else-if="remotePending.length">{{ remotePending.length }} 人</span>
+                <span class="um-pending-count" v-else>无</span>
+              </div>
+              <div class="um-pending-item" v-for="p in remotePending" :key="'r-' + p.username">
+                <div class="um-pending-main">
+                  <span class="um-name">{{ p.username }}</span>
+                  <span class="um-pending-meta">提交于 {{ fmtDateTime(p.createdAt) }}</span>
+                </div>
+                <div class="um-actions">
+                  <button class="btn btn-sm btn-primary" @click="approveRemoteByAdmin(p)">通过</button>
+                  <button class="btn btn-sm btn-danger" @click="rejectRemoteByAdmin(p)">驳回</button>
+                </div>
+              </div>
+              <div class="um-hint" v-if="!remotePending.length && !remotePendingLoading && authAdminToken && authAdminToken.trim()">
+                云端注册表暂无待审。已通过 / 添加的账号会自动写进注册表；对方设备只需输入账号密码即可登录。
+              </div>
+            </div>
+
+            <div class="um-code-bar">
+              <input class="um-input um-grow" v-model="userModal.reqCode"
+                     placeholder="用户发来的「注册申请码」（SNTREG1.…），跨设备注册时粘贴到这里"
+                     autocomplete="off"
+                     @keyup.enter="importRequestCode">
+              <button class="btn btn-sm" @click="importRequestCode">导入申请</button>
+            </div>
+
+            <div class="um-toolbar">
+              <input class="um-input" v-model="userModal.newUsername" placeholder="用户名（2-20 位）" maxlength="20" autocomplete="off">
+              <input class="um-input" type="password" v-model="userModal.newPassword" placeholder="初始密码（8-64 位，含字母和数字）" maxlength="64" autocomplete="new-password">
+              <select class="um-input" v-model="userModal.newRole">
+                <option value="user">普通用户</option>
+                <option value="admin">管理员</option>
+              </select>
+              <button class="btn btn-primary btn-sm" @click="addUserByAdmin">添加</button>
+              <div class="um-hint">
+                普通用户可以用全部业务页面，但不能改设置、导入/清空数据、管理账号。
+                账号存在本机浏览器：同一台设备上注册的账号会直接出现在上方待审核区；
+                其他设备注册的用户，需要把他发来的「申请码」粘到上面导入，通过后再把系统给出的「准入码」发回给他。
+              </div>
+            </div>
           </div><!-- /um-panel review -->
 
           <!-- ============ 授权使用面板 ============ -->
@@ -4719,22 +4684,34 @@
               <button class="btn btn-sm btn-primary" @click="memberManual.plan='2y';grantMemberManual()">开通24月期</button>
             </div>
           </div><!-- /um-section 2y -->
+
+            <!-- 授权使用：未开通使用（已注册未付费/未试用的普通用户；管理员可在此授权试用一天/三天/一周/一月） -->
+            <div class="um-section" v-if="umAuth==='none'">
+              <div class="um-section-head">
+                <h4>未开通使用</h4>
+                <span class="um-section-desc">已注册但尚未开通任何会员、也未处于试用期的普通用户统一在此；管理员可点「试用一天 / 三天 / 一周 / 一月」授权免费试用，授权后账号归入「授权免费试用」并出现在下方「会员板块」。该板块字段表即账户信息表（含用户名 / 角色 / 状态 / 日期 / 额度 / 密码 / 登录记录 / 操作）。</span>
+              </div>
+              <div class="um-code-bar">
+                <input class="um-input um-grow" v-model="trialGrantName" placeholder="用户名" autocomplete="off">
+                <button class="btn btn-sm" v-for="o in trialDayOptions" :key="o.days" @click="grantUserTrialByName(trialGrantName, o.days)">试用{{ o.label }}</button>
+              </div>
+            </div><!-- /um-section none -->
           </div><!-- /um-panel auth -->
 
           <!-- 板块③ 支付码（个人收款码功能）已按需求删除 -->
 
-          <!-- 审核通过区：在「授权使用」面板下按当前子标签(umAuth)只显示该套餐已通过账户；
-               在「待审核用户 / 普通用户注册」面板下显示全部已通过账户 -->
+          <!-- 审核通过区 / 会员板块：在「授权使用」面板下按当前子标签(umAuth)只显示该分类账户；
+               在「待审核用户」面板下显示全部已注册（非待审）账户 -->
           <div class="um-table-head" v-if="approvedZoneList().length && umTab !== 'admin'">
             <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
-              <h4 style="margin:0;">审核通过区</h4>
+              <h4 style="margin:0;">{{ umTab==='auth' ? '会员板块' : '审核通过区' }}</h4>
               <span class="um-pending-right">
                 <span class="um-pending-count">{{ approvedZoneList().length }} 人</span>
                 <button class="btn btn-sm um-refresh-btn" @click="refreshApprovedZone" title="重新读取本机账号表，刷新审核通过区的分类">↻ 刷新</button>
               </span>
             </div>
-            <span class="um-section-desc" v-if="umTab==='auth'">以下为「{{ umAuth==='2y' ? '24月期（¥4000）' : umAuth==='1y' ? '12月期（¥2000）' : umAuth==='6m' ? '6月期（¥1000）' : '授权免费试用' }}」子标签对应的审核通过区：仅显示该套餐下、经审核后通过会员审核的账户，绝不混入其他月期 / 试用 / 管理员。待审核支付申请在「待审核用户」面板显示与处理，审核通过后点右侧「↻ 刷新」即归入本子标签对应套餐。</span>
-            <span class="um-section-desc" v-else>以下为审核通过区：已注册、经审核后获得试用或通过会员审核、可正常使用的账户（管理员 / 付费会员 / 试用中）。待审核申请只在上方「审核区」显示与处理。</span>
+            <span class="um-section-desc" v-if="umTab==='auth'">以下为「{{ umAuth==='2y' ? '24月期（¥4000）' : umAuth==='1y' ? '12月期（¥2000）' : umAuth==='6m' ? '6月期（¥1000）' : umAuth==='none' ? '未开通使用' : '授权免费试用' }}」子标签对应的会员板块：仅显示该分类下、经审核后通过会员审核的账户，绝不混入其他月期 / 试用 / 管理员 / 未开通。待审核支付申请在「待审核用户」面板显示与处理，审核通过后点右侧「↻ 刷新」即归入本子标签对应分类。</span>
+            <span class="um-section-desc" v-else>以下为审核通过区：显示所有已注册、非待审的账户（涵盖管理员 / 付费会员 / 试用中 / 已注册未开通会员——即所有状态的用户）。待审核申请只在上方「审核区」显示与处理。</span>
           </div>
           <table class="um-table" v-if="approvedZoneList().length && umTab !== 'admin'">
             <thead>
@@ -4759,7 +4736,7 @@
                     </select>
                   </td>
                   <td data-label="状态">
-                    <span class="um-badge" :class="badgeClass(u)">{{ u.statusName }}</span>
+                    <span class="um-badge" :class="badgeClass(u)">{{ memberStatusText(u) }}</span>
                   </td>
                   <!-- 日期列（三行：注册日期 / 支付日期 / 到期日期）；支付日期来自用户提交的支付申请，开通时落库 -->
                   <td class="um-membership um-stack" data-label="日期">
@@ -4988,14 +4965,14 @@
     </transition>
   </div>
 
-  <script src="js/auth.js?v=20261016a"></script>
-  <script src="js/auth-sync.js?v=20261016a"></script>
+  <script src="js/auth.js?v=20261016c"></script>
+  <script src="js/auth-sync.js?v=20261016c"></script>
   <!-- 边缘加速默认站点（batch37 治本：Cloudflare Worker 代理东财/腾讯，缓解 JSONP 限流误报）。
        若你所在地区 workers.dev 访问慢，可在「设置 → 行情加速地址」清空即恢复纯直连。 -->
   <script>window.__SNT_ACCEL__ = 'https://sichina.dpdns.org';</script>
   <!-- 扫码支付二维码渲染库（第三方 qrcodejs，本地托管避免外链失效）。renderQr 会先检测全局 QRCode 是否存在。 -->
-  <script src="assets/qrcode.min.js?v=20261016a"></script>
-  <script src="js/auth-boot.js?v=20261016a"></script>
+  <script src="assets/qrcode.min.js?v=20261016c"></script>
+  <script src="js/auth-boot.js?v=20261016c"></script>
   <!-- store / stock-api / hot-topics / app 由 auth-boot.js 在登录通过后动态装载，
        未登录时它们不会被下载，业务数据也不会进入内存 -->
 </body>

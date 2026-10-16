@@ -119,9 +119,9 @@ const app = createApp({
        一次只展开一行；error 承载行内校验提示，不弹 alert。 */
     const resetPw = reactive({ show: false, username: '', newPassword: '', confirmPassword: '', error: '', reveal: false });
     /* 用户管理全屏面板：左侧/顶部 Tab 状态。
-       umTab: 'register' 普通用户注册 | 'auth' 授权使用
-       umAuth: 'trial' 授权免费试用 | '6m' 6月期 | '1y' 12月期 | '2y' 24月期 */
-    const umTab = ref('register');
+       umTab: 'admin' 管理员 | 'review' 待审核用户 | 'auth' 授权使用
+       umAuth: 'trial' 授权免费试用 | '6m' 6月期 | '1y' 12月期 | '2y' 24月期 | 'none' 未开通使用 */
+    const umTab = ref('review');
     const umAuth = ref('trial');
     // 会员搜索（管理员 / 普通用户注册 / 授权使用 / 待审核用户 各面板共用）
     const umSearch = ref('');
@@ -263,11 +263,34 @@ const app = createApp({
     }
 
     /** 状态徽标配色：待审核=黄、已驳回/停用=红、管理员=琥珀、正常=灰底 */
+    /* 账户信息表「状态」列：按会员/试用状态显示 注册 / 试用 / 6月 / 12月 / 24月（符合哪个就显示哪个）。
+     * 这是把原本的「已通过」改为会员状态语义的核心改动。
+     * 待审核 / 已停用 作为门禁态仍单独提示，避免管理员误判（例如把待审账号当成已注册免费账号）。 */
+    function memberStatusText(u) {
+      if (!u) return '—';
+      if (u.disabled) return '已停用';
+      if (u.trialActive) return '试用';
+      const plan = planOfUser(u);   // '6m' | '1y' | '2y' | null
+      if (plan === '6m') return '6月';
+      if (plan === '1y') return '12月';
+      if (plan === '2y') return '24月';
+      if (u.status === 'pending') return '待审核';
+      return '注册';
+    }
+
     function badgeClass(u) {
-      if (u.status === 'pending') return 'pending';
-      if (u.status === 'rejected') return 'rejected';
       if (u.disabled) return 'off';
-      return u.role === 'admin' ? 'admin' : 'user';
+      if (u.status === 'rejected') return 'rejected';
+      // 会员/试用状态优先按真实套餐着色（与状态文案一致）；
+      // 仅当「待审核且无试用无会员」时才用待审核色，避免把正在试用的新用户误标成待审色。
+      const s = memberStatusText(u);
+      if (s === '试用') return 'trial';
+      if (s === '6月') return 'm6';
+      if (s === '12月') return 'm12';
+      if (s === '24月') return 'm24';
+      if (s === '待审核') return 'pending';
+      if (s === '注册') return u.role === 'admin' ? 'admin' : 'reg';
+      return 'reg';
     }
 
     /** 密码列显示：默认打码，只有管理员点过「显示」才展示明文 */
@@ -2511,7 +2534,7 @@ const app = createApp({
       memberManual.username = '';
     }
     // 授权免费试用（非支付会员用户）：仅列出「当前处于试用期」的普通用户，供管理员核对 / 续期 / 撤销。
-    // 注意：已注册但未开通会员的普通用户不再归入此处（见 registeredNoMemberList，统一收口到「普通用户注册」面板）。
+    // 注意：已注册但未开通会员的普通用户不再归入此处（见 registeredNoMemberList，统一收口到「授权使用 → 未开通使用」子标签）。
     function trialUsersList() {
       return (userList.value || []).filter(u => {
         if (u.role !== 'user') return false;
@@ -2520,7 +2543,7 @@ const app = createApp({
       });
     }
     // 已注册未开通会员的普通用户：role=user、非待审核、无有效付费会员、不在试用期的账号。
-    // 这些账号统一在「① 普通用户注册」面板下的「已注册未开通会员普通用户」块呈现，便于管理员在此授权试用 / 开通。
+    // 这些账号统一在「授权使用 → 未开通使用」子标签下呈现，便于管理员在此授权试用 / 开通。
     function registeredNoMemberList() {
       return (userList.value || []).filter(u => {
         if (u.role !== 'user') return false;
@@ -2639,7 +2662,7 @@ const app = createApp({
         admin: { key: 'admin', label: '管理员', amount: 0, items: [] }
       };
       for (const u of list) {
-        if (u.role === 'admin') { cats.admin.items.push({ 账号名称: u.username, 角色: '管理员', 状态: u.statusName || u.status }); continue; }
+        if (u.role === 'admin') { cats.admin.items.push({ 账号名称: u.username, 角色: '管理员', 状态: memberStatusText(u) }); continue; }
         if (u.status === 'pending') { cats.pending.items.push({ 账号名称: u.username, 角色: '普通用户', 状态: '待审核' }); continue; }
         const plan = planOfUser(u);
         if (plan) {
@@ -2650,7 +2673,7 @@ const app = createApp({
           cats.trial.items.push(trialFields(u));
         }
         // 注意：已注册但未开通会员的普通用户（role=user、非 pending、非付费、非试用）不再归入「免费试用」，
-        // 而是统一在「① 普通用户注册」面板下的「已注册未开通会员普通用户」块呈现（见 registeredNoMemberList）。
+        // 而是统一在「授权使用 → 未开通使用」子标签下呈现（见 registeredNoMemberList）。
       }
       const stats = {
         total: list.length,
@@ -2684,13 +2707,19 @@ const app = createApp({
     // - 在「授权使用」面板下，只显示当前子标签(umAuth)对应套餐的已通过账户，
     //   保证「24月期（¥4000）用户」页面的审核通过区只含支付¥4000的24月期账户，
     //   不混入其他月期 / 试用 / 管理员（分类严格互斥，与 planOfUser 口径一致）。
-    // - 在「待审核用户 / 普通用户注册」面板下，显示全部已通过账户（isAccountShown），维持原总览行为。
+    // - 在「待审核用户」面板下，显示全部已注册（非待审）账户（含未开通会员），维持原总览行为。
     function approvedZoneList() {
       const all = (userList.value || []);
       if (umTab.value === 'auth') {
         const sub = umAuth.value;
-        if (sub === 'trial') return trialUsersList();        // 授权免费试用：仅试用中且非付费
-        return all.filter(u => planOfUser(u) === sub);        // 付费套餐：仅该套餐
+        if (sub === 'trial') return trialUsersList();            // 授权免费试用：仅试用中且非付费
+        if (sub === 'none') return registeredNoMemberList();      // 未开通使用：已注册但无有效会员、未试用的普通用户
+        return all.filter(u => planOfUser(u) === sub);            // 付费套餐：仅该套餐
+      }
+      if (umTab.value === 'review') {
+        // 审核通过区：显示所有已注册、非待审账号（含已注册未开通会员 / 试用中 / 付费会员 / 管理员），
+        // 即「所有状态的用户」，符合「审核通过区显示所有已注册用户」的要求。
+        return all.filter(u => u.status !== 'pending');
       }
       return all.filter(u => isAccountShown(u));
     }
@@ -10286,7 +10315,7 @@ const app = createApp({
       exportUsersTable, importUsersTable,
       pwModal, openChangePassword, submitChangePassword,
       // 登录档案与注册审核
-      fmtDuration, badgeClass, passwordText, revealedPw, expandedUser,
+      fmtDuration, badgeClass, memberStatusText, passwordText, revealedPw, expandedUser,
       approveUserByAdmin, rejectUserByAdmin, importRequestCode,
       // 跨设备免码登录（GitHub 注册表）
       authAdminToken, remotePending, remotePendingLoading,

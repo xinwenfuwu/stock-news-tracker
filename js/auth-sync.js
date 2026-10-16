@@ -28,6 +28,26 @@
   var REPO_NAME = 'stock-news-tracker';
   var REPO_BRANCH = 'main';
 
+  /* ---------- 静态文件基址：Cloudflare 托管时统一走代理 Worker ----------
+   * GitHub Pages：同源相对路径（data/... 由 Pages 托管，免鉴权同源 GET）。
+   * Cloudflare Workers / Pages：页面与 GitHub 不同源，直接 fetch github.io 会被 CORS 拦，
+   *   故统一改走 snt-registry-proxy Worker（Cloudflare 边缘回源 GitHub，补 CORS 头）。
+   *   注意：写操作仍走下方 gh() → api.github.com，读写同指 GitHub 仓库，
+   *   不会出现「Cloudflare 读到旧快照、GitHub 才是新数据」的分裂。
+   *   REGISTRY_PATH / MEMBER_*_PATH 仍保持「仓库内相对路径」不变（写接口按它拼 URL）。 */
+  var REGISTRY_PROXY_BASE = 'https://snt-registry-proxy.hui-zhou.workers.dev';
+  function isCfHost() {
+    try {
+      var h = String((typeof location !== 'undefined' && location.hostname) || '').toLowerCase();
+      return /(^|\.)workers\.dev$/.test(h) || /(^|\.)pages\.dev$/.test(h);
+    } catch (e) { return false; }
+  }
+  /** 把仓库内相对路径解析成「当前宿主可读」的 URL。 */
+  function staticUrl(path) {
+    var p = String(path || '').replace(/^\/+/, '');
+    return isCfHost() ? (REGISTRY_PROXY_BASE + '/' + p) : p;
+  }
+
   function getToken() {
     try { return (localStorage.getItem(TOKEN_KEY) || '').trim(); } catch (e) { return ''; }
   }
@@ -37,7 +57,7 @@
    *  加时间戳参数绕开 GitHub Pages 的 CDN 缓存 —— 否则管理员刚开通的会员 / 刚变更的状态
    *  最长要等十几分钟才能在别的设备上看到。 */
   function readRegistry() {
-    return fetch(REGISTRY_PATH + '?_=' + Date.now(), { method: 'GET', cache: 'no-store' })
+    return fetch(staticUrl(REGISTRY_PATH) + '?_=' + Date.now(), { method: 'GET', cache: 'no-store' })
       .then(function (r) {
         if (!r.ok) return { version: 1, updatedAt: null, accounts: {} };
         return r.json().catch(function () { return { version: 1, updatedAt: null, accounts: {} }; });
@@ -146,7 +166,8 @@
 
   /** 读取静态 JSON 文件；bust=true 时追加时间戳参数，绕开 GitHub Pages 的 CDN 缓存。 */
   function readJsonFile(path, bust) {
-    var url = path + (bust ? ((path.indexOf('?') >= 0 ? '&' : '?') + '_=' + Date.now()) : '');
+    var base = staticUrl(path);
+    var url = base + (bust ? ((base.indexOf('?') >= 0 ? '&' : '?') + '_=' + Date.now()) : '');
     return fetch(url, { method: 'GET', cache: 'no-store' })
       .then(function (r) {
         if (!r.ok) return null;
