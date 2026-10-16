@@ -2116,6 +2116,68 @@
       }, Promise.resolve()).then(function () { return { ok: true, count: list.length }; });
     },
 
+    /**
+     * 事故恢复：把 GitHub 云端注册表（data/accounts/registry.json）里的全部账号，
+     * 合并回本机账号表（localStorage 的 snt-auth-users-v1）。
+     *
+     * 背景（本次故障根因）：管理员「用户管理」里的账号列表只读取本机 localStorage，
+     * 而跨设备注册 / 免码登录的账号只落在云端注册表。一旦管理员清了站点数据、换浏览器，
+     * 或本机账号表丢失，「注册用户 / 会员用户 / 试用用户」就会从管理员视角「全部消失」——
+     * 但云端其实还好好存着。本函数就是把它们找回来。
+     *
+     * 安全性：只读云端、只写本机（按用户名 upsert，绝不删除本机已有账号），
+     * 完全不动云端注册表，因此不会因为本机为空而误清空云端。
+     * 云端注册表是公开文件，无需 GitHub 令牌即可读取，所以即使没配令牌也能恢复。
+     *
+     * @returns {Promise<{ok:boolean, recovered:number, skipped:number, error?:string}>}
+     */
+    recoverFromRegistry: function () {
+      var self = this;
+      if (!this.isAdmin()) return Promise.resolve({ ok: false, error: '仅管理员可恢复账号' });
+      if (typeof Auth === 'undefined' || !Auth.Sync || !Auth.Sync.readRegistry) {
+        return Promise.resolve({ ok: false, error: '云端同步模块未加载' });
+      }
+      return Promise.resolve(Auth.Sync.readRegistry()).then(function (reg) {
+        var accs = (reg && reg.accounts) || {};
+        self.users = loadUsers();
+        var localMap = {};
+        self.users.forEach(function (u) { if (u && u.username) localMap[String(u.username).toLowerCase()] = true; });
+        var recovered = 0, skipped = 0;
+        Object.keys(accs).forEach(function (uname) {
+          var a = accs[uname];
+          if (!a || !a.hash) { skipped++; return; }
+          if (localMap[String(uname).toLowerCase()]) { skipped++; return; } // 本机已有，不覆盖
+          var now = Date.now();
+          var u = {
+            username: uname,
+            hash: a.hash,
+            role: a.role || ROLE.USER,
+            disabled: !!a.disabled,
+            status: a.status || STATUS.PENDING,
+            trialUntil: Number(a.trialUntil) || 0,
+            trialDays: Number(a.trialDays) || 0,
+            quotaMonths: Number(a.quotaMonths) || 0,
+            disableDate: a.disableDate || '',
+            registerDate: a.registerDate || '',
+            payMembershipUntil: Number(a.payMembershipUntil) || 0,
+            paidAt: Number(a.paidAt) || 0,
+            paidPlan: a.paidPlan || '',
+            paidAmount: Number(a.paidAmount) || 0,
+            createdAt: Number(a.createdAt) || now,
+            updatedAt: Number(a.updatedAt) || now,
+            logins: [],
+            recoveredFrom: 'registry'
+          };
+          self.users.push(u);
+          recovered++;
+        });
+        if (recovered > 0) { saveUsers(self.users); }
+        return { ok: true, recovered: recovered, skipped: skipped };
+      }).catch(function (e) {
+        return { ok: false, error: String((e && e.message) || e) };
+      });
+    },
+
     /* ---------- 底层原语，供外部复用 ---------- */
     makePasswordHash: makePasswordHash,
     verifyPassword: verifyPassword,

@@ -303,7 +303,7 @@ const app = createApp({
       showToast('已刷新审核通过区', 'success');
     }
 
-    function openUserManage() {
+    async function openUserManage() {
       userMenuOpen.value = false;
       if (!can('users.manage')) { showToast('仅管理员可管理账号', 'error'); return; }
       // 确保「GitHub 令牌」响应式变量反映已保存的值（即使没先打开设置也能显示同步按钮）
@@ -312,6 +312,16 @@ const app = createApp({
       userModal.reqCode = '';
       expandedUser.value = null;
       Object.keys(revealedPw).forEach(k => delete revealedPw[k]);
+      // 事故恢复：打开用户管理时，先把云端注册表里本机缺失的账号合并回来，
+      // 避免「本机账号表丢失 → 注册/会员/试用用户全消失」。只读云端、非破坏性。
+      if (A && A.recoverFromRegistry) {
+        try {
+          const r = await A.recoverFromRegistry();
+          if (r && r.ok && r.recovered > 0) {
+            showToast('已从云端注册表恢复 ' + r.recovered + ' 个账号', 'success');
+          }
+        } catch (e) { /* 静默，不影响后续 */ }
+      }
       refreshUserList();
       // 跨设备免码：管理员已配令牌时，同步自己的账号 + 拉云端注册表待审名单
       if (A && A.Sync && A.Sync.isAdminConfigured && A.Sync.isAdminConfigured()) {
@@ -321,6 +331,20 @@ const app = createApp({
       }
       userModal.show = true;
       markPendingSeen();   // 打开面板即视为已查看，收起提醒条、角标转已读
+    }
+
+    /** 手动从云端注册表恢复本机缺失的账号（用户管理面板按钮，保险用） */
+    async function recoverUsersByAdmin() {
+      if (!A || !A.recoverFromRegistry) { showToast('同步模块未就绪', 'error'); return; }
+      showToast('正在从云端注册表恢复账号…', 'info');
+      const r = await A.recoverFromRegistry();
+      if (!r || !r.ok) { showToast('恢复失败：' + ((r && r.error) || '未知错误'), 'error'); return; }
+      refreshUserList();
+      if (r.recovered > 0) {
+        showToast('已恢复 ' + r.recovered + ' 个云端账号（本机已有 ' + r.skipped + ' 个未动）', 'success');
+      } else {
+        showToast('本机账号已是最新，无需恢复', 'info');
+      }
     }
 
     function addUserByAdmin() {
@@ -10253,7 +10277,7 @@ const app = createApp({
       // 登录账号与权限
       authUser, authInitial, authExpiryText, can, fmtDateTime, doLogout, userMenuOpen,
       otherAccounts, openUserMenu, switchAccount, addAccount,
-      userModal, userList, openUserManage, addUserByAdmin, changeUserRole,
+      userModal, userList, openUserManage, recoverUsersByAdmin, addUserByAdmin, changeUserRole,
       umTab, umAuth,
       toggleUserDisabled, removeUserByAdmin,
       resetPw, openResetPassword, cancelResetPassword, genResetPassword, submitResetPassword,
