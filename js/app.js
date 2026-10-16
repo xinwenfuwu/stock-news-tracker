@@ -7072,14 +7072,16 @@ const app = createApp({
         return _liveCache;   // 5 分钟内：直接复用，避免重复抓取（force=true 时用户主动刷新，强制重拉）
       }
       // 直连（CORS 已放开，无需代理）；untilMs=窗口起点（翻到更旧即停）、endMs=窗口终点（更新的不入列）
+      // 20261016f：maxPages 12→40——格隆汇服务端每页硬封顶 15 条，12 页只能覆盖约 5 小时，
+      // 窗口起点附近（如 15:00→15:56）的新闻会因页数用尽而漏抓；40 页 ≈ 20 小时，配合 untilMs 提前停
       let items = [];
-      try { items = await StockAPI.fetchGelonghuiLiveBriefsDirect(12, 50, { untilMs: winStart, endMs: winEnd }); } catch (e) { items = []; }
+      try { items = await StockAPI.fetchGelonghuiLiveBriefsDirect(40, 50, { untilMs: winStart, endMs: winEnd }); } catch (e) { items = []; }
       // 直连失败（极端网络）则回退代理（若已配）
       if (!items.length) {
         const proxyUrl = String((D.settings && D.settings.proxyUrl) || '')
           .split(/[\s,;]+/).map(s => s.trim()).filter(Boolean)[0] || '';
         if (proxyUrl) {
-          try { items = await StockAPI.fetchGelonghuiLiveBriefs(proxyUrl, 12, { untilMs: winStart, endMs: winEnd }); } catch (_) { items = []; }
+          try { items = await StockAPI.fetchGelonghuiLiveBriefs(proxyUrl, 40, { untilMs: winStart, endMs: winEnd }); } catch (_) { items = []; }
         }
       }
       if (items.length) { _liveCache = items; _lastLiveFetchTs = now; _liveJustFetched = true; }
@@ -7123,8 +7125,11 @@ const app = createApp({
         // 区间外新闻不获取、不参与计算；5 分钟内重复刷新复用缓存（force=true 已强制重拉）。
         const liveItems = await fetchLiveBriefsForWindow(w.start.getTime(), true, w.end.getTime());
         const chunks = await Promise.all(days.map(d => fetchBriefsFile(d, briefSourceName.value)));
+        // 20261016f：toast 明示「最新一条时间」——实时条目为倒序（最新在前），
+        // 用户可据此确认刷新确实在「此刻」重新抓了（两次刷新若此时间相同，说明期间接口无新快讯）
+        const liveNewest = (liveItems && liveItems.length) ? String(liveItems[0].time || '') : '';
         if ((_liveJustFetched || _thsLiveJustFetched || _emLiveJustFetched) && liveItems.length) {
-          showToast(`已实时拉取${briefSourceName.value}最近 ${liveItems.length} 条快讯（5 分钟内刷新不再重复抓取）`, 'success');
+          showToast(`已实时拉取${briefSourceName.value}最近 ${liveItems.length} 条快讯（最新一条 ${liveNewest}）`, 'success');
         }
         // 记录每个拉取日是否有数据（用于回退到「最近真正有数据的一天」）
         const daysWithData = [];
@@ -7185,7 +7190,7 @@ const app = createApp({
           briefWindow.end = endStr;
           Object.keys(briefUi.open).forEach(k => { briefUi.open[k] = false; });   // 换窗口后分类先收起
           const hrs = (w.end - w.start) / 3600000;
-          showToast(`已刷新：${startStr} → ${endStr}（约 ${hrs.toFixed(1)} 小时）共 ${inWin.length} 条${liveAdded ? '，其中实时叠加 ' + liveAdded + ' 条' : ''}；仅统计该区间内新闻，区间外不纳入`, 'success');
+          showToast(`已刷新：${startStr} → ${endStr}（约 ${hrs.toFixed(1)} 小时）共 ${inWin.length} 条${liveAdded ? '，其中实时叠加 ' + liveAdded + ' 条（最新一条 ' + liveNewest + '）' : ''}；仅统计该区间内新闻，区间外不纳入`, 'success');
         }
         // 窗口状态（briefWindow）已落定后再重算「数/增」(batch55) 与「昨」(batch73)，
         // 这样 batch55 的前一周期会跟随「今」窗口推导（与「昨」同一口径），不会再错用默认闭市窗口。

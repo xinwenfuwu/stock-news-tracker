@@ -6349,8 +6349,11 @@ const StockAPI = {
   /** 格隆汇实时快讯（浏览器直连，无需任何代理）：格隆汇 v4 接口已放开 CORS（access-control-allow-origin: *），
    *  故刷新「按时间段」时可直接抓取最近快讯叠加到窗口，秒级新鲜、不依赖 GitHub 定时任务，也不会漏掉最近时段的快讯。
    *  翻页按服务端同款游标（liveId = 上一页最小 id）；单次失败抛错由调用方兜底。
+   *  ⚠️ 服务端每页硬封顶 15 条（2026-10-16 实测：limit 填 50/100/200 均只回 15），
+   *  故覆盖深度只能靠 maxPages 堆：40 页 ≈ 600 条 ≈ 最近 20 小时（20261016f 由 12 页上调，
+   *  修复「12×15=180 条 ≈ 5 小时」导致窗口起点附近一小时段的新闻抓不到的问题）。
    *  opts（20261016e）：{ untilMs, endMs } 窗口起止；传入后只拉取/保留区间内条目（详见 _fetchGelonghuiV4Pages）。 */
-  async fetchGelonghuiLiveBriefsDirect(maxPages = 12, limit = 50, opts = {}) {
+  async fetchGelonghuiLiveBriefsDirect(maxPages = 40, limit = 50, opts = {}) {
     const GH = 'https://www.gelonghui.com/api/live-channels/all/lives/v4';
     return this._fetchGelonghuiV4Pages((cursor) =>
       GH + '?category=all' + (cursor != null ? '&liveId=' + cursor : '') + '&limit=' + limit + '&timestamp=' + Date.now()
@@ -6358,8 +6361,9 @@ const StockAPI = {
   },
 
   /** 格隆汇实时快讯（经 Worker /proxy 转发，作为直连的回退路径）：仅当直连失败时、且用户已配代理才用。
-   *  未配置代理返回 []；翻页按服务端同款游标。opts（20261016e）：{ untilMs, endMs } 窗口起止，透传同直连。 */
-  async fetchGelonghuiLiveBriefs(proxyUrl, maxPages = 12, opts = {}) {
+   *  未配置代理返回 []；翻页按服务端同款游标。opts（20261016e）：{ untilMs, endMs } 窗口起止，透传同直连。
+   *  maxPages 默认 40（20261016f）：服务端每页硬封顶 15 条，40 页 ≈ 20 小时覆盖，与直连版口径一致。 */
+  async fetchGelonghuiLiveBriefs(proxyUrl, maxPages = 40, opts = {}) {
     const base = String(proxyUrl || '').trim().replace(/\/+$/, '');
     if (!base) return [];
     const GH = 'https://www.gelonghui.com/api/live-channels/all/lives/v4';

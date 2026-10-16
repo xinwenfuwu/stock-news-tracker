@@ -188,12 +188,52 @@ console.log('\n[T7] app.js 接线（静态断言）');
   const src = fs.readFileSync(path.join(ROOT, 'js/app.js'), 'utf8');
   check('调用点传入窗口终点', /fetchLiveBriefsForWindow\(w\.start\.getTime\(\), true, w\.end\.getTime\(\)\)/.test(src));
   check('实时源同时传 untilTime 与 endTime', /winOpts = \{ untilTime: winStart, endTime: winEnd \}/.test(src));
-  check('格隆汇直连传 untilMs+endMs', /fetchGelonghuiLiveBriefsDirect\(12, 50, \{ untilMs: winStart, endMs: winEnd \}\)/.test(src));
-  check('格隆汇代理回退传 untilMs+endMs', /fetchGelonghuiLiveBriefs\(proxyUrl, 12, \{ untilMs: winStart, endMs: winEnd \}\)/.test(src));
+  check('格隆汇直连传 untilMs+endMs（maxPages=40）', /fetchGelonghuiLiveBriefsDirect\(40, 50, \{ untilMs: winStart, endMs: winEnd \}\)/.test(src));
+  check('格隆汇代理回退传 untilMs+endMs（maxPages=40）', /fetchGelonghuiLiveBriefs\(proxyUrl, 40, \{ untilMs: winStart, endMs: winEnd \}\)/.test(src));
   check('东财/同花顺翻页参数含 endTime', /Object\.assign\(\{\s*maxPages: 50,\s*proxyUrl: \(D\.settings && D\.settings\.proxyUrl\) \|\| ''\s*\}, winOpts\)/.test(src) && /fetchThsLiveBriefs\(Object\.assign\(\{ maxPages: 50 \}, winOpts\)\)/.test(src));
   check('缓存键为「起点:终点」复合键', /const key = winStart \+ ':' \+ winEnd;/.test(src) && /_emCacheWinKey === key/.test(src) && /_thsCacheWinKey === key/.test(src));
   check('成功提示注明区间外不纳入', /区间外不纳入/.test(src));
+  check('提示语含「最新一条」时间（20261016f：证明刷新在此刻重抓）', /最新一条/.test(src) && /const liveNewest/.test(src));
   check('无旧缓存变量残留', !/_emCacheUntilMs|_thsCacheUntilMs/.test(src));
+}
+
+/* ---------- T9 服务端每页 15 条封顶时，深窗口必须翻够页数（20261016f 真实回归） ----------
+ * 线上实测（2026-10-16 21:0x）：格隆汇 v4 每页硬封顶 15 条（limit 50/100/200 均只回 15）。
+ * 旧 maxPages=12 → 仅 180 条，从 21:01 往前约 5 小时回到 16:1x，
+ * 窗口起点 15:00→16:1x 之间的新闻漏抓，且两次刷新条数不变（用户反馈 180→180）。
+ * 修复：maxPages=40（40×15=600 条 ≈ 60 小时上限，正常由 untilMs 提前停兜底）。 */
+console.log('\n[T9] 每页 15 条封顶 + 40 页覆盖深窗口（用户场景回归）');
+{
+  const PAGE = 15;
+  const baseSec = Date.UTC(2026, 9, 16, 13, 1) / 1000;     // 21:01 北京（= 13:01 UTC），unix 秒
+  const buildRaw = (n, stepSec) => {
+    const a = [];
+    for (let i = 0; i < n; i++) a.push({ id: 900000 - i, createTimestamp: baseSec - i * stepSec, content: '快讯' + i });
+    return a;
+  };
+  const start = new Date(2026, 9, 16, 15, 0).getTime();     // 窗口起点 15:00
+  const end = new Date(2026, 9, 19, 9, 30).getTime();       // 窗口终点 10/19 09:30
+  const runWith = (maxPages) => {
+    const raw = buildRaw(60 * PAGE, 100);                   // 真实密度：约 100 秒/条（180 条/5 小时）
+    let pages = 0;
+    const fetcher = async () => { pages++; return JSON.stringify({ statusCode: 200, result: raw.splice(0, PAGE) }); };
+    return StockAPI._fetchGelonghuiV4Pages(() => 'https://gm.test/', maxPages, 50, fetcher, { untilMs: start, endMs: end })
+      .then(items => ({ items, pages }));
+  };
+  // 修复后：40 页上限，正常在翻过 15:00 后提前停
+  const fixed = await runWith(40);
+  check('40 页上限下抓到起点附近全部条目（≈217 条）', fixed.items.length >= 200, 'n=' + fixed.items.length + ' pages=' + fixed.pages);
+  check('修复后最旧一条抵达窗口起点附近（15:0x）', fixed.items[fixed.items.length - 1].time <= '2026-10-16 15:05', 'oldest=' + fixed.items[fixed.items.length - 1].time);
+  // 旧版对照：12 页 = 180 条，只能回到约 16:1x
+  const legacy = await runWith(12);
+  check('旧版 12 页只回到约 16:0x（漏抓 15:00→16:0x）', legacy.items.length === 180 && legacy.items[legacy.items.length - 1].time >= '2026-10-16 16:00', 'n=' + legacy.items.length + ' oldest=' + legacy.items[legacy.items.length - 1].time);
+  check('修复版比旧版多抓到窗口内条目', fixed.items.length > legacy.items.length, 'fixed=' + fixed.items.length + ' legacy=' + legacy.items.length);
+  // untilMs 提前停：窄窗口不应白翻 40 页
+  const raw4 = buildRaw(60 * PAGE, 100);
+  let pages4 = 0;
+  const fetcher4 = async () => { pages4++; return JSON.stringify({ statusCode: 200, result: raw4.splice(0, PAGE) }); };
+  const it4 = await StockAPI._fetchGelonghuiV4Pages(() => 'https://gm.test/', 40, 50, fetcher4, { untilMs: new Date(2026, 9, 16, 20, 0).getTime(), endMs: end });
+  check('窄窗口提前停（起点 20:00 只翻 3 页）', pages4 === 3 && it4.length === 37 && it4[it4.length - 1].time === '2026-10-16 20:01', 'pages=' + pages4 + ' n=' + it4.length + ' oldest=' + (it4[it4.length - 1] || {}).time);
 }
 
 /* ---------- T8 计算侧精筛口径（与 refreshBriefCloseWindow 同表达式） ---------- */
