@@ -333,21 +333,49 @@ async function payClaim(request) {
   try {
     const rd = await ghReadJson(CLAIMS_PATH);
     const claims = (rd.ok && rd.data && Array.isArray(rd.data.claims)) ? rd.data.claims : [];
-    const exists = claims.some(c => !c.resolved && c.user === user && c.plan === plan);
-    if (!exists) {
-      // 20261007s：把用户端提交的支付时间 / 实付金额 / 时段一并落库，
-      // 管理员「待审核用户」列表与开通后的用户表都能直接取用。
-      const ts = Number(body.ts) || Date.now();
-      const claim = { id: 'c_' + Date.now() + '_' + Math.floor(Math.random() * 1e6), user, plan, ts, resolved: false };
-      if (body.amount != null) claim.amount = Number(body.amount) || 0;
-      if (body.startTs) claim.startTs = Number(body.startTs) || ts;
-      if (body.endTs) claim.endTs = Number(body.endTs) || 0;
-      if (body.period) claim.period = String(body.period);
-      claims.push(claim);
-      const w = await ghWriteJson(CLAIMS_PATH, { claims }, rd.sha, 'chore(membership): add claim ' + user);
-      if (!w.ok) return json({ error: '提交失败：' + w.error }, 500);
+    // 20261016h：账号快照透传。普通用户在自己设备（无 GitHub 令牌）注册的账号只存本机、
+    // 从不进云端注册表，管理员「核对并开通」时查无此人；现在用户提交申请时附带账号快照，
+    // 管理员即可按它自动创建账号并开通（app.js grantMemberClaim → createAccountFromSnapshot）。
+    // 这里只接受结构合法且用户名一致的快照，hash 必须是 pbkdf2 自包含字符串，角色一律 user。
+    let acct = null;
+    if (body.acct && typeof body.acct === 'object' && !Array.isArray(body.acct)) {
+      const a = body.acct;
+      if (String(a.username || '').trim() === user && typeof a.hash === 'string' && a.hash.indexOf('pbkdf2$') === 0) {
+        acct = {
+          username: user,
+          hash: a.hash,
+          role: 'user',
+          status: typeof a.status === 'string' ? a.status : 'active',
+          disabled: false,
+          trialUntil: Number(a.trialUntil) || 0,
+          trialDays: Number(a.trialDays) || 0,
+          quotaMonths: Number(a.quotaMonths) || 0,
+          registerDate: typeof a.registerDate === 'string' ? a.registerDate : '',
+          payMembershipUntil: Number(a.payMembershipUntil) || 0,
+          paidAt: Number(a.paidAt) || 0,
+          paidPlan: typeof a.paidPlan === 'string' ? a.paidPlan : '',
+          paidAmount: Number(a.paidAmount) || 0,
+          createdAt: Number(a.createdAt) || Date.now()
+        };
+      }
     }
-    return json({ ok: true });
+    // 20261007s：把用户端提交的支付时间 / 实付金额 / 时段一并落库，
+    // 管理员「待审核用户」列表与开通后的用户表都能直接取用。
+    const ts = Number(body.ts) || Date.now();
+    const claim = { id: 'c_' + Date.now() + '_' + Math.floor(Math.random() * 1e6), user, plan, ts, resolved: false };
+    if (body.amount != null) claim.amount = Number(body.amount) || 0;
+    if (body.startTs) claim.startTs = Number(body.startTs) || ts;
+    if (body.endTs) claim.endTs = Number(body.endTs) || 0;
+    if (body.period) claim.period = String(body.period);
+    if (acct) claim.acct = acct;
+    // 20261016h：同一用户同一套餐的未决申请 → 「重新提交即取代最新」。
+    // 旧逻辑是静默丢弃（exists 即返回 ok），用户补交/重交（如旧申请缺账号快照）永远进不来；
+    // 现在用最新提交替换（含最新支付时间与账号快照），审核区始终是最新一条。
+    const idx = claims.findIndex(c => !c.resolved && c.user === user && c.plan === plan);
+    if (idx >= 0) claims[idx] = claim; else claims.push(claim);
+    const w = await ghWriteJson(CLAIMS_PATH, { claims }, rd.sha, 'chore(membership): add claim ' + user);
+    if (!w.ok) return json({ error: '提交失败：' + w.error }, 500);
+    return json({ ok: true, replaced: idx >= 0 });
   } catch (e) { return json({ error: '提交异常：' + (e && e.message ? e.message : e) }, 500); }
 }
 /** 20261007s：待审核申请的实时读取（公开只读）。直接读仓库最新内容，绕开 Pages 构建/CDN 延迟。 */
