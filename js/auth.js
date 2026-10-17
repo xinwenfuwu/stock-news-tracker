@@ -2345,7 +2345,8 @@
      * 完全不动云端注册表，因此不会因为本机为空而误清空云端。
      * 云端注册表是公开文件，无需 GitHub 令牌即可读取，所以即使没配令牌也能恢复。
      *
-     * @returns {Promise<{ok:boolean, recovered:number, skipped:number, error?:string}>}
+     * @returns {Promise<{ok:boolean, recovered:number, skipped:number, cleaned:number, error?:string}>}
+     *          cleaned = 20261016n 剔除的 e2e 测试残留（eadm_<ts> 形态的管理员账号）数量
      */
     recoverFromRegistry: function () {
       var self = this;
@@ -2356,6 +2357,22 @@
       return Promise.resolve(Auth.Sync.readRegistry()).then(function (reg) {
         var accs = (reg && reg.accounts) || {};
         self.users = loadUsers();
+        // 20261016n：清理 e2e 测试残留。2026-10-06 的线上 e2e（e2e_member_a-live.mjs）
+        // 用 'eadm_' + Date.now() 注册测试账号、再直接改 localStorage 提权为 admin，
+        // 脚本末尾的清理不可靠（失败被静默 catch），导致两个 eadm_<ts> 管理员永久留在
+        // 云端注册表；任何设备打开用户管理都会经本函数把它们合入本机，显示在「审核通过区」
+        // （用户名与注册名对不上，用户实测反馈）。该形态极度特异（eadm_ 前缀 + 13 位毫秒
+        // 时间戳 + 管理员角色），正常用户不会命中；命中即从本机剔除（云端残留已删除，
+        // 下面的合并循环不会再带回来）。
+        var E2E_ADMIN_RE = /^eadm_\d{13}$/;
+        var cleaned = 0;
+        for (var ci = self.users.length - 1; ci >= 0; ci--) {
+          var cu = self.users[ci];
+          if (cu && cu.username && E2E_ADMIN_RE.test(String(cu.username)) && cu.role === ROLE.ADMIN) {
+            self.users.splice(ci, 1);
+            cleaned++;
+          }
+        }
         var localMap = {};
         self.users.forEach(function (u) { if (u && u.username) localMap[String(u.username).toLowerCase()] = true; });
         var recovered = 0, skipped = 0;
@@ -2387,8 +2404,8 @@
           self.users.push(u);
           recovered++;
         });
-        if (recovered > 0) { saveUsers(self.users); }
-        return { ok: true, recovered: recovered, skipped: skipped };
+        if (recovered > 0 || cleaned > 0) { saveUsers(self.users); }
+        return { ok: true, recovered: recovered, skipped: skipped, cleaned: cleaned };
       }).catch(function (e) {
         return { ok: false, error: String((e && e.message) || e) };
       });

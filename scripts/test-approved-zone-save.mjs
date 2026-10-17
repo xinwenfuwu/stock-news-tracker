@@ -16,6 +16,8 @@
  * 场景4（非管理员）：拒绝保存
  * 场景5（批量/健壮性）：多账号一次保存全部落地；空数组/不存在用户名安全返回
  * 场景6（静态断言）：app.js / index.html / css / auth.js 接线
+ * 场景7（e2e 残留清理，20261016n）：recoverFromRegistry 剔除 eadm_<ts> 管理员残留，
+ *   不误删形态相近的正常账号，幂等
  * ============================================================ */
 import fs from 'node:fs';
 import path from 'node:path';
@@ -266,6 +268,47 @@ function dirtyOf(Auth, localUserView, cloudAcc) {
     check('null 参数 → 安全返回', sv5.ok === true && sv5.total === 0, JSON.stringify(sv5));
   }
 
+  /* ========== 场景7：e2e 测试残留（eadm_<ts> 管理员）自动清理（20261016n） ========== */
+  console.log('\n[场景7] recoverFromRegistry 清理 e2e 测试残留');
+  {
+    const aStore = makeStorage();
+    const A = await loadAuthForDevice(aStore, { withToken: true });
+    const AuthA = A.Auth;
+    await AuthA.setup('admin', 'Admin@2026', 'Admin@2026');
+    // 模拟污染：本机账号表混入 e2e 残留（eadm_<13位ts> + admin，形态与 2026-10-06
+    // 线上事故完全一致——e2e_member_a-live.mjs 注册后改 localStorage 提权，清理不可靠）
+    const users = JSON.parse(aStore.getItem('snt-auth-users-v1') || '[]');
+    const ts1 = 1791264090552, ts2 = 1791294636949;
+    users.push({ username: 'eadm_' + ts1, role: 'admin', hash: 'pbkdf2$150000$c2FsdA==$ZHN0', status: 'active', disabled: false, createdAt: ts1, updatedAt: ts1, logins: [] });
+    users.push({ username: 'eadm_' + ts2, role: 'admin', hash: 'pbkdf2$150000$c2FsdA==$ZHN0', status: 'active', disabled: false, createdAt: ts2, updatedAt: ts2, logins: [] });
+    // 对照组：形态相近但不应被误删的账号
+    users.push({ username: 'eadm_lookalike', role: 'user', hash: 'pbkdf2$150000$c2FsdA==$ZHN0', status: 'active', disabled: false, createdAt: 1, updatedAt: 1, logins: [] });      // eadm_ 前缀但是普通用户
+    users.push({ username: 'adm_1791264090552', role: 'admin', hash: 'pbkdf2$150000$c2FsdA==$ZHN0', status: 'active', disabled: false, createdAt: 1, updatedAt: 1, logins: [] });    // 管理员但非 eadm_ 前缀
+    aStore.setItem('snt-auth-users-v1', JSON.stringify(users));
+    // 自带已知云端状态（避免被前面场景的同步污染）：云端只有一个普通账号 realuser
+    ghFiles.set('data/accounts/registry.json', {
+      content: JSON.stringify({ version: 1, updatedAt: 0, accounts: {
+        realuser: { hash: 'pbkdf2$150000$c2FsdA==$ZHN0', role: 'user', status: 'active', disabled: false, trialUntil: 0, quotaMonths: 0, disableDate: '', registerDate: '2026-10-06', createdAt: 1, updatedAt: 1 }
+      } }, null, 2),
+      sha: 'sha-reg-s7'
+    });
+    const cloudCount = Object.keys(regOf().accounts).length;
+    const rec = await AuthA.recoverFromRegistry();
+    check('cleaned=2（两个 eadm_<ts> 管理员残留被剔除）', rec.ok === true && rec.cleaned === 2, JSON.stringify(rec));
+    check('云端账号正常合入（recovered=1，本机均无）', rec.recovered === 1 && cloudCount === 1, 'recovered=' + rec.recovered + ' cloud=' + cloudCount);
+    const after = JSON.parse(aStore.getItem('snt-auth-users-v1') || '[]').map(u => u.username);
+    check('本机不再有 eadm_<ts> 残留', !after.some(n => /^eadm_\d{13}$/.test(n)), after.join(','));
+    check('本机保留 eadm_ 前缀的普通用户（不误删）', after.includes('eadm_lookalike'), after.join(','));
+    check('本机保留非 eadm_ 前缀的管理员（不误删）', after.includes('adm_1791264090552'), after.join(','));
+    check('本机保留 admin 与合入的云端账号（realuser）', after.includes('admin') && after.includes('realuser'), after.join(','));
+    // 幂等：再恢复一次 cleaned=0
+    const rec2 = await AuthA.recoverFromRegistry();
+    check('再次恢复 cleaned=0（幂等，不重复触发保存）', rec2.ok === true && rec2.cleaned === 0, JSON.stringify(rec2));
+    // 管理员视图（listUsersDetail）里同样没有残留
+    const names = AuthA.listUsersDetail().map(u => u.username);
+    check('管理员视图无 eadm_<ts> 残留（审核通过区不再显示）', !names.some(n => /^eadm_\d{13}$/.test(n)), names.join(','));
+  }
+
   /* ========== 场景6：静态断言（接线） ========== */
   console.log('\n[场景6] 接线静态断言');
   {
@@ -278,6 +321,10 @@ function dirtyOf(Auth, localUserView, cloudAcc) {
     check('auth.js 保存接口仅管理员可调', /saveUsersToRegistry: function[\s\S]{0,200}isAdmin\(\)/.test(auth));
     check('auth.js 保存顺序写入防 409', /saveUsersToRegistry: function[\s\S]{0,900}顺序写入/.test(auth));
     check('auth.js 写入与脏检查共用 buildRegistryRecord 口径', /buildRegistryRecord\(u\);[\s\S]{0,80}rec\.updatedAt = Date\.now\(\)/.test(auth));
+    check('auth.js recoverFromRegistry 定义 E2E_ADMIN_RE 残留识别', auth.includes('var E2E_ADMIN_RE = /^eadm_\\d{13}$/;'));
+    check('auth.js 残留剔除条件：eadm_<ts> 且 role=admin', /E2E_ADMIN_RE\.test\(String\(cu\.username\)\) && cu\.role === ROLE\.ADMIN/.test(auth));
+    check('auth.js recoverFromRegistry 返回 cleaned 计数', /return \{ ok: true, recovered: recovered, skipped: skipped, cleaned: cleaned \};/.test(auth));
+    check('auth.js 有残留时也落盘（cleaned>0 触发 saveUsers）', /if \(recovered > 0 \|\| cleaned > 0\) \{ saveUsers\(self\.users\); \}/.test(auth));
     check('app.js 定义 saveApprovedZoneChanges', /async function saveApprovedZoneChanges\(\)/.test(app));
     check('app.js 定义 isAccountDirty', /function isAccountDirty\(u\)/.test(app));
     check('app.js 定义 dirtyAccountList', /const dirtyAccountList = computed\(/.test(app));
