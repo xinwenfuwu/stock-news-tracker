@@ -152,18 +152,18 @@ const app = createApp({
        一次只展开一行；error 承载行内校验提示，不弹 alert。 */
     const resetPw = reactive({ show: false, username: '', newPassword: '', confirmPassword: '', error: '', reveal: false });
     /* 用户管理全屏面板：左侧/顶部 Tab 状态。
-       umTab: 'admin' 管理员 | 'review' 待审核用户 | 'auth' 授权使用
+       umTab: 'admin' 管理员 | 'review' 审核区 | 'auth' 授权使用
        umAuth: 'trial' 授权免费试用 | '6m' 6月期 | '1y' 12月期 | '2y' 24月期 | 'none' 未开通使用 */
     const umTab = ref('review');
     const umAuth = ref('trial');
-    // 会员搜索（管理员 / 普通用户注册 / 授权使用 / 待审核用户 各面板共用）
+    // 会员搜索（管理员 / 普通用户注册 / 授权使用 / 审核区 各面板共用）
     const umSearch = ref('');
     function umSearchMatch(s) {
       const q = String(umSearch.value || '').trim().toLowerCase();
       if (!q) return true;
       return String(s || '').toLowerCase().includes(q);
     }
-    // 待审核用户面板：用户在「会员服务」点「提交申请」后落地的未处理支付申请（按搜索过滤）
+    // 审核区面板：用户在「会员服务」点「提交申请」后落地的未处理支付申请（按搜索过滤）
     function reviewClaims() {
       return memberClaims.list.filter(c => umSearchMatch(c.user));
     }
@@ -2484,7 +2484,7 @@ const app = createApp({
     }
     // 用户提交「我已支付请求开通」：优先 POST 会员后端 /pay/claim（普通用户没有 GitHub 令牌，
     // 只有这条通道能真正写进共享的待开通记录）；失败再回落 GitHub 直写（管理员同设备时的兜底）。
-    // 管理员在「用户管理 → 待审核用户」点右上「↻ 刷新」即可看到这条申请。
+    // 管理员在「用户管理 → 审核区」点右上「↻ 刷新」即可看到这条申请。
     async function submitPaymentClaim() {
       const amt = Number(membershipModal.payAmount);
       if (!amt || amt <= 0) { membershipModal.claimError = '请填写支付金额（必填）'; return; }
@@ -2666,7 +2666,7 @@ const app = createApp({
       } catch (e) { memberClaims.list = []; }
       finally { memberClaims.loading = false; }
     }
-    // 「待审核用户」区最右侧的刷新按钮：强制重拉最新申请并给出回执
+    // 「审核区」区最右侧的刷新按钮：强制重拉最新申请并给出回执
     async function refreshMemberClaims() {
       await loadMemberClaims();
       if (memberClaims.loading) return;
@@ -2793,7 +2793,7 @@ const app = createApp({
         showToast(err === '用户不存在'
           ? (claim.acct
               ? '已尝试用申请里的账号信息创建「' + claim.user + '」，但仍开通失败，请重试；若持续失败，请让对方在登录页「👑 会员服务」重新提交一次申请'
-              : '云端注册表里也没有「' + claim.user + '」，且这条申请没有附带账号信息（旧版提交）。请让对方在登录页「👑 会员服务（开通/续费）」里重新提交一次申请（新版会自动附带账号信息，即可一键开通）；或让对方把「申请码」发给你，在「待审核用户 → 注册审核 / 账号导入」区导入后再开通')
+              : '云端注册表里也没有「' + claim.user + '」，且这条申请没有附带账号信息（旧版提交）。请让对方在登录页「👑 会员服务（开通/续费）」里重新提交一次申请（新版会自动附带账号信息，即可一键开通）；或让对方把「申请码」发给你，在「审核区 → 注册审核 / 账号导入」区导入后再开通')
           : err, 'error', 12000);
         return;
       }
@@ -3127,7 +3127,7 @@ const app = createApp({
       return { cats: cats, catList: catList, stats: stats };
     }
     // 授权使用面板：某套餐下「已开通」的会员清单（只读展示，不再放审核/开通按钮，
-    // 因为审核与开通已统一收敛到「待审核用户」板块）。数据来自 adminClassify 的分类结果。
+    // 因为审核与开通已统一收敛到「审核区」板块）。数据来自 adminClassify 的分类结果。
     function authCatItems(plan) {
       const ac = adminClassify();
       return (ac.cats[plan] && ac.cats[plan].items) || [];
@@ -3146,7 +3146,7 @@ const app = createApp({
     // - 在「授权使用」面板下，只显示当前子标签(umAuth)对应套餐的已通过账户，
     //   保证「24月期（¥4000）用户」页面的审核通过区只含支付¥4000的24月期账户，
     //   不混入其他月期 / 试用 / 管理员（分类严格互斥，与 planOfUser 口径一致）。
-    // - 在「待审核用户」面板下，显示全部已注册（非待审）账户（含未开通会员），维持原总览行为。
+    // - 在「审核区」面板下，显示全部已注册（非待审）账户（含未开通会员），维持原总览行为。
     function approvedZoneList() {
       const all = (userList.value || []);
       if (umTab.value === 'auth') {

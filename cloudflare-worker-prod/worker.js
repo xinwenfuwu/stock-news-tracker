@@ -435,7 +435,7 @@ async function payClaim(request) {
       }
     }
     // 20261007s：把用户端提交的支付时间 / 实付金额 / 时段一并落库，
-    // 管理员「待审核用户」列表与开通后的用户表都能直接取用。
+    // 管理员「审核区」列表与开通后的用户表都能直接取用。
     const ts = Number(body.ts) || Date.now();
     const claim = { id: 'c_' + Date.now() + '_' + Math.floor(Math.random() * 1e6), user, plan, ts, resolved: false };
     if (body.amount != null) claim.amount = Number(body.amount) || 0;
