@@ -347,6 +347,18 @@ function dirtyOf(Auth, localUserView, cloudAcc) {
     check('index.html 未保存行高亮 um-row-dirty', /'um-row-dirty': isAccountDirty\(u\)/.test(html));
     check('index.html 审核通过区说明提到保存上传', /点「💾 保存」上传到云端后端，刷新页面、换设备登录都不会丢失/.test(html));
     check('css 有保存按钮/角标/未保存标记/行高亮样式', css.includes('.um-save-btn') && css.includes('.um-save-count') && css.includes('.um-dirty-tag') && css.includes('.um-row-dirty td'));
+    /* 20261016p：审核区申请列表小标题改名 + 两处「保存设置」按钮 */
+    check('index.html 申请列表小标题改为「审核区域」', html.includes('<span>审核区域</span>'));
+    check('index.html 审核区「保存设置」在「↻ 刷新」左侧', (() => {
+      const head = html.slice(html.indexOf('<span>审核区域</span>'), html.indexOf('</div>', html.indexOf('<span>审核区域</span>')));
+      return head.indexOf('@click="saveApprovedZoneChanges"') > 0 && head.indexOf('@click="saveApprovedZoneChanges"') < head.indexOf('@click="refreshMemberClaims"');
+    })());
+    check('index.html 「保存设置」按钮共 3 处（审核通过区表头 + 审核区 + 授权使用）', (html.match(/@click="saveApprovedZoneChanges"/g) || []).length === 3, 'count=' + (html.match(/@click="saveApprovedZoneChanges"/g) || []).length);
+    check('index.html 授权使用面板也有「保存设置」', (() => {
+      const panel = html.slice(html.indexOf("umTab==='auth'"), html.indexOf('um-table-head'));
+      return panel.includes('@click="saveApprovedZoneChanges"');
+    })());
+    check('index.html 「保存设置」文案出现（非仅 💾 保存）', (html.match(/>保存设置</g) || []).length >= 2, 'count=' + (html.match(/>保存设置</g) || []).length);
   }
 
   console.log('\n========== 结果：' + pass + ' 通过 / ' + fail + ' 失败 ==========');
