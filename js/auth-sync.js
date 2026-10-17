@@ -365,7 +365,14 @@
       trialUntil: Number(acct.trialUntil) || 0,
       trialDays: Number(acct.trialDays) || 0,
       registerDate: typeof acct.registerDate === 'string' ? acct.registerDate : '',
-      createdAt: Number(acct.createdAt) || 0
+      createdAt: Number(acct.createdAt) || 0,
+      // 20261016l：会员字段透传——管理员「创建并开通」后经本端点把
+      // 「账号 + 会员状态」一次性落库（无令牌设备也能上云）。
+      payMembershipUntil: Number(acct.payMembershipUntil) || 0,
+      paidAt: Number(acct.paidAt) || 0,
+      paidPlan: typeof acct.paidPlan === 'string' ? acct.paidPlan : '',
+      paidAmount: Number(acct.paidAmount) || 0,
+      quotaMonths: Number(acct.quotaMonths) || 0
     };
     return fetch(base + '/auth/register', {
       method: 'POST',

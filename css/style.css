@@ -2994,6 +2994,9 @@ body.guest-mode #app { display: none; }
 .um-claim-hasacct { color: #15803d; background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 4px; padding: 0 6px; cursor: help; }
 /* 20261016i：审核区「拒绝通过」行内二次确认（与本地数据删除同一交互范式） */
 .um-confirm-tip { font-size: 12px; font-weight: 600; color: var(--danger); white-space: nowrap; }
+/* 20261016l：「创建并开通」行内确认（申请无账号信息且账号各处都不存在时的兜底） */
+.um-confirm-tip.um-create-tip { color: var(--primary); white-space: normal; }
+.um-create-pw { max-width: 220px; font-size: 12px; padding: 3px 8px; }
 /* 20261016i：审核区底部「已拒绝的申请」折叠列表（拒绝后申请从审核区移除，这里保留追溯） */
 .um-rejected { margin-top: 10px; border-top: 1px dashed #fde68a; padding-top: 8px; }
 .um-rejected-toggle {

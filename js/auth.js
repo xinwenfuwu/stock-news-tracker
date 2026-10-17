@@ -2200,6 +2200,55 @@
       return this._syncUserToRegistry(u);
     },
 
+    /**
+     * 20261016l：把本机账号（含最新会员状态）同步进云端注册表。
+     * 与 syncUserToRegistry 的区别：无令牌时经 pay Worker /auth/register 代写
+     * （令牌直写 → Worker 代写），供「创建并开通」兜底链路使用——
+     * 管理员设备没配令牌时，对方拿到密码后依然能在任意设备登录。
+     * @returns {Promise<{ok:boolean, error?:string}>}
+     */
+    syncAccountToCloud: function (username) {
+      this.users = loadUsers();
+      var u = findUser(this.users, username);
+      if (!u) return Promise.resolve({ ok: false, error: '用户不存在' });
+      return this._syncAccountToCloud(u);
+    },
+
+    /**
+     * 20261016l：为支付申请兜底创建账号——申请无账号快照、且账号在本机与
+     * 云端注册表都不存在时，「核对并开通」经行内确认后调用。
+     * 仅管理员可调；角色一律普通用户（支付申请绝不带来管理员权限）。
+     * 只写本机：调用方开通会员后应再调 syncAccountToCloud 把
+     * 「账号 + 会员状态」一起写云端（一次落库，避免会员只在本机）。
+     * @returns {Promise<{ok:boolean, user?:object, error?:string}>}
+     */
+    createAccountForClaim: function (username, password) {
+      var self = this;
+      if (!this.isAdmin()) return Promise.resolve({ ok: false, error: '仅管理员可执行该操作' });
+      var v = this.validate(username, password, password);
+      if (!v.ok) return Promise.resolve(v);
+      this.users = loadUsers();
+      if (findUser(this.users, v.username)) {
+        return Promise.resolve({ ok: false, error: '该用户名已存在，请直接在用户表里为该账号开通' });
+      }
+      return makePasswordHash(v.password).then(function (hash) {
+        var now = Date.now();
+        var u = {
+          username: v.username, role: ROLE.USER, hash: hash,
+          pwSeal: sealPassword(v.password),
+          disabled: false, status: STATUS.ACTIVE,
+          registerDate: localDateStr(now), quotaMonths: 0,
+          createdAt: now, updatedAt: now,
+          createdBy: (self.user && self.user.username) || '',
+          createdFromClaim: true,               // 标记：由支付申请兜底创建
+          logins: []
+        };
+        self.users.push(u);
+        if (!saveUsers(self.users)) return { ok: false, error: '保存失败：浏览器本地存储不可用' };
+        return { ok: true, user: publicUser(u) };
+      });
+    },
+
     /** 管理员把自己的账号同步进注册表（登录后自动调用，确保管理员也能跨设备登录） */
     syncSelfToRegistry: function () {
       if (!this.isAdmin()) return Promise.resolve({ ok: false, error: '仅管理员可同步' });

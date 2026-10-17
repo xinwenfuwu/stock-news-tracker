@@ -27,7 +27,7 @@
   'use strict';
 
   // 与 index.html 中静态资源版本号保持一致，避免升级后命中旧缓存
-  var ASSET_V = '20261016k';
+  var ASSET_V = '20261016l';
 
   // 管理员点开「注册申请导入链接」后，申请码暂存在这里，等业务层（app.js）就绪后取走
   var IMPORT_KEY = 'snt-pending-import-v1';
@@ -229,13 +229,16 @@
     };
     // 20261016h：附带账号快照（与主界面 submitPaymentClaim 同口径）——本机存有该账号
     // （即用户注册时所用的设备）时导出，管理员「核对并开通」可一键创建并开通；
-    // 导出失败（如在陌生设备上续费）不阻挡提交，管理员仍可走申请码导入。
+    // 导出失败（如在陌生设备上续费）不阻挡提交，管理员可走「创建并开通」兜底。
+    // 20261016l：记录「本机没有该账号」，提交成功时明确提醒，避免用户误以为已附带账号信息。
+    var noLocalAcct = false;
     try {
       if (typeof Auth !== 'undefined' && Auth && typeof Auth.accountSnapshot === 'function') {
         var sr = Auth.accountSnapshot(uname);
         if (sr && sr.ok && sr.snapshot) claim.acct = sr.snapshot;
-      }
-    } catch (e) { /* 忽略，退回无快照提交 */ }
+        else noLocalAcct = true;
+      } else { noLocalAcct = true; }
+    } catch (e) { noLocalAcct = true; }
     setBusy('正在提交…');
     renewMsg('');
     var base = renewPayBase();
@@ -274,7 +277,8 @@
       if (ok) {
         if (elRenewAmount) elRenewAmount.value = '';
         renewMsg('✅ 已提交，管理员核对账单后将按你的支付时间为你开通「' + plan.label + '」。开通后即可登录使用。'
-          + (claim.acct ? '（已附带账号信息，管理员可一键开通）' : ''), 'ok');
+          + (claim.acct ? '（已附带账号信息，管理员可一键开通）'
+             : (noLocalAcct ? '（注意：本机没有账号「' + uname + '」的登录信息，管理员可能需要先创建账号才能为你开通——如已在别处注册过，请在注册时所用的设备上提交）' : '')), 'ok');
       } else {
         var tip = /发给管理员/.test(errMsg || '') ? '' : '（也可直接把用户名发给管理员，由管理员手动开通）';
         renewMsg('提交失败：' + (errMsg || '请稍后重试') + tip, 'error');

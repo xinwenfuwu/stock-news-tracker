@@ -361,26 +361,33 @@ async function authRegister(request) {
       reg.accounts = reg.accounts || {};
       const exist = reg.accounts[username];
       if (exist) {
+        // 20261016l：同一份密码哈希 → 本人（或管理员代管）在同步最新状态，允许覆盖更新；
+        // 哈希不同且对方是管理员 / 付费 / 已激活 → 拒绝抢名（409）。
+        const sameHash = exist.hash === hash;
         const paid = (Number(exist.payMembershipUntil) || 0) > now || (Number(exist.quotaMonths) || 0) > 0;
-        if (exist.role === 'admin' || paid || (exist.status || 'pending') === 'active') {
+        if (!sameHash && (exist.role === 'admin' || paid || (exist.status || 'pending') === 'active')) {
           return json({ ok: false, error: '该用户名已被使用，请更换一个' }, 409);
         }
-        // pending / rejected → 允许覆盖（主人认领 / 重新申请）
+        // sameHash（主人同步）/ pending / rejected → 允许覆盖（主人认领 / 重新申请 / 状态更新）
       }
+      // 20261016l：会员字段透传——管理员「核对并开通」对无账号快照的申请兜底
+      // 「创建账号并开通」后，经本端点把「账号 + 会员状态」一次性写入云端，
+      // 无令牌设备也能落地，对方拿到密码后任意设备登录即带会员。
+      const memUntil = Number(body.payMembershipUntil) || 0;
       reg.accounts[username] = {
         hash: hash,
-        role: 'user',
+        role: (exist && exist.role === 'admin') ? 'admin' : 'user',   // 不把已有管理员降级
         status: status,
         disabled: false,
         trialUntil: trialUntil,
         trialDays: Number(body.trialDays) || (trialUntil ? 1 : 0),
-        quotaMonths: 0,
+        quotaMonths: Number(body.quotaMonths) || 0,
         disableDate: '',
         registerDate: typeof body.registerDate === 'string' ? body.registerDate : '',
-        payMembershipUntil: 0,
-        paidAt: 0,
-        paidPlan: '',
-        paidAmount: 0,
+        payMembershipUntil: memUntil,
+        paidAt: Number(body.paidAt) || 0,
+        paidPlan: typeof body.paidPlan === 'string' ? body.paidPlan : '',
+        paidAmount: Number(body.paidAmount) || 0,
         createdAt: Number(body.createdAt) || now,
         updatedAt: now
       };
