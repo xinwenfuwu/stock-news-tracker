@@ -2992,6 +2992,24 @@ body.guest-mode #app { display: none; }
 /* 20261016h：支付申请的账号信息徽标（审核区） */
 .um-claim-noacct { color: #b45309; background: #fef3c7; border: 1px solid #fde68a; border-radius: 4px; padding: 0 6px; cursor: help; }
 .um-claim-hasacct { color: #15803d; background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 4px; padding: 0 6px; cursor: help; }
+/* 20261016i：审核区「拒绝通过」行内二次确认（与本地数据删除同一交互范式） */
+.um-confirm-tip { font-size: 12px; font-weight: 600; color: var(--danger); white-space: nowrap; }
+/* 20261016i：审核区底部「已拒绝的申请」折叠列表（拒绝后申请从审核区移除，这里保留追溯） */
+.um-rejected { margin-top: 10px; border-top: 1px dashed #fde68a; padding-top: 8px; }
+.um-rejected-toggle {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 2px 8px; border: 1px solid var(--border); border-radius: 6px;
+  background: #fff; color: var(--text-placeholder);
+  font-size: 12px; font-weight: 600; cursor: pointer;
+}
+.um-rejected-toggle:hover { background: var(--primary-light); color: var(--primary); border-color: var(--primary); }
+.um-rejected-list { margin-top: 8px; display: flex; flex-direction: column; gap: 4px; }
+.um-rejected-item {
+  display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+  padding: 6px 8px; border: 1px solid var(--border); border-radius: 8px;
+  background: var(--bg-2, #f5f7fa); opacity: .85;
+}
+.um-rejected-item .um-pending-meta { color: var(--text-placeholder); }
 
 .um-code-bar { display: flex; gap: 8px; align-items: center; margin-bottom: 12px; }
 

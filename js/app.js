@@ -2453,7 +2453,8 @@ const app = createApp({
       });
     }
     // ===== batch-A：会员后台（管理员） =====
-    const memberClaims = reactive({ list: [], loading: false });
+    // list：待审核（未处理）申请；rejected：已被管理员拒绝的申请（20261016i，仅本机视图追溯用）
+    const memberClaims = reactive({ list: [], loading: false, rejected: [], rejectedOpen: false });
     // 已审核通过（开通）的 claim id：永久从「待审核」区移除，即使后端 / 前端标记偶发失败也不再回显。
     // 20261011k：改为 localStorage 持久化，避免刷新页面后 in-memory Set 丢失、导致已通过的申请又回显到「审核区」。
     const RESOLVED_CLAIM_KEY = 'snt-resolved-claims-v1';
@@ -2491,10 +2492,16 @@ const app = createApp({
           const r2 = (A && A.Sync && A.Sync.readClaims) ? await A.Sync.readClaims() : { ok: true, claims: [] };
           raw = (r2 && r2.claims) || [];
         }
-        memberClaims.list = raw.filter(c => !c.resolved && !resolvedClaimIds.has(c.id)).map(c => ({
+        memberClaims.list = raw.filter(c => !c.resolved && !c.rejected && !resolvedClaimIds.has(c.id)).map(c => ({
           id: c.id, user: c.user, plan: c.plan || '6m', ts: c.ts || 0,
           amount: Number(c.amount) || 0, resolved: !!c.resolved,
           acct: (c.acct && typeof c.acct === 'object') ? c.acct : null
+        }));
+        // 20261016i：已拒绝的申请单独收集（仅本机展示，最多最近 30 条）——
+        // 拒绝后从审核区移除但保留可追溯记录，避免「拒绝后申请凭空消失」的困惑。
+        memberClaims.rejected = raw.filter(c => c.rejected).slice(-30).map(c => ({
+          id: c.id, user: c.user, plan: c.plan || '6m', ts: c.ts || 0,
+          rejectedAt: Number(c.rejectedAt) || 0
         }));
       } catch (e) { memberClaims.list = []; }
       finally { memberClaims.loading = false; }
@@ -2625,6 +2632,50 @@ const app = createApp({
       }
       showToast(msg, prop.ok ? 'success' : 'warn', prop.ok ? 4200 : 9000);
       refreshUserList();          // 表格同步显示支付日期 / 额度 / 期分类
+      await loadMemberClaims();
+    }
+    /* 20261016i：管理员「拒绝通过」——拒绝某条待审核申请。
+     * 与「核对并开通」互斥：同一申请只能处理一次。拒绝后：
+     *   · 本机乐观移除（入 resolvedClaimIds 持久集 + 从列表移除），不再回显审核区；
+     *   · 云端标记优先走后端 /pay/claims/resolve（带 rejected，管理员无 GitHub 令牌也能标），
+     *     失败回落管理员令牌直写 claims.json（resolved + rejected + rejectedAt）；
+     *   · 被拒申请保留在文件里供追溯，界面在审核区底部「已拒绝」列表显示；
+     *   · 对方重新提交支付申请后作为新申请进入审核区（Worker 去重只取代未决申请）。
+     * 拒绝不触碰账号本身（不开通、不停用），用户仍可照原权限（试用/既有会员）登录。 */
+    const rejectConfirmId = ref('');   // 行内二次确认：当前处于「确认拒绝？」状态的申请 id
+    async function rejectMemberClaim(claim) {
+      if (!A || !claim || !claim.id) return;
+      // 乐观更新：先入已处理集合并从列表移除，保证无论后端标记是否成功都不再回显
+      resolvedClaimIds.add(claim.id); persistResolvedClaims();
+      memberClaims.list = memberClaims.list.filter(c => c.id !== claim.id);
+      let marked = false;
+      try {
+        const base = payApiBase();
+        if (base) {
+          try {
+            const r = await fetch(base + '/pay/claims/resolve', {
+              method: 'POST', headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ id: claim.id, rejected: true })
+            });
+            if (r.ok) marked = true;
+          } catch (e) { /* 回落令牌直写 */ }
+        }
+        if (!marked && A.Sync && A.Sync.writeClaims) {
+          const rd = (A.Sync && A.Sync.readClaims) ? await A.Sync.readClaims() : { ok: true, claims: [] };
+          const all = (rd && rd.claims) || [];
+          const tgt = all.find(c => c.id === claim.id);
+          if (tgt) {
+            tgt.resolved = true; tgt.rejected = true; tgt.rejectedAt = Date.now();
+            const wr = await A.Sync.writeClaims(all);
+            marked = !!(wr && wr.ok);
+          }
+        }
+      } catch (e) { /* 本机已移除，仅未标记 */ }
+      showToast(marked
+        ? ('已拒绝「' + claim.user + '」的申请，该申请已从审核区移除（对方重新提交后会作为新申请进入审核区）')
+        : ('已拒绝「' + claim.user + '」的申请（本机已移除；云端标记失败，刷新后可能再次出现，可再点一次拒绝）'),
+        marked ? 'success' : 'warn', marked ? 3600 : 9000);
+      rejectConfirmId.value = '';
       await loadMemberClaims();
     }
     // 管理员手动开通（按用户名，无需待开通记录）
@@ -10452,7 +10503,7 @@ const app = createApp({
       authAdminToken, remotePending, remotePendingLoading,
       loadRemotePending, approveRemoteByAdmin, rejectRemoteByAdmin, syncAllToRegistryByAdmin,
       // batch-A：会员后台（个人码方案）
-      memberClaims, memberManual, loadMemberClaims, refreshMemberClaims, grantMemberClaim, grantMemberManual, trialUsersList, registeredNoMemberList, reviewClaims, umSearch, umSearchMatch,
+      memberClaims, memberManual, loadMemberClaims, refreshMemberClaims, grantMemberClaim, rejectMemberClaim, rejectConfirmId, grantMemberManual, trialUsersList, registeredNoMemberList, reviewClaims, umSearch, umSearchMatch,
       planAmount, planMonthsNum, planName, planMonthText, planOfUser, claimFields, trialFields, adminClassify,
       paidPlanOf, paidDateText, planCategoryText, quotaInputVal,
       authCatItems, isAccountShown, approvedZoneList, refreshApprovedZone,

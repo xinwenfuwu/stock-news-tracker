@@ -20,6 +20,7 @@
  * 场景5（账号已存在）：保留本机哈希，不覆盖
  * 场景6（防提权）：快照 role=admin 也只创建普通用户
  * 场景7（静态断言）：app.js / auth-boot.js / auth.js 接线
+ * 场景8（静态断言）：20261016i「拒绝通过」接线（app.js / index.html / worker.js / css）
  * ============================================================ */
 import fs from 'node:fs';
 import path from 'node:path';
@@ -274,6 +275,27 @@ const DAY = 24 * 60 * 60 * 1000;
     check('app.js 旧版申请提示引导重新提交/申请码', /旧版提交[\s\S]{0,200}申请码/.test(app));
     check('auth-boot.js 登录页续费提交也带快照', /Auth\.accountSnapshot\(uname\)/.test(boot));
     check('index.html 审核区徽标区分新旧申请', fs.readFileSync(path.join(ROOT, 'index.html'), 'utf8').includes('um-claim-noacct'));
+  }
+
+  /* ========== 场景8：静态断言（20261016i「拒绝通过」接线） ========== */
+  console.log('\n[场景8] 「拒绝通过」接线静态断言');
+  {
+    const app = fs.readFileSync(path.join(ROOT, 'js/app.js'), 'utf8');
+    const html = fs.readFileSync(path.join(ROOT, 'index.html'), 'utf8');
+    const worker = fs.readFileSync(path.join(ROOT, 'cloudflare-worker-prod/worker.js'), 'utf8');
+    check('app.js 定义 rejectMemberClaim', /async function rejectMemberClaim\(claim\)/.test(app));
+    check('app.js 拒绝优先走后端 /pay/claims/resolve 且带 rejected', /\/pay\/claims\/resolve[\s\S]{0,220}rejected: true/.test(app));
+    check('app.js 拒绝回落令牌直写 resolved+rejected+rejectedAt', /tgt\.resolved = true; tgt\.rejected = true; tgt\.rejectedAt = Date\.now\(\)/.test(app));
+    check('app.js 拒绝先乐观移除再重拉（resolvedClaimIds + filter）', /resolvedClaimIds\.add\(claim\.id\); persistResolvedClaims\(\);[\s\S]{0,120}memberClaims\.list = memberClaims\.list\.filter/.test(app));
+    check('app.js 收集已拒绝申请（rejected 列表）', /memberClaims\.rejected = raw\.filter\(c => c\.rejected\)/.test(app));
+    check('app.js 待审列表排除已拒绝申请', /!c\.resolved && !c\.rejected && !resolvedClaimIds\.has\(c\.id\)/.test(app));
+    check('app.js 暴露 rejectMemberClaim / rejectConfirmId', /grantMemberClaim, rejectMemberClaim, rejectConfirmId,/.test(app));
+    check('index.html 审核区有「拒绝通过」按钮', /@click="rejectConfirmId = c\.id"[^>]*title="拒绝该申请/.test(html));
+    check('index.html 行内二次确认（确认拒绝/取消）', /rejectConfirmId === c\.id[\s\S]{0,400}确认拒绝[\s\S]{0,200}取消/.test(html));
+    check('index.html 底部「已拒绝的申请」列表', html.includes('已拒绝的申请（{{ memberClaims.rejected.length }}'));
+    check('index.html 拒绝需二次确认防误点', /um-confirm-tip/.test(html));
+    check('worker.js resolve 端点支持 rejected 标记', /payClaimResolve[\s\S]{0,700}const rejected = body\.rejected === true;[\s\S]{0,400}t\.rejected = true; t\.rejectedAt = Date\.now\(\)/.test(worker));
+    check('css 有拒绝确认与已拒绝列表样式', fs.readFileSync(path.join(ROOT, 'css/style.css'), 'utf8').includes('.um-rejected-toggle'));
   }
 
   console.log('\n========== 结果：' + pass + ' 通过 / ' + fail + ' 失败 ==========');

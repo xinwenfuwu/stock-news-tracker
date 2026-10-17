@@ -392,12 +392,17 @@ async function payClaimResolve(request) {
   const id = (body.id || '').trim();
   if (!id) return json({ error: '缺少 id' }, 400);
   if (!payEnv('GH_PAT')) return json({ error: '未配置 GH_PAT' }, 503);
+  // 20261016i：rejected=true 时按「拒绝」处理——resolved 一并置 true（从审核区移除），
+  // 另记 rejected / rejectedAt 两个审计字段。与「开通」共用同一端点、同一读写路径，
+  // 管理员浏览器无 GitHub 令牌也能标记（借 Worker 的 GH_PAT）。
+  const rejected = body.rejected === true;
   try {
     const rd = await ghReadJson(CLAIMS_PATH);
     const claims = (rd.ok && rd.data && Array.isArray(rd.data.claims)) ? rd.data.claims : [];
-    const t = claims.find(c => c.id === id); if (t) t.resolved = true;
-    const w = await ghWriteJson(CLAIMS_PATH, { claims }, rd.sha, 'chore(membership): resolve claim ' + id);
-    return w.ok ? json({ ok: true }) : json({ error: w.error }, 500);
+    const t = claims.find(c => c.id === id);
+    if (t) { t.resolved = true; if (rejected) { t.rejected = true; t.rejectedAt = Date.now(); } }
+    const w = await ghWriteJson(CLAIMS_PATH, { claims }, rd.sha, 'chore(membership): ' + (rejected ? 'reject' : 'resolve') + ' claim ' + id);
+    return w.ok ? json({ ok: true, rejected: rejected }) : json({ error: w.error }, 500);
   } catch (e) { return json({ error: String(e && e.message || e) }, 500); }
 }
 

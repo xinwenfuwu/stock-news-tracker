@@ -4,12 +4,12 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>股市信息分析系统</title>
-  <link rel="stylesheet" href="css/style.css?v=20261016h">
+  <link rel="stylesheet" href="css/style.css?v=20261016i">
   <!-- Vue 3 全局构建版（v3.4.21 · 自托管）
        原先走 unpkg.com CDN：国内网络对 unpkg 的连通性不稳定，一旦该请求长时间挂起，
        <head> 里的阻塞脚本会让整页停在白屏、后续 auth-boot.js 根本不会执行。
        改为同源托管后，启动链路不再依赖任何第三方 CDN。 -->
-  <script src="js/vue.global.prod.js?v=20261016h"></script>
+  <script src="js/vue.global.prod.js?v=20261016i"></script>
 </head>
 <body class="auth-locked">
   <!-- ===== 登录关卡：登录通过前业务脚本不会被加载 ===== -->
@@ -4563,12 +4563,35 @@
                   <span class="um-pending-meta um-claim-hasacct" v-else title="申请自带账号信息，账号不在本机/云端时「核对并开通」将自动创建">✓ 可一键开通</span>
                 </div>
                 <div class="um-actions">
-                  <button class="btn btn-sm btn-primary" @click="grantMemberClaim(c)">核对并开通</button>
+                  <template v-if="rejectConfirmId === c.id">
+                    <span class="um-confirm-tip">确认拒绝？</span>
+                    <button class="btn btn-sm btn-danger" @click="rejectMemberClaim(c)">确认拒绝</button>
+                    <button class="btn btn-sm" @click="rejectConfirmId = ''">取消</button>
+                  </template>
+                  <template v-else>
+                    <button class="btn btn-sm btn-primary" @click="grantMemberClaim(c)">核对并开通</button>
+                    <button class="btn btn-sm btn-danger" @click="rejectConfirmId = c.id" title="拒绝该申请：从审核区移除，不为该申请开通会员；不影响该账号现有的登录与试用权限">拒绝通过</button>
+                  </template>
                 </div>
               </div>
               <div class="um-empty" v-if="!memberClaims.loading && !reviewClaims().length">暂无待审核支付申请</div>
+              <!-- 20261016i：已拒绝的申请（拒绝后从审核区移除，这里保留追溯记录） -->
+              <div class="um-rejected" v-if="memberClaims.rejected.length">
+                <button type="button" class="um-rejected-toggle" @click="memberClaims.rejectedOpen = !memberClaims.rejectedOpen"
+                        title="展开/收起被拒绝的申请（仅本机可见，供追溯）">
+                  <span>{{ memberClaims.rejectedOpen ? '▾' : '▸' }}</span>
+                  <span>已拒绝的申请（{{ memberClaims.rejected.length }}）</span>
+                </button>
+                <div class="um-rejected-list" v-if="memberClaims.rejectedOpen">
+                  <div class="um-rejected-item" v-for="c in memberClaims.rejected" :key="c.id">
+                    <span class="um-name">{{ c.user }}</span>
+                    <span class="um-pending-meta">{{ planLabel(c.plan) }}</span>
+                    <span class="um-pending-meta">拒绝于 {{ fmtDateTime(c.rejectedAt) }}</span>
+                  </div>
+                </div>
+              </div>
             </div>
-            <div class="um-hint">说明：① 用户支付后在「会员服务」点「我已支付请求开通」提交，普通用户无需任何令牌即可提交成功（新版申请自动附带账号信息）；② 点右上「↻ 刷新」重新拉取最新申请；③「核对并开通」按申请套餐开通会员，<b>有效期从该用户的支付时间起算</b>（支付时间早于套餐月数的极少数补录情形，则从开通当天起算），并自动归入「审核通过区」（同时在「授权使用」按套餐分列）；④ 开通同时把该账号转为「已通过」，可正常登录使用网站全部功能；账号名称、开始时间、结束时间、时段、支付费用均按提交信息记录，支付日期与额度同时写入下方用户表；⑤ 若账号不在本机也不在云端注册表，将按申请自带的信息自动创建（含对方注册时的密码哈希，任何设备可用原密码登录）；旧版申请（无账号信息）需让对方重新提交，或用「申请码」在「注册审核 / 账号导入」区导入后再开通。</div>
+            <div class="um-hint">说明：① 用户支付后在「会员服务」点「我已支付请求开通」提交，普通用户无需任何令牌即可提交成功（新版申请自动附带账号信息）；② 点右上「↻ 刷新」重新拉取最新申请；③「核对并开通」按申请套餐开通会员，<b>有效期从该用户的支付时间起算</b>（支付时间早于套餐月数的极少数补录情形，则从开通当天起算），并自动归入「审核通过区」（同时在「授权使用」按套餐分列）；④ 开通同时把该账号转为「已通过」，可正常登录使用网站全部功能；账号名称、开始时间、结束时间、时段、支付费用均按提交信息记录，支付日期与额度同时写入下方用户表；⑤ 若账号不在本机也不在云端注册表，将按申请自带的信息自动创建（含对方注册时的密码哈希，任何设备可用原密码登录）；旧版申请（无账号信息）需让对方重新提交，或用「申请码」在「注册审核 / 账号导入」区导入后再开通。⑥ 对误交、重复或无效的申请可点「拒绝通过」（需二次确认），拒绝后该申请从审核区移除并进入下方「已拒绝的申请」列表，不影响该账号的登录与试用；对方重新提交支付申请后会作为新申请进入审核区。</div>
           </div>
             <!-- 注册审核 / 账号导入（原「普通用户注册」板块已删除，相关能力并入此处） -->
             <div class="um-pending um-pending-trial">
@@ -4987,14 +5010,14 @@
     </transition>
   </div>
 
-  <script src="js/auth.js?v=20261016h"></script>
-  <script src="js/auth-sync.js?v=20261016h"></script>
+  <script src="js/auth.js?v=20261016i"></script>
+  <script src="js/auth-sync.js?v=20261016i"></script>
   <!-- 边缘加速默认站点（batch37 治本：Cloudflare Worker 代理东财/腾讯，缓解 JSONP 限流误报）。
        若你所在地区 workers.dev 访问慢，可在「设置 → 行情加速地址」清空即恢复纯直连。 -->
   <script>window.__SNT_ACCEL__ = 'https://sichina.dpdns.org';</script>
   <!-- 扫码支付二维码渲染库（第三方 qrcodejs，本地托管避免外链失效）。renderQr 会先检测全局 QRCode 是否存在。 -->
-  <script src="assets/qrcode.min.js?v=20261016h"></script>
-  <script src="js/auth-boot.js?v=20261016h"></script>
+  <script src="assets/qrcode.min.js?v=20261016i"></script>
+  <script src="js/auth-boot.js?v=20261016i"></script>
   <!-- store / stock-api / hot-topics / app 由 auth-boot.js 在登录通过后动态装载，
        未登录时它们不会被下载，业务数据也不会进入内存 -->
 </body>

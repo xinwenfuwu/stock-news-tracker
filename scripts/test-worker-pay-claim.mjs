@@ -5,6 +5,8 @@
  * 2) 未决申请「重新提交即取代最新」：同用户同套餐的未决申请被最新提交替换
  * 3) 不同套餐可并存；已 resolved 的旧申请不被替换
  * 4) 无 GH_PAT → 503（保持原行为）
+ * 5) 20261016i 拒绝标记：rejected=true → resolved+rejected+rejectedAt；被拒后重交生成新未决申请
+ * 6) 20261016i 普通 resolve 不写 rejected 字段（与拒绝互不污染）
  * ============================================================ */
 import fs from 'node:fs';
 import path from 'node:path';
@@ -85,6 +87,19 @@ async function submit(body) {
   const j = await resp.json().catch(() => ({}));
   return { status: resp.status, j };
 }
+// 20261016i：驱动 /pay/claims/resolve（rejected=true 为「拒绝」，false/省略为「开通」）
+async function resolve(id, rejected) {
+  const req = new Request('https://sichina.dpdns.org/pay/claims/resolve', {
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ id, rejected: !!rejected }),
+  });
+  let out = null;
+  const event = { request: req, respondWith: (p) => { out = p; } };
+  handler(event);
+  const resp = await out;
+  const j = await resp.json().catch(() => ({}));
+  return { status: resp.status, j };
+}
 
 const GOOD_HASH = 'pbkdf2$150000$c2FsdHNhbHQ=$aGFzaGhhc2g';
 const base = (over = {}) => Object.assign({
@@ -151,6 +166,37 @@ const base = (over = {}) => Object.assign({
     const r = await submit(base({ user: 'nopat' }));
     check('无令牌 → 503 且提示发给管理员', r.status === 503 && /发给管理员/.test(r.j.error || ''), JSON.stringify(r.j));
     sandbox.GH_PAT = 'ghp_mocktoken';
+  }
+
+  /* ---- T6 拒绝标记（20261016i：/pay/claims/resolve rejected=true） ---- */
+  console.log('\n[T6] 拒绝标记：resolved + rejected + rejectedAt，被拒后重交生成新未决申请');
+  {
+    const r0 = await submit(base({ user: 'rejectme', plan: '6m', amount: 1000 }));
+    check('先提交一条未决申请', r0.j && r0.j.ok === true, JSON.stringify(r0.j));
+    const c = claimsNow().find(x => x.user === 'rejectme');
+    check('申请存在且未决', !!c && !c.resolved, JSON.stringify(c));
+    const rj = await resolve(c.id, true);
+    check('拒绝标记成功且回执 rejected=true', rj.j && rj.j.ok === true && rj.j.rejected === true, JSON.stringify(rj.j));
+    const c2 = claimsNow().find(x => x.id === c.id);
+    check('resolved 与 rejected 均置位', !!c2 && c2.resolved === true && c2.rejected === true, JSON.stringify(c2));
+    check('rejectedAt 已记录', !!c2 && Number(c2.rejectedAt) > 0, 'rejectedAt=' + (c2 && c2.rejectedAt));
+    // 被拒后重新提交：旧申请已 resolved，去重逻辑不再取代它 → 生成新的未决申请
+    const rr = await submit(base({ user: 'rejectme', plan: '6m', amount: 1000 }));
+    check('被拒后重新提交成功且不取代旧申请', rr.j && rr.j.ok === true && rr.j.replaced === false, JSON.stringify(rr.j));
+    const mine = claimsNow().filter(x => x.user === 'rejectme');
+    check('同一用户现有两条申请（旧已拒 + 新未决）', mine.length === 2, 'n=' + mine.length);
+    check('其中恰一条未决（新申请进入审核区）', mine.filter(x => !x.resolved).length === 1, 'n=' + mine.filter(x => !x.resolved).length);
+  }
+
+  /* ---- T7 普通 resolve 不写 rejected 字段（与拒绝互不污染） ---- */
+  console.log('\n[T7] 普通开通标记只置 resolved，不写 rejected');
+  {
+    const r0 = await submit(base({ user: 'plainresolve' }));
+    const c = claimsNow().find(x => x.user === 'plainresolve');
+    const rj = await resolve(c.id, false);
+    check('普通开通标记成功且回执 rejected=false', rj.j && rj.j.ok === true && rj.j.rejected === false, JSON.stringify(rj.j));
+    const c2 = claimsNow().find(x => x.id === c.id);
+    check('resolved=true 但不带 rejected/rejectedAt', !!c2 && c2.resolved === true && !c2.rejected && !c2.rejectedAt, JSON.stringify(c2));
   }
 
   console.log('\n========== 结果：' + pass + ' 通过 / ' + fail + ' 失败 ==========');
