@@ -1,14 +1,17 @@
 /* ============================================================
- * test-claim-create-grant.mjs — 验证「核对并开通」兜底创建链路（20261016l）
+ * test-claim-create-grant.mjs — 验证「核对并开通」兜底创建链路（20261016m）
  *
  * 背景（用户需求）：管理员对无账号信息的旧版支付申请点「核对并开通」，
  * 要能直接开通对应期限并把账号归类到相应板块——即使账号在本机、
  * 云端注册表、申请快照里都不存在（用户实测 yh123：¥4000/24月期申请
  * 无 acct，云端注册表也没有，点开通即报错）。
+ * 20261016m：交互恢复旧版「一键完成」——账号各处都不存在时，
+ * 「核对并开通」自动生成随机密码直接创建+开通+上云+弹密码面板，
+ * 不再有第二次点击；仅自动创建失败才回落行内确认态（密码可改重试）。
  *
  * 场景1（核心需求完整复现，与线上实况一致）：
  *   申请无 acct、云端注册表没有 yh123、管理员本机也没有
- *   → createAccountForClaim 创建账号（密码可改）
+ *   → createAccountForClaim 创建账号（随机密码）
  *   → grantMembership 按支付时间开通 24 个月
  *   → syncAccountToCloud 令牌直写云端（账号+会员）
  *   → 全新设备用该密码登录成功（门禁放行，会员有效）
@@ -19,7 +22,7 @@
  * 场景4（边界与防护）：非管理员拒绝 / 已存在用户名拒绝 / 弱密码拒绝 /
  *   同步不存在用户拒绝 / 创建账号角色强制普通用户
  * 场景5（静态断言）：auth.js / app.js / index.html / auth-boot.js /
- *   auth-sync.js 接线
+ *   auth-sync.js 接线（含 20261016m 一键自动路径与失败回落）
  * ============================================================ */
 import fs from 'node:fs';
 import path from 'node:path';
@@ -179,7 +182,8 @@ const MONTH_MS = 30 * 24 * 60 * 60 * 1000;
     const rec = await A.Auth.recoverFromRegistry();
     check('云端注册表也恢复不到（recovered=0）', rec && rec.ok === true && rec.recovered === 0, JSON.stringify(rec));
 
-    // 管理员点「创建并开通」：创建账号（密码可改）→ 开通 → 云端落库
+    // 一键创建并开通（20261016m 自动路径，与 grantMemberClaim→runCreateGrant 同口径）：
+    // 创建账号（随机密码）→ 开通 → 云端落库
     const cr = await A.Auth.createAccountForClaim(claim.user, 'Yh@123456');
     check('createAccountForClaim 创建成功', cr && cr.ok === true, JSON.stringify(cr && cr.error));
     const gr = A.Auth.grantMembership(claim.user, months, { paidAt: payTs, amount: claim.amount });
@@ -309,10 +313,14 @@ const MONTH_MS = 30 * 24 * 60 * 60 * 1000;
     check('auth.js createAccountForClaim 仅管理员', /createAccountForClaim: function[\s\S]*?仅管理员可执行该操作/.test(auth));
     check('auth.js createAccountForClaim 角色强制 user', /createAccountForClaim: function[\s\S]*?role: ROLE\.USER/.test(auth));
     check('app.js grantMemberClaim 含待审注册兜底（pendingUsers→approveUser）', /A\.pendingUsers\(\)[\s\S]*?A\.approveUser\(claim\.user, 'user'\)/.test(app));
-    check('app.js grantMemberClaim 含创建确认触发（grantCreateId）', /grantCreateId\.value = claim\.id/.test(app));
+    check('app.js 一键路径：预生成随机密码并自动执行 runCreateGrant（无第二次点击）', /grantCreatePw\.value = genClaimPassword\(\);[\s\S]*?await runCreateGrant\(claim\)/.test(app));
+    check('app.js 新增 runCreateGrant 执行体（一键与行内确认共用）', /async function runCreateGrant/.test(app));
+    check('app.js 仅自动创建失败才回落行内确认态（autoOk 守卫）', /const autoOk = await runCreateGrant\(claim\);[\s\S]*?grantCreateId\.value = claim\.id/.test(app));
     check('app.js 新增 confirmGrantCreate', /async function confirmGrantCreate/.test(app));
-    check('app.js confirmGrantCreate 创建→开通→落库 顺序', /createAccountForClaim\(claim\.user, pw\)[\s\S]*?grantMembership\(claim\.user, months[\s\S]*?syncAccountToCloud\(claim\.user\)/.test(app));
-    check('app.js confirmGrantCreate 弹密码面板（showApproveCodePanel）', /async function confirmGrantCreate[\s\S]*?showApproveCodePanel/.test(app));
+    check('app.js confirmGrantCreate 校验密码后委托 runCreateGrant', /async function confirmGrantCreate[\s\S]*?await runCreateGrant\(claim\)/.test(app));
+    check('app.js runCreateGrant 创建→开通→落库 顺序', /createAccountForClaim\(claim\.user, pw\)[\s\S]*?grantMembership\(claim\.user, months[\s\S]*?syncAccountToCloud\(claim\.user\)/.test(app));
+    check('app.js runCreateGrant 弹密码面板（showApproveCodePanel）', /async function runCreateGrant[\s\S]*?showApproveCodePanel/.test(app));
+    check('app.js runCreateGrant 全程成功返回 true', /await loadMemberClaims\(\);\s*\n\s*return true;/.test(app));
     check('app.js 暴露 grantCreateId/grantCreatePw/confirmGrantCreate', /grantCreateId, grantCreatePw, confirmGrantCreate/.test(app));
     check('index.html 行内「创建并开通」确认区', html.includes('grantCreateId === c.id') && html.includes('confirmGrantCreate(c)'));
     check('index.html 创建确认含密码输入框', html.includes('um-create-pw') && html.includes('v-model="grantCreatePw"'));
