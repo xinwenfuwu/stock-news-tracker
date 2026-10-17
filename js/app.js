@@ -139,6 +139,7 @@ const app = createApp({
        savingApproved：保存中（按钮禁用 + 文案切换），防重复点击。 */
     const cloudRegistrySnapshot = reactive({});
     const savingApproved = ref(false);
+    const refreshingPending = ref(false);   // 20261016k：「待审核注册申请」↻ 刷新 进行中
     const userModal = reactive({
       show: false, newUsername: '', newPassword: '', newRole: 'user',
       pending: [], pendingRole: {}, reqCode: ''
@@ -356,6 +357,37 @@ const app = createApp({
       refreshUserList();
       scanPending();
       showToast('已刷新审核通过区', 'success');
+    }
+
+    /**
+     * 20261016k：「待审核注册申请」↻ 刷新按钮。
+     * ① 先从云端注册表合并最新账号（只读、免令牌）——其他设备注册的用户经此进入本机列表，
+     *    出现在下方「审核通过区」（需求：所有注册用户的账户信息必须出现在审核通过区）；
+     * ② 重扫本机待审申请与账号列表；
+     * ③ 有令牌时拉云端待审名单；④ 重拉云端快照，保持「未保存」角标准确。
+     */
+    async function refreshPendingRegistrations() {
+      refreshingPending.value = true;
+      try {
+        let merged = 0;
+        if (A && A.recoverFromRegistry) {
+          try {
+            const rr = await A.recoverFromRegistry();
+            if (rr && rr.ok) merged = Number(rr.recovered) || 0;
+          } catch (e) { /* 网络失败不影响本机刷新 */ }
+        }
+        refreshUserList();
+        scanPending();
+        await loadCloudRegistrySnapshot();
+        if (A && A.Sync && A.Sync.isAdminConfigured && A.Sync.isAdminConfigured()) {
+          loadRemotePending();
+        }
+        showToast(merged > 0
+          ? ('已刷新：新并入 ' + merged + ' 个云端注册表账号，已出现在审核通过区')
+          : '已刷新待审核注册申请', 'success');
+      } finally {
+        refreshingPending.value = false;
+      }
     }
 
     /* ---------- 20261016j：审核通过区「保存到云端」 ---------- */
@@ -10620,7 +10652,7 @@ const app = createApp({
       memberClaims, memberManual, loadMemberClaims, refreshMemberClaims, grantMemberClaim, rejectMemberClaim, rejectConfirmId, grantMemberManual, trialUsersList, registeredNoMemberList, reviewClaims, umSearch, umSearchMatch,
       planAmount, planMonthsNum, planName, planMonthText, planOfUser, claimFields, trialFields, adminClassify,
       paidPlanOf, paidDateText, planCategoryText, quotaInputVal,
-      authCatItems, isAccountShown, approvedZoneList, refreshApprovedZone,
+      authCatItems, isAccountShown, approvedZoneList, refreshApprovedZone, refreshPendingRegistrations, refreshingPending,
       // 20261016j：审核通过区「💾 保存」（改动上传云端后端）
       savingApproved, dirtyAccountList, isAccountDirty, saveApprovedZoneChanges,
       showApproveCode, toggleRevealPassword, revealPendingPassword,

@@ -4,12 +4,12 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>股市信息分析系统</title>
-  <link rel="stylesheet" href="css/style.css?v=20261016j">
+  <link rel="stylesheet" href="css/style.css?v=20261016k">
   <!-- Vue 3 全局构建版（v3.4.21 · 自托管）
        原先走 unpkg.com CDN：国内网络对 unpkg 的连通性不稳定，一旦该请求长时间挂起，
        <head> 里的阻塞脚本会让整页停在白屏、后续 auth-boot.js 根本不会执行。
        改为同源托管后，启动链路不再依赖任何第三方 CDN。 -->
-  <script src="js/vue.global.prod.js?v=20261016j"></script>
+  <script src="js/vue.global.prod.js?v=20261016k"></script>
 </head>
 <body class="auth-locked">
   <!-- ===== 登录关卡：登录通过前业务脚本不会被加载 ===== -->
@@ -4597,7 +4597,17 @@
             <div class="um-pending um-pending-trial">
               <div class="um-pending-head">
                 <span>🔔 待审核注册申请</span>
-                <span class="um-pending-count">{{ userModal.pending.length }} 人</span>
+                <span class="um-pending-right">
+                  <span class="um-pending-count">{{ userModal.pending.length }} 人</span>
+                  <!-- 20261016k：刷新按钮——重扫本机待审申请，并从云端注册表合并最新注册的账号
+                       （无令牌设备注册也会经 Worker 代写云端，管理员在此刷新后即出现在审核通过区） -->
+                  <button class="btn btn-sm um-refresh-btn" :disabled="refreshingPending"
+                          @click="refreshPendingRegistrations"
+                          title="重新扫描本机待审申请，并从云端注册表合并最新注册的账号——其他设备注册的用户会出现在下方「审核通过区」">
+                    <span v-if="refreshingPending">刷新中…</span>
+                    <template v-else>↻ 刷新</template>
+                  </button>
+                </span>
               </div>
               <div class="um-pending-item" v-for="p in userModal.pending.filter(x => umSearchMatch(x.username))" :key="p.username">
                 <div class="um-pending-main">
@@ -4638,7 +4648,7 @@
                 </div>
               </div>
               <div class="um-hint" v-if="!remotePending.length && !remotePendingLoading && authAdminToken && authAdminToken.trim()">
-                云端注册表暂无待审。已通过 / 添加的账号会自动写进注册表；对方设备只需输入账号密码即可登录。
+                云端注册表暂无待审。新注册的用户会自动写进注册表（普通设备经云端通道代写），打开面板或点上方「↻ 刷新」即出现在下方「审核通过区」；已通过 / 添加的账号同样自动写入，对方设备只需输入账号密码即可登录。
               </div>
             </div>
 
@@ -4660,8 +4670,9 @@
               <button class="btn btn-primary btn-sm" @click="addUserByAdmin">添加</button>
               <div class="um-hint">
                 普通用户可以用全部业务页面，但不能改设置、导入/清空数据、管理账号。
-                账号存在本机浏览器：同一台设备上注册的账号会直接出现在上方待审核区；
-                其他设备注册的用户，需要把他发来的「申请码」粘到上面导入，通过后再把系统给出的「准入码」发回给他。
+                账号存在本机浏览器：同一台设备上注册的账号（注册即送 1 天试用）会直接出现在下方「审核通过区」；
+                <b>其他设备注册的用户会自动写入云端注册表</b>，点上方「↻ 刷新」或重新打开本面板，即出现在下方「审核通过区」，无需申请码。
+                「申请码」导入仅作离线兜底（对方注册时网络异常导致没写上云端时使用）。
               </div>
             </div>
           </div><!-- /um-panel review -->
@@ -5022,14 +5033,14 @@
     </transition>
   </div>
 
-  <script src="js/auth.js?v=20261016j"></script>
-  <script src="js/auth-sync.js?v=20261016j"></script>
+  <script src="js/auth.js?v=20261016k"></script>
+  <script src="js/auth-sync.js?v=20261016k"></script>
   <!-- 边缘加速默认站点（batch37 治本：Cloudflare Worker 代理东财/腾讯，缓解 JSONP 限流误报）。
        若你所在地区 workers.dev 访问慢，可在「设置 → 行情加速地址」清空即恢复纯直连。 -->
   <script>window.__SNT_ACCEL__ = 'https://sichina.dpdns.org';</script>
   <!-- 扫码支付二维码渲染库（第三方 qrcodejs，本地托管避免外链失效）。renderQr 会先检测全局 QRCode 是否存在。 -->
-  <script src="assets/qrcode.min.js?v=20261016j"></script>
-  <script src="js/auth-boot.js?v=20261016j"></script>
+  <script src="assets/qrcode.min.js?v=20261016k"></script>
+  <script src="js/auth-boot.js?v=20261016k"></script>
   <!-- store / stock-api / hot-topics / app 由 auth-boot.js 在登录通过后动态装载，
        未登录时它们不会被下载，业务数据也不会进入内存 -->
 </body>

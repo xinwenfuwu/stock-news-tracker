@@ -248,7 +248,10 @@
     if (!uname || !password) return Promise.resolve({});
     return readRegistry().then(function (reg) {
       var acc = reg.accounts && reg.accounts[uname];
-      if (!acc || !acc.hash) return {}; // 注册表里没有 → 回落本地
+      // 20261016k：注册表里没有这个账号时返回 { notFound: true }（仍回落本地登录），
+      // 让 auth.js 在本地登录成功后补写一次云端——注册时离线没同步上的账号，
+      // 下次登录即进入云端注册表，管理员的「审核通过区」随之可见。
+      if (!acc || !acc.hash) return { notFound: true };
       var verify = global.Auth
         ? global.Auth.verifyPassword(password, acc.hash)
         : Promise.resolve(false);
@@ -343,6 +346,39 @@
     });
   }
 
+  /**
+   * 20261016k：无令牌设备（普通用户）注册时，经 pay Worker 把账号代写进云端注册表。
+   * 与 registerRemote（需管理员令牌直写）二选一：有令牌走 GitHub 直写，无令牌走这里
+   * （Worker 持 GH_PAT，落库后管理员打开用户管理即经 recoverFromRegistry 看到该账号）。
+   * 任何失败都返回 { ok:false }，调用方离线兜底，不阻塞注册流程。
+   */
+  function registerRemoteViaWorker(acct) {
+    var base = memberApiBase();
+    var uname = String(acct && acct.username || '').trim();
+    if (!base || !uname || !acct || typeof acct.hash !== 'string' || acct.hash.indexOf('pbkdf2$') !== 0) {
+      return Promise.resolve({ ok: false, error: '参数不完整' });
+    }
+    var payload = {
+      username: uname,
+      hash: acct.hash,
+      status: 'active',
+      trialUntil: Number(acct.trialUntil) || 0,
+      trialDays: Number(acct.trialDays) || 0,
+      registerDate: typeof acct.registerDate === 'string' ? acct.registerDate : '',
+      createdAt: Number(acct.createdAt) || 0
+    };
+    return fetch(base + '/auth/register', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+      cache: 'no-store',
+      body: JSON.stringify(payload)
+    }).then(function (r) {
+      return r.json().catch(function () { return {}; }).then(function (j) {
+        return { ok: r.ok && !!(j && j.ok), status: r.status, error: (j && j.error) ? String(j.error) : '' };
+      });
+    }).catch(function (e) { return { ok: false, error: String((e && e.message) || e) }; });
+  }
+
   global.Auth = global.Auth || {};
   // 20261012e：登录门禁的云端会员兜底查询（auth.js 的 accessDenyWithRemote 会调用）。
   // 单独挂到 Auth 上（不进 Sync），让 auth.js 不依赖同步模块的加载顺序。
@@ -363,6 +399,7 @@
     disableRemote: disableRemote,
     deleteUser: deleteUser,
     registerRemote: registerRemote,
+    registerRemoteViaWorker: registerRemoteViaWorker,
     // batch-A：会员个人收款码配置 + 待开通记录（公开读、令牌写）
     MEMBER_CFG_PATH: MEMBER_CFG_PATH,
     MEMBER_CLAIMS_PATH: MEMBER_CLAIMS_PATH,

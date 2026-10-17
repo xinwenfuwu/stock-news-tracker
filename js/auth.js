@@ -1126,12 +1126,15 @@
         self.users.push(u);
         if (!saveUsers(self.users)) return { ok: false, error: '保存失败：浏览器本地存储不可用' };
         setDeviceRegisteredUser(v.username);        // 设备注册锁：本机已自助注册一个账号
-        // 20261016d：全新注册也写云端注册表（仅本机配有 GitHub 令牌时真正落地，即管理员设备）；
-        // 普通用户设备没有令牌，_syncUserToRegistry 静默跳过，行为与之前完全一致。
-        // 目的：保证「普通用户注册后，管理员在任何设备的用户管理里都以**相同用户名**看到该账号」，
-        // 杜绝「只存在本机 → 管理员看不到 → 手动添加成另一个名字」的用户名分裂。
-        // 同步的是真实状态（active + 1天试用），对方设备登录时经 loginRemote 直接放行。
-        try { self._syncUserToRegistry(u).catch(function () { /* 离线兜底，不影响注册结果 */ }); } catch (e) { /* ignore */ }
+        // 20261016d：全新注册也写云端注册表，保证「普通用户注册后，管理员在任何设备的
+        // 用户管理里都以**相同用户名**看到该账号」，杜绝「只存在本机 → 管理员看不到 →
+        // 手动添加成另一个名字」的用户名分裂。同步的是真实状态（active + 1天试用），
+        // 对方设备登录时经 loginRemote 直接放行。
+        // 20261016k：写入走 _syncAccountToCloud——有令牌直写、无令牌经 Worker 代写；
+        // 失败（离线等）不影响注册结果，仅意味着跨设备暂不可见（下次登录会补写）。
+        try {
+          self._syncAccountToCloud(u).catch(function () { /* 离线兜底，不影响注册结果 */ });
+        } catch (e) { /* ignore */ }
         return {
           ok: true, user: publicUser(u), autoTrial: true,
           trialUntil: u.trialUntil, trialDays: 1
@@ -1169,7 +1172,17 @@
             };
           }
           if (r && r.error) return { ok: false, error: r.error };
-          return self._localLogin(username, password, remember);   // 后端无明确结论 → 本地兜底
+          // 20261016k：云端注册表里没有这个账号（r.notFound）而本机登录成功 →
+          // 补写一次云端（有令牌直写 / 无令牌经 Worker 代写）。注册时离线没同步上的账号，
+          // 下次登录即进入云端注册表，管理员的「审核通过区」随之可见；
+          // 仅 notFound 才补写——哈希不符（云端是另一套密码）时不覆盖，避免误改对方记录。
+          return self._localLogin(username, password, remember).then(function (lr) {
+            if (lr && lr.ok && r && r.notFound) {
+              var full = findUser(loadUsers(), uname);
+              if (full) self._syncAccountToCloud(full).catch(function () { /* 静默兜底 */ });
+            }
+            return lr;
+          });
         }).catch(function () {
           return self._localLogin(username, password, remember);   // 网络抖动 → 本地兜底
         });
@@ -2151,6 +2164,27 @@
         rec.updatedAt = Date.now();
         return Promise.resolve(Auth.Sync.writeUser(rec));
       } catch (e) { return Promise.resolve({ ok: false, error: String(e && e.message || e) }); }
+    },
+
+    /**
+     * 20261016k：把账号写进云端注册表（注册 / 登录自愈共用）。
+     * ① 本机配有 GitHub 令牌（管理员设备）→ Contents API 直写；
+     * ② 无令牌（普通用户设备）→ 经 pay Worker /auth/register 代写（Worker 持 GH_PAT），
+     *    保证普通用户注册后，管理员在任意设备的「审核通过区」都能看到该账号。
+     * 两条都失败（离线等）不影响本地业务，仅意味着跨设备暂不可见。
+     */
+    _syncAccountToCloud: function (u) {
+      var self = this;
+      return Promise.resolve(this._syncUserToRegistry(u)).then(function (sr) {
+        if (sr && sr.ok) return sr;                    // ① 直写成功
+        if (!(sr && sr.skip)) return sr;               // 非「缺令牌」类失败不重试
+        if (Auth.Sync && typeof Auth.Sync.registerRemoteViaWorker === 'function') {
+          return Auth.Sync.registerRemoteViaWorker(u).catch(function () {
+            return { ok: false, error: '网络异常，稍后登录会自动补写' };
+          });
+        }
+        return sr;
+      }).catch(function () { return { ok: false, error: '网络异常，稍后登录会自动补写' }; });
     },
 
     /**

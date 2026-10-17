@@ -195,6 +195,8 @@ async function fetchHandler(request) {
     //            管理员点「刷新」即可看到刚提交的申请（此前要等 Pages 重建，最长数十秒）。
     if (url.pathname === '/pay/claims' && request.method === 'GET') return payClaimsGet();
     if (url.pathname === '/pay/claims/resolve' && request.method === 'POST') return payClaimResolve(request);
+    // 20261016k：无令牌设备注册代写——把新账号写进云端注册表，管理员「审核通过区」必现
+    if (url.pathname === '/auth/register' && request.method === 'POST') return authRegister(request);
 
     // ============ 路由 5：/acc/<path> —— GitHub Pages 静态资源加速（20261006g） ============
     // 背景：国内访问 xinwenfuwu.github.io 时快时慢，402KB 的 js/app.js 经常 20 秒拉不完，
@@ -224,7 +226,7 @@ async function fetchHandler(request) {
         service: 'stock-news-tracker-edge-cache',
         ttl: TTL,
         allowHosts: ALLOW_HOSTS,
-        member: { claimChannel: !!payEnv('GH_PAT') },
+        member: { claimChannel: !!payEnv('GH_PAT'), registerChannel: !!payEnv('GH_PAT') },
         routes: ['/news', '/q/<codes>', '/k/<code>/<n>', '/proxy?url=']
       }, null, 2), { headers: withCors({ 'Content-Type': 'application/json' }) });
     }
@@ -323,7 +325,73 @@ async function ghWriteJson(path, obj, sha, message) {
   const body = { message: message || ('chore(membership): update ' + path), content, branch: GH_BRANCH };
   if (sha) body.sha = sha;
   const r = await ghApi('/contents/' + path, 'PUT', body);
-  return r.ok ? { ok: true } : { ok: false, error: (r.body && r.body.message) || ('HTTP ' + r.status) };
+  return r.ok ? { ok: true } : { ok: false, error: (r.body && r.body.message) || ('HTTP ' + r.status), status: r.status };
+}
+
+// ============ 20261016k：注册即写云端注册表（无令牌设备经 Worker 代写） ============
+// 背景：普通用户在自己设备（无 GitHub 令牌）注册只存本机，管理员在任意设备都看不到该账号，
+// 违背「所有注册用户的账户信息必须出现在管理员审核通过区」。现在注册时经本端点把账号写进
+// data/accounts/registry.json（Worker 持 GH_PAT）；管理员打开用户管理时
+// recoverFromRegistry（只读合并）即把该账号并入本机列表，出现在「审核通过区」。
+// 与本地 register() 同样的占用口径，避免云端抢名 / 覆盖付费账号：
+//   · 已存在「管理员」或「付费会员」同名账号 → 拒绝（409）
+//   · 已存在 active 同名账号 → 拒绝（409，请对方直接登录或联系管理员）
+//   · 已存在 pending / rejected 同名账号 → 允许覆盖（真正的主人认领 / 重新申请）
+const REGISTRY_PATH = 'data/accounts/registry.json';
+const REG_USERNAME_RE = /^[A-Za-z0-9_\u4e00-\u9fa5.-]{2,20}$/;
+async function authRegister(request) {
+  let body; try { body = await request.json(); } catch (e) { return json({ error: 'invalid json' }, 400); }
+  const username = String(body.username || '').trim();
+  const hash = typeof body.hash === 'string' ? body.hash.trim() : '';
+  if (!username) return json({ error: '缺少用户名' }, 400);
+  if (!REG_USERNAME_RE.test(username)) return json({ error: '用户名只能包含中文、字母、数字、下划线、点或短横线（2-20 个字符）' }, 400);
+  if (hash.indexOf('pbkdf2$') !== 0 || hash.split('$').length !== 4) return json({ error: '密码哈希格式不正确' }, 400);
+  if (!payEnv('GH_PAT')) return json({ error: '注册同步通道未配置（请联系管理员）' }, 503);
+  const now = Date.now();
+  // 试用期只接受合理值（客户端注册即送 1 天；异常值按无试用处理，避免脏数据）
+  let trialUntil = Number(body.trialUntil) || 0;
+  if (trialUntil && (trialUntil < now - 30 * 86400000 || trialUntil > now + 30 * 86400000)) trialUntil = 0;
+  const status = body.status === 'pending' ? 'pending' : 'active';
+  try {
+    // 并发注册可能撞 409 sha 冲突：失败重读一次再写（与 auth-sync.js writeRegistry 同策略）
+    for (let attempt = 0; attempt < 2; attempt++) {
+      const rd = await ghReadJson(REGISTRY_PATH);
+      const reg = (rd.ok && rd.data && typeof rd.data === 'object') ? rd.data : {};
+      reg.version = reg.version || 1;
+      reg.accounts = reg.accounts || {};
+      const exist = reg.accounts[username];
+      if (exist) {
+        const paid = (Number(exist.payMembershipUntil) || 0) > now || (Number(exist.quotaMonths) || 0) > 0;
+        if (exist.role === 'admin' || paid || (exist.status || 'pending') === 'active') {
+          return json({ ok: false, error: '该用户名已被使用，请更换一个' }, 409);
+        }
+        // pending / rejected → 允许覆盖（主人认领 / 重新申请）
+      }
+      reg.accounts[username] = {
+        hash: hash,
+        role: 'user',
+        status: status,
+        disabled: false,
+        trialUntil: trialUntil,
+        trialDays: Number(body.trialDays) || (trialUntil ? 1 : 0),
+        quotaMonths: 0,
+        disableDate: '',
+        registerDate: typeof body.registerDate === 'string' ? body.registerDate : '',
+        payMembershipUntil: 0,
+        paidAt: 0,
+        paidPlan: '',
+        paidAmount: 0,
+        createdAt: Number(body.createdAt) || now,
+        updatedAt: now
+      };
+      reg.updatedAt = now;
+      const w = await ghWriteJson(REGISTRY_PATH, reg, rd.sha, 'chore(auth): register ' + username);
+      if (w.ok) return json({ ok: true, created: true });
+      if (attempt === 0 && w.status === 409) continue;   // sha 冲突：重读重试一次
+      return json({ error: '写入失败：' + w.error }, 500);
+    }
+    return json({ error: '写入失败：并发冲突重试后仍未成功' }, 500);
+  } catch (e) { return json({ error: String(e && e.message ? e.message : e) }, 500); }
 }
 async function payClaim(request) {
   let body; try { body = await request.json(); } catch (e) { return json({ error: 'invalid json' }, 400); }
