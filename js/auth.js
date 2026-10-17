@@ -464,6 +464,34 @@
     return attempt(0);
   }
 
+  /* ================= 注册表记录（云端 registry.json 单账号结构） ================= */
+
+  /**
+   * 把本机账号整理成「云端注册表」的字段子集（与 Auth.Sync.writeUser 的白名单一致）。
+   * 20261016j：_syncUserToRegistry 的写入、以及「💾 保存」按钮的脏检查共用它，
+   * 保证「比较口径」与「落库口径」永远一致，不会出现「看着没变、其实写漏了」。
+   * 不含 updatedAt（每次写入都变，参与比较会永远为真）。
+   */
+  function buildRegistryRecord(u) {
+    return {
+      username: u.username,
+      hash: u.hash || '',
+      role: u.role || ROLE.USER,
+      status: statusOf(u),
+      disabled: !!u.disabled,
+      trialUntil: u.trialUntil || 0,
+      trialDays: u.trialDays || 0,
+      quotaMonths: u.quotaMonths || 0,
+      disableDate: u.disableDate || '',
+      registerDate: u.registerDate || '',
+      payMembershipUntil: u.payMembershipUntil || 0,   // batch-A：后台/扫码开通的会员到期时间戳(ms)
+      paidAt: Number(u.paidAt) || 0,                   // 20261007q：支付日期(ms)
+      paidPlan: u.paidPlan || '',                      // 20261007q：支付套餐 6m / 1y / 2y
+      paidAmount: Number(u.paidAmount) || 0,           // 20261007q：实付金额
+      createdAt: u.createdAt || Date.now()
+    };
+  }
+
   /* ================= 用户记录派生字段 ================= */
 
   function statusOf(u) {
@@ -2119,23 +2147,8 @@
         if (!u || !u.hash || u.hash.indexOf('pbkdf2$') !== 0) return Promise.resolve({ ok: false, skip: true, error: '账号缺少密码哈希，无法同步' });
         if (typeof Auth === 'undefined' || !Auth.Sync || !Auth.Sync.writeUser) return Promise.resolve({ ok: false, skip: true, error: '同步模块未加载' });
         if (!Auth.Sync.isAdminConfigured || !Auth.Sync.isAdminConfigured()) return Promise.resolve({ ok: false, skip: true, error: '未配置 GitHub 令牌（设置 → 云端同步）' });
-        var rec = {
-          username: u.username,
-          hash: u.hash,
-          role: u.role || ROLE.USER,
-          status: statusOf(u),
-          disabled: !!u.disabled,
-          trialUntil: u.trialUntil || 0,
-          quotaMonths: u.quotaMonths || 0,
-          disableDate: u.disableDate || '',
-          registerDate: u.registerDate || '',
-          payMembershipUntil: u.payMembershipUntil || 0,   // batch-A：后台/扫码开通的会员到期时间戳(ms)
-          paidAt: Number(u.paidAt) || 0,                   // 20261007q：支付日期(ms)
-          paidPlan: u.paidPlan || '',                      // 20261007q：支付套餐 6m / 1y / 2y
-          paidAmount: Number(u.paidAmount) || 0,           // 20261007q：实付金额
-          createdAt: u.createdAt || Date.now(),
-          updatedAt: Date.now()
-        };
+        var rec = buildRegistryRecord(u);
+        rec.updatedAt = Date.now();
         return Promise.resolve(Auth.Sync.writeUser(rec));
       } catch (e) { return Promise.resolve({ ok: false, error: String(e && e.message || e) }); }
     },
@@ -2171,6 +2184,69 @@
       return list.reduce(function (p, u) {
         return p.then(function () { return Promise.resolve(self._syncUserToRegistry(u)); });
       }, Promise.resolve()).then(function () { return { ok: true, count: list.length }; });
+    },
+
+    /**
+     * 20261016j：把指定的若干账号「保存」（上传）到云端注册表。
+     * 供用户管理「审核通过区」的「💾 保存」按钮使用：管理员改完角色 / 状态 / 停用 /
+     * 试用 / 注册日期 / 额度后点保存，改动即写入后端（GitHub 注册表），
+     * 刷新页面、清本机数据、换设备登录都不会丢失。
+     * 顺序写入，避免并发 PUT 触发 409 sha 冲突（每个账号一次 GET+PUT）。
+     * @param {string[]} usernames 要保存的用户名（大小写不敏感；传空数组什么都不做）
+     * @returns {Promise<{ok:boolean, total:number, saved:string[], failed:Array<{username,error}>, skipped:number, error?}>}
+     */
+    saveUsersToRegistry: function (usernames) {
+      if (!this.isAdmin()) return Promise.resolve({ ok: false, error: '仅管理员可同步' });
+      var self = this;
+      this.users = loadUsers();
+      var want = {};
+      (usernames || []).forEach(function (n) { want[String(n == null ? '' : n).trim().toLowerCase()] = true; });
+      var list = this.users.filter(function (u) {
+        return u && u.username && u.hash && u.hash.indexOf('pbkdf2$') === 0
+          && want[String(u.username).toLowerCase()];
+      });
+      var saved = [], failed = [], skipped = 0;
+      // 顺序写入，避免并发 PUT 触发 409 sha 冲突
+      return list.reduce(function (p, u) {
+        return p.then(function () {
+          return Promise.resolve(self._syncUserToRegistry(u)).then(function (r) {
+            if (r && r.ok) saved.push(u.username);
+            else if (r && r.skip) skipped++;
+            else failed.push({ username: u.username, error: (r && r.error) || '写入失败' });
+          });
+        });
+      }, Promise.resolve()).then(function () {
+        // 一个都没写进去且全部因「无令牌」被跳过 → 明确报错，让管理员去设置里配令牌
+        if (list.length && !saved.length && skipped === list.length) {
+          return { ok: false, error: '未配置 GitHub 令牌（设置 → 云端同步）', total: list.length, saved: saved, failed: failed, skipped: skipped };
+        }
+        return { ok: failed.length === 0, total: list.length, saved: saved, failed: failed, skipped: skipped };
+      });
+    },
+
+    /**
+     * 20261016j：导出「参与云端比较的字段子集」（不含 username / hash / createdAt / updatedAt）。
+     * 「💾 保存」按钮用它比较「本机账号 vs 云端注册表」判断有没有未上传的改动；
+     * 传入本机账号（含管理员视图 adminUser）或注册表条目均可，两端口径一致。
+     * ⚠️ 不含 disableDate：界面上的「到期」是 disableDateOf 由 payMembershipUntil/额度派生的，
+     *    而注册表里存的是原始字段（grantMembership 只写 payMembershipUntil，从不写原始 disableDate），
+     *    拿派生值比原始值会永远判「有改动」。派生结论已由 payMembershipUntil/quotaMonths/registerDate 覆盖。
+     */
+    registryKeyFields: function (rec) {
+      if (!rec) return null;
+      return {
+        role: String(rec.role || 'user'),
+        status: String(rec.status || 'active'),
+        disabled: !!rec.disabled,
+        trialUntil: Number(rec.trialUntil) || 0,
+        trialDays: Number(rec.trialDays) || 0,
+        quotaMonths: Number(rec.quotaMonths) || 0,
+        registerDate: String(rec.registerDate || ''),
+        payMembershipUntil: Number(rec.payMembershipUntil) || 0,
+        paidAt: Number(rec.paidAt) || 0,
+        paidPlan: String(rec.paidPlan || ''),
+        paidAmount: Number(rec.paidAmount) || 0
+      };
     },
 
     /**

@@ -133,6 +133,12 @@ const app = createApp({
       if (typeof AuthUI !== 'undefined' && AuthUI.addAccount) AuthUI.addAccount();
     }
     const userList = ref([]);
+    /* 20261016j：审核通过区「💾 保存」按钮 —— 把账号设置改动上传云端后端。
+       cloudRegistrySnapshot：打开用户管理时从云端注册表拉取的「已保存状态」（按用户名小写索引），
+       之后每次同步成功（含单字段自动同步）都按账号更新；本机与它不一致即「有未保存改动」。
+       savingApproved：保存中（按钮禁用 + 文案切换），防重复点击。 */
+    const cloudRegistrySnapshot = reactive({});
+    const savingApproved = ref(false);
     const userModal = reactive({
       show: false, newUsername: '', newPassword: '', newRole: 'user',
       pending: [], pendingRole: {}, reqCode: ''
@@ -352,6 +358,91 @@ const app = createApp({
       showToast('已刷新审核通过区', 'success');
     }
 
+    /* ---------- 20261016j：审核通过区「保存到云端」 ---------- */
+    /**
+     * 打开面板 / 手动恢复后，从云端注册表拉取「已保存状态」快照（只读、免鉴权）。
+     * 保存按钮靠它判断哪些账号有未上传的改动；读取失败时快照为空，
+     * 所有账号都会被视为「未保存」（保存时整体上传，upsert 不丢数据，属安全侧）。
+     */
+    async function loadCloudRegistrySnapshot() {
+      if (!A || !A.Sync || !A.Sync.readRegistry) return { ok: false, error: '同步模块未加载' };
+      try {
+        const reg = await A.Sync.readRegistry();
+        const accs = (reg && reg.accounts) || {};
+        const snap = {};
+        Object.keys(accs).forEach(function (k) {
+          snap[k.toLowerCase()] = A.registryKeyFields(accs[k]);
+        });
+        Object.keys(cloudRegistrySnapshot).forEach(function (k) { delete cloudRegistrySnapshot[k]; });
+        Object.keys(snap).forEach(function (k) { cloudRegistrySnapshot[k] = snap[k]; });
+        return { ok: true, count: Object.keys(snap).length };
+      } catch (e) {
+        return { ok: false, error: String((e && e.message) || e) };
+      }
+    }
+
+    /** 某账号本机状态与云端快照是否不一致（true = 有未上传的改动，行内显示「未保存」） */
+    function isAccountDirty(u) {
+      if (!u || !u.username || !A || typeof A.registryKeyFields !== 'function') return false;
+      const cloud = cloudRegistrySnapshot[String(u.username).toLowerCase()];
+      if (!cloud) return true;   // 云端没有这个账号 → 需要保存
+      return JSON.stringify(A.registryKeyFields(u)) !== JSON.stringify(cloud);
+    }
+
+    /** 有未上传改动的账号列表：保存按钮的角标数字与保存范围都取这里 */
+    const dirtyAccountList = computed(function () {
+      return (userList.value || []).filter(function (u) { return isAccountDirty(u); });
+    });
+
+    /** 单个账号同步云端成功后，把快照更新成本机状态（避免刚自动同步过还显示「未保存」） */
+    function markAccountSynced(username) {
+      if (!username || !A || typeof A.registryKeyFields !== 'function') return;
+      const key = String(username).toLowerCase();
+      const u = (userList.value || []).find(function (x) { return x.username === username; });
+      if (!u) { delete cloudRegistrySnapshot[key]; return; }
+      cloudRegistrySnapshot[key] = A.registryKeyFields(u);
+    }
+    /** 账号删除后从快照里移除（否则本机删了、云端快照还在，比对会错乱） */
+    function dropSnapshotEntry(username) {
+      if (username) delete cloudRegistrySnapshot[String(username).toLowerCase()];
+    }
+
+    /**
+     * 20261016j：审核通过区「💾 保存」——把有未上传改动的账号一次性写进云端注册表。
+     * 管理员在这张表里改角色 / 状态 / 停用 / 试用 / 注册日期 / 额度后点它，
+     * 改动即上传后端（GitHub 注册表）：刷新页面、清本机数据、换设备登录都不丢失
+     * （典型场景：把某账号从管理员改成普通用户，保存后刷新页面再打开仍是普通用户）。
+     */
+    async function saveApprovedZoneChanges() {
+      if (!A || savingApproved.value) return;
+      const dirty = dirtyAccountList.value;
+      if (!dirty.length) { showToast('没有需要保存的改动（所有账号已与云端一致）', 'info'); return; }
+      if (!A.Sync || !A.Sync.isAdminConfigured || !A.Sync.isAdminConfigured()) {
+        showToast('请先在「设置」填写 GitHub 令牌（仅管理员），改动才能上传后端；未配置令牌时改动只保存在本机', 'error', 10000);
+        return;
+      }
+      savingApproved.value = true;
+      showToast('正在保存 ' + dirty.length + ' 个账号的改动到云端…', 'info');
+      try {
+        const r = await A.saveUsersToRegistry(dirty.map(function (u) { return u.username; }));
+        (r.saved || []).forEach(markAccountSynced);
+        if (r.ok && (r.saved || []).length) {
+          showToast('已保存 ' + r.saved.length + ' 个账号的改动到云端，刷新页面不会丢失', 'success');
+        } else if ((r.saved || []).length) {
+          const names = (r.failed || []).map(function (f) { return f.username; }).join('、');
+          showToast('已保存 ' + r.saved.length + ' 个；' + (r.failed || []).length + ' 个失败（' + names + '）：'
+            + (((r.failed || [])[0] || {}).error || '未知错误'), 'warn', 10000);
+        } else {
+          showToast('保存失败：' + (((r.failed || [])[0] || {}).error || r.error || '未知错误'), 'error');
+        }
+      } catch (e) {
+        showToast('保存失败：' + String((e && e.message) || e), 'error');
+      } finally {
+        savingApproved.value = false;
+        refreshUserList();
+      }
+    }
+
     async function openUserManage() {
       userMenuOpen.value = false;
       if (!can('users.manage')) { showToast('仅管理员可管理账号', 'error'); return; }
@@ -372,6 +463,8 @@ const app = createApp({
         } catch (e) { /* 静默，不影响后续 */ }
       }
       refreshUserList();
+      // 20261016j：拉云端「已保存状态」快照，供「💾 保存」按钮判断哪些账号有未上传的改动
+      await loadCloudRegistrySnapshot();
       // 跨设备免码：管理员已配令牌时，同步自己的账号 + 拉云端注册表待审名单
       if (A && A.Sync && A.Sync.isAdminConfigured && A.Sync.isAdminConfigured()) {
         A.syncSelfToRegistry();
@@ -389,6 +482,8 @@ const app = createApp({
       const r = await A.recoverFromRegistry();
       if (!r || !r.ok) { showToast('恢复失败：' + ((r && r.error) || '未知错误'), 'error'); return; }
       refreshUserList();
+      // 20261016j：恢复后重拉云端快照，保证「未保存」角标准确（刚从云端合回来的账号不算未保存）
+      await loadCloudRegistrySnapshot();
       if (r.recovered > 0) {
         showToast('已恢复 ' + r.recovered + ' 个云端账号（本机已有 ' + r.skipped + ' 个未动）', 'success');
       } else {
@@ -408,6 +503,8 @@ const app = createApp({
           Promise.resolve(r.sync).then(sr => {
             if (sr && !sr.ok && !sr.skip) {
               showToast(`「${r.user.username}」未同步到云端注册表：${sr.error || '写入失败'}（对方设备可能无法登录）`, 'warn', 9000);
+            } else if (sr && sr.ok) {
+              markAccountSynced(r.user.username);   // 20261016j：已自动上传，不再显示「未保存」
             }
           }).catch(() => {});
         }
@@ -425,6 +522,8 @@ const app = createApp({
         Promise.resolve(r.sync).then(sr => {
           if (sr && !sr.ok && !sr.skip) {
             showToast(`「${u.username}」的角色变更未同步到云端：${sr.error || '写入失败'}`, 'warn', 8000);
+          } else if (sr && sr.ok) {
+            markAccountSynced(u.username);   // 20261016j：已自动上传，不再显示「未保存」
           }
         }).catch(() => {});
       }
@@ -441,6 +540,8 @@ const app = createApp({
         Promise.resolve(r.sync).then(sr => {
           if (sr && !sr.ok && !sr.skip) {
             showToast(`「${u.username}」的停用状态未同步到云端：${sr.error || '写入失败'}`, 'warn', 8000);
+          } else if (sr && sr.ok) {
+            markAccountSynced(u.username);   // 20261016j：已自动上传，不再显示「未保存」
           }
         }).catch(() => {});
       }
@@ -458,6 +559,8 @@ const app = createApp({
         Promise.resolve(r.sync).then(sr => {
           if (sr && !sr.ok && !sr.skip) {
             showToast(`「${u.username}」未从云端注册表删除：${sr.error || '写入失败'}（该账号之后可能再次出现）`, 'warn', 9000);
+          } else if (sr && sr.ok) {
+            dropSnapshotEntry(u.username);   // 20261016j：云端已删，快照同步移除
           }
         }).catch(() => {});
       }
@@ -638,6 +741,8 @@ const app = createApp({
       syncP.then(sr => {
         const synced = !!(sr && sr.ok);
         if (synced) {
+          // 20261016j：已写入云端，更新快照，不再显示「未保存」
+          markAccountSynced(u.username);
           // 审核通过的同时账号已写入云端，对方设备登录时用账号密码直接读取、免准入码。
           // 不再强制弹准入码面板，避免诱导管理员去发码、用户去抄码。
           showToast(`已通过「${u.username}」并已同步到云端，对方现在可用账号密码直接登录（免准入码）`, 'success');
@@ -674,6 +779,8 @@ const app = createApp({
         Promise.resolve(r.sync).then(sr => {
           if (sr && !sr.ok && !sr.skip) {
             showToast(`「${u.username}」的驳回状态未同步到云端：${sr.error || '写入失败'}`, 'warn', 8000);
+          } else if (sr && sr.ok) {
+            markAccountSynced(u.username);   // 20261016j：已自动上传，不再显示「未保存」
           }
         }).catch(() => {});
       }
@@ -2537,7 +2644,12 @@ const app = createApp({
       if (typeof A.syncUserToRegistry !== 'function') return { ok: false, error: '当前版本不支持云端同步' };
       try {
         const r = await A.syncUserToRegistry(username);
-        if (r && r.ok) return { ok: true, error: '' };
+        if (r && r.ok) {
+          // 20261016j：会员已写云端，刷新列表并更新快照，该行不再显示「未保存」
+          refreshUserList();
+          markAccountSynced(username);
+          return { ok: true, error: '' };
+        }
         return { ok: false, error: (r && r.error) || '注册表写入失败' };
       } catch (e) {
         return { ok: false, error: String((e && e.message) || e) };
@@ -2576,6 +2688,8 @@ const app = createApp({
               cr.sync.then(function (sr) {
                 if (sr && !sr.ok && !sr.skip) {
                   showToast('账号「' + claim.user + '」已按申请信息创建，但同步云端注册表失败：' + (sr.error || '未知错误'), 'error', 9000);
+                } else if (sr && sr.ok) {
+                  markAccountSynced(claim.user);   // 20261016j：新账号已上云，不算「未保存」
                 }
               }).catch(function () { /* 忽略 */ });
             }
@@ -10507,6 +10621,8 @@ const app = createApp({
       planAmount, planMonthsNum, planName, planMonthText, planOfUser, claimFields, trialFields, adminClassify,
       paidPlanOf, paidDateText, planCategoryText, quotaInputVal,
       authCatItems, isAccountShown, approvedZoneList, refreshApprovedZone,
+      // 20261016j：审核通过区「💾 保存」（改动上传云端后端）
+      savingApproved, dirtyAccountList, isAccountDirty, saveApprovedZoneChanges,
       showApproveCode, toggleRevealPassword, revealPendingPassword,
       copyPassword, toggleLoginLog,
       // batch16：准入码面板（管理员把授权转达给用户）

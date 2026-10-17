@@ -3075,6 +3075,23 @@ body.guest-mode #app { display: none; }
 .um-row-pending td { background: #fffdf5; }
 .um-row-off td { opacity: 0.62; }
 
+/* 20261016j：审核通过区「💾 保存到云端」按钮 + 未保存改动行高亮 */
+.um-save-btn { white-space: nowrap; }
+.um-save-btn:disabled { opacity: .6; cursor: default; }
+.um-save-count {
+  display: inline-block; min-width: 17px; margin-left: 5px; padding: 0 4px;
+  border-radius: 9px; background: rgba(255, 255, 255, .28);
+  font-size: 11px; line-height: 17px; text-align: center;
+}
+.um-save-btn:not(.btn-primary) .um-save-count { background: var(--primary-light); color: var(--primary); }
+.um-dirty-tag {
+  margin-left: 6px; padding: 0 6px; border-radius: 4px;
+  border: 1px solid #fde68a; background: #fef3c7; color: #b45309;
+  font-size: 11px; white-space: nowrap;
+}
+/* 放在 pending/off 之后：同一行既是待审/停用又有未保存改动时，未保存底色优先 */
+.um-row-dirty td { background: #fffbeb; }
+
 .um-logrow td { padding: 0 10px 12px; background: var(--surface-alt); }
 
 /* ===== 重置密码：行内输入区（batch14 替换 window.prompt）===== */

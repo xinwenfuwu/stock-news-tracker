@@ -4,12 +4,12 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>股市信息分析系统</title>
-  <link rel="stylesheet" href="css/style.css?v=20261016i">
+  <link rel="stylesheet" href="css/style.css?v=20261016j">
   <!-- Vue 3 全局构建版（v3.4.21 · 自托管）
        原先走 unpkg.com CDN：国内网络对 unpkg 的连通性不稳定，一旦该请求长时间挂起，
        <head> 里的阻塞脚本会让整页停在白屏、后续 auth-boot.js 根本不会执行。
        改为同源托管后，启动链路不再依赖任何第三方 CDN。 -->
-  <script src="js/vue.global.prod.js?v=20261016i"></script>
+  <script src="js/vue.global.prod.js?v=20261016j"></script>
 </head>
 <body class="auth-locked">
   <!-- ===== 登录关卡：登录通过前业务脚本不会被加载 ===== -->
@@ -4752,11 +4752,22 @@
               <h4 style="margin:0;">{{ umTab==='auth' ? '会员板块' : '审核通过区' }}</h4>
               <span class="um-pending-right">
                 <span class="um-pending-count">{{ approvedZoneList().length }} 人</span>
+                <!-- 20261016j：「💾 保存」把本机改动上传云端后端（GitHub 注册表）；
+                     「↻ 刷新」只重读本机账号表。保存后刷新页面、换设备登录都不丢失。 -->
+                <button class="btn btn-sm um-save-btn" :class="{ 'btn-primary': dirtyAccountList.length > 0 }"
+                        :disabled="savingApproved"
+                        @click="saveApprovedZoneChanges"
+                        :title="dirtyAccountList.length > 0
+                          ? ('把 ' + dirtyAccountList.length + ' 个账号的改动上传到云端后端（GitHub 注册表）：角色 / 状态 / 停用 / 试用 / 注册日期 / 额度，保存后刷新页面、换设备登录都不丢失')
+                          : '所有账号设置已与云端一致，没有需要上传的改动'">
+                  <span v-if="savingApproved">保存中…</span>
+                  <template v-else>💾 保存<span class="um-save-count" v-if="dirtyAccountList.length > 0">{{ dirtyAccountList.length }}</span></template>
+                </button>
                 <button class="btn btn-sm um-refresh-btn" @click="refreshApprovedZone" title="重新读取本机账号表，刷新审核通过区的分类">↻ 刷新</button>
               </span>
             </div>
-            <span class="um-section-desc" v-if="umTab==='auth'">以下为「{{ umAuth==='2y' ? '24月期（¥4000）' : umAuth==='1y' ? '12月期（¥2000）' : umAuth==='6m' ? '6月期（¥1000）' : umAuth==='none' ? '未开通使用' : '授权免费试用' }}」子标签对应的会员板块：仅显示该分类下、经审核后通过会员审核的账户，绝不混入其他月期 / 试用 / 管理员 / 未开通。待审核支付申请在「待审核用户」面板显示与处理，审核通过后点右侧「↻ 刷新」即归入本子标签对应分类。</span>
-            <span class="um-section-desc" v-else>以下为审核通过区：显示所有已注册、非待审的账户（涵盖管理员 / 付费会员 / 试用中 / 已注册未开通会员——即所有状态的用户）。待审核申请只在上方「审核区」显示与处理。</span>
+            <span class="um-section-desc" v-if="umTab==='auth'">以下为「{{ umAuth==='2y' ? '24月期（¥4000）' : umAuth==='1y' ? '12月期（¥2000）' : umAuth==='6m' ? '6月期（¥1000）' : umAuth==='none' ? '未开通使用' : '授权免费试用' }}」子标签对应的会员板块：仅显示该分类下、经审核后通过会员审核的账户，绝不混入其他月期 / 试用 / 管理员 / 未开通。待审核支付申请在「待审核用户」面板显示与处理，审核通过后点右侧「↻ 刷新」即归入本子标签对应分类。在此改动账号设置后，点「💾 保存」上传云端后端，刷新页面不丢失。</span>
+            <span class="um-section-desc" v-else>以下为审核通过区：显示所有已注册、非待审的账户（涵盖管理员 / 付费会员 / 试用中 / 已注册未开通会员——即所有状态的用户）。待审核申请只在上方「审核区」显示与处理。在此改动账号设置（角色 / 状态 / 停用 / 试用 / 注册日期 / 额度）后，点「💾 保存」上传到云端后端，刷新页面、换设备登录都不会丢失；「↻ 刷新」只重读本机。</span>
           </div>
           <table class="um-table" v-if="approvedZoneList().length && umTab !== 'admin'">
             <thead>
@@ -4769,10 +4780,11 @@
             </thead>
             <tbody>
               <template v-for="u in approvedZoneList().filter(x => umSearchMatch(x.username))" :key="u.username">
-                <tr :class="{ 'um-row-pending': u.status === 'pending', 'um-row-off': u.disabled }">
+                <tr :class="{ 'um-row-pending': u.status === 'pending', 'um-row-off': u.disabled, 'um-row-dirty': isAccountDirty(u) }">
                   <td data-label="用户名">
                     <span class="um-name">{{ u.username }}</span>
                     <span class="um-self" v-if="authUser && u.username === authUser.username">当前登录</span>
+                    <span class="um-dirty-tag" v-if="isAccountDirty(u)" title="该账号有改动尚未上传云端，点上方「💾 保存」即可上传">未保存</span>
                   </td>
                   <td data-label="角色">
                     <select class="um-input" :value="u.role" @change="changeUserRole(u, $event.target.value)">
@@ -5010,14 +5022,14 @@
     </transition>
   </div>
 
-  <script src="js/auth.js?v=20261016i"></script>
-  <script src="js/auth-sync.js?v=20261016i"></script>
+  <script src="js/auth.js?v=20261016j"></script>
+  <script src="js/auth-sync.js?v=20261016j"></script>
   <!-- 边缘加速默认站点（batch37 治本：Cloudflare Worker 代理东财/腾讯，缓解 JSONP 限流误报）。
        若你所在地区 workers.dev 访问慢，可在「设置 → 行情加速地址」清空即恢复纯直连。 -->
   <script>window.__SNT_ACCEL__ = 'https://sichina.dpdns.org';</script>
   <!-- 扫码支付二维码渲染库（第三方 qrcodejs，本地托管避免外链失效）。renderQr 会先检测全局 QRCode 是否存在。 -->
-  <script src="assets/qrcode.min.js?v=20261016i"></script>
-  <script src="js/auth-boot.js?v=20261016i"></script>
+  <script src="assets/qrcode.min.js?v=20261016j"></script>
+  <script src="js/auth-boot.js?v=20261016j"></script>
   <!-- store / stock-api / hot-topics / app 由 auth-boot.js 在登录通过后动态装载，
        未登录时它们不会被下载，业务数据也不会进入内存 -->
 </body>
