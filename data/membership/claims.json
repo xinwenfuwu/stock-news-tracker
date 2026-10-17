@@ -34,6 +34,33 @@
       "startTs": 1792202513468,
       "endTs": 1807754513468,
       "period": "6 个月会员（¥1000）"
+    },
+    {
+      "id": "c_1792236672033_396929",
+      "user": "yh100",
+      "plan": "2y",
+      "ts": 1792236669381,
+      "resolved": false,
+      "amount": 4000,
+      "startTs": 1792236669381,
+      "endTs": 1854444669381,
+      "period": "24月期（¥4000）",
+      "acct": {
+        "username": "yh100",
+        "hash": "pbkdf2$150000$MsF+McLbfBDnWn98kSjTdw==$cJ7LJhU1BJGDEfLIyiaqol9f9hgrTK9nhYEoTuaS8WQ=",
+        "role": "user",
+        "status": "active",
+        "disabled": false,
+        "trialUntil": 1792294951812,
+        "trialDays": 0,
+        "quotaMonths": 0,
+        "registerDate": "",
+        "payMembershipUntil": 0,
+        "paidAt": 0,
+        "paidPlan": "",
+        "paidAmount": 0,
+        "createdAt": 1792208551812
+      }
     }
   ]
 }
