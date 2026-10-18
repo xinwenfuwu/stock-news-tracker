@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": 1792338594828,
+  "updatedAt": 1792338596826,
   "accounts": {
     "181": {
       "hash": "pbkdf2$150000$KjYyYMWup5jVGwvFBcCcOQ==$3U/UO6mfq2XHtEoimjRCc/0rz4seqfPAhnrte+JrXlw=",
@@ -142,6 +142,28 @@
       "placeholder": true,
       "createdAt": 1792338567304,
       "updatedAt": 1792338594828
+    },
+    "huyun1": {
+      "hash": "",
+      "role": "user",
+      "status": "active",
+      "disabled": false,
+      "trialUntil": 0,
+      "trialDays": 0,
+      "quotaMonths": 24,
+      "disableDate": "",
+      "registerDate": "",
+      "payMembershipUntil": 1854546567304,
+      "paidAt": 1792338567304,
+      "paidPlan": "2y",
+      "paidAmount": 0,
+      "paidClaimIds": [
+        "c_1792320394065_834403",
+        "c_1792326105918_286630"
+      ],
+      "placeholder": true,
+      "createdAt": 1792338567304,
+      "updatedAt": 1792338596826
     }
   }
 }
