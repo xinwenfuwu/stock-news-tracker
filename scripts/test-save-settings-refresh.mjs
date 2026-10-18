@@ -307,8 +307,8 @@ function planOf(u) {
     check('刷新后停用设置不丢失', !!yh3 && yh3.disabled === true, JSON.stringify(yh3 && yh3.disabled));
   }
 
-  /* ========== 场景3：拒绝通过 → 强制刷新 ========== */
-  console.log('\n[场景3] hy123 申请 → 拒绝通过 → 强制刷新');
+  /* ========== 场景3：拒绝通过 → 保存设置 → 强制刷新 → 换设备 ========== */
+  console.log('\n[场景3] hy123 申请 → 拒绝通过 → 保存设置 → 强制刷新 → 全新设备');
   {
     setRegistryAccounts({});
     const SNAP_HASH = 'pbkdf2$150000$c2FsdHNhbHQ=$aHkxMjNoYXNo';
@@ -321,19 +321,31 @@ function planOf(u) {
 
     check('拒绝前 hy123 在待审区', (await loadPendingClaims(A.Auth, aStore)).includes('hy123'));
 
-    /* --- 管理员点「拒绝通过」（app.js rejectMemberClaim 同口径：标 rejected+rejectedAt 写回） --- */
-    const all = claimsOf().claims;
-    const tgt = all.find(c => c.id === 'clm_hy123');
-    tgt.rejected = true; tgt.rejectedAt = Date.now(); tgt.resolved = true;
-    setClaims(all);
+    /* --- 管理员点「拒绝通过」（app.js rejectMemberClaim 同口径：记录 rejectedClaimIds + 本机移除） --- */
+    aStore.setItem('snt-rejected-claims-v1', JSON.stringify(['clm_hy123']));
+    aStore.setItem('snt-resolved-claims-v1', JSON.stringify(['clm_hy123']));
 
-    /* ===== 强制刷新 ===== */
+    /* --- 管理员点「保存设置」（app.js saveApprovedZoneChanges 同口径：把 rejectedClaimIds 写回云端 claims.json） --- */
+    const mr = await A.Auth.Sync.markClaimResolved('clm_hy123', { rejected: true });
+    check('④ 保存设置把已拒绝申请写回云端（markClaimResolved.ok）', !!mr && mr.ok === true, JSON.stringify(mr));
+    check('④ 云端该申请标 rejected/rejectedAt（审计保留）', (() => {
+      const t = claimsOf().claims.find(c => c.id === 'clm_hy123');
+      return !!t && t.resolved === true && t.rejected === true && Number(t.rejectedAt) > 0;
+    })(), JSON.stringify(claimsOf().claims.find(c => c.id === 'clm_hy123') || null));
+
+    /* ===== 强制刷新（同 localStorage 重新加载） ===== */
     const A2 = await loadAuthForDevice(aStore, { withToken: true, withWorker: true });
     await A2.Auth.login('admin', 'Admin@2026');
     const pendingAfter = await loadPendingClaims(A2.Auth, aStore);
     check('④ 刷新后待审区无 hy123（已拒绝不回显）', !pendingAfter.includes('hy123'), pendingAfter.join(','));
-    const rejected = claimsOf().claims.filter(c => c.rejected);
-    check('④ 云端保留 rejected/rejectedAt 审计记录', rejected.length === 1 && Number(rejected[0].rejectedAt) > 0, JSON.stringify(rejected));
+
+    /* ===== 全新设备（空 localStorage）：仍不应在审核区 —— 证明拒绝状态已上云 ===== */
+    const cStore = makeStorage();
+    const C = await loadAuthForDevice(cStore, { withToken: false, withWorker: true });
+    const cClaims = (await C.Auth.Sync.readClaims()).claims || [];
+    const cPending = cClaims.filter(c => !c.resolved && !c.rejected).map(c => c.user);
+    check('④ 全新设备（清本机）审核区仍无 hy123（拒绝已上云、后端过滤）', !cPending.includes('hy123'), cPending.join(','));
+
     const hyUser = A2.Auth.listUsersDetail().find(u => u.username === 'hy123');
     check('④ 被拒申请未创建账号/未开通会员（拒绝不开通）', !hyUser, JSON.stringify(hyUser || null));
     check('④ 云端注册表无 hy123（拒绝不上云）', !regOf().accounts['hy123'], JSON.stringify(Object.keys(regOf().accounts)));
@@ -357,8 +369,16 @@ function planOf(u) {
     check('用户管理内「保存设置」文案按钮共 3 处（头部 + 审核区 + 授权使用）', (html.match(/<template v-else>保存设置<span class="um-save-count"/g) || []).length === 3, 'count=' + (html.match(/<template v-else>保存设置<span class="um-save-count"/g) || []).length);
     check('app.js resolvedClaimIds 持久化（刷新后已通过申请不回显）',
       /const RESOLVED_CLAIM_KEY = 'snt-resolved-claims-v1';/.test(app) && /function persistResolvedClaims\(\)/.test(app) && /resolvedClaimIds\.add\(claim\.id\); persistResolvedClaims\(\);/.test(app));
+    check('app.js rejectedClaimIds 持久化（拒绝状态可上云，跨设备不重现）',
+      /const REJECTED_CLAIM_KEY = 'snt-rejected-claims-v1';/.test(app) && /function persistRejectedClaims\(\)/.test(app)
+      && /rejectedClaimIds\.add\(claim\.id\); persistRejectedClaims\(\);/.test(app)
+      && /!rejectedClaimIds\.has\(c\.id\)/.test(app));
     check('app.js 审核通过后从待审列表立即移除', /memberClaims\.list = memberClaims\.list\.filter\(c => c\.id !== claim\.id\);/.test(app));
-    check('app.js 拒绝通过落 rejected/rejectedAt 并写回', /rejected: true/.test(app) && /rejectedAt/.test(app));
+    check('app.js 拒绝通过落 rejected/rejectedAt 并写回（保存设置经 markClaimResolved）',
+      /rejected: true/.test(app) && /rejectedAt/.test(app)
+      && /rejectedClaimIds\.size > 0/.test(app)
+      && /resolveClaimOnCloud\(id, \{ rejected: true \}\)/.test(app)
+      && /A\.Sync\.markClaimResolved/.test(app));
     check('app.js 授权使用板块按 planOfUser 归类（paidPlan 优先）', /function planOfUser\(u\) \{[\s\S]*?u\.paidPlan === '2y'/.test(app));
   }
 

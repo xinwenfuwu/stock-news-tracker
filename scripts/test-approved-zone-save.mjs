@@ -331,8 +331,8 @@ function dirtyOf(Auth, localUserView, cloudAcc) {
     check('app.js 定义 loadCloudRegistrySnapshot', /async function loadCloudRegistrySnapshot\(\)/.test(app));
     check('app.js 定义 markAccountSynced / dropSnapshotEntry', /function markAccountSynced\(username\)/.test(app) && /function dropSnapshotEntry\(username\)/.test(app));
     check('app.js openUserManage 拉云端快照', /refreshUserList\(\);\s*\n\s*\/\/ 20261016j：拉云端「已保存状态」快照[\s\S]{0,120}loadCloudRegistrySnapshot\(\);/.test(app));
-    check('app.js 保存前校验 GitHub 令牌', /saveApprovedZoneChanges[\s\S]{0,700}isAdminConfigured\(\)\)\s*\n?\s*\{\s*\n\s*showToast\('请先在「设置」填写 GitHub 令牌/.test(app));
-    check('app.js 无改动时提示且不上传', /没有需要保存的改动（所有账号已与云端一致）/.test(app));
+    check('app.js 保存前校验 GitHub 令牌（账号改动需令牌）', /isAdminConfigured\(\)\)[\s\S]{0,400}showToast\('账号改动需先在「设置」填写 GitHub 令牌/.test(app));
+    check('app.js 无改动时提示且不上传', /没有需要保存的改动（账号已与云端一致，也没有待持久化的审核操作）/.test(app));
     check('app.js 保存成功提示刷新不丢失', /已保存 ' \+ r\.saved\.length \+ ' 个账号的改动到云端，刷新页面不会丢失/.test(app));
     check('app.js 部分失败时列出失败账号', /\(r\.failed \|\| \[\]\)\.length \+ ' 个失败（/.test(app));
     check('app.js 角色变更同步成功后标记已保存', /markAccountSynced\(u\.username\);   \/\/ 20261016j：已自动上传/.test(app));

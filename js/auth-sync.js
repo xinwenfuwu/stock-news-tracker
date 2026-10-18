@@ -241,6 +241,33 @@
   }
   /** 覆盖写入待开通记录（管理员令牌 / Worker 持 GH_PAT 调用） */
   function writeClaims(claims) { return writeJsonFile(MEMBER_CLAIMS_PATH, { claims: Array.isArray(claims) ? claims : [] }, 'chore(membership): update claims'); }
+  /**
+   * 20261016r：把某条申请在后端 claims.json 标记为已处理。
+   * · rejected=true → resolved=true + rejected=true + rejectedAt（从审核区移除，留审计）；
+   * · rejected=false（默认）→ 仅 resolved=true（核对并开通后让申请不再回显）。
+   * 读取公开、写入需令牌（管理员 GitHub 令牌 / Worker 持 GH_PAT）。
+   * 返回 { ok, changed, error }。找不到该申请（可能已被清理）时 ok=true、changed=false。
+   *
+   * 用途：用户管理「保存设置」按钮把本机已拒绝 / 已通过的申请状态可靠写回云端，
+   * 实现「拒绝通过 → 保存设置 → 强制刷新（甚至换设备）后该申请永不重现审核区」。
+   */
+  function markClaimResolved(id, opts) {
+    var o = opts || {};
+    var rejected = o.rejected === true;
+    return readClaims().then(function (rd) {
+      var all = (rd && rd.claims) || [];
+      var t = all.find(function (c) { return c.id === id; });
+      if (!t) return { ok: true, changed: false, notFound: true };
+      if (t.resolved && (!rejected || t.rejected)) return { ok: true, changed: false };
+      t.resolved = true;
+      if (rejected) { t.rejected = true; t.rejectedAt = Number(t.rejectedAt) || Date.now(); }
+      return writeClaims(all).then(function (wr) {
+        return { ok: !!(wr && wr.ok), changed: !!(wr && wr.ok), error: wr && wr.error };
+      });
+    }).catch(function (e) {
+      return { ok: false, changed: false, error: String((e && e.message) || e) };
+    });
+  }
 
   /** 登录：读注册表 → 校验密码 → 返回授权或状态。找不到用户返回 {} 让 auth.js 回落本地。 */
   function loginRemote(username, password) {
@@ -414,6 +441,7 @@
     writeMembershipConfig: writeMembershipConfig,
     readClaims: readClaims,
     writeClaims: writeClaims,
+    markClaimResolved: markClaimResolved,
     // 20261012e：会员到期时间查询 + 后端基地址（业务层复用同一基地址）
     memberApiBase: memberApiBase,
     queryMembershipRemote: queryMembershipRemote

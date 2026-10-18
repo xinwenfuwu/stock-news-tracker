@@ -440,32 +440,58 @@ const app = createApp({
     }
 
     /**
-     * 20261016j：审核通过区「💾 保存」——把有未上传改动的账号一次性写进云端注册表。
-     * 管理员在这张表里改角色 / 状态 / 停用 / 试用 / 注册日期 / 额度后点它，
-     * 改动即上传后端（GitHub 注册表）：刷新页面、清本机数据、换设备登录都不丢失
-     * （典型场景：把某账号从管理员改成普通用户，保存后刷新页面再打开仍是普通用户）。
+     * 20261016j / 20261016r：审核通过区「💾 保存」——把本机未上传的改动一次性写进云端。
+     * 覆盖两类：
+     *  ① 账号表改动（角色/状态/停用/试用/注册日期/额度）：写 registry.json，
+     *     刷新 / 清本机 / 换设备登录都不丢失；
+     *  ② 已处理的审核申请（20261016r 新增）：把本机 rejectedClaimIds / resolvedClaimIds
+     *     对应的申请状态写回云端 claims.json。尤其是「拒绝通过」的申请，保存后即使清本机 /
+     *     换设备刷新也永不在审核区重现（rejected=true 由后端过滤）。
+     * 管理员在这张表里改完或点拒绝后点它，结果即上云。
      */
     async function saveApprovedZoneChanges() {
       if (!A || savingApproved.value) return;
       const dirty = dirtyAccountList.value;
-      if (!dirty.length) { showToast('没有需要保存的改动（所有账号已与云端一致）', 'info'); return; }
-      if (!A.Sync || !A.Sync.isAdminConfigured || !A.Sync.isAdminConfigured()) {
-        showToast('请先在「设置」填写 GitHub 令牌（仅管理员），改动才能上传后端；未配置令牌时改动只保存在本机', 'error', 10000);
+      const hasClaims = rejectedClaimIds.size > 0;
+      if (!dirty.length && !hasClaims) {
+        showToast('没有需要保存的改动（账号已与云端一致，也没有待持久化的审核操作）', 'info');
         return;
       }
+      const adminOk = !!(A.Sync && A.Sync.isAdminConfigured && A.Sync.isAdminConfigured());
       savingApproved.value = true;
-      showToast('正在保存 ' + dirty.length + ' 个账号的改动到云端…', 'info');
+      let claimResult = null;
       try {
-        const r = await A.saveUsersToRegistry(dirty.map(function (u) { return u.username; }));
-        (r.saved || []).forEach(markAccountSynced);
-        if (r.ok && (r.saved || []).length) {
-          showToast('已保存 ' + r.saved.length + ' 个账号的改动到云端，刷新页面不会丢失', 'success');
-        } else if ((r.saved || []).length) {
-          const names = (r.failed || []).map(function (f) { return f.username; }).join('、');
-          showToast('已保存 ' + r.saved.length + ' 个；' + (r.failed || []).length + ' 个失败（' + names + '）：'
-            + (((r.failed || [])[0] || {}).error || '未知错误'), 'warn', 10000);
-        } else {
-          showToast('保存失败：' + (((r.failed || [])[0] || {}).error || r.error || '未知错误'), 'error');
+        // ① 账号表改动（需管理员令牌）
+        if (dirty.length) {
+          if (!adminOk) {
+            showToast('账号改动需先在「设置」填写 GitHub 令牌（仅管理员）才能上传后端；未配置令牌时改动只存本机', 'error', 10000);
+          } else {
+            const r = await A.saveUsersToRegistry(dirty.map(function (u) { return u.username; }));
+            (r.saved || []).forEach(markAccountSynced);
+            if (r.ok && (r.saved || []).length) {
+              showToast('已保存 ' + r.saved.length + ' 个账号的改动到云端，刷新页面不会丢失', 'success');
+            } else if ((r.saved || []).length) {
+              const names = (r.failed || []).map(function (f) { return f.username; }).join('、');
+              showToast('已保存 ' + r.saved.length + ' 个；' + (r.failed || []).length + ' 个失败（' + names + '）：'
+                + (((r.failed || [])[0] || {}).error || '未知错误'), 'warn', 10000);
+            } else {
+              showToast('保存失败：' + (((r.failed || [])[0] || {}).error || r.error || '未知错误'), 'error');
+            }
+          }
+        }
+        // ② 已拒绝的审核申请写回云端（rejected=true 由后端过滤，刷新/换设备不再重现审核区）
+        if (hasClaims) {
+          let okN = 0, failN = 0; const fails = [];
+          for (const id of Array.from(rejectedClaimIds)) {
+            const ok = await resolveClaimOnCloud(id, { rejected: true });
+            if (ok) okN++; else { failN++; fails.push(id); }
+          }
+          claimResult = { okN, failN, fails };
+          if (failN === 0) {
+            showToast(okN ? ('已把 ' + okN + ' 条已拒绝申请同步到云端，刷新/换设备不会在审核区重现') : '云端已是最新审核状态', 'success');
+          } else {
+            showToast('有 ' + failN + ' 条已拒绝申请云端同步失败（' + fails.join('、') + '）：本机已记录，可稍后重试保存设置', 'warn', 10000);
+          }
         }
       } catch (e) {
         showToast('保存失败：' + String((e && e.message) || e), 'error');
@@ -2607,6 +2633,21 @@ const app = createApp({
     function persistResolvedClaims() {
       try { localStorage.setItem(RESOLVED_CLAIM_KEY, JSON.stringify(Array.from(resolvedClaimIds))); } catch (e) {}
     }
+    // 20261016r：被管理员「拒绝通过」的申请 id 单独持久化，与 resolvedClaimIds 区分。
+    // resolvedClaimIds 用于「本机不再回显审核区」（开通/拒绝 都入），rejectedClaimIds 用于
+    // 「保存设置」时把拒绝状态可靠写回云端 claims.json（开通走 grantMemberClaim 已自行上云）。
+    // 二者独立存储，避免保存设置时把已开通申请误标为 rejected、破坏审计。
+    const REJECTED_CLAIM_KEY = 'snt-rejected-claims-v1';
+    function loadRejectedClaims() {
+      try {
+        const arr = JSON.parse(localStorage.getItem(REJECTED_CLAIM_KEY) || '[]');
+        return new Set(Array.isArray(arr) ? arr.filter(x => typeof x === 'string') : []);
+      } catch (e) { return new Set(); }
+    }
+    const rejectedClaimIds = loadRejectedClaims();
+    function persistRejectedClaims() {
+      try { localStorage.setItem(REJECTED_CLAIM_KEY, JSON.stringify(Array.from(rejectedClaimIds))); } catch (e) {}
+    }
     // 20261016l/m：「创建并开通」——申请无账号信息、且账号在本机/云端/申请快照里
     // 都不存在时，「核对并开通」一键自动新建账号（预生成随机密码）并开通，密码在
     // 弹出面板中展示供转发；仅自动创建失败时才进入行内确认态（grantCreateId），
@@ -2652,7 +2693,7 @@ const app = createApp({
           const r2 = (A && A.Sync && A.Sync.readClaims) ? await A.Sync.readClaims() : { ok: true, claims: [] };
           raw = (r2 && r2.claims) || [];
         }
-        memberClaims.list = raw.filter(c => !c.resolved && !c.rejected && !resolvedClaimIds.has(c.id)).map(c => ({
+        memberClaims.list = raw.filter(c => !c.resolved && !c.rejected && !resolvedClaimIds.has(c.id) && !rejectedClaimIds.has(c.id)).map(c => ({
           id: c.id, user: c.user, plan: c.plan || '6m', ts: c.ts || 0,
           amount: Number(c.amount) || 0, resolved: !!c.resolved,
           acct: (c.acct && typeof c.acct === 'object') ? c.acct : null
@@ -2924,11 +2965,16 @@ const app = createApp({
      *   · 对方重新提交支付申请后作为新申请进入审核区（Worker 去重只取代未决申请）。
      * 拒绝不触碰账号本身（不开通、不停用），用户仍可照原权限（试用/既有会员）登录。 */
     const rejectConfirmId = ref('');   // 行内二次确认：当前处于「确认拒绝？」状态的申请 id
-    async function rejectMemberClaim(claim) {
-      if (!A || !claim || !claim.id) return;
-      // 乐观更新：先入已处理集合并从列表移除，保证无论后端标记是否成功都不再回显
-      resolvedClaimIds.add(claim.id); persistResolvedClaims();
-      memberClaims.list = memberClaims.list.filter(c => c.id !== claim.id);
+    /**
+     * 20261016r：把某条申请在云端标记为已处理（resolved）。
+     * rejected=true 时并标 rejected/rejectedAt（拒绝通过）。
+     * 优先走后端 /pay/claims/resolve（Worker 持 GH_PAT，token-less，管理员无 GitHub 令牌也能标），
+     * 失败回落管理员令牌直写 claims.json（A.Sync.markClaimResolved）。返回是否成功标记。
+     * 供 rejectMemberClaim 与 saveApprovedZoneChanges（保存设置）复用，确保拒绝状态可靠上云。
+     */
+    async function resolveClaimOnCloud(claimId, opts) {
+      if (!A || !claimId) return false;
+      const rejected = !!(opts && opts.rejected);
       let marked = false;
       try {
         const base = payApiBase();
@@ -2936,25 +2982,28 @@ const app = createApp({
           try {
             const r = await fetch(base + '/pay/claims/resolve', {
               method: 'POST', headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ id: claim.id, rejected: true })
+              body: JSON.stringify({ id: claimId, rejected })
             });
             if (r.ok) marked = true;
           } catch (e) { /* 回落令牌直写 */ }
         }
-        if (!marked && A.Sync && A.Sync.writeClaims) {
-          const rd = (A.Sync && A.Sync.readClaims) ? await A.Sync.readClaims() : { ok: true, claims: [] };
-          const all = (rd && rd.claims) || [];
-          const tgt = all.find(c => c.id === claim.id);
-          if (tgt) {
-            tgt.resolved = true; tgt.rejected = true; tgt.rejectedAt = Date.now();
-            const wr = await A.Sync.writeClaims(all);
-            marked = !!(wr && wr.ok);
-          }
+        if (!marked && A.Sync && A.Sync.markClaimResolved) {
+          const mr = await A.Sync.markClaimResolved(claimId, { rejected });
+          marked = !!(mr && mr.ok);
         }
-      } catch (e) { /* 本机已移除，仅未标记 */ }
+      } catch (e) { /* 保持当前 marked */ }
+      return marked;
+    }
+    async function rejectMemberClaim(claim) {
+      if (!A || !claim || !claim.id) return;
+      // 乐观更新：先入已处理集合并从列表移除，保证无论后端标记是否成功都不再回显
+      resolvedClaimIds.add(claim.id); persistResolvedClaims();
+      rejectedClaimIds.add(claim.id); persistRejectedClaims();   // 20261016r：记录为「已拒绝」，供保存设置上云
+      memberClaims.list = memberClaims.list.filter(c => c.id !== claim.id);
+      const marked = await resolveClaimOnCloud(claim.id, { rejected: true });
       showToast(marked
         ? ('已拒绝「' + claim.user + '」的申请，该申请已从审核区移除（对方重新提交后会作为新申请进入审核区）')
-        : ('已拒绝「' + claim.user + '」的申请（本机已移除；云端标记失败，刷新后可能再次出现，可再点一次拒绝）'),
+        : ('已拒绝「' + claim.user + '」的申请（本机已移除；云端标记失败，可点「保存设置」或再点一次拒绝重试）'),
         marked ? 'success' : 'warn', marked ? 3600 : 9000);
       rejectConfirmId.value = '';
       await loadMemberClaims();
