@@ -70,7 +70,11 @@ function ttlFor(pathname, targetHost) {
 function withCors(headers) {
   const h = new Headers(headers || {});
   h.set('Access-Control-Allow-Origin', '*');
-  h.set('Access-Control-Allow-Methods', 'GET,HEAD,OPTIONS');
+  // 20261018：必须包含 POST（以及 PUT），否则浏览器对带 application/json 的跨域 POST
+  // （/auth/register、/pay/claim、/pay/claims/resolve、/pay/create 等）触发预检(OPTIONS)时，
+  // 因方法列表不含 POST 而预检失败 → POST 被拦截 → 无令牌设备的「经 Worker 代写云端」全部静默失败：
+  // 注册/开通的账号写不进 registry.json，用户换设备登录时云端查无此号 → 报「用户名或密码不正确」。
+  h.set('Access-Control-Allow-Methods', 'GET,HEAD,POST,PUT,OPTIONS');
   h.set('Access-Control-Allow-Headers', '*');
   return h;
 }
@@ -197,6 +201,11 @@ async function fetchHandler(request) {
     if (url.pathname === '/pay/claims/resolve' && request.method === 'POST') return payClaimResolve(request);
     // 20261016k：无令牌设备注册代写——把新账号写进云端注册表，管理员「审核通过区」必现
     if (url.pathname === '/auth/register' && request.method === 'POST') return authRegister(request);
+    // 20261018e：管理员无令牌时经此通道把「重置后的密码哈希」写进云端注册表（防抢名 409 绕不开，另开专用通道）
+    if (url.pathname === '/auth/admin-reset' && request.method === 'POST') return authAdminReset(request);
+    // 20261018f：管理员删除账号专用通道——无 GitHub 令牌也能把账号从云端注册表真正删掉，
+    //            否则「删了又出现」（recoverFromRegistry 会把云端残留合并回本机）。
+    if (url.pathname === '/auth/admin-delete' && request.method === 'POST') return authAdminDelete(request);
 
     // ============ 路由 5：/acc/<path> —— GitHub Pages 静态资源加速（20261006g） ============
     // 背景：国内访问 xinwenfuwu.github.io 时快时慢，402KB 的 js/app.js 经常 20 秒拉不完，
@@ -227,7 +236,9 @@ async function fetchHandler(request) {
         ttl: TTL,
         allowHosts: ALLOW_HOSTS,
         member: { claimChannel: !!payEnv('GH_PAT'), registerChannel: !!payEnv('GH_PAT') },
-        routes: ['/news', '/q/<codes>', '/k/<code>/<n>', '/proxy?url=']
+        adminReset: !!payEnv('ADMIN_RESET_KEY'),
+        adminDelete: !!payEnv('ADMIN_RESET_KEY'),
+        routes: ['/news', '/q/<codes>', '/k/<code>/<n>', '/proxy?url=', '/auth/register', '/auth/admin-reset', '/auth/admin-delete']
       }, null, 2), { headers: withCors({ 'Content-Type': 'application/json' }) });
     }
 
@@ -360,7 +371,12 @@ async function authRegister(request) {
       reg.version = reg.version || 1;
       reg.accounts = reg.accounts || {};
       const exist = reg.accounts[username];
-      if (exist) {
+      // 20261018d：hash 为空的记录 = 管理员「核对并开通」时为尚未注册的用户名预发的
+      // 「占位会员凭证」。本人来注册同名账号 → 认领：落真实密码哈希，并继承已开通的会籍
+      // （会员有效期 / 支付信息 / 已核对申请 id），不能因为「已存在」把人挡在门外，
+      // 也不能把会员洗成 0。
+      const claiming = !!(exist && !exist.hash);
+      if (exist && !claiming) {
         // 20261016l：同一份密码哈希 → 本人（或管理员代管）在同步最新状态，允许覆盖更新；
         // 哈希不同且对方是管理员 / 付费 / 已激活 → 拒绝抢名（409）。
         const sameHash = exist.hash === hash;
@@ -374,21 +390,28 @@ async function authRegister(request) {
       // 「创建账号并开通」后，经本端点把「账号 + 会员状态」一次性写入云端，
       // 无令牌设备也能落地，对方拿到密码后任意设备登录即带会员。
       const memUntil = Number(body.payMembershipUntil) || 0;
+      const prevMemUntil = exist ? (Number(exist.payMembershipUntil) || 0) : 0;
+      const prevQuota = exist ? (Number(exist.quotaMonths) || 0) : 0;
+      const prevClaimIds = (exist && Array.isArray(exist.paidClaimIds)) ? exist.paidClaimIds : [];
+      const claimIds = prevClaimIds.concat(Array.isArray(body.paidClaimIds) ? body.paidClaimIds : [])
+        .map(x => String(x || '').trim()).filter((x, i, arr) => x && arr.indexOf(x) === i).slice(-30);
       reg.accounts[username] = {
         hash: hash,
         role: (exist && exist.role === 'admin') ? 'admin' : 'user',   // 不把已有管理员降级
-        status: status,
+        status: claiming ? 'active' : status,
         disabled: false,
-        trialUntil: trialUntil,
-        trialDays: Number(body.trialDays) || (trialUntil ? 1 : 0),
-        quotaMonths: Number(body.quotaMonths) || 0,
+        trialUntil: claiming ? (Number(exist.trialUntil) || 0) : trialUntil,
+        trialDays: claiming ? (Number(exist.trialDays) || 0) : (Number(body.trialDays) || (trialUntil ? 1 : 0)),
+        quotaMonths: claiming ? Math.max(Number(body.quotaMonths) || 0, prevQuota) : (Number(body.quotaMonths) || 0),
         disableDate: '',
-        registerDate: typeof body.registerDate === 'string' ? body.registerDate : '',
-        payMembershipUntil: memUntil,
-        paidAt: Number(body.paidAt) || 0,
-        paidPlan: typeof body.paidPlan === 'string' ? body.paidPlan : '',
-        paidAmount: Number(body.paidAmount) || 0,
-        createdAt: Number(body.createdAt) || now,
+        registerDate: (claiming && exist.registerDate) ? exist.registerDate : (typeof body.registerDate === 'string' ? body.registerDate : ''),
+        payMembershipUntil: claiming ? Math.max(memUntil, prevMemUntil) : memUntil,
+        paidAt: claiming ? (Number(exist.paidAt) || Number(body.paidAt) || 0) : (Number(body.paidAt) || 0),
+        paidPlan: claiming ? (exist.paidPlan || (typeof body.paidPlan === 'string' ? body.paidPlan : '')) : (typeof body.paidPlan === 'string' ? body.paidPlan : ''),
+        paidAmount: claiming ? (Number(exist.paidAmount) || Number(body.paidAmount) || 0) : (Number(body.paidAmount) || 0),
+        paidClaimIds: claimIds,
+        placeholder: false,
+        createdAt: Number(body.createdAt) || (exist && Number(exist.createdAt)) || now,
         updatedAt: now
       };
       reg.updatedAt = now;
@@ -400,6 +423,78 @@ async function authRegister(request) {
     return json({ error: '写入失败：并发冲突重试后仍未成功' }, 500);
   } catch (e) { return json({ error: String(e && e.message ? e.message : e) }, 500); }
 }
+/**
+ * 20261018e：管理员「重置密码」专用通道（无 GitHub 令牌也能把新哈希写进云端注册表）。
+ *
+ * 背景（根因）：公开端点 /auth/register 对「已激活账号的【不同】哈希」一律 409（防抢名 / 防篡改），
+ * 因此「改密码」永远走不通 register；而改密码又必须落到云端，否则对方设备读云端仍是旧哈希 → 登录失败。
+ * 会员开通走的是「同哈希覆盖」分支（register 允许），所以出现了「会员开通了、密码却没更新」的割裂。
+ *
+ * 安全：本端点要求调用方携带 ADMIN_RESET_KEY（仅配置在 Worker 环境变量 + 管理员浏览器设置里），
+ * 未配置该键则整条通道 503 关闭（默认安全）；密钥不符 403。仅更新目标账号的 hash / placeholder，
+ * 不动会员 / 试用 / 角色等其它字段。有 GitHub 令牌的管理员仍优先走令牌直写（_syncUserToRegistry），
+ * 本端点只是「无令牌管理员」的兜底通道。
+ */
+async function authAdminReset(request) {
+  const key = payEnv('ADMIN_RESET_KEY');
+  if (!key) return json({ error: '管理员重置通道未启用（Worker 未配置 ADMIN_RESET_KEY）' }, 503);
+  let body; try { body = await request.json(); } catch (e) { return json({ error: 'invalid json' }, 400); }
+  const username = String(body.username || '').trim();
+  const hash = typeof body.hash === 'string' ? body.hash.trim() : '';
+  const resetKey = String(body.resetKey || '');
+  if (!username) return json({ error: '缺少用户名' }, 400);
+  if (!REG_USERNAME_RE.test(username)) return json({ error: '用户名格式不正确（2-20 位中文/字母/数字/下划线/点/短横线）' }, 400);
+  if (hash.indexOf('pbkdf2$') !== 0 || hash.split('$').length !== 4) return json({ error: '密码哈希格式不正确' }, 400);
+  if (resetKey !== key) return json({ error: '重置密钥不正确' }, 403);
+  if (!payEnv('GH_PAT')) return json({ error: '注册表写入通道未配置（请联系管理员）' }, 503);
+  try {
+    const rd = await ghReadJson(REGISTRY_PATH);
+    const reg = (rd.ok && rd.data && typeof rd.data === 'object') ? rd.data : {};
+    reg.version = reg.version || 1;
+    reg.accounts = reg.accounts || {};
+    const exist = reg.accounts[username];
+    if (!exist) return json({ error: '账号不存在（请先让该用户注册或由管理员创建）' }, 404);
+    // 仅更新密码哈希与占位标记，保留会员 / 试用 / 角色 / 支付等全部其它字段
+    exist.hash = hash;
+    exist.placeholder = false;
+    reg.accounts[username] = exist;
+    reg.updatedAt = Date.now();
+    const w = await ghWriteJson(REGISTRY_PATH, reg, rd.sha, 'chore(auth): admin reset password ' + username);
+    if (w.ok) return json({ ok: true, updated: true });
+    return json({ error: '写入失败：' + (w.error || 'unknown') }, 500);
+  } catch (e) { return json({ error: String(e && e.message ? e.message : e) }, 500); }
+}
+
+/**
+ * 20261018f：管理员删除账号（无 GitHub 令牌设备也能真正从云端注册表删掉）。
+ * 普通设备没有令牌，无法走 Contents API 直写；这里用 Worker 持有的 GH_PAT 服务端改写 registry.json。
+ * 权限与 /auth/admin-reset 同口径：需 resetKey === ADMIN_RESET_KEY（未配置则 503 关闭）。
+ * 幂等：云端本就没有该账号时返回 { ok:true, deleted:false }，不视为失败。
+ */
+async function authAdminDelete(request) {
+  const key = payEnv('ADMIN_RESET_KEY');
+  if (!key) return json({ error: '管理员删除通道未启用（Worker 未配置 ADMIN_RESET_KEY）' }, 503);
+  let body; try { body = await request.json(); } catch (e) { return json({ error: 'invalid json' }, 400); }
+  const username = String(body.username || '').trim();
+  const resetKey = String(body.resetKey || '');
+  if (!username) return json({ error: '缺少用户名' }, 400);
+  if (!REG_USERNAME_RE.test(username)) return json({ error: '用户名格式不正确（2-20 位中文/字母/数字/下划线/点/短横线）' }, 400);
+  if (resetKey !== key) return json({ error: '删除密钥不正确' }, 403);
+  if (!payEnv('GH_PAT')) return json({ error: '注册表写入通道未配置（请联系管理员）' }, 503);
+  try {
+    const rd = await ghReadJson(REGISTRY_PATH);
+    const reg = (rd.ok && rd.data && typeof rd.data === 'object') ? rd.data : {};
+    reg.version = reg.version || 1;
+    reg.accounts = reg.accounts || {};
+    if (!reg.accounts[username]) return json({ ok: true, deleted: false }); // 云端本来就没有，幂等成功
+    delete reg.accounts[username];
+    reg.updatedAt = Date.now();
+    const w = await ghWriteJson(REGISTRY_PATH, reg, rd.sha, 'chore(auth): admin delete account ' + username);
+    if (w.ok) return json({ ok: true, deleted: true });
+    return json({ error: '写入失败：' + (w.error || 'unknown') }, 500);
+  } catch (e) { return json({ error: String(e && e.message ? e.message : e) }, 500); }
+}
+
 async function payClaim(request) {
   let body; try { body = await request.json(); } catch (e) { return json({ error: 'invalid json' }, 400); }
   const user = (body.user || '').trim(); const plan = (['6m', '1y', '2y'].indexOf(body.plan) >= 0) ? body.plan : '6m';
@@ -433,6 +528,39 @@ async function payClaim(request) {
           createdAt: Number(a.createdAt) || Date.now()
         };
       }
+    }
+    // 20261018d：申请没带账号快照（旧版客户端 / 在陌生设备上提交）→ 服务端按用户名
+    // 从云端注册表补齐一份快照（含密码哈希），管理员点「核对并开通」就能一键完成，
+    // 不必再让对方回注册设备重新提交。注册表与 claims.json 本就是同一公开仓库，
+    // 哈希同属「自包含 PBKDF2 串」，不引入新的暴露面。
+    if (!acct && user) {
+      try {
+        const rdReg = await ghReadJson(REGISTRY_PATH);
+        const accs = (rdReg.ok && rdReg.data && rdReg.data.accounts) || {};
+        let acc = accs[user];
+        if (!acc) {
+          const k = Object.keys(accs).find(x => String(x).trim().toLowerCase() === user.toLowerCase());
+          acc = k ? accs[k] : null;
+        }
+        if (acc && typeof acc.hash === 'string' && acc.hash.indexOf('pbkdf2$') === 0) {
+          acct = {
+            username: user,
+            hash: acc.hash,
+            role: 'user',
+            status: acc.status || 'active',
+            disabled: false,
+            trialUntil: Number(acc.trialUntil) || 0,
+            trialDays: Number(acc.trialDays) || 0,
+            quotaMonths: Number(acc.quotaMonths) || 0,
+            registerDate: typeof acc.registerDate === 'string' ? acc.registerDate : '',
+            payMembershipUntil: Number(acc.payMembershipUntil) || 0,
+            paidAt: Number(acc.paidAt) || 0,
+            paidPlan: typeof acc.paidPlan === 'string' ? acc.paidPlan : '',
+            paidAmount: Number(acc.paidAmount) || 0,
+            createdAt: Number(acc.createdAt) || Date.now()
+          };
+        }
+      } catch (e) { /* 补不齐就走原流程（管理员仍可用占位凭证开通） */ }
     }
     // 20261007s：把用户端提交的支付时间 / 实付金额 / 时段一并落库，
     // 管理员「审核区」列表与开通后的用户表都能直接取用。

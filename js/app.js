@@ -607,20 +607,27 @@ const app = createApp({
 
     function removeUserByAdmin(u) {
       if (!A) return;
-      if (!confirm(`确定删除用户「${u.username}」？删除后该账号无法再登录。`)) return;
+      if (!confirm(`确定删除用户「${u.username}」？将从本机与云端后端一并删除，删除后该账号无法再登录。`)) return;
       const r = A.removeUser(u.username);
       if (!r.ok) { showToast(r.error, 'error'); return; }
-      showToast('已删除用户', 'success');
+      showToast('已从本机删除，正在删除云端账号…', 'info', 2500);
       refreshUserList();
-      // 20261016d：删除必须同步到云端注册表，否则下次打开用户管理时该账号会被「从云端恢复」重新合并回来
+      // 20261016d / 20261018f：删除必须同步到云端注册表，否则下次打开用户管理时该账号会被「从云端恢复」重新合并回来。
+      // 无令牌时 _deleteAccountFromCloud 会回落 /auth/admin-delete 专用通道（Worker 持 GH_PAT 服务端删除）。
+      const failMsg = `「${u.username}」已从本机删除，但云端未删除：`;
       if (r.sync) {
         Promise.resolve(r.sync).then(sr => {
-          if (sr && !sr.ok && !sr.skip) {
-            showToast(`「${u.username}」未从云端注册表删除：${sr.error || '写入失败'}（该账号之后可能再次出现）`, 'warn', 9000);
-          } else if (sr && sr.ok) {
+          if (sr && sr.ok) {
             dropSnapshotEntry(u.username);   // 20261016j：云端已删，快照同步移除
+            showToast(`「${u.username}」已从本机与云端后端一并删除`, 'success');
+          } else {
+            showToast(failMsg + `${(sr && sr.error) || '写入失败'}。请在「设置」中配置 GitHub 令牌或管理员重置密钥后重新删除，否则该账号之后可能再次出现。`, 'warn', 13000);
           }
-        }).catch(() => {});
+        }).catch(() => {
+          showToast(failMsg + '云端同步异常，请在设置中配置 GitHub 令牌或管理员重置密钥后重试。', 'warn', 13000);
+        });
+      } else {
+        showToast(failMsg + '云端同步模块不可用。', 'warn', 10000);
       }
     }
 

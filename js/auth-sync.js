@@ -463,6 +463,28 @@
     }).catch(function (e) { return { ok: false, error: String((e && e.message) || e) }; });
   }
 
+  /**
+   * 20261018f：管理员「删除账号」专用通道——无 GitHub 令牌的设备也能把账号从云端注册表真正删掉
+   * （Worker 持 GH_PAT 服务端删除；否则只删本机，下次 recoverFromRegistry 又会把云端残留合并回来）。
+   * 权限与 adminReset 同口径：resetKey === Worker 环境变量 ADMIN_RESET_KEY。
+   */
+  function adminDeleteRemoteViaWorker(username, key) {
+    var base = memberApiBase();
+    var uname = String(username == null ? '' : username).trim();
+    if (!base || !uname) return Promise.resolve({ ok: false, error: '参数不完整（需 Worker 地址与用户名）' });
+    if (!key) return Promise.resolve({ ok: false, error: '缺少管理员删除密钥' });
+    return fetch(base + '/auth/admin-delete', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+      cache: 'no-store',
+      body: JSON.stringify({ username: uname, resetKey: String(key) })
+    }).then(function (r) {
+      return r.json().catch(function () { return {}; }).then(function (j) {
+        return { ok: r.ok && !!(j && j.ok), status: r.status, deleted: !!(j && j.deleted), error: (j && j.error) ? String(j.error) : '' };
+      });
+    }).catch(function (e) { return { ok: false, error: String((e && e.message) || e) }; });
+  }
+
   global.Auth = global.Auth || {};
   // 20261012e：登录门禁的云端会员兜底查询（auth.js 的 accessDenyWithRemote 会调用）。
   // 单独挂到 Auth 上（不进 Sync），让 auth.js 不依赖同步模块的加载顺序。
@@ -485,6 +507,7 @@
     registerRemote: registerRemote,
     registerRemoteViaWorker: registerRemoteViaWorker,
     adminResetRemoteViaWorker: adminResetRemoteViaWorker,
+    adminDeleteRemoteViaWorker: adminDeleteRemoteViaWorker,
     // batch-A：会员个人收款码配置 + 待开通记录（公开读、令牌写）
     MEMBER_CFG_PATH: MEMBER_CFG_PATH,
     MEMBER_CLAIMS_PATH: MEMBER_CLAIMS_PATH,

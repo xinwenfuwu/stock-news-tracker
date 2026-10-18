@@ -1916,10 +1916,9 @@
       clearDeviceRegisteredUser(username);
       // 20261016d：删除必须同步到云端注册表，否则 recoverFromRegistry 会把该账号重新合并回本机，
       // 管理员会看到「删了又出现」的幽灵账号（且名字可能与新注册账号混淆）。
-      // 删除失败（无令牌 / 写失败）时由调用方 toast 告知，不再静默。
-      var delP = (typeof Auth !== 'undefined' && Auth.Sync && Auth.Sync.deleteUser)
-        ? Auth.Sync.deleteUser(username)
-        : Promise.resolve({ ok: false, skip: true, error: '同步模块未加载' });
+      // 20261018f：无令牌时经 /auth/admin-delete 专用通道由 Worker 服务端删除，确保「后端也删除」；
+      // 删除失败（无令牌也无重置密钥 / 写失败）时由调用方 toast 告知，不再静默。
+      var delP = this._deleteAccountFromCloud(username);
       return { ok: true, sync: delP };
     },
 
@@ -2363,6 +2362,31 @@
         }
         return { ok: false, skip: !!(sr && sr.skip), error: (sr && sr.error) || '云端同步失败（未配置 GitHub 令牌或管理员重置密钥）' };
       });
+    },
+
+    /**
+     * 20261018f：把账号从云端注册表真正删掉（管理员点「删除」时调用）。
+     * 顺序：① 有 GitHub 令牌 → Contents API 直写删除（Auth.Sync.deleteUser）；
+     *       ② 无令牌或直写失败 → 经 /auth/admin-delete 专用通道由 Worker 服务端删除；
+     *       ③ 都没有 → 返回 skip，由调用方明确提示「云端未删，之后可能再次出现」。
+     * 关键：删除若没落云，recoverFromRegistry 下次会把该账号合并回本机，形成「删了又出现」的幽灵账号。
+     */
+    _deleteAccountFromCloud: function (username) {
+      var uname = String(username == null ? '' : username).trim();
+      if (!uname) return Promise.resolve({ ok: false, error: '缺少用户名' });
+      var hasSyncDelete = (typeof Auth !== 'undefined' && Auth.Sync && typeof Auth.Sync.deleteUser === 'function');
+      var direct = hasSyncDelete ? Auth.Sync.deleteUser(uname) : Promise.resolve({ ok: false, skip: true, error: '同步模块未加载' });
+      return Promise.resolve(direct).then(function (sr) {
+        if (sr && sr.ok) return { ok: true, via: 'token', skip: false, deleted: !!sr.deleted };
+        var key = adminResetKey();
+        if (key && typeof Auth !== 'undefined' && Auth.Sync && typeof Auth.Sync.adminDeleteRemoteViaWorker === 'function') {
+          return Promise.resolve(Auth.Sync.adminDeleteRemoteViaWorker(uname, key)).then(function (wr) {
+            if (wr && wr.ok) return { ok: true, via: 'worker', skip: false, deleted: !!wr.deleted };
+            return { ok: false, skip: !!(sr && sr.skip), error: (wr && wr.error) || (sr && sr.error) || '云端删除失败' };
+          });
+        }
+        return { ok: false, skip: !!(sr && sr.skip), error: (sr && sr.error) || '云端未删除（未配置 GitHub 令牌或管理员重置密钥）' };
+      }).catch(function (e) { return { ok: false, error: String((e && e.message) || e) }; });
     },
 
     /**
