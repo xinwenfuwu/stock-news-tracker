@@ -241,7 +241,7 @@ const tick = (ms = 60) => new Promise(r => setTimeout(r, ms));
     check('auth.js 登录自愈只在 notFound 时触发', /r && r\.notFound/.test(auth));
     check('auth-sync.js 导出 registerRemoteViaWorker', /registerRemoteViaWorker: registerRemoteViaWorker/.test(sync));
     check('auth-sync.js loginRemote 缺账号返回 notFound', /return \{ notFound: true \}/.test(sync));
-    check('auth-sync.js Worker 端点URL为 /auth/register', /base \+ '\/auth\/register'/.test(sync));
+    check('auth-sync.js Worker 端点URL为 /auth/register', /fetchFirstAvailable\('\/auth\/register'/.test(sync));
     check('app.js 暴露 refreshPendingRegistrations', /refreshPendingRegistrations, refreshingPending/.test(app));
     check('app.js 刷新函数合并云端注册表（recoverFromRegistry）', /async function refreshPendingRegistrations[\s\S]*?A\.recoverFromRegistry/.test(app));
     // 待审核注册申请区的刷新按钮（按锚点定位，确保加在该区而不是别处）

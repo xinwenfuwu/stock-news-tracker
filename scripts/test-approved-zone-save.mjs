@@ -224,7 +224,7 @@ function dirtyOf(Auth, localUserView, cloudAcc) {
     await AuthA.setup('admin', 'Admin@2026', 'Admin@2026');
     const before = JSON.stringify(regOf().accounts);
     const sv = await AuthA.saveUsersToRegistry(['admin']);
-    check('无令牌 → ok=false 且提示去设置配令牌', sv.ok === false && /GitHub 令牌/.test(sv.error || ''), JSON.stringify(sv));
+    check('无令牌 → ok=false 且未写入任何账号', sv.ok === false && sv.saved.length === 0 && sv.failed.length > 0 && /令牌|云端/.test(JSON.stringify(sv)), JSON.stringify(sv));
     check('无令牌 → 没有账号被写进去', sv.saved.length === 0, JSON.stringify(sv.saved));
     check('注册表未被改动', JSON.stringify(regOf().accounts) === before, 'registry changed');
   }
@@ -323,8 +323,8 @@ function dirtyOf(Auth, localUserView, cloudAcc) {
     check('auth.js 写入与脏检查共用 buildRegistryRecord 口径', /buildRegistryRecord\(u\);[\s\S]{0,80}rec\.updatedAt = Date\.now\(\)/.test(auth));
     check('auth.js recoverFromRegistry 定义 E2E_ADMIN_RE 残留识别', auth.includes('var E2E_ADMIN_RE = /^eadm_\\d{13}$/;'));
     check('auth.js 残留剔除条件：eadm_<ts> 且 role=admin', /E2E_ADMIN_RE\.test\(String\(cu\.username\)\) && cu\.role === ROLE\.ADMIN/.test(auth));
-    check('auth.js recoverFromRegistry 返回 cleaned 计数', /return \{ ok: true, recovered: recovered, skipped: skipped, cleaned: cleaned \};/.test(auth));
-    check('auth.js 有残留时也落盘（cleaned>0 触发 saveUsers）', /if \(recovered > 0 \|\| cleaned > 0\) \{ saveUsers\(self\.users\); \}/.test(auth));
+    check('auth.js recoverFromRegistry 返回 cleaned 计数', /return \{ ok: true, recovered: recovered, skipped: skipped, cleaned: cleaned(, changed: changed)? \};/.test(auth));
+    check('auth.js 有残留时也落盘（cleaned>0 触发 saveUsers）', /if \(recovered > 0 \|\| cleaned > 0( \|\| changed > 0)?\) \{ saveUsers\(self\.users\); \}/.test(auth));
     check('app.js 定义 saveApprovedZoneChanges', /async function saveApprovedZoneChanges\(\)/.test(app));
     check('app.js 定义 isAccountDirty', /function isAccountDirty\(u\)/.test(app));
     check('app.js 定义 dirtyAccountList', /const dirtyAccountList = computed\(/.test(app));

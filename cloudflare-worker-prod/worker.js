@@ -356,7 +356,12 @@ async function authRegister(request) {
   const hash = typeof body.hash === 'string' ? body.hash.trim() : '';
   if (!username) return json({ error: '缺少用户名' }, 400);
   if (!REG_USERNAME_RE.test(username)) return json({ error: '用户名只能包含中文、字母、数字、下划线、点或短横线（2-20 个字符）' }, 400);
-  if (hash.indexOf('pbkdf2$') !== 0 || hash.split('$').length !== 4) return json({ error: '密码哈希格式不正确' }, 400);
+  // 20261018h：占位会员凭证（placeholder=true 且哈希为空）允许写入——这是管理员「核对并开通」
+  // 为「旧版无账号信息申请」登记会籍的唯一载体。此前这里无条件要求 pbkdf2$ 四段哈希，
+  // 导致占位凭证 100% 写入失败（实测 400「密码哈希格式不正确」）→ 云端注册表没有该账号
+  // → 去重依据丢失 → 刷新/换设备后已通过的申请又回审核区（本次故障的根因之一）。
+  const isPlaceholder = body.placeholder === true && !hash;
+  if (!isPlaceholder && (hash.indexOf('pbkdf2$') !== 0 || hash.split('$').length !== 4)) return json({ error: '密码哈希格式不正确' }, 400);
   if (!payEnv('GH_PAT')) return json({ error: '注册同步通道未配置（请联系管理员）' }, 503);
   const now = Date.now();
   // 试用期只接受合理值（客户端注册即送 1 天；异常值按无试用处理，避免脏数据）
@@ -376,6 +381,25 @@ async function authRegister(request) {
       // （会员有效期 / 支付信息 / 已核对申请 id），不能因为「已存在」把人挡在门外，
       // 也不能把会员洗成 0。
       const claiming = !!(exist && !exist.hash);
+      // 20261018h：占位凭证只允许「补会籍 / 补去重 id」，绝不碰已有真实账号的密码。
+      // 场景：管理员先为孤儿申请登记了占位凭证，之后本人注册认领（claiming 分支），
+      // 再点一次「核对并开通」时占位凭证又来了——此时必须走「合并」而不是覆盖，
+      // 否则会把对方的真实密码哈希洗成空值（等于把人锁在门外）。
+      if (isPlaceholder && exist && exist.hash) {
+        exist.paidClaimIds = ((exist.paidClaimIds || []).concat(Array.isArray(body.paidClaimIds) ? body.paidClaimIds : []))
+          .map(x => String(x || '').trim()).filter((x, i, arr) => x && arr.indexOf(x) === i).slice(-30);
+        exist.payMembershipUntil = Math.max(Number(exist.payMembershipUntil) || 0, Number(body.payMembershipUntil) || 0);
+        exist.quotaMonths = Math.max(Number(exist.quotaMonths) || 0, Number(body.quotaMonths) || 0);
+        if (!Number(exist.paidAt) && Number(body.paidAt)) exist.paidAt = Number(body.paidAt);
+        if (!exist.paidPlan && typeof body.paidPlan === 'string') exist.paidPlan = body.paidPlan;
+        if (!Number(exist.paidAmount) && Number(body.paidAmount)) exist.paidAmount = Number(body.paidAmount);
+        reg.accounts[username] = exist;
+        reg.updatedAt = now;
+        const wm = await ghWriteJson(REGISTRY_PATH, reg, rd.sha, 'chore(auth): merge placeholder grant ' + username);
+        if (wm.ok) return json({ ok: true, merged: true, passwordKept: true });
+        if (attempt === 0 && wm.status === 409) continue;
+        return json({ error: '写入失败：' + wm.error }, 500);
+      }
       if (exist && !claiming) {
         // 20261016l：同一份密码哈希 → 本人（或管理员代管）在同步最新状态，允许覆盖更新；
         // 哈希不同且对方是管理员 / 付费 / 已激活 → 拒绝抢名（409）。
@@ -410,7 +434,8 @@ async function authRegister(request) {
         paidPlan: claiming ? (exist.paidPlan || (typeof body.paidPlan === 'string' ? body.paidPlan : '')) : (typeof body.paidPlan === 'string' ? body.paidPlan : ''),
         paidAmount: claiming ? (Number(exist.paidAmount) || Number(body.paidAmount) || 0) : (Number(body.paidAmount) || 0),
         paidClaimIds: claimIds,
-        placeholder: false,
+        // 20261018h：占位会员凭证（无密码、仅带会员到期时间）如实落库，供跨设备认领与去重
+        placeholder: !!isPlaceholder,
         createdAt: Number(body.createdAt) || (exist && Number(exist.createdAt)) || now,
         updatedAt: now
       };
@@ -603,9 +628,11 @@ async function payClaimResolve(request) {
     const rd = await ghReadJson(CLAIMS_PATH);
     const claims = (rd.ok && rd.data && Array.isArray(rd.data.claims)) ? rd.data.claims : [];
     const t = claims.find(c => c.id === id);
-    if (t) { t.resolved = true; if (rejected) { t.rejected = true; t.rejectedAt = Date.now(); } }
+    if (t) { t.resolved = true; t.resolvedAt = Number(t.resolvedAt) || Date.now(); if (rejected) { t.rejected = true; t.rejectedAt = Date.now(); } }
     const w = await ghWriteJson(CLAIMS_PATH, { claims }, rd.sha, 'chore(membership): ' + (rejected ? 'reject' : 'resolve') + ' claim ' + id);
-    return w.ok ? json({ ok: true, rejected: rejected }) : json({ error: w.error }, 500);
+    // 20261018h：回执带 found，客户端据此判断「云端确实有这条申请且已改状态」，
+    // 而不是拿到 200 就以为标记成功（此前「假成功」是审核区反复重现的另一原因）。
+    return w.ok ? json({ ok: true, rejected: rejected, found: !!t, resolvedAt: t ? t.resolvedAt : 0 }) : json({ error: w.error }, 500);
   } catch (e) { return json({ error: String(e && e.message || e) }, 500); }
 }
 

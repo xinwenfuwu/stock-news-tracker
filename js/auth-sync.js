@@ -239,10 +239,16 @@
     // 账号所在 Cloudflare 账号的 workers.dev 子域（deploy-stock-edge.js 部署脚本名 stock-edge）
     return 'https://stock-edge.hui-zhou.workers.dev';
   }
+  /** 国内可达的 Worker 主域（与 index.html 注入的 __SNT_ACCEL__ 同一实例 stock-edge）。
+   *  实测：本机/国内直连 *.workers.dev 全部超时，而该自定义域 1 秒内返回，
+   *  故把它固定加入候选，避免管理员在「设置 → 代理地址」里填了失效地址后，
+   *  开通/审核/写申请状态全部静默失败（本次「审核后刷新又回来」的根因之一）。 */
+  var PRIMARY_MEMBER_API = 'https://sichina.dpdns.org';
   function memberApiBases() {
     var out = [];
     var p = memberApiBase();
     if (p) out.push(p);
+    if (out.indexOf(PRIMARY_MEMBER_API) < 0) out.push(PRIMARY_MEMBER_API);
     var fb = workerDevUrl();
     if (fb && out.indexOf(fb) < 0) out.push(fb);
     return out;
@@ -337,6 +343,30 @@
       });
     }).catch(function (e) {
       return { ok: false, changed: false, error: String((e && e.message) || e) };
+    });
+  }
+
+  /**
+   * 20261018h：把某条申请在云端标记为已处理（resolved / rejected），走多通道兜底。
+   * 与 markClaimResolved（需 GitHub 令牌直写）互补：本函数借 Worker 的 GH_PAT，管理员浏览器
+   * 没配令牌也能标；并且按 memberApiBases() 依次尝试，主地址失效时自动换国内可达域，
+   * 避免「返回 200 假成功 / 请求根本没发出去」导致审核区反复重现。
+   * @returns {Promise<{ok:boolean, found:boolean, status?:number, error?:string}>}
+   *   found=false 表示云端申请列表里已没有这条 id（可能已被清理）——调用方按「已处理」对待。
+   */
+  function resolveClaimRemote(id, rejected) {
+    var cid = String(id == null ? '' : id).trim();
+    if (!cid) return Promise.resolve({ ok: false, found: false, error: '缺少申请 id' });
+    return fetchFirstAvailable('/pay/claims/resolve', { id: cid, rejected: !!rejected }).then(function (res) {
+      var ok = !!(res && res.ok);
+      return {
+        ok: ok,
+        found: ok && !(res.body && res.body.found === false),
+        status: (res && res.status) || 0,
+        error: ok ? '' : ((res && res.error) || ('HTTP ' + ((res && res.status) || 0)))
+      };
+    }).catch(function (e) {
+      return { ok: false, found: false, error: String((e && e.message) || e) };
     });
   }
 
@@ -554,6 +584,7 @@
     readClaims: readClaims,
     writeClaims: writeClaims,
     markClaimResolved: markClaimResolved,
+    resolveClaimRemote: resolveClaimRemote,
     // 20261012e：会员到期时间查询 + 后端基地址（业务层复用同一基地址）
     memberApiBase: memberApiBase,
     queryMembershipRemote: queryMembershipRemote

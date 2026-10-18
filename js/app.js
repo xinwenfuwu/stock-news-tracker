@@ -452,7 +452,7 @@ const app = createApp({
     async function saveApprovedZoneChanges() {
       if (!A || savingApproved.value) return;
       const dirty = dirtyAccountList.value;
-      const hasClaims = rejectedClaimIds.size > 0;
+      const hasClaims = rejectedClaimIds.size > 0 || claimQueue.length > 0;
       if (!dirty.length && !hasClaims) {
         showToast('没有需要保存的改动（账号已与云端一致，也没有待持久化的审核操作）', 'info');
         return;
@@ -479,18 +479,28 @@ const app = createApp({
             }
           }
         }
-        // ② 已拒绝的审核申请写回云端（rejected=true 由后端过滤，刷新/换设备不再重现审核区）
-        if (hasClaims) {
+        // ② 已处理（拒绝 / 核对开通）的审核申请写回云端（resolved/rejected 由后端过滤，刷新/换设备不再重现审核区）
+        // 20261018h：除 rejectedClaimIds 外，把「待上云队列」里的 id 也一并补传——之前只有拒绝的会被保存，
+        // 已开通但云端写失败的申请没人管，清缓存/换设备后又回到审核区（用户实况）。
+        const pendingIds = Array.from(new Set(Array.from(rejectedClaimIds).concat(claimQueue.map(x => x.id))));
+        if (pendingIds.length) {
           let okN = 0, failN = 0; const fails = [];
-          for (const id of Array.from(rejectedClaimIds)) {
-            const ok = await resolveClaimOnCloud(id, { rejected: true });
-            if (ok) okN++; else { failN++; fails.push(id); }
+          for (const id of pendingIds) {
+            const q = claimQueue.find(x => x.id === id);
+            const rej = rejectedClaimIds.has(id) || !!(q && q.rejected);
+            const ok = await resolveClaimOnCloud(id, { rejected: rej });
+            if (ok) {
+              okN++;
+              const i = claimQueue.findIndex(x => x.id === id);
+              if (i >= 0) claimQueue.splice(i, 1);
+            } else { failN++; fails.push(id); enqueueClaimResolve(id, rej); }
           }
+          persistClaimQueue();
           claimResult = { okN, failN, fails };
           if (failN === 0) {
-            showToast(okN ? ('已把 ' + okN + ' 条已拒绝申请同步到云端，刷新/换设备不会在审核区重现') : '云端已是最新审核状态', 'success');
+            showToast(okN ? ('已把 ' + okN + ' 条审核操作同步到云端，刷新/换设备不会在审核区重现') : '云端已是最新审核状态', 'success');
           } else {
-            showToast('有 ' + failN + ' 条已拒绝申请云端同步失败（' + fails.join('、') + '）：本机已记录，可稍后重试保存设置', 'warn', 10000);
+            showToast('有 ' + failN + ' 条审核操作云端同步失败（' + fails.join('、') + '）：已留在自动重试队列，可稍后再点保存设置', 'warn', 10000);
           }
         }
       } catch (e) {
@@ -527,8 +537,12 @@ const app = createApp({
       if (A && A.Sync && A.Sync.isAdminConfigured && A.Sync.isAdminConfigured()) {
         A.syncSelfToRegistry();
         loadRemotePending();
-        loadMemberClaims();   // batch-A：拉会员待开通记录
       }
+      // 20261018h：审核区数据与「有没有 GitHub 令牌」无关——之前只有配了令牌才加载，
+      // 无令牌管理员打开面板会看到空列表（误以为申请被清掉了）。这里统一加载；
+      // 加载前先补传上次没写成功的「已处理申请」，避免已通过的申请又出现在列表里。
+      try { await flushClaimResolveQueue(); } catch (e) { /* 忽略，照常加载 */ }
+      loadMemberClaims();   // batch-A：拉会员待开通记录
       userModal.show = true;
       markPendingSeen();   // 打开面板即视为已查看，收起提醒条、角标转已读
     }
@@ -605,6 +619,38 @@ const app = createApp({
       }
     }
 
+    /**
+     * 20261018h：删除账号后级联清理该用户名下的审核申请。
+     * 需求（用户原话）：管理员删除这些账号 → 整个系统上删除 → 普通用户可重新注册。
+     * 若只删账号不动申请，审核区会永远挂着一条「查无此人」的申请（点开通只会报用户不存在）。
+     * 这里把该用户所有未处理申请标为 resolved+rejected（移出审核区、保留审计记录），
+     * 并写入持久队列保证上云；同名重新注册由 Worker /auth/register 正常创建（注册表已无该账号）。
+     * @returns {Promise<number>} 被清理的申请条数
+     */
+    async function cascadeResolveClaimsForUser(uname) {
+      if (!A || !uname) return 0;
+      const key = String(uname).toLowerCase();
+      let touched = 0;
+      try {
+        const rd = (A.Sync && A.Sync.readClaims) ? await A.Sync.readClaims() : { claims: [] };
+        const mine = ((rd && rd.claims) || []).filter(c =>
+          String(c.user || '').toLowerCase() === key && !c.resolved && !c.rejected);
+        for (const c of mine) {
+          resolvedClaimIds.add(c.id);
+          rejectedClaimIds.add(c.id);
+          enqueueClaimResolve(c.id, true);
+          touched++;
+        }
+        if (touched) {
+          persistResolvedClaims();
+          persistRejectedClaims();
+          memberClaims.list = memberClaims.list.filter(c => String(c.user || '').toLowerCase() !== key);
+          await flushClaimResolveQueue();
+        }
+      } catch (e) { /* 队列已落盘，稍后自动重试 */ }
+      return touched;
+    }
+
     function removeUserByAdmin(u) {
       if (!A) return;
       if (!confirm(`确定删除用户「${u.username}」？将从本机与云端后端一并删除，删除后该账号无法再登录。`)) return;
@@ -615,13 +661,17 @@ const app = createApp({
       // 20261016d / 20261018f：删除必须同步到云端注册表，否则下次打开用户管理时该账号会被「从云端恢复」重新合并回来。
       // 无令牌时 _deleteAccountFromCloud 会回落 /auth/admin-delete 专用通道（Worker 持 GH_PAT 服务端删除）。
       const failMsg = `「${u.username}」已从本机删除，但云端未删除：`;
+      // 20261018h：级联清理该用户名下的审核申请（否则审核区会一直挂一条「查无此人」的申请）
+      const casc = cascadeResolveClaimsForUser(u.username);
       if (r.sync) {
-        Promise.resolve(r.sync).then(sr => {
+        Promise.resolve(r.sync).then(async (sr) => {
+          const cleaned = await casc;
+          const claimTail = cleaned ? `；已同时清理 ${cleaned} 条该账号的待审申请（可重新注册）` : '';
           if (sr && sr.ok) {
             dropSnapshotEntry(u.username);   // 20261016j：云端已删，快照同步移除
-            showToast(`「${u.username}」已从本机与云端后端一并删除`, 'success');
+            showToast(`「${u.username}」已从本机与云端后端一并删除${claimTail}`, 'success', 5000);
           } else {
-            showToast(failMsg + `${(sr && sr.error) || '写入失败'}。请在「设置」中配置 GitHub 令牌或管理员重置密钥后重新删除，否则该账号之后可能再次出现。`, 'warn', 13000);
+            showToast(failMsg + `${(sr && sr.error) || '写入失败'}。请在「设置」中配置 GitHub 令牌或管理员重置密钥后重新删除，否则该账号之后可能再次出现。${claimTail}`, 'warn', 13000);
           }
         }).catch(() => {
           showToast(failMsg + '云端同步异常，请在设置中配置 GitHub 令牌或管理员重置密钥后重试。', 'warn', 13000);
@@ -2664,6 +2714,63 @@ const app = createApp({
     function persistRejectedClaims() {
       try { localStorage.setItem(REJECTED_CLAIM_KEY, JSON.stringify(Array.from(rejectedClaimIds))); } catch (e) {}
     }
+    /**
+     * 20261018h：「申请状态上云」持久重试队列。
+     * 背景（用户实况）：管理员点了「核对并开通」，本机已移除该行，但云端 claims.json 里
+     * 这条申请仍是 resolved:false —— 一旦本机 localStorage 被清、或换设备/换入口打开，
+     * 已通过的申请又回到审核区（用户反馈「强制刷新后又出现了」）。
+     * 根因：resolve 只发一次请求，失败/打错地址就永久丢失，没有任何补偿。
+     * 现在：每次开通/拒绝都把 id 入队（localStorage 持久），启动、点刷新、保存设置、删号后
+     * 都会自动重试，直到云端回执 ok 为止；期间审核区一律不再显示这些申请。
+     */
+    const CLAIM_QUEUE_KEY = 'snt-claim-queue-v1';
+    function loadClaimQueue() {
+      try {
+        const arr = JSON.parse(localStorage.getItem(CLAIM_QUEUE_KEY) || '[]');
+        return Array.isArray(arr) ? arr.filter(x => x && typeof x.id === 'string' && x.id) : [];
+      } catch (e) { return []; }
+    }
+    const claimQueue = loadClaimQueue();
+    // 队列里的 id 一律视为「已处理」——即使本地清理过 resolvedClaimIds，也不让它们回审核区
+    claimQueue.forEach(it => resolvedClaimIds.add(it.id));
+    function persistClaimQueue() {
+      try { localStorage.setItem(CLAIM_QUEUE_KEY, JSON.stringify(claimQueue)); } catch (e) {}
+    }
+    /** 把一条申请加入「待上云」队列（同时记入本机已处理集合，立即从审核区消失）。 */
+    function enqueueClaimResolve(claimId, rejected) {
+      if (!claimId) return;
+      const id = String(claimId);
+      const i = claimQueue.findIndex(x => x.id === id);
+      if (i >= 0) {
+        claimQueue[i].rejected = !!(rejected || claimQueue[i].rejected);
+        claimQueue[i].ts = Date.now();
+      } else {
+        claimQueue.push({ id: id, rejected: !!rejected, ts: Date.now(), tries: 0 });
+        if (claimQueue.length > 60) claimQueue.splice(0, claimQueue.length - 60);
+      }
+      persistClaimQueue();
+      resolvedClaimIds.add(id);
+      persistResolvedClaims();
+      if (rejected) { rejectedClaimIds.add(id); persistRejectedClaims(); }
+    }
+    /** 尝试把所有「待上云」申请写进云端；成功的出队。返回 {done, left}。 */
+    async function flushClaimResolveQueue() {
+      if (!claimQueue.length) return { done: 0, left: 0 };
+      const items = claimQueue.slice();
+      let done = 0;
+      for (const it of items) {
+        const ok = await resolveClaimOnCloud(it.id, { rejected: !!it.rejected });
+        if (ok) {
+          done++;
+          const i = claimQueue.findIndex(x => x.id === it.id);
+          if (i >= 0) claimQueue.splice(i, 1);
+        } else {
+          it.tries = (Number(it.tries) || 0) + 1;
+        }
+      }
+      persistClaimQueue();
+      return { done: done, left: claimQueue.length };
+    }
     const memberManual = reactive({ username: '', plan: '6m' });
     // 按套餐期限过滤待开通记录（管理员界面分半年/一年/两年三区展示）
     function claimsOfPlan(p) {
@@ -2715,12 +2822,18 @@ const app = createApp({
         let raw = null;
         // 1) 会员后端「实时读」（GET /pay/claims）：直接读仓库最新内容，绕开 GitHub Pages 的
         //    构建/CDN 延迟，管理员点「刷新」即见刚提交的申请。
+        //    20261018h：按候选地址依次尝试（设置里的地址 → 国内可达主域），
+        //    避免管理员填了失效代理地址后读不到真实申请状态（会误以为「已处理又回来了」）。
+        const readBases = [];
         const base = payApiBase();
-        if (base) {
+        if (base) readBases.push(base);
+        if (readBases.indexOf('https://sichina.dpdns.org') < 0) readBases.push('https://sichina.dpdns.org');
+        for (const b of readBases) {
+          if (raw) break;
           try {
-            const r = await fetch(base + '/pay/claims', { headers: { 'Accept': 'application/json' }, cache: 'no-store' });
+            const r = await fetch(b + '/pay/claims', { headers: { 'Accept': 'application/json' }, cache: 'no-store' });
             if (r.ok) { const j = await r.json(); if (j && Array.isArray(j.claims)) raw = j.claims; }
-          } catch (e) { /* 后端不可用 → 回落静态文件 */ }
+          } catch (e) { /* 试下一个地址 */ }
         }
         // 2) 回落：公开静态文件 data/membership/claims.json
         if (!raw) {
@@ -2759,6 +2872,10 @@ const app = createApp({
     }
     // 「审核区」区最右侧的刷新按钮：强制重拉最新申请并给出回执
     async function refreshMemberClaims() {
+      // 20261018h：先把「待上云」的已处理申请补传一次（上次开通/拒绝时云端没写成功的），
+      // 再拉最新列表——保证点刷新既有补偿作用，也不会把已处理的申请又显示出来。
+      let flushed = { done: 0, left: 0 };
+      try { flushed = await flushClaimResolveQueue(); } catch (e) { /* 忽略，继续刷新 */ }
       await loadMemberClaims();
       if (memberClaims.loading) return;
       // 20261018e：把去重命中的「已核对开通过」申请在云端标记 resolved，彻底移出审核区
@@ -2768,14 +2885,20 @@ const app = createApp({
         let ok = 0, fail = 0;
         for (const c of stale) {
           const m = await resolveClaimOnCloud(c.id, {});
-          if (m) ok++; else fail++;
+          if (m) ok++; else { fail++; enqueueClaimResolve(c.id, false); }
         }
         showToast('已把 ' + stale.length + ' 条已核对开通过的申请移出审核区'
-          + (fail ? ('（' + fail + ' 条云端标记失败，可重试刷新）') : ''), fail ? 'warn' : 'success', fail ? 6000 : 4000);
+          + (fail ? ('（' + fail + ' 条云端标记失败，已加入自动重试）') : ''), fail ? 'warn' : 'success', fail ? 6000 : 4000);
         return;
       }
       const n = memberClaims.list.length;
-      showToast(n ? ('已刷新：' + n + ' 条待审核支付申请') : '已刷新：暂无待审核支付申请', n ? 'success' : 'info');
+      const q = claimQueue.length;
+      const tail = q ? ('；另有 ' + q + ' 条已处理申请在等待上云（会自动重试）') : '';
+      if (flushed.done) {
+        showToast('已补传 ' + flushed.done + ' 条已处理申请到云端' + (q ? ('，仍有 ' + q + ' 条待重试') : ''), q ? 'warn' : 'success', q ? 6000 : 4000);
+        return;
+      }
+      showToast((n ? ('已刷新：' + n + ' 条待审核支付申请') : '已刷新：暂无待审核支付申请') + tail, n ? 'success' : 'info', q ? 7000 : 3000);
     }
     // 解析某条申请所属的套餐月数：优先用申请里带的套餐，其次按金额推断（普通用户提交的申请只有金额时也能对）
     function claimMonths(c) {
@@ -2920,36 +3043,29 @@ const app = createApp({
       // 审核通过：立即从「待审核」区移除该申请（乐观更新，确保无论后端标记是否成功都不再回显）
       if (claim.id) { resolvedClaimIds.add(claim.id); persistResolvedClaims(); }
       memberClaims.list = memberClaims.list.filter(c => c.id !== claim.id);
-      // 标记该 claim 已处理：优先走后端 /pay/claims/resolve（管理员浏览器没有 GitHub 令牌也能标记），
-      // 失败再回落管理员令牌直写；两者都失败也不影响已开通。
-      try {
-        let marked = false;
-        const base = payApiBase();
-        if (base) {
-          try {
-            const r = await fetch(base + '/pay/claims/resolve', {
-              method: 'POST', headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ id: claim.id })
-            });
-            if (r.ok) marked = true;
-          } catch (e) { /* 回落令牌直写 */ }
-        }
-        if (!marked && A.Sync && A.Sync.writeClaims) {
-          const rd = (A.Sync && A.Sync.readClaims) ? await A.Sync.readClaims() : { ok: true, claims: [] };
-          const all = (rd && rd.claims) || [];
-          const tgt = all.find(c => c.id === claim.id);
-          if (tgt) { tgt.resolved = true; tgt.resolvedAt = Date.now(); await A.Sync.writeClaims(all); }
-        }
-      } catch (e) { /* 会员已开通，仅未标记 */ }
+      // 标记该 claim 已处理：20261018h 起统一走 resolveClaimOnCloud（多通道，token-less），
+      // 失败则入「持久重试队列」——绝不出现「本机审核区没了、云端还是 pending」的割裂状态
+      // （那正是管理员刷新/换设备后申请又冒出来的原因）。
+      let claimMarked = false;
+      if (claim.id) {
+        claimMarked = await resolveClaimOnCloud(claim.id, {});
+        if (!claimMarked) enqueueClaimResolve(claim.id, false);
+      }
       const startText = payTs ? fmtDateNum(payTs) : fmtDateNum(Date.now());
+      const claimStateText = claimMarked
+        ? '；审核申请已在云端标记为「已开通」'
+        : '；审核申请状态稍后自动重试上传（点「刷新」可立即重试）';
       let msg;
       if (placeholderGrant) {
         // 20261018e：占位会员凭证——只登记会籍、不碰任何密码，对方用自己注册时的密码登录即生效。
         msg = '已为「' + claim.user + '」登记会员凭证（' + months + ' 个月，自支付日 ' + startText + ' 起算）';
-        msg += '；已写入云端，对方用自己注册时的密码登录即生效（未改动任何密码）';
-        if (!prop.ok) msg += '，但云端同步未完全成功（' + prop.error + '），请确认 GitHub 令牌或稍后重试';
+        msg += prop.ok
+          ? '；会籍已写入云端，对方用自己注册时的密码登录即生效（未改动任何密码）'
+          : '；会籍已登记在本机，但云端同步未成功（' + prop.error + '），请稍后重试或检查网络';
+        msg += claimStateText;
       } else {
         msg = '已为「' + claim.user + '」开通 ' + months + ' 个月会员（自支付日 ' + startText + ' 起算）';
+        msg += claimStateText;
         if (createdFromClaim) msg += '；账号已按申请信息创建，对方用注册时的密码即可登录';
         if (prop.ok) {
           msg += '，已同步云端，对方现在即可登录';
@@ -2981,22 +3097,32 @@ const app = createApp({
       if (!A || !claimId) return false;
       const rejected = !!(opts && opts.rejected);
       let marked = false;
+      // ① 20261018h：agent 侧多通道（设置里的代理地址 → 国内可达主域 → workers.dev），
+      //    借 Worker 的 GH_PAT 写 claims.json，管理员浏览器不需要令牌。
       try {
-        const base = payApiBase();
-        if (base) {
-          try {
+        if (A.Sync && typeof A.Sync.resolveClaimRemote === 'function') {
+          const rr = await A.Sync.resolveClaimRemote(claimId, rejected);
+          if (rr && rr.ok) marked = true;
+        }
+      } catch (e) { /* 继续走下面的兼容路径 */ }
+      // ② 兼容路径：老版本 Sync 模块没有 resolveClaimRemote 时，直接打当前配置的后端地址
+      if (!marked) {
+        try {
+          const base = payApiBase();
+          if (base) {
             const r = await fetch(base + '/pay/claims/resolve', {
               method: 'POST', headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({ id: claimId, rejected })
             });
             if (r.ok) marked = true;
-          } catch (e) { /* 回落令牌直写 */ }
-        }
-        if (!marked && A.Sync && A.Sync.markClaimResolved) {
-          const mr = await A.Sync.markClaimResolved(claimId, { rejected });
-          marked = !!(mr && mr.ok);
-        }
-      } catch (e) { /* 保持当前 marked */ }
+          }
+        } catch (e) { /* 回落令牌直写 */ }
+      }
+      // ③ 最后兜底：管理员配了 GitHub 令牌 → 直写 claims.json
+      if (!marked && A.Sync && A.Sync.markClaimResolved) {
+        const mr = await A.Sync.markClaimResolved(claimId, { rejected });
+        marked = !!(mr && mr.ok);
+      }
       return marked;
     }
     async function rejectMemberClaim(claim) {
@@ -3006,6 +3132,8 @@ const app = createApp({
       rejectedClaimIds.add(claim.id); persistRejectedClaims();   // 20261016r：记录为「已拒绝」，供保存设置上云
       memberClaims.list = memberClaims.list.filter(c => c.id !== claim.id);
       const marked = await resolveClaimOnCloud(claim.id, { rejected: true });
+      // 20261018h：云端没标成功 → 入持久重试队列，刷新/重开页面仍会自动补传
+      if (!marked) enqueueClaimResolve(claim.id, true);
       showToast(marked
         ? ('已拒绝「' + claim.user + '」的申请，该申请已从审核区移除（对方重新提交后会作为新申请进入审核区）')
         : ('已拒绝「' + claim.user + '」的申请（本机已移除；云端标记失败，可点「保存设置」或再点一次拒绝重试）'),
@@ -10091,6 +10219,14 @@ const app = createApp({
       // 兜底轮询：**只读 localStorage，不产生任何网络请求**，因此与
       // 「暂停数据刷新」的约定（进入页面不自动抓取数据）不冲突
       setInterval(scanPending, 8000);
+
+      // 20261018h：开机 + 定时把「已处理但云端未写成功」的审核申请补传上去。
+      // 只有队列非空时才发请求（绝大多数情况零网络开销），保证「审核过就再也不回审核区」
+      // 即使在开通当次网络抖动 / 后端地址失效的情况下也能自愈。
+      setTimeout(() => { try { flushClaimResolveQueue(); } catch (e) {} }, 2500);
+      setInterval(() => {
+        try { if (claimQueue.length) flushClaimResolveQueue(); } catch (e) {}
+      }, 5 * 60 * 1000);
       // 浏览器会把后台标签页的定时器节流（可能拖到每分钟一次），
       // 所以「切回本站 / 重新聚焦窗口」时立刻补扫一次——管理员从微信点完链接切回来就能看到
       document.addEventListener('visibilitychange', () => { if (!document.hidden) scanPending(); });

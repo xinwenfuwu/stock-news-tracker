@@ -372,12 +372,12 @@ function planOf(u) {
     check('app.js rejectedClaimIds 持久化（拒绝状态可上云，跨设备不重现）',
       /const REJECTED_CLAIM_KEY = 'snt-rejected-claims-v1';/.test(app) && /function persistRejectedClaims\(\)/.test(app)
       && /rejectedClaimIds\.add\(claim\.id\); persistRejectedClaims\(\);/.test(app)
-      && /!rejectedClaimIds\.has\(c\.id\)/.test(app));
+      && /rejectedClaimIds\.has\(c\.id\)\) return;/.test(app));
     check('app.js 审核通过后从待审列表立即移除', /memberClaims\.list = memberClaims\.list\.filter\(c => c\.id !== claim\.id\);/.test(app));
     check('app.js 拒绝通过落 rejected/rejectedAt 并写回（保存设置经 markClaimResolved）',
       /rejected: true/.test(app) && /rejectedAt/.test(app)
       && /rejectedClaimIds\.size > 0/.test(app)
-      && /resolveClaimOnCloud\(id, \{ rejected: true \}\)/.test(app)
+      && /resolveClaimOnCloud\(id, \{ rejected: rej \}\)/.test(app)
       && /A\.Sync\.markClaimResolved/.test(app));
     check('app.js 授权使用板块按 planOfUser 归类（paidPlan 优先）', /function planOfUser\(u\) \{[\s\S]*?u\.paidPlan === '2y'/.test(app));
   }
