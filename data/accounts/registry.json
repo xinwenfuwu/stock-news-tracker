@@ -87,7 +87,7 @@
       "updatedAt": 1790210900404
     },
     "huyun2": {
-      "hash": "",
+      "hash": "pbkdf2$150000$HQX+pmdgKjlTwMtnwo7O/Q==$PiY2jJpWMma9d7wwKrpy7nmIST5TDFFxJlEzc2vazrA=",
       "role": "user",
       "status": "active",
       "disabled": false,
@@ -101,7 +101,7 @@
       "paidPlan": "2y",
       "paidAmount": 4000,
       "createdAt": 1791383950326,
-      "updatedAt": 1791822740931
+      "updatedAt": 1792331639882
     }
   }
 }
