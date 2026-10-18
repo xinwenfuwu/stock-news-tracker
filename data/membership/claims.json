@@ -29,11 +29,12 @@
       "user": "hy123",
       "plan": "6m",
       "ts": 1792202513468,
-      "resolved": false,
+      "resolved": true,
       "amount": 4000,
       "startTs": 1792202513468,
       "endTs": 1807754513468,
-      "period": "6 个月会员（¥1000）"
+      "period": "6 个月会员（¥1000）",
+      "resolvedAt": 1792338630970
     },
     {
       "id": "c_1792236672033_396929",
