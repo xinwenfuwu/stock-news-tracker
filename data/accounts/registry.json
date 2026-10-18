@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": 1791822740931,
+  "updatedAt": 1792334932106,
   "accounts": {
     "181": {
       "hash": "pbkdf2$150000$KjYyYMWup5jVGwvFBcCcOQ==$3U/UO6mfq2XHtEoimjRCc/0rz4seqfPAhnrte+JrXlw=",
@@ -102,6 +102,25 @@
       "paidAmount": 4000,
       "createdAt": 1791383950326,
       "updatedAt": 1792331639882
+    },
+    "yunhu1234": {
+      "hash": "pbkdf2$150000$7G3ys3toytVXwV+j7vlw3g==$89g1o8ZJ94mqTd4Zgsq2G1QSvqShlRcJWwTLwK/PPsc=",
+      "role": "user",
+      "status": "active",
+      "disabled": false,
+      "trialUntil": 1792421328538,
+      "trialDays": 1,
+      "quotaMonths": 0,
+      "disableDate": "",
+      "registerDate": "",
+      "payMembershipUntil": 0,
+      "paidAt": 0,
+      "paidPlan": "",
+      "paidAmount": 0,
+      "paidClaimIds": [],
+      "placeholder": false,
+      "createdAt": 1792334928538,
+      "updatedAt": 1792334932106
     }
   }
 }
