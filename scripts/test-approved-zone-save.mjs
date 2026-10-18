@@ -353,7 +353,7 @@ function dirtyOf(Auth, localUserView, cloudAcc) {
       const head = html.slice(html.indexOf('<span>审核区域</span>'), html.indexOf('</div>', html.indexOf('<span>审核区域</span>')));
       return head.indexOf('@click="saveApprovedZoneChanges"') > 0 && head.indexOf('@click="saveApprovedZoneChanges"') < head.indexOf('@click="refreshMemberClaims"');
     })());
-    check('index.html 「保存设置」按钮共 3 处（审核通过区表头 + 审核区 + 授权使用）', (html.match(/@click="saveApprovedZoneChanges"/g) || []).length === 3, 'count=' + (html.match(/@click="saveApprovedZoneChanges"/g) || []).length);
+    check('index.html 「保存设置」按钮共 4 处（审核通过区表头 + 用户管理头部 + 审核区 + 授权使用）', (html.match(/@click="saveApprovedZoneChanges"/g) || []).length === 4, 'count=' + (html.match(/@click="saveApprovedZoneChanges"/g) || []).length);
     check('index.html 授权使用面板也有「保存设置」', (() => {
       const panel = html.slice(html.indexOf("umTab==='auth'"), html.indexOf('um-table-head'));
       return panel.includes('@click="saveApprovedZoneChanges"');
