@@ -61,6 +61,33 @@
         "paidAmount": 0,
         "createdAt": 1792208551812
       }
+    },
+    {
+      "id": "c_1792318521346_135348",
+      "user": "huyun1",
+      "plan": "2y",
+      "ts": 1792318516293,
+      "resolved": false,
+      "amount": 4000,
+      "startTs": 1792318516293,
+      "endTs": 1854526516293,
+      "period": "24 个月会员（¥4000）",
+      "acct": {
+        "username": "huyun1",
+        "hash": "pbkdf2$150000$v5boH10uh7gIn0Un5HKyCQ==$Ia7hcTKkLtxG+a0Hv0Kd/+dTahY/eIewFost2oL0hkU=",
+        "role": "user",
+        "status": "active",
+        "disabled": false,
+        "trialUntil": 1792243179100,
+        "trialDays": 3,
+        "quotaMonths": 0,
+        "registerDate": "2026-10-11",
+        "payMembershipUntil": 0,
+        "paidAt": 0,
+        "paidPlan": "",
+        "paidAmount": 0,
+        "createdAt": 1791378144333
+      }
     }
   ]
 }
