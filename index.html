@@ -4,12 +4,12 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>股市信息分析系统</title>
-  <link rel="stylesheet" href="css/style.css?v=20261018b">
+  <link rel="stylesheet" href="css/style.css?v=20261018c">
   <!-- Vue 3 全局构建版（v3.4.21 · 自托管）
        原先走 unpkg.com CDN：国内网络对 unpkg 的连通性不稳定，一旦该请求长时间挂起，
        <head> 里的阻塞脚本会让整页停在白屏、后续 auth-boot.js 根本不会执行。
        改为同源托管后，启动链路不再依赖任何第三方 CDN。 -->
-  <script src="js/vue.global.prod.js?v=20261018b"></script>
+  <script src="js/vue.global.prod.js?v=20261018c"></script>
 </head>
 <body class="auth-locked">
   <!-- ===== 登录关卡：登录通过前业务脚本不会被加载 ===== -->
@@ -4580,7 +4580,7 @@
                 <div class="um-pending-main">
                   <span class="um-name">{{ c.user }}</span>
                   <span class="um-pending-meta" v-for="(val, key) in claimFields(c)" :key="key"><b>{{ key }}：</b>{{ val }}</span>
-                  <span class="um-pending-meta um-claim-noacct" v-if="!c.acct" title="该申请未附带账号信息（旧版提交或在未注册该账号的设备上提交）。账号在本机/云端时可直接开通；若各处都没有，「核对并开通」会自动创建账号并开通（随机密码在弹出面板中展示）">⚠ 旧版申请（无账号信息）</span>
+                  <span class="um-pending-meta um-claim-noacct" v-if="!c.acct" title="该申请未附带账号信息（旧版提交或在未注册该账号的设备上提交）。账号在本机/云端时可直接开通；若各处都没有，「核对并开通」不会改动任何密码，会提示对方在登录页「👑 会员服务」重新提交（新版会自动附带账号信息），或把「申请码」发给你在审核区导入后再开通">⚠ 旧版申请（无账号信息）</span>
                   <span class="um-pending-meta um-claim-hasacct" v-else title="申请自带账号信息，账号不在本机/云端时「核对并开通」将自动创建">✓ 可一键开通</span>
                 </div>
                 <div class="um-actions">
@@ -4588,12 +4588,6 @@
                     <span class="um-confirm-tip">确认拒绝？</span>
                     <button class="btn btn-sm btn-danger" @click="rejectMemberClaim(c)">确认拒绝</button>
                     <button class="btn btn-sm" @click="rejectConfirmId = ''">取消</button>
-                  </template>
-                  <template v-else-if="grantCreateId === c.id">
-                    <span class="um-confirm-tip um-create-tip">自动创建未成功，可修改密码后点「创建并开通」重试：</span>
-                    <input class="um-input um-create-pw" v-model="grantCreatePw" placeholder="新账号密码（8-64 位，含字母和数字）" autocomplete="off">
-                    <button class="btn btn-sm btn-primary" @click="confirmGrantCreate(c)" title="创建该账号（普通用户）并按支付时间开通会员，会员自动归入对应期限板块">创建并开通</button>
-                    <button class="btn btn-sm" @click="grantCreateId = ''">取消</button>
                   </template>
                   <template v-else>
                     <button class="btn btn-sm btn-primary" @click="grantMemberClaim(c)">核对并开通</button>
@@ -5076,14 +5070,14 @@
     </transition>
   </div>
 
-  <script src="js/auth.js?v=20261018b"></script>
-  <script src="js/auth-sync.js?v=20261018b"></script>
+  <script src="js/auth.js?v=20261018c"></script>
+  <script src="js/auth-sync.js?v=20261018c"></script>
   <!-- 边缘加速默认站点（batch37 治本：Cloudflare Worker 代理东财/腾讯，缓解 JSONP 限流误报）。
        若你所在地区 workers.dev 访问慢，可在「设置 → 行情加速地址」清空即恢复纯直连。 -->
   <script>window.__SNT_ACCEL__ = 'https://sichina.dpdns.org';</script>
   <!-- 扫码支付二维码渲染库（第三方 qrcodejs，本地托管避免外链失效）。renderQr 会先检测全局 QRCode 是否存在。 -->
-  <script src="assets/qrcode.min.js?v=20261018b"></script>
-  <script src="js/auth-boot.js?v=20261018b"></script>
+  <script src="assets/qrcode.min.js?v=20261018c"></script>
+  <script src="js/auth-boot.js?v=20261018c"></script>
   <!-- store / stock-api / hot-topics / app 由 auth-boot.js 在登录通过后动态装载，
        未登录时它们不会被下载，业务数据也不会进入内存 -->
 </body>

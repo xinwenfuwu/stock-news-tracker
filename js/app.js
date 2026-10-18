@@ -2648,27 +2648,6 @@ const app = createApp({
     function persistRejectedClaims() {
       try { localStorage.setItem(REJECTED_CLAIM_KEY, JSON.stringify(Array.from(rejectedClaimIds))); } catch (e) {}
     }
-    // 20261016l/m：「创建并开通」——申请无账号信息、且账号在本机/云端/申请快照里
-    // 都不存在时，「核对并开通」一键自动新建账号（预生成随机密码）并开通，密码在
-    // 弹出面板中展示供转发；仅自动创建失败时才进入行内确认态（grantCreateId），
-    // 密码可改后重试。会员自支付时间起算。
-    const grantCreateId = ref('');      // 行内确认态对应的申请 id（仅自动创建失败才出现）
-    const grantCreatePw = ref('');      // 新账号密码（自动路径预生成随机密码；确认态可改）
-    // 生成 12 位随机密码（大小写字母+数字，去掉 0/O/1/l/I 易混字符；与重置密码同口径）
-    function genClaimPassword() {
-      const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789';
-      const n = 12;
-      let pw = '';
-      try {
-        const buf = new Uint32Array(n);
-        (window.crypto && crypto.getRandomValues) ? crypto.getRandomValues(buf)
-          : buf.forEach((_, i) => { buf[i] = Math.floor(Math.random() * 4294967296); });
-        for (let i = 0; i < n; i++) pw += chars[buf[i] % chars.length];
-      } catch (e) {
-        for (let i = 0; i < n; i++) pw += chars[Math.floor(Math.random() * chars.length)];
-      }
-      return pw;
-    }
     const memberManual = reactive({ username: '', plan: '6m' });
     // 按套餐期限过滤待开通记录（管理员界面分半年/一年/两年三区展示）
     function claimsOfPlan(p) {
@@ -2817,22 +2796,12 @@ const app = createApp({
           }
         } catch (e) { /* 走下面的一键自动创建 */ }
       }
-      // 20261016m：账号在本机、云端注册表、申请信息里都不存在——申请里没有密码哈希，
-      // 无法原样创建。恢复旧版「一键开通」交互（用户反馈 20261016l 的行内确认态多了
-      // 一步）：不再要求第二次点击，自动生成随机密码直接走完
-      // 「创建账号 → 按支付时间开通 → 云端落库 → 弹密码面板」，管理员转发密码即可。
-      // 仅当自动创建失败（如用户名不符合注册规则）时，才回落行内确认态（密码可改重试）。
-      // （用户实测 yh123：同浏览器注册的账号因换了入口/清过存储而不在本机，云端也没有，
-      // 申请还是旧版无快照。）
-      if ((!r || !r.ok) && r && r.error === '用户不存在') {
-        grantCreatePw.value = genClaimPassword();
-        const autoOk = await runCreateGrant(claim);
-        if (!autoOk) {
-          grantCreateId.value = claim.id;
-          showToast('自动创建「' + claim.user + '」未成功，可在本行修改密码后点「创建并开通」重试', 'warn', 10000);
-        }
-        return;
-      }
+      // 20261018c：账号在本机、云端注册表、申请快照、待审注册里都不存在时，
+      // 绝不再自动创建「带随机密码」的账号——过去这一步会用随机密码新建账号，
+      // 把用户自己设置的密码覆盖掉，导致对方用原密码登录报错。
+      // 「核对并开通」只负责分配支付对应的使用时间，不碰用户密码。
+      // 找不到账号时直接回落下方统一的「用户不存在」引导（提示对方重新提交 / 申请码导入），
+      // 由对方在自己设备用真实密码登录——从源头保证密码不被改动。
       if (!r || !r.ok) {
         const err = (r && r.error) || '开通失败';
         showToast(err === '用户不存在'
@@ -2879,86 +2848,6 @@ const app = createApp({
       showToast(msg, prop.ok ? 'success' : 'warn', prop.ok ? 4200 : 9000);
       refreshUserList();          // 表格同步显示支付日期 / 额度 / 期分类
       await loadMemberClaims();
-    }
-    // 20261016l/m：行内确认态入口（仅自动创建失败后出现）——校验密码 → 清确认态 → 执行体。
-    async function confirmGrantCreate(claim) {
-      if (!A || !claim) return;
-      const pw = String(grantCreatePw.value || '');
-      const v = A.validatePassword(pw, pw);
-      if (!v.ok) { showToast('密码不符合要求：' + v.error, 'error'); return; }
-      grantCreateId.value = '';
-      await runCreateGrant(claim);
-    }
-    // 20261016l/m：创建并开通执行体——「核对并开通」一键自动路径与行内确认共用。
-    // 流程：创建账号（角色强制普通用户，密码取 grantCreatePw）→ 按支付时间开通 →
-    // 云端落库（有令牌 Contents API 直写；无令牌经 Worker /auth/register 代写，
-    // 会员一并写入）→ 标记申请已处理 → 弹密码面板供管理员转发 →
-    // 刷新列表（账号归入对应期限板块）。
-    // @returns {Promise<boolean>} 是否全程成功（失败时由调用方决定是否回落行内确认态）
-    async function runCreateGrant(claim) {
-      if (!A || !claim) return false;
-      const pw = String(grantCreatePw.value || '');
-      const months = claimMonths(claim);
-      const payTs = Number(claim.ts) || 0;
-      // 1) 创建账号（仅本机；角色一律普通用户，支付申请绝不带来管理员权限）
-      let cr = null;
-      try { cr = await A.createAccountForClaim(claim.user, pw); }
-      catch (e) { showToast('创建账号失败：' + String((e && e.message) || e), 'error', 9000); return false; }
-      if (!cr || !cr.ok) { showToast('创建账号失败：' + ((cr && cr.error) || '未知错误'), 'error', 9000); return false; }
-      // 2) 开通会员（有效期自该用户的支付时间起算，补录情形兜底为当天起算）
-      const r = A.grantMembership(claim.user, months, { paidAt: payTs, amount: Number(claim.amount) || 0 });
-      if (!r || !r.ok) {
-        showToast('账号已创建，但开通失败：' + ((r && r.error) || '未知错误'), 'error', 9000);
-        refreshUserList();
-        return false;
-      }
-      // 3) 云端落库：账号 + 会员一起写注册表（对方拿到密码后任意设备登录即带会员）
-      let cloudOk = false, cloudErr = '';
-      try {
-        const sr = await A.syncAccountToCloud(claim.user);
-        cloudOk = !!(sr && sr.ok);
-        cloudErr = (sr && sr.error) || '';
-      } catch (e) { cloudErr = String((e && e.message) || e); }
-      if (cloudOk) markAccountSynced(claim.user);
-      // 4) 标记该申请已处理（与「核对并开通」同口径：后端优先，失败回落令牌直写）
-      if (claim.id) { resolvedClaimIds.add(claim.id); persistResolvedClaims(); }
-      memberClaims.list = memberClaims.list.filter(c => c.id !== claim.id);
-      try {
-        let marked = false;
-        const base = payApiBase();
-        if (base) {
-          try {
-            const rr = await fetch(base + '/pay/claims/resolve', {
-              method: 'POST', headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ id: claim.id })
-            });
-            if (rr.ok) marked = true;
-          } catch (e) { /* 回落令牌直写 */ }
-        }
-        if (!marked && A.Sync && A.Sync.writeClaims) {
-          const rd = (A.Sync && A.Sync.readClaims) ? await A.Sync.readClaims() : { ok: true, claims: [] };
-          const all = (rd && rd.claims) || [];
-          const tgt = all.find(c => c.id === claim.id);
-          if (tgt) { tgt.resolved = true; tgt.resolvedAt = Date.now(); await A.Sync.writeClaims(all); }
-        }
-      } catch (e) { /* 会员已开通，仅未标记 */ }
-      // 5) 回执 + 密码面板（让管理员复制转发给对方）
-      const startText = payTs ? fmtDateNum(payTs) : fmtDateNum(Date.now());
-      let msg = '已为「' + claim.user + '」创建账号并开通 ' + months + ' 个月会员（自支付日 ' + startText + ' 起算）';
-      if (cloudOk) msg += '，已同步云端，对方用下方密码即可在任意设备登录';
-      else msg += '；但云端注册表同步失败（' + (cloudErr || '未知错误') + '），对方暂时只能在本机登录';
-      showToast(msg, cloudOk ? 'success' : 'warn', cloudOk ? 4600 : 9000);
-      showApproveCodePanel({
-        title: '账号「' + claim.user + '」已创建并开通',
-        desc: '该账号此前在本机、云端注册表和申请信息里都不存在，已按本次操作为其创建。\n\n'
-          + '请把下面密码发给「' + claim.user + '」，对方在登录页用「用户名 + 该密码」即可登录'
-          + (cloudOk ? '（任意设备均可，会员已同步云端）。' : '。') + '\n\n'
-          + '提示：对方登录后建议自行修改密码；若对方手里另有旧密码且能登录，以旧密码为准即可。',
-        code: pw
-      });
-      refreshUserList();          // 账号归入对应期限板块（24月期等）
-      await loadMemberClaims();
-      return true;
     }
     /* 20261016i：管理员「拒绝通过」——拒绝某条待审核申请。
      * 与「核对并开通」互斥：同一申请只能处理一次。拒绝后：
@@ -10837,7 +10726,7 @@ const app = createApp({
       authAdminToken, remotePending, remotePendingLoading,
       loadRemotePending, approveRemoteByAdmin, rejectRemoteByAdmin, syncAllToRegistryByAdmin,
       // batch-A：会员后台（个人码方案）
-      memberClaims, memberManual, loadMemberClaims, refreshMemberClaims, grantMemberClaim, rejectMemberClaim, rejectConfirmId, grantCreateId, grantCreatePw, confirmGrantCreate, grantMemberManual, trialUsersList, registeredNoMemberList, reviewClaims, umSearch, umSearchMatch,
+      memberClaims, memberManual, loadMemberClaims, refreshMemberClaims, grantMemberClaim, rejectMemberClaim, rejectConfirmId, grantMemberManual, trialUsersList, registeredNoMemberList, reviewClaims, umSearch, umSearchMatch,
       planAmount, planMonthsNum, planName, planMonthText, planOfUser, claimFields, trialFields, adminClassify,
       paidPlanOf, paidDateText, planCategoryText, quotaInputVal,
       authCatItems, isAccountShown, approvedZoneList, refreshApprovedZone, refreshPendingRegistrations, refreshingPending,

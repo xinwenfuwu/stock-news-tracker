@@ -1,28 +1,22 @@
 /* ============================================================
- * test-claim-create-grant.mjs — 验证「核对并开通」兜底创建链路（20261016m）
+ * test-claim-create-grant.mjs — 验证「核对并开通」只分配会员时间、绝不改动用户密码（20261018c）
  *
- * 背景（用户需求）：管理员对无账号信息的旧版支付申请点「核对并开通」，
- * 要能直接开通对应期限并把账号归类到相应板块——即使账号在本机、
- * 云端注册表、申请快照里都不存在（用户实测 yh123：¥4000/24月期申请
- * 无 acct，云端注册表也没有，点开通即报错）。
- * 20261016m：交互恢复旧版「一键完成」——账号各处都不存在时，
- * 「核对并开通」自动生成随机密码直接创建+开通+上云+弹密码面板，
- * 不再有第二次点击；仅自动创建失败才回落行内确认态（密码可改重试）。
+ * 背景（用户需求）：管理员点「核对并开通」后，账号的密码竟然被改了（20261018c 反馈）。
+ * 明确要求：核对并开通只负责分配「支付对应的使用时间」，不得改动用户自己设置的密码。
+ *   账号在本机/云端/申请快照/待审注册里能解析到 → 用原哈希开通（密码不动）；
+ *   解析不到 → 提示对方重新提交/申请码导入，绝不自动生成随机密码建号（那会覆盖原密码）。
  *
- * 场景1（核心需求完整复现，与线上实况一致）：
- *   申请无 acct、云端注册表没有 yh123、管理员本机也没有
- *   → createAccountForClaim 创建账号（随机密码）
- *   → grantMembership 按支付时间开通 24 个月
- *   → syncAccountToCloud 令牌直写云端（账号+会员）
- *   → 全新设备用该密码登录成功（门禁放行，会员有效）
- * 场景2（无令牌设备）：创建+开通后经 Worker /auth/register 代写，
- *   会员字段一并落库（对方任意设备登录即带会员）
- * 场景3（待审注册兜底）：同设备注册卡在 pending 的账号 → approveUser
- *   （沿用对方密码哈希）→ grantMembership，无需新建密码
+ * 场景1（核心需求）：已存在账号用自设密码注册 → 申请带快照 → 管理员按快照解析并开通
+ *   → 用户自设密码哈希全程不变 → 用户用原密码登录成功且带会员（门禁放行）。
+ * 场景2（管理员手动建号原语）：createAccountForClaim 仍可用（与核对并开通解耦），
+ *   建号+开通后经 Worker /auth/register 代写，会员字段一并落库。
+ * 场景3（待审注册兜底）：同设备注册卡在 pending 的账号 → approveUser（沿用对方哈希）
+ *   → grantMembership，无需新建密码。
  * 场景4（边界与防护）：非管理员拒绝 / 已存在用户名拒绝 / 弱密码拒绝 /
- *   同步不存在用户拒绝 / 创建账号角色强制普通用户
- * 场景5（静态断言）：auth.js / app.js / index.html / auth-boot.js /
- *   auth-sync.js 接线（含 20261016m 一键自动路径与失败回落）
+ *   同步不存在用户拒绝 / 创建账号角色强制普通用户。
+ * 场景5（静态断言）：auth.js / app.js / index.html / auth-boot.js / auth-sync.js 接线，
+ *   重点断言「核对并开通」不再含 genClaimPassword / runCreateGrant / grantCreatePw /
+ *   confirmGrantCreate 等密码改动路径，index.html 无「创建并开通」密码输入框。
  * ============================================================ */
 import fs from 'node:fs';
 import path from 'node:path';
@@ -162,59 +156,49 @@ const tick = (ms = 80) => new Promise(r => setTimeout(r, ms));
 const MONTH_MS = 30 * 24 * 60 * 60 * 1000;
 
 (async () => {
-  /* ========== 场景1：核心需求——无快照申请 + 账号各处都不存在 → 创建并开通 ========== */
-  console.log('\n[场景1] 旧版申请（无 acct）且账号不存在 → 创建账号 → 按支付时间开通 → 云端落库 → 新设备登录');
+  /* ========== 场景1：核心需求——核对并开通只分配时间，绝不改动用户自设密码 ========== */
+  console.log('\n[场景1] 已存在账号（用户自设密码）→ 云端恢复并开通 → 原密码照常登录且带会员');
   {
     workerCalls.length = 0;
-    setRegistryAccounts({});                       // 云端注册表为空（与线上实况一致：yh123 不在册）
+    setRegistryAccounts({});                       // 云端注册表先清空
     const aStore = makeStorage();
     const A = await loadAuthForDevice(aStore, { withToken: true, withWorker: true });
     await A.Auth.setup('admin', 'Admin@2026', 'Admin@2026');
 
-    // 模拟线上那条申请：yh123 / 2y / ¥4000 / 无 acct（旧版提交）
-    const claim = { id: 'clm_yh123', user: 'yh123', plan: '2y', amount: 4000, ts: Date.now() - 3600000 };
-    const months = claim.plan === '2y' ? 24 : 12;
-    const payTs = Number(claim.ts) || 0;
+    // 模拟「普通用户在自己设备注册」（无令牌）：账号经 Worker 写入云端注册表（与线上一致）
+    const uStore = makeStorage();
+    const U = await loadAuthForDevice(uStore, { withToken: false, withWorker: true });
+    const reg = await U.Auth.register('yh123', 'MyOwn@2026');
+    check('用户在自己设备注册成功（自设密码）', reg.ok === true, JSON.stringify(reg.error || 'ok'));
+    const snapR = await U.Auth.accountSnapshot('yh123');
+    const payTs = Date.now() - 3600000;
+    const claim = { id: 'clm_yh123', user: 'yh123', plan: '2y', amount: 4000, ts: payTs, acct: snapR.snapshot };
 
-    // 复现故障：链前三步都找不到账号
-    const g0 = A.Auth.grantMembership(claim.user, months, { paidAt: payTs, amount: claim.amount });
+    // 管理员设备：直接开通报「用户不存在」（管理员本机没有该账号，复现故障）
+    const g0 = A.Auth.grantMembership('yh123', 24, { paidAt: payTs, amount: 4000 });
     check('直接开通报「用户不存在」（复现故障）', g0 && g0.ok === false && g0.error === '用户不存在', JSON.stringify(g0));
+    // 云端恢复：把用户注册时写入的账号（含其自设密码哈希）合并回管理员本机
     const rec = await A.Auth.recoverFromRegistry();
-    check('云端注册表也恢复不到（recovered=0）', rec && rec.ok === true && rec.recovered === 0, JSON.stringify(rec));
+    check('云端恢复成功（账号注册时已上云，含用户自设密码哈希）', rec && rec.ok === true && rec.recovered >= 1, JSON.stringify(rec));
 
-    // 一键创建并开通（20261016m 自动路径，与 grantMemberClaim→runCreateGrant 同口径）：
-    // 创建账号（随机密码）→ 开通 → 云端落库
-    const cr = await A.Auth.createAccountForClaim(claim.user, 'Yh@123456');
-    check('createAccountForClaim 创建成功', cr && cr.ok === true, JSON.stringify(cr && cr.error));
-    const gr = A.Auth.grantMembership(claim.user, months, { paidAt: payTs, amount: claim.amount });
+    // 开通会员（仅分配使用时间，不碰密码）
+    const gr = A.Auth.grantMembership('yh123', 24, { paidAt: payTs, amount: 4000 });
     check('开通 24 个月成功', gr && gr.ok === true, JSON.stringify(gr && gr.error));
-    const sr = await A.Auth.syncAccountToCloud(claim.user);
-    check('云端落库成功（令牌直写）', sr && sr.ok === true, JSON.stringify(sr && sr.error));
+    check('会员自支付时间起算且未过期', gr && gr.until > Date.now(), 'until=' + (gr && gr.until));
 
-    // 本机账号状态：会员自支付时间起算、归入 24 月期口径
-    const detail = A.Auth.listUsersDetail().find(u => u.username === 'yh123');
-    check('账号出现在本机列表（审核通过区可见）', !!detail, 'not found');
-    check('会员到期 = 支付时间 + 24 个月', !!detail && Math.abs(Number(detail.payMembershipUntil) - (payTs + 24 * MONTH_MS)) < 60000, 'until=' + (detail && detail.payMembershipUntil));
-    check('额度 24 个月', !!detail && detail.quotaMonths === 24, 'q=' + (detail && detail.quotaMonths));
-    check('paidPlan=2y / 实付 4000 / 支付日期落库', !!detail && detail.paidPlan === '2y' && Number(detail.paidAmount) === 4000 && Number(detail.paidAt) === payTs, JSON.stringify({ p: detail && detail.paidPlan, a: detail && detail.paidAmount, t: detail && detail.paidAt }));
-    check('角色为普通用户（防提权）', !!detail && detail.role === 'user', 'role=' + (detail && detail.role));
+    // 关键断言：用户自设密码的哈希没有被任何「核对并开通」步骤改动
+    const rawUsers = JSON.parse(aStore.getItem('snt-auth-users-v1') || '[]');
+    const yh = rawUsers.find(u => u.username === 'yh123');
+    check('核对并开通后用户自设密码哈希保持不变', !!yh && yh.hash === snapR.snapshot.hash, 'hash changed!');
+    check('云端注册表哈希 = 用户自设那份（任意设备可原密码登录）',
+      !!regOf().accounts['yh123'] && regOf().accounts['yh123'].hash === snapR.snapshot.hash, 'cloud hash mismatch');
 
-    // 云端注册表：账号 + 会员一起落库
-    const cloud = regOf().accounts['yh123'];
-    check('云端注册表有 yh123（active）', !!cloud && cloud.status === 'active', JSON.stringify(cloud || null));
-    check('云端会员字段齐全（until/quota/plan/amount）', !!cloud && Number(cloud.payMembershipUntil) > Date.now() && cloud.quotaMonths === 24 && cloud.paidPlan === '2y' && cloud.paidAmount === 4000, JSON.stringify(cloud));
-    check('云端哈希即新建密码那份（对方可登录）', !!cloud && /^pbkdf2\$/.test(cloud.hash), 'hash=' + (cloud && cloud.hash));
-
-    // 全新设备：用「用户名 + 新密码」直接登录（门禁放行 = 会员有效）
+    // 用户在自己设备（或全新设备）用「原密码」直接登录成功 + 带会员（门禁放行）
     const cStore = makeStorage();
     const C = await loadAuthForDevice(cStore, { withToken: false, withWorker: true });
-    const lg = await C.Auth.login('yh123', 'Yh@123456');
-    check('全新设备用新密码登录成功', lg.ok === true, JSON.stringify(lg.error || 'ok'));
-    check('登录后即带会员（门禁未拦）', lg.ok === true && lg.user && lg.user.role === 'user', 'role=' + (lg.user && lg.user.role));
-    // 新设备本机也落下会员到期时间（读原始存储：listUsersDetail 需管理员视角）
-    const cUsers = JSON.parse(cStore.getItem('snt-auth-users-v1') || '[]');
-    const cYh = cUsers.find(u => u.username === 'yh123');
-    check('新设备本机也落下会员到期时间', !!cYh && Number(cYh.payMembershipUntil) > Date.now(), 'until=' + (cYh && cYh.payMembershipUntil));
+    const lg = await C.Auth.login('yh123', 'MyOwn@2026');
+    check('用户用原密码登录成功（密码未被改动）', lg.ok === true, JSON.stringify(lg.error || 'ok'));
+    check('登录后即带会员（门禁未拦）', lg.ok === true && lg.user && lg.user.role === 'user', '');
   }
 
   /* ========== 场景2：无令牌设备——经 Worker 代写，会员一并落库 ========== */
@@ -299,6 +283,36 @@ const MONTH_MS = 30 * 24 * 60 * 60 * 1000;
     check('兜底创建的账号状态 active', !!d && d.status !== 'pending', 'status=' + (d && d.status));
   }
 
+  /* ========== 场景6：需求2——已支付用户会员未到期前不停止使用，到期（且试用已过）才停 ========== */
+  console.log('\n[场景6] 会员未到期前放行（不停止已支付用户使用）；到期后才拒绝');
+  {
+    setRegistryAccounts({});
+    // 单设备（管理员、无令牌无 Worker）→ 门禁复核只认本机，避免云端会员源把过期值兜底回未来
+    const uStore = makeStorage();
+    const U = await loadAuthForDevice(uStore, { withToken: false, withWorker: false });
+    await U.Auth.setup('admin', 'Admin@2026', 'Admin@2026');
+    const reg = await U.Auth.register('paidguy', 'Paid@2026');
+    check('前置：注册 paidguy 成功', reg.ok === true, JSON.stringify(reg.error || 'ok'));
+
+    // 管理员为 paidguy 开通 6 个月（未到期）
+    const gr = U.Auth.grantMembership('paidguy', 6, { paidAt: Date.now() });
+    check('开通 6 个月（会员未到期）', gr && gr.ok === true && gr.until > Date.now(), 'until=' + (gr && gr.until));
+
+    const lg = await U.Auth.login('paidguy', 'Paid@2026');
+    check('前置：paidguy 登录成功（会话建立）', lg.ok === true, JSON.stringify(lg.error || 'ok'));
+    const rc = await U.Auth.recheckAccess();
+    check('需求2：会员未到期 → recheckAccess 放行（不停止使用）', rc && rc.ok === true, JSON.stringify(rc));
+
+    // 把会员到期时间改成过去、并清空试用，模拟「会员已过期且试用也已过」→ 门禁应立即拒绝
+    const users = JSON.parse(uStore.getItem('snt-auth-users-v1') || '[]');
+    const pu = users.find(u => u.username === 'paidguy');
+    pu.payMembershipUntil = Date.now() - 86400000;
+    pu.trialUntil = 0; pu.trialDays = 0;
+    uStore.setItem('snt-auth-users-v1', JSON.stringify(users));
+    const rc2 = await U.Auth.recheckAccess();
+    check('需求2：会员已过期且试用已过 → recheckAccess 拒绝（到期才停止）', rc2 && rc2.ok === false, JSON.stringify(rc2));
+  }
+
   /* ========== 场景5：静态断言（接线） ========== */
   console.log('\n[场景5] 静态断言：auth/app/index/boot/sync 接线');
   {
@@ -313,17 +327,16 @@ const MONTH_MS = 30 * 24 * 60 * 60 * 1000;
     check('auth.js createAccountForClaim 仅管理员', /createAccountForClaim: function[\s\S]*?仅管理员可执行该操作/.test(auth));
     check('auth.js createAccountForClaim 角色强制 user', /createAccountForClaim: function[\s\S]*?role: ROLE\.USER/.test(auth));
     check('app.js grantMemberClaim 含待审注册兜底（pendingUsers→approveUser）', /A\.pendingUsers\(\)[\s\S]*?A\.approveUser\(claim\.user, 'user'\)/.test(app));
-    check('app.js 一键路径：预生成随机密码并自动执行 runCreateGrant（无第二次点击）', /grantCreatePw\.value = genClaimPassword\(\);[\s\S]*?await runCreateGrant\(claim\)/.test(app));
-    check('app.js 新增 runCreateGrant 执行体（一键与行内确认共用）', /async function runCreateGrant/.test(app));
-    check('app.js 仅自动创建失败才回落行内确认态（autoOk 守卫）', /const autoOk = await runCreateGrant\(claim\);[\s\S]*?grantCreateId\.value = claim\.id/.test(app));
-    check('app.js 新增 confirmGrantCreate', /async function confirmGrantCreate/.test(app));
-    check('app.js confirmGrantCreate 校验密码后委托 runCreateGrant', /async function confirmGrantCreate[\s\S]*?await runCreateGrant\(claim\)/.test(app));
-    check('app.js runCreateGrant 创建→开通→落库 顺序', /createAccountForClaim\(claim\.user, pw\)[\s\S]*?grantMembership\(claim\.user, months[\s\S]*?syncAccountToCloud\(claim\.user\)/.test(app));
-    check('app.js runCreateGrant 弹密码面板（showApproveCodePanel）', /async function runCreateGrant[\s\S]*?showApproveCodePanel/.test(app));
-    check('app.js runCreateGrant 全程成功返回 true', /await loadMemberClaims\(\);\s*\n\s*return true;/.test(app));
-    check('app.js 暴露 grantCreateId/grantCreatePw/confirmGrantCreate', /grantCreateId, grantCreatePw, confirmGrantCreate/.test(app));
-    check('index.html 行内「创建并开通」确认区', html.includes('grantCreateId === c.id') && html.includes('confirmGrantCreate(c)'));
-    check('index.html 创建确认含密码输入框', html.includes('um-create-pw') && html.includes('v-model="grantCreatePw"'));
+    check('app.js 核对并开通解析账号三兜底：recoverFromRegistry + createAccountFromSnapshot + approveUser',
+      /recoverFromRegistry[\s\S]*?createAccountFromSnapshot[\s\S]*?approveUser\(claim\.user, 'user'\)/.test(app));
+    check('app.js 核对并开通绝不改动用户密码：已移除 genClaimPassword/runCreateGrant/grantCreatePw/confirmGrantCreate/grantCreateId',
+      !/genClaimPassword/.test(app) && !/runCreateGrant/.test(app) && !/grantCreatePw/.test(app) && !/confirmGrantCreate/.test(app) && !/grantCreateId/.test(app));
+    check('app.js 账号解析不到时回落「用户不存在」引导（提示重新提交/申请码，不自动建号覆盖密码）',
+      /旧版提交[\s\S]{0,200}申请码/.test(app) || /请让对方在登录页/.test(app));
+    check('index.html 审核区不再有「创建并开通」密码输入框（已移除密码改动路径）',
+      !html.includes('grantCreateId === c.id') && !html.includes('um-create-pw') && !html.includes('confirmGrantCreate(c)'));
+    check('auth.js 仍保留 createAccountForClaim 原语（管理员手动建号独立能力，与核对并开通解耦）',
+      /createAccountForClaim: function/.test(auth));
     check('auth-boot.js 会员面板对本机无账号给出提醒', /noLocalAcct/.test(boot) && /本机没有账号/.test(boot));
     check('auth-sync.js 代写载荷含会员字段', /payMembershipUntil: Number\(acct\.payMembershipUntil\)/.test(sync) && /quotaMonths: Number\(acct\.quotaMonths\)/.test(sync));
   }
