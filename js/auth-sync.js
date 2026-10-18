@@ -228,22 +228,80 @@
   }
 
   /**
+   * 20261018g：写入通道候选地址（按优先级）。
+   * 主地址取自页面注入（默认 sichina.dpdns.org）。若该域名 DNS 未委派到 Cloudflare
+   * （表现为 A 记录停在 192.0.2.1 占位、Worker 路由永远不可达），写入会静默失败，
+   * 导致「注册成功却只落本机 → 换设备/换入口登录报密码不正确、管理员在后端看不到」。
+   * 因此追加 Worker 自身的 *.workers.dev 地址作为兜底通道——它始终可达
+   * （仅国内部分网络对 *.workers.dev 有拦截，故仍放在次选）。
+   */
+  function workerDevUrl() {
+    // 账号所在 Cloudflare 账号的 workers.dev 子域（deploy-stock-edge.js 部署脚本名 stock-edge）
+    return 'https://stock-edge.hui-zhou.workers.dev';
+  }
+  function memberApiBases() {
+    var out = [];
+    var p = memberApiBase();
+    if (p) out.push(p);
+    var fb = workerDevUrl();
+    if (fb && out.indexOf(fb) < 0) out.push(fb);
+    return out;
+  }
+
+  /**
+   * 20261018g：依次尝试多个写入通道，直到拿到业务成功的响应或确定失败。
+   * - 网络异常 / 超时（视为该通道不可用）→ 试下一个候选地址；
+   * - 4xx（403 密钥错 / 409 抢名 / 400 参数错等确定性失败）→ 立即返回，不再试下一个（避免重复写）；
+   * - 2xx 且业务 ok → 成功。
+   * 每个通道带 6s 超时，避免某个死域名长时间挂起拖垮注册/开通流程。
+   */
+  function fetchFirstAvailable(path, bodyObj) {
+    var bases = memberApiBases();
+    var lastErr = { ok: false, error: '未配置后端写入地址' };
+    function go(i) {
+      if (i >= bases.length) return Promise.resolve(lastErr);
+      var base = bases[i];
+      var sig = (typeof AbortSignal !== 'undefined' && AbortSignal.timeout) ? AbortSignal.timeout(6000) : null;
+      var opt = { method: 'POST', headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' }, cache: 'no-store', body: JSON.stringify(bodyObj) };
+      if (sig) opt.signal = sig;
+      return Promise.resolve(fetch(base + path, opt)).then(function (r) {
+        return r.json().catch(function () { return {}; }).then(function (j) {
+          if (r.ok && j && j.ok) return { ok: true, status: r.status, body: j };
+          if (r.status >= 400 && r.status < 500) return { ok: false, status: r.status, body: j, stop: true };
+          lastErr = { ok: false, status: r.status, error: (j && j.error) ? String(j.error) : ('HTTP ' + r.status) };
+          return go(i + 1);
+        });
+      }).catch(function (e) {
+        lastErr = { ok: false, error: String((e && e.message) || e) };
+        return go(i + 1);
+      });
+    }
+    return go(0);
+  }
+
+  /**
    * 查会员后端（Cloudflare Worker KV）里某用户的会员到期时间。
    * 商户扫码支付成功回调会写这个 KV；管理员「核对并开通」也会尽量同步到这里。
    * 任何失败都返回 { ok:false, until:0 }，绝不抛异常（门禁兜底不能把用户挡在门外）。
    */
   function queryMembershipRemote(username) {
-    var base = memberApiBase();
+    var bases = memberApiBases();
     var uname = String(username == null ? '' : username).trim();
-    if (!base || !uname) return Promise.resolve({ ok: false, until: 0 });
-    return fetch(base + '/pay/membership?user=' + encodeURIComponent(uname), {
-      headers: { 'Accept': 'application/json' }, cache: 'no-store'
-    }).then(function (r) {
-      if (!r.ok) return { ok: false, until: 0 };
-      return r.json().catch(function () { return {}; });
-    }).then(function (j) {
-      return { ok: true, until: Number(j && j.until) || 0 };
-    }).catch(function () { return { ok: false, until: 0 }; });
+    if (!uname) return Promise.resolve({ ok: false, until: 0 });
+    function go(i) {
+      if (i >= bases.length) return Promise.resolve({ ok: false, until: 0 });
+      var base = bases[i];
+      var sig = (typeof AbortSignal !== 'undefined' && AbortSignal.timeout) ? AbortSignal.timeout(6000) : null;
+      var opt = { headers: { 'Accept': 'application/json' }, cache: 'no-store' };
+      if (sig) opt.signal = sig;
+      return Promise.resolve(fetch(base + '/pay/membership?user=' + encodeURIComponent(uname), opt)).then(function (r) {
+        if (!r.ok) { return go(i + 1); }
+        return r.json().catch(function () { return {}; });
+      }).then(function (j) {
+        return { ok: true, until: Number(j && j.until) || 0 };
+      }).catch(function () { return go(i + 1); });
+    }
+    return go(0);
   }
   /** 读取待开通记录（公开，免鉴权）。始终带时间戳参数，保证管理员点「刷新」拿到的是最新申请。 */
   function readClaims() {
@@ -393,14 +451,13 @@
    * 任何失败都返回 { ok:false }，调用方离线兜底，不阻塞注册流程。
    */
   function registerRemoteViaWorker(acct) {
-    var base = memberApiBase();
     var uname = String(acct && acct.username || '').trim();
     // 20261018e：占位会员凭证（管理员为旧版无账号申请登记会籍）hash 为空、但带 placeholder 标记，
     // 允许经本端点写入云端注册表（普通账号仍要求 pbkdf2$ 哈希）。
     var isPlaceholder = !!(acct && acct.placeholder);
-    if (!base || !uname || !acct || typeof acct.hash !== 'string'
+    if (!uname || !acct || typeof acct.hash !== 'string'
         || (acct.hash.indexOf('pbkdf2$') !== 0 && !isPlaceholder)) {
-      return Promise.resolve({ ok: false, error: '参数不完整' });
+      return Promise.resolve({ ok: false, error: '参数不完整（需合法哈希）' });
     }
     var payload = {
       username: uname,
@@ -421,16 +478,11 @@
       paidClaimIds: claimIdList(acct.paidClaimIds),
       placeholder: isPlaceholder
     };
-    return fetch(base + '/auth/register', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
-      cache: 'no-store',
-      body: JSON.stringify(payload)
-    }).then(function (r) {
-      return r.json().catch(function () { return {}; }).then(function (j) {
-        return { ok: r.ok && !!(j && j.ok), status: r.status, error: (j && j.error) ? String(j.error) : '' };
-      });
-    }).catch(function (e) { return { ok: false, error: String((e && e.message) || e) }; });
+    // 20261018g：经多写入通道兜底（sichina 主 / stock-edge *.workers.dev 兜底），
+    // 避免主域名 DNS 未委派时注册写入静默失败。
+    return fetchFirstAvailable('/auth/register', payload).then(function (res) {
+      return { ok: res.ok, status: res.status, error: (res.body && res.body.error) ? String(res.body.error) : (res.ok ? '' : '云端写入失败') };
+    });
   }
 
   /**
@@ -440,9 +492,8 @@
    * 密钥不符或 Worker 未配置该键时返回非 ok，调用方回落到「需配置 GitHub 令牌」的提示。
    */
   function adminResetRemoteViaWorker(acct, key) {
-    var base = memberApiBase();
     var uname = String(acct && acct.username || '').trim();
-    if (!base || !uname || !acct || typeof acct.hash !== 'string'
+    if (!uname || !acct || typeof acct.hash !== 'string'
         || acct.hash.indexOf('pbkdf2$') !== 0 || !key) {
       return Promise.resolve({ ok: false, error: '参数不完整（需 Worker 地址、合法哈希与重置密钥）' });
     }
@@ -451,16 +502,10 @@
       hash: acct.hash,
       resetKey: String(key)
     };
-    return fetch(base + '/auth/admin-reset', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
-      cache: 'no-store',
-      body: JSON.stringify(payload)
-    }).then(function (r) {
-      return r.json().catch(function () { return {}; }).then(function (j) {
-        return { ok: r.ok && !!(j && j.ok), status: r.status, error: (j && j.error) ? String(j.error) : '' };
-      });
-    }).catch(function (e) { return { ok: false, error: String((e && e.message) || e) }; });
+    // 20261018g：多写入通道兜底。
+    return fetchFirstAvailable('/auth/admin-reset', payload).then(function (res) {
+      return { ok: res.ok, status: res.status, error: (res.body && res.body.error) ? String(res.body.error) : (res.ok ? '' : '云端写入失败') };
+    });
   }
 
   /**
@@ -469,20 +514,13 @@
    * 权限与 adminReset 同口径：resetKey === Worker 环境变量 ADMIN_RESET_KEY。
    */
   function adminDeleteRemoteViaWorker(username, key) {
-    var base = memberApiBase();
     var uname = String(username == null ? '' : username).trim();
-    if (!base || !uname) return Promise.resolve({ ok: false, error: '参数不完整（需 Worker 地址与用户名）' });
+    if (!uname) return Promise.resolve({ ok: false, error: '参数不完整（需 Worker 地址与用户名）' });
     if (!key) return Promise.resolve({ ok: false, error: '缺少管理员删除密钥' });
-    return fetch(base + '/auth/admin-delete', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
-      cache: 'no-store',
-      body: JSON.stringify({ username: uname, resetKey: String(key) })
-    }).then(function (r) {
-      return r.json().catch(function () { return {}; }).then(function (j) {
-        return { ok: r.ok && !!(j && j.ok), status: r.status, deleted: !!(j && j.deleted), error: (j && j.error) ? String(j.error) : '' };
-      });
-    }).catch(function (e) { return { ok: false, error: String((e && e.message) || e) }; });
+    // 20261018g：多写入通道兜底。
+    return fetchFirstAvailable('/auth/admin-delete', { username: uname, resetKey: String(key) }).then(function (res) {
+      return { ok: res.ok, status: res.status, deleted: !!(res.body && res.body.deleted), error: (res.body && res.body.error) ? String(res.body.error) : (res.ok ? '' : '云端删除失败') };
+    });
   }
 
   global.Auth = global.Auth || {};

@@ -1178,13 +1178,21 @@
         // 对方设备登录时经 loginRemote 直接放行。
         // 20261016k：写入走 _syncAccountToCloud——有令牌直写、无令牌经 Worker 代写；
         // 失败（离线等）不影响注册结果，仅意味着跨设备暂不可见（下次登录会补写）。
+        // 20261018g：云端写入改为「等待结果并上报」，不再静默吞错。
+        // 写入失败（Worker 不可达 / 主域名 DNS 未委派）时账号仍落本机（可本地登录），
+        // 但必须把 cloudSync 状态带回 UI，提示用户「本机可用、其他设备需稍后同步」，
+        // 杜绝「注册成功却换设备登录报密码不正确」的静默陷阱。
+        var cloudSync = { ok: false, skip: true };
         try {
-          self._syncAccountToCloud(u).catch(function () { /* 离线兜底，不影响注册结果 */ });
-        } catch (e) { /* ignore */ }
-        return {
-          ok: true, user: publicUser(u), autoTrial: true,
-          trialUntil: u.trialUntil, trialDays: 1
-        };
+          cloudSync = self._syncAccountToCloud(u);
+        } catch (e) { cloudSync = { ok: false, error: String((e && e.message) || e) }; }
+        return Promise.resolve(cloudSync).then(function (cs) {
+          return {
+            ok: true, user: publicUser(u), autoTrial: true,
+            trialUntil: u.trialUntil, trialDays: 1,
+            cloudSync: cs || { ok: false }
+          };
+        });
       });
     },
 

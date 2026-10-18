@@ -27,7 +27,7 @@
   'use strict';
 
   // 与 index.html 中静态资源版本号保持一致，避免升级后命中旧缓存
-  var ASSET_V = '20261018f';
+  var ASSET_V = '20261018g';
 
   // 管理员点开「注册申请导入链接」后，申请码暂存在这里，等业务层（app.js）就绪后取走
   var IMPORT_KEY = 'snt-pending-import-v1';
@@ -930,7 +930,16 @@
             var lu = $('#login-username');
             if (lu) lu.value = (r.user && r.user.username) || '';
             showForm('login');
-            showMsg('注册成功！已自动为你开通 1 天免费试用，现在就能用注册密码登录使用。', 'ok');
+            var okMsg = '注册成功！已自动为你开通 1 天免费试用，现在就能用注册密码登录使用。';
+            // 20261018g：云端写入失败（主域名 DNS 未委派 / Worker 不可达）时，账号只落本机，
+            // 必须明确告知用户：当前设备可登录，但换设备/管理员端需稍后补同步，避免「以为注册成功却登不上」。
+            if (r.cloudSync && !r.cloudSync.ok && !r.cloudSync.skip) {
+              okMsg += '（注意：账号已存在本机，但同步到云端失败——当前设备可直接登录；'
+                + '如需在其他设备登录、或让管理员在「用户管理」看到此账号，请稍后在本机登录一次以自动补同步，或检查网络后重试。）';
+              showMsg(okMsg, 'warn');
+            } else {
+              showMsg(okMsg, 'ok');
+            }
             return;
           }
           var code = r.requestCode || '';
