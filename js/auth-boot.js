@@ -27,7 +27,7 @@
   'use strict';
 
   // 与 index.html 中静态资源版本号保持一致，避免升级后命中旧缓存
-  var ASSET_V = '20261018a';
+  var ASSET_V = '20261018b';
 
   // 管理员点开「注册申请导入链接」后，申请码暂存在这里，等业务层（app.js）就绪后取走
   var IMPORT_KEY = 'snt-pending-import-v1';
@@ -120,6 +120,10 @@
     { key: '1y', label: '12 个月会员', amount: 2000, months: 12 },
     { key: '2y', label: '24 个月会员', amount: 4000, months: 24 }
   ];
+  // 会员收款码：管理员提供的静态微信收款码（与站内「会员服务」弹窗一致），打开即见，无需后端下单。
+  // 后端商户扫码（/pay/create）在未配置微信/支付宝商户号时返回 503，故此路径仅作为可选增强，
+  // 默认以静态收款码保证「点击会员服务即出二维码」的体验。
+  var RENEW_WX_QR = 'assets/wechat-pay-qr.jpg';
   var renewPlan = '6m';
 
   function renewMsg(text, type) {
@@ -151,7 +155,10 @@
       b.addEventListener('click', function () {
         renewPlan = p.key;
         renderRenewPlans();
-        renewCreateOrder();
+        // 静态微信收款码打开即见，选套餐仅用于标注金额与提示，不再依赖后端下单（避免未配置商户时 503 无码）
+        if (elRenewQr) elRenewQr.hidden = false;
+        if (elRenewWx && !elRenewWx.getAttribute('src')) elRenewWx.src = RENEW_WX_QR;
+        renewMsg('请扫码支付「' + p.label + '（¥' + p.amount + '）」，支付成功后填写金额并点「我已支付」', 'info');
       });
       elRenewPlans.appendChild(b);
     });
@@ -200,7 +207,8 @@
       return Promise.all([renewRenderQr(j.wxQr || ''), renewRenderQr(j.aliQr || '')]).then(function (arr) {
         if (elRenewWx) elRenewWx.src = arr[0] || (j.wxQr || '');
         if (elRenewAli) elRenewAli.src = arr[1] || (j.aliQr || '');
-        if (elRenewQr) elRenewQr.hidden = !(arr[0] || arr[1]);
+        // 仅在动态下单成功（拿到真实二维码）时才确保容器可见；失败绝不隐藏静态收款码
+        if (elRenewQr && (arr[0] || arr[1])) elRenewQr.hidden = false;
         renewMsg('请扫码支付「' + plan.label + '（¥' + plan.amount + '）」，支付成功后填写金额并点「我已支付」', 'info');
       });
     }).catch(function (e) {
@@ -290,6 +298,10 @@
     var submitBtn = document.getElementById('auth-renew-submit');
     if (submitBtn) submitBtn.addEventListener('click', renewSubmitClaim);
     renderRenewPlans();
+    // 静态微信收款码：面板绑定即就绪，打开会员服务即见，无需等后端下单
+    if (elRenewWx) elRenewWx.src = RENEW_WX_QR;
+    if (elRenewQr) elRenewQr.hidden = false;
+    renewMsg('请选择套餐并扫码支付，支付成功后填写金额并点「我已支付」', 'info');
   }
 
   function setBusy(text) {

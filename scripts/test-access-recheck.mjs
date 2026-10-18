@@ -225,6 +225,10 @@ const DAY = 24 * 60 * 60 * 1000;
     // 20261016f：登录页「会员服务（开通/续费）」自助通道（过期用户被拦在登录外时的重新支付入口）
     check('登录页有会员服务入口按钮', /id="auth-to-renew"/.test(html) && /id="auth-renew"/.test(html));
     check('auth-boot 实现了续费面板逻辑', /function renewSubmitClaim/.test(boot) && /function renewCreateOrder/.test(boot) && /function bindRenewPanel/.test(boot));
+    // 20261018b 回归：登录页「会员服务」必须直接显示静态收款码，不依赖未配置的商户接口（否则 503 无码）
+    check('登录页续费收款码为静态微信码（不依赖后端下单）', /id="auth-renew-wx" src="assets\/wechat-pay-qr\.jpg"/.test(html));
+    check('登录页续费二维码容器默认可见（非 hidden）', /id="auth-renew-qr"[^>]*>/.test(html) && !/id="auth-renew-qr"[^>]*\shidden/.test(html));
+    check('auth-boot 定义了静态收款码常量并接线', /var RENEW_WX_QR = 'assets\/wechat-pay-qr\.jpg';/.test(boot) && /if \(elRenewWx\) elRenewWx\.src = RENEW_WX_QR;/.test(boot) && /if \(elRenewQr\) elRenewQr\.hidden = false;/.test(boot));
     check('bind() 里接线会员面板', /function bind\(\) \{\s*bindRenewPanel\(\);/.test(boot));
     check('门禁被拦时给出去会员服务的指引', /auth-guide-renew/.test(boot) && /试用已结束\|暂无有效\|无法使用\|已被停用/.test(boot));
     check('续费申请字段与主界面 submitPaymentClaim 同口径', /id: 'clm_' \+ startTs/.test(boot) && /user: uname/.test(boot) && /period: plan\.label/.test(boot));
