@@ -79,11 +79,12 @@
       "user": "huyun1",
       "plan": "1y",
       "ts": 1792326099377,
-      "resolved": false,
+      "resolved": true,
       "amount": 2000,
       "startTs": 1792326099377,
       "endTs": 1823430099377,
-      "period": "12 个月会员（¥2000）"
+      "period": "12 个月会员（¥2000）",
+      "resolvedAt": 1792338593789
     }
   ]
 }
