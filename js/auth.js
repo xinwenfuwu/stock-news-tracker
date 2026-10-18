@@ -859,7 +859,13 @@
       trialLeftMs: tr.leftMs,
       trialLeftText: trialLeftText(tr.leftMs),
       trialLabel: tr.label,
-      trialGrantedBy: u.trialGrantedBy || ''
+      trialGrantedBy: u.trialGrantedBy || '',
+      // 20261018：付费会员字段对登录用户可见——界面据此展示「会员有效期至 / 已开通套餐」，
+      // 也便于端到端校验「管理员开通→云端→用户端登录带会员」的数据反馈链路是否真正贯通。
+      payMembershipUntil: Number(u.payMembershipUntil) || 0,
+      paidAt: Number(u.paidAt) || 0,
+      paidPlan: u.paidPlan || '',
+      paidAmount: Number(u.paidAmount) || 0
     };
   }
 

@@ -2735,9 +2735,13 @@ const app = createApp({
      */
     async function propagateMembershipGrant(username) {
       if (!A) return { ok: false, error: '鉴权模块未就绪' };
-      if (typeof A.syncUserToRegistry !== 'function') return { ok: false, error: '当前版本不支持云端同步' };
+      // 20261018：必须用 syncAccountToCloud（直写→Worker 代写双路径），不能用
+      // syncUserToRegistry（仅管理员令牌直写、无令牌时 skip）。否则管理员设备若没配
+      // GitHub 令牌，会员只写在本机、云端注册表始终不更新，用户在自己设备登录时
+      // loginRemote 取不到账号 → 回落本机 → 报「用户名或密码不正确」（本次故障根因）。
+      if (typeof A.syncAccountToCloud !== 'function') return { ok: false, error: '当前版本不支持云端同步' };
       try {
-        const r = await A.syncUserToRegistry(username);
+        const r = await A.syncAccountToCloud(username);
         if (r && r.ok) {
           // 20261016j：会员已写云端，刷新列表并更新快照，该行不再显示「未保存」
           refreshUserList();

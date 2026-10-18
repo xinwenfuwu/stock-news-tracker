@@ -58,17 +58,22 @@ function mockAuthRegister(body) {
   const exist = reg.accounts[username];
   const now = Date.now();
   if (exist) {
+    const sameHash = exist.hash === hash;
     const paid = (Number(exist.payMembershipUntil) || 0) > now || (Number(exist.quotaMonths) || 0) > 0;
-    if (exist.role === 'admin' || paid || (exist.status || 'pending') === 'active') {
+    // 与 cloudflare-worker-prod/worker.js authRegister 一致：同哈希（本人/管理员同步）允许覆盖更新；
+    // 异哈希 + 管理员/付费/已激活 → 409 拒绝抢名。否则「管理员开通」拿不到 200，云端的会员永远写不上。
+    if (!sameHash && (exist.role === 'admin' || paid || (exist.status || 'pending') === 'active')) {
       return { status: 409, body: { ok: false, error: '该用户名已被使用，请更换一个' } };
     }
   }
   const trialUntil = Number(body.trialUntil) || 0;
+  // 忠实复制会员字段（与 cloudflare-worker-prod/worker.js authRegister 一致），否则测不出「开通传播」
   reg.accounts[username] = {
     hash, role: 'user', status: 'active', disabled: false,
     trialUntil, trialDays: Number(body.trialDays) || (trialUntil ? 1 : 0),
-    quotaMonths: 0, disableDate: '', registerDate: typeof body.registerDate === 'string' ? body.registerDate : '',
-    payMembershipUntil: 0, paidAt: 0, paidPlan: '', paidAmount: 0,
+    quotaMonths: Number(body.quotaMonths) || 0, disableDate: '', registerDate: typeof body.registerDate === 'string' ? body.registerDate : '',
+    payMembershipUntil: Number(body.payMembershipUntil) || 0, paidAt: Number(body.paidAt) || 0,
+    paidPlan: typeof body.paidPlan === 'string' ? body.paidPlan : '', paidAmount: Number(body.paidAmount) || 0,
     createdAt: Number(body.createdAt) || now, updatedAt: now,
   };
   setRegistryAccounts(reg.accounts);
@@ -246,6 +251,53 @@ const tick = (ms = 60) => new Promise(r => setTimeout(r, ms));
     const headSlice = html.slice(anchor, headEnd);
     check('该区标题行有 ↻ 刷新按钮', headSlice.includes('um-refresh-btn') && headSlice.includes('@click="refreshPendingRegistrations"'), headSlice.slice(0, 400));
     check('刷新按钮有禁用态（刷新中…）', headSlice.includes('refreshingPending'));
+  }
+
+  /* ========== 场景5：无令牌管理员「核对并开通」→ 云端 → 全新设备原密码带会员登录 ========== */
+  console.log('\n[场景5] 打通数据反馈：无令牌管理员开通→云端→全新设备原密码登录带会员（20261018 CORS 修复验证）');
+  {
+    workerCalls.length = 0;
+    setRegistryAccounts({});
+    // —— 设备B：普通用户（无令牌）注册，经 Worker 代写云端 ——
+    const bStore = makeStorage();
+    const B = await loadAuthForDevice(bStore, { withToken: false, withWorker: true });
+    const reg = await B.Auth.register('approved1', 'Ap@123456');
+    check('设备B注册成功', reg.ok === true, JSON.stringify(reg.error || 'ok'));
+    await tick();
+    check('云端已有 approved1（active）', !!regOf().accounts['approved1'], JSON.stringify(regOf().accounts));
+    const regHash = workerCalls.length ? workerCalls[0].hash : '';
+
+    // —— 设备A：管理员（无令牌！）从云端恢复该账号并开通会员，再经 Worker 代写回云端 ——
+    const aStore = makeStorage();
+    const A = await loadAuthForDevice(aStore, { withToken: false, withWorker: true });
+    await A.Auth.setup('admin', 'Admin@2026', 'Admin@2026');
+    const rec = await A.Auth.recoverFromRegistry();
+    check('无令牌管理员也能从云端恢复 approved1', rec.ok === true && rec.recovered === 1, JSON.stringify(rec));
+    const gm = A.Auth.grantMembership('approved1', 6, { paidAt: Date.now() - 2 * 86400000, amount: 1000 });
+    check('无令牌管理员开通会员成功（本机）', gm.ok === true, JSON.stringify(gm.error || 'ok'));
+    const prop = await A.Auth.syncAccountToCloud('approved1');
+    check('开通后经 Worker 代写云端成功（无令牌路径，正是被 CORS 拦的链路）', prop && prop.ok === true, JSON.stringify(prop));
+    const cloudAcc = regOf().accounts['approved1'];
+    check('云端账号已带会员到期时间', !!cloudAcc && Number(cloudAcc.payMembershipUntil) > Date.now(), JSON.stringify(cloudAcc));
+    check('云端哈希仍是用户注册时那份（原密码可登录，未变成随机密码）',
+      !!cloudAcc && !!regHash && cloudAcc.hash === regHash, 'cloud=' + (cloudAcc && cloudAcc.hash) + ' reg=' + regHash);
+
+    // —— 设备C：全新设备（无本机账号、无令牌）用原密码直接登录，应带会员 ——
+    const cStore = makeStorage();
+    const C = await loadAuthForDevice(cStore, { withToken: false, withWorker: true });
+    const lg = await C.Auth.login('approved1', 'Ap@123456');
+    check('全新设备用原密码登录成功（管理员→后端→用户端数据反馈打通）', lg.ok === true, JSON.stringify(lg.error || 'ok'));
+    check('登录后带会员（会员未过期，门禁放行）',
+      lg.ok === true && lg.user && Number(lg.user.payMembershipUntil) > Date.now(), JSON.stringify(lg.user || {}));
+  }
+
+  /* ========== 场景6：Worker CORS 头必须含 POST（防 20261018 回归） ========== */
+  console.log('\n[场景6] 静态断言：stock-edge Worker 的 CORS Allow-Methods 含 POST（否则浏览器跨域 POST 被预检拦截）');
+  {
+    const worker = fs.readFileSync(path.join(ROOT, 'cloudflare-worker-prod/worker.js'), 'utf8');
+    check('withCors 允许方法含 POST', /Access-Control-Allow-Methods', '[^']*POST[^']*'/.test(worker), 'CORS 头未含 POST');
+    check('withCors 允许方法含 OPTIONS（预检）', /Access-Control-Allow-Methods', '[^']*OPTIONS[^']*'/.test(worker));
+    check('worker 处理 /auth/register 的 POST', /url\.pathname === '\/auth\/register'[\s\S]{0,80}request\.method === 'POST'/.test(worker));
   }
 
   console.log('\n========== 结果：' + pass + ' 通过 / ' + fail + ' 失败 ==========');
