@@ -164,8 +164,8 @@
         paidAt: Number(record.paidAt) || 0,                   // 20261007q：支付日期(ms)
         paidPlan: record.paidPlan || '',                      // 20261007q：支付套餐 6m / 1y / 2y
         paidAmount: Number(record.paidAmount) || 0,           // 20261007q：实付金额
-        paidClaimIds: claimIdList(record.paidClaimIds),        // 20261018d：已核对开通的申请 id（审核区去重依据）
-        placeholder: !!record.placeholder,                     // 20261018d：占位会员凭证（无密码、仅带会员到期时间）
+        paidClaimIds: claimIdList(record.paidClaimIds),        // 20261018e：已核对开通的申请 id（审核区去重依据）
+        placeholder: !!record.placeholder,                     // 20261018e：占位会员凭证（无密码、仅带会员到期时间）
         createdAt: record.createdAt || Date.now(),
         updatedAt: Date.now()
       };
@@ -395,7 +395,7 @@
   function registerRemoteViaWorker(acct) {
     var base = memberApiBase();
     var uname = String(acct && acct.username || '').trim();
-    // 20261018d：占位会员凭证（管理员为旧版无账号申请登记会籍）hash 为空、但带 placeholder 标记，
+    // 20261018e：占位会员凭证（管理员为旧版无账号申请登记会籍）hash 为空、但带 placeholder 标记，
     // 允许经本端点写入云端注册表（普通账号仍要求 pbkdf2$ 哈希）。
     var isPlaceholder = !!(acct && acct.placeholder);
     if (!base || !uname || !acct || typeof acct.hash !== 'string'
@@ -417,11 +417,41 @@
       paidPlan: typeof acct.paidPlan === 'string' ? acct.paidPlan : '',
       paidAmount: Number(acct.paidAmount) || 0,
       quotaMonths: Number(acct.quotaMonths) || 0,
-      // 20261018d：已核对开通的申请 id + 占位标记一并上云，供跨设备审核区去重与会员认领。
+      // 20261018e：已核对开通的申请 id + 占位标记一并上云，供跨设备审核区去重与会员认领。
       paidClaimIds: claimIdList(acct.paidClaimIds),
       placeholder: isPlaceholder
     };
     return fetch(base + '/auth/register', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+      cache: 'no-store',
+      body: JSON.stringify(payload)
+    }).then(function (r) {
+      return r.json().catch(function () { return {}; }).then(function (j) {
+        return { ok: r.ok && !!(j && j.ok), status: r.status, error: (j && j.error) ? String(j.error) : '' };
+      });
+    }).catch(function (e) { return { ok: false, error: String((e && e.message) || e) }; });
+  }
+
+  /**
+   * 20261018e：管理员「重置密码」专用通道（无 GitHub 令牌也能把新哈希写进云端注册表）。
+   * 普通 /auth/register 端点对「已激活账号的不同哈希」会 409（防抢名 / 防篡改），改密码走不通，
+   * 故另开 /auth/admin-reset —— 仅本端点接受 resetKey（= Worker 环境变量 ADMIN_RESET_KEY）。
+   * 密钥不符或 Worker 未配置该键时返回非 ok，调用方回落到「需配置 GitHub 令牌」的提示。
+   */
+  function adminResetRemoteViaWorker(acct, key) {
+    var base = memberApiBase();
+    var uname = String(acct && acct.username || '').trim();
+    if (!base || !uname || !acct || typeof acct.hash !== 'string'
+        || acct.hash.indexOf('pbkdf2$') !== 0 || !key) {
+      return Promise.resolve({ ok: false, error: '参数不完整（需 Worker 地址、合法哈希与重置密钥）' });
+    }
+    var payload = {
+      username: uname,
+      hash: acct.hash,
+      resetKey: String(key)
+    };
+    return fetch(base + '/auth/admin-reset', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
       cache: 'no-store',
@@ -454,6 +484,7 @@
     deleteUser: deleteUser,
     registerRemote: registerRemote,
     registerRemoteViaWorker: registerRemoteViaWorker,
+    adminResetRemoteViaWorker: adminResetRemoteViaWorker,
     // batch-A：会员个人收款码配置 + 待开通记录（公开读、令牌写）
     MEMBER_CFG_PATH: MEMBER_CFG_PATH,
     MEMBER_CLAIMS_PATH: MEMBER_CLAIMS_PATH,

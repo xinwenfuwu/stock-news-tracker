@@ -390,7 +390,7 @@
   }
 
   /**
-   * 20261018d：把任意来源（本机数组 / 云端注册表字段 / 申请 id）的「已核对开通申请 id」归一化为
+   * 20261018e：把任意来源（本机数组 / 云端注册表字段 / 申请 id）的「已核对开通申请 id」归一化为
    * 去重、最多保留最近 30 条的字符串数组。审核区去重据此永久过滤已处理申请，杜绝跨设备 / 刷新后回显。
    */
   function claimIdList(src) {
@@ -402,6 +402,26 @@
     });
     return out.slice(-30);
   }
+
+  /**
+   * 20261018e：管理员「重置密码」密钥（与 Cloudflare Worker 的 ADMIN_RESET_KEY 环境变量对应）。
+   * 用途：无 GitHub 令牌的管理员，改密码后经 /auth/admin-reset 通道把新哈希写进云端注册表，
+   * 否则对方设备读云端仍是旧哈希 → 登录失败。密钥仅存本机 localStorage，不进仓库、不进导出。
+   * 未配置（为空）时，重置密码只落本机，并提示管理员去「设置」填令牌 / 该密钥。
+   */
+  function adminResetKey() {
+    try { return (localStorage.getItem('snt-admin-reset-key') || '').trim(); } catch (e) { return ''; }
+  }
+
+  /**
+   * 20261018e：记录「本机已改密码、但云端可能还没同步」的账号名（小写）。
+   * 「💾 保存设置」按钮会把这些账号一并补传到云端（即便它们没触发其它字段的「脏」判定），
+   * 保证管理员在用户管理里的每次密码改动，点过保存设置后都落到后端。
+   */
+  var pwSyncPending = (typeof Set !== 'undefined') ? new Set() : {
+    _m: {}, add: function (k) { this._m[k] = 1; }, has: function (k) { return !!this._m[k]; },
+    delete: function (k) { delete this._m[k]; }, forEach: function (f) { var m = this._m; Object.keys(m).forEach(function (k) { f(k); }); }
+  };
 
   /* ================= 设备 / 时段 ================= */
 
@@ -502,8 +522,8 @@
       paidAt: Number(u.paidAt) || 0,                   // 20261007q：支付日期(ms)
       paidPlan: u.paidPlan || '',                      // 20261007q：支付套餐 6m / 1y / 2y
       paidAmount: Number(u.paidAmount) || 0,           // 20261007q：实付金额
-      paidClaimIds: claimIdList(u.paidClaimIds),        // 20261018d：已核对开通的申请 id（永久去重审核区依据）
-      placeholder: !!u.placeholder,                    // 20261018d：占位会员凭证（无密码、仅带会员到期时间）
+      paidClaimIds: claimIdList(u.paidClaimIds),        // 20261018e：已核对开通的申请 id（永久去重审核区依据）
+      placeholder: !!u.placeholder,                    // 20261018e：占位会员凭证（无密码、仅带会员到期时间）
       createdAt: u.createdAt || Date.now()
     };
   }
@@ -801,7 +821,7 @@
   function loadUsers() {
     var arr = readJSON(USERS_KEY, []);
     if (!Array.isArray(arr)) return [];
-    // 20261018d：保留「占位会员凭证」账号（hash 为空但 placeholder=true）——它们无密码、仅带会员到期时间，
+    // 20261018e：保留「占位会员凭证」账号（hash 为空但 placeholder=true）——它们无密码、仅带会员到期时间，
     // 供审核区去重与跨设备会籍认领使用，不能因 hash 为空被过滤掉（否则 localUsers/合并循环都会漏掉）。
     return arr.filter(function (u) { return u && typeof u.username === 'string' && (u.hash || u.placeholder); });
   }
@@ -884,8 +904,8 @@
       paidAt: Number(u.paidAt) || 0,
       paidPlan: u.paidPlan || '',
       paidAmount: Number(u.paidAmount) || 0,
-      paidClaimIds: claimIdList(u.paidClaimIds),   // 20261018d：已核对开通的申请 id
-      placeholder: !!u.placeholder                 // 20261018d：占位会员凭证（无密码）
+      paidClaimIds: claimIdList(u.paidClaimIds),   // 20261018e：已核对开通的申请 id
+      placeholder: !!u.placeholder                 // 20261018e：占位会员凭证（无密码）
     };
   }
 
@@ -2029,7 +2049,7 @@
         u.approvedBy = (this.user && this.user.username) || '';
       }
       u.updatedAt = now;
-      // 20261018d：把「本次核对开通对应的申请 id」记进账号，供审核区永久去重
+      // 20261018e：把「本次核对开通对应的申请 id」记进账号，供审核区永久去重
       // （跨设备 / 刷新后即使 claims.json 的 resolved 偶发写失败，也不会再回审核区）。
       if (ex.claimId) u.paidClaimIds = claimIdList((u.paidClaimIds || []).concat([String(ex.claimId)]));
       // 此前因会员到期被自动停用的账号，若开通后续期到今天之后，解除停用
@@ -2043,7 +2063,7 @@
     },
 
     /**
-     * 20261018d：占位会员凭证开通（解决「旧版申请无账号信息、云端注册表也没有、各处都找不到」的孤儿申请）。
+     * 20261018e：占位会员凭证开通（解决「旧版申请无账号信息、云端注册表也没有、各处都找不到」的孤儿申请）。
      * 这类申请的提交者已在自己设备注册并登录（提交申请需要登录态），只是其账号未进云端注册表、
      * 申请也未附带账号快照——管理员在本机/云端都查无此人，正常开通报「用户不存在」。
      *
@@ -2126,7 +2146,7 @@
       var u = findUser(this.users, username);
       if (!u) return { ok: false, error: '用户不存在' };
       var until = Number(untilTs) || 0;
-      // 20261018d：跨设备登录时，把云端账号的「已核对开通申请 id」与支付信息一并落本机，
+      // 20261018e：跨设备登录时，把云端账号的「已核对开通申请 id」与支付信息一并落本机，
       // 让审核区去重（paidClaimIds）、会员字段展示在换设备后仍完整（不依赖本机残留）。
       if (meta && typeof meta === 'object') {
         if (Array.isArray(meta.paidClaimIds) && meta.paidClaimIds.length) {
@@ -2202,15 +2222,22 @@
           u2.pwSeal = sealPassword(pc.value);   // 同步更新可显示密码，避免「显示的是旧密码」
           u2.updatedAt = Date.now();
           if (!saveUsers(self.users)) return { ok: false, error: '保存失败：浏览器本地存储不可用' };
-          self._syncUserToRegistry(u2);
+          // 20261018e：记录「已改密码、云端可能未同步」，供「💾 保存设置」兜底补传
+          try { pwSyncPending.add(String(username).toLowerCase()); } catch (e) {}
           if (isSelf) {
             // 会话签名绑定密码哈希，改完必须重签，否则自己会被立刻踢下线
             var rec = currentRecord(u2, self.session && self.session.loginAt);
             return issueSession(u2, TTL_REMEMBER, rec ? rec.at : Date.now()).then(function () {
-              return { ok: true, resigned: true };
+              return self._syncPasswordToCloud(u2).then(function (sr) {
+                if (sr && sr.ok) { try { pwSyncPending.delete(String(username).toLowerCase()); } catch (e) {} }
+                return { ok: true, resigned: true, cloud: sr };
+              });
             });
           }
-          return { ok: true };
+          return self._syncPasswordToCloud(u2).then(function (sr) {
+            if (sr && sr.ok) { try { pwSyncPending.delete(String(username).toLowerCase()); } catch (e) {} }
+            return { ok: true, cloud: sr };
+          });
         });
       });
     },
@@ -2272,7 +2299,7 @@
      */
     _syncUserToRegistry: function (u) {
       try {
-        // 20261018d：占位会员凭证（无密码哈希）允许同步——它的 hash 为空，但带 placeholder 标记，
+        // 20261018e：占位会员凭证（无密码哈希）允许同步——它的 hash 为空，但带 placeholder 标记，
         // 管理员为「旧版无账号申请」一键登记会籍时即以此形态落云端，提交者换设备登录即带会员。
         // 普通账号仍要求 pbkdf2$ 哈希。
         if (!u || (!u.placeholder && (!u.hash || u.hash.indexOf('pbkdf2$') !== 0))) return Promise.resolve({ ok: false, skip: true, error: '账号缺少密码哈希，无法同步' });
@@ -2297,12 +2324,45 @@
         if (sr && sr.ok) return sr;                    // ① 直写成功
         if (!(sr && sr.skip)) return sr;               // 非「缺令牌」类失败不重试
         if (Auth.Sync && typeof Auth.Sync.registerRemoteViaWorker === 'function') {
-          return Auth.Sync.registerRemoteViaWorker(u).catch(function () {
+          return Auth.Sync.registerRemoteViaWorker(u).then(function (wr) {
+            if (wr && wr.ok) return wr;
+            // 注册端点对「已激活账号的不同哈希」会 409（防抢名）——改密码只能走专用通道
+            if (wr && wr.status === 409) {
+              return self._syncPasswordToCloud(u).then(function (pr) {
+                return pr && pr.ok ? pr : (sr.ok ? sr : pr);
+              });
+            }
+            return wr;
+          }).catch(function () {
             return { ok: false, error: '网络异常，稍后登录会自动补写' };
           });
         }
-        return sr;
+        return self._syncPasswordToCloud(u).then(function (pr) {
+          return pr && pr.ok ? pr : sr;
+        });
       }).catch(function () { return { ok: false, error: '网络异常，稍后登录会自动补写' }; });
+    },
+
+    /**
+     * 20261018e：把「密码哈希」写进云端注册表（绕过 /auth/register 的 409 防抢名限制）。
+     * 顺序：① 有 GitHub 令牌 → Contents API 直写（_syncUserToRegistry，可改任意字段含哈希）；
+     *       ② 无令牌但配置了「管理员重置密钥」→ 经 /auth/admin-reset 专用通道写哈希；
+     *       ③ 都没有 → 返回失败，由调用方提示「需配置令牌 / 重置密钥」。
+     * 仅改密码哈希与占位标记，不动会员 / 试用 / 角色等其它字段（由 Worker 端保证）。
+     */
+    _syncPasswordToCloud: function (u) {
+      var self = this;
+      return Promise.resolve(this._syncUserToRegistry(u)).then(function (sr) {
+        if (sr && sr.ok) return { ok: true, via: 'token', skip: false };
+        var key = adminResetKey();
+        if (key && Auth.Sync && typeof Auth.Sync.adminResetRemoteViaWorker === 'function') {
+          return Promise.resolve(Auth.Sync.adminResetRemoteViaWorker(u, key)).then(function (ar) {
+            if (ar && ar.ok) return { ok: true, via: 'worker', skip: false };
+            return { ok: false, skip: !!(sr && sr.skip), error: (ar && ar.error) || (sr && sr.error) || '云端同步失败' };
+          });
+        }
+        return { ok: false, skip: !!(sr && sr.skip), error: (sr && sr.error) || '云端同步失败（未配置 GitHub 令牌或管理员重置密钥）' };
+      });
     },
 
     /**
@@ -2402,24 +2462,26 @@
       this.users = loadUsers();
       var want = {};
       (usernames || []).forEach(function (n) { want[String(n == null ? '' : n).trim().toLowerCase()] = true; });
+      // 20261018e：把「已改密码但云端可能未同步」的账号一并纳入本次保存，保证点过「保存设置」后密码也落到后端
+      try { pwSyncPending.forEach(function (n) { want[n] = true; }); } catch (e) {}
       var list = this.users.filter(function (u) {
         return u && u.username && u.hash && u.hash.indexOf('pbkdf2$') === 0
           && want[String(u.username).toLowerCase()];
       });
       var saved = [], failed = [], skipped = 0;
-      // 顺序写入，避免并发 PUT 触发 409 sha 冲突
+      // 顺序写入，避免并发 PUT 触发 409 sha 冲突；统一走 _syncAccountToCloud（含改密码的 admin-reset 兜底）
       return list.reduce(function (p, u) {
         return p.then(function () {
-          return Promise.resolve(self._syncUserToRegistry(u)).then(function (r) {
-            if (r && r.ok) saved.push(u.username);
+          return Promise.resolve(self._syncAccountToCloud(u)).then(function (r) {
+            if (r && r.ok) { saved.push(u.username); try { pwSyncPending.delete(String(u.username).toLowerCase()); } catch (e) {} }
             else if (r && r.skip) skipped++;
             else failed.push({ username: u.username, error: (r && r.error) || '写入失败' });
           });
         });
       }, Promise.resolve()).then(function () {
-        // 一个都没写进去且全部因「无令牌」被跳过 → 明确报错，让管理员去设置里配令牌
+        // 一个都没写进去且全部因「无令牌 / 无重置密钥」被跳过 → 明确报错，让管理员去设置里配
         if (list.length && !saved.length && skipped === list.length) {
-          return { ok: false, error: '未配置 GitHub 令牌（设置 → 云端同步）', total: list.length, saved: saved, failed: failed, skipped: skipped };
+          return { ok: false, error: '未配置 GitHub 令牌（设置 → 云端同步）或管理员重置密钥', total: list.length, saved: saved, failed: failed, skipped: skipped };
         }
         return { ok: failed.length === 0, total: list.length, saved: saved, failed: failed, skipped: skipped };
       });
@@ -2496,7 +2558,7 @@
         var recovered = 0, skipped = 0, changed = 0;
         Object.keys(accs).forEach(function (uname) {
           var a = accs[uname];
-          // 20261018d：占位会员凭证（无 hash 但带 payMembershipUntil）也合回本机，
+          // 20261018e：占位会员凭证（无 hash 但带 payMembershipUntil）也合回本机，
           // 保证「管理员建占位凭证 → 提交者换设备登录即带会员」闭环可用。
           if (!a || (!a.hash && !a.placeholder)) { skipped++; return; }
           if (localMap[String(uname).toLowerCase()]) { skipped++; return; } // 本机已有，不覆盖
@@ -2507,7 +2569,7 @@
             role: a.role || ROLE.USER,
             disabled: !!a.disabled,
             status: a.status || STATUS.PENDING,
-            placeholder: !!a.placeholder,                     // 20261018d：占位凭证标记
+            placeholder: !!a.placeholder,                     // 20261018e：占位凭证标记
             trialUntil: Number(a.trialUntil) || 0,
             trialDays: Number(a.trialDays) || 0,
             quotaMonths: Number(a.quotaMonths) || 0,
@@ -2517,7 +2579,7 @@
             paidAt: Number(a.paidAt) || 0,
             paidPlan: a.paidPlan || '',
             paidAmount: Number(a.paidAmount) || 0,
-            paidClaimIds: claimIdList(a.paidClaimIds),         // 20261018d：已核对开通的申请 id（去重依据）
+            paidClaimIds: claimIdList(a.paidClaimIds),         // 20261018e：已核对开通的申请 id（去重依据）
             createdAt: Number(a.createdAt) || now,
             updatedAt: Number(a.updatedAt) || now,
             logins: [],
@@ -2526,7 +2588,7 @@
           self.users.push(u);
           recovered++;
         });
-        // 20261018d：本机已有的同名账号，若云端注册表带了 paidClaimIds（已核对开通记录），
+        // 20261018e：本机已有的同名账号，若云端注册表带了 paidClaimIds（已核对开通记录），
         // 合并进本机（去重取并集），让审核区去重在「仅本机有账号、云端已有开通记录」时也能生效。
         self.users.forEach(function (lu) {
           if (!lu || !lu.username) return;

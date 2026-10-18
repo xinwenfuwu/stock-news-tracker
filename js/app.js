@@ -781,6 +781,15 @@ const app = createApp({
         cancelResetPassword();
         refreshUserList();
         copyText(np, `已重置「${who}」的密码，新密码已复制到剪贴板`);
+        // 20261018e：把云端同步结果明确反馈给管理员——
+        // 密码改完必须落到云端注册表，对方设备用新密码才能登录；否则只改了本机，对方仍报「账号或密码错误」。
+        if (r.cloud && r.cloud.ok) {
+          showToast(`已重置「${who}」的密码并同步到云端，对方设备可用新密码登录`, 'success');
+        } else {
+          const why = (r.cloud && r.cloud.error) ? ('（' + r.cloud.error + '）') : '';
+          showToast('⚠️ 密码已在本地更新，但云端同步失败' + why + '。对方设备暂用旧密码登录；' +
+            '请在「设置」配置 GitHub 令牌或管理员重置密钥后，点用户管理里的「保存设置」补传。', 'warn', 12000);
+        }
       }).catch(e => { resetPw.error = '重置失败：' + (e && e.message ? e.message : e); });
     }
 
@@ -2655,7 +2664,7 @@ const app = createApp({
     }
     // 拉取待开通记录（公开读 data/membership/claims.json；读接口自带时间戳参数，绕开 CDN 缓存）
     /**
-     * 20261018d：构建「已核对开通」去重索引——从本机账号表 + 云端注册表两处取得每个账号的
+     * 20261018e：构建「已核对开通」去重索引——从本机账号表 + 云端注册表两处取得每个账号的
      * 已开通申请 id（paidClaimIds）与支付时间（paidAt）。审核区据此永久过滤，即使换设备 /
      * 刷新后 claims.json 的 resolved 偶发写失败，已处理的申请也不会再回审核区。
      */
@@ -2725,7 +2734,7 @@ const app = createApp({
           if (claimAlreadyApplied(item, idx)) applied.push(item); else pending.push(item);
         });
         memberClaims.list = pending;
-        // 20261018d：已核对开通的申请（账号维度去重命中）→ 本机永久移除 + 入 stale 待云端标记，
+        // 20261018e：已核对开通的申请（账号维度去重命中）→ 本机永久移除 + 入 stale 待云端标记，
         // 实现「已通过就再也不回审核区」（跨设备 / 刷新后 claims.json 的 resolved 偶发失败也兜得住）。
         if (applied.length) {
           applied.forEach(function (c) { resolvedClaimIds.add(c.id); });
@@ -2745,7 +2754,7 @@ const app = createApp({
     async function refreshMemberClaims() {
       await loadMemberClaims();
       if (memberClaims.loading) return;
-      // 20261018d：把去重命中的「已核对开通过」申请在云端标记 resolved，彻底移出审核区
+      // 20261018e：把去重命中的「已核对开通过」申请在云端标记 resolved，彻底移出审核区
       // （换设备 / 清本机数据后也不会再回显）。
       const stale = (memberClaims.stale || []).slice();
       if (stale.length) {
@@ -2823,7 +2832,7 @@ const app = createApp({
       // 看不到 → 核对并开通报用户不存在」（用户实测 yh123）。
       // 20261016h：记录本次是否「按申请信息新建了账号」，用于成功提示
       let createdFromClaim = false;
-      // 20261018d：记录本次是否走了「占位会员凭证」兜底（旧版无账号申请）
+      // 20261018e：记录本次是否走了「占位会员凭证」兜底（旧版无账号申请）
       let placeholderGrant = false;
       if ((!r || !r.ok) && r && r.error === '用户不存在' && claim.acct && typeof A.createAccountFromSnapshot === 'function') {
         try {
@@ -2866,7 +2875,7 @@ const app = createApp({
           }
         } catch (e) { /* 走下面的占位凭证兜底 */ }
       }
-      // 20261018d：账号在本机、云端注册表、申请快照、待审注册里都不存在（如旧版提交的 huyun1 / hy123 / yh123，
+      // 20261018e：账号在本机、云端注册表、申请快照、待审注册里都不存在（如旧版提交的 huyun1 / hy123 / yh123，
       // 线上实况：申请无 acct、注册表也没有该用户）→ 登记「占位会员凭证」：
       //   建一条无密码（hash 为空）但带 payMembershipUntil 的占位账号并写云端注册表。
       // 绝对安全：不生成、也不修改任何人的密码（占位账号任何设备都无法登录，因为它没有密码哈希）；
@@ -2887,7 +2896,7 @@ const app = createApp({
           }
         } catch (e) { /* 走下方统一错误提示 */ }
       }
-      // 20261018d：账号在本机、云端注册表、申请快照、待审注册、占位凭证都不存在时，
+      // 20261018e：账号在本机、云端注册表、申请快照、待审注册、占位凭证都不存在时，
       // 才回落下方统一的「用户不存在」引导（提示对方重新提交 / 申请码导入），
       // 由对方在自己设备用真实密码登录——从源头保证密码不被改动。
       if (!r || !r.ok) {
@@ -2928,7 +2937,7 @@ const app = createApp({
       const startText = payTs ? fmtDateNum(payTs) : fmtDateNum(Date.now());
       let msg;
       if (placeholderGrant) {
-        // 20261018d：占位会员凭证——只登记会籍、不碰任何密码，对方用自己注册时的密码登录即生效。
+        // 20261018e：占位会员凭证——只登记会籍、不碰任何密码，对方用自己注册时的密码登录即生效。
         msg = '已为「' + claim.user + '」登记会员凭证（' + months + ' 个月，自支付日 ' + startText + ' 起算）';
         msg += '；已写入云端，对方用自己注册时的密码登录即生效（未改动任何密码）';
         if (!prop.ok) msg += '，但云端同步未完全成功（' + prop.error + '），请确认 GitHub 令牌或稍后重试';
@@ -10294,6 +10303,9 @@ const app = createApp({
     const aiModel = ref('');
     // 跨设备免码登录（GitHub 注册表）配置：独立本地键，不进 D.settings（避免随设置导出泄露）
     const authAdminToken = ref('');
+    // 20261018e：管理员「重置密码」密钥（与 Cloudflare Worker 的 ADMIN_RESET_KEY 环境变量对应）。
+    // 无 GitHub 令牌时，改密码经 /auth/admin-reset 通道把新哈希写进云端注册表，对方设备才能用新密码登录。
+    const adminResetKey = ref('');
     const remotePending = ref([]);
     const remotePendingLoading = ref(false);
 
@@ -10381,6 +10393,7 @@ const app = createApp({
         aiTesting.value = false;
         try {
           authAdminToken.value = (localStorage.getItem('snt-auth-admin-token') || '').trim();
+          adminResetKey.value = (localStorage.getItem('snt-admin-reset-key') || '').trim();
         } catch (e) { /* ignore */ }
         aiTestResult.state = '';
         aiTestResult.text = '';
@@ -10412,6 +10425,7 @@ const app = createApp({
       // 保存跨设备登录令牌（独立键，不进 D.settings）
       try {
         localStorage.setItem('snt-auth-admin-token', (authAdminToken.value || '').trim());
+        localStorage.setItem('snt-admin-reset-key', (adminResetKey.value || '').trim());
       } catch (e) { /* ignore */ }
       showToast('设置已保存', 'success');
       showSettings.value = false;
@@ -10819,7 +10833,7 @@ const app = createApp({
       fmtDuration, badgeClass, memberStatusText, passwordText, revealedPw, expandedUser,
       approveUserByAdmin, rejectUserByAdmin, importRequestCode,
       // 跨设备免码登录（GitHub 注册表）
-      authAdminToken, remotePending, remotePendingLoading,
+      authAdminToken, adminResetKey, remotePending, remotePendingLoading,
       loadRemotePending, approveRemoteByAdmin, rejectRemoteByAdmin, syncAllToRegistryByAdmin,
       // batch-A：会员后台（个人码方案）
       memberClaims, memberManual, loadMemberClaims, refreshMemberClaims, grantMemberClaim, rejectMemberClaim, rejectConfirmId, grantMemberManual, trialUsersList, registeredNoMemberList, reviewClaims, umSearch, umSearchMatch,
