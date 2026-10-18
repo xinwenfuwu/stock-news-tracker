@@ -131,6 +131,17 @@
     }).catch(function (e) { return { ok: false, error: String((e && e.message) || e) }; });
   }
 
+  /** 归一化「已核对开通申请 id」数组：去重、最多保留最近 30 条（与 auth.js claimIdList 同口径）。 */
+  function claimIdList(src) {
+    var arr = (src && Array.isArray(src)) ? src : [];
+    var seen = {}, out = [];
+    arr.forEach(function (x) {
+      var s = String(x == null ? '' : x).trim();
+      if (s && !seen[s]) { seen[s] = 1; out.push(s); }
+    });
+    return out.slice(-30);
+  }
+
   /** 写入单个用户（upsert）。record 来自本地账号，仅挑注册表需要的字段。 */
   function writeUser(record) {
     if (!record || !record.username) return Promise.resolve({ ok: false, error: '缺少用户名' });
@@ -153,6 +164,8 @@
         paidAt: Number(record.paidAt) || 0,                   // 20261007q：支付日期(ms)
         paidPlan: record.paidPlan || '',                      // 20261007q：支付套餐 6m / 1y / 2y
         paidAmount: Number(record.paidAmount) || 0,           // 20261007q：实付金额
+        paidClaimIds: claimIdList(record.paidClaimIds),        // 20261018d：已核对开通的申请 id（审核区去重依据）
+        placeholder: !!record.placeholder,                     // 20261018d：占位会员凭证（无密码、仅带会员到期时间）
         createdAt: record.createdAt || Date.now(),
         updatedAt: Date.now()
       };
@@ -382,7 +395,11 @@
   function registerRemoteViaWorker(acct) {
     var base = memberApiBase();
     var uname = String(acct && acct.username || '').trim();
-    if (!base || !uname || !acct || typeof acct.hash !== 'string' || acct.hash.indexOf('pbkdf2$') !== 0) {
+    // 20261018d：占位会员凭证（管理员为旧版无账号申请登记会籍）hash 为空、但带 placeholder 标记，
+    // 允许经本端点写入云端注册表（普通账号仍要求 pbkdf2$ 哈希）。
+    var isPlaceholder = !!(acct && acct.placeholder);
+    if (!base || !uname || !acct || typeof acct.hash !== 'string'
+        || (acct.hash.indexOf('pbkdf2$') !== 0 && !isPlaceholder)) {
       return Promise.resolve({ ok: false, error: '参数不完整' });
     }
     var payload = {
@@ -399,7 +416,10 @@
       paidAt: Number(acct.paidAt) || 0,
       paidPlan: typeof acct.paidPlan === 'string' ? acct.paidPlan : '',
       paidAmount: Number(acct.paidAmount) || 0,
-      quotaMonths: Number(acct.quotaMonths) || 0
+      quotaMonths: Number(acct.quotaMonths) || 0,
+      // 20261018d：已核对开通的申请 id + 占位标记一并上云，供跨设备审核区去重与会员认领。
+      paidClaimIds: claimIdList(acct.paidClaimIds),
+      placeholder: isPlaceholder
     };
     return fetch(base + '/auth/register', {
       method: 'POST',

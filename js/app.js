@@ -2619,7 +2619,7 @@ const app = createApp({
     }
     // ===== batch-A：会员后台（管理员） =====
     // list：待审核（未处理）申请；rejected：已被管理员拒绝的申请（20261016i，仅本机视图追溯用）
-    const memberClaims = reactive({ list: [], loading: false, rejected: [], rejectedOpen: false });
+    const memberClaims = reactive({ list: [], loading: false, rejected: [], rejectedOpen: false, stale: [] });
     // 已审核通过（开通）的 claim id：永久从「待审核」区移除，即使后端 / 前端标记偶发失败也不再回显。
     // 20261011k：改为 localStorage 持久化，避免刷新页面后 in-memory Set 丢失、导致已通过的申请又回显到「审核区」。
     const RESOLVED_CLAIM_KEY = 'snt-resolved-claims-v1';
@@ -2654,8 +2654,47 @@ const app = createApp({
       return memberClaims.list.filter(c => (c.plan || '6m') === p);
     }
     // 拉取待开通记录（公开读 data/membership/claims.json；读接口自带时间戳参数，绕开 CDN 缓存）
+    /**
+     * 20261018d：构建「已核对开通」去重索引——从本机账号表 + 云端注册表两处取得每个账号的
+     * 已开通申请 id（paidClaimIds）与支付时间（paidAt）。审核区据此永久过滤，即使换设备 /
+     * 刷新后 claims.json 的 resolved 偶发写失败，已处理的申请也不会再回审核区。
+     */
+    async function claimAppliedIndex() {
+      const ids = new Set();
+      const byUser = {};
+      function add(u, uname) {
+        const name = uname || (u && u.username);
+        if (!name) return;
+        const k = String(name).toLowerCase();
+        byUser[k] = byUser[k] || { paidClaimIds: [], paidAt: 0 };
+        const pc = (u && u.paidClaimIds && Array.isArray(u.paidClaimIds)) ? u.paidClaimIds : [];
+        pc.forEach(function (id) { ids.add(String(id)); });
+        byUser[k].paidClaimIds = byUser[k].paidClaimIds.concat(pc);
+        if (u && Number(u.paidAt) > byUser[k].paidAt) byUser[k].paidAt = Number(u.paidAt);
+      }
+      (userList.value || []).forEach(function (u) { add(u); });
+      try {
+        const reg = (A && A.Sync && A.Sync.readRegistry) ? await A.Sync.readRegistry() : null;
+        const accs = (reg && reg.accounts) || {};
+        Object.keys(accs).forEach(function (k) { add(accs[k], k); });
+      } catch (e) { /* 云端读不到不影响本机去重 */ }
+      return { ids: ids, byUser: byUser };
+    }
+    /** 判断某条申请是否已核对开通（已处理）：申请 id 命中 / 支付时间命中（精确相等，续费新申请不误吞）。 */
+    function claimAlreadyApplied(c, idx) {
+      if (!c || !idx) return false;
+      if (idx.ids.has(String(c.id))) return true;
+      const rec = idx.byUser[String(c.user || '').toLowerCase()];
+      if (rec) {
+        if ((rec.paidClaimIds || []).indexOf(String(c.id)) >= 0) return true;
+        if (Number(c.ts) > 0 && Number(rec.paidAt) === Number(c.ts)) return true;
+      }
+      return false;
+    }
+
     async function loadMemberClaims() {
       memberClaims.loading = true;
+      memberClaims.stale = [];
       try {
         let raw = null;
         // 1) 会员后端「实时读」（GET /pay/claims）：直接读仓库最新内容，绕开 GitHub Pages 的
@@ -2672,11 +2711,27 @@ const app = createApp({
           const r2 = (A && A.Sync && A.Sync.readClaims) ? await A.Sync.readClaims() : { ok: true, claims: [] };
           raw = (r2 && r2.claims) || [];
         }
-        memberClaims.list = raw.filter(c => !c.resolved && !c.rejected && !resolvedClaimIds.has(c.id) && !rejectedClaimIds.has(c.id)).map(c => ({
-          id: c.id, user: c.user, plan: c.plan || '6m', ts: c.ts || 0,
-          amount: Number(c.amount) || 0, resolved: !!c.resolved,
-          acct: (c.acct && typeof c.acct === 'object') ? c.acct : null
-        }));
+        const idx = await claimAppliedIndex();
+        const applied = [], pending = [];
+        raw.forEach(function (c) {
+          if (c.resolved || c.rejected || resolvedClaimIds.has(c.id) || rejectedClaimIds.has(c.id)) return;
+          const m = claimMonths(c);
+          const item = {
+            id: c.id, user: c.user, plan: c.plan || '6m', ts: c.ts || 0,
+            amount: Number(c.amount) || 0, resolved: !!c.resolved,
+            acct: (c.acct && typeof c.acct === 'object') ? c.acct : null,
+            endTs: (Number(c.ts) || 0) + m * 30 * 24 * 60 * 60 * 1000
+          };
+          if (claimAlreadyApplied(item, idx)) applied.push(item); else pending.push(item);
+        });
+        memberClaims.list = pending;
+        // 20261018d：已核对开通的申请（账号维度去重命中）→ 本机永久移除 + 入 stale 待云端标记，
+        // 实现「已通过就再也不回审核区」（跨设备 / 刷新后 claims.json 的 resolved 偶发失败也兜得住）。
+        if (applied.length) {
+          applied.forEach(function (c) { resolvedClaimIds.add(c.id); });
+          persistResolvedClaims();
+          memberClaims.stale = applied;
+        }
         // 20261016i：已拒绝的申请单独收集（仅本机展示，最多最近 30 条）——
         // 拒绝后从审核区移除但保留可追溯记录，避免「拒绝后申请凭空消失」的困惑。
         memberClaims.rejected = raw.filter(c => c.rejected).slice(-30).map(c => ({
@@ -2690,7 +2745,20 @@ const app = createApp({
     async function refreshMemberClaims() {
       await loadMemberClaims();
       if (memberClaims.loading) return;
-      const n = reviewClaims().length;
+      // 20261018d：把去重命中的「已核对开通过」申请在云端标记 resolved，彻底移出审核区
+      // （换设备 / 清本机数据后也不会再回显）。
+      const stale = (memberClaims.stale || []).slice();
+      if (stale.length) {
+        let ok = 0, fail = 0;
+        for (const c of stale) {
+          const m = await resolveClaimOnCloud(c.id, {});
+          if (m) ok++; else fail++;
+        }
+        showToast('已把 ' + stale.length + ' 条已核对开通过的申请移出审核区'
+          + (fail ? ('（' + fail + ' 条云端标记失败，可重试刷新）') : ''), fail ? 'warn' : 'success', fail ? 6000 : 4000);
+        return;
+      }
+      const n = memberClaims.list.length;
       showToast(n ? ('已刷新：' + n + ' 条待审核支付申请') : '已刷新：暂无待审核支付申请', n ? 'success' : 'info');
     }
     // 解析某条申请所属的套餐月数：优先用申请里带的套餐，其次按金额推断（普通用户提交的申请只有金额时也能对）
@@ -2755,6 +2823,8 @@ const app = createApp({
       // 看不到 → 核对并开通报用户不存在」（用户实测 yh123）。
       // 20261016h：记录本次是否「按申请信息新建了账号」，用于成功提示
       let createdFromClaim = false;
+      // 20261018d：记录本次是否走了「占位会员凭证」兜底（旧版无账号申请）
+      let placeholderGrant = false;
       if ((!r || !r.ok) && r && r.error === '用户不存在' && claim.acct && typeof A.createAccountFromSnapshot === 'function') {
         try {
           const cr = A.createAccountFromSnapshot(claim.acct);
@@ -2794,13 +2864,31 @@ const app = createApp({
               r = A.grantMembership(claim.user, months, { paidAt: payTs, amount: Number(claim.amount) || 0 });
             }
           }
-        } catch (e) { /* 走下面的一键自动创建 */ }
+        } catch (e) { /* 走下面的占位凭证兜底 */ }
       }
-      // 20261018c：账号在本机、云端注册表、申请快照、待审注册里都不存在时，
-      // 绝不再自动创建「带随机密码」的账号——过去这一步会用随机密码新建账号，
-      // 把用户自己设置的密码覆盖掉，导致对方用原密码登录报错。
-      // 「核对并开通」只负责分配支付对应的使用时间，不碰用户密码。
-      // 找不到账号时直接回落下方统一的「用户不存在」引导（提示对方重新提交 / 申请码导入），
+      // 20261018d：账号在本机、云端注册表、申请快照、待审注册里都不存在（如旧版提交的 huyun1 / hy123 / yh123，
+      // 线上实况：申请无 acct、注册表也没有该用户）→ 登记「占位会员凭证」：
+      //   建一条无密码（hash 为空）但带 payMembershipUntil 的占位账号并写云端注册表。
+      // 绝对安全：不生成、也不修改任何人的密码（占位账号任何设备都无法登录，因为它没有密码哈希）；
+      // 提交者本就在自己设备有真实账号（含真实密码），登录时 loginRemote 因占位无 hash 回落本地，
+      // accessDenyWithRemote 读云端会员放行；若换设备尚未注册，同名注册会自动认领这份会籍。
+      // claimId 记进 paidClaimIds，审核区据此永久去重。exists 竞态（刚被别人建了真实账号）→ 回落正常开通。
+      if ((!r || !r.ok) && r && r.error === '用户不存在' && typeof A.grantMembershipPlaceholder === 'function') {
+        try {
+          const ph = await A.grantMembershipPlaceholder(claim.user, months, { paidAt: payTs, amount: Number(claim.amount) || 0, claimId: claim.id });
+          if (ph && ph.exists) {
+            // 竞态：已存在真实账号 → 正常开通一次（带 claimId 进 paidClaimIds）
+            r = A.grantMembership(claim.user, months, { paidAt: payTs, amount: Number(claim.amount) || 0, claimId: claim.id });
+          } else if (ph && ph.ok) {
+            r = { ok: true, until: ph.until, startAt: ph.startAt, user: { username: claim.user }, placeholderGrant: true, synced: ph.synced };
+            placeholderGrant = true;
+          } else if (ph && ph.error) {
+            r = { ok: false, error: ph.error };
+          }
+        } catch (e) { /* 走下方统一错误提示 */ }
+      }
+      // 20261018d：账号在本机、云端注册表、申请快照、待审注册、占位凭证都不存在时，
+      // 才回落下方统一的「用户不存在」引导（提示对方重新提交 / 申请码导入），
       // 由对方在自己设备用真实密码登录——从源头保证密码不被改动。
       if (!r || !r.ok) {
         const err = (r && r.error) || '开通失败';
@@ -2838,12 +2926,20 @@ const app = createApp({
         }
       } catch (e) { /* 会员已开通，仅未标记 */ }
       const startText = payTs ? fmtDateNum(payTs) : fmtDateNum(Date.now());
-      let msg = '已为「' + claim.user + '」开通 ' + months + ' 个月会员（自支付日 ' + startText + ' 起算）';
-      if (createdFromClaim) msg += '；账号已按申请信息创建，对方用注册时的密码即可登录';
-      if (prop.ok) {
-        msg += '，已同步云端，对方现在即可登录';
+      let msg;
+      if (placeholderGrant) {
+        // 20261018d：占位会员凭证——只登记会籍、不碰任何密码，对方用自己注册时的密码登录即生效。
+        msg = '已为「' + claim.user + '」登记会员凭证（' + months + ' 个月，自支付日 ' + startText + ' 起算）';
+        msg += '；已写入云端，对方用自己注册时的密码登录即生效（未改动任何密码）';
+        if (!prop.ok) msg += '，但云端同步未完全成功（' + prop.error + '），请确认 GitHub 令牌或稍后重试';
       } else {
-        msg += '；但云端注册表同步失败（' + prop.error + '），用户在其他设备可能仍无法登录';
+        msg = '已为「' + claim.user + '」开通 ' + months + ' 个月会员（自支付日 ' + startText + ' 起算）';
+        if (createdFromClaim) msg += '；账号已按申请信息创建，对方用注册时的密码即可登录';
+        if (prop.ok) {
+          msg += '，已同步云端，对方现在即可登录';
+        } else {
+          msg += '；但云端注册表同步失败（' + prop.error + '），用户在其他设备可能仍无法登录';
+        }
       }
       showToast(msg, prop.ok ? 'success' : 'warn', prop.ok ? 4200 : 9000);
       refreshUserList();          // 表格同步显示支付日期 / 额度 / 期分类

@@ -389,6 +389,20 @@
     }
   }
 
+  /**
+   * 20261018d：把任意来源（本机数组 / 云端注册表字段 / 申请 id）的「已核对开通申请 id」归一化为
+   * 去重、最多保留最近 30 条的字符串数组。审核区去重据此永久过滤已处理申请，杜绝跨设备 / 刷新后回显。
+   */
+  function claimIdList(src) {
+    var arr = (src && Array.isArray(src)) ? src : [];
+    var seen = {}, out = [];
+    arr.forEach(function (x) {
+      var s = String(x == null ? '' : x).trim();
+      if (s && !seen[s]) { seen[s] = 1; out.push(s); }
+    });
+    return out.slice(-30);
+  }
+
   /* ================= 设备 / 时段 ================= */
 
   /** 把 UserAgent 压成一句人话，例如「Chrome 128 / Windows」 */
@@ -488,6 +502,8 @@
       paidAt: Number(u.paidAt) || 0,                   // 20261007q：支付日期(ms)
       paidPlan: u.paidPlan || '',                      // 20261007q：支付套餐 6m / 1y / 2y
       paidAmount: Number(u.paidAmount) || 0,           // 20261007q：实付金额
+      paidClaimIds: claimIdList(u.paidClaimIds),        // 20261018d：已核对开通的申请 id（永久去重审核区依据）
+      placeholder: !!u.placeholder,                    // 20261018d：占位会员凭证（无密码、仅带会员到期时间）
       createdAt: u.createdAt || Date.now()
     };
   }
@@ -785,7 +801,9 @@
   function loadUsers() {
     var arr = readJSON(USERS_KEY, []);
     if (!Array.isArray(arr)) return [];
-    return arr.filter(function (u) { return u && typeof u.username === 'string' && u.hash; });
+    // 20261018d：保留「占位会员凭证」账号（hash 为空但 placeholder=true）——它们无密码、仅带会员到期时间，
+    // 供审核区去重与跨设备会籍认领使用，不能因 hash 为空被过滤掉（否则 localUsers/合并循环都会漏掉）。
+    return arr.filter(function (u) { return u && typeof u.username === 'string' && (u.hash || u.placeholder); });
   }
 
   function saveUsers(users) { return writeJSON(USERS_KEY, users); }
@@ -865,7 +883,9 @@
       payMembershipUntil: Number(u.payMembershipUntil) || 0,
       paidAt: Number(u.paidAt) || 0,
       paidPlan: u.paidPlan || '',
-      paidAmount: Number(u.paidAmount) || 0
+      paidAmount: Number(u.paidAmount) || 0,
+      paidClaimIds: claimIdList(u.paidClaimIds),   // 20261018d：已核对开通的申请 id
+      placeholder: !!u.placeholder                 // 20261018d：占位会员凭证（无密码）
     };
   }
 
@@ -2009,6 +2029,9 @@
         u.approvedBy = (this.user && this.user.username) || '';
       }
       u.updatedAt = now;
+      // 20261018d：把「本次核对开通对应的申请 id」记进账号，供审核区永久去重
+      // （跨设备 / 刷新后即使 claims.json 的 resolved 偶发写失败，也不会再回审核区）。
+      if (ex.claimId) u.paidClaimIds = claimIdList((u.paidClaimIds || []).concat([String(ex.claimId)]));
       // 此前因会员到期被自动停用的账号，若开通后续期到今天之后，解除停用
       if (u.disabled && u.autoDisabled && !isMembershipExpired(u)) {
         u.disabled = false; u.autoDisabled = false; u.disabledAt = null;
@@ -2020,16 +2043,102 @@
     },
 
     /**
+     * 20261018d：占位会员凭证开通（解决「旧版申请无账号信息、云端注册表也没有、各处都找不到」的孤儿申请）。
+     * 这类申请的提交者已在自己设备注册并登录（提交申请需要登录态），只是其账号未进云端注册表、
+     * 申请也未附带账号快照——管理员在本机/云端都查无此人，正常开通报「用户不存在」。
+     *
+     * 处理策略：建一条「无密码」（hash 为空）但带 payMembershipUntil 的占位账号并写云端注册表。
+     *   · 绝对安全：不生成、也不修改任何人的密码（占位账号任何设备都无法登录，因为它没有密码哈希）；
+     *   · 提交者本就在自己设备有真实账号（含真实密码）——他在自己设备登录时 loginRemote 因占位账号
+     *     无 hash 回落本地，accessDenyWithRemote 读云端会员放行；换设备若还没注册，同名注册会自动认领
+     *     这份会籍（worker /auth/register 的 claiming 分支 + register 的认领逻辑）。
+     *   · claimId 记进 paidClaimIds，审核区据此永久去重，杜绝「已开通又回审核区」。
+     * 返回 { ok, until, startAt, placeholder:true, synced }；若同名已是真实账号（竞态）返回
+     * { ok:false, exists:true }，调用方据以回落正常开通。
+     * @param {string} username
+     * @param {number} months 6 / 12 / 24
+     * @param {{paidAt?:number, amount?:number, claimId?:string}} [extra]
+     */
+    grantMembershipPlaceholder: function (username, months, extra) {
+      if (!this.isAdmin()) return { ok: false, error: '仅管理员可开通会员' };
+      // 仅校验用户名格式（占位凭证不创建密码，故不跑密码强度规则）
+      var v = validateUsername(username);
+      if (!v.ok) return { ok: false, error: v.error || '用户名格式不正确' };
+      var uname = v.value;
+      var m = parseInt(months, 10);
+      if (!(m === 6 || m === 12 || m === 24)) return { ok: false, error: '套餐仅支持 6、12 或 24 个月' };
+      this.users = loadUsers();
+      var exist = findUser(this.users, uname);
+      // 竞态：同名已是真实账号（有密码哈希）→ 不建占位，交回正常开通链路
+      if (exist && exist.hash && exist.hash.indexOf('pbkdf2$') === 0) {
+        return { ok: false, exists: true, error: '该用户名已存在真实账号，请直接开通' };
+      }
+      var now = Date.now();
+      var ex = extra || {};
+      var span = m * 30 * 24 * 60 * 60 * 1000;
+      var startTs = Number(ex.paidAt) > 0 ? Number(ex.paidAt) : now;
+      var until = startTs + span;
+      if (until <= now) until = now + span;
+      var u = {
+        username: uname, role: ROLE.USER, hash: '', placeholder: true,
+        pwSeal: '', disabled: false, status: STATUS.ACTIVE,
+        trialUntil: 0, trialDays: 0, quotaMonths: m,
+        disableDate: '', registerDate: localDateStr(startTs),
+        payMembershipUntil: until, paidAt: startTs,
+        paidPlan: (m === 24 ? '2y' : (m === 12 ? '1y' : '6m')),
+        paidAmount: Number(ex.amount) > 0 ? Number(ex.amount) : (m === 24 ? 4000 : (m === 12 ? 2000 : 1000)),
+        paidClaimIds: claimIdList([String(ex.claimId || '')]),
+        createdAt: now, updatedAt: now, logins: []
+      };
+      // 同名占位已存在（如重复点开通）→ 在其基础上续期/合并，不重复建号
+      if (exist) {
+        u.createdAt = exist.createdAt || now;
+        u.paidClaimIds = claimIdList((exist.paidClaimIds || []).concat([String(ex.claimId || '')]));
+        if (Number(exist.payMembershipUntil) > until) until = Number(exist.payMembershipUntil);
+        u.payMembershipUntil = until;
+      }
+      // 占位账号无密码，列表里标灰但正常归类到对应月期
+      if (!exist) this.users.push(u); else { var ei = this.users.indexOf(exist); if (ei >= 0) this.users[ei] = u; }
+      if (!saveUsers(this.users)) return { ok: false, error: '保存失败：浏览器本地存储不可用' };
+      // 写云端注册表（令牌直写 → Worker 代写）。占位账号无密码哈希，_syncUserToRegistry / Worker
+      // 均已放开对「空 hash 但 placeholder」的放行（见对应改动）。
+      var self = this;
+      return Promise.resolve(this._syncAccountToCloud(u)).then(function (sr) {
+        var synced = !!(sr && (sr.ok || sr.skip));
+        if (sr && !sr.ok && !sr.skip) {
+          // 云端写失败：本机的占位账号仍有效（提交者本机已能生效），仅提示云端未同步
+          return { ok: true, until: until, startAt: startTs, placeholder: true, synced: false, cloudError: (sr && sr.error) || '' };
+        }
+        return { ok: true, until: until, startAt: startTs, placeholder: true, synced: synced };
+      }).catch(function (e) {
+        return { ok: true, until: until, startAt: startTs, placeholder: true, synced: false, cloudError: String((e && e.message) || e) };
+      });
+    },
+
+    /**
      * batch84：把后端扫码支付返回的会员到期时间落到本机账号。
      * 供业务层在登录后 / 打开会员面板时调用：查询后端「我的会员到期时间」，若有效则写入本机，
      * 之后的登录门禁（isMembershipExpired）会据此放行。不要求管理员权限（属于本人自助开通）。
      * @param {string} username
      * @param {number} untilTs 会员到期时间戳(ms)；<=now 视为无效不写入
      */
-    applyRemoteMembership: function (username, untilTs) {
+    applyRemoteMembership: function (username, untilTs, meta) {
       var u = findUser(this.users, username);
       if (!u) return { ok: false, error: '用户不存在' };
       var until = Number(untilTs) || 0;
+      // 20261018d：跨设备登录时，把云端账号的「已核对开通申请 id」与支付信息一并落本机，
+      // 让审核区去重（paidClaimIds）、会员字段展示在换设备后仍完整（不依赖本机残留）。
+      if (meta && typeof meta === 'object') {
+        if (Array.isArray(meta.paidClaimIds) && meta.paidClaimIds.length) {
+          u.paidClaimIds = claimIdList((u.paidClaimIds || []).concat(meta.paidClaimIds));
+        }
+        if (Number(meta.paidAt) > 0) u.paidAt = Number(meta.paidAt);
+        if (meta.paidPlan) u.paidPlan = String(meta.paidPlan);
+        if (Number(meta.paidAmount) > 0) u.paidAmount = Number(meta.paidAmount);
+        if (Number(meta.quotaMonths) > 0) u.quotaMonths = Number(meta.quotaMonths);
+        if (typeof meta.registerDate === 'string' && meta.registerDate) u.registerDate = meta.registerDate;
+        if (meta.placeholder) u.placeholder = true;
+      }
       if (!until || until <= Date.now()) {
         // 20261012e：云端明确返回「已过期」时，保留这个过去的到期时间，不要清零。
         // 清零会让 disableDateOf 回退到 legacy 口径（registerDate + quotaMonths×30天），
@@ -2163,7 +2272,10 @@
      */
     _syncUserToRegistry: function (u) {
       try {
-        if (!u || !u.hash || u.hash.indexOf('pbkdf2$') !== 0) return Promise.resolve({ ok: false, skip: true, error: '账号缺少密码哈希，无法同步' });
+        // 20261018d：占位会员凭证（无密码哈希）允许同步——它的 hash 为空，但带 placeholder 标记，
+        // 管理员为「旧版无账号申请」一键登记会籍时即以此形态落云端，提交者换设备登录即带会员。
+        // 普通账号仍要求 pbkdf2$ 哈希。
+        if (!u || (!u.placeholder && (!u.hash || u.hash.indexOf('pbkdf2$') !== 0))) return Promise.resolve({ ok: false, skip: true, error: '账号缺少密码哈希，无法同步' });
         if (typeof Auth === 'undefined' || !Auth.Sync || !Auth.Sync.writeUser) return Promise.resolve({ ok: false, skip: true, error: '同步模块未加载' });
         if (!Auth.Sync.isAdminConfigured || !Auth.Sync.isAdminConfigured()) return Promise.resolve({ ok: false, skip: true, error: '未配置 GitHub 令牌（设置 → 云端同步）' });
         var rec = buildRegistryRecord(u);
@@ -2381,18 +2493,21 @@
         }
         var localMap = {};
         self.users.forEach(function (u) { if (u && u.username) localMap[String(u.username).toLowerCase()] = true; });
-        var recovered = 0, skipped = 0;
+        var recovered = 0, skipped = 0, changed = 0;
         Object.keys(accs).forEach(function (uname) {
           var a = accs[uname];
-          if (!a || !a.hash) { skipped++; return; }
+          // 20261018d：占位会员凭证（无 hash 但带 payMembershipUntil）也合回本机，
+          // 保证「管理员建占位凭证 → 提交者换设备登录即带会员」闭环可用。
+          if (!a || (!a.hash && !a.placeholder)) { skipped++; return; }
           if (localMap[String(uname).toLowerCase()]) { skipped++; return; } // 本机已有，不覆盖
           var now = Date.now();
           var u = {
             username: uname,
-            hash: a.hash,
+            hash: a.hash || '',
             role: a.role || ROLE.USER,
             disabled: !!a.disabled,
             status: a.status || STATUS.PENDING,
+            placeholder: !!a.placeholder,                     // 20261018d：占位凭证标记
             trialUntil: Number(a.trialUntil) || 0,
             trialDays: Number(a.trialDays) || 0,
             quotaMonths: Number(a.quotaMonths) || 0,
@@ -2402,6 +2517,7 @@
             paidAt: Number(a.paidAt) || 0,
             paidPlan: a.paidPlan || '',
             paidAmount: Number(a.paidAmount) || 0,
+            paidClaimIds: claimIdList(a.paidClaimIds),         // 20261018d：已核对开通的申请 id（去重依据）
             createdAt: Number(a.createdAt) || now,
             updatedAt: Number(a.updatedAt) || now,
             logins: [],
@@ -2410,8 +2526,17 @@
           self.users.push(u);
           recovered++;
         });
-        if (recovered > 0 || cleaned > 0) { saveUsers(self.users); }
-        return { ok: true, recovered: recovered, skipped: skipped, cleaned: cleaned };
+        // 20261018d：本机已有的同名账号，若云端注册表带了 paidClaimIds（已核对开通记录），
+        // 合并进本机（去重取并集），让审核区去重在「仅本机有账号、云端已有开通记录」时也能生效。
+        self.users.forEach(function (lu) {
+          if (!lu || !lu.username) return;
+          var ca = accs[String(lu.username)];
+          if (!ca || !Array.isArray(ca.paidClaimIds) || ca.paidClaimIds.length === 0) return;
+          var merged = claimIdList((lu.paidClaimIds || []).concat(ca.paidClaimIds));
+          if (merged.length !== (lu.paidClaimIds || []).length) { lu.paidClaimIds = merged; changed = true; }
+        });
+        if (recovered > 0 || cleaned > 0 || changed > 0) { saveUsers(self.users); }
+        return { ok: true, recovered: recovered, skipped: skipped, cleaned: cleaned, changed: changed };
       }).catch(function (e) {
         return { ok: false, error: String((e && e.message) || e) };
       });
