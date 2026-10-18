@@ -140,6 +140,7 @@ const app = createApp({
     const cloudRegistrySnapshot = reactive({});
     const savingApproved = ref(false);
     const refreshingPending = ref(false);   // 20261016k：「待审核注册申请」↻ 刷新 进行中
+    const refreshingUm = ref(false);         // 20261019a：用户管理顶部「🔄 刷新」按钮 进行中
     const userModal = reactive({
       show: false, newUsername: '', newPassword: '', newRole: 'user',
       pending: [], pendingRole: {}, reqCode: ''
@@ -560,6 +561,38 @@ const app = createApp({
         showToast('已恢复 ' + r.recovered + ' 个云端账号（本机已有 ' + r.skipped + ' 个未动）', 'success');
       } else {
         showToast('本机账号已是最新，无需恢复', 'info');
+      }
+    }
+
+    /**
+     * 20261019a：用户管理顶部「🔄 刷新」按钮（位于「从云端恢复」左侧）。
+     * 需求：用户注册后账号信息同步到云端，管理员在此点「刷新」即可看到刚注册成功的账号——
+     * 它们会出现在「审核通过区」（所有已注册非待审账号）与「授权免费试用（非支付会员用户）」分类中
+     * （注册即送 1 天试用，新注册用户落在免费试用；已注册未开通会员的落在「未开通使用」）。
+     * 实现：从云端注册表只读合并最新账号（免令牌，其他设备注册的用户经此并入本机列表），
+     * 刷新账号表与各分类、重拉云端「已保存」快照（保证「未保存」角标准确）。与「从云端恢复」互为补充：
+     * 本按钮聚焦「看最新注册」，并给明确回执；「从云端恢复」是更重的整表保险。
+     */
+    async function refreshUserManagement() {
+      refreshingUm.value = true;
+      try {
+        let merged = 0;
+        if (A && A.recoverFromRegistry) {
+          try {
+            const rr = await A.recoverFromRegistry();
+            if (rr && rr.ok) merged = Number(rr.recovered) || 0;
+          } catch (e) { /* 网络失败不影响本机刷新 */ }
+        }
+        refreshUserList();                 // 重算 审核通过区 / 授权免费试用 / 各月期会员板块 分类
+        await loadCloudRegistrySnapshot(); // 重拉云端快照，保证「未保存」角标准确
+        if (A && A.Sync && A.Sync.isAdminConfigured && A.Sync.isAdminConfigured()) {
+          loadRemotePending();
+        }
+        showToast(merged > 0
+          ? ('已刷新：新并入 ' + merged + ' 个云端注册账号，已出现在审核通过区 / 授权免费试用')
+          : '已刷新：本机与云端账号列表已是最新', 'success');
+      } finally {
+        refreshingUm.value = false;
       }
     }
 
