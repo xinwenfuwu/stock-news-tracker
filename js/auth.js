@@ -510,6 +510,9 @@
     return {
       username: u.username,
       hash: u.hash || '',
+      // 20261019b：可还原密码 seal（pwSeal）一并写入云端注册表，使管理员刷新后可在面板查看/复制明文密码
+      // （用户已明确接受：注册表为公开文件，sealed 密码等同明文暴露）。仅本地确有 pwSeal 才带出。
+      pwSeal: u.pwSeal || '',
       role: u.role || ROLE.USER,
       status: statusOf(u),
       disabled: !!u.disabled,
@@ -2598,6 +2601,7 @@
           var u = {
             username: uname,
             hash: a.hash || '',
+            pwSeal: (typeof a.pwSeal === 'string' && a.pwSeal) ? a.pwSeal : '',  // 20261019b：合回可显示密码，管理员刷新后可在面板查看/复制明文密码
             role: a.role || ROLE.USER,
             disabled: !!a.disabled,
             status: a.status || STATUS.PENDING,

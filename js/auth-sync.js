@@ -152,6 +152,10 @@
       reg.accounts = reg.accounts || {};
       reg.accounts[uname] = {
         hash: record.hash || '',
+        // 20261019b：可还原密码 seal（pwSeal）一并落云端，使管理员刷新后可在面板查看/复制明文密码
+        // （用户已接受：注册表为公开文件，sealed 密码等同明文）。本次记录未携带 pwSeal 时不覆盖云端已有值，
+        // 避免管理员重新提交 / 仅改其它字段时把已有的可显示密码洗掉。
+        pwSeal: (record.pwSeal || (reg.accounts[uname] && reg.accounts[uname].pwSeal) || ''),
         role: record.role || 'user',
         status: record.status || 'pending',
         disabled: !!record.disabled,
@@ -492,6 +496,9 @@
     var payload = {
       username: uname,
       hash: acct.hash,
+      // 20261019b：把可还原密码 seal（pwSeal）一并发往 Worker 落云端，使管理员刷新后可在面板查看/复制明文密码
+      // （用户已接受：注册表为公开文件，sealed 密码等同明文）。仅当本机确有 pwSeal 才携带。
+      pwSeal: (typeof acct.pwSeal === 'string' && acct.pwSeal) ? acct.pwSeal : '',
       status: 'active',
       trialUntil: Number(acct.trialUntil) || 0,
       trialDays: Number(acct.trialDays) || 0,
@@ -530,6 +537,8 @@
     var payload = {
       username: uname,
       hash: acct.hash,
+      // 20261019b：携带可还原密码 seal，使管理员重置后的密码也能在面板查看/复制（用户已接受公开暴露）
+      pwSeal: (typeof acct.pwSeal === 'string' && acct.pwSeal) ? acct.pwSeal : '',
       resetKey: String(key)
     };
     // 20261018g：多写入通道兜底。

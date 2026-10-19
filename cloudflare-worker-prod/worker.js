@@ -421,6 +421,10 @@ async function authRegister(request) {
         .map(x => String(x || '').trim()).filter((x, i, arr) => x && arr.indexOf(x) === i).slice(-30);
       reg.accounts[username] = {
         hash: hash,
+        // 20261019b：把「可还原密码 seal（pwSeal）」一并写入公开注册表，使管理员刷新后即可在
+        // 用户管理面板查看/复制该用户的明文密码（用户已明确接受：注册表为公开文件，sealed 密码等同明文）。
+        // 若本次请求未携带 pwSeal（例如改密码专用通道只传哈希），则保留云端已有值，避免把已有可显示密码洗掉。
+        pwSeal: (typeof body.pwSeal === 'string' && body.pwSeal) ? body.pwSeal : ((exist && exist.pwSeal) || ''),
         role: (exist && exist.role === 'admin') ? 'admin' : 'user',   // 不把已有管理员降级
         status: claiming ? 'active' : status,
         disabled: false,
@@ -482,6 +486,9 @@ async function authAdminReset(request) {
     // 仅更新密码哈希与占位标记，保留会员 / 试用 / 角色 / 支付等全部其它字段
     exist.hash = hash;
     exist.placeholder = false;
+    // 20261019b：若请求携带可还原密码 seal（pwSeal），一并落云端，使管理员刷新后可在面板查看/复制明文密码
+    // （用户已接受：注册表为公开文件，sealed 密码等同明文）。仅当本次确实携带才覆盖，否则保留云端已有值。
+    if (typeof body.pwSeal === 'string' && body.pwSeal) exist.pwSeal = body.pwSeal;
     reg.accounts[username] = exist;
     reg.updatedAt = Date.now();
     const w = await ghWriteJson(REGISTRY_PATH, reg, rd.sha, 'chore(auth): admin reset password ' + username);
