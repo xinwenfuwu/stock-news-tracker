@@ -4,12 +4,12 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>股市信息分析系统</title>
-  <link rel="stylesheet" href="css/style.css?v=20261019b">
+  <link rel="stylesheet" href="css/style.css?v=20261019c">
   <!-- Vue 3 全局构建版（v3.4.21 · 自托管）
        原先走 unpkg.com CDN：国内网络对 unpkg 的连通性不稳定，一旦该请求长时间挂起，
        <head> 里的阻塞脚本会让整页停在白屏、后续 auth-boot.js 根本不会执行。
        改为同源托管后，启动链路不再依赖任何第三方 CDN。 -->
-  <script src="js/vue.global.prod.js?v=20261019b"></script>
+  <script src="js/vue.global.prod.js?v=20261019c"></script>
 </head>
 <body class="auth-locked">
   <!-- ===== 登录关卡：登录通过前业务脚本不会被加载 ===== -->
@@ -4483,7 +4483,7 @@
             <span v-if="savingApproved">保存中…</span>
             <template v-else>保存设置<span class="um-save-count" v-if="dirtyAccountList.length > 0">{{ dirtyAccountList.length }}</span></template>
           </button>
-          <button class="btn btn-sm" @click="refreshUserManagement" :disabled="refreshingUm" title="从云端注册表只读合并最新注册的账号，刷新「审核通过区 / 授权免费试用 / 各会员板块」分类，立即看到刚注册成功的账号">{{ refreshingUm ? '刷新中…' : '🔄 刷新' }}</button>
+          <button class="btn btn-sm" @click="refreshUserManagement" :disabled="refreshingUm" title="从云端注册表只读合并最新注册的账号，刷新「审核通过区 / 试用非会员 / 各会员板块」分类，立即看到刚注册成功的账号">{{ refreshingUm ? '刷新中…' : '🔄 刷新' }}</button>
           <button class="btn btn-sm" @click="recoverUsersByAdmin" title="把云端注册表里本机缺失的账号（注册/会员/试用用户）合并回本机，只读云端、不改动云端">🔄 从云端恢复</button>
           <button class="btn-icon" @click="userModal.show = false">✕</button>
         </div>
@@ -4495,7 +4495,7 @@
           </div>
           <div class="um-subtabs" v-if="umTab==='auth'">
             <button class="um-tab um-subtab" :class="{active: umAuth==='2y'}" @click="umAuth='2y'">24月期（¥4000）用户</button>
-            <button class="um-tab um-subtab" :class="{active: umAuth==='trial'}" @click="umAuth='trial'">授权免费试用（非支付会员用户）</button>
+            <button class="um-tab um-subtab" :class="{active: umAuth==='trial'}" @click="umAuth='trial'">试用非会员</button>
             <button class="um-tab um-subtab" :class="{active: umAuth==='6m'}" @click="umAuth='6m'">6月期（¥1000）用户</button>
             <button class="um-tab um-subtab" :class="{active: umAuth==='1y'}" @click="umAuth='1y'">12月期（¥2000）用户</button>
             <button class="um-tab um-subtab" :class="{active: umAuth==='none'}" @click="umAuth='none'">未开通使用</button>
@@ -4544,7 +4544,7 @@
               <div class="um-empty" v-else>暂无</div>
             </div>
 
-            <div class="um-hint">说明：付费会员按套餐（24月期¥4000 / 6月期¥1000 / 12月期¥2000）归类到「授权使用」对应子标签；已进入试用期的用户归入「授权免费试用」；<b>已注册但尚未开通任何会员、也未处于试用期的普通用户统一归入「授权使用 → 未开通使用」子标签</b>，由管理员在此授权试用（一天 / 三天 / 一周 / 一月）或等待其支付开通；待审核与管理员账号单列统计。「累计应收」= 各付费分类人数 × 对应金额。</div>
+            <div class="um-hint">说明：付费会员按套餐（24月期¥4000 / 6月期¥1000 / 12月期¥2000）归类到「授权使用」对应子标签；已进入试用期的用户归入「试用非会员」；<b>已注册但尚未开通任何会员、也未处于试用期的普通用户统一归入「授权使用 → 未开通使用」子标签</b>，由管理员在此授权试用（一天 / 三天 / 一周 / 一月）或等待其支付开通；待审核与管理员账号单列统计。「累计应收」= 各付费分类人数 × 对应金额。</div>
           </div>
           </div><!-- /um-panel admin -->
 
@@ -4736,11 +4736,11 @@
             </div>
           </div><!-- /um-section 6m -->
 
-            <!-- 授权使用：授权免费试用（非支付会员用户） -->
+            <!-- 授权使用：试用非会员 -->
             <div class="um-section" v-if="umAuth==='trial'">
             <div class="um-pending um-pending-trial">
               <div class="um-pending-head">
-                <span>授权免费试用（非支付会员用户）</span>
+                <span>试用非会员</span>
                 <span class="um-pending-count">{{ trialUsersList().length }} 人</span>
               </div>
               <div class="um-pending-item" v-for="u in trialUsersList().filter(u => umSearchMatch(u.username))" :key="u.username">
@@ -4787,7 +4787,7 @@
             <div class="um-section" v-if="umAuth==='none'">
               <div class="um-section-head">
                 <h4>未开通使用</h4>
-                <span class="um-section-desc">已注册但尚未开通任何会员、也未处于试用期的普通用户统一在此；管理员可点「试用一天 / 三天 / 一周 / 一月」授权免费试用，授权后账号归入「授权免费试用」并出现在下方「会员板块」。该板块字段表即账户信息表（含用户名 / 角色 / 状态 / 日期 / 额度 / 密码 / 登录记录 / 操作）。</span>
+                <span class="um-section-desc">已注册但尚未开通任何会员、也未处于试用期的普通用户统一在此；管理员可点「试用一天 / 三天 / 一周 / 一月」授权免费试用，授权后账号归入「试用非会员」并出现在下方「会员板块」。该板块字段表即账户信息表（含用户名 / 角色 / 状态 / 日期 / 额度 / 密码 / 登录记录 / 操作）。</span>
               </div>
               <div class="um-code-bar">
                 <input class="um-input um-grow" v-model="trialGrantName" placeholder="用户名" autocomplete="off">
@@ -4819,7 +4819,7 @@
                 <button class="btn btn-sm um-refresh-btn" @click="refreshApprovedZone" title="重新读取本机账号表，刷新审核通过区的分类">↻ 刷新</button>
               </span>
             </div>
-            <span class="um-section-desc" v-if="umTab==='auth'">以下为「{{ umAuth==='2y' ? '24月期（¥4000）' : umAuth==='1y' ? '12月期（¥2000）' : umAuth==='6m' ? '6月期（¥1000）' : umAuth==='none' ? '未开通使用' : '授权免费试用' }}」子标签对应的会员板块：仅显示该分类下、经审核后通过会员审核的账户，绝不混入其他月期 / 试用 / 管理员 / 未开通。待审核支付申请在「审核区」面板显示与处理，审核通过后点右侧「↻ 刷新」即归入本子标签对应分类。在此改动账号设置后，点「💾 保存」上传云端后端，刷新页面不丢失。</span>
+            <span class="um-section-desc" v-if="umTab==='auth'">以下为「{{ umAuth==='2y' ? '24月期（¥4000）' : umAuth==='1y' ? '12月期（¥2000）' : umAuth==='6m' ? '6月期（¥1000）' : umAuth==='none' ? '未开通使用' : '试用非会员' }}」子标签对应的会员板块：仅显示该分类下、经审核后通过会员审核的账户，绝不混入其他月期 / 试用 / 管理员 / 未开通。待审核支付申请在「审核区」面板显示与处理，审核通过后点右侧「↻ 刷新」即归入本子标签对应分类。在此改动账号设置后，点「💾 保存」上传云端后端，刷新页面不丢失。</span>
             <span class="um-section-desc" v-else>以下为审核通过区：显示所有已注册、非待审的账户（涵盖管理员 / 付费会员 / 试用中 / 已注册未开通会员——即所有状态的用户）。待审核申请只在上方「审核区」显示与处理。在此改动账号设置（角色 / 状态 / 停用 / 试用 / 注册日期 / 额度）后，点「💾 保存」上传到云端后端，刷新页面、换设备登录都不会丢失；「↻ 刷新」只重读本机。</span>
           </div>
           <table class="um-table" v-if="approvedZoneList().length && umTab !== 'admin'">
@@ -5075,14 +5075,14 @@
     </transition>
   </div>
 
-  <script src="js/auth.js?v=20261019b"></script>
-  <script src="js/auth-sync.js?v=20261019b"></script>
+  <script src="js/auth.js?v=20261019c"></script>
+  <script src="js/auth-sync.js?v=20261019c"></script>
   <!-- 边缘加速默认站点（batch37 治本：Cloudflare Worker 代理东财/腾讯，缓解 JSONP 限流误报）。
        若你所在地区 workers.dev 访问慢，可在「设置 → 行情加速地址」清空即恢复纯直连。 -->
   <script>window.__SNT_ACCEL__ = 'https://sichina.dpdns.org';</script>
   <!-- 扫码支付二维码渲染库（第三方 qrcodejs，本地托管避免外链失效）。renderQr 会先检测全局 QRCode 是否存在。 -->
-  <script src="assets/qrcode.min.js?v=20261019b"></script>
-  <script src="js/auth-boot.js?v=20261019b"></script>
+  <script src="assets/qrcode.min.js?v=20261019c"></script>
+  <script src="js/auth-boot.js?v=20261019c"></script>
   <!-- store / stock-api / hot-topics / app 由 auth-boot.js 在登录通过后动态装载，
        未登录时它们不会被下载，业务数据也不会进入内存 -->
 </body>

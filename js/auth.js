@@ -1895,6 +1895,9 @@
           username: v.username, role: roleVal, hash: hash,
           pwSeal: sealPassword(v.password),
           disabled: false, status: STATUS.ACTIVE,
+          // 20261019c：管理员「普通用户注册」入口建出的账号也默认赠送 1 天试用，
+          // 使其直接归入「试用非会员」分类（与自助注册行为一致），避免只落在「未开通使用」。
+          trialUntil: now + 24 * 60 * 60 * 1000, trialDays: 1,
           createdAt: now, updatedAt: now,
           registerDate: localDateStr(now), quotaMonths: 0,
           createdBy: (self.user && self.user.username) || '',
@@ -2629,9 +2632,23 @@
         self.users.forEach(function (lu) {
           if (!lu || !lu.username) return;
           var ca = accs[String(lu.username)];
-          if (!ca || !Array.isArray(ca.paidClaimIds) || ca.paidClaimIds.length === 0) return;
-          var merged = claimIdList((lu.paidClaimIds || []).concat(ca.paidClaimIds));
-          if (merged.length !== (lu.paidClaimIds || []).length) { lu.paidClaimIds = merged; changed = true; }
+          if (!ca) return;
+          var thisChanged = false;
+          if (Array.isArray(ca.paidClaimIds) && ca.paidClaimIds.length) {
+            var merged = claimIdList((lu.paidClaimIds || []).concat(ca.paidClaimIds));
+            if (merged.length !== (lu.paidClaimIds || []).length) { lu.paidClaimIds = merged; thisChanged = true; }
+          }
+          // 20261019c：用云端权威的「试用 / 会员」字段刷新本机陈旧副本（取时间较大值），
+          // 不覆盖密码哈希 / 角色 / 状态。即使本机账号 trialUntil 缺失，刷新后也能正确归入「试用非会员」。
+          var cloudTrial = Number(ca.trialUntil) || 0;
+          if (cloudTrial > (Number(lu.trialUntil) || 0)) { lu.trialUntil = cloudTrial; thisChanged = true; }
+          if (Number(ca.trialDays) > (Number(lu.trialDays) || 0)) { lu.trialDays = Number(ca.trialDays); thisChanged = true; }
+          var cloudPmu = Number(ca.payMembershipUntil) || 0;
+          if (cloudPmu > (Number(lu.payMembershipUntil) || 0)) { lu.payMembershipUntil = cloudPmu; thisChanged = true; }
+          if (!Number(lu.paidAt) && Number(ca.paidAt)) { lu.paidAt = Number(ca.paidAt); thisChanged = true; }
+          if (!lu.paidPlan && typeof ca.paidPlan === 'string') { lu.paidPlan = ca.paidPlan; thisChanged = true; }
+          if (!Number(lu.paidAmount) && Number(ca.paidAmount)) { lu.paidAmount = Number(ca.paidAmount); thisChanged = true; }
+          if (thisChanged) { changed = true; lu.updatedAt = now; }
         });
         if (recovered > 0 || cleaned > 0 || changed > 0) { saveUsers(self.users); }
         return { ok: true, recovered: recovered, skipped: skipped, cleaned: cleaned, changed: changed };

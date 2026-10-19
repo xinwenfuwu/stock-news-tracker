@@ -1,6 +1,6 @@
 // 20261019a：用户管理顶部「🔄 刷新」按钮（位于「从云端恢复」左侧）回归测试。
 // 验证：① 按钮绑定 refreshUserManagement；② 该函数从云端注册表只读合并（recoverFromRegistry）；
-// ③ 刷新账号表分类（审核通过区 / 授权免费试用）；④ refreshingUm 状态位存在。
+// ③ 刷新账号表分类（审核通过区 / 试用非会员）；④ refreshingUm 状态位存在。
 // 采用与项目其它 app.js 测试一致的「源码字面接线」断言风格。
 import fs from 'fs';
 import path from 'path';

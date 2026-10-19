@@ -154,7 +154,7 @@ const app = createApp({
     const resetPw = reactive({ show: false, username: '', newPassword: '', confirmPassword: '', error: '', reveal: false });
     /* 用户管理全屏面板：左侧/顶部 Tab 状态。
        umTab: 'admin' 管理员 | 'review' 审核区 | 'auth' 授权使用
-       umAuth: 'trial' 授权免费试用 | '6m' 6月期 | '1y' 12月期 | '2y' 24月期 | 'none' 未开通使用 */
+       umAuth: 'trial' 试用非会员 | '6m' 6月期 | '1y' 12月期 | '2y' 24月期 | 'none' 未开通使用 */
     const umTab = ref('review');
     const umAuth = ref('trial');
     // 会员搜索（管理员 / 普通用户注册 / 授权使用 / 审核区 各面板共用）
@@ -567,7 +567,7 @@ const app = createApp({
     /**
      * 20261019a：用户管理顶部「🔄 刷新」按钮（位于「从云端恢复」左侧）。
      * 需求：用户注册后账号信息同步到云端，管理员在此点「刷新」即可看到刚注册成功的账号——
-     * 它们会出现在「审核通过区」（所有已注册非待审账号）与「授权免费试用（非支付会员用户）」分类中
+     * 它们会出现在「审核通过区」（所有已注册非待审账号）与「试用非会员」分类中
      * （注册即送 1 天试用，新注册用户落在免费试用；已注册未开通会员的落在「未开通使用」）。
      * 实现：从云端注册表只读合并最新账号（免令牌，其他设备注册的用户经此并入本机列表），
      * 刷新账号表与各分类、重拉云端「已保存」快照（保证「未保存」角标准确）。与「从云端恢复」互为补充：
@@ -583,13 +583,22 @@ const app = createApp({
             if (rr && rr.ok) merged = Number(rr.recovered) || 0;
           } catch (e) { /* 网络失败不影响本机刷新 */ }
         }
-        refreshUserList();                 // 重算 审核通过区 / 授权免费试用 / 各月期会员板块 分类
+        refreshUserList();                 // 重算 审核通过区 / 试用非会员 / 各月期会员板块 分类
         await loadCloudRegistrySnapshot(); // 重拉云端快照，保证「未保存」角标准确
+        // 20261019c：刷新也把「本机独有 / 与云端不一致」的账号推上云端（满足「点击按钮后账号数据返回到云端」）。
+        // 这样即便某次注册/改动的云端写入偶发失败，管理员点一次刷新即可补传，账号随后归入对应分类（含试用非会员）。
         if (A && A.Sync && A.Sync.isAdminConfigured && A.Sync.isAdminConfigured()) {
+          const dirtyNow = dirtyAccountList.value;
+          if (dirtyNow && dirtyNow.length) {
+            try {
+              const r = await A.saveUsersToRegistry(dirtyNow.map(function (u) { return u.username; }));
+              (r.saved || []).forEach(markAccountSynced);
+            } catch (e) { /* 补传失败不影响本次刷新查看 */ }
+          }
           loadRemotePending();
         }
         showToast(merged > 0
-          ? ('已刷新：新并入 ' + merged + ' 个云端注册账号，已出现在审核通过区 / 授权免费试用')
+          ? ('已刷新：新并入 ' + merged + ' 个云端注册账号，已出现在审核通过区 / 试用非会员')
           : '已刷新：本机与云端账号列表已是最新', 'success');
       } finally {
         refreshingUm.value = false;
@@ -3187,7 +3196,7 @@ const app = createApp({
       refreshUserList();
       memberManual.username = '';
     }
-    // 授权免费试用（非支付会员用户）：仅列出「当前处于试用期」的普通用户，供管理员核对 / 续期 / 撤销。
+    // 试用非会员：仅列出「当前处于试用期」的普通用户，供管理员核对 / 续期 / 撤销。
     // 注意：已注册但未开通会员的普通用户不再归入此处（见 registeredNoMemberList，统一收口到「授权使用 → 未开通使用」子标签）。
     function trialUsersList() {
       return (userList.value || []).filter(u => {
@@ -3308,7 +3317,7 @@ const app = createApp({
     function adminClassify() {
       const list = (userList.value || []);
       const cats = {
-        trial: { key: 'trial', label: '授权免费试用（非支付会员用户）', amount: 0, items: [] },
+        trial: { key: 'trial', label: '试用非会员', amount: 0, items: [] },
         '6m': { key: '6m', label: '6月期（¥1000）用户', amount: 1000, items: [] },
         '1y': { key: '1y', label: '12月期（¥2000）用户', amount: 2000, items: [] },
         '2y': { key: '2y', label: '24月期（¥4000）用户', amount: 4000, items: [] },
@@ -3366,7 +3375,7 @@ const app = createApp({
       const all = (userList.value || []);
       if (umTab.value === 'auth') {
         const sub = umAuth.value;
-        if (sub === 'trial') return trialUsersList();            // 授权免费试用：仅试用中且非付费
+        if (sub === 'trial') return trialUsersList();            // 试用非会员：仅试用中且非付费
         if (sub === 'none') return registeredNoMemberList();      // 未开通使用：已注册但无有效会员、未试用的普通用户
         return all.filter(u => planOfUser(u) === sub);            // 付费套餐：仅该套餐
       }
