@@ -2438,7 +2438,9 @@
       var self = this;
       return Promise.resolve(this._syncUserToRegistry(u)).then(function (sr) {
         if (sr && sr.ok) return sr;                    // ① 直写成功
-        if (!(sr && sr.skip)) return sr;               // 非「缺令牌」类失败不重试
+        // 直写失败（缺令牌 skip，或令牌无 contents:write 权限 / 409 等）→ 一律回落 Worker 代写。
+        // 否则会出现「本机登录成功、云端却仍是空白占位」的死循环（hy123 实况：令牌在但直写失败，
+        // 旧逻辑只在该分支短路返回，永不走 Worker，导致换设备始终登不上）。
         if (Auth.Sync && typeof Auth.Sync.registerRemoteViaWorker === 'function') {
           return Auth.Sync.registerRemoteViaWorker(u).then(function (wr) {
             if (wr && wr.ok) return wr;
