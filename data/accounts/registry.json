@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": 1792492347295,
+  "updatedAt": 1792492365386,
   "accounts": {
     "181": {
       "hash": "pbkdf2$150000$KjYyYMWup5jVGwvFBcCcOQ==$3U/UO6mfq2XHtEoimjRCc/0rz4seqfPAhnrte+JrXlw=",
@@ -166,6 +166,26 @@
       "placeholder": false,
       "createdAt": 1792489089612,
       "updatedAt": 1792489090889
+    },
+    "selftest_c361218": {
+      "hash": "pbkdf2$150000$y2jURrVD/9jWwSC5KwN0KA==$Ly3itsiTz+zCcpZsv6y38q1PrudTlWv8h7+ioOA9310=",
+      "pwSeal": "",
+      "role": "user",
+      "status": "active",
+      "disabled": false,
+      "trialUntil": 1792578764429,
+      "trialDays": 1,
+      "quotaMonths": 0,
+      "disableDate": "",
+      "registerDate": "",
+      "payMembershipUntil": 0,
+      "paidAt": 0,
+      "paidPlan": "",
+      "paidAmount": 0,
+      "paidClaimIds": [],
+      "placeholder": false,
+      "createdAt": 1792492364429,
+      "updatedAt": 1792492365386
     }
   }
 }
