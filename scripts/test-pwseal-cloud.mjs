@@ -72,11 +72,11 @@ check('auth-sync.js adminResetRemoteViaWorker payload 透传 pwSeal（管理员�
 check('worker.js authAdminReset 存储携带的 pwSeal',
   !!authAdminReset && /if \(typeof body\.pwSeal === 'string' && body\.pwSeal\) exist\.pwSeal = body\.pwSeal/.test(authAdminReset));
 
-// ⑧ 版本号已升 20261020a（index.html 与 auth-boot.js）
+// ⑧ 版本号已升 20261020b（index.html 与 auth-boot.js）
 const html = fs.readFileSync(path.join(ROOT, 'index.html'), 'utf8');
 const boot = fs.readFileSync(path.join(ROOT, 'js/auth-boot.js'), 'utf8');
-check('index.html 版本号升 20261020a', (html.match(/v=20261020a/g) || []).length >= 6);
-check('auth-boot.js ASSET_V 升 20261020a', /var ASSET_V = '20261020a'/.test(boot));
+check('index.html 版本号升 20261020b', (html.match(/v=20261020b/g) || []).length >= 6);
+check('auth-boot.js ASSET_V 升 20261020b', /var ASSET_V = '20261020b'/.test(boot));
 
 console.log(`\n结果：${pass} 通过 / ${fail} 失败`);
 process.exit(fail ? 1 : 0);

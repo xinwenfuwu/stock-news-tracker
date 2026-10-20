@@ -27,7 +27,7 @@
   'use strict';
 
   // 与 index.html 中静态资源版本号保持一致，避免升级后命中旧缓存
-  var ASSET_V = '20261020a';
+  var ASSET_V = '20261020b';
 
   // 管理员点开「注册申请导入链接」后，申请码暂存在这里，等业务层（app.js）就绪后取走
   var IMPORT_KEY = 'snt-pending-import-v1';
@@ -925,6 +925,24 @@
         Auth.register(u, p).then(function (r) {
           setBusy('');
           if (!r.ok) { showMsg(r.error, 'error'); return; }
+          // 已注册账号再次提交注册申请：识别为已有用户，返回其试用/会员状态，跳登录。
+          // 这样「注册 → 1 天试用 → 归试用非会员；试用到期未付费 → 自动归未开通使用」
+          // 的链路在重复注册时也不会被「用户名已被使用」打断。
+          if (r.alreadyRegistered) {
+            var lu2 = $('#login-username');
+            if (lu2) lu2.value = (r.user && r.user.username) || '';
+            showForm('login');
+            var amsg;
+            if (r.isMember) {
+              amsg = '该账号已是会员，请用原密码直接登录。';
+            } else if (r.trialActive) {
+              amsg = '该账号已注册并处于 1 天试用期内（至 ' + ((r.user && r.user.trialUntilText) || '') + '），请用原密码直接登录；管理员端可在「授权使用 → 试用非会员」查看。';
+            } else {
+              amsg = '该账号试用已结束且未开通会员，请登录后开通会员以继续使用。';
+            }
+            showMsg(amsg, (r.isMember || r.trialActive) ? 'ok' : 'warn');
+            return;
+          }
           // batch84：注册即 1 天试用（免申请码）→ 直接提示可登录，不展示申请码。
           if (r.autoTrial) {
             var lu = $('#login-username');

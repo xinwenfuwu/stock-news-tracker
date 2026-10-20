@@ -1111,12 +1111,33 @@
       if (!v.ok) return Promise.resolve(v);
       this.users = loadUsers();
       var exist = findUser(this.users, v.username);
-      // 已通过的账号直接拒绝；待审核的先不拦，等算出哈希确认是同一个人的密码再说
-      if (exist && statusOf(exist) === STATUS.ACTIVE) {
-        return Promise.resolve({ ok: false, error: '该用户名已被使用，请换一个' });
-      }
       return makePasswordHash(v.password).then(function (hash) {
         var now = Date.now();
+        // 已存在「有效(active)」账号：识别为已有用户，不再报「用户名已被使用」。
+        // 校验密码一致后返回其账号信息（含试用状态），并重新同步到云端，
+        // 使其稳定出现在管理员「授权使用 → 试用非会员」板块（试用中）或「未开通使用」板块（试用已结束）。
+        // 密码不符仍统一报「用户名已被使用」，避免用户名探测。
+        if (exist && statusOf(exist) === STATUS.ACTIVE) {
+          return verifyPassword(v.password, exist.hash).then(function (okPwd) {
+            if (!okPwd) return { ok: false, error: '该用户名已被使用，请换一个' };
+            var tr = trialState(exist);
+            var pmu = Number(exist.payMembershipUntil) || 0;
+            var isMember = pmu > now;
+            // 重新同步到云端（双路径：有令牌直写 / 无令牌经 Worker），让管理员面板与跨设备都能看到该账号
+            var cloudSync = { ok: false, skip: true };
+            try { cloudSync = self._syncAccountToCloud(exist); } catch (e) { cloudSync = { ok: false, error: String((e && e.message) || e) }; }
+            return Promise.resolve(cloudSync).then(function (cs) {
+              return {
+                ok: true, user: publicUser(exist),
+                alreadyRegistered: true,
+                trialActive: tr.active,
+                isMember: isMember,
+                trialUntil: tr.until, trialDays: tr.days,
+                cloudSync: cs || { ok: false }
+              };
+            });
+          });
+        }
         // batch84：注册即 1 天试用（免申请码）。规则：
         //   · 全新用户（本机无同名记录）→ 直接给 1 天 trial，注册完即可作为普通用户登录，无需复制申请码；
         //   · 已存在「待审核」记录 → 原行为（同设备重提，返回同一申请码）；
