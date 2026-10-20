@@ -575,6 +575,7 @@ const app = createApp({
      */
     async function refreshUserManagement() {
       refreshingUm.value = true;
+      let pushedCount = 0;
       try {
         let merged = 0;
         if (A && A.recoverFromRegistry) {
@@ -586,19 +587,29 @@ const app = createApp({
         refreshUserList();                 // 重算 审核通过区 / 试用非会员 / 各月期会员板块 分类
         await loadCloudRegistrySnapshot(); // 重拉云端快照，保证「未保存」角标准确
         // 20261019c：刷新也把「本机独有 / 与云端不一致」的账号推上云端（满足「点击按钮后账号数据返回到云端」）。
-        // 这样即便某次注册/改动的云端写入偶发失败，管理员点一次刷新即可补传，账号随后归入对应分类（含试用非会员）。
-        if (A && A.Sync && A.Sync.isAdminConfigured && A.Sync.isAdminConfigured()) {
+        // 20261019e：不再要求「必须配置 GitHub 令牌」——saveUsersToRegistry → _syncAccountToCloud 本身有
+        // 双路径兜底（令牌直写 / Worker 代写），无令牌管理员也要能把凭证补传上去。
+        // 这正是「云端空占位、用户永远登录不上」的修复入口：点一次刷新即补全 hash + pwSeal。
+        if (A && typeof A.isAdmin === 'function' && A.isAdmin()) {
           const dirtyNow = dirtyAccountList.value;
           if (dirtyNow && dirtyNow.length) {
             try {
               const r = await A.saveUsersToRegistry(dirtyNow.map(function (u) { return u.username; }));
               (r.saved || []).forEach(markAccountSynced);
+              pushedCount = (r.saved || []).length;
             } catch (e) { /* 补传失败不影响本次刷新查看 */ }
           }
-          loadRemotePending();
+          if (A.Sync && A.Sync.isAdminConfigured && A.Sync.isAdminConfigured()) loadRemotePending();
+          if (pushedCount > 0) {
+            await loadCloudRegistrySnapshot();
+            refreshUserList();
+          }
         }
-        showToast(merged > 0
-          ? ('已刷新：新并入 ' + merged + ' 个云端注册账号，已出现在审核通过区 / 试用非会员')
+        const tips = [];
+        if (merged > 0) tips.push('新并入 ' + merged + ' 个云端注册账号');
+        if (typeof pushedCount === 'number' && pushedCount > 0) tips.push('已把 ' + pushedCount + ' 个本机账号（含密码凭证）补传云端');
+        showToast(tips.length
+          ? ('已刷新：' + tips.join('；') + '；已出现在审核通过区 / 试用非会员')
           : '已刷新：本机与云端账号列表已是最新', 'success');
       } finally {
         refreshingUm.value = false;
