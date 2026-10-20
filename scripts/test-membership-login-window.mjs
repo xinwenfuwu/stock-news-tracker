@@ -215,7 +215,8 @@ function loginFailCheck(name, lg) {
   console.log('\n[场景6] 静态接线：自愈在任何直写失败都回落 Worker');
   {
     const auth = fs.readFileSync(path.join(ROOT, 'js/auth.js'), 'utf8');
-    check('auth.js 直写失败也回落 registerRemoteViaWorker', /registerRemoteViaWorker\(u\)/.test(auth));
+    // 20261020c：回落 Worker 时带 selfSet（本人刚设定的密码可覆盖云端旧哈希）
+    check('auth.js 直写失败也回落 registerRemoteViaWorker', /registerRemoteViaWorker\(u, \{ selfSet: true \}\)/.test(auth));
   }
 
   console.log('\n========== 结果：' + pass + ' 通过 / ' + fail + ' 失败 ==========');

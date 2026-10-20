@@ -1105,6 +1105,27 @@
      * 自助注册：只写入一条待审核记录，**不会**登录态。
      * 必须由管理员 approveUser 通过后才能登录。
      */
+    /**
+     * 自助注册 = 「登录账号 + 登录密码」的设定动作（20261020c 起统一口径）。
+     *
+     * 用户诉求（2026-10-20，原话）：点一次「注册申请」就要同时完成三件事，
+     * 中间没有任何等待 ——
+     *   ① 管理员「用户管理」里立刻出现该账号；
+     *   ② 注册者返回登录页用**刚输入的密码**立刻能登录；
+     *   ③ 归类自动完成（有会员→会员期；否则 1 天试用→「试用非会员」；试用到期未付费→「未开通使用」）。
+     *
+     * 旧逻辑的三个坑（都指向「注册完返回登录必然失败」）：
+     *   · 本机已存在同名账号且密码不同 → 直接报「该用户名已被使用」，密码根本没改；
+     *   · 本机存在 pending/rejected 记录 → 只回一个申请码，状态仍不可登录；
+     *   · 云端对「异哈希 + 已激活/付费」返回 409 → 云端密码永远是旧的，
+     *     登录时 loginRemote 拿到 mismatch + 会员到期时间 → 提示
+     *     「会员有效但密码不符……」（用户截图里的报错就是这么产生的）。
+     *
+     * 现在：无论本机是否已有同名账号（试用中 / 试用到期 / 待审核 / 被驳回），
+     * 一律**以本次输入的密码为准**重建凭证（会籍/支付字段只升不降，管理员账号除外），
+     * 状态置为 active，无有效会员且试用已结束时补 1 天试用；随后**等待**云端写入完成再返回，
+     * 保证「点一次注册申请」即闭环。
+     */
     register: function (username, password) {
       var self = this;
       var v = this.validate(username, password, password);
@@ -1113,110 +1134,59 @@
       var exist = findUser(this.users, v.username);
       return makePasswordHash(v.password).then(function (hash) {
         var now = Date.now();
-        // 已存在「有效(active)」账号：识别为已有用户，不再报「用户名已被使用」。
-        // 校验密码一致后返回其账号信息（含试用状态），并重新同步到云端，
-        // 使其稳定出现在管理员「授权使用 → 试用非会员」板块（试用中）或「未开通使用」板块（试用已结束）。
-        // 密码不符仍统一报「用户名已被使用」，避免用户名探测。
-        if (exist && statusOf(exist) === STATUS.ACTIVE) {
-          return verifyPassword(v.password, exist.hash).then(function (okPwd) {
-            if (!okPwd) return { ok: false, error: '该用户名已被使用，请换一个' };
-            var tr = trialState(exist);
-            var pmu = Number(exist.payMembershipUntil) || 0;
-            var isMember = pmu > now;
-            // 重新同步到云端（双路径：有令牌直写 / 无令牌经 Worker），让管理员面板与跨设备都能看到该账号
-            var cloudSync = { ok: false, skip: true };
-            try { cloudSync = self._syncAccountToCloud(exist); } catch (e) { cloudSync = { ok: false, error: String((e && e.message) || e) }; }
-            return Promise.resolve(cloudSync).then(function (cs) {
-              return {
-                ok: true, user: publicUser(exist),
-                alreadyRegistered: true,
-                trialActive: tr.active,
-                isMember: isMember,
-                trialUntil: tr.until, trialDays: tr.days,
-                cloudSync: cs || { ok: false }
-              };
-            });
-          });
-        }
-        // batch84：注册即 1 天试用（免申请码）。规则：
-        //   · 全新用户（本机无同名记录）→ 直接给 1 天 trial，注册完即可作为普通用户登录，无需复制申请码；
-        //   · 已存在「待审核」记录 → 原行为（同设备重提，返回同一申请码）；
-        //   · 已存在「被驳回」记录 → 原行为（重新申请，回到待审核，需管理员通过）。
-        // 仅「已存在账号重新申请」才写云端注册表；全新用户不进管理员待审列表。
-        if (exist && typeof Auth !== 'undefined' && Auth.Sync && Auth.Sync.isConfigured && Auth.Sync.isConfigured()) {
-          Auth.Sync.registerRemote(v.username, v.password).catch(function () { /* 离线兜底 */ });
-        }
-        // 本机已有同名「待审核」记录：密码一致就直接把同一个申请码再给他一次。
-        if (exist && statusOf(exist) === STATUS.PENDING) {
-          // 注意：密码哈希带随机 salt，同一个密码每次算出的 hash 都不一样，
-          // 所以不能拿 hash 字符串直接比，必须用 verifyPassword 真正校验一次。
-          return verifyPassword(v.password, exist.hash).then(function (okPwd) {
-            if (!okPwd) {
-              return {
-                ok: false,
-                error: '该用户名已提交过注册申请。若这是你自己的账号，请用注册时设置的密码重新提交，即可取回同一个申请码'
-              };
-            }
-            if (!exist.pwSeal) exist.pwSeal = sealPassword(v.password);
-            exist.updatedAt = Date.now();
-            exist.registeredOnDevice = true;          // 本机自助注册的账号，标记设备锁
-            setDeviceRegisteredUser(v.username);
-            saveUsers(self.users);
-            return {
-              ok: true, user: publicUser(exist),
-              requestCode: makeRequestCode(exist), alreadySubmitted: true
-            };
-          });
-        }
-        // 已存在「被驳回」记录：重新申请，回到待审核（沿用原行为，需管理员通过）。
-        if (exist && statusOf(exist) === STATUS.REJECTED) {
-          var ur = {
-            username: v.username, role: ROLE.USER, hash: hash,
-            pwSeal: sealPassword(v.password),
-            disabled: false, status: STATUS.PENDING,
-            registeredOnDevice: true,               // 本机自助注册的账号，标记设备锁
-            createdAt: exist.createdAt || now, updatedAt: now,
-            logins: []
+        // 管理员账号不经注册接口改密码（防止任何人仅凭用户名接管管理员）
+        if (exist && exist.role === ROLE.ADMIN) {
+          return {
+            ok: false,
+            error: '该用户名为管理员账号，请直接用管理员密码登录；若忘记密码，请用另一台已登录的管理员设备在「用户管理」里重置'
           };
-          var ri = self.users.indexOf(exist);
-          if (ri >= 0) self.users[ri] = ur; else self.users.push(ur);
-          if (!saveUsers(self.users)) return { ok: false, error: '保存失败：浏览器本地存储不可用' };
-          setDeviceRegisteredUser(v.username);
-          return { ok: true, user: publicUser(ur), requestCode: makeRequestCode(ur) };
         }
-        // 全新用户：注册即自动开通 1 天试用（trial），无需管理员审核、无需复制申请码。
-        // 状态直接置为 active：试用期内可正常登录；试用一到期即被 accessDeny 拦截，
-        // 账号归入「已注册未开通会员普通用户」（符合规则③：注册后自动 1 天免费、之后无付费则进入未开通会员分类，无需管理员审核）。
-        var u = {
-          username: v.username, role: ROLE.USER, hash: hash,
-          pwSeal: sealPassword(v.password),
-          disabled: false, status: STATUS.ACTIVE,
-          registeredOnDevice: true,                 // 本机自助注册的账号，标记设备锁
-          trialUntil: now + 24 * 60 * 60 * 1000,
-          createdAt: now, updatedAt: now,
-          logins: []
-        };
-        self.users.push(u);
+        // 管理员停用的账号不能靠「再注册一次」自行解封
+        if (exist && exist.disabled) {
+          return { ok: false, error: '该账号已被管理员停用，请联系管理员恢复后再登录' };
+        }
+        var isMember = !!(exist && (Number(exist.payMembershipUntil) || 0) > now);
+        var trialUntil = exist ? (Number(exist.trialUntil) || 0) : 0;
+        // 「注册即送 1 天试用」只在**从未开通过试用**时给一次。
+        // 试用已结束且未付费的账号再次注册不会重置试用（否则可无限刷免费额度），
+        // 仍归「授权使用 → 未开通使用」，登录时按会员门禁提示开通。
+        if (!isMember && !(trialUntil > 0)) trialUntil = now + 24 * 60 * 60 * 1000;
+        // 沿用已有记录（保留 paidClaimIds / 支付信息 / 创建时间等），只覆盖凭证与可登录状态
+        var u = exist || { username: v.username, logins: [], createdAt: now };
+        u.username = v.username;
+        u.role = ROLE.USER;
+        u.hash = hash;
+        u.pwSeal = sealPassword(v.password);      // 管理员面板可显示/复制的密码 = 本次注册输入的密码
+        u.placeholder = false;                    // 认领占位凭证：不再是空占位
+        u.disabled = false;
+        u.status = STATUS.ACTIVE;                 // 注册即生效，无需等待管理员审核
+        u.registeredOnDevice = true;              // 设备注册锁
+        u.pwdSetAt = now;                         // 本次密码设定时间（供登录自愈判断「谁的凭证最新」）
+        u.trialUntil = trialUntil;
+        if (!(Number(u.trialDays) > 0)) u.trialDays = 1;
+        u.createdAt = Number(u.createdAt) || now;
+        u.updatedAt = now;
+        if (!Array.isArray(u.logins)) u.logins = [];
+        var idx = exist ? self.users.indexOf(exist) : -1;
+        if (idx >= 0) self.users[idx] = u; else self.users.push(u);
         if (!saveUsers(self.users)) return { ok: false, error: '保存失败：浏览器本地存储不可用' };
-        setDeviceRegisteredUser(v.username);        // 设备注册锁：本机已自助注册一个账号
-        // 20261016d：全新注册也写云端注册表，保证「普通用户注册后，管理员在任何设备的
-        // 用户管理里都以**相同用户名**看到该账号」，杜绝「只存在本机 → 管理员看不到 →
-        // 手动添加成另一个名字」的用户名分裂。同步的是真实状态（active + 1天试用），
-        // 对方设备登录时经 loginRemote 直接放行。
-        // 20261016k：写入走 _syncAccountToCloud——有令牌直写、无令牌经 Worker 代写；
-        // 失败（离线等）不影响注册结果，仅意味着跨设备暂不可见（下次登录会补写）。
-        // 20261018g：云端写入改为「等待结果并上报」，不再静默吞错。
-        // 写入失败（Worker 不可达 / 主域名 DNS 未委派）时账号仍落本机（可本地登录），
-        // 但必须把 cloudSync 状态带回 UI，提示用户「本机可用、其他设备需稍后同步」，
-        // 杜绝「注册成功却换设备登录报密码不正确」的静默陷阱。
+        setDeviceRegisteredUser(v.username);
+        // 立刻同步云端并**等待完成**（有令牌直写 / 无令牌经 Worker 代写，Worker 侧对本次新密码放行覆盖），
+        // 使「注册完 → 管理员用户管理可见 → 返回登录可成功」在同一次点击内闭环。
         var cloudSync = { ok: false, skip: true };
         try {
           cloudSync = self._syncAccountToCloud(u);
         } catch (e) { cloudSync = { ok: false, error: String((e && e.message) || e) }; }
         return Promise.resolve(cloudSync).then(function (cs) {
+          var tr = trialState(u);
           return {
-            ok: true, user: publicUser(u), autoTrial: true,
-            trialUntil: u.trialUntil, trialDays: 1,
+            ok: true, user: publicUser(u),
+            autoTrial: true,
+            alreadyRegistered: !!exist,
+            passwordUpdated: !!exist,       // 本次注册把该账号密码更新为输入值
+            trialActive: tr.active,
+            isMember: isMember,
+            trialUntil: tr.until, trialDays: tr.days || 1,
             cloudSync: cs || { ok: false }
           };
         });
@@ -2463,10 +2433,13 @@
         // 否则会出现「本机登录成功、云端却仍是空白占位」的死循环（hy123 实况：令牌在但直写失败，
         // 旧逻辑只在该分支短路返回，永不走 Worker，导致换设备始终登不上）。
         if (Auth.Sync && typeof Auth.Sync.registerRemoteViaWorker === 'function') {
-          return Auth.Sync.registerRemoteViaWorker(u).then(function (wr) {
+          // 20261020c：带上 selfSet 标记——本机这一刻的凭证就是「用户自己刚定的密码」，
+          // 云端若已有同名账号（旧密码 / 管理员代建 / 换过密码）应放行覆盖，而不是 409 死锁。
+          // 否则注册完返回登录必然失败（「会员有效但密码不符」），管理员面板显示的也永远是旧密码。
+          return Auth.Sync.registerRemoteViaWorker(u, { selfSet: true }).then(function (wr) {
             if (wr && wr.ok) return wr;
-            // 注册端点对「已激活账号的不同哈希」会 409（防抢名）——改密码只能走专用通道
-            if (wr && wr.status === 409) {
+            // Worker 仍拒绝（老版本 Worker / 管理员账号）→ 再试「管理员重置密码」通道
+            if (wr && (wr.status === 409 || wr.status === 403)) {
               return self._syncPasswordToCloud(u).then(function (pr) {
                 return pr && pr.ok ? pr : (sr.ok ? sr : pr);
               });

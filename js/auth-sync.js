@@ -531,7 +531,7 @@
    * （Worker 持 GH_PAT，落库后管理员打开用户管理即经 recoverFromRegistry 看到该账号）。
    * 任何失败都返回 { ok:false }，调用方离线兜底，不阻塞注册流程。
    */
-  function registerRemoteViaWorker(acct) {
+  function registerRemoteViaWorker(acct, opts) {
     var uname = String(acct && acct.username || '').trim();
     // 20261018e：占位会员凭证（管理员为旧版无账号申请登记会籍）hash 为空、但带 placeholder 标记，
     // 允许经本端点写入云端注册表（普通账号仍要求 pbkdf2$ 哈希）。
@@ -560,7 +560,12 @@
       quotaMonths: Number(acct.quotaMonths) || 0,
       // 20261018e：已核对开通的申请 id + 占位标记一并上云，供跨设备审核区去重与会员认领。
       paidClaimIds: claimIdList(acct.paidClaimIds),
-      placeholder: isPlaceholder
+      placeholder: isPlaceholder,
+      // 20261020c：selfSet=true 表示「本人刚设定了这个密码」（注册申请 / 登录自愈补传）。
+      // Worker 端据此对普通用户账号放行哈希覆盖：否则 /auth/register 对「异哈希 + 已激活/付费」
+      // 一律 409，导致「注册完用户管理里显示的还是旧密码、用户拿新密码登不上」。
+      // 管理员账号（role=admin）Worker 端仍然拒绝，不会被本标记接管。
+      selfSet: !!(opts && opts.selfSet)
     };
     // 20261018g：经多写入通道兜底（sichina 主 / stock-edge *.workers.dev 兜底），
     // 避免主域名 DNS 未委派时注册写入静默失败。

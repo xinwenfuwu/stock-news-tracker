@@ -400,6 +400,45 @@ async function authRegister(request) {
         if (attempt === 0 && wm.status === 409) continue;
         return json({ error: '写入失败：' + wm.error }, 500);
       }
+      // 20261020c：自助「注册即设定密码」通道（body.selfSet === true）。
+      // 背景（用户实测故障）：注册页输入新密码提交时，云端若已有同名账号（旧密码 / 管理员代建 /
+      // 别处改过密码），旧逻辑对「异哈希 + active/付费」一律 409 → 云端密码永远保持旧的 →
+      // 用户拿刚输入的密码返回登录必然失败（登录页报「会员有效但密码不符」），
+      // 管理员「用户管理」里显示的也一直是旧密码。
+      // 本产品里「注册申请」的语义就等于「设定该账号的登录密码」，故对普通用户账号放行覆盖：
+      // 只更新 hash / pwSeal / 可登录状态，会籍与支付字段只升不降。
+      // 安全边界：管理员账号（role=admin）与已停用账号（disabled=true）仍拒绝，不能被本标记接管。
+      if (exist && body.selfSet === true && !claiming) {
+        if (exist.role === 'admin') {
+          return json({ ok: false, error: '管理员账号不能通过注册接口设置密码，请管理员登录后自行修改' }, 409);
+        }
+        if (exist.disabled) {
+          return json({ ok: false, error: '该账号已被管理员停用，请联系管理员恢复' }, 403);
+        }
+        exist.hash = hash;
+        if (typeof body.pwSeal === 'string' && body.pwSeal) exist.pwSeal = body.pwSeal;
+        exist.placeholder = false;
+        exist.status = 'active';
+        exist.role = 'user';
+        exist.payMembershipUntil = Math.max(Number(exist.payMembershipUntil) || 0, Number(body.payMembershipUntil) || 0);
+        exist.quotaMonths = Math.max(Number(exist.quotaMonths) || 0, Number(body.quotaMonths) || 0);
+        // 试用只延长不缩短（避免注册把别人仍在进行的试用洗掉）
+        if (trialUntil > (Number(exist.trialUntil) || 0)) exist.trialUntil = trialUntil;
+        if (!Number(exist.trialDays) && Number(exist.trialUntil)) exist.trialDays = Number(body.trialDays) || 1;
+        if (!Number(exist.paidAt) && Number(body.paidAt)) exist.paidAt = Number(body.paidAt);
+        if (!exist.paidPlan && typeof body.paidPlan === 'string' && body.paidPlan) exist.paidPlan = body.paidPlan;
+        if (!Number(exist.paidAmount) && Number(body.paidAmount)) exist.paidAmount = Number(body.paidAmount);
+        exist.paidClaimIds = ((Array.isArray(exist.paidClaimIds) ? exist.paidClaimIds : [])
+          .concat(Array.isArray(body.paidClaimIds) ? body.paidClaimIds : []))
+          .map(x => String(x || '').trim()).filter((x, i, arr) => x && arr.indexOf(x) === i).slice(-30);
+        exist.updatedAt = now;
+        reg.accounts[username] = exist;
+        reg.updatedAt = now;
+        const ws = await ghWriteJson(REGISTRY_PATH, reg, rd.sha, 'chore(auth): self-set password ' + username);
+        if (ws.ok) return json({ ok: true, updated: true, passwordSet: true });
+        if (attempt === 0 && ws.status === 409) continue;
+        return json({ error: '写入失败：' + ws.error }, 500);
+      }
       if (exist && !claiming) {
         // 20261016l：同一份密码哈希 → 本人（或管理员代管）在同步最新状态，允许覆盖更新；
         // 哈希不同且对方是管理员 / 付费 / 已激活 → 拒绝抢名（409）。

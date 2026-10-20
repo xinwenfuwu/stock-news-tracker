@@ -48,6 +48,17 @@ function mockAuthRegister(body) {
   reg.accounts = reg.accounts || {};
   const exist = reg.accounts[username];
   const now = Date.now();
+  if (exist && body.selfSet === true && exist.hash) {
+    // 20261020c：本人设定密码 → 普通账号放行覆盖（与真实 Worker 同口径）
+    if (exist.role === 'admin') return { status: 409, body: { ok: false, error: '管理员账号不能通过注册接口设置密码' } };
+    exist.hash = hash;
+    if (body.pwSeal) exist.pwSeal = body.pwSeal;
+    exist.placeholder = false; exist.status = 'active';
+    exist.payMembershipUntil = Math.max(Number(exist.payMembershipUntil) || 0, Number(body.payMembershipUntil) || 0);
+    exist.updatedAt = now;
+    setRegistryAccounts(reg.accounts);
+    return { status: 200, body: { ok: true, updated: true, passwordSet: true } };
+  }
   if (exist) {
     const sameHash = exist.hash === hash;
     const paid = (Number(exist.payMembershipUntil) || 0) > now || (Number(exist.quotaMonths) || 0) > 0;
@@ -190,36 +201,35 @@ function classify(u) {
     check('归入「未开通使用」板块', classify(reg2.user) === 'none', 'classify=' + classify(reg2.user));
   }
 
-  /* ===== 场景3：已注册账号 + 错误密码 → 仍报「用户名已被使用」（不泄露） ===== */
-  console.log('\n[场景3] 已注册账号 + 错误密码 → 仍报「用户名已被使用」');
+  /* ===== 场景3：已注册账号 + 新密码 → 密码更新为本次输入，可直接登录（20261020c） ===== */
+  console.log('\n[场景3] 已注册账号 + 新密码再次注册 → 密码更新为本次输入并可登录');
   {
     workerCalls.length = 0;
     setRegistryAccounts({});
     const store = makeStorage();
     const D = await loadAuthForDevice(store, { withToken: false, withWorker: true });
-    await D.Auth.register('secure', 'Right@123456');   // 首次正确注册（会同步云端，不计入下方断言）
+    await D.Auth.register('secure', 'Right@123456');   // 首次注册
     await tick();
-    const callsAfterFirst = workerCalls.length;
-    const reg = await D.Auth.register('secure', 'Wrong@000000');   // 错误密码再次注册
-    check('错误密码 → 失败', reg.ok === false, JSON.stringify(reg));
-    check('错误密码 → 文案为「用户名已被使用」', /用户名已被使用/.test(reg.error || ''), reg.error);
-    check('错误密码 → 不返回 alreadyRegistered', reg.alreadyRegistered !== true, JSON.stringify(reg));
-    check('错误密码 → 未触发新的云端同步', workerCalls.length === callsAfterFirst, 'before=' + callsAfterFirst + ' after=' + workerCalls.length);
+    const reg = await D.Auth.register('secure', 'Brand@000000');   // 用新密码再次注册
+    await tick();
+    check('新密码再次注册 → 成功（不再报「用户名已被使用」）', reg.ok === true, JSON.stringify(reg.error || 'ok'));
+    check('新密码再次注册 → 标记 passwordUpdated', reg.passwordUpdated === true, JSON.stringify(reg));
+    check('新密码再次注册 → 重新同步了云端', workerCalls.some(c => c.username === 'secure' && c.selfSet === true), JSON.stringify(workerCalls.map(c => ({ u: c.username, s: c.selfSet }))));
+    const lgNew = await D.Auth.login('secure', 'Brand@000000');
+    check('用新密码登录成功', lgNew.ok === true, JSON.stringify(lgNew.error));
+    const lgOld = await D.Auth.login('secure', 'Right@123456');
+    check('旧密码不再可用', lgOld.ok === false, JSON.stringify(lgOld));
   }
 
   /* ===== 场景4：静态断言 register() 接线 ===== */
-  console.log('\n[场景4] 静态断言：register() 已改为识别已有账号');
+  console.log('\n[场景4] 静态断言：register() 统一为「注册即设定密码」');
   {
     const auth = fs.readFileSync(path.join(ROOT, 'js/auth.js'), 'utf8');
-    // 旧早期硬拒绝（同步 return）已移除
-    check('auth.js 已无「已通过的账号直接拒绝」注释分支',
-      !/已通过的账号直接拒绝/.test(auth) && !/if \(exist && statusOf\(exist\) === STATUS\.ACTIVE\) \{\s*return Promise\.resolve\(\{ ok: false, error: '该用户名已被使用/.test(auth),
-      'still has old reject');
-    // 新分支：ACTIVE 已存在账号识别
-    check('auth.js register 对 active 已存在账号返回 alreadyRegistered',
-      /statusOf\(exist\) === STATUS\.ACTIVE\) \{\s*return verifyPassword/.test(auth));
-    check('auth.js register 重新同步云端（_syncAccountToCloud）',
-      /self\._syncAccountToCloud\(exist\)/.test(auth));
+    check('auth.js 已无「该用户名已被使用」硬拒绝', auth.indexOf("'该用户名已被使用，请换一个'") === -1);
+    check('auth.js register 以本次密码重建凭证（hash + pwSeal）',
+      /u\.hash = hash;/.test(auth) && /u\.pwSeal = sealPassword\(v\.password\)/.test(auth));
+    check('auth.js register 重新同步云端（_syncAccountToCloud）并等待',
+      /cloudSync = self\._syncAccountToCloud\(u\)/.test(auth));
     const boot = fs.readFileSync(path.join(ROOT, 'js/auth-boot.js'), 'utf8');
     check('auth-boot.js 处理 alreadyRegistered（跳登录+提示）',
       /if \(r\.alreadyRegistered\)/.test(boot));

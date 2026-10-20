@@ -27,7 +27,7 @@
   'use strict';
 
   // 与 index.html 中静态资源版本号保持一致，避免升级后命中旧缓存
-  var ASSET_V = '20261020b';
+  var ASSET_V = '20261020c';
 
   // 管理员点开「注册申请导入链接」后，申请码暂存在这里，等业务层（app.js）就绪后取走
   var IMPORT_KEY = 'snt-pending-import-v1';
@@ -932,15 +932,24 @@
             var lu2 = $('#login-username');
             if (lu2) lu2.value = (r.user && r.user.username) || '';
             showForm('login');
+            // 20261020c：注册申请 = 设定该账号密码。已有账号再次注册时，密码已按本次输入更新，
+            // 云端也已同步（selfSet 覆盖旧哈希），因此「返回登录」用刚输入的密码必定成功。
             var amsg;
             if (r.isMember) {
-              amsg = '该账号已是会员，请用原密码直接登录。';
+              amsg = '该用户名已存在，已把登录密码更新为你本次输入的密码；会员仍在有效期内，现在直接用这个密码登录即可。';
             } else if (r.trialActive) {
-              amsg = '该账号已注册并处于 1 天试用期内（至 ' + ((r.user && r.user.trialUntilText) || '') + '），请用原密码直接登录；管理员端可在「授权使用 → 试用非会员」查看。';
+              amsg = '该用户名已存在，已把登录密码更新为你本次输入的密码，并为你开通 1 天试用（至 '
+                + ((r.user && r.user.trialUntilText) || '今天结束')
+                + '）；现在直接用这个密码登录即可，管理员端「授权使用 → 试用非会员」里能看到。';
             } else {
-              amsg = '该账号试用已结束且未开通会员，请登录后开通会员以继续使用。';
+              amsg = '该用户名已存在，登录密码已更新为你本次输入的密码，账号已恢复可登录；管理员端「授权使用 → 未开通使用」里能看到，登录后可开通会员。';
             }
-            showMsg(amsg, (r.isMember || r.trialActive) ? 'ok' : 'warn');
+            if (r.cloudSync && !r.cloudSync.ok && !r.cloudSync.skip) {
+              amsg += '（提示：云端同步未成功，本机可直接登录；换设备请稍后再登录一次自动补同步。）';
+              showMsg(amsg, 'warn');
+            } else {
+              showMsg(amsg, 'ok');
+            }
             return;
           }
           // batch84：注册即 1 天试用（免申请码）→ 直接提示可登录，不展示申请码。
