@@ -908,7 +908,10 @@
       paidPlan: u.paidPlan || '',
       paidAmount: Number(u.paidAmount) || 0,
       paidClaimIds: claimIdList(u.paidClaimIds),   // 20261018e：已核对开通的申请 id
-      placeholder: !!u.placeholder                 // 20261018e：占位会员凭证（无密码）
+      placeholder: !!u.placeholder,                // 20261018e：占位会员凭证（无密码）
+      // 20261019d：只暴露「有没有登录凭证」这个布尔结论（不含哈希/密码本身），
+      // 供「💾 保存 / 🔄 刷新」判断云端是否还缺凭证（云端空占位时判脏并补传）。
+      hasCred: !!(u.hash || u.pwSeal)
     };
   }
 
@@ -1238,6 +1241,12 @@
               var full = findUser(loadUsers(), uname);
               if (full) self._syncAccountToCloud(full).catch(function () { /* 静默兜底 */ });
             }
+            // 20261019d：本机也不通时，若云端显示「会员仍有效、只是密码不符」，把原因说清楚——
+            // 用户看到的不再是笼统的「用户名或密码不正确」，而是「会员已开通、密码不对」。
+            if (lr && !lr.ok && r && r.mismatch && Number(r.until) > Date.now()) {
+              lr.error = '用户名或密码不正确（该账号会员已开通，有效期至 ' + localDateStr(Number(r.until))
+                + '；会员有效但密码不符，请用注册时设置的密码登录；若忘记密码，请联系管理员在用户管理里「重置密码」）';
+            }
             return lr;
           });
         }).catch(function () {
@@ -1315,6 +1324,8 @@
         // 否则：本机已有该账号 —— 角色以「本机」为准，注册表绝不覆盖（保证同一浏览器账户独立性）
         u.status = STATUS.ACTIVE;
         u.disabled = false;
+        u.placeholder = false;         // 20261019d：登录成功即证明有可用凭证，占位标记必须清掉
+        if (grant && grant.pwSeal && !u.pwSeal) u.pwSeal = grant.pwSeal;   // 云端凭证落到本机（管理员可查看/复制）
         applyGrant(u, grant);         // 同步服务端授权（试用 / 会员额度 / 会员到期时间）
         u.updatedAt = Date.now();
         if (!saveUsers(self.users)) return { ok: false, error: '保存失败：浏览器本地存储不可用' };
@@ -2072,7 +2083,13 @@
       saveUsers(this.users);
       // 20261012e：注册表同步改为「调用方显式 await Auth.syncUserToRegistry(username)」——
       // 这里不再静默 fire-and-forget，避免「本机显示已开通、云端没写上、用户却登不上」且无人知晓。
-      return { ok: true, until: u.payMembershipUntil, startAt: startTs, user: adminUser(u) };
+      // 20261019d：开通即回执「能不能登录」。needPassword=true 表示该账号没有任何登录凭证
+      // （hash 为空、无 pwSeal），用户即便会员在有效期内也登不进来——调用方必须提示管理员先设密码。
+      var loginReady = !!((u.hash && u.hash.indexOf('pbkdf2$') === 0) || u.pwSeal);
+      return {
+        ok: true, until: u.payMembershipUntil, startAt: startTs, user: adminUser(u),
+        loginReady: loginReady, needPassword: !loginReady
+      };
     },
 
     /**
@@ -2112,9 +2129,14 @@
       var startTs = Number(ex.paidAt) > 0 ? Number(ex.paidAt) : now;
       var until = startTs + span;
       if (until <= now) until = now + span;
+      // 20261019d：沿用本机已有的密码凭证。此前这里一律写 hash:'' / pwSeal:''，
+      // 会在「先有账号、后走占位开通」时把已有密码连同云端记录一起抹掉 ——
+      // 结果会员明明开通了，用户却在任何设备都登录不上（hy123 线上就是这种空占位）。
+      var keepHash = (exist && exist.hash && exist.hash.indexOf('pbkdf2$') === 0) ? exist.hash : '';
+      var keepSeal = (exist && exist.pwSeal) ? exist.pwSeal : '';
       var u = {
-        username: uname, role: ROLE.USER, hash: '', placeholder: true,
-        pwSeal: '', disabled: false, status: STATUS.ACTIVE,
+        username: uname, role: ROLE.USER, hash: keepHash, placeholder: !keepHash,
+        pwSeal: keepSeal, disabled: false, status: STATUS.ACTIVE,
         trialUntil: 0, trialDays: 0, quotaMonths: m,
         disableDate: '', registerDate: localDateStr(startTs),
         payMembershipUntil: until, paidAt: startTs,
@@ -2136,15 +2158,18 @@
       // 写云端注册表（令牌直写 → Worker 代写）。占位账号无密码哈希，_syncUserToRegistry / Worker
       // 均已放开对「空 hash 但 placeholder」的放行（见对应改动）。
       var self = this;
+      // 20261019d：开通即回执「能不能登录」——needPassword=true 表示该账号仍无登录密码，
+      // 调用方必须提示管理员设置密码，否则用户即便会员有效也登不进来。
+      var loginReady = !!keepHash;
       return Promise.resolve(this._syncAccountToCloud(u)).then(function (sr) {
         var synced = !!(sr && (sr.ok || sr.skip));
         if (sr && !sr.ok && !sr.skip) {
           // 云端写失败：本机的占位账号仍有效（提交者本机已能生效），仅提示云端未同步
-          return { ok: true, until: until, startAt: startTs, placeholder: true, synced: false, cloudError: (sr && sr.error) || '' };
+          return { ok: true, until: until, startAt: startTs, placeholder: true, synced: false, loginReady: loginReady, needPassword: !loginReady, cloudError: (sr && sr.error) || '' };
         }
-        return { ok: true, until: until, startAt: startTs, placeholder: true, synced: synced };
+        return { ok: true, until: until, startAt: startTs, placeholder: true, synced: synced, loginReady: loginReady, needPassword: !loginReady };
       }).catch(function (e) {
-        return { ok: true, until: until, startAt: startTs, placeholder: true, synced: false, cloudError: String((e && e.message) || e) };
+        return { ok: true, until: until, startAt: startTs, placeholder: true, synced: false, loginReady: loginReady, needPassword: !loginReady, cloudError: String((e && e.message) || e) };
       });
     },
 
@@ -2315,12 +2340,60 @@
         // 20261018e：占位会员凭证（无密码哈希）允许同步——它的 hash 为空，但带 placeholder 标记，
         // 管理员为「旧版无账号申请」一键登记会籍时即以此形态落云端，提交者换设备登录即带会员。
         // 普通账号仍要求 pbkdf2$ 哈希。
-        if (!u || (!u.placeholder && (!u.hash || u.hash.indexOf('pbkdf2$') !== 0))) return Promise.resolve({ ok: false, skip: true, error: '账号缺少密码哈希，无法同步' });
+        // 20261019d：放行条件放宽为「有 pbkdf2 哈希 / 有可还原密码 / 占位会籍」任一成立即可上云。
+        // 此前只放行哈希与占位，导致「仅存 pwSeal」的账号被判 skip、云端永远拿不到凭证。
+        var usable = !!u && !!(u.pwSeal || (u.hash && u.hash.indexOf('pbkdf2$') === 0) || u.placeholder);
+        if (!usable) return Promise.resolve({ ok: false, skip: true, error: '账号缺少密码哈希，无法同步' });
         if (typeof Auth === 'undefined' || !Auth.Sync || !Auth.Sync.writeUser) return Promise.resolve({ ok: false, skip: true, error: '同步模块未加载' });
         if (!Auth.Sync.isAdminConfigured || !Auth.Sync.isAdminConfigured()) return Promise.resolve({ ok: false, skip: true, error: '未配置 GitHub 令牌（设置 → 云端同步）' });
         var rec = buildRegistryRecord(u);
         rec.updatedAt = Date.now();
-        return Promise.resolve(Auth.Sync.writeUser(rec));
+        // 20261019d：写云端前先读一次云端记录，做「会籍与凭证只升不降」保护。
+        // 事故场景：本机新建了一个同名账号（无会员、无密码），保存时会把云端已付费的
+        // payMembershipUntil / paidAt / hash / pwSeal 整条覆盖成空 —— 用户会员"凭空消失"，
+        // 甚至变成无法登录的空占位（hy123 的形态）。保护后：只会补全，绝不降级。
+        var mergeCloudSafe = function () {
+          if (!Auth.Sync || typeof Auth.Sync.readRegistry !== 'function') return Promise.resolve(rec);
+          return Promise.resolve(Auth.Sync.readRegistry()).then(function (reg) {
+            var ca = (reg && reg.accounts && reg.accounts[String(u.username)]) || null;
+            if (!ca) return rec;
+            if (Number(ca.payMembershipUntil) > Number(rec.payMembershipUntil)) rec.payMembershipUntil = Number(ca.payMembershipUntil);
+            if (Number(ca.trialUntil) > Number(rec.trialUntil)) rec.trialUntil = Number(ca.trialUntil);
+            if (Number(ca.trialDays) > Number(rec.trialDays)) rec.trialDays = Number(ca.trialDays);
+            if (Number(ca.paidAt) > Number(rec.paidAt)) rec.paidAt = Number(ca.paidAt);
+            if (Number(ca.quotaMonths) > Number(rec.quotaMonths)) rec.quotaMonths = Number(ca.quotaMonths);
+            if (Number(ca.paidAmount) > Number(rec.paidAmount)) rec.paidAmount = Number(ca.paidAmount);
+            if (!rec.paidPlan && ca.paidPlan) rec.paidPlan = ca.paidPlan;
+            // 凭证同样只补不清：本机没有而云端有时沿用云端，避免把可登录账号写成空占位
+            if (!rec.hash && ca.hash) rec.hash = ca.hash;
+            if (!rec.pwSeal && ca.pwSeal) rec.pwSeal = ca.pwSeal;
+            if (rec.hash && rec.hash.indexOf('pbkdf2$') === 0) rec.placeholder = false;
+            return rec;
+          }).catch(function () { return rec; });
+        };
+        return mergeCloudSafe().then(function (r2) {
+          return Promise.resolve(Auth.Sync.writeUser(r2)).then(function (w) {
+            // 把「云端合并后的会籍 / 凭证」回写本机（只升不降），否则本机仍显示无会员、
+            // 与云端指纹永远不一致，行内会一直挂「未保存」角标。
+            if (w && w.ok) {
+              try {
+                var arr = loadUsers();
+                var t = findUser(arr, u.username);
+                if (t) {
+                  var dirtyLocal = false;
+                  if (Number(r2.payMembershipUntil) > Number(t.payMembershipUntil)) { t.payMembershipUntil = Number(r2.payMembershipUntil); dirtyLocal = true; }
+                  if (Number(r2.trialUntil) > Number(t.trialUntil)) { t.trialUntil = Number(r2.trialUntil); dirtyLocal = true; }
+                  if (Number(r2.paidAt) > Number(t.paidAt)) { t.paidAt = Number(r2.paidAt); dirtyLocal = true; }
+                  if (!t.paidPlan && r2.paidPlan) { t.paidPlan = r2.paidPlan; dirtyLocal = true; }
+                  if (!t.hash && r2.hash) { t.hash = r2.hash; dirtyLocal = true; }
+                  if (!t.pwSeal && r2.pwSeal) { t.pwSeal = r2.pwSeal; dirtyLocal = true; }
+                  if (dirtyLocal) { t.updatedAt = Date.now(); saveUsers(arr); }
+                }
+              } catch (e) { /* 回写失败不影响云端结果 */ }
+            }
+            return w;
+          });
+        });
       } catch (e) { return Promise.resolve({ ok: false, error: String(e && e.message || e) }); }
     },
 
@@ -2503,7 +2576,10 @@
       // 20261018e：把「已改密码但云端可能未同步」的账号一并纳入本次保存，保证点过「保存设置」后密码也落到后端
       try { pwSyncPending.forEach(function (n) { want[n] = true; }); } catch (e) {}
       var list = this.users.filter(function (u) {
-        return u && u.username && u.hash && u.hash.indexOf('pbkdf2$') === 0
+        // 20261019d：放宽到「有 hash / 有 pwSeal / 占位凭证」——只要该账号有任何可上云的形态就纳入保存。
+        // 此前只认 pbkdf2$ 哈希，导致「本机只有可还原密码」「占位会籍」两类账号永远传不上去，
+        // 云端长期空占位 → 用户换设备登录一直报「用户名或密码不正确」。
+        return u && u.username && (u.hash || u.pwSeal || u.placeholder)
           && want[String(u.username).toLowerCase()];
       });
       var saved = [], failed = [], skipped = 0;
@@ -2546,7 +2622,14 @@
         payMembershipUntil: Number(rec.payMembershipUntil) || 0,
         paidAt: Number(rec.paidAt) || 0,
         paidPlan: String(rec.paidPlan || ''),
-        paidAmount: Number(rec.paidAmount) || 0
+        paidAmount: Number(rec.paidAmount) || 0,
+        // 20261019d：凭证差异也参与比较（只比「有没有」，不比具体值——哈希每次加盐不同会永远判脏）。
+        // 目的：本机已有密码、云端仍是「空占位」时判为「未保存」，让「💾 保存 / 🔄 刷新」把凭证补传上云，
+        // 否则云端长期无 hash，用户在任何设备（除本机外）登录都是「用户名或密码不正确」。
+        placeholder: !!rec.placeholder,
+        // 20261019d：本机 adminUser 视图只暴露布尔 hasCred（不暴露 hash/pwSeal 具体值），
+        // 注册表条目则用 hash/pwSeal 是否存在推导——两端口径一致，才能正确判出「本机有密码、云端空占位」。
+        hasCred: (typeof rec.hasCred === 'boolean') ? rec.hasCred : !!(rec.hash || rec.pwSeal)
       };
     },
 
@@ -2629,6 +2712,7 @@
         });
         // 20261018e：本机已有的同名账号，若云端注册表带了 paidClaimIds（已核对开通记录），
         // 合并进本机（去重取并集），让审核区去重在「仅本机有账号、云端已有开通记录」时也能生效。
+        var nowTs = Date.now();   // 20261019d 修复：上面 forEach 内的 now 在该回调作用域内，此处不可见（曾抛 now is not defined）
         self.users.forEach(function (lu) {
           if (!lu || !lu.username) return;
           var ca = accs[String(lu.username)];
@@ -2648,7 +2732,7 @@
           if (!Number(lu.paidAt) && Number(ca.paidAt)) { lu.paidAt = Number(ca.paidAt); thisChanged = true; }
           if (!lu.paidPlan && typeof ca.paidPlan === 'string') { lu.paidPlan = ca.paidPlan; thisChanged = true; }
           if (!Number(lu.paidAmount) && Number(ca.paidAmount)) { lu.paidAmount = Number(ca.paidAmount); thisChanged = true; }
-          if (thisChanged) { changed = true; lu.updatedAt = now; }
+          if (thisChanged) { changed = true; lu.updatedAt = nowTs; }
         });
         if (recovered > 0 || cleaned > 0 || changed > 0) { saveUsers(self.users); }
         return { ok: true, recovered: recovered, skipped: skipped, cleaned: cleaned, changed: changed };

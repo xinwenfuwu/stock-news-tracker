@@ -374,6 +374,46 @@
     });
   }
 
+  /** 20261019d：时间戳 → YYYY-MM-DD（仅用于登录回执文案，不依赖其它模块） */
+  function fmtDateNum(ts) {
+    var d = new Date(Number(ts) || 0);
+    if (isNaN(d.getTime())) return '—';
+    var m = d.getMonth() + 1, dd = d.getDate();
+    return d.getFullYear() + '-' + (m < 10 ? '0' + m : m) + '-' + (dd < 10 ? '0' + dd : dd);
+  }
+
+  /**
+   * 20261019d：把注册表条目组装成登录回执（统一状态校验 + 授权字段 + 云端凭证）。
+   * @param {Object} acc 注册表条目
+   * @param {boolean} matchedBySeal 云端无哈希、用 pwSeal 明文比对通过
+   */
+  function grantFromRecord(acc, matchedBySeal) {
+    var st = acc.status || 'pending';
+    if (st === 'pending') return { ok: false, status: 'pending', error: '该账号正在等待管理员审核，通过后即可直接登录' };
+    if (st === 'rejected') return { ok: false, status: 'rejected', error: '该注册申请未通过审核，请联系管理员' };
+    if (acc.disabled) return { ok: false, status: 'disabled', error: '该账号已被停用，请联系管理员' };
+    return {
+      ok: true,
+      grant: {
+        role: acc.role || 'user',           // 20261012e：跨设备首次落地时角色以注册表为准
+        trialDays: acc.trialDays || 0,
+        trialUntil: acc.trialUntil || 0,
+        quotaMonths: acc.quotaMonths || 0,
+        disableDate: acc.disableDate || '',
+        registerDate: acc.registerDate || '',
+        payMembershipUntil: acc.payMembershipUntil || 0,
+        paidAt: Number(acc.paidAt) || 0,
+        paidPlan: acc.paidPlan || '',
+        paidAmount: Number(acc.paidAmount) || 0,
+        // 20261019d：云端凭证回传（本机落地时可直接采用，避免「云端有密码、本机却建不出账号」）
+        hash: acc.hash || '',
+        pwSeal: acc.pwSeal || '',
+        matchedBySeal: !!matchedBySeal,
+        loginReady: true
+      }
+    };
+  }
+
   /** 登录：读注册表 → 校验密码 → 返回授权或状态。找不到用户返回 {} 让 auth.js 回落本地。 */
   function loginRemote(username, password) {
     var uname = String(username == null ? '' : username).trim();
@@ -383,7 +423,31 @@
       // 20261016k：注册表里没有这个账号时返回 { notFound: true }（仍回落本地登录），
       // 让 auth.js 在本地登录成功后补写一次云端——注册时离线没同步上的账号，
       // 下次登录即进入云端注册表，管理员的「审核通过区」随之可见。
-      if (!acc || !acc.hash) return { notFound: true };
+      if (!acc) return { notFound: true };
+      // 20261019d：云端「占位会员凭证」没有哈希（hash:''），此前直接返回 notFound 回落本地，
+      // 用户换设备登录时本机无该账号 → 报「用户名或密码不正确」，即便会员早已开通也无法登录。
+      // 处理顺序：① 有 hash → 正常校验；② 无 hash 但有 pwSeal → 用可还原密码比对明文；
+      //          ③ 两者都没有但会员在有效期内 → 返回明确的「缺登录密码」回执（不再混淆为密码错）。
+      if (!acc.hash) {
+        var sealedPw = '';
+        if (acc.pwSeal && global.Auth && typeof global.Auth.unsealPassword === 'function') {
+          try { sealedPw = global.Auth.unsealPassword(acc.pwSeal) || ''; } catch (e) { sealedPw = ''; }
+        }
+        if (sealedPw && sealedPw === password) {
+          return grantFromRecord(acc, true);   // 明文匹配 → 视为通过，回执标记 matchedBySeal
+        }
+        var untilTs = Number(acc.payMembershipUntil) || 0;
+        if (untilTs > Date.now()) {
+          return {
+            ok: false,
+            status: 'nocred',
+            error: '该账号会员已开通（有效期至 ' + fmtDateNum(untilTs) + '），但云端缺少登录密码'
+              + (sealedPw ? '（你输入的密码与之不符）' : '')
+              + '：请使用注册时设置的密码登录；若忘记密码，请联系管理员在用户管理里「重置密码」后再登录'
+          };
+        }
+        return { notFound: true };
+      }
       var verify = global.Auth
         ? global.Auth.verifyPassword(password, acc.hash)
         : Promise.resolve(false);
@@ -393,28 +457,11 @@
           // 管理员手动添加时设了另一套密码）→ 不再硬报「用户名或密码不正确」把用户锁死，
           // 改为返回 {} 让 auth.js 回落本机校验：本机账号表里有正确哈希就能正常登录。
           // 本机也没有该账号时，_localLogin 会给出同样的错误提示，安全性不变。
-          return {};
+          // 20261019d：附带 mismatch + 会员到期时间，供 auth.js 生成本机也不通时的诊断文案
+          // （「会员有效、只是密码不符」比笼统的「用户名或密码不正确」有用得多）。
+          return { mismatch: true, until: Number(acc.payMembershipUntil) || 0, hasCred: true };
         }
-        var st = acc.status || 'pending';
-        var disabled = !!acc.disabled;
-        if (st === 'pending') return { ok: false, status: 'pending', error: '该账号正在等待管理员审核，通过后即可直接登录' };
-        if (st === 'rejected') return { ok: false, status: 'rejected', error: '该注册申请未通过审核，请联系管理员' };
-        if (disabled) return { ok: false, status: 'disabled', error: '该账号已被停用，请联系管理员' };
-        return {
-          ok: true,
-          grant: {
-            role: acc.role || 'user',           // 20261012e：跨设备首次落地时角色以注册表为准
-            trialDays: acc.trialDays || 0,
-            trialUntil: acc.trialUntil || 0,
-            quotaMonths: acc.quotaMonths || 0,
-            disableDate: acc.disableDate || '',
-            registerDate: acc.registerDate || '',
-            payMembershipUntil: acc.payMembershipUntil || 0,
-            paidAt: Number(acc.paidAt) || 0,
-            paidPlan: acc.paidPlan || '',
-            paidAmount: Number(acc.paidAmount) || 0
-          }
-        };
+        return grantFromRecord(acc, false);
       });
     }).catch(function () { return {}; });
   }

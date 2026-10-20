@@ -3061,7 +3061,7 @@ const app = createApp({
             // 竞态：已存在真实账号 → 正常开通一次（带 claimId 进 paidClaimIds）
             r = A.grantMembership(claim.user, months, { paidAt: payTs, amount: Number(claim.amount) || 0, claimId: claim.id });
           } else if (ph && ph.ok) {
-            r = { ok: true, until: ph.until, startAt: ph.startAt, user: { username: claim.user }, placeholderGrant: true, synced: ph.synced };
+            r = { ok: true, until: ph.until, startAt: ph.startAt, user: { username: claim.user }, placeholderGrant: true, synced: ph.synced, loginReady: !!ph.loginReady, needPassword: !!ph.needPassword };
             placeholderGrant = true;
           } else if (ph && ph.error) {
             r = { ok: false, error: ph.error };
@@ -3098,24 +3098,33 @@ const app = createApp({
         ? '；审核申请已在云端标记为「已开通」'
         : '；审核申请状态稍后自动重试上传（点「刷新」可立即重试）';
       let msg;
+      // 20261019d：开通即回执「能不能登录」。needPassword=true 说明该账号至今没有任何登录密码
+      // （典型：管理员为旧版无账号申请登记会籍，或账号只在对方设备注册过），此时会员再有效也登不进来。
+      const needPw = !!(r && r.needPassword);
+      const untilText = fmtDateNum(Number(r && r.until) || 0);
       if (placeholderGrant) {
         // 20261018e：占位会员凭证——只登记会籍、不碰任何密码，对方用自己注册时的密码登录即生效。
-        msg = '已为「' + claim.user + '」登记会员凭证（' + months + ' 个月，自支付日 ' + startText + ' 起算）';
+        msg = '已为「' + claim.user + '」登记会员凭证（' + months + ' 个月，自支付日 ' + startText + ' 起算，有效期至 ' + untilText + '）';
         msg += prop.ok
-          ? '；会籍已写入云端，对方用自己注册时的密码登录即生效（未改动任何密码）'
+          ? '；会籍已写入云端（未改动任何密码）'
           : '；会籍已登记在本机，但云端同步未成功（' + prop.error + '），请稍后重试或检查网络';
+        msg += needPw
+          ? '。⚠ 但该账号目前没有登录密码，用户无法登录：请点该行的「重置密码」设置一个密码，再通知用户用「用户名 + 新密码」登录'
+          : '；对方用注册时的密码登录即生效';
         msg += claimStateText;
       } else {
-        msg = '已为「' + claim.user + '」开通 ' + months + ' 个月会员（自支付日 ' + startText + ' 起算）';
+        msg = '已为「' + claim.user + '」开通 ' + months + ' 个月会员（自支付日 ' + startText + ' 起算，有效期至 ' + untilText + '）';
         msg += claimStateText;
-        if (createdFromClaim) msg += '；账号已按申请信息创建，对方用注册时的密码即可登录';
-        if (prop.ok) {
-          msg += '，已同步云端，对方现在即可登录';
+        if (createdFromClaim) msg += '；账号已按申请信息创建';
+        if (needPw) {
+          msg += '。⚠ 但该账号目前没有登录密码，用户无法登录：请点该行的「重置密码」设置一个密码，再通知用户用「用户名 + 新密码」登录';
+        } else if (prop.ok) {
+          msg += '，已同步云端，对方现在即可用注册时的密码登录';
         } else {
           msg += '；但云端注册表同步失败（' + prop.error + '），用户在其他设备可能仍无法登录';
         }
       }
-      showToast(msg, prop.ok ? 'success' : 'warn', prop.ok ? 4200 : 9000);
+      showToast(msg, (prop.ok && !needPw) ? 'success' : 'warn', (prop.ok && !needPw) ? 4200 : 12000);
       refreshUserList();          // 表格同步显示支付日期 / 额度 / 期分类
       await loadMemberClaims();
     }
@@ -3189,10 +3198,42 @@ const app = createApp({
       const uname = (memberManual.username || '').trim();
       if (!uname) { showToast('请输入用户名', 'error'); return; }
       const months = memberManual.plan === '1y' ? 12 : (memberManual.plan === '2y' ? 24 : 6);
-      const r = A.grantMembership(uname, months, { paidAt: Date.now(), amount: planAmount(memberManual.plan) });
+      const amount = planAmount(memberManual.plan);
+      const payTs = Date.now();
+      let r = A.grantMembership(uname, months, { paidAt: payTs, amount: amount });
+      // 20261019d：账号只存在于别的设备时，先合并云端再重试；仍找不到则登记「占位会员凭证」，
+      // 保证「管理员按用户名开通」一定能落库（云端也写得上），而不是简单报「用户不存在」。
+      if ((!r || !r.ok) && r && r.error === '用户不存在' && typeof A.recoverFromRegistry === 'function') {
+        try {
+          const rec = await A.recoverFromRegistry();
+          if (rec && rec.ok && rec.recovered > 0) {
+            refreshUserList();
+            r = A.grantMembership(uname, months, { paidAt: payTs, amount: amount });
+          }
+        } catch (e) { /* 继续走占位兜底 */ }
+      }
+      if ((!r || !r.ok) && r && r.error === '用户不存在' && typeof A.grantMembershipPlaceholder === 'function') {
+        try {
+          const ph = await A.grantMembershipPlaceholder(uname, months, { paidAt: payTs, amount: amount });
+          if (ph && ph.ok) {
+            r = { ok: true, until: ph.until, startAt: ph.startAt, loginReady: !!ph.loginReady, needPassword: !!ph.needPassword, placeholderGrant: true };
+          } else if (ph && ph.exists) {
+            r = A.grantMembership(uname, months, { paidAt: payTs, amount: amount });
+          } else if (ph && ph.error) {
+            r = { ok: false, error: ph.error };
+          }
+        } catch (e) { /* 走下方统一错误提示 */ }
+      }
       if (!r || !r.ok) { showToast((r && r.error) || '开通失败', 'error'); return; }
       const prop = await propagateMembershipGrant(uname);
-      showToast(prop.ok ? '已为「' + uname + '」开通会员，并已同步云端' : '已为「' + uname + '」开通会员；但云端同步失败（' + prop.error + '）', prop.ok ? 'success' : 'warn', prop.ok ? 3000 : 9000);
+      const untilText = fmtDateNum(Number(r.until) || 0);
+      let msg = '已为「' + uname + '」开通 ' + months + ' 个月会员（有效期至 ' + untilText + '）';
+      msg += prop.ok ? '，已同步云端' : '；但云端同步失败（' + prop.error + '）';
+      // 20261019d：开通回执必须说清「能不能登录」——没有密码的账号会员再有效也登不进来。
+      msg += r.needPassword
+        ? '。⚠ 但该账号目前没有登录密码，用户无法登录：请点该行的「重置密码」设置一个密码，再通知用户用「用户名 + 新密码」登录'
+        : '，对方现在即可用注册时的密码登录';
+      showToast(msg, (prop.ok && !r.needPassword) ? 'success' : 'warn', (prop.ok && !r.needPassword) ? 3600 : 12000);
       refreshUserList();
       memberManual.username = '';
     }
