@@ -239,6 +239,30 @@ const FUTURE = Date.now() + 180 * 24 * 3600 * 1000;   // ≈ 6 个月后（2027-
     check('无密码账号回执 loginReady=false', ph2 && ph2.loginReady === false, JSON.stringify(ph2));
   }
 
+  /* ========== 场景8：显示密码与实际哈希不一致 → 以显示密码为准重算，保证「看到什么就能用什么」 ========== */
+  console.log('\n[场景8] 面板显示密码与实际哈希不一致 → 同步时以显示密码为准修正');
+  {
+    setRegistryAccounts({});
+    const store = makeStorage();
+    const A = await loadAuthForDevice(store, { withToken: true });
+    await A.Auth.setup('admin', 'Admin@2026', 'Admin@2026');
+    await A.Auth.addUser('mismatch', 'AAA@123456', { role: 'user' });
+    A.Auth.grantMembership('mismatch', 6, { paidAt: Date.now(), amount: 1000 });
+    // 人为制造「哈希=AAA@123456，但 pwSeal 显示 BBB@123456」的历史脏数据
+    const raw = JSON.parse(store.getItem('snt-auth-users-v1'));
+    const arr = Array.isArray(raw) ? raw : (raw && raw.users) || [];
+    const target = arr.find(x => x && x.username === 'mismatch');
+    check('找到本机 mismatch 账号', !!target);
+    target.pwSeal = A.Auth.sealPassword('BBB@123456');
+    store.setItem('snt-auth-users-v1', JSON.stringify(raw));
+
+    const sr = await A.Auth.saveUsersToRegistry(['mismatch']);
+    check('保存成功', sr.ok === true && (sr.saved || []).includes('mismatch'), JSON.stringify(sr));
+    const C = await loadAuthForDevice(makeStorage(), {});
+    const lgB = await C.Auth.login('mismatch', 'BBB@123456');
+    check('用户用「面板显示的那个密码」登录成功（哈希已按显示密码修正）', lgB.ok === true, JSON.stringify(lgB.error || 'ok'));
+  }
+
   /* ========== 场景7：静态断言（接线与文案） ========== */
   console.log('\n[场景7] 静态断言：接线 / 作用域 / 文案');
   {

@@ -2371,8 +2371,32 @@
             return rec;
           }).catch(function () { return rec; });
         };
-        return mergeCloudSafe().then(function (r2) {
-          return Promise.resolve(Auth.Sync.writeUser(r2)).then(function (w) {
+        /**
+         * 20261019d：保证「云端哈希」与「管理员看到的可显示密码（pwSeal）」一致。
+         * 历史事故：账号改过密码但云端只更新了哈希、或只更新了 pwSeal，导致
+         * 「面板显示 qq123456，用户输 qq123456 却报密码错」。这里以可显示密码为准，
+         * 不一致就用它重算哈希（本机与云端同时修正），做到「看到什么密码就能用什么密码」。
+         */
+        var ensureHashMatchesSeal = function () {
+          if (!u || !u.pwSeal) return Promise.resolve(rec);
+          var plain = '';
+          try { plain = unsealPassword(u.pwSeal) || ''; } catch (e) { plain = ''; }
+          if (!plain) return Promise.resolve(rec);
+          return Promise.resolve(verifyPassword(plain, rec.hash || '')).then(function (ok) {
+            if (ok) return rec;
+            return Promise.resolve(makePasswordHash(plain)).then(function (h) {
+              rec.hash = h;
+              rec.placeholder = false;
+              try {
+                var arr = loadUsers(); var t = findUser(arr, u.username);
+                if (t) { t.hash = h; t.placeholder = false; t.updatedAt = Date.now(); saveUsers(arr); }
+              } catch (e2) { /* 本机回写失败不影响云端 */ }
+              return rec;
+            });
+          }).catch(function () { return rec; });
+        };
+        return mergeCloudSafe().then(ensureHashMatchesSeal).then(function (r3) {
+          return Promise.resolve(Auth.Sync.writeUser(r3)).then(function (w) {
             // 把「云端合并后的会籍 / 凭证」回写本机（只升不降），否则本机仍显示无会员、
             // 与云端指纹永远不一致，行内会一直挂「未保存」角标。
             if (w && w.ok) {
@@ -2381,12 +2405,12 @@
                 var t = findUser(arr, u.username);
                 if (t) {
                   var dirtyLocal = false;
-                  if (Number(r2.payMembershipUntil) > Number(t.payMembershipUntil)) { t.payMembershipUntil = Number(r2.payMembershipUntil); dirtyLocal = true; }
-                  if (Number(r2.trialUntil) > Number(t.trialUntil)) { t.trialUntil = Number(r2.trialUntil); dirtyLocal = true; }
-                  if (Number(r2.paidAt) > Number(t.paidAt)) { t.paidAt = Number(r2.paidAt); dirtyLocal = true; }
-                  if (!t.paidPlan && r2.paidPlan) { t.paidPlan = r2.paidPlan; dirtyLocal = true; }
-                  if (!t.hash && r2.hash) { t.hash = r2.hash; dirtyLocal = true; }
-                  if (!t.pwSeal && r2.pwSeal) { t.pwSeal = r2.pwSeal; dirtyLocal = true; }
+                  if (Number(r3.payMembershipUntil) > Number(t.payMembershipUntil)) { t.payMembershipUntil = Number(r3.payMembershipUntil); dirtyLocal = true; }
+                  if (Number(r3.trialUntil) > Number(t.trialUntil)) { t.trialUntil = Number(r3.trialUntil); dirtyLocal = true; }
+                  if (Number(r3.paidAt) > Number(t.paidAt)) { t.paidAt = Number(r3.paidAt); dirtyLocal = true; }
+                  if (!t.paidPlan && r3.paidPlan) { t.paidPlan = r3.paidPlan; dirtyLocal = true; }
+                  if (!t.hash && r3.hash) { t.hash = r3.hash; dirtyLocal = true; }
+                  if (!t.pwSeal && r3.pwSeal) { t.pwSeal = r3.pwSeal; dirtyLocal = true; }
                   if (dirtyLocal) { t.updatedAt = Date.now(); saveUsers(arr); }
                 }
               } catch (e) { /* 回写失败不影响云端结果 */ }
