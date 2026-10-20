@@ -452,6 +452,10 @@ const app = createApp({
      */
     async function saveApprovedZoneChanges() {
       if (!A || savingApproved.value) return;
+      // 20261020：保存前重拉一次云端「已保存」快照，避免内存快照陈旧导致误判「账号已与云端一致」。
+      // 典型事故：本机有密码、云端却是空占位（hash/pwSeal 均空），旧快照以为一致 → 永远不补传，
+      // 用户换设备登录一直报「云端缺少登录密码」。重拉后 hasCred 差异即被判脏并补传上云。
+      try { await loadCloudRegistrySnapshot(); } catch (e) { /* 读取失败按现有快照处理 */ }
       const dirty = dirtyAccountList.value;
       const hasClaims = rejectedClaimIds.size > 0 || claimQueue.length > 0;
       if (!dirty.length && !hasClaims) {

@@ -238,7 +238,7 @@ const tick = (ms = 60) => new Promise(r => setTimeout(r, ms));
     check('auth.js 新增 _syncAccountToCloud（直写→Worker 代写）', /_syncAccountToCloud: function/.test(auth));
     check('auth.js 注册走 _syncAccountToCloud', /self\._syncAccountToCloud\(u\)/.test(auth));
     check('auth.js 登录自愈走 _syncAccountToCloud', /self\._syncAccountToCloud\(full\)/.test(auth));
-    check('auth.js 登录自愈只在 notFound 时触发', /r && r\.notFound/.test(auth));
+    check('auth.js 登录自愈在 notFound / nocred（云端缺凭证）时触发', /\(r\.notFound \|\| r\.status === 'nocred'\)/.test(auth));
     check('auth-sync.js 导出 registerRemoteViaWorker', /registerRemoteViaWorker: registerRemoteViaWorker/.test(sync));
     check('auth-sync.js loginRemote 缺账号返回 notFound', /return \{ notFound: true \}/.test(sync));
     check('auth-sync.js Worker 端点URL为 /auth/register', /fetchFirstAvailable\('\/auth\/register'/.test(sync));

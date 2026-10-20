@@ -1231,21 +1231,27 @@
                 : '该账号已被停用，请联系管理员')
             };
           }
-          if (r && r.error) return { ok: false, error: r.error };
-          // 20261016k：云端注册表里没有这个账号（r.notFound）而本机登录成功 →
-          // 补写一次云端（有令牌直写 / 无令牌经 Worker 代写）。注册时离线没同步上的账号，
-          // 下次登录即进入云端注册表，管理员的「审核通过区」随之可见；
-          // 仅 notFound 才补写——哈希不符（云端是另一套密码）时不覆盖，避免误改对方记录。
+          // 20261020：nocred = 云端会员有效、但云端缺密码凭证。此类回执不能像 pending/disabled
+          // 那样直接短路——本机设备很可能仍存着该账号的真实密码（典型：管理员设备建号/设过密码）。
+          // 直接短路会导致「管理员设备明明有密码却登不上」，且云端永远拿不到补传（死循环）。
+          // 处理：只有「非 nocred」的明确错误才短路；nocred 回落本机校验，本机通过即放行并自愈补传云端。
+          if (r && r.error && r.status !== 'nocred') return { ok: false, error: r.error };
+          // 云端注册表里没有该账号（notFound）或云端缺凭证（nocred）而本机登录成功 →
+          // 补写一次云端（有令牌直写 / 无令牌经 Worker 代写）。注册时离线没同步上的账号、
+          // 或「云端空占位但本机有密码」的账号，登录一次即自动修复云端，之后任意设备都能登录。
           return self._localLogin(username, password, remember).then(function (lr) {
-            if (lr && lr.ok && r && r.notFound) {
+            if (lr && lr.ok && r && (r.notFound || r.status === 'nocred')) {
               var full = findUser(loadUsers(), uname);
               if (full) self._syncAccountToCloud(full).catch(function () { /* 静默兜底 */ });
             }
-            // 20261019d：本机也不通时，若云端显示「会员仍有效、只是密码不符」，把原因说清楚——
-            // 用户看到的不再是笼统的「用户名或密码不正确」，而是「会员已开通、密码不对」。
-            if (lr && !lr.ok && r && r.mismatch && Number(r.until) > Date.now()) {
-              lr.error = '用户名或密码不正确（该账号会员已开通，有效期至 ' + localDateStr(Number(r.until))
-                + '；会员有效但密码不符，请用注册时设置的密码登录；若忘记密码，请联系管理员在用户管理里「重置密码」）';
+            // 本机也不通：把云端给出的精确原因透传，避免笼统「用户名或密码不正确」误导用户
+            if (lr && !lr.ok) {
+              if (r && r.status === 'nocred') {
+                lr.error = r.error;   // 云端会员有效但缺密码、本机也没有 → 提示管理员重置密码
+              } else if (r && r.mismatch && Number(r.until) > Date.now()) {
+                lr.error = '用户名或密码不正确（该账号会员已开通，有效期至 ' + localDateStr(Number(r.until))
+                  + '；会员有效但密码不符，请用注册时设置的密码登录；若忘记密码，请联系管理员在用户管理里「重置密码」）';
+              }
             }
             return lr;
           });
