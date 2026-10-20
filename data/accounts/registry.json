@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": 1792338637607,
+  "updatedAt": 1792487825511,
   "accounts": {
     "181": {
       "hash": "pbkdf2$150000$KjYyYMWup5jVGwvFBcCcOQ==$3U/UO6mfq2XHtEoimjRCc/0rz4seqfPAhnrte+JrXlw=",
@@ -123,7 +123,8 @@
       "updatedAt": 1792334932106
     },
     "hy123": {
-      "hash": "",
+      "hash": "pbkdf2$150000$c1sh1f0nrED2X+gN3xEDMw==$AxeQNdBVDnokF1eZWWmkY+7yI+PF8SAoiX2EZ746bHk=",
+      "pwSeal": "BTkAedHjgL4=",
       "role": "user",
       "status": "active",
       "disabled": false,
@@ -139,9 +140,9 @@
       "paidClaimIds": [
         "c_1792202515586_438758"
       ],
-      "placeholder": true,
+      "placeholder": false,
       "createdAt": 1792338629535,
-      "updatedAt": 1792338634621
+      "updatedAt": 1792487825511
     },
     "huyun1": {
       "hash": "",
