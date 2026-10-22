@@ -8698,7 +8698,7 @@ const app = createApp({
         new Promise(r => setTimeout(() => r(null), HOT_SRC_TIMEOUT))
       ]);
       try {
-        const [boards, stocks, preBoards, ampBoards, newListed, ths, em, ad] = await Promise.all([
+        const [boards, stocks, preBoards, ampBoards, newListed, ths, em, dy] = await Promise.all([
           withTimeout(StockAPI.getBoardRanking()),
           withTimeout(StockAPI.getLimitUpStreak()),
           withTimeout(StockAPI.getPreMarketBoards()),
@@ -8706,7 +8706,7 @@ const app = createApp({
           withTimeout(StockAPI.getNewListedStocks()),
           withTimeout(StockAPI.getThsHotStocks()),
           withTimeout(StockAPI.getEmHotStocks()),
-          withTimeout(StockAPI.getAdSpend().catch(() => null))
+          withTimeout(StockAPI.getDouyinStock().catch(() => null))
         ]);
         // 各路独立落盘：某一路接口限流返回空时保留旧数据，避免「刷新一次反而清空已有内容」
         if (boards && boards.length) { hotBoards.value = boards; D.hotBoards = boards; }
@@ -8720,24 +8720,24 @@ const app = createApp({
           try { await enrichThsChange(thsHotStocks.value); } catch (e) { console.warn('同花顺热股实时涨跌幅补全失败', e); }
         }
         if (em && em.length) { emHotStocks.value = em; D.emHotStocks = em; }
-        // 20261015：广告投放力度榜（按上市公司销售费用排名，免费·准确）独立落盘
-        if (ad && ad.list && ad.list.length) {
-          adSpend.value = ad.list; D.adSpend = ad.list;
-          adDate.value = ad.generatedAt || ''; D.adDate = adDate.value;
-          adCount.value = ad.count || 0; D.adCount = adCount.value;
+        // 抖音搜索股票排名榜（抖音热搜榜 ∩ A股公司名，按搜索热度排名）独立落盘
+        if (dy && dy.list && dy.list.length) {
+          douyinStock.value = dy.list; D.douyinStock = dy.list;
+          douyinDate.value = dy.generatedAt || ''; D.douyinDate = douyinDate.value;
+          douyinCount.value = dy.count || 0; D.douyinCount = douyinCount.value;
         }
         // 任一当前有数据即视为成功（含历史残留），某一路限流不再误报整体失败
         const nBoards = hotBoards.value.length, nPre = preMarketBoards.value.length,
               nAmp = amplitudeBoards.value.length, nStocks = hotStocks.value.length, nNew = newListedStocks.value.length,
               nThs = thsHotStocks.value.length, nEm = emHotStocks.value.length,
-              nAd = (adSpend.value && adSpend.value.length) || 0;
+              nAd = (douyinStock.value && douyinStock.value.length) || 0;
         const gotNew = (boards && boards.length) || (stocks && stocks.length) || (preBoards && preBoards.length)
                     || (ampBoards && ampBoards.length) || (newListed && newListed.length)
-                    || (ths && ths.length) || (em && em.length) || (ad && ad.list && ad.list.length);
+                    || (ths && ths.length) || (em && em.length) || (dy && dy.list && dy.list.length);
         const nAll = nBoards + nPre + nAmp + nStocks + nNew + nThs + nEm + nAd;
         if (nAll) {
           // 有数据即成功；本轮确实没拿到新数据时补一句「沿用上次」，避免用户误以为刷新没生效
-          showToast(`获取到 ${nBoards} 个当日板块、${nPre} 个盘前热点、${nAmp} 个振幅板块、${nStocks} 只连板股票、${nNew} 只新上市股票、同花顺热度 ${nThs} 只、东财人气 ${nEm} 只、广告投放力度榜 ${nAd} 家`
+          showToast(`获取到 ${nBoards} 个当日板块、${nPre} 个盘前热点、${nAmp} 个振幅板块、${nStocks} 只连板股票、${nNew} 只新上市股票、同花顺热度 ${nThs} 只、东财人气 ${nEm} 只、抖音搜索股票排名榜 ${nAd} 只`
             + (gotNew ? '' : '（本轮未获取到新数据，沿用上次结果）'), 'success');
         } else {
           // 全空：区分「本轮确实没拉到」与「真的一无所有」，给出可操作提示，不再使用已过时的 JSONP 措辞
@@ -8765,13 +8765,13 @@ const app = createApp({
     const thsHotLoading = ref(false);
     const emHotStocks = ref([]);
     const emHotLoading = ref(false);
-    // 广告投放力度榜（按上市公司最新财报「销售费用」排名，免费·准确，源自东财利润表 SALE_EXPENSE）
-    const adSpend = ref([]);         // [{rank,code,name,saleExpense,operateIncome,reportDate}]
-    const adLoading = ref(false);
-    const adError = ref('');
-    const adDate = ref('');          // 榜单生成时间（generatedAt）
-    const adCount = ref(0);          // 参与排名的有销售费用公司数
-    // 注：该榜单来自财报，与上方「新闻统计开始时间」无关，不随日期切换重算
+    // 抖音搜索股票排名榜（抖音热搜榜 ∩ A股公司名，按搜索热度 hot_value 排名）
+    const douyinStock = ref([]);     // [{rank,code,name,hotValue,word}]
+    const douyinLoading = ref(false);
+    const douyinError = ref('');
+    const douyinDate = ref('');      // 榜单生成时间（generatedAt）
+    const douyinCount = ref(0);      // 命中抖音热搜的 A股公司数
+    // 注：该榜单来自抖音热搜，与上方「新闻统计开始时间」无关，不随日期切换重算
 
     // ============ 豆包榜「用户自带 Key」：每用户各自消耗自己账户 500 次/月免费额度 ============
     const doubaoKeyInput = ref('');        // 输入框临时值（不进 localStorage，保存时才写 D.settings.doubaoKey）
@@ -8875,30 +8875,39 @@ const app = createApp({
     /** 从搜索结果中抽取「上市公司」并按提及次数排名（非上市公司不计入）。
      *  @param {Array<{title,site,url,snippet}>} rawList 某平台原始搜索结果
      *  @returns {Promise<Array<{code,name,count}>>} 降序取前 20 */
-    /** 20261015：刷新「广告投放力度榜」。
-     * 数据源=上市公司最新财报「销售费用」（东财利润表 SALE_EXPENSE）。
-     * 理由：抖音/头条是中国最大的广告渠道，销售费用越高的上市公司越是在上面大规模投广告——
-     * 这是免费且准确的代理指标（真实投放额是字节跳动的付费商业数据，搜索引擎抓不到）。
-     * 与「新闻统计开始时间」无关，不随日期切换重算。 */
-    async function refreshAdBoard() {
-      if (adLoading.value) return;
-      adLoading.value = true; adError.value = '';
-      showToast('正在刷新广告投放力度榜...', 'info');
+    /** 抖音搜索股票排名榜：拉抖音热搜榜，匹配 A股公司名，按搜索热度（hot_value）排名。
+     *  免费公开接口仅能拿到「抖音通用热搜榜」，真实逐股搜索量是字节巨量引擎付费数据（免费不可得）；
+     *  故本榜为「抖音热搜中出现的 A股公司名」按热度排序——静默交易日可能为空（已做空态提示）。
+     *  与「新闻统计开始时间」无关，不随日期切换重算。 */
+    async function refreshDouyinStock() {
+      if (douyinLoading.value) return;
+      douyinLoading.value = true; douyinError.value = '';
+      showToast('正在刷新抖音搜索股票排名榜...', 'info');
       try {
-        const res = await StockAPI.getAdSpend();
+        const res = await StockAPI.getDouyinStock();
         if (res && res.list && res.list.length) {
-          adSpend.value = res.list;
-          D.adSpend = res.list;
-          adDate.value = res.generatedAt || ''; D.adDate = adDate.value;
-          adCount.value = res.count || 0; D.adCount = adCount.value;
-          showToast(`已刷新广告投放力度榜（${res.list.length} 家上市公司，按销售费用排名）`, 'success');
+          douyinStock.value = res.list;
+          D.douyinStock = res.list;
+          douyinDate.value = res.generatedAt || ''; D.douyinDate = douyinDate.value;
+          douyinCount.value = res.count || 0; D.douyinCount = douyinCount.value;
+          showToast(`已刷新抖音搜索股票排名榜（${res.list.length} 只股票，按抖音搜索热度排名）`, 'success');
         } else {
-          adError.value = '广告投放力度榜暂未返回结果'; showToast('广告投放力度榜暂未返回结果', 'info');
+          douyinStock.value = []; D.douyinStock = [];
+          douyinError.value = '当前抖音热搜暂无股票相关词条（静默交易日属正常）';
+          showToast('当前抖音热搜暂无股票相关词条', 'info');
         }
       } catch (e) {
-        adError.value = (e && e.message) || '广告投放力度榜获取失败';
-        showToast('广告投放力度榜获取失败：' + (e.message || e), 'error');
-      } finally { adLoading.value = false; }
+        douyinError.value = (e && e.message) || '抖音搜索股票排名榜获取失败';
+        showToast('抖音搜索股票排名榜获取失败：' + (e.message || e), 'error');
+      } finally { douyinLoading.value = false; }
+    }
+
+    // 格式化抖音搜索热度值：≥1亿→x.xx亿；≥1万→x.x万；否则原值
+    function fmtDouyinHot(v) {
+      const n = Number(v) || 0;
+      if (n >= 1e8) return (n / 1e8).toFixed(2) + ' 亿';
+      if (n >= 1e4) return (n / 1e4).toFixed(1) + ' 万';
+      return String(n);
     }
 
     // ============ 同花顺热门板块（行业 / 概念）：刷新后显示当前同花顺热门行业与概念 ============
@@ -9415,10 +9424,10 @@ const app = createApp({
     // 20261006h：三平台热度榜缓存恢复
     if (D.thsHotStocks && D.thsHotStocks.length) thsHotStocks.value = D.thsHotStocks;
     if (D.emHotStocks && D.emHotStocks.length) emHotStocks.value = D.emHotStocks;
-    // 20261015：广告投放力度榜缓存恢复（源自财报「销售费用」，非日期维度）
-    if (D.adSpend && D.adSpend.length) adSpend.value = D.adSpend;
-    if (D.adDate) adDate.value = D.adDate;
-    if (typeof D.adCount === 'number') adCount.value = D.adCount;
+    // 抖音搜索股票排名榜缓存恢复（源自抖音热搜榜，非日期维度）
+    if (D.douyinStock && D.douyinStock.length) douyinStock.value = D.douyinStock;
+    if (D.douyinDate) douyinDate.value = D.douyinDate;
+    if (typeof D.douyinCount === 'number') douyinCount.value = D.douyinCount;
     // 同花顺热门板块（行业/概念）缓存恢复
     if (D.thsSectors && ((D.thsSectors.industries || []).length || (D.thsSectors.concepts || []).length)) thsSectors.value = D.thsSectors;
 
@@ -10992,7 +11001,7 @@ const app = createApp({
       // 20261006h：三平台热度股票排行榜（同花顺 / 东方财富 / 豆包搜索）
       thsHotStocks, thsHotLoading, refreshThsHotOnly,
       emHotStocks, emHotLoading, refreshEmHotOnly,
-      adSpend, adLoading, adError, adDate, adCount, refreshAdBoard,
+      douyinStock, douyinLoading, douyinError, douyinDate, douyinCount, refreshDouyinStock, fmtDouyinHot,
       thsSectors, thsSectorsLoading, thsSectorsError, refreshThsSectorsOnly,
       doubaoKeyInput, doubaoKeyFormShow, doubaoGuideShow, doubaoKeyActive,
       toggleDoubaoKeyForm, saveDoubaoKey, clearDoubaoKey, openDoubaoGuide,

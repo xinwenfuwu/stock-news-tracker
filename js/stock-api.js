@@ -3155,15 +3155,15 @@ const StockAPI = {
   },
 
   /**
-   * 广告投放力度榜：按上市公司最新财报「销售费用」排名（免费·准确，源自东财利润表）。
-   * 抖音/头条是当下国内最大广告渠道，重投放公司多在此投流，销售费用高 ≈ 你在抖音/头条看到的广告主。
-   * 真正的平台投放额归字节私有（付费数据），免费渠道无法获取，故用销售费用作最准确代理。
-   * 返回 { list:[{rank,code,name,saleExpense,operateIncome,reportDate}], count, generatedAt, note }
+   * 抖音搜索股票排名榜：取抖音热搜榜词云，匹配 A股公司名，按搜索热度（hot_value）排名。
+   * 免费公开接口仅能拿到「抖音通用热搜榜」，真实逐股搜索量是字节巨量引擎付费数据（免费不可得）；
+   * 因此本榜是「抖音热搜中出现的 A股公司名」按热度排序——当某只股票成为抖音热搜话题时上榜，静默交易日可能为空。
+   * 返回 { list:[{rank,code,name,hotValue,word}], count, generatedAt, note }
    */
-  async getAdSpend() {
-    const r = await fetch(this._rankBase() + '/rank/adspend', { cache: 'no-store' });
+  async getDouyinStock() {
+    const r = await fetch(this._rankBase() + '/rank/douyin-stock', { cache: 'no-store' });
     if (!r.ok) {
-      let msg = '广告投放力度榜获取失败(' + r.status + ')';
+      let msg = '抖音搜索股票排名榜获取失败(' + r.status + ')';
       try { const j = await r.json(); if (j && j.error) msg = j.error; } catch (e) {}
       throw new Error(msg);
     }
