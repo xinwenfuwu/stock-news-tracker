@@ -86,6 +86,33 @@
       "endTs": 1823430099377,
       "period": "12 个月会员（¥2000）",
       "resolvedAt": 1792338593789
+    },
+    {
+      "id": "c_1792721555656_320394",
+      "user": "蔡蔡",
+      "plan": "6m",
+      "ts": 1792721554152,
+      "resolved": false,
+      "amount": 1000,
+      "startTs": 1792721554152,
+      "endTs": 1808273554152,
+      "period": "6 个月会员（¥1000）",
+      "acct": {
+        "username": "蔡蔡",
+        "hash": "pbkdf2$150000$NP1iq6FyWI7tVs0Z8GZn1A==$0YYylzYe1biX8i6wTJScRuoqD/Dbo4xZZ4XEs1s01Dw=",
+        "role": "user",
+        "status": "active",
+        "disabled": false,
+        "trialUntil": 1792671616825,
+        "trialDays": 1,
+        "quotaMonths": 0,
+        "registerDate": "",
+        "payMembershipUntil": 0,
+        "paidAt": 0,
+        "paidPlan": "",
+        "paidAmount": 0,
+        "createdAt": 1792628864201
+      }
     }
   ]
 }
