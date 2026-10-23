@@ -92,7 +92,7 @@
       "user": "蔡蔡",
       "plan": "6m",
       "ts": 1792721554152,
-      "resolved": false,
+      "resolved": true,
       "amount": 1000,
       "startTs": 1792721554152,
       "endTs": 1808273554152,
@@ -112,7 +112,8 @@
         "paidPlan": "",
         "paidAmount": 0,
         "createdAt": 1792628864201
-      }
+      },
+      "resolvedAt": 1792724677778
     }
   ]
 }
