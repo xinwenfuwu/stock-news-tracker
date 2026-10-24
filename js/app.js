@@ -7096,14 +7096,11 @@ const app = createApp({
       for (const s of l) { const n = (s.items || []).length; if (n > m) m = n; }
       return m;
     });
-    /* 请求R：原「1天内」改为「时段」——选中时严格统计上方「新闻统计开始时间」起止区间内的新闻；
-     * 其余选项仍是「近 N 天」整日纳入（不套窗口）。 */
+    /* 跨站重合榜 / 主题分类统计 严格按「新闻统计开始时间」窗口统计：
+     * 只保留「时段」这一个口径，统计永远只覆盖该窗口内的新闻，与每日快讯同逻辑；
+     * 段外新闻一律不纳入（见 runAnalysis 内的严格时间窗精筛，无「兜底」回灌）。 */
     const htRangeOptions = [
-      { key: 'win', label: '时段', days: 1 },
-      { key: '3d', label: '3天内', days: 3 },
-      { key: '5d', label: '5天内', days: 5 },
-      { key: '10d', label: '10天内', days: 10 },
-      { key: '1m', label: '一月内', days: 30 }
+      { key: 'win', label: '时段', days: 1 }
     ];
     const analysisRange = ref('win');
     const analysisLoading = ref(false);
@@ -8528,14 +8525,14 @@ const app = createApp({
 
     /** 统计分析：按时间段加载历史快照，跨站聚类 + 各站分类统计 */
     async function runAnalysis() {
-      const opt = htRangeOptions.find(r => r.key === analysisRange.value) || htRangeOptions[1];
-      // 请求R：「时段」= 按上方「新闻统计开始时间」窗口统计；其余 = 近 N 天整日纳入
+      const opt = htRangeOptions.find(r => r.key === analysisRange.value) || htRangeOptions[0];
+      // 统计分析严格绑定「新闻统计开始时间」窗口：只有「时段」一种口径，统计永远只覆盖该窗口内新闻
       const winMode = analysisRange.value === 'win';
       analysisLoading.value = true;
       analysisResult.value = null;
       try {
         // batch16：时间口径改为「统计窗口」（15:00 换日、起止可改）；
-        // 请求R：只有选中「时段」时才按窗口精筛，否则按所选「近 N 天」回溯。
+        // 现在「时间段」只保留「时段」，等同于始终按窗口精筛（与每日快讯同逻辑）。
         const HT = ht_();
         const ws = (HT && HT.fromLocalInputValue) ? HT.fromLocalInputValue(analysisWinStart.value) : null;
         const we = (HT && HT.fromLocalInputValue) ? HT.fromLocalInputValue(analysisWinEnd.value) : null;
@@ -8566,9 +8563,11 @@ const app = createApp({
         }));
         const flat = [];
         let dayCount = 0;
-        // 窗口精筛后按源聚合；同时保留原始条目做兜底（避免严格时间窗把整源误杀成「无数据」）
+        // 严格时间窗精筛：与每日快讯同一口径（ts != null && ts >= 窗口起点 && ts < 窗口终点）。
+        // 带逐条时间戳的条目，落在窗口外的直接丢弃；无时间戳的条目无法判定，按「整日」口径保留
+        // （快照由 windowSnapshotDates 选出的日历日已受窗口约束，避免丢数据）。
+        // 不做任何「兜底」回灌——段外新闻坚决不统计、不展示。
         const winBySource = new Map();
-        const rawBySource = new Map();
         const _ensureSrc = (m, s) => {
           if (!m.has(s.key)) m.set(s.key, { rank: s.rank, key: s.key, name: s.name, color: s.color, items: [] });
           return m.get(s.key);
@@ -8582,21 +8581,17 @@ const app = createApp({
                 sourceRank: s.rank, sourceKey: s.key, sourceName: s.name,
                 text: it.text, time: it.time, url: it.url, cat: it.cat || '财经', date: snap.date
               };
-              _ensureSrc(rawBySource, s).items.push(base);
-              // batch16：有逐条时间戳的按窗口精筛；历史快照没有 time，只能整日纳入（避免丢数据）
+              // 有逐条时间戳且能解析 → 严格按窗口过滤；窗口外直接丢弃（与每日快讯一致）
               if (winStartMs != null && it.time && HT && HT.parseBriefTime && HT.inWindow) {
                 const ts = HT.parseBriefTime(it.time);
-                if (ts != null && !HT.inWindow(ts, winStartMs, winEndMs)) continue;
+                if (ts != null && !HT.inWindow(ts, winStartMs, winEndMs)) continue;   // 段外新闻：不统计、不展示
               }
+              // 其余（无时间戳 / 窗口内）纳入统计
               _ensureSrc(winBySource, s).items.push(base);
             }
           }
         }
         for (const [, _v] of winBySource) flat.push(..._v.items);
-        // 兜底：某源窗口精筛后为空、但原始有数据 → 放行原始条目（防止「该时间段内无数据」误判）
-        for (const [key, _raw] of rawBySource) {
-          if (!winBySource.has(key) || winBySource.get(key).items.length === 0) flat.push(..._raw.items);
-        }
         // 实时叠加：已配置代理 → 拉取十个平台此刻真实热点，按 源+文本 去重合并（修复「刷新不拉实时」）
         let liveAdded = 0;
         const _proxies = String(D.settings.proxyUrl || '').split(/[\s,;]+/).map(x => x.trim()).filter(Boolean);
