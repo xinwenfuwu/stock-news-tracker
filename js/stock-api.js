@@ -1690,7 +1690,8 @@ const StockAPI = {
    *   kcfHb,            // 扣非净利润环比增长率(%)
    *   contractLiab,     // 最新合同负债(元)
    *   shareholderCount, // 散户数量(本期股东人数)
-   *   prevShareholderCount // 上期散户数量
+   *   prevShareholderCount, // 上期散户数量
+   *   shareholder924    // 924散户：报告期最接近 2024-09-24 的一期股东户数
    * }}
    */
   async getFinance(code) {
@@ -1700,7 +1701,7 @@ const StockAPI = {
       profitYoY: null, revenueYoY: null, hbGrowth: null,
       kcfYoY: null, revHb: null, kcfHb: null,
       contractLiab: null,
-      shareholderCount: null, prevShareholderCount: null
+      shareholderCount: null, prevShareholderCount: null, shareholder924: null
     };
     // 财务摘要（净利润/扣非/营收/各类增长率）
     try {
@@ -1734,9 +1735,10 @@ const StockAPI = {
     } catch (e) {
       console.debug('资产负债表获取失败', code);
     }
-    // 股东人数（本期 + 上期）
+    // 股东人数（本期 + 上期 + 924期）
     try {
-      const holderUrl = `https://datacenter-web.eastmoney.com/api/data/v1/get?reportName=RPT_F10_EH_HOLDERNUM&columns=ALL&filter=(SECUCODE%3D%22${secucode}%22)&pageNumber=1&pageSize=2&sortColumns=END_DATE&sortTypes=-1`;
+      // pageSize 从 2 提升到 24（约 6 年报告期）：924散户需在历史报告期里找「最接近 2024-09-24」的一期
+      const holderUrl = `https://datacenter-web.eastmoney.com/api/data/v1/get?reportName=RPT_F10_EH_HOLDERNUM&columns=ALL&filter=(SECUCODE%3D%22${secucode}%22)&pageNumber=1&pageSize=24&sortColumns=END_DATE&sortTypes=-1`;
       const hResp = await fetch(holderUrl, { cache: 'no-store' });
       const hJson = await hResp.json();
       const rows = hJson.result && hJson.result.data;
@@ -1744,6 +1746,20 @@ const StockAPI = {
         result.shareholderCount = rows[0].HOLDER_TOTAL_NUM != null ? rows[0].HOLDER_TOTAL_NUM : (rows[0].HOLDER_NUM || null);
         if (rows.length > 1) {
           result.prevShareholderCount = rows[1].HOLDER_TOTAL_NUM != null ? rows[1].HOLDER_TOTAL_NUM : (rows[1].HOLDER_NUM || null);
+        }
+        // 924散户：股东户数按报告期披露（季报/半年报等），取报告期(END_DATE)最接近 2024-09-24 的一期。
+        // 绝大多数个股命中的是 2024-09-30（2024三季报）；924 前后未披露的取相邻最近一期。
+        const target = new Date('2024-09-24').getTime();
+        let best = null, bestGap = Infinity;
+        for (const r of rows) {
+          if (!r || !r.END_DATE) continue;
+          const t = new Date(String(r.END_DATE).slice(0, 10)).getTime();
+          if (isNaN(t)) continue;
+          const gap = Math.abs(t - target);
+          if (gap < bestGap) { bestGap = gap; best = r; }
+        }
+        if (best) {
+          result.shareholder924 = best.HOLDER_TOTAL_NUM != null ? best.HOLDER_TOTAL_NUM : (best.HOLDER_NUM || null);
         }
       }
     } catch (e) {

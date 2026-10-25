@@ -1395,7 +1395,7 @@ const app = createApp({
         // 添加当日股价快照：供「距添加」字段计算基准，且不会被后续行情刷新覆盖
         fav.favPrice = (stock.todayPrice != null && !isNaN(stock.todayPrice)) ? +stock.todayPrice : null;
         // 复制现有数据字段（若来源已带行情/财务数据则一并保存）
-        const keys = ['industry','dailyChange','amplitude','capitalFlow','shareholderCount','prevShareholderCount',
+        const keys = ['industry','dailyChange','amplitude','capitalFlow','shareholderCount','prevShareholderCount','shareholder924',
           'profitYoY','revenueYoY','hbGrowth','kcfYoY','revHb','kcfHb','q24Rev','q24Kcf',
           'netProfit','kcfjcxjlr','revenue','totalMarketCap',
           'contractLiab','todayPrice','yearStartPrice','price924','yearChange','change924',
@@ -1562,6 +1562,7 @@ const app = createApp({
         if (fin.contractLiab != null) s.contractLiab = fin.contractLiab;
         if (fin.shareholderCount != null) s.shareholderCount = fin.shareholderCount;
         if (fin.prevShareholderCount != null) s.prevShareholderCount = fin.prevShareholderCount;
+        if (fin.shareholder924 != null) s.shareholder924 = fin.shareholder924;
       } catch (e) { console.warn('财务数据获取失败', s.code, e); }
       try {
         const q24 = await StockAPI.getQuarterlyFinance(s.code);
@@ -4240,6 +4241,7 @@ const app = createApp({
         capitalFlow: null,
         shareholderCount: null,
         prevShareholderCount: null,
+        shareholder924: null,   // 924散户：报告期最接近 2024-09-24 的一期股东户数
         profitYoY: null,
         revenueYoY: null,
         hbGrowth: null,
@@ -4316,6 +4318,7 @@ const app = createApp({
               s.capitalFlow = o.capitalFlow;
               s.shareholderCount = o.shareholderCount;
               s.prevShareholderCount = o.prevShareholderCount;
+              s.shareholder924 = o.shareholder924;
               s.profitYoY = o.profitYoY;
               s.revenueYoY = o.revenueYoY;
               s.hbGrowth = o.hbGrowth;
@@ -4642,6 +4645,7 @@ const app = createApp({
           if (fin.contractLiab != null) s.contractLiab = fin.contractLiab;
           if (fin.shareholderCount != null) s.shareholderCount = fin.shareholderCount;
           if (fin.prevShareholderCount != null) s.prevShareholderCount = fin.prevShareholderCount;
+          if (fin.shareholder924 != null) s.shareholder924 = fin.shareholder924;
         } catch (e) {
           console.warn('补充数据获取失败', s.code, e);
         }
@@ -4953,6 +4957,8 @@ const app = createApp({
       { key: 'q24Kcf', label: '24扣率', width: 74, sortable: true, type: 'pct' },
       // 924涨跌 / 年涨跌：按需求置于「24扣率」右侧（紧贴 24扣率），二者位置互换
       { key: 'change924', label: '924涨跌', width: 78, sortable: true, type: 'pct' },
+      // 924散差：按需求置于「924涨跌」右侧 = 今日最新散户数量 − 924散户（计算字段，见 poolVal）
+      { key: 'diff924Holder', label: '924散差', width: 82, sortable: true, type: 'diff' },
       // 估值：=(24营率+24扣率)/2（即 924涨跌 与「业绩增幅均值」的比较基准；>0 表示业绩正增长）
       { key: 'valuation', label: '估值', width: 76, sortable: true, type: 'pct' },
       { key: 'yearChange', label: '年涨跌', width: 78, sortable: true, type: 'pct' },
@@ -4981,6 +4987,8 @@ const app = createApp({
       { key: 'shareholderDiff', label: '散户差额', width: 80, sortable: true, type: 'diff' },
       { key: 'shareholderCount', label: '最新散户', width: 82, sortable: true, type: 'int' },
       { key: 'prevShareholderCount', label: '上期散户', width: 82, sortable: true, type: 'int' },
+      // 924散户：按需求置于「上期散户」右侧 = 报告期最接近 2024-09-24 的一期股东户数（东财 RPT_F10_EH_HOLDERNUM）
+      { key: 'shareholder924', label: '924散户', width: 82, sortable: true, type: 'int' },
       // 按需求：今年高价、今年低价 置于「换手率」左侧
       { key: 'yearHighPrice', label: '今年高价', width: 78, sortable: true, type: 'price' },
       { key: 'yearHighDays', label: '距高天', width: 64, sortable: true, type: 'days' },
@@ -5345,6 +5353,11 @@ const app = createApp({
       if (key === 'shareholderDiff') {
         return (s.shareholderCount != null && s.prevShareholderCount != null)
           ? +(s.shareholderCount - s.prevShareholderCount) : null;
+      }
+      // 924散差 = 今日最新散户数量 − 924散户（2024-09-24 附近报告期股东户数）
+      if (key === 'diff924Holder') {
+        return (s.shareholderCount != null && s.shareholder924 != null)
+          ? +(s.shareholderCount - s.shareholder924) : null;
       }
       // 距今年最高/最低价的涨跌幅（%，现价相对今年高低价）
       if (key === 'distToYearHigh') {
@@ -10426,6 +10439,7 @@ const app = createApp({
             if (fin.contractLiab != null) s.contractLiab = fin.contractLiab;
             if (fin.shareholderCount != null) s.shareholderCount = fin.shareholderCount;
             if (fin.prevShareholderCount != null) s.prevShareholderCount = fin.prevShareholderCount;
+            if (fin.shareholder924 != null) s.shareholder924 = fin.shareholder924;
           } catch (e) {
             console.warn('财务数据获取失败', s.code, e);
           }
