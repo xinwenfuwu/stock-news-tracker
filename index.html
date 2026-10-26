@@ -4,12 +4,12 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>股市信息分析系统</title>
-  <link rel="stylesheet" href="css/style.css?v=20261025a">
+  <link rel="stylesheet" href="css/style.css?v=20261026a">
   <!-- Vue 3 全局构建版（v3.4.21 · 自托管）
        原先走 unpkg.com CDN：国内网络对 unpkg 的连通性不稳定，一旦该请求长时间挂起，
        <head> 里的阻塞脚本会让整页停在白屏、后续 auth-boot.js 根本不会执行。
        改为同源托管后，启动链路不再依赖任何第三方 CDN。 -->
-  <script src="js/vue.global.prod.js?v=20261025a"></script>
+  <script src="js/vue.global.prod.js?v=20261026a"></script>
 </head>
 <body class="auth-locked">
   <!-- ===== 登录关卡：登录通过前业务脚本不会被加载 ===== -->
@@ -2368,6 +2368,8 @@
           </div>
         </div>
 
+        <div class="global-layout">
+        <div class="sector-main">
         <!-- 板块搜索 -->
         <div class="sector-search">
           <input v-model="sectorSearch" placeholder="输入行业/概念名称，如：白酒、人工智能、新能源车、低空经济..."
@@ -2892,6 +2894,130 @@
             <p class="muted">在上方输入行业或概念名称，点击板块即可自动列出其下所有股票</p>
           </template>
         </div>
+        </div><!-- /sector-main -->
+
+        <!-- ===== 量化板块（选股页右侧）：盘后 / 盘中 每日操作信号打分 ===== -->
+        <aside class="quant-panel">
+          <div class="quant-tabs">
+            <button type="button" :class="['quant-tab', { active: quantTab === 'post' }]" @click="quantTab = 'post'">📕 盘后板块</button>
+            <button type="button" :class="['quant-tab', { active: quantTab === 'intraday' }]" @click="quantTab = 'intraday'">📗 盘中板块</button>
+          </div>
+
+          <div class="quant-board">
+            <!-- 一、操作顺序 -->
+            <section class="q-block">
+              <div class="q-block-head" @click="quantOrderOpen = !quantOrderOpen">
+                <span>一、操作顺序（{{ currentQuant.label.replace('板块','') }}）</span>
+                <span class="q-caret">{{ quantOrderOpen ? '▾' : '▸' }}</span>
+              </div>
+              <ol v-show="quantOrderOpen" class="q-order">
+                <li v-for="(o, i) in currentQuant.order" :key="i">{{ o }}</li>
+              </ol>
+            </section>
+
+            <!-- 二、四大信号 Checklist -->
+            <section class="q-block">
+              <div class="q-block-head" @click="quantSignalOpen = !quantSignalOpen">
+                <span>二、四大信号 Checklist</span>
+                <span class="q-caret">{{ quantSignalOpen ? '▾' : '▸' }}</span>
+              </div>
+              <div v-show="quantSignalOpen">
+                <div v-for="sig in currentQuant.signals" :key="sig.no" class="q-signal">
+                  <div class="q-signal-title">信号{{ sig.no }}：{{ sig.name }}<span class="q-signal-desc">{{ sig.desc }}</span></div>
+                  <div class="q-table-wrap">
+                    <table class="q-table">
+                      <thead><tr><th>跟踪项</th><th>去哪看</th><th class="q-col-good">好信号 · 可参与</th><th class="q-col-warn">警惕信号 · 减仓/观望</th></tr></thead>
+                      <tbody>
+                        <tr v-for="(r, ri) in sig.rows" :key="ri">
+                          <td data-label="跟踪项">{{ r.track }}</td>
+                          <td data-label="去哪看">{{ r.where }}</td>
+                          <td data-label="好信号" class="q-good">{{ r.good }}</td>
+                          <td data-label="警惕信号" class="q-warn">{{ r.warn }}</td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            <!-- 三、当日打分决策表 -->
+            <section class="q-block">
+              <div class="q-block-head">三、当日打分决策表（每项 0–2 分，满分 8 分）</div>
+              <div class="q-score">
+                <div class="q-score-row">
+                  <label>日期</label>
+                  <input type="date" v-model="quantDate" class="q-input">
+                  <button v-if="quantEditingId" class="btn btn-sm" type="button" @click="cancelQuantEdit">✕ 取消编辑</button>
+                </div>
+                <div class="q-score-grid">
+                  <div v-for="sig in currentQuant.signals" :key="'f'+sig.no" class="q-score-cell">
+                    <div class="q-score-label">信号{{ sig.no }} {{ sig.name }}</div>
+                    <select v-model="quantForm[quantTab]['s'+sig.no]" class="q-input">
+                      <option :value="0">0 背离/危险</option>
+                      <option :value="1">1 中性</option>
+                      <option :value="2">2 确认向好</option>
+                    </select>
+                    <input v-model="quantForm[quantTab]['b'+sig.no]" class="q-input" placeholder="一句话依据">
+                  </div>
+                </div>
+                <div class="q-score-total">
+                  合计 <b>{{ quantTotalOf(quantTab) }}</b> / 8
+                  <span class="q-level" :class="quantLevelOf(quantTotalOf(quantTab)).cls">{{ quantLevelOf(quantTotalOf(quantTab)).text }}</span>
+                </div>
+                <button class="btn btn-primary btn-sm" type="button" @click="saveQuantScore(quantTab)">{{ quantEditingId ? '更新记录' : '保存打分' }}</button>
+              </div>
+            </section>
+
+            <!-- 操作档位 + 关键原则 -->
+            <section class="q-block">
+              <div class="q-block-head">操作档位（按合计分）</div>
+              <ul class="q-levels">
+                <li><span class="lv-strong">7–8 分</span> 情绪+资金+业绩齐共振 → 积极进攻主线，正常仓位</li>
+                <li><span class="lv-mid">5–6 分</span> 有催化但有一项弱（多为资金或拥挤度）→ 半仓，只做有业绩/订单细分，回避纯题材</li>
+                <li><span class="lv-weak">3–4 分</span> 反弹但缺资金或业绩验证 → 轻仓或只做超跌博弈，冲高减仓</li>
+                <li><span class="lv-def">0–2 分</span> 普跌、缩量、避险 → 空仓防守，等信号修复</li>
+              </ul>
+              <div class="q-note">⚠️ {{ currentQuant.note }}</div>
+            </section>
+
+            <!-- 四、怎么用这份清单 -->
+            <section class="q-block">
+              <div class="q-block-head">四、{{ currentQuant.usageTitle }}</div>
+              <div v-for="u in currentQuant.usage" :key="u.t" class="q-usage">
+                <b>{{ u.t }}：</b>{{ u.d }}
+              </div>
+            </section>
+
+            <!-- 历史记录 + 趋势 -->
+            <section class="q-block">
+              <div class="q-block-head">📅 历史打分（按日期，含趋势）</div>
+              <div v-if="quantTrend(quantTab).length" class="q-trend">
+                <div v-for="t in quantTrend(quantTab)" :key="t.id" class="q-trend-bar" :title="t.date + ' ' + t.total + '/8'">
+                  <span class="q-trend-label">{{ t.date.slice(5) }}</span>
+                  <span class="q-trend-track"><span class="q-trend-fill" :class="quantLevelOf(t.total).cls" :style="{ width: (t.total/8*100) + '%' }"></span></span>
+                  <span class="q-trend-val">{{ t.total }}</span>
+                </div>
+              </div>
+              <table v-if="quantHistory(quantTab).length" class="q-table q-hist">
+                <thead><tr><th>日期</th><th>合计</th><th>档位</th><th>操作</th></tr></thead>
+                <tbody>
+                  <tr v-for="h in quantHistory(quantTab)" :key="h.id">
+                    <td data-label="日期">{{ h.date }}</td>
+                    <td data-label="合计"><b>{{ h.total }}</b>/8</td>
+                    <td data-label="档位" :class="quantLevelOf(h.total).cls">{{ quantLevelOf(h.total).text.split(' · ')[0] }}</td>
+                    <td data-label="操作" class="q-ops">
+                      <button class="btn btn-xs" type="button" @click="editQuantScore(h)">编辑</button>
+                      <button class="btn btn-xs btn-danger" type="button" @click="deleteQuantScore(h.id)">删</button>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+              <p v-else class="muted small">尚无「{{ currentQuant.label }}」打分记录，填好上方打分表点「保存打分」即可。</p>
+            </section>
+          </div>
+        </aside>
+        </div><!-- /global-layout -->
       </section>
 
       <!-- ===== 页面3：热门板块 ===== -->
@@ -5074,14 +5200,14 @@
     </transition>
   </div>
 
-  <script src="js/auth.js?v=20261025a"></script>
-  <script src="js/auth-sync.js?v=20261025a"></script>
+  <script src="js/auth.js?v=20261026a"></script>
+  <script src="js/auth-sync.js?v=20261026a"></script>
   <!-- 边缘加速默认站点（batch37 治本：Cloudflare Worker 代理东财/腾讯，缓解 JSONP 限流误报）。
        若你所在地区 workers.dev 访问慢，可在「设置 → 行情加速地址」清空即恢复纯直连。 -->
   <script>window.__SNT_ACCEL__ = 'https://sichina.dpdns.org';</script>
   <!-- 扫码支付二维码渲染库（第三方 qrcodejs，本地托管避免外链失效）。renderQr 会先检测全局 QRCode 是否存在。 -->
-  <script src="assets/qrcode.min.js?v=20261025a"></script>
-  <script src="js/auth-boot.js?v=20261025a"></script>
+  <script src="assets/qrcode.min.js?v=20261026a"></script>
+  <script src="js/auth-boot.js?v=20261026a"></script>
   <!-- store / stock-api / hot-topics / app 由 auth-boot.js 在登录通过后动态装载，
        未登录时它们不会被下载，业务数据也不会进入内存 -->
 </body>

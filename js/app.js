@@ -10905,6 +10905,175 @@ const app = createApp({
     }
 
     // 暴露到模板
+    // ============ 量化板块（选股页右侧）：盘后 / 盘中 每日操作信号打分 ============
+    // 内容严格按需求原文；盘中板块按市面常见盘中量化指标补全（与盘后同构，便于统一打分）。
+    const QUANT = {
+      post: {
+        label: '盘后板块',
+        order: [
+          '先看指数和涨跌家数（情绪底色）',
+          '再看主力资金 / ETF 份额（钱是真的假的）',
+          '翻当日涨停 / 连板 / 炸板（短线赚钱效应）',
+          '扫板块成交额排名 + 换手（是不是拥挤）',
+          '查今晚公告 / 业绩预告 / 次日解禁（有没有雷或催化）',
+          '填当日打分表，给出次日操作档位'
+        ],
+        signals: [
+          { no: 1, name: '情绪修复', desc: '风险偏好是否在回升', rows: [
+            { track: '全市场上涨家数', where: '行情软件涨跌家数', good: '>3000 家上涨', warn: '<1500 家、普跌' },
+            { track: '跌停家数', where: '同上', good: '<10 家', warn: '>30 家、有大面积跌停' },
+            { track: '连板高度', where: '涨停复盘', good: '出现 3 板以上梯队、断层小', warn: '最高板被砸、断板潮' },
+            { track: '炸板率', where: '涨停复盘', good: '<30%', warn: '>45%（承接差、易冲高回落）' },
+            { track: '涨跌停比 / 昨日涨停今表现', where: '复盘工具', good: '昨日涨停今日多数红盘', warn: '打板/追高普遍亏钱' },
+            { track: '避险资产', where: '银行/红利指数、国债、美元', good: '防守板块走弱=进攻信号', warn: '银行红利逆势走强=避险' }
+          ]},
+          { no: 2, name: '资金持续', desc: '放量还是缩量、钱往哪去', rows: [
+            { track: '两市成交额', where: '行情首页', good: '较前日放量、且维持高位（如持续 2 万亿级）', warn: '反弹却缩量=无量反弹不接力' },
+            { track: '主力净流入方向', where: '资金流向榜', good: '资金持续流入某主线（如半导体/光模块）', warn: '主线单日净流出、尾盘跳水' },
+            { track: '宽基 / 行业 ETF 份额', where: 'ETF 净值与份额', good: '主线 ETF 连续申购=机构加仓', warn: '高位 ETF 被大幅赎回' },
+            { track: '北向 / 外资（如仍可看）', where: '沪深股通', good: '持续净买入', warn: '连续净流出' },
+            { track: '融资余额', where: '两融数据', good: '稳步上升=杠杆资金进场', warn: '快速回落=去杠杆' }
+          ]},
+          { no: 3, name: '业绩兑现', desc: '涨的有没有基本面撑腰', rows: [
+            { track: '当晚业绩预告 / 快报', where: '交易所公告、巨潮', good: '上涨主线里有公司业绩超预期', warn: '高位股业绩暴雷、商誉减值' },
+            { track: '主线龙头订单/产能公告', where: '公司公告、新闻', good: '龙头集中发订单、回购、扩产=景气强化', warn: '澄清公告、减持、风险提示' },
+            { track: '机构研报评级', where: '研报平台', good: '多家投行上调某板块目标价', warn: '一致看多后开始"拥挤预警"' },
+            { track: '业绩真空期时点', where: '财报日历', good: '处于真空期=题材活跃窗口', warn: '财报披露窗口=杀业绩风险' }
+          ]},
+          { no: 4, name: '板块拥挤度', desc: '是否已经涨过头', rows: [
+            { track: '板块成交额占比', where: '板块行情', good: '占比适中、刚抬头', warn: '单一板块占比冲历史高位=过热' },
+            { track: '板块换手率', where: '板块排行', good: '温和放量', warn: '换手飙升、放量滞涨' },
+            { track: '龙头位置', where: 'K线', good: '刚突破、离前高有空间', warn: '连续大涨、乖离过大、加速赶顶' },
+            { track: '筹码/获利比例', where: '筹码分布', good: '获利盘未极致', warn: '获利盘>90% 且放巨量' },
+            { track: '同题材扩散度', where: '涨停分布', good: '梯队健康、有补涨接力', warn: '只剩杂毛跟风、龙头熄火' }
+          ]}
+        ],
+        usageTitle: '次日/本周/本月怎么用这份清单',
+        usage: [
+          { t: '看次日', d: '重点看①情绪 + ②资金当天有没有同步转强，共振则次日反弹延续概率高。' },
+          { t: '看本周', d: '连续 2–3 天②资金和③业绩都拿 2 分，才算"结构行情"成立，可跟主线轮动。' },
+          { t: '看本月', d: '把每天合计分连成一条曲线——分数中枢持续抬升 = 趋势性机会；分数反复在 3–4 分震荡 = 只做波段、不做趋势。' }
+        ],
+        note: '情绪决定敢不敢干，资金决定能不能持续，业绩决定能走多远，拥挤度决定该不该止盈。四个信号里只要"资金"和"业绩"双双背离，即使情绪很热也只当反弹做，不重仓过夜。'
+      },
+      intraday: {
+        label: '盘中板块',
+        order: [
+          '开盘前看隔夜外盘 / 消息面（定开盘情绪基调）',
+          '集合竞价看涨跌家数、涨停封板率（定当日强弱）',
+          '盘中看主力净流入方向 + 量能同比（钱是否持续）',
+          '扫涨停分布与连板梯队（题材是否健康）',
+          '盯高位股与避险资产表现（风险温度）',
+          '填盘中打分表，给出当日交易档位'
+        ],
+        signals: [
+          { no: 1, name: '实时强弱', desc: '盘中多空谁占上风', rows: [
+            { track: '涨跌家数（实时）', where: '行情软件/同花顺', good: '上涨家数>3500 且持续扩大', warn: '上涨<1500 且缩窄' },
+            { track: '涨停封板率（实时）', where: '涨停板/涨停复盘', good: '>70% 且秒板多', warn: '<50%、炸板多' },
+            { track: '连板梯队（实时）', where: '涨停复盘', good: '有 3 板以上梯队', warn: '高度板断板' },
+            { track: '指数分时（黄白线）', where: '分时图', good: '黄线在白线上、小盘活跃', warn: '白线护盘、黄线大跌（赚指数不赚钱）' },
+            { track: '主力/北向分时净流入', where: '资金流向', good: '持续净流入', warn: '持续净流出/冲高回落' }
+          ]},
+          { no: 2, name: '盘中资金', desc: '钱是否真实持续流入', rows: [
+            { track: '主力净流入（实时）', where: '资金流向榜', good: '主线板块持续净流入', warn: '主线净流出、尾盘跳水' },
+            { track: '成交金额（实时）', where: '行情首页', good: '早盘放量、量能同比放大', warn: '缩量、无量震荡' },
+            { track: 'ETF 盘中申赎', where: 'ETF 分时', good: '主线 ETF 盘中净申购', warn: '高位大幅净赎回' },
+            { track: '融资买入额（实时）', where: '两融实时', good: '融资买入回升', warn: '融资偿还>买入' }
+          ]},
+          { no: 3, name: '题材活跃度', desc: '热点是否成势', rows: [
+            { track: '涨停分布（实时）', where: '涨停复盘', good: '主线题材梯队完整、有补涨', warn: '只剩龙头独苗、跟风熄火' },
+            { track: '热点集中度', where: '板块涨幅榜', good: '1–2 个主线清晰领涨', warn: '热点散乱、快速轮动' },
+            { track: '题材持续性', where: '5日/3日涨幅', good: '主线连续上榜', warn: '一日游、隔日闷杀' },
+            { track: '龙头表现', where: '个股分时', good: '龙头强势封板、带动板块', warn: '龙头炸板/跳水拖累' }
+          ]},
+          { no: 4, name: '风险温度', desc: '是否已经过热或转弱', rows: [
+            { track: '炸板率（实时）', where: '涨停复盘', good: '<30%', warn: '>45%' },
+            { track: '高位股表现', where: '涨跌幅榜', good: '高位趋势股继续新高', warn: '高位股批量跳水（杀高位）' },
+            { track: '回落幅度（分时）', where: '指数分时', good: '维持高位、回踩不破', warn: '冲高大幅回落（上影长）' },
+            { track: '避险资产（实时）', where: '银行/红利/国债', good: '防守走弱=风险偏好升', warn: '避险资产逆势走强' }
+          ]}
+        ],
+        usageTitle: '当下/半日/节奏怎么用这份清单',
+        usage: [
+          { t: '看当下', d: '①实时强弱 + ②盘中资金同步转强，可顺势加仓；任一项转弱则降仓。' },
+          { t: '看半日', d: '上午②资金和③题材活跃度都拿 2 分，下午延续概率高，可持有主线。' },
+          { t: '看节奏', d: '把每日盘中合计分连线——连续高位=可滚动做多；反复 3–4 分=快进快出、不恋战。' }
+        ],
+        note: '盘中只做"当下"判断：情绪（强弱）决定敢不敢出手，资金（净流入）决定能不能持续，题材（活跃度）决定主攻方向，风险温度决定该不该止盈。资金与题材双双走弱，即使指数红盘也只做超短、不过夜。'
+      }
+    };
+
+    // 打分表单状态：每个板块一份（s1..s4 打分，b1..b4 一句话依据）
+    function blankQuantForm() {
+      return { s1: 1, s2: 1, s3: 1, s4: 1, b1: '', b2: '', b3: '', b4: '' };
+    }
+    const quantTab = ref('post');
+    const quantDate = ref(Store.today());
+    const quantForm = reactive({ post: blankQuantForm(), intraday: blankQuantForm() });
+    const quantOrderOpen = ref(false);
+    const quantSignalOpen = ref(true);
+    const quantEditingId = ref(null);
+    const currentQuant = computed(() => QUANT[quantTab.value]);
+
+    function quantTotalOf(board) {
+      const f = quantForm[board];
+      return (+f.s1 || 0) + (+f.s2 || 0) + (+f.s3 || 0) + (+f.s4 || 0);
+    }
+    function quantLevelOf(total) {
+      if (total >= 7) return { cls: 'lv-strong', text: '7–8 分 · 积极进攻（正常仓位）' };
+      if (total >= 5) return { cls: 'lv-mid', text: '5–6 分 · 半仓参与（只做有业绩/订单细分）' };
+      if (total >= 3) return { cls: 'lv-weak', text: '3–4 分 · 轻仓/超跌博弈（冲高减仓）' };
+      return { cls: 'lv-def', text: '0–2 分 · 空仓防守（等信号修复）' };
+    }
+    function quantHistory(board) {
+      return (D.quantScores || []).filter(r => r.board === board)
+        .slice().sort((a, b) => (a.date < b.date ? 1 : a.date > b.date ? -1 : (b.createdAt || 0) - (a.createdAt || 0)));
+    }
+    function quantTrend(board) {
+      return quantHistory(board).slice(0, 20).reverse(); // 日期升序，画曲线
+    }
+    function saveQuantScore(board) {
+      const f = quantForm[board];
+      const total = quantTotalOf(board);
+      const rec = {
+        board,
+        date: quantDate.value || Store.today(),
+        s1: +f.s1, s2: +f.s2, s3: +f.s3, s4: +f.s4,
+        b1: f.b1, b2: f.b2, b3: f.b3, b4: f.b4,
+        total,
+        level: quantLevelOf(total).text
+      };
+      if (quantEditingId.value) {
+        Store.updateQuantScore(quantEditingId.value, rec);
+        showToast('已更新「' + QUANT[board].label + '」' + rec.date + ' 打分', 'success');
+      } else {
+        Store.addQuantScore(rec);
+        showToast('已保存「' + QUANT[board].label + '」' + rec.date + ' 打分（' + total + '/8）', 'success');
+      }
+      quantForm[board] = blankQuantForm();
+      quantEditingId.value = null;
+    }
+    function editQuantScore(rec) {
+      quantTab.value = rec.board;
+      quantDate.value = rec.date;
+      quantForm[rec.board] = {
+        s1: rec.s1, s2: rec.s2, s3: rec.s3, s4: rec.s4,
+        b1: rec.b1 || '', b2: rec.b2 || '', b3: rec.b3 || '', b4: rec.b4 || ''
+      };
+      quantEditingId.value = rec.id;
+      const el = document.querySelector('.quant-panel');
+      if (el) el.scrollTop = 0;
+    }
+    function cancelQuantEdit() {
+      quantEditingId.value = null;
+      quantForm[quantTab.value] = blankQuantForm();
+    }
+    function deleteQuantScore(id) {
+      Store.deleteQuantScore(id);
+      if (quantEditingId.value === id) cancelQuantEdit();
+      showToast('已删除一条打分记录', 'info');
+    }
+
     return {
       // 全局
       D, currentPage, tabs, goPage,
@@ -11057,6 +11226,10 @@ const app = createApp({
       saveHolding, deleteHoldingRow, refreshHoldingPrices, holdingRefreshing,
       // 交易逻辑记录表
       tradeLogicOpen, tradeLogicForm, tradeLogicInputs, tradeLogicRows,
+      // 量化板块（选股页右侧）：盘后 / 盘中 每日操作信号打分
+      QUANT, quantTab, quantDate, quantForm, quantOrderOpen, quantSignalOpen, quantEditingId,
+      currentQuant, quantTotalOf, quantLevelOf, quantHistory, quantTrend,
+      saveQuantScore, editQuantScore, cancelQuantEdit, deleteQuantScore,
       tradeLogicSortDir, tradeLogicSortIcon, toggleTradeLogicSort,
       openTradeLogicPanel, resetTradeLogicForm, editTradeLogicRow, saveTradeLogic, deleteTradeLogicRow,
       addTradeLogicChip, removeTradeLogicChip,

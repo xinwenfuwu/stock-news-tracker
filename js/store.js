@@ -28,6 +28,7 @@ const Store = {
       news: [],
       stockPools: [],
       sectorPools: [],        // 概念/行业选股板块：[{id, name, bk, type, date, stocks: [...]}]
+      quantScores: [],        // 量化板块打分记录：[{id, board:'post'|'intraday', date, s1..s4, b1..b4, total, level, createdAt, updatedAt}]
       favorites: [],          // 收藏股票：[{code, name, favDate, note}]
       catMeta: {},             // 子类标注：{ "概念归类::人工智能": { color:'#ff0000', note:'重点' }, ... }（概念/行业归类行右侧颜色与备注）
       holdings: {},            // 用户持仓：{ [username]: [{id, code, name, entryDate, entryPrice, currentPrice, shares, direction, fee, note, createdAt, updatedAt}] }
@@ -358,6 +359,26 @@ const Store = {
   deleteSectorPool(id) {
     const i = this.data.sectorPools.findIndex(p => p.id === id);
     if (i >= 0) this.data.sectorPools.splice(i, 1);
+  },
+
+  // ===== 量化板块：每日操作信号打分（盘后 / 盘中） =====
+  addQuantScore(rec) {
+    rec.id = this.uid('qs');
+    rec.createdAt = Date.now();
+    rec.updatedAt = rec.updatedAt || Date.now();
+    this.data.quantScores.push(rec);
+    this.saveNow();
+    return rec;
+  },
+  updateQuantScore(id, patch) {
+    const it = this.data.quantScores.find(r => r.id === id);
+    if (it) { Object.assign(it, patch, { updatedAt: Date.now() }); this.saveNow(); return it; }
+    return null;
+  },
+  deleteQuantScore(id) {
+    const i = this.data.quantScores.findIndex(r => r.id === id);
+    if (i >= 0) { this.data.quantScores.splice(i, 1); this.saveNow(); return true; }
+    return false;
   },
 
   // ===== 收藏 =====
