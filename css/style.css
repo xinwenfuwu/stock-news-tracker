@@ -2031,6 +2031,18 @@ body {
   margin-bottom: 14px;
 }
 
+/* 选股页复用 .global-layout 的双栏骨架，但「全球信息」页在 ≥1300px 会把 .global-layout
+ * 改成 grid（右列固定 800px，给每日快讯面板用）。若选股页沿用该栅格，右侧量化板块只有
+ * 460px，会白留约 340px 空档，同时把左主栏压到 ~740px（1366 笔记本仅剩 ~500px）。
+ * 因此选股页加 .sector-layout 修饰类，宽屏下强制回到 flex，让量化板块贴合右缘、
+ * 左主栏吃掉剩余全部宽度。 */
+.global-layout.sector-layout {
+  display: flex;
+  gap: 16px;
+  grid-template-columns: none;
+}
+.sector-main { flex: 1 1 auto; min-width: 0; }
+
 /* ===== 量化板块（选股页右侧）：盘后 / 盘中 每日操作信号打分 ===== */
 .quant-panel {
   flex: 0 0 460px;
@@ -2045,6 +2057,14 @@ body {
   padding: 12px 14px;
   overflow-y: auto;
 }
+/* 面板总标题：让「量化板块」这个容器名在右栏顶部一眼可见 */
+.quant-head {
+  display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap;
+  padding-bottom: 8px; margin-bottom: 10px;
+  border-bottom: 2px solid var(--primary);
+}
+.quant-title { font-size: 15px; font-weight: 700; color: var(--text); letter-spacing: .5px; }
+.quant-sub { font-size: 11px; color: var(--text-secondary); }
 .quant-tabs { display: flex; gap: 8px; margin-bottom: 10px; }
 .quant-tab {
   flex: 1; padding: 8px 10px; font-size: 13px; font-weight: 600;
@@ -3773,4 +3793,15 @@ body.guest-mode #app { display: none; }
   .q-table td:last-child { border-bottom: none; }
   .q-table td::before { content: attr(data-label); font-weight: 600; color: #475569; text-align: left; flex: 0 0 auto; max-width: 40%; }
   .q-score-grid { grid-template-columns: 1fr; }
+}
+
+/* 量化板块：窄屏（与 .global-layout 堆叠断点一致）取消固定 460px，整行铺满、取消粘顶 */
+@media (max-width: 980px) {
+  .quant-panel {
+    flex: 1 1 auto;
+    width: 100%;
+    max-height: none;
+    position: static;
+    margin-top: 14px;
+  }
 }
