@@ -4,12 +4,12 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>股市信息分析系统</title>
-  <link rel="stylesheet" href="css/style.css?v=20261026b">
+  <link rel="stylesheet" href="css/style.css?v=20261026c">
   <!-- Vue 3 全局构建版（v3.4.21 · 自托管）
        原先走 unpkg.com CDN：国内网络对 unpkg 的连通性不稳定，一旦该请求长时间挂起，
        <head> 里的阻塞脚本会让整页停在白屏、后续 auth-boot.js 根本不会执行。
        改为同源托管后，启动链路不再依赖任何第三方 CDN。 -->
-  <script src="js/vue.global.prod.js?v=20261026b"></script>
+  <script src="js/vue.global.prod.js?v=20261026c"></script>
 </head>
 <body class="auth-locked">
   <!-- ===== 登录关卡：登录通过前业务脚本不会被加载 ===== -->
@@ -2367,8 +2367,6 @@
             </button>
           </div>
         </div>
-
-        <div class="global-layout sector-layout">
         <div class="sector-main">
         <!-- 板块搜索 -->
         <div class="sector-search">
@@ -2896,12 +2894,20 @@
         </div>
         </div><!-- /sector-main -->
 
-        <!-- ===== 量化板块（选股页右侧）：盘后 / 盘中 每日操作信号打分 ===== -->
-        <aside class="quant-panel">
-          <div class="quant-head">
-            <div class="quant-title">📊 量化板块</div>
-            <div class="quant-sub">盘后 / 盘中 两大子版块 · 每日四信号打分</div>
+
+      </section>
+
+      <!-- ===== 独立页面：量化板块（盘后 / 盘中 每日操作信号打分） ===== -->
+      <section v-show="currentPage === 'quant'" class="page">
+        <div class="page-toolbar">
+          <div class="toolbar-left"><h2 class="page-title">📊 量化板块</h2></div>
+          <div class="toolbar-right">
+            <span class="muted small">盘后 / 盘中 两大子版块 · 每日四信号打分 · 打分按日期自动存档对比</span>
           </div>
+        </div>
+        <div class="quant-page">
+        <!-- 量化板块内容：盘后 / 盘中 每日操作信号打分（页面标题已在 .page-toolbar，此处不再重复标题） -->
+          <div class="quant-board-wrap">
           <div class="quant-tabs">
             <button type="button" :class="['quant-tab', { active: quantTab === 'post' }]" @click="quantTab = 'post'">📕 盘后板块</button>
             <button type="button" :class="['quant-tab', { active: quantTab === 'intraday' }]" @click="quantTab = 'intraday'">📗 盘中板块</button>
@@ -3020,11 +3026,11 @@
               <p v-else class="muted small">尚无「{{ currentQuant.label }}」打分记录，填好上方打分表点「保存打分」即可。</p>
             </section>
           </div>
-        </aside>
-        </div><!-- /global-layout -->
+                  </div><!-- /quant-board-wrap -->
+        </div>
       </section>
 
-      <!-- ===== 页面3：热门板块 ===== -->
+            <!-- ===== 页面3：热门板块 ===== -->
             <section v-show="currentPage === 'hot'" class="page">
         <div class="page-toolbar">
           <div class="toolbar-left">
@@ -5204,14 +5210,14 @@
     </transition>
   </div>
 
-  <script src="js/auth.js?v=20261026b"></script>
-  <script src="js/auth-sync.js?v=20261026b"></script>
+  <script src="js/auth.js?v=20261026c"></script>
+  <script src="js/auth-sync.js?v=20261026c"></script>
   <!-- 边缘加速默认站点（batch37 治本：Cloudflare Worker 代理东财/腾讯，缓解 JSONP 限流误报）。
        若你所在地区 workers.dev 访问慢，可在「设置 → 行情加速地址」清空即恢复纯直连。 -->
   <script>window.__SNT_ACCEL__ = 'https://sichina.dpdns.org';</script>
   <!-- 扫码支付二维码渲染库（第三方 qrcodejs，本地托管避免外链失效）。renderQr 会先检测全局 QRCode 是否存在。 -->
-  <script src="assets/qrcode.min.js?v=20261026b"></script>
-  <script src="js/auth-boot.js?v=20261026b"></script>
+  <script src="assets/qrcode.min.js?v=20261026c"></script>
+  <script src="js/auth-boot.js?v=20261026c"></script>
   <!-- store / stock-api / hot-topics / app 由 auth-boot.js 在登录通过后动态装载，
        未登录时它们不会被下载，业务数据也不会进入内存 -->
 </body>

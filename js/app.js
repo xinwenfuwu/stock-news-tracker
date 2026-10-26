@@ -39,6 +39,7 @@ const app = createApp({
       { key: 'hot', label: '热门板块', icon: '🔥' },
       { key: 'pools', label: '股票池', icon: '📅' },
       { key: 'sector', label: '选股', icon: '🧭' },
+      { key: 'quant', label: '量化板块', icon: '📊' },
       { key: 'filter', label: '板块成分股', icon: '🎯' }
     ];
     // batch52：每日快讯面板现在同时挂在「新闻追踪」页顶部与「全球信息」页右栏（同一份数据、同一套交互），
@@ -55,13 +56,13 @@ const app = createApp({
     }
     // 初始化路由
     const hash = location.hash.replace('#', '');
-    if (['news', 'holdings', 'finance', 'pools', 'sector', 'filter', 'hot'].includes(hash)) currentPage.value = hash;
+    if (['news', 'holdings', 'finance', 'pools', 'sector', 'quant', 'filter', 'hot'].includes(hash)) currentPage.value = hash;
     // 监听 hashchange：支持通过 URL 锚点直接跳转页面（如 index.html#finance），
     // 否则仅靠 goPage 点击切换，外部改 location.hash 不会更新 currentPage。
     // 这里只同步 currentPage，具体的「进入页面加载」交给已有的 watch(currentPage)。
     window.addEventListener('hashchange', function () {
       var h = (location.hash || '').replace('#', '');
-      if (['news', 'holdings', 'finance', 'pools', 'sector', 'filter', 'hot'].includes(h)) {
+      if (['news', 'holdings', 'finance', 'pools', 'sector', 'quant', 'filter', 'hot'].includes(h)) {
         if (currentPage.value !== h) currentPage.value = h;
       }
     });

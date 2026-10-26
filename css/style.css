@@ -2065,6 +2065,10 @@ body {
 }
 .quant-title { font-size: 15px; font-weight: 700; color: var(--text); letter-spacing: .5px; }
 .quant-sub { font-size: 11px; color: var(--text-secondary); }
+/* 量化板块升级为左侧导航独立入口（currentPage='quant'）后的整页布局：居中单列、白卡包裹，
+ * 不再用 .quant-panel 的固定 460px / 吸顶样式（那些是右栏时期的遗留，已不再使用）。 */
+.quant-page { max-width: 1180px; margin: 0 auto; }
+.quant-board-wrap { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 14px 16px; }
 .quant-tabs { display: flex; gap: 8px; margin-bottom: 10px; }
 .quant-tab {
   flex: 1; padding: 8px 10px; font-size: 13px; font-weight: 600;
