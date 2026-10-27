@@ -11296,6 +11296,92 @@ const app = createApp({
     }
     const quantAiReport = ref(null);   // 最近一次 AI 研判报告 {model, summary, checks}
     const quantAiBusy = ref(false);
+
+    // ===== 盘前预测：打分逻辑与「当日打分决策表」完全一致 =====
+    // 14:50 前点 → 用当前实时数据预测今天的行情档位；14:50 后点 → 预测下一交易日。
+    const quantPredResult = ref(null);   // 最近一次预测结果（展示用）
+    const quantPredicting = ref(false);
+    /** 下一交易日：跳过周六周日（法定节假日无法预知，按自然工作日估算） */
+    function nextTradingDay(d) {
+      const t = new Date(d.getTime());
+      do { t.setDate(t.getDate() + 1); } while (t.getDay() === 0 || t.getDay() === 6);
+      return t;
+    }
+    function _fmtDate(d) {
+      return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+    }
+    async function quantPredict(board) {
+      if (quantPredicting.value) return;
+      quantPredicting.value = true;
+      quantMsg.value = '盘前预测中：正在按「当日打分决策表」逻辑计算各信号分…';
+      try {
+        if (!quantData[board]) await fetchQuantData(board);
+        const qd = quantData[board];
+        // 时间窗口：14:50 前预测今天，之后预测下一交易日
+        const now = new Date();
+        const cutoff = new Date(now.getTime()); cutoff.setHours(14, 50, 0, 0);
+        const beforeCutoff = now.getTime() < cutoff.getTime();
+        const targetD = beforeCutoff ? now : nextTradingDay(now);
+        const targetDate = _fmtDate(targetD);
+        const windowNote = beforeCutoff ? '14:50 前预测今天' : '14:50 后预测下一交易日';
+        // 与 decideQuant 同一套打分：逐跟踪项按好/警惕阈值打分，信号内取最弱项（警惕一票否决）；
+        // 全部跟踪项都无实时数据的信号按中性 1 分计入，并单独提示。
+        const basis = [], defaulted = [];
+        const sc = {};
+        for (const sig of QUANT[board].signals) {
+          const no = sig.no;
+          const parts = [], ss = [];
+          for (const r of sig.rows) {
+            const s = quantMetricScore(board, no, r.track);
+            if (s == null) continue;
+            ss.push(s);
+            const mv = quantMetricVal(board, no, r.track);
+            parts.push(r.track + ' ' + s + ' 分（' + ((mv && mv.text) || '—') + '）');
+          }
+          if (ss.length) {
+            sc['s' + no] = Math.min.apply(null, ss);
+            basis.push('信号' + no + ' ' + sig.name + '：' + sc['s' + no] + ' 分（取最弱） — ' + parts.join('；'));
+          } else {
+            sc['s' + no] = 1;
+            defaulted.push('信号' + no + ' ' + sig.name);
+            basis.push('信号' + no + ' ' + sig.name + '：1 分（无实时数据，按中性计）');
+          }
+        }
+        const total = (sc.s1 || 0) + (sc.s2 || 0) + (sc.s3 || 0) + (sc.s4 || 0);
+        const lvl = quantLevelOf(total);
+        quantPredResult.value = {
+          boardLabel: QUANT[board].label,
+          targetDate, windowNote,
+          total, levelText: lvl.text, levelCls: lvl.cls,
+          basis,
+          defaulted
+        };
+        Store.addQuantPrediction({
+          board,
+          targetDate,
+          basisDate: qd ? String(qd.updatedAt || '').split(' ')[0] : Store.today(),
+          s1: sc.s1, s2: sc.s2, s3: sc.s3, s4: sc.s4,
+          total,
+          level: lvl.text,
+          basis,
+          defaultedCount: defaulted.length
+        });
+        quantMsg.value = '盘前预测完成：预测对象 ' + targetDate + '（' + windowNote + '）· 合计 ' + total + '/8 · ' + lvl.text.split(' · ')[0] + '。';
+        showToast('盘前预测完成（' + targetDate + ' ' + total + '/8）', 'success');
+      } catch (e) {
+        quantMsg.value = '盘前预测失败：' + (e && e.message ? e.message : e);
+      } finally {
+        quantPredicting.value = false;
+      }
+    }
+    function quantPredHistory(board) {
+      return (D.quantPredictions || []).filter(r => r.board === board)
+        .slice().sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+    }
+    function deleteQuantPrediction(id) {
+      Store.deleteQuantPrediction(id);
+      showToast('已删除一条预测记录', 'info');
+    }
     /** AI 研判：把行情快照交给设置里配置的 DeepSeek（OpenAI 兼容）分析，产出研判报告；
      *  对「完全无数据」的信号按 AI 建议自动填分（有数据的信号只给参考，不覆盖规则打分）。 */
     async function callQuantAI(board) {
@@ -11617,6 +11703,7 @@ const app = createApp({
       quantData, quantFetchedAt, quantFetching, quantSearching, quantMsg, quantAiReport, quantAiBusy,
       isVacuumMonth, quantMetricSpec, quantMetricVal, quantMetricScore, quantRowInfo, quantOrderHint,
       fetchQuantData, decideQuant, callQuantAI, quantResonanceBoards, quantSearchResonance,
+      quantPredict, quantPredResult, quantPredicting, quantPredHistory, deleteQuantPrediction,
       tradeLogicSortDir, tradeLogicSortIcon, toggleTradeLogicSort,
       openTradeLogicPanel, resetTradeLogicForm, editTradeLogicRow, saveTradeLogic, deleteTradeLogicRow,
       addTradeLogicChip, removeTradeLogicChip,

@@ -4,12 +4,12 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>股市信息分析系统</title>
-  <link rel="stylesheet" href="css/style.css?v=20261027c">
+  <link rel="stylesheet" href="css/style.css?v=20261027d">
   <!-- Vue 3 全局构建版（v3.4.21 · 自托管）
        原先走 unpkg.com CDN：国内网络对 unpkg 的连通性不稳定，一旦该请求长时间挂起，
        <head> 里的阻塞脚本会让整页停在白屏、后续 auth-boot.js 根本不会执行。
        改为同源托管后，启动链路不再依赖任何第三方 CDN。 -->
-  <script src="js/vue.global.prod.js?v=20261027c"></script>
+  <script src="js/vue.global.prod.js?v=20261027d"></script>
 </head>
 <body class="auth-locked">
   <!-- ===== 登录关卡：登录通过前业务脚本不会被加载 ===== -->
@@ -2975,6 +2975,9 @@
                 <button class="btn btn-ai btn-sm" type="button" :disabled="quantAiBusy" @click="callQuantAI(quantTab)" title="把行情快照交给 DeepSeek 分析（需在设置→AI 解读里配置 Key）">
                   <span v-if="quantAiBusy">⏳ AI 研判中…</span><span v-else>🤖 AI 研判（DeepSeek）</span>
                 </button>
+                <button class="btn btn-sm" type="button" :disabled="quantPredicting" @click="quantPredict(quantTab)" title="按「当日打分决策表」同一套逻辑自动打分定档位：14:50 前预测今天，14:50 后预测下一交易日">
+                  <span v-if="quantPredicting">⏳ 预测中…</span><span v-else>🔮 盘前预测</span>
+                </button>
               </div>
               <div class="q-src">数据来源 · 概念板块信息：新浪板块名单（经代理，取一次后本地缓存）+ 成分股换手（直连） · 个股信息：新浪全市场扫描 + 腾讯指数行情（均可直连） · AI 研判：DeepSeek（设置里点一键预设，填 Key 即用）</div>
               <div class="q-msg" v-if="quantMsg">{{ quantMsg }}</div>
@@ -2990,6 +2993,33 @@
                 <span v-for="b in quantResonanceBoards.slice(0, 10)" :key="b.name" class="q-reso-chip">
                   {{ b.name }} <em>{{ b.amountYi }}亿 · 涨幅{{ b.changePct }}%</em>
                 </span>
+              </div>
+              <div class="q-pred" v-if="quantPredResult">
+                <div class="q-pred-head">🔮 盘前预测 · {{ quantPredResult.boardLabel }} · 预测对象：<b>{{ quantPredResult.targetDate }}</b>（{{ quantPredResult.windowNote }}）</div>
+                <div class="q-pred-sum">合计 <b>{{ quantPredResult.total }}</b> / 8
+                  <span class="q-level" :class="quantPredResult.levelCls">{{ quantPredResult.levelText }}</span>
+                </div>
+                <ul class="q-pred-basis">
+                  <li v-for="(b, i) in quantPredResult.basis" :key="i">{{ b }}</li>
+                </ul>
+                <div class="q-pred-note" v-if="quantPredResult.defaulted.length">⚠️ 以下信号无实时数据、按中性 1 分计入：{{ quantPredResult.defaulted.join('、') }}。可在下方打分表手动修正，或用 🤖 AI 研判 给参考分。</div>
+              </div>
+              <div class="q-pred-hist" v-if="quantPredHistory(quantTab).length">
+                <div class="q-pred-hist-title">近期预测记录（{{ currentQuant.label }}）：</div>
+                <table class="q-table q-hist">
+                  <thead><tr><th>预测对象日</th><th>合计</th><th>档位</th><th>预测时间</th><th>操作</th></tr></thead>
+                  <tbody>
+                    <tr v-for="p in quantPredHistory(quantTab).slice(0, 10)" :key="p.id">
+                      <td data-label="预测对象日"><b>{{ p.targetDate }}</b></td>
+                      <td data-label="合计">{{ p.total }}/8</td>
+                      <td data-label="档位" :class="quantLevelOf(p.total).cls">{{ quantLevelOf(p.total).text.split(' · ')[0] }}</td>
+                      <td data-label="预测时间">{{ new Date(p.createdAt).toLocaleString('zh-CN', { hour12: false }) }}</td>
+                      <td data-label="操作" class="q-ops">
+                        <button class="btn btn-xs btn-danger" type="button" @click="deleteQuantPrediction(p.id)">删</button>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
               </div>
             </section>
 
@@ -4481,10 +4511,6 @@
           <button class="btn-icon" @click="showSettings = false">✕</button>
         </div>
         <div class="modal-body">
-          <div class="info-box small">
-            <p><b>跨设备免码登录（可选 · 无需服务器）</b>共享账号表存为仓库里的公开文件 <code>data/accounts/registry.json</code>，由 GitHub Pages 直接托管。管理员在「用户管理」里通过 / 添加的账号会自动写进注册表；对方在自己设备上<b>只输入用户名和密码</b>即可登录，无需再粘贴准入码。</p>
-            <p><b>安全：</b>注册表是公开文件，含「用户名 + PBKDF2 密码哈希(带随机盐)」，离线爆破成本很高（与准入码同级别）。写入用的 GitHub 令牌只存在你本机浏览器，<b>不会</b>进注册表。下方字段仅管理员设备需要填写。</p>
-          </div>
           <div class="form-row" v-if="authUser && authUser.role === 'admin'">
             <label>GitHub 令牌（仅管理员 · 用于把账号写入云端注册表）细粒度令牌，仅授权本仓库 <code>xinwenfuwu/stock-news-tracker</code> 的 Contents 读写即可。普通用户无需填写——他们只需在登录页输入账号密码。</label>
             <input type="password" v-model="authAdminToken" placeholder="ghp_... 或 github_pat_..." autocomplete="new-password">
@@ -5252,14 +5278,14 @@
     </transition>
   </div>
 
-  <script src="js/auth.js?v=20261027c"></script>
-  <script src="js/auth-sync.js?v=20261027c"></script>
+  <script src="js/auth.js?v=20261027d"></script>
+  <script src="js/auth-sync.js?v=20261027d"></script>
   <!-- 边缘加速默认站点（batch37 治本：Cloudflare Worker 代理东财/腾讯，缓解 JSONP 限流误报）。
        若你所在地区 workers.dev 访问慢，可在「设置 → 行情加速地址」清空即恢复纯直连。 -->
   <script>window.__SNT_ACCEL__ = 'https://sichina.dpdns.org';</script>
   <!-- 扫码支付二维码渲染库（第三方 qrcodejs，本地托管避免外链失效）。renderQr 会先检测全局 QRCode 是否存在。 -->
-  <script src="assets/qrcode.min.js?v=20261027c"></script>
-  <script src="js/auth-boot.js?v=20261027c"></script>
+  <script src="assets/qrcode.min.js?v=20261027d"></script>
+  <script src="js/auth-boot.js?v=20261027d"></script>
   <!-- store / stock-api / hot-topics / app 由 auth-boot.js 在登录通过后动态装载，
        未登录时它们不会被下载，业务数据也不会进入内存 -->
 </body>

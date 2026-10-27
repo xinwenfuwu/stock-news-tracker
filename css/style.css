@@ -3891,6 +3891,15 @@ body.guest-mode #app { display: none; }
 .q-ai-sum { font-size: 12px; color: #1e293b; line-height: 1.7; white-space: pre-wrap; }
 .q-ai-checks { margin: 8px 0 0; padding-left: 18px; }
 .q-ai-checks li { font-size: 12px; color: #334155; line-height: 1.7; }
+/* 盘前预测结果 + 记录 */
+.q-pred { border: 1px solid #a7f3d0; background: #ecfdf5; border-radius: 8px; padding: 10px 12px; margin: 8px 0; }
+.q-pred-head { font-size: 13px; font-weight: 600; color: #047857; margin-bottom: 6px; }
+.q-pred-sum { font-size: 13px; color: #1e293b; margin-bottom: 6px; }
+.q-pred-basis { margin: 0 0 6px; padding-left: 18px; }
+.q-pred-basis li { font-size: 12px; color: #334155; line-height: 1.7; }
+.q-pred-note { font-size: 11px; color: #b45309; background: #fffbeb; border: 1px solid #fde68a; border-radius: 6px; padding: 6px 8px; }
+.q-pred-hist { margin: 8px 0 0; }
+.q-pred-hist-title { font-size: 12px; font-weight: 600; color: #475569; margin-bottom: 4px; }
 /* 操作顺序每步的数据补充提示（点「计算数据」后出现） */
 .q-order-hint {
   display: inline-block;
