@@ -4,12 +4,12 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>股市信息分析系统</title>
-  <link rel="stylesheet" href="css/style.css?v=20261027b">
+  <link rel="stylesheet" href="css/style.css?v=20261027c">
   <!-- Vue 3 全局构建版（v3.4.21 · 自托管）
        原先走 unpkg.com CDN：国内网络对 unpkg 的连通性不稳定，一旦该请求长时间挂起，
        <head> 里的阻塞脚本会让整页停在白屏、后续 auth-boot.js 根本不会执行。
        改为同源托管后，启动链路不再依赖任何第三方 CDN。 -->
-  <script src="js/vue.global.prod.js?v=20261027b"></script>
+  <script src="js/vue.global.prod.js?v=20261027c"></script>
 </head>
 <body class="auth-locked">
   <!-- ===== 登录关卡：登录通过前业务脚本不会被加载 ===== -->
@@ -2972,15 +2972,23 @@
                 <button class="btn btn-ai btn-sm" type="button" :disabled="quantSearching" @click="quantSearchResonance()">
                   <span v-if="quantSearching">⏳ 选股中…</span><span v-else>🔍 一键搜索共振选股</span>
                 </button>
-                <label class="q-ai-toggle" title="预留：开启后「需手动/AI 研判」行未来可由大模型研判">
-                  <input type="checkbox" v-model="quantAiMode"> AI 研判接口（预留）
-                </label>
+                <button class="btn btn-ai btn-sm" type="button" :disabled="quantAiBusy" @click="callQuantAI(quantTab)" title="把行情快照交给 DeepSeek 分析（需在设置→AI 解读里配置 Key）">
+                  <span v-if="quantAiBusy">⏳ AI 研判中…</span><span v-else>🤖 AI 研判（DeepSeek）</span>
+                </button>
               </div>
+              <div class="q-src">数据来源 · 概念板块信息：新浪板块名单（经代理，取一次后本地缓存）+ 成分股换手（直连） · 个股信息：新浪全市场扫描 + 腾讯指数行情（均可直连） · AI 研判：DeepSeek（设置里点一键预设，填 Key 即用）</div>
               <div class="q-msg" v-if="quantMsg">{{ quantMsg }}</div>
+              <div class="q-ai" v-if="quantAiReport">
+                <div class="q-ai-head">🤖 AI 研判报告（{{ quantAiReport.model }}）</div>
+                <div class="q-ai-sum">{{ quantAiReport.summary }}</div>
+                <ul class="q-ai-checks" v-if="quantAiReport.checks.length">
+                  <li v-for="(c, i) in quantAiReport.checks" :key="i"><b>{{ c.item }}</b>：{{ c.advice }}</li>
+                </ul>
+              </div>
               <div class="q-reso" v-if="quantResonanceBoards.length">
                 <div class="q-reso-title">共振候选板块（情绪+资金+业绩齐共振）：</div>
                 <span v-for="b in quantResonanceBoards.slice(0, 10)" :key="b.name" class="q-reso-chip">
-                  {{ b.name }} <em>{{ b.amountYi }}亿 · 主力{{ b.mainNetInYi }}亿</em>
+                  {{ b.name }} <em>{{ b.amountYi }}亿 · 涨幅{{ b.changePct }}%</em>
                 </span>
               </div>
             </section>
@@ -5244,14 +5252,14 @@
     </transition>
   </div>
 
-  <script src="js/auth.js?v=20261027b"></script>
-  <script src="js/auth-sync.js?v=20261027b"></script>
+  <script src="js/auth.js?v=20261027c"></script>
+  <script src="js/auth-sync.js?v=20261027c"></script>
   <!-- 边缘加速默认站点（batch37 治本：Cloudflare Worker 代理东财/腾讯，缓解 JSONP 限流误报）。
        若你所在地区 workers.dev 访问慢，可在「设置 → 行情加速地址」清空即恢复纯直连。 -->
   <script>window.__SNT_ACCEL__ = 'https://sichina.dpdns.org';</script>
   <!-- 扫码支付二维码渲染库（第三方 qrcodejs，本地托管避免外链失效）。renderQr 会先检测全局 QRCode 是否存在。 -->
-  <script src="assets/qrcode.min.js?v=20261027b"></script>
-  <script src="js/auth-boot.js?v=20261027b"></script>
+  <script src="assets/qrcode.min.js?v=20261027c"></script>
+  <script src="js/auth-boot.js?v=20261027c"></script>
   <!-- store / stock-api / hot-topics / app 由 auth-boot.js 在登录通过后动态装载，
        未登录时它们不会被下载，业务数据也不会进入内存 -->
 </body>

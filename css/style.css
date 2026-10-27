@@ -3883,6 +3883,14 @@ body.guest-mode #app { display: none; }
 .q-data-text { word-break: break-word; }
 .q-data-text.q-missing { color: #94a3b8; }
 .q-manual { color: #94a3b8; font-style: italic; }
+/* 数据端口来源标注（两类免费数据源说明） */
+.q-src { font-size: 11px; color: #64748b; line-height: 1.6; margin: 2px 0 6px; }
+/* AI 研判报告（DeepSeek） */
+.q-ai { border: 1px solid #c7d2fe; background: #eef2ff; border-radius: 8px; padding: 10px 12px; margin: 8px 0; }
+.q-ai-head { font-size: 13px; font-weight: 600; color: #4338ca; margin-bottom: 6px; }
+.q-ai-sum { font-size: 12px; color: #1e293b; line-height: 1.7; white-space: pre-wrap; }
+.q-ai-checks { margin: 8px 0 0; padding-left: 18px; }
+.q-ai-checks li { font-size: 12px; color: #334155; line-height: 1.7; }
 /* 操作顺序每步的数据补充提示（点「计算数据」后出现） */
 .q-order-hint {
   display: inline-block;

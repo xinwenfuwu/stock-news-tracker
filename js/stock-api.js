@@ -6806,15 +6806,23 @@ const StockAPI = {
   },
 
   /**
-   * 量化板块「数据端口」：拉取盘后/盘中两类页面所需的实时市场指标。
+   * 量化板块「数据端口」v2（20261027c 起弃用东方财富，全部换用免费接口）。
    *
-   * 设计原则：
-   *  - 纯前端直连东方财富 push2 / 行情接口（浏览器侧 CORS 开放），可选经 proxyUrl 代理规避跨域；
-   *  - 每个指标独立 try/catch，任一失败只置 ok:false，绝不让整次调用抛错；
-   *  - 返回结构固定：market / boards / safeHaven / northbound / financing / metrics（平铺供 app.js 行级匹配）。
+   * 需要获取的信息分两类：
+   *  A) 概念板块信息 —— 新浪财经板块名单（newFLJK.php：概念 + 行业，接口无 CORS 头，直连必失败、
+   *     走 proxyUrl 代理；成功后把名单结构缓存到 Store，之后无代理也能沿用名单）
+   *     + 板块成交额第一的成分股平均换手（Market_Center json_v2，接口带 CORS 可直连）。
+   *  B) 个股信息 —— 新浪行情中心全市场扫描（Market_Center.getHQNodeData node=hs_a，num=80 按
+   *     成交额降序翻页约 70 页，该排序下接口带 CORS 头可直连）统计涨跌/涨跌停/两市成交额；
+   *     腾讯 qt.gtimg.cn 批量行情（CORS 可直连）取上证/银行/红利指数做避险资产对比。
+   *
+   * 主力资金说明：上述免费源均无「板块级主力净流入」（东财 f62 独有），故改用代理口径：
+   *   topFundBoard = 成交额前 10 板块中涨幅最高者（资金进攻方向），topFundBoardPct = 其涨幅%。
+   * 设计原则：每个指标独立 try/catch，任一失败只置空，绝不让整次调用抛错；
+   * 返回结构：market / boards / safeHaven / categories（两类信息的来源与状态）/ metrics（平铺供 app.js 行级匹配）。
    *
    * @param {string} board 'post' | 'intraday'（部分指标按盘后/盘中语义取值，目前共用同一份行情快照）
-   * @param {object} [opts] { proxyUrl }
+   * @param {object} [opts] { proxyUrl, boardCache }
    * @returns {Promise<object>} 见上
    */
   async quantData(board, opts) {
@@ -6829,8 +6837,12 @@ const StockAPI = {
       market: null,
       boards: [],
       safeHaven: null,
-      northbound: { ok: false, note: '北向资金自 2024-08 起暂停盘中披露，暂无量化的可靠数据源' },
+      northbound: { ok: false, note: '北向资金自 2024-08 起暂停盘中披露，暂无量化的可靠免费数据源' },
       financing: { ok: false, note: '融资余额需交易所数据中心，本站未接入' },
+      categories: {
+        conceptBoards: { ok: false, source: '新浪财经·板块名单（经代理）+ 成分股换手（直连）', count: 0, note: '' },
+        stocks: { ok: false, source: '新浪行情中心·全市场扫描（直连）+ 腾讯行情·指数避险（直连）', count: 0, note: '' }
+      },
       metrics: {}
     };
 
@@ -6840,57 +6852,153 @@ const StockAPI = {
       try { return await self._fetchJson(u, timeout || 12000); }
       catch (e) { return null; }
     }
-    // East Money clist（注意 fs 中的 "+" 必须保持原样，不能编码成 %2B / 空格）
-    async function clist(fs, fields, pz) {
-      const url = `https://push2.eastmoney.com/api/qt/clist/get?pn=1&pz=${pz || 6000}&po=1&np=1&fltt=2&invt=2&fid=f3&fs=${fs}&fields=${fields}`;
-      const j = await jget(url, 14000);
-      if (!j || !j.data || !Array.isArray(j.data.diff)) return [];
-      return j.data.diff;
+    // 带 CORS 的免费接口：永远直连（不经代理，省 Worker 额度），失败返回 null
+    async function jgetDirect(url, timeout) {
+      try { return await self._fetchJson(url, timeout || 12000); }
+      catch (e) { return null; }
+    }
+    // 抓文本（GBK/UTF-8 自适应）：直连优先；无 CORS 的接口直连会抛错 → 有代理时走代理。
+    // 用 U+FFFD 判定编码：GBK 回包按 UTF-8 解会出乱码，再换 GBK 解码。
+    async function tget(url, timeout) {
+      try {
+        const buf = await self._fetchBytes(url, timeout || 12000);
+        const u8 = new TextDecoder('utf-8').decode(buf);
+        if (u8.indexOf('\uFFFD') === -1) return u8;
+        const g = new TextDecoder('gbk').decode(buf);
+        return g.indexOf('\uFFFD') === -1 ? g : u8;
+      } catch (e) { /* 直连失败 */ }
+      if (proxy) {
+        try {
+          const buf = await self._fetchBytes(`${proxy}/proxy?url=${encodeURIComponent(url)}`, timeout || 14000);
+          const u8 = new TextDecoder('utf-8').decode(buf);
+          if (u8.indexOf('\uFFFD') === -1) return u8;
+          return new TextDecoder('gbk').decode(buf);
+        } catch (e) { return null; }
+      }
+      return null;
+    }
+    // 解析 newFLJK.php 的板块名单：{"gn_x":"gn_x,名称,家数,均价,涨跌额,涨跌幅,量,额,领涨代码,领涨涨幅,...,领涨名"}
+    function parseBoardList(t) {
+      if (!t) return [];
+      const m = t.match(/\{([\s\S]*)\}/);
+      if (!m) return [];
+      let obj = null;
+      try { obj = JSON.parse('{' + m[1] + '}'); }
+      catch (e) { try { obj = (new Function('return ({' + m[1] + '})'))(); } catch (e2) { return []; } }
+      const arr = [];
+      for (const k in obj || {}) {
+        const p = String(obj[k] || '').split(',');
+        if (p.length < 8 || !p[1]) continue;
+        arr.push({
+          node: p[0], name: p[1],
+          cnt: parseInt(p[2], 10) || null,
+          changePct: parseFloat(p[5]),
+          amountYi: +((parseFloat(p[7]) || 0) / 1e8).toFixed(1),
+          leaderCode: p[8] || '',
+          leaderPct: p.length > 9 ? parseFloat(p[9]) : null,
+          leader: p.length > 12 ? p[12] : ''
+        });
+      }
+      return arr;
     }
 
-    // 1) 全市场涨跌家数 + 两市成交额（一次扫描全部 A 股，按涨跌幅分级计数）
+    // ============ A) 概念板块信息 ============
+    let boards = [];
+    let boardsFresh = false;
+    try {
+      const t1 = await tget('https://money.finance.sina.com.cn/q/view/newFLJK.php?param=class', 15000);
+      const t2 = await tget('https://money.finance.sina.com.cn/q/view/newFLJK.php?param=industry', 15000);
+      const merged = parseBoardList(t1).concat(parseBoardList(t2))
+        .filter(b => b.name && b.amountYi != null && !isNaN(b.amountYi) && b.changePct != null && !isNaN(b.changePct))
+        .sort((a, b) => (b.amountYi || 0) - (a.amountYi || 0))
+        .slice(0, 40);
+      if (merged.length) {
+        boards = merged;
+        boardsFresh = true;
+        // 名单结构缓存（node/名称/领涨股），供无代理时沿用
+        out.boardCache = {
+          date: this._todayStr(),
+          boards: boards.map(b => ({ node: b.node, name: b.name, cnt: b.cnt, leader: b.leader, leaderCode: b.leaderCode }))
+        };
+        out.categories.conceptBoards.ok = true;
+        out.categories.conceptBoards.count = merged.length;
+      }
+    } catch (e) { /* 走缓存兜底 */ }
+    if (!boardsFresh) {
+      const cache = opts.boardCache;
+      if (cache && Array.isArray(cache.boards) && cache.boards.length) {
+        boards = cache.boards.map(b => ({
+          node: b.node, name: b.name, cnt: b.cnt || null,
+          changePct: null, amountYi: null,
+          leader: b.leader || '', leaderCode: b.leaderCode || '', leaderPct: null
+        }));
+        out.categories.conceptBoards.note = '板块名单来自本地缓存（' + (cache.date || '未知日期') + '），当日涨幅/成交额需配置代理后刷新';
+      }
+    }
+    out.boards = boards;
+    // 板块成交额第一的成分股平均换手（Market_Center json_v2，CORS 可直连）
+    let topTurnover = null;
+    if (boardsFresh && boards.length) {
+      try {
+        const top = boards[0];   // 已按成交额降序
+        const j = await jgetDirect(`https://vip.stock.finance.sina.com.cn/quotes_service/api/json_v2.php/Market_Center.getHQNodeData?page=1&num=40&sort=amount&asc=0&node=${encodeURIComponent(top.node)}`, 12000);
+        if (Array.isArray(j) && j.length) {
+          const ts = j.map(x => parseFloat(x.turnoverratio)).filter(v => !isNaN(v));
+          if (ts.length) topTurnover = +(ts.reduce((s, v) => s + v, 0) / ts.length).toFixed(2);
+        }
+      } catch (e) { /* 换手缺失不影响其它指标 */ }
+    }
+
+    // ============ B) 个股信息 ============
+    // 全市场扫描：hs_a num=80 按成交额降序翻页（约 70 页，并发 6），统计涨跌/涨跌停/两市成交额
     let market = null;
     try {
-      const all = await clist('m:0+t:1,m:1+t:2', 'f12,f14,f3,f6', 6000);
-      if (all.length) {
-        let up = 0, down = 0, flat = 0, limitUp = 0, limitDown = 0, amount = 0;
-        for (const it of all) {
-          const pct = parseFloat(it.f3);
-          const amt = parseFloat(it.f6) || 0;
-          amount += amt;
-          if (isNaN(pct)) { flat++; continue; }
-          if (pct >= 9.9) limitUp++;
-          else if (pct <= -9.9) limitDown++;
-          if (pct > 0) up++;
-          else if (pct < 0) down++;
-          else flat++;
+      const NUM = 80, MAXP = 100, CONC = 6;
+      const seen = new Set();
+      let up = 0, down = 0, flat = 0, limitUp = 0, limitDown = 0, amount = 0, total = 0, fails = 0, okPages = 0, done = false;
+      for (let p = 1; p <= MAXP && !done; p += CONC) {
+        const wave = [];
+        for (let k = 0; k < CONC && p + k <= MAXP && !done; k++) {
+          const pg = p + k;
+          wave.push(jgetDirect(`https://vip.stock.finance.sina.com.cn/quotes_service/api/json_v2.php/Market_Center.getHQNodeData?page=${pg}&num=${NUM}&sort=amount&asc=0&node=hs_a`, 15000).then(j => ({ pg, arr: Array.isArray(j) ? j : null })));
         }
-        const total = all.length;
+        const rs = await Promise.all(wave);
+        for (const r of rs) {
+          if (!r || !r.arr) { fails++; continue; }
+          okPages++;
+          if (r.arr.length < NUM) done = true;   // 短页 = 已到最后一页
+          for (const it of r.arr) {
+            if (!it || !it.symbol || seen.has(it.symbol)) continue;
+            seen.add(it.symbol);
+            const pct = parseFloat(it.changepercent);
+            const amt = parseFloat(it.amount) || 0;
+            amount += amt; total++;
+            if (isNaN(pct)) { flat++; continue; }
+            const lu = /^bj/.test(it.symbol) ? 29.9 : 9.9;   // 北交所 30cm
+            if (pct >= lu) limitUp++;
+            else if (pct <= -lu) limitDown++;
+            if (pct > 0) up++;
+            else if (pct < 0) down++;
+            else flat++;
+          }
+        }
+        if (fails > CONC * 2) break;   // 失败过多，放弃本次统计
+      }
+      if (total > 0 && okPages > 0 && fails <= okPages * 0.2) {
         market = {
           up, down, flat, limitUp, limitDown, total,
           amountYi: +(amount / 1e8).toFixed(0),
-          ratioUp: total ? +(up / total * 100).toFixed(1) : null
+          ratioUp: total ? +(up / total * 100).toFixed(1) : null,
+          partial: fails > 0
         };
       }
     } catch (e) { market = null; }
     out.market = market;
+    out.categories.stocks.ok = !!market;
+    out.categories.stocks.count = market ? market.total : 0;
+    if (market && market.partial) out.categories.stocks.note = '个别分页拉取失败，涨跌家数为近似值';
 
-    // 2) 板块排名（行业 + 概念，按成交额降序取前 30，带换手/主力净流入/涨跌幅）
-    let boards = [];
-    try {
-      const raw = await clist('m:90+t:2,m:90+t:3', 'f12,f14,f3,f6,f8,f62', 30);
-      boards = raw.map(it => ({
-        code: String(it.f12 || '').toUpperCase(),
-        name: it.f14 || '',
-        changePct: parseFloat(it.f3),
-        amountYi: +((parseFloat(it.f6) || 0) / 1e8).toFixed(1),
-        turnover: parseFloat(it.f8),
-        mainNetInYi: +((parseFloat(it.f62) || 0) / 1e8).toFixed(2)
-      })).filter(b => b.code);
-    } catch (e) { boards = []; }
-    out.boards = boards;
-
-    // 3) 避险资产强弱（银行/红利指数 vs 上证指数当日涨跌幅）
+    // 避险资产强弱（银行/红利指数 vs 上证指数当日涨跌幅）—— 腾讯行情，CORS 可直连
     let safe = null;
     try {
       const q = await this.getQuotes(['sh000001', 'sz399986', 'sh000015']).catch(() => ({}));
@@ -6903,7 +7011,7 @@ const StockAPI = {
     } catch (e) { safe = null; }
     out.safeHaven = safe;
 
-    // 4) 汇总平铺指标（供 app.js 行级匹配 / 自动打分）
+    // 汇总平铺指标（供 app.js 行级匹配 / 自动打分）
     const m = out.metrics;
     if (market) {
       m.upCount = mk(market.up, `${market.up} 家`, true);
@@ -6915,16 +7023,18 @@ const StockAPI = {
       m.amountYi = mk(market.amountYi, `${market.amountYi} 亿`, true);
       m.ratioUp = mk(market.ratioUp, (market.ratioUp != null ? `${market.ratioUp}%` : '—'), market.ratioUp != null);
     }
-    if (boards.length) {
-      const byAmount = boards.slice().sort((a, b) => b.amountYi - a.amountYi)[0];
-      const totalAmt = boards.reduce((s, b) => s + (b.amountYi || 0), 0) || market && market.amountYi || 1;
-      const byFund = boards.slice().sort((a, b) => b.mainNetInYi - a.mainNetInYi)[0];
+    const withAmt = boards.filter(b => b.amountYi != null);
+    if (withAmt.length) {
+      const byAmount = withAmt[0];   // 已按成交额降序
+      const totalAmt = withAmt.reduce((s, b) => s + (b.amountYi || 0), 0) || 1;
       m.topAmtBoard = mk(byAmount.name, byAmount.name, true);
       m.topAmtBoardAmountYi = mk(byAmount.amountYi, `${byAmount.amountYi} 亿`, true);
-      m.topAmtBoardTurnover = mk(byAmount.turnover, (byAmount.turnover != null ? `${byAmount.turnover}%` : '—'), byAmount.turnover != null);
-      m.topAmtBoardRatio = mk(byAmount.amountYi / totalAmt, (totalAmt ? `${(byAmount.amountYi / totalAmt * 100).toFixed(1)}%` : '—'), totalAmt > 0);
+      m.topAmtBoardTurnover = mk(topTurnover, (topTurnover != null ? `${topTurnover}%` : '—'), topTurnover != null);
+      m.topAmtBoardRatio = mk(byAmount.amountYi / totalAmt, `${(byAmount.amountYi / totalAmt * 100).toFixed(1)}%`, totalAmt > 0);
+      // 资金进攻方向（代理口径）：成交额前 10 板块中涨幅最高者
+      const byFund = withAmt.slice(0, 10).slice().sort((a, b) => (b.changePct || 0) - (a.changePct || 0))[0];
       m.topFundBoard = mk(byFund.name, byFund.name, true);
-      m.topFundBoardMainNetInYi = mk(byFund.mainNetInYi, `${byFund.mainNetInYi} 亿`, true);
+      m.topFundBoardPct = mk(byFund.changePct, `${byFund.changePct >= 0 ? '+' : ''}${byFund.changePct}%`, true);
       // 板块拥挤度：取成交额最大板块的占比与换手
       m.boardCrowdRatio = m.topAmtBoardRatio;
       m.boardCrowdTurnover = m.topAmtBoardTurnover;
@@ -6937,6 +7047,23 @@ const StockAPI = {
 
     out.ok = !!(market || boards.length || safe);
     return out;
+  },
+
+  /**
+   * 量化板块·概念板块成分股（新浪 Market_Center json_v2，CORS 可直连）。
+   * @param {string} node 新浪板块节点（如 gn_hwqc / hangye_ZA01）
+   * @returns {Promise<Array<{code,name,changePercent}>>}
+   */
+  async quantBoardStocks(node) {
+    if (!node) return [];
+    const url = `https://vip.stock.finance.sina.com.cn/quotes_service/api/json_v2.php/Market_Center.getHQNodeData?page=1&num=40&sort=changepercent&asc=0&node=${encodeURIComponent(node)}`;
+    const j = await this._fetchJson(url, 12000);
+    if (!Array.isArray(j)) return [];
+    return j.map(it => ({
+      code: String(it.symbol || ''),
+      name: it.name || '',
+      changePercent: parseFloat(it.changepercent)
+    })).filter(s => s.code);
   },
 
 };

@@ -11006,8 +11006,9 @@ const app = createApp({
 
     /**
      * 把 QUANT 每个「跟踪项」映射到 StockAPI.quantData() 返回的指标键 + 自动打分函数。
-     * 仅收录「可由行情数据端口直接算出」的跟踪项；其余（连板高度、炸板率、北向、融资、业绩预告、
-     * 机构研报、龙头位置、筹码、扩散度等）无实时可靠数据源，标记为 manual，由用户手填或将来接 AI。
+     * 仅收录「可由行情数据端口直接算出」的跟踪项；其余无实时可靠数据源，标记为 manual。
+     * 主力资金说明：免费接口（新浪/腾讯）无「板块级主力净流入」，统一用代理口径
+     *   topFundBoardPct = 资金进攻板块（成交额前 10 中涨幅最高者）的涨幅% 来判定方向。
      * score(v)：好信号→2，警惕信号→0，中性→1；v==null 表示数据未取到，不参与自动打分。
      */
     const QM = (m, score) => ({ m, score });
@@ -11021,7 +11022,7 @@ const app = createApp({
         },
         2: {
           '两市成交额': QM('amountYi', v => v >= 18000 ? 2 : v >= 10000 ? 1 : 0),
-          '主力净流入方向': QM('topFundBoardMainNetInYi', v => v > 5 ? 2 : v >= -5 ? 1 : 0)
+          '主力净流入方向': QM('topFundBoardPct', v => v > 2 ? 2 : v >= 0 ? 1 : 0)
         },
         3: {
           '业绩真空期时点': QM('vacuum', v => v >= 1 ? 2 : 0)
@@ -11036,10 +11037,10 @@ const app = createApp({
           '涨跌家数（实时）': QM('ratioUp', v => v > 55 ? 2 : v > 45 ? 1 : 0),
           '涨停封板率（实时）': QM('limitUpDownRatio', v => v >= 2.5 ? 2 : v >= 1.5 ? 1 : 0),
           '指数分时（黄白线）': QM('ratioUp', v => v > 55 ? 2 : v > 45 ? 1 : 0),
-          '主力/北向分时净流入': QM('topFundBoardMainNetInYi', v => v > 5 ? 2 : v >= -5 ? 1 : 0)
+          '主力/北向分时净流入': QM('topFundBoardPct', v => v > 2 ? 2 : v >= 0 ? 1 : 0)
         },
         2: {
-          '主力净流入（实时）': QM('topFundBoardMainNetInYi', v => v > 5 ? 2 : v >= -5 ? 1 : 0),
+          '主力净流入（实时）': QM('topFundBoardPct', v => v > 2 ? 2 : v >= 0 ? 1 : 0),
           '成交金额（实时）': QM('amountYi', v => v >= 18000 ? 2 : v >= 10000 ? 1 : 0)
         },
         3: {
@@ -11130,7 +11131,6 @@ const app = createApp({
     const quantFetching = ref(false);
     const quantSearching = ref(false);
     const quantMsg = ref('');                                     // 数据/决策/选股状态行
-    const quantAiMode = ref(false);                               // AI 研判开关（预留接口，当前用行情规则）
 
     /** 该月是否处于财报真空期（季报/中报/年报密集披露月之外） */
     function isVacuumMonth(d) {
@@ -11201,7 +11201,8 @@ const app = createApp({
         if (i === 1) {
           const f = T('topFundBoard');
           if (!f) return manual('ETF 份额需手动；主力资金看下方板块排名');
-          return { text: `主力净流入第一：${f.text} ${T('topFundBoardMainNetInYi') ? T('topFundBoardMainNetInYi').text : ''}` };
+          const p = T('topFundBoardPct');
+          return { text: `资金进攻方向：${f.text} ${p ? p.text : ''}（涨幅代理口径）` };
         }
         if (i === 2) {
           if (!T('limitUpCount')) return null;
@@ -11223,7 +11224,8 @@ const app = createApp({
         if (i === 2) {
           const f = T('topFundBoard');
           if (!f) return null;
-          return { text: `主力净流入第一：${f.text} ${T('topFundBoardMainNetInYi') ? T('topFundBoardMainNetInYi').text : ''}` };
+          const p = T('topFundBoardPct');
+          return { text: `资金进攻方向：${f.text} ${p ? p.text : ''}（涨幅代理口径）` };
         }
         if (i === 3) {
           if (!T('limitUpCount')) return null;
@@ -11237,21 +11239,24 @@ const app = createApp({
       }
       return null;
     }
-    /** 计算数据：从行情数据端口拉取各跟踪项实时指标 */
+    /** 计算数据：从行情数据端口拉取各跟踪项实时指标（概念板块信息 + 个股信息两类免费源） */
     async function fetchQuantData(board) {
       if (quantFetching.value) return;
       quantFetching.value = true;
-      quantMsg.value = '正在从行情数据端口拉取实时市场指标…';
+      quantMsg.value = '正在从免费数据端口拉取实时市场指标（概念板块信息 + 个股信息）…';
       try {
-        const qd = await StockAPI.quantData(board, { proxyUrl: proxyUrl.value });
+        const qd = await StockAPI.quantData(board, { proxyUrl: proxyUrl.value, boardCache: D.quantBoardCache || null });
         quantData[board] = qd;
         quantFetchedAt[board] = qd.updatedAt;
+        // 板块名单结构缓存：本次经代理取到的名单存下来，之后无代理也能沿用
+        if (qd.boardCache) { D.quantBoardCache = qd.boardCache; Store.saveNow(); }
         if (qd.ok) {
           const m = qd.market;
           const boardCnt = qd.boards ? qd.boards.length : 0;
-          quantMsg.value = '已更新「' + QUANT[board].label + '」数据（' + qd.updatedAt + '）：' +
-            (m ? (m.up + ' 涨 / ' + m.down + ' 跌，两市 ' + m.amountYi + ' 亿') : '市场数据缺失') +
-            '，板块排名 ' + boardCnt + ' 个。';
+          const cbNote = qd.categories && qd.categories.conceptBoards.note ? '（' + qd.categories.conceptBoards.note + '）' : '';
+          quantMsg.value = '已更新「' + QUANT[board].label + '」数据（' + qd.updatedAt + '）'
+            + ' · 个股信息：' + (m ? (m.up + ' 涨 / ' + m.down + ' 跌，两市 ' + m.amountYi + ' 亿') : '未取到（新浪扫描受限）')
+            + ' · 概念板块信息：' + (boardCnt ? (boardCnt + ' 个板块' + cbNote) : '未取到（板块名单需在设置里配置代理后获取一次）') + '。';
         } else {
           quantMsg.value = '数据端口暂不可达（可能跨域/网络受限），已保留空白；可手动填分或稍后重试「计算数据」。';
         }
@@ -11285,20 +11290,99 @@ const app = createApp({
       const tt = quantTotalOf(board);
       const lvl = quantLevelOf(tt).text;
       let note = '决策完成：自动判定 ' + decided + ' 个信号，' + manual + ' 个信号需手动（无实时数据）。当前合计 ' + tt + '/8 · ' + lvl + '。';
-      if (manual > 0) {
-        note += quantAiMode.value
-          ? ' AI 研判接口已预留，当前版本用行情规则；手动项可在数据更新后重算。'
-          : ' 手动项可接入 AI 研判或自行判断。';
-      }
+      if (manual > 0) note += ' 缺数据的信号可点「🤖 AI 研判」，由 DeepSeek 基于行情快照给出参考。';
       quantMsg.value = note;
       showToast('已根据好/警惕信号指标完成自动打分', 'success');
     }
-    /** 预留：未来接入 LLM 对「需手动/AI 研判」行做语义研判（当前未启用） */
+    const quantAiReport = ref(null);   // 最近一次 AI 研判报告 {model, summary, checks}
+    const quantAiBusy = ref(false);
+    /** AI 研判：把行情快照交给设置里配置的 DeepSeek（OpenAI 兼容）分析，产出研判报告；
+     *  对「完全无数据」的信号按 AI 建议自动填分（有数据的信号只给参考，不覆盖规则打分）。 */
     async function callQuantAI(board) {
-      showToast('AI 研判接口已预留：当前版本用行情数据规则自动计算，未启用大模型', 'info');
-      return null;
+      if (quantAiBusy.value) return;
+      if (!aiConfigured.value) {
+        showToast('请先在「设置 → AI 解读」配置 AI 接口（点 DeepSeek 一键预设，填入你的 API Key）', 'info');
+        showSettings.value = true;
+        return;
+      }
+      quantAiBusy.value = true;
+      quantMsg.value = 'AI 研判中：正在把行情快照交给 ' + (D.settings.aiModel || '大模型') + ' 分析…';
+      try {
+        let qd = quantData[board];
+        if (!qd) { await fetchQuantData(board); qd = quantData[board]; }
+        const ms = (qd && qd.metrics) || {};
+        const V = k => (ms[k] && ms[k].value != null) ? ms[k].text : '无数据';
+        const boardsTop = ((qd && qd.boards) || []).slice(0, 10)
+          .map(b => b.name + '(涨幅' + (b.changePct == null ? '?' : b.changePct) + '%,成交额' + (b.amountYi == null ? '?' : b.amountYi) + '亿' + (b.leader ? ',领涨:' + b.leader : '') + ')')
+          .join('；') || '无数据';
+        const manualRows = [];
+        for (const sig of QUANT[board].signals) {
+          for (const r of sig.rows) {
+            if (!quantMetricSpec(board, sig.no, r.track)) {
+              manualRows.push('信号' + sig.no + '·' + r.track + '（好信号:' + r.good + ' / 警惕:' + r.warn + '）');
+            }
+          }
+        }
+        const sys = '你是 A 股量化复盘助手。用户给你一份实时行情快照（你不能联网），'
+          + '请只基于快照数据和你的市场知识做推理，不要编造快照里没有的具体数字。'
+          + '输出必须是严格的 JSON 对象（不要 markdown 代码块、不要多余文字），格式：'
+          + '{"summary":"200字以内的综合研判","checks":[{"item":"跟踪项","advice":"该跟踪项怎么判断/去哪查"}],"suggestions":{"s1":0-2或null,"s2":0-2或null,"s3":0-2或null,"s4":0-2或null}}。'
+          + 'suggestions 只对「无数据信号」给分（0=警惕,1=中性,2=向好），有数据的信号给 null。';
+        const user = '【行情快照 ' + (qd ? qd.updatedAt : '无') + '】\n'
+          + '市场宽度：上涨 ' + V('upCount') + ' / 下跌 ' + V('downCount') + '，涨停 ' + V('limitUpCount') + '，跌停 ' + V('limitDownCount')
+          + '，两市成交额 ' + V('amountYi') + '，上涨占比 ' + V('ratioUp') + '\n'
+          + '板块（按成交额前10，代理口径无主力净流入）：' + boardsTop + '\n'
+          + '避险资产：沪指 ' + V('shPct') + '，银行 ' + V('bankPct') + '，红利 ' + V('dividendPct') + '\n'
+          + '板块拥挤度：成交额第一占比 ' + V('topAmtBoardRatio') + '，其成分股平均换手 ' + V('topAmtBoardTurnover') + '\n'
+          + '财报窗口：' + (isVacuumMonth(new Date()) ? '业绩真空期（题材窗口）' : '财报披露窗口') + '\n'
+          + '【无实时数据、需你给研判建议的跟踪项】\n' + (manualRows.length ? manualRows.join('\n') : '（本页所有跟踪项均有实时数据）') + '\n'
+          + '请给出 JSON。';
+        const res = await callOpenAICompat(
+          [{ role: 'system', content: sys }, { role: 'user', content: user }],
+          { maxTokens: 1500, timeoutMs: 90000 }
+        );
+        if (!res.ok) {
+          quantMsg.value = 'AI 研判失败：' + res.error;
+          return;
+        }
+        let j = null;
+        const mm = res.content.match(/\{[\s\S]*\}/);
+        if (mm) { try { j = JSON.parse(mm[0]); } catch (e) { /* 忽略 */ } }
+        if (!j || !j.summary) {
+          quantMsg.value = 'AI 返回内容无法解析为研判 JSON（模型：' + (D.settings.aiModel || '') + '）：' + res.content.slice(0, 80);
+          return;
+        }
+        quantAiReport.value = {
+          model: D.settings.aiModel || 'AI',
+          summary: String(j.summary),
+          checks: Array.isArray(j.checks) ? j.checks.slice(0, 8).map(c => ({ item: String(c.item || ''), advice: String(c.advice || '') })) : []
+        };
+        // 自动填分：仅当该信号所有跟踪项都无实时数据时才采纳 AI 建议
+        let applied = 0;
+        const sug = j.suggestions || {};
+        for (const sig of QUANT[board].signals) {
+          const hasData = sig.rows.some(r => quantMetricSpec(board, sig.no, r.track));
+          const s = sug['s' + sig.no];
+          if (!hasData && s != null) {
+            quantForm[board]['s' + sig.no] = Math.max(0, Math.min(2, +s || 0));
+            applied++;
+          }
+        }
+        quantMsg.value = 'AI 研判完成（' + quantAiReport.value.model + '）'
+          + (applied ? '：已按 AI 建议填入 ' + applied + ' 个无数据信号的评分' : '：报告见下方，评分仍以实时数据规则为准') + '。';
+        showToast('AI 研判完成', 'success');
+      } catch (e) {
+        quantMsg.value = 'AI 研判失败：' + (e && e.message ? e.message : e);
+      } finally {
+        quantAiBusy.value = false;
+      }
     }
-    /** 共振候选板块（只读，给 UI 展示） */
+    /** 共振候选板块（只读，给 UI 展示）。
+     *  资金口径：免费源无板块主力净流入，用「涨幅>0」（资金进攻方向代理）判定；
+     *  新浪板块无主力数据时 mainNetInYi 为 null，回落到 changePct。 */
+    function quantFundOk(b) {
+      return b.mainNetInYi != null ? b.mainNetInYi > 0 : (b.changePct || 0) > 0;
+    }
     const quantResonanceBoards = computed(() => {
       const qd = quantData.post;
       if (!qd || !qd.boards || !qd.boards.length) return [];
@@ -11306,28 +11390,28 @@ const app = createApp({
       const emotionGood = !!(mkt && mkt.ratioUp != null && mkt.ratioUp >= 50);
       const vac = isVacuumMonth(new Date());
       return qd.boards
-        .filter(b => (b.mainNetInYi || 0) > 0 && (b.amountYi || 0) >= 300)
-        .map(b => ({ name: b.name, amountYi: b.amountYi, mainNetInYi: b.mainNetInYi, changePct: b.changePct, resonance: (emotionGood ? 1 : 0) + (vac ? 1 : 0) + 1 }))
-        .sort((a, b) => (b.resonance - a.resonance) || ((b.mainNetInYi || 0) - (a.mainNetInYi || 0)));
+        .filter(b => quantFundOk(b) && (b.amountYi || 0) >= 80)
+        .map(b => ({ name: b.name, amountYi: b.amountYi, mainNetInYi: b.mainNetInYi, changePct: b.changePct, node: b.node, resonance: (emotionGood ? 1 : 0) + (vac ? 1 : 0) + 1 }))
+        .sort((a, b) => (b.resonance - a.resonance) || ((b.amountYi || 0) - (a.amountYi || 0)));
     });
-    /** 一键搜索：情绪+资金+业绩齐共振板块 → 成分股 → 新建「量化共振选股」板块并打开 */
+    /** 一键搜索：情绪+资金+业绩齐共振板块 → 新浪成分股 → 新建「量化共振选股」板块并打开 */
     async function quantSearchResonance() {
       if (quantSearching.value) return;
       quantSearching.value = true;
       quantMsg.value = '正在计算「情绪+资金+业绩」共振板块，并拉取成分股…';
       try {
-        const qd = quantData.post || await StockAPI.quantData('post', { proxyUrl: proxyUrl.value });
+        const qd = quantData.post || await StockAPI.quantData('post', { proxyUrl: proxyUrl.value, boardCache: D.quantBoardCache || null });
         if (!qd.boards || !qd.boards.length) {
-          quantMsg.value = '未取到板块排名数据，无法共振选股（请检查网络/代理后重试「计算数据」）。';
+          quantMsg.value = '未取到板块名单（需在设置里配置代理后点一次「计算数据」，或稍后重试），无法共振选股。';
           return;
         }
         const mkt = qd.market;
         const emotionGood = !!(mkt && mkt.ratioUp != null && mkt.ratioUp >= 50);
         const vac = isVacuumMonth(new Date());
         const cand = qd.boards
-          .filter(b => (b.mainNetInYi || 0) > 0 && (b.amountYi || 0) >= 300)
+          .filter(b => quantFundOk(b) && (b.amountYi || 0) >= 80)
           .map(b => ({ ...b, resonance: (emotionGood ? 1 : 0) + (vac ? 1 : 0) + 1 }))
-          .sort((a, b) => (b.resonance - a.resonance) || ((b.mainNetInYi || 0) - (a.mainNetInYi || 0)));
+          .sort((a, b) => (b.resonance - a.resonance) || ((b.amountYi || 0) - (a.amountYi || 0)));
         const top = cand.slice(0, 8);
         if (!top.length) {
           quantMsg.value = '当前未找到满足「情绪+资金+业绩齐共振」的板块（资金面或情绪面不达标）。';
@@ -11337,7 +11421,7 @@ const app = createApp({
         const all = [];
         for (const b of top) {
           try {
-            const list = await StockAPI.getSectorStocks(b.code, b.name);
+            const list = await StockAPI.quantBoardStocks(b.node);
             const sorted = (list || []).slice().sort((x, y) => ((y.changePercent || 0) - (x.changePercent || 0))).slice(0, 20);
             for (const s of sorted) {
               const c = StockAPI.pureCode(s.code);
@@ -11360,6 +11444,7 @@ const app = createApp({
         };
         Store.addSectorPool(sector);
         recomputePoolAvg(sector);
+        Store.saveNow();   // 共振选股是异步多步流程，立即落盘防抖动窗口丢失
         quantMsg.value = '已选出 ' + top.length + ' 个共振板块（情绪' + (emotionGood ? '✓' : '✗') +
           ' + 资金✓ + 业绩' + (vac ? '✓真空期' : '✗财报窗') + '），' + all.length + ' 只成分股已生成「量化共振选股」板块。';
         showToast('量化共振选股：' + all.length + ' 只 · ' + top.length + ' 个板块', 'success');
@@ -11529,7 +11614,7 @@ const app = createApp({
       currentQuant, quantTotalOf, quantLevelOf, quantHistory, quantTrend,
       saveQuantScore, editQuantScore, cancelQuantEdit, deleteQuantScore,
       // 量化板块：数据端口 / 自动打分 / 共振选股
-      quantData, quantFetchedAt, quantFetching, quantSearching, quantMsg, quantAiMode,
+      quantData, quantFetchedAt, quantFetching, quantSearching, quantMsg, quantAiReport, quantAiBusy,
       isVacuumMonth, quantMetricSpec, quantMetricVal, quantMetricScore, quantRowInfo, quantOrderHint,
       fetchQuantData, decideQuant, callQuantAI, quantResonanceBoards, quantSearchResonance,
       tradeLogicSortDir, tradeLogicSortIcon, toggleTradeLogicSort,
