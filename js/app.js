@@ -11004,6 +11004,55 @@ const app = createApp({
       }
     };
 
+    /**
+     * 把 QUANT 每个「跟踪项」映射到 StockAPI.quantData() 返回的指标键 + 自动打分函数。
+     * 仅收录「可由行情数据端口直接算出」的跟踪项；其余（连板高度、炸板率、北向、融资、业绩预告、
+     * 机构研报、龙头位置、筹码、扩散度等）无实时可靠数据源，标记为 manual，由用户手填或将来接 AI。
+     * score(v)：好信号→2，警惕信号→0，中性→1；v==null 表示数据未取到，不参与自动打分。
+     */
+    const QM = (m, score) => ({ m, score });
+    const QUANT_METRIC = {
+      post: {
+        1: {
+          '全市场上涨家数': QM('upCount', v => v > 3000 ? 2 : v >= 1500 ? 1 : 0),
+          '跌停家数': QM('limitDownCount', v => v <= 10 ? 2 : v <= 30 ? 1 : 0),
+          '涨跌停比 / 昨日涨停今表现': QM('limitUpDownRatio', v => v >= 2 ? 2 : v >= 1 ? 1 : 0),
+          '避险资产': QM('safeGap', v => v > 0.3 ? 2 : v >= -0.3 ? 1 : 0)
+        },
+        2: {
+          '两市成交额': QM('amountYi', v => v >= 18000 ? 2 : v >= 10000 ? 1 : 0),
+          '主力净流入方向': QM('topFundBoardMainNetInYi', v => v > 5 ? 2 : v >= -5 ? 1 : 0)
+        },
+        3: {
+          '业绩真空期时点': QM('vacuum', v => v >= 1 ? 2 : 0)
+        },
+        4: {
+          '板块成交额占比': QM('topAmtBoardRatio', v => v < 0.08 ? 2 : v <= 0.15 ? 1 : 0),
+          '板块换手率': QM('topAmtBoardTurnover', v => v < 4 ? 2 : v <= 8 ? 1 : 0)
+        }
+      },
+      intraday: {
+        1: {
+          '涨跌家数（实时）': QM('ratioUp', v => v > 55 ? 2 : v > 45 ? 1 : 0),
+          '涨停封板率（实时）': QM('limitUpDownRatio', v => v >= 2.5 ? 2 : v >= 1.5 ? 1 : 0),
+          '指数分时（黄白线）': QM('ratioUp', v => v > 55 ? 2 : v > 45 ? 1 : 0),
+          '主力/北向分时净流入': QM('topFundBoardMainNetInYi', v => v > 5 ? 2 : v >= -5 ? 1 : 0)
+        },
+        2: {
+          '主力净流入（实时）': QM('topFundBoardMainNetInYi', v => v > 5 ? 2 : v >= -5 ? 1 : 0),
+          '成交金额（实时）': QM('amountYi', v => v >= 18000 ? 2 : v >= 10000 ? 1 : 0)
+        },
+        3: {
+          '涨停分布（实时）': QM('limitUpCount', v => v > 80 ? 2 : v > 30 ? 1 : 0),
+          '热点集中度': QM('topAmtBoardRatio', v => (v >= 0.05 && v <= 0.13) ? 2 : (v <= 0.18 ? 1 : 0))
+        },
+        4: {
+          '炸板率（实时）': QM('limitUpDownRatio', v => v >= 2.5 ? 2 : v >= 1.5 ? 1 : 0),
+          '避险资产（实时）': QM('safeGap', v => v > 0.3 ? 2 : v >= -0.3 ? 1 : 0)
+        }
+      }
+    };
+
     // 打分表单状态：每个板块一份（s1..s4 打分，b1..b4 一句话依据）
     function blankQuantForm() {
       return { s1: 1, s2: 1, s3: 1, s4: 1, b1: '', b2: '', b3: '', b4: '' };
@@ -11073,6 +11122,202 @@ const app = createApp({
       Store.deleteQuantScore(id);
       if (quantEditingId.value === id) cancelQuantEdit();
       showToast('已删除一条打分记录', 'info');
+    }
+
+    // ===== 量化板块：数据端口 / 自动打分 / 共振选股 =====
+    const quantData = reactive({ post: null, intraday: null });   // 各板块最近一次拉取结果
+    const quantFetchedAt = reactive({});                          // 各板块更新时间
+    const quantFetching = ref(false);
+    const quantSearching = ref(false);
+    const quantMsg = ref('');                                     // 数据/决策/选股状态行
+    const quantAiMode = ref(false);                               // AI 研判开关（预留接口，当前用行情规则）
+
+    /** 该月是否处于财报真空期（季报/中报/年报密集披露月之外） */
+    function isVacuumMonth(d) {
+      const mm = (d || new Date()).getMonth() + 1;
+      return [4, 8, 10].indexOf(mm) === -1;
+    }
+    function quantMetricSpec(board, no, track) {
+      const b = QUANT_METRIC[board];
+      if (!b || !b[no]) return null;
+      return b[no][track] || null;
+    }
+    function _qdMetrics(board) {
+      const qd = quantData[board];
+      return (qd && qd.metrics) || null;
+    }
+    /** 返回该行对应的实时指标对象 {value,text,ok}，无匹配（manual）返回 null */
+    function quantMetricVal(board, no, track) {
+      const spec = quantMetricSpec(board, no, track);
+      if (!spec) return null;
+      if (spec.m === 'safeGap') {
+        const ms = _qdMetrics(board);
+        if (!ms) return { value: null, text: '— (未取到)', ok: false };
+        const sh = ms.shPct, bk = ms.bankPct;
+        if (!sh || !bk || sh.value == null || bk.value == null) return { value: null, text: '— (缺数据)', ok: false };
+        const gap = +(sh.value - bk.value).toFixed(2);
+        return { value: gap, text: `风险偏好${gap >= 0 ? '升' : '降'} (${gap >= 0 ? '+' : ''}${gap}%)`, ok: true };
+      }
+      if (spec.m === 'vacuum') {
+        const vac = isVacuumMonth(new Date());
+        return { value: vac ? 1 : 0, text: vac ? '真空期（题材窗口）' : '财报披露窗口', ok: true };
+      }
+      const ms = _qdMetrics(board);
+      if (!ms) return null;
+      return ms[spec.m] || null;
+    }
+    /** 返回该行自动打分 0/1/2；无数据/无匹配返回 null */
+    function quantMetricScore(board, no, track) {
+      const spec = quantMetricSpec(board, no, track);
+      if (!spec) return null;
+      const mv = quantMetricVal(board, no, track);
+      if (!mv || mv.value == null) return null;
+      try { return spec.score(mv.value); } catch (e) { return null; }
+    }
+    /** 给模板用：综合信息 {manual, text, badge, missing} */
+    function quantRowInfo(board, no, track) {
+      const spec = quantMetricSpec(board, no, track);
+      if (!spec) return { manual: true, text: '需手动 / AI 研判', badge: null };
+      const mv = quantMetricVal(board, no, track);
+      const score = quantMetricScore(board, no, track);
+      if (!mv || mv.value == null || mv.ok === false) {
+        return { manual: false, text: (mv && mv.text) || '— (数据未取到)', badge: null, missing: true };
+      }
+      return { manual: false, text: mv.text, badge: score, missing: false };
+    }
+    /** 计算数据：从行情数据端口拉取各跟踪项实时指标 */
+    async function fetchQuantData(board) {
+      if (quantFetching.value) return;
+      quantFetching.value = true;
+      quantMsg.value = '正在从行情数据端口拉取实时市场指标…';
+      try {
+        const qd = await StockAPI.quantData(board, { proxyUrl: proxyUrl.value });
+        quantData[board] = qd;
+        quantFetchedAt[board] = qd.updatedAt;
+        if (qd.ok) {
+          const m = qd.market;
+          const boardCnt = qd.boards ? qd.boards.length : 0;
+          quantMsg.value = '已更新「' + QUANT[board].label + '」数据（' + qd.updatedAt + '）：' +
+            (m ? (m.up + ' 涨 / ' + m.down + ' 跌，两市 ' + m.amountYi + ' 亿') : '市场数据缺失') +
+            '，板块排名 ' + boardCnt + ' 个。';
+        } else {
+          quantMsg.value = '数据端口暂不可达（可能跨域/网络受限），已保留空白；可手动填分或稍后重试「计算数据」。';
+        }
+      } catch (e) {
+        quantData[board] = null;
+        quantMsg.value = '拉取失败：' + (e && e.message ? e.message : e);
+      } finally {
+        quantFetching.value = false;
+      }
+    }
+    /** 决策数据：按好信号·可参与 / 警惕信号·减仓 自动给每个信号打分 */
+    async function decideQuant(board) {
+      if (!quantData[board]) await fetchQuantData(board);
+      let decided = 0, manual = 0;
+      const f = quantForm[board];
+      for (const sig of QUANT[board].signals) {
+        const no = sig.no;
+        const scores = [];
+        for (const r of sig.rows) {
+          const s = quantMetricScore(board, no, r.track);
+          if (s != null) scores.push(s);
+        }
+        if (scores.length) {
+          const s = Math.min.apply(null, scores);   // 取最弱项，警惕信号一票否决
+          f['s' + no] = s;
+          decided++;
+        } else {
+          manual++;
+        }
+      }
+      const tt = quantTotalOf(board);
+      const lvl = quantLevelOf(tt).text;
+      let note = '决策完成：自动判定 ' + decided + ' 个信号，' + manual + ' 个信号需手动（无实时数据）。当前合计 ' + tt + '/8 · ' + lvl + '。';
+      if (manual > 0) {
+        note += quantAiMode.value
+          ? ' AI 研判接口已预留，当前版本用行情规则；手动项可在数据更新后重算。'
+          : ' 手动项可接入 AI 研判或自行判断。';
+      }
+      quantMsg.value = note;
+      showToast('已根据好/警惕信号指标完成自动打分', 'success');
+    }
+    /** 预留：未来接入 LLM 对「需手动/AI 研判」行做语义研判（当前未启用） */
+    async function callQuantAI(board) {
+      showToast('AI 研判接口已预留：当前版本用行情数据规则自动计算，未启用大模型', 'info');
+      return null;
+    }
+    /** 共振候选板块（只读，给 UI 展示） */
+    const quantResonanceBoards = computed(() => {
+      const qd = quantData.post;
+      if (!qd || !qd.boards || !qd.boards.length) return [];
+      const mkt = qd.market;
+      const emotionGood = !!(mkt && mkt.ratioUp != null && mkt.ratioUp >= 50);
+      const vac = isVacuumMonth(new Date());
+      return qd.boards
+        .filter(b => (b.mainNetInYi || 0) > 0 && (b.amountYi || 0) >= 300)
+        .map(b => ({ name: b.name, amountYi: b.amountYi, mainNetInYi: b.mainNetInYi, changePct: b.changePct, resonance: (emotionGood ? 1 : 0) + (vac ? 1 : 0) + 1 }))
+        .sort((a, b) => (b.resonance - a.resonance) || ((b.mainNetInYi || 0) - (a.mainNetInYi || 0)));
+    });
+    /** 一键搜索：情绪+资金+业绩齐共振板块 → 成分股 → 新建「量化共振选股」板块并打开 */
+    async function quantSearchResonance() {
+      if (quantSearching.value) return;
+      quantSearching.value = true;
+      quantMsg.value = '正在计算「情绪+资金+业绩」共振板块，并拉取成分股…';
+      try {
+        const qd = quantData.post || await StockAPI.quantData('post', { proxyUrl: proxyUrl.value });
+        if (!qd.boards || !qd.boards.length) {
+          quantMsg.value = '未取到板块排名数据，无法共振选股（请检查网络/代理后重试「计算数据」）。';
+          return;
+        }
+        const mkt = qd.market;
+        const emotionGood = !!(mkt && mkt.ratioUp != null && mkt.ratioUp >= 50);
+        const vac = isVacuumMonth(new Date());
+        const cand = qd.boards
+          .filter(b => (b.mainNetInYi || 0) > 0 && (b.amountYi || 0) >= 300)
+          .map(b => ({ ...b, resonance: (emotionGood ? 1 : 0) + (vac ? 1 : 0) + 1 }))
+          .sort((a, b) => (b.resonance - a.resonance) || ((b.mainNetInYi || 0) - (a.mainNetInYi || 0)));
+        const top = cand.slice(0, 8);
+        if (!top.length) {
+          quantMsg.value = '当前未找到满足「情绪+资金+业绩齐共振」的板块（资金面或情绪面不达标）。';
+          return;
+        }
+        const seen = new Set();
+        const all = [];
+        for (const b of top) {
+          try {
+            const list = await StockAPI.getSectorStocks(b.code, b.name);
+            const sorted = (list || []).slice().sort((x, y) => ((y.changePercent || 0) - (x.changePercent || 0))).slice(0, 20);
+            for (const s of sorted) {
+              const c = StockAPI.pureCode(s.code);
+              if (!c || seen.has(c)) continue;
+              seen.add(c);
+              all.push({ code: c, name: s.name || '', board: b.name, chg: s.changePercent });
+            }
+          } catch (e) { /* 跳过该板块 */ }
+        }
+        if (!all.length) {
+          quantMsg.value = '已选出 ' + top.length + ' 个共振板块，但成分股获取失败（接口受限，可稍后重试）。';
+          return;
+        }
+        const sector = {
+          name: '量化共振选股',
+          bk: 'QUANTRES_' + Date.now(),
+          type: '量化共振',
+          date: Store.today(),
+          stocks: all.map(s => ({ code: s.code, name: s.name, board: s.board }))
+        };
+        Store.addSectorPool(sector);
+        recomputePoolAvg(sector);
+        quantMsg.value = '已选出 ' + top.length + ' 个共振板块（情绪' + (emotionGood ? '✓' : '✗') +
+          ' + 资金✓ + 业绩' + (vac ? '✓真空期' : '✗财报窗') + '），' + all.length + ' 只成分股已生成「量化共振选股」板块。';
+        showToast('量化共振选股：' + all.length + ' 只 · ' + top.length + ' 个板块', 'success');
+        goPage('sector');
+        openSectorDetail(sector);
+      } catch (e) {
+        quantMsg.value = '共振选股失败：' + (e && e.message ? e.message : e);
+      } finally {
+        quantSearching.value = false;
+      }
     }
 
     return {
@@ -11231,6 +11476,10 @@ const app = createApp({
       QUANT, quantTab, quantDate, quantForm, quantOrderOpen, quantSignalOpen, quantEditingId,
       currentQuant, quantTotalOf, quantLevelOf, quantHistory, quantTrend,
       saveQuantScore, editQuantScore, cancelQuantEdit, deleteQuantScore,
+      // 量化板块：数据端口 / 自动打分 / 共振选股
+      quantData, quantFetchedAt, quantFetching, quantSearching, quantMsg, quantAiMode,
+      isVacuumMonth, quantMetricSpec, quantMetricVal, quantMetricScore, quantRowInfo,
+      fetchQuantData, decideQuant, callQuantAI, quantResonanceBoards, quantSearchResonance,
       tradeLogicSortDir, tradeLogicSortIcon, toggleTradeLogicSort,
       openTradeLogicPanel, resetTradeLogicForm, editTradeLogicRow, saveTradeLogic, deleteTradeLogicRow,
       addTradeLogicChip, removeTradeLogicChip,

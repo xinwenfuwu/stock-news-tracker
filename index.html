@@ -4,12 +4,12 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>股市信息分析系统</title>
-  <link rel="stylesheet" href="css/style.css?v=20261026c">
+  <link rel="stylesheet" href="css/style.css?v=20261027a">
   <!-- Vue 3 全局构建版（v3.4.21 · 自托管）
        原先走 unpkg.com CDN：国内网络对 unpkg 的连通性不稳定，一旦该请求长时间挂起，
        <head> 里的阻塞脚本会让整页停在白屏、后续 auth-boot.js 根本不会执行。
        改为同源托管后，启动链路不再依赖任何第三方 CDN。 -->
-  <script src="js/vue.global.prod.js?v=20261026c"></script>
+  <script src="js/vue.global.prod.js?v=20261027a"></script>
 </head>
 <body class="auth-locked">
   <!-- ===== 登录关卡：登录通过前业务脚本不会被加载 ===== -->
@@ -2936,18 +2936,52 @@
                   <div class="q-signal-title">信号{{ sig.no }}：{{ sig.name }}<span class="q-signal-desc">{{ sig.desc }}</span></div>
                   <div class="q-table-wrap">
                     <table class="q-table">
-                      <thead><tr><th>跟踪项</th><th>去哪看</th><th class="q-col-good">好信号 · 可参与</th><th class="q-col-warn">警惕信号 · 减仓/观望</th></tr></thead>
+                      <thead><tr><th>跟踪项</th><th>去哪看</th><th class="q-col-good">好信号 · 可参与</th><th class="q-col-warn">警惕信号 · 减仓/观望</th><th class="q-col-data">实时数据（数据端口）</th></tr></thead>
                       <tbody>
                         <tr v-for="(r, ri) in sig.rows" :key="ri">
                           <td data-label="跟踪项">{{ r.track }}</td>
                           <td data-label="去哪看">{{ r.where }}</td>
                           <td data-label="好信号" class="q-good">{{ r.good }}</td>
                           <td data-label="警惕信号" class="q-warn">{{ r.warn }}</td>
+                          <td data-label="实时数据" class="q-data">
+                            <template v-if="quantRowInfo(quantTab, sig.no, r.track).manual">
+                              <span class="q-manual">需手动 / AI 研判</span>
+                            </template>
+                            <template v-else>
+                              <span v-if="quantRowInfo(quantTab, sig.no, r.track).badge != null"
+                                    :class="['q-badge', 'lv-' + (quantRowInfo(quantTab, sig.no, r.track).badge === 0 ? 'def' : quantRowInfo(quantTab, sig.no, r.track).badge === 1 ? 'mid' : 'strong')]">{{ quantRowInfo(quantTab, sig.no, r.track).badge }}</span>
+                              <span class="q-data-text" :class="{ 'q-missing': quantRowInfo(quantTab, sig.no, r.track).missing }">{{ quantRowInfo(quantTab, sig.no, r.track).text }}</span>
+                            </template>
+                          </td>
                         </tr>
                       </tbody>
                     </table>
                   </div>
                 </div>
+              </div>
+            </section>
+
+            <!-- 量化数据：计算 / 决策 / 一键搜索共振选股 -->
+            <section class="q-block">
+              <div class="q-block-head">量化数据（数据端口自动计算）</div>
+              <div class="q-actions">
+                <button class="btn btn-primary btn-sm" type="button" :disabled="quantFetching" @click="fetchQuantData(quantTab)">
+                  <span v-if="quantFetching">⏳ 拉取中…</span><span v-else>📡 计算数据</span>
+                </button>
+                <button class="btn btn-sm" type="button" :disabled="quantFetching || quantSearching" @click="decideQuant(quantTab)">🧮 决策数据</button>
+                <button class="btn btn-ai btn-sm" type="button" :disabled="quantSearching" @click="quantSearchResonance()">
+                  <span v-if="quantSearching">⏳ 选股中…</span><span v-else>🔍 一键搜索共振选股</span>
+                </button>
+                <label class="q-ai-toggle" title="预留：开启后「需手动/AI 研判」行未来可由大模型研判">
+                  <input type="checkbox" v-model="quantAiMode"> AI 研判接口（预留）
+                </label>
+              </div>
+              <div class="q-msg" v-if="quantMsg">{{ quantMsg }}</div>
+              <div class="q-reso" v-if="quantResonanceBoards.length">
+                <div class="q-reso-title">共振候选板块（情绪+资金+业绩齐共振）：</div>
+                <span v-for="b in quantResonanceBoards.slice(0, 10)" :key="b.name" class="q-reso-chip">
+                  {{ b.name }} <em>{{ b.amountYi }}亿 · 主力{{ b.mainNetInYi }}亿</em>
+                </span>
               </div>
             </section>
 
@@ -5210,14 +5244,14 @@
     </transition>
   </div>
 
-  <script src="js/auth.js?v=20261026c"></script>
-  <script src="js/auth-sync.js?v=20261026c"></script>
+  <script src="js/auth.js?v=20261027a"></script>
+  <script src="js/auth-sync.js?v=20261027a"></script>
   <!-- 边缘加速默认站点（batch37 治本：Cloudflare Worker 代理东财/腾讯，缓解 JSONP 限流误报）。
        若你所在地区 workers.dev 访问慢，可在「设置 → 行情加速地址」清空即恢复纯直连。 -->
   <script>window.__SNT_ACCEL__ = 'https://sichina.dpdns.org';</script>
   <!-- 扫码支付二维码渲染库（第三方 qrcodejs，本地托管避免外链失效）。renderQr 会先检测全局 QRCode 是否存在。 -->
-  <script src="assets/qrcode.min.js?v=20261026c"></script>
-  <script src="js/auth-boot.js?v=20261026c"></script>
+  <script src="assets/qrcode.min.js?v=20261027a"></script>
+  <script src="js/auth-boot.js?v=20261027a"></script>
   <!-- store / stock-api / hot-topics / app 由 auth-boot.js 在登录通过后动态装载，
        未登录时它们不会被下载，业务数据也不会进入内存 -->
 </body>

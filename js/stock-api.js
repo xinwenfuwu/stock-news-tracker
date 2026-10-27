@@ -6805,4 +6805,138 @@ const StockAPI = {
     return `${y}-${m}-${day}`;
   },
 
+  /**
+   * 量化板块「数据端口」：拉取盘后/盘中两类页面所需的实时市场指标。
+   *
+   * 设计原则：
+   *  - 纯前端直连东方财富 push2 / 行情接口（浏览器侧 CORS 开放），可选经 proxyUrl 代理规避跨域；
+   *  - 每个指标独立 try/catch，任一失败只置 ok:false，绝不让整次调用抛错；
+   *  - 返回结构固定：market / boards / safeHaven / northbound / financing / metrics（平铺供 app.js 行级匹配）。
+   *
+   * @param {string} board 'post' | 'intraday'（部分指标按盘后/盘中语义取值，目前共用同一份行情快照）
+   * @param {object} [opts] { proxyUrl }
+   * @returns {Promise<object>} 见上
+   */
+  async quantData(board, opts) {
+    opts = opts || {};
+    const proxy = (opts.proxyUrl || '').trim().replace(/\/+$/, '');
+    const self = this;
+    const mk = (value, text, ok) => ({ value: (value == null ? null : value), text: text == null ? '—' : String(text), ok: !!ok });
+    const out = {
+      ok: false,
+      board: board || 'post',
+      updatedAt: new Date().toISOString().slice(0, 16).replace('T', ' '),
+      market: null,
+      boards: [],
+      safeHaven: null,
+      northbound: { ok: false, note: '北向资金自 2024-08 起暂停盘中披露，暂无量化的可靠数据源' },
+      financing: { ok: false, note: '融资余额需交易所数据中心，本站未接入' },
+      metrics: {}
+    };
+
+    // 经代理或直连取 JSON（proxyUrl 形如 https://worker.xxx/proxy?url=）
+    async function jget(url, timeout) {
+      const u = proxy ? `${proxy}/proxy?url=${encodeURIComponent(url)}` : url;
+      try { return await self._fetchJson(u, timeout || 12000); }
+      catch (e) { return null; }
+    }
+    // East Money clist（注意 fs 中的 "+" 必须保持原样，不能编码成 %2B / 空格）
+    async function clist(fs, fields, pz) {
+      const url = `https://push2.eastmoney.com/api/qt/clist/get?pn=1&pz=${pz || 6000}&po=1&np=1&fltt=2&invt=2&fid=f3&fs=${fs}&fields=${fields}`;
+      const j = await jget(url, 14000);
+      if (!j || !j.data || !Array.isArray(j.data.diff)) return [];
+      return j.data.diff;
+    }
+
+    // 1) 全市场涨跌家数 + 两市成交额（一次扫描全部 A 股，按涨跌幅分级计数）
+    let market = null;
+    try {
+      const all = await clist('m:0+t:1,m:1+t:2', 'f12,f14,f3,f6', 6000);
+      if (all.length) {
+        let up = 0, down = 0, flat = 0, limitUp = 0, limitDown = 0, amount = 0;
+        for (const it of all) {
+          const pct = parseFloat(it.f3);
+          const amt = parseFloat(it.f6) || 0;
+          amount += amt;
+          if (isNaN(pct)) { flat++; continue; }
+          if (pct >= 9.9) limitUp++;
+          else if (pct <= -9.9) limitDown++;
+          if (pct > 0) up++;
+          else if (pct < 0) down++;
+          else flat++;
+        }
+        const total = all.length;
+        market = {
+          up, down, flat, limitUp, limitDown, total,
+          amountYi: +(amount / 1e8).toFixed(0),
+          ratioUp: total ? +(up / total * 100).toFixed(1) : null
+        };
+      }
+    } catch (e) { market = null; }
+    out.market = market;
+
+    // 2) 板块排名（行业 + 概念，按成交额降序取前 30，带换手/主力净流入/涨跌幅）
+    let boards = [];
+    try {
+      const raw = await clist('m:90+t:2,m:90+t:3', 'f12,f14,f3,f6,f8,f62', 30);
+      boards = raw.map(it => ({
+        code: String(it.f12 || '').toUpperCase(),
+        name: it.f14 || '',
+        changePct: parseFloat(it.f3),
+        amountYi: +((parseFloat(it.f6) || 0) / 1e8).toFixed(1),
+        turnover: parseFloat(it.f8),
+        mainNetInYi: +((parseFloat(it.f62) || 0) / 1e8).toFixed(2)
+      })).filter(b => b.code);
+    } catch (e) { boards = []; }
+    out.boards = boards;
+
+    // 3) 避险资产强弱（银行/红利指数 vs 上证指数当日涨跌幅）
+    let safe = null;
+    try {
+      const q = await this.getQuotes(['sh000001', 'sz399986', 'sh000015']).catch(() => ({}));
+      const sh = q['sh000001'], bank = q['sz399986'], div = q['sh000015'];
+      safe = {
+        shPct: sh && sh.changePercent != null ? +sh.changePercent.toFixed(2) : null,
+        bankPct: bank && bank.changePercent != null ? +bank.changePercent.toFixed(2) : null,
+        dividendPct: div && div.changePercent != null ? +div.changePercent.toFixed(2) : null
+      };
+    } catch (e) { safe = null; }
+    out.safeHaven = safe;
+
+    // 4) 汇总平铺指标（供 app.js 行级匹配 / 自动打分）
+    const m = out.metrics;
+    if (market) {
+      m.upCount = mk(market.up, `${market.up} 家`, true);
+      m.downCount = mk(market.down, `${market.down} 家`, true);
+      m.limitUpCount = mk(market.limitUp, `${market.limitUp} 家`, true);
+      m.limitDownCount = mk(market.limitDown, `${market.limitDown} 家`, true);
+      const ludr = market.limitDown ? +(market.limitUp / market.limitDown).toFixed(2) : (market.limitUp ? 99 : 0);
+      m.limitUpDownRatio = mk(ludr, (market.limitDown ? (market.limitUp / market.limitDown).toFixed(2) : (market.limitUp ? '∞' : '0')), true);
+      m.amountYi = mk(market.amountYi, `${market.amountYi} 亿`, true);
+      m.ratioUp = mk(market.ratioUp, (market.ratioUp != null ? `${market.ratioUp}%` : '—'), market.ratioUp != null);
+    }
+    if (boards.length) {
+      const byAmount = boards.slice().sort((a, b) => b.amountYi - a.amountYi)[0];
+      const totalAmt = boards.reduce((s, b) => s + (b.amountYi || 0), 0) || market && market.amountYi || 1;
+      const byFund = boards.slice().sort((a, b) => b.mainNetInYi - a.mainNetInYi)[0];
+      m.topAmtBoard = mk(byAmount.name, byAmount.name, true);
+      m.topAmtBoardAmountYi = mk(byAmount.amountYi, `${byAmount.amountYi} 亿`, true);
+      m.topAmtBoardTurnover = mk(byAmount.turnover, (byAmount.turnover != null ? `${byAmount.turnover}%` : '—'), byAmount.turnover != null);
+      m.topAmtBoardRatio = mk(byAmount.amountYi / totalAmt, (totalAmt ? `${(byAmount.amountYi / totalAmt * 100).toFixed(1)}%` : '—'), totalAmt > 0);
+      m.topFundBoard = mk(byFund.name, byFund.name, true);
+      m.topFundBoardMainNetInYi = mk(byFund.mainNetInYi, `${byFund.mainNetInYi} 亿`, true);
+      // 板块拥挤度：取成交额最大板块的占比与换手
+      m.boardCrowdRatio = m.topAmtBoardRatio;
+      m.boardCrowdTurnover = m.topAmtBoardTurnover;
+    }
+    if (safe) {
+      m.bankPct = mk(safe.bankPct, (safe.bankPct != null ? `${safe.bankPct}%` : '—'), safe.bankPct != null);
+      m.dividendPct = mk(safe.dividendPct, (safe.dividendPct != null ? `${safe.dividendPct}%` : '—'), safe.dividendPct != null);
+      m.shPct = mk(safe.shPct, (safe.shPct != null ? `${safe.shPct}%` : '—'), safe.shPct != null);
+    }
+
+    out.ok = !!(market || boards.length || safe);
+    return out;
+  },
+
 };

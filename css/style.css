@@ -3809,3 +3809,177 @@ body.guest-mode #app { display: none; }
     margin-top: 14px;
   }
 }
+
+
+/* 选股页复用 .global-layout 的双栏骨架，但「全球信息」页在 ≥1300px 会把 .global-layout
+ * 改成 grid（右列固定 800px，给每日快讯面板用）。若选股页沿用该栅格，右侧量化板块只有
+ * 460px，会白留约 340px 空档，同时把左主栏压到 ~740px（1366 笔记本仅剩 ~500px）。
+ * 因此选股页加 .sector-layout 修饰类，宽屏下强制回到 flex，让量化板块贴合右缘、
+ * 左主栏吃掉剩余全部宽度。 */
+.global-layout.sector-layout {
+  display: flex;
+  gap: 16px;
+  grid-template-columns: none;
+}
+.sector-main { flex: 1 1 auto; min-width: 0; }
+
+/* ===== 量化板块（选股页右侧）：盘后 / 盘中 每日操作信号打分 ===== */
+.quant-panel {
+  flex: 0 0 460px;
+  width: 460px;
+  max-height: calc(100vh - 96px);
+  position: sticky;
+  top: 72px;
+  align-self: flex-start;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 12px 14px;
+  overflow-y: auto;
+}
+/* 面板总标题：让「量化板块」这个容器名在右栏顶部一眼可见 */
+.quant-head {
+  display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap;
+  padding-bottom: 8px; margin-bottom: 10px;
+  border-bottom: 2px solid var(--primary);
+}
+.quant-title { font-size: 15px; font-weight: 700; color: var(--text); letter-spacing: .5px; }
+.quant-sub { font-size: 11px; color: var(--text-secondary); }
+/* 量化板块升级为左侧导航独立入口（currentPage='quant'）后的整页布局：居中单列、白卡包裹，
+ * 不再用 .quant-panel 的固定 460px / 吸顶样式（那些是右栏时期的遗留，已不再使用）。 */
+.quant-page { max-width: 1180px; margin: 0 auto; }
+.quant-board-wrap { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 14px 16px; }
+.quant-tabs { display: flex; gap: 8px; margin-bottom: 10px; }
+.quant-tab {
+  flex: 1; padding: 8px 10px; font-size: 13px; font-weight: 600;
+  border: 1px solid var(--border); background: var(--surface-alt);
+  border-radius: 8px; cursor: pointer; color: var(--text-secondary);
+  transition: background .15s, color .15s;
+}
+.quant-tab.active { background: var(--primary); border-color: var(--primary); color: #fff; }
+.quant-board { display: flex; flex-direction: column; gap: 14px; }
+.q-block { border-top: 1px dashed var(--border); padding-top: 10px; }
+.q-block:first-child { border-top: none; padding-top: 0; }
+.q-block-head {
+  display: flex; justify-content: space-between; align-items: center;
+  font-size: 13.5px; font-weight: 700; color: var(--primary);
+  cursor: pointer; user-select: none; margin-bottom: 8px;
+}
+.q-caret { color: var(--text-secondary); font-weight: 400; }
+.q-order { margin: 0; padding-left: 20px; font-size: 12.5px; color: var(--text-secondary); line-height: 1.9; }
+.q-signal { margin-bottom: 10px; }
+.q-signal-title { font-size: 12.5px; font-weight: 700; margin-bottom: 4px; }
+.q-signal-desc { font-weight: 400; color: var(--text-secondary); margin-left: 6px; font-size: 11.5px; }
+.q-table-wrap { overflow-x: auto; }
+.q-table { width: 100%; border-collapse: collapse; font-size: 11.5px; }
+.q-table th, .q-table td { border: 1px solid var(--border); padding: 5px 7px; text-align: left; vertical-align: top; line-height: 1.5; }
+.q-table thead th { background: var(--surface-alt); font-weight: 700; }
+.q-col-good { color: #15803d; }
+.q-col-warn { color: #b91c1c; }
+.q-good { color: #15803d; }
+.q-warn { color: #b91c1c; }
+.q-col-data { color: #1d4ed8; }
+.q-data { font-size: 11px; }
+.q-data-text { word-break: break-word; }
+.q-data-text.q-missing { color: #94a3b8; }
+.q-manual { color: #94a3b8; font-style: italic; }
+.q-badge { display: inline-block; min-width: 16px; text-align: center; font-weight: 700; border-radius: 5px; padding: 0 4px; margin-right: 5px; font-size: 11px; }
+/* 复用 .lv-strong/.lv-mid/.lv-def 配色 */
+.q-actions { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 8px; }
+.q-ai-toggle { display: inline-flex; align-items: center; gap: 5px; font-size: 11.5px; color: var(--text-secondary); cursor: pointer; user-select: none; }
+.q-msg { font-size: 12px; color: #334155; background: var(--surface-alt); border: 1px solid var(--border); border-radius: 8px; padding: 7px 10px; margin-bottom: 8px; line-height: 1.6; }
+.q-reso { font-size: 11.5px; margin-bottom: 6px; }
+.q-reso-title { color: #475569; font-weight: 600; margin-bottom: 4px; }
+.q-reso-chip { display: inline-block; background: #eef2ff; border: 1px solid #c7d2fe; color: #3730a3; border-radius: 999px; padding: 2px 9px; margin: 2px 4px 2px 0; font-size: 11px; }
+.q-reso-chip em { color: #6366f1; font-style: normal; }
+.q-score { display: flex; flex-direction: column; gap: 8px; }
+.q-score-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.q-score-row label { font-size: 12px; color: var(--text-secondary); }
+.q-score-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.q-score-cell { display: flex; flex-direction: column; gap: 4px; border: 1px solid var(--border); border-radius: 8px; padding: 6px 8px; background: var(--surface-alt); }
+.q-score-label { font-size: 11.5px; font-weight: 700; }
+.q-input { width: 100%; padding: 5px 7px; border: 1px solid var(--border); border-radius: 6px; font-size: 12px; background: #fff; box-sizing: border-box; }
+.q-input:focus { outline: none; border-color: var(--primary); }
+.q-score-total { font-size: 13px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.q-score-total b { font-size: 16px; color: var(--primary); }
+.q-level { padding: 2px 8px; border-radius: 999px; font-size: 11.5px; font-weight: 700; }
+.lv-strong { background: #dcfce7; color: #15803d; }
+.lv-mid { background: #dbeafe; color: #1d4ed8; }
+.lv-weak { background: #fef9c3; color: #a16207; }
+.lv-def { background: #fee2e2; color: #b91c1c; }
+.q-levels { margin: 0; padding-left: 2px; list-style: none; font-size: 12px; line-height: 1.9; }
+.q-levels li { display: flex; gap: 6px; align-items: baseline; }
+.q-levels span { font-weight: 700; white-space: nowrap; }
+.q-note { margin-top: 8px; font-size: 11.5px; color: #92400e; background: #fffbeb; border: 1px solid #fde68a; border-radius: 8px; padding: 7px 9px; line-height: 1.6; }
+.q-usage { font-size: 12px; line-height: 1.7; color: var(--text-secondary); margin-bottom: 4px; }
+.q-usage b { color: var(--text); }
+.q-trend { display: flex; flex-direction: column; gap: 4px; margin-bottom: 10px; }
+.q-trend-bar { display: flex; align-items: center; gap: 6px; font-size: 11px; }
+.q-trend-label { flex: 0 0 42px; color: var(--text-secondary); }
+.q-trend-track { flex: 1; background: var(--surface-alt); border-radius: 4px; height: 12px; overflow: hidden; }
+.q-trend-fill { display: block; height: 100%; min-width: 4px; }
+.q-trend-val { flex: 0 0 16px; text-align: right; font-weight: 700; }
+.q-hist td.q-ops { white-space: nowrap; }
+.q-ops .btn { margin-right: 4px; }
+
+/* 待审核头部右侧：计数 + 刷新按钮 成组靠右（刷新按钮在「审核区」区最右侧） */
+/* 20261016i：审核区「拒绝通过」行内二次确认（与本地数据删除同一交互范式） */
+.um-confirm-tip { font-size: 12px; font-weight: 600; color: var(--danger); white-space: nowrap; }
+/* 20261016l：「创建并开通」行内确认（申请无账号信息且账号各处都不存在时的兜底） */
+.um-confirm-tip.um-create-tip { color: var(--primary); white-space: normal; }
+.um-create-pw { max-width: 220px; font-size: 12px; padding: 3px 8px; }
+/* 20261016i：审核区底部「已拒绝的申请」折叠列表（拒绝后申请从审核区移除，这里保留追溯） */
+.um-rejected { margin-top: 10px; border-top: 1px dashed #fde68a; padding-top: 8px; }
+.um-rejected-toggle {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 2px 8px; border: 1px solid var(--border); border-radius: 6px;
+  background: #fff; color: var(--text-placeholder);
+  font-size: 12px; font-weight: 600; cursor: pointer;
+}
+.um-rejected-toggle:hover { background: var(--primary-light); color: var(--primary); border-color: var(--primary); }
+.um-rejected-list { margin-top: 8px; display: flex; flex-direction: column; gap: 4px; }
+.um-rejected-item {
+  display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+  padding: 6px 8px; border: 1px solid var(--border); border-radius: 8px;
+  background: var(--bg-2, #f5f7fa); opacity: .85;
+}
+.um-rejected-item .um-pending-meta { color: var(--text-placeholder); }
+/* 20261016j：审核通过区「💾 保存到云端」按钮 + 未保存改动行高亮 */
+.um-save-btn { white-space: nowrap; }
+.um-save-btn:disabled { opacity: .6; cursor: default; }
+.um-save-count {
+  display: inline-block; min-width: 17px; margin-left: 5px; padding: 0 4px;
+  border-radius: 9px; background: rgba(255, 255, 255, .28);
+  font-size: 11px; line-height: 17px; text-align: center;
+}
+.um-save-btn:not(.btn-primary) .um-save-count { background: var(--primary-light); color: var(--primary); }
+.um-dirty-tag {
+  margin-left: 6px; padding: 0 6px; border-radius: 4px;
+  border: 1px solid #fde68a; background: #fef3c7; color: #b45309;
+  font-size: 11px; white-space: nowrap;
+}
+/* 放在 pending/off 之后：同一行既是待审/停用又有未保存改动时，未保存底色优先 */
+.um-row-dirty td { background: #fffbeb; }
+
+
+/* 量化板块：窄屏表格转卡片 + 评分栅格单列 */
+@media (max-width: 768px) {
+  .q-table thead { display: none; }
+  .q-table, .q-table tbody, .q-table tr { display: block; width: 100%; }
+  .q-table tr { border: 1px solid var(--border); border-radius: 10px; margin-bottom: 10px; background: #fff; padding: 2px 8px; }
+  .q-table td { display: flex; justify-content: space-between; gap: 10px; border: none; border-bottom: 1px solid #f1f5f9; text-align: right; padding: 6px 2px; }
+  .q-table td:last-child { border-bottom: none; }
+  .q-table td::before { content: attr(data-label); font-weight: 600; color: #475569; text-align: left; flex: 0 0 auto; max-width: 40%; }
+  .q-score-grid { grid-template-columns: 1fr; }
+}
+
+/* 量化板块：窄屏（与 .global-layout 堆叠断点一致）取消固定 460px，整行铺满、取消粘顶 */
+@media (max-width: 980px) {
+  .quant-panel {
+    flex: 1 1 auto;
+    width: 100%;
+    max-height: none;
+    position: static;
+    margin-top: 14px;
+  }
+}
