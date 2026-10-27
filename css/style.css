@@ -3883,6 +3883,20 @@ body.guest-mode #app { display: none; }
 .q-data-text { word-break: break-word; }
 .q-data-text.q-missing { color: #94a3b8; }
 .q-manual { color: #94a3b8; font-style: italic; }
+/* 操作顺序每步的数据补充提示（点「计算数据」后出现） */
+.q-order-hint {
+  display: inline-block;
+  margin-left: 8px;
+  padding: 1px 8px;
+  font-size: 11px;
+  line-height: 18px;
+  border-radius: 10px;
+  background: #eff6ff;
+  color: #1d4ed8;
+  vertical-align: 1px;
+  word-break: break-all;
+}
+.q-order-hint.q-manual { background: #f1f5f9; color: #94a3b8; font-style: normal; }
 .q-badge { display: inline-block; min-width: 16px; text-align: center; font-weight: 700; border-radius: 5px; padding: 0 4px; margin-right: 5px; font-size: 11px; }
 /* 复用 .lv-strong/.lv-mid/.lv-def 配色 */
 .q-actions { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 8px; }

@@ -11185,6 +11185,58 @@ const app = createApp({
       }
       return { manual: false, text: mv.text, badge: score, missing: false };
     }
+    /** 操作顺序每一步的数据补充：复用 quantData 端口，已取到数据则给计算结果，无实时源则标注需手动 */
+    function quantOrderHint(board, i) {
+      const qd = quantData[board];
+      if (!qd || !qd.metrics) return null; // 尚未点「计算数据」时不展示
+      const ms = qd.metrics;
+      const T = k => ms[k] || null;
+      const manual = t => ({ text: t, manual: true });
+      if (board === 'post') {
+        if (i === 0) {
+          if (!T('upCount')) return null;
+          const sh = T('shPct');
+          return { text: `沪指 ${sh ? sh.text : '—'} · 上涨 ${T('upCount').text} / 下跌 ${T('downCount') ? T('downCount').text : '—'} · 两市 ${T('amountYi') ? T('amountYi').text : '—'}` };
+        }
+        if (i === 1) {
+          const f = T('topFundBoard');
+          if (!f) return manual('ETF 份额需手动；主力资金看下方板块排名');
+          return { text: `主力净流入第一：${f.text} ${T('topFundBoardMainNetInYi') ? T('topFundBoardMainNetInYi').text : ''}` };
+        }
+        if (i === 2) {
+          if (!T('limitUpCount')) return null;
+          return { text: `涨停 ${T('limitUpCount').text} / 跌停 ${T('limitDownCount') ? T('limitDownCount').text : '—'}（连板·炸板率需手动）` };
+        }
+        if (i === 3) {
+          const b = T('topAmtBoard');
+          if (!b) return null;
+          return { text: `成交额第一：${b.text} ${T('topAmtBoardAmountYi') ? T('topAmtBoardAmountYi').text : ''} · 换手 ${T('topAmtBoardTurnover') ? T('topAmtBoardTurnover').text : '—'}` };
+        }
+        if (i === 4) return manual('公告 / 业绩预告 / 次日解禁：需手动 / AI 研判');
+        if (i === 5) return { text: '→ 点上方「🧮 决策数据」自动打分定档位' };
+      } else {
+        if (i === 0) return manual('隔夜外盘 / 消息面：需手动 / AI 研判');
+        if (i === 1) {
+          if (!T('upCount')) return null;
+          return { text: `上涨 ${T('upCount').text} / 涨停 ${T('limitUpCount') ? T('limitUpCount').text : '—'}` };
+        }
+        if (i === 2) {
+          const f = T('topFundBoard');
+          if (!f) return null;
+          return { text: `主力净流入第一：${f.text} ${T('topFundBoardMainNetInYi') ? T('topFundBoardMainNetInYi').text : ''}` };
+        }
+        if (i === 3) {
+          if (!T('limitUpCount')) return null;
+          return { text: `涨停 ${T('limitUpCount').text}（连板梯队需手动）` };
+        }
+        if (i === 4) {
+          if (!T('bankPct') && !T('shPct')) return null;
+          return { text: `避险对比：银行 ${T('bankPct') ? T('bankPct').text : '—'} · 红利 ${T('dividendPct') ? T('dividendPct').text : '—'} · 沪指 ${T('shPct') ? T('shPct').text : '—'}` };
+        }
+        if (i === 5) return { text: '→ 点上方「🧮 决策数据」自动打分定档位' };
+      }
+      return null;
+    }
     /** 计算数据：从行情数据端口拉取各跟踪项实时指标 */
     async function fetchQuantData(board) {
       if (quantFetching.value) return;
@@ -11478,7 +11530,7 @@ const app = createApp({
       saveQuantScore, editQuantScore, cancelQuantEdit, deleteQuantScore,
       // 量化板块：数据端口 / 自动打分 / 共振选股
       quantData, quantFetchedAt, quantFetching, quantSearching, quantMsg, quantAiMode,
-      isVacuumMonth, quantMetricSpec, quantMetricVal, quantMetricScore, quantRowInfo,
+      isVacuumMonth, quantMetricSpec, quantMetricVal, quantMetricScore, quantRowInfo, quantOrderHint,
       fetchQuantData, decideQuant, callQuantAI, quantResonanceBoards, quantSearchResonance,
       tradeLogicSortDir, tradeLogicSortIcon, toggleTradeLogicSort,
       openTradeLogicPanel, resetTradeLogicForm, editTradeLogicRow, saveTradeLogic, deleteTradeLogicRow,
