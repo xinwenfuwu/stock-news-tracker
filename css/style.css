@@ -3891,6 +3891,21 @@ body.guest-mode #app { display: none; }
 .q-ai-sum { font-size: 12px; color: #1e293b; line-height: 1.7; white-space: pre-wrap; }
 .q-ai-checks { margin: 8px 0 0; padding-left: 18px; }
 .q-ai-checks li { font-size: 12px; color: #334155; line-height: 1.7; }
+/* AI 预测记录表 */
+.q-ai-pred { border: 1px solid #c7d2fe; border-radius: 8px; padding: 10px 12px; margin: 8px 0; background: #f5f3ff; }
+.q-ai-pred-title { font-size: 12.5px; font-weight: 600; color: #5b21b6; margin-bottom: 8px; }
+.q-ai-pred .q-table-wrap { overflow-x: auto; }
+.q-ai-pred-tbl { width: 100%; border-collapse: collapse; font-size: 12px; }
+.q-ai-pred-tbl th, .q-ai-pred-tbl td { border: 1px solid #e5e7eb; padding: 5px 8px; text-align: left; vertical-align: top; }
+.q-ai-pred-tbl th { background: #ede9fe; color: #4c1d95; font-weight: 600; white-space: nowrap; }
+.q-chips { display: flex; flex-wrap: wrap; gap: 4px; }
+.q-chip { display: inline-block; padding: 1px 8px; border-radius: 999px; background: #e0e7ff; color: #3730a3; font-size: 11.5px; cursor: pointer; border: 1px solid #c7d2fe; }
+.q-chip:hover { background: #c7d2fe; }
+.q-chip-ind { background: #dcfce7; color: #166534; border-color: #bbf7d0; }
+.q-chip-ind:hover { background: #bbf7d0; }
+.q-stocks { color: #0f172a; line-height: 1.6; }
+.q-ops { white-space: nowrap; }
+.muted { color: #94a3b8; }
 /* 盘前预测结果 + 记录 */
 .q-pred { border: 1px solid #a7f3d0; background: #ecfdf5; border-radius: 8px; padding: 10px 12px; margin: 8px 0; }
 .q-pred-head { font-size: 13px; font-weight: 600; color: #047857; margin-bottom: 6px; }

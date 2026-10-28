@@ -11294,8 +11294,82 @@ const app = createApp({
       quantMsg.value = note;
       showToast('已根据好/警惕信号指标完成自动打分', 'success');
     }
-    const quantAiReport = ref(null);   // 最近一次 AI 研判报告 {model, summary, checks}
+    const quantAiReport = ref(null);   // 最近一次 AI 研判报告 {model, summary, checks, predicted, predictedAt}
     const quantAiBusy = ref(false);
+    const quantAiDrafts = ref([]);     // 本次会话内尚未「保存」的 AI 预测草稿（刷新即丢，关闭前可保存）
+
+    /** AI 研判预测表（草稿 + 已保存合并，按时间倒序）；预测概念/行业可点击跳转「板块成分股」。 */
+    const quantAiPredictionsView = computed(() => {
+      const saved = (D.quantAiPredictions || []).map(r => ({ ...r, saved: true }));
+      const drafts = quantAiDrafts.value.map(r => ({ ...r, saved: false }));
+      return drafts.concat(saved).sort((a, b) => (b.at || 0) - (a.at || 0));
+    });
+    function fmtTime(ts) {
+      try { return new Date(ts).toLocaleString('zh-CN', { hour12: false }).slice(5); }
+      catch (e) { return ''; }
+    }
+    function saveAiPrediction(p) {
+      if (p.saved) return;
+      Store.addQuantAiPrediction({
+        at: p.at, model: p.model,
+        concepts: p.concepts || [], industries: p.industries || [], stocks: p.stocks || [],
+        summary: p.summary || ''
+      });
+      const i = quantAiDrafts.value.findIndex(x => x.id === p.id);
+      if (i >= 0) quantAiDrafts.value.splice(i, 1);
+      showToast('已保存 AI 预测记录', 'success');
+    }
+    function deleteAiPrediction(p) {
+      if (p.saved) Store.deleteQuantAiPrediction(p.id);
+      else { const i = quantAiDrafts.value.findIndex(x => x.id === p.id); if (i >= 0) quantAiDrafts.value.splice(i, 1); }
+      showToast('已删除一条 AI 预测记录', 'info');
+    }
+    /** 点击预测表中的「概念/行业」→ 在顶部导航「板块成分股」页加载其成分股（符合量化板块同套指标列）。 */
+    async function openAiConceptInSector(name) {
+      if (!name) return;
+      try {
+        let qd = quantData.post;
+        if (!qd || !qd.boards || !qd.boards.length) {
+          qd = await StockAPI.quantData('post', { proxyUrl: proxyUrl.value, boardCache: D.quantBoardCache || null });
+        }
+        const boards = (qd && qd.boards) || [];
+        const norm = s => String(s || '').replace(/\s+/g, '').toLowerCase();
+        const n = norm(name);
+        const b = boards.find(x => norm(x.name) === n)
+          || boards.find(x => norm(x.name).includes(n) || n.includes(norm(x.name)));
+        if (!b) {
+          showToast('「' + name + '」未匹配到新浪板块（需先点「计算数据」拉取板块名单，或名称不完全一致）', 'error');
+          return;
+        }
+        if (hotBoardLoading.value) return;
+        hotBoardLoading.value = true;
+        showToast('正在获取「' + name + '」成分股…', 'info');
+        try {
+          const list = await StockAPI.quantBoardStocks(b.node);
+          if (!list || !list.length) { showToast('「' + name + '」未获取到成分股（接口受限，可稍后重试）', 'error'); return; }
+          const daily = Store.getDailyStocks(hotDate.value);
+          daily.stocks = list.map(s => {
+            const ns = _newStock({ code: s.code, name: s.name, changePercent: s.changePercent });
+            ns.dailyChange = s.changePercent; ns.todayPrice = s.price;
+            return ns;
+          });
+          hotBoardActive.value = name;
+          hotDetailIsStock.value = false;
+          if (!filterPanel.locked) resetHotFilterRanges();
+          filterPanel.poolId = 'hot';
+          hotFilterStocks.value = daily.stocks;
+          goPage('filter');
+          showToast('已在「板块成分股」加载「' + name + '」成分股 ' + daily.stocks.length + ' 只，正在补全字段…', 'success');
+          await refreshHotStocks();
+        } catch (e) {
+          showToast('成分股获取失败：' + (e && e.message ? e.message : e), 'error');
+        } finally {
+          hotBoardLoading.value = false;
+        }
+      } catch (e) {
+        showToast('查询板块失败：' + (e && e.message ? e.message : e), 'error');
+      }
+    }
 
     // ===== 盘前预测：打分逻辑与「当日打分决策表」完全一致 =====
     // 14:50 前点 → 用当前实时数据预测今天的行情档位；14:50 后点 → 预测下一交易日。
@@ -11412,8 +11486,13 @@ const app = createApp({
         const sys = '你是 A 股量化复盘助手。用户给你一份实时行情快照（你不能联网），'
           + '请只基于快照数据和你的市场知识做推理，不要编造快照里没有的具体数字。'
           + '输出必须是严格的 JSON 对象（不要 markdown 代码块、不要多余文字），格式：'
-          + '{"summary":"200字以内的综合研判","checks":[{"item":"跟踪项","advice":"该跟踪项怎么判断/去哪查"}],"suggestions":{"s1":0-2或null,"s2":0-2或null,"s3":0-2或null,"s4":0-2或null}}。'
-          + 'suggestions 只对「无数据信号」给分（0=警惕,1=中性,2=向好），有数据的信号给 null。';
+          + '{"summary":"200字以内的综合研判","checks":[{"item":"跟踪项","advice":"该跟踪项怎么判断/去哪查"}],"suggestions":{"s1":0-2或null,"s2":0-2或null,"s3":0-2或null,"s4":0-2或null},'
+          + '"predictedConcepts":["概念板块名1","概念板块名2"...],"predictedIndustries":["行业板块名1"...],"predictedStocks":[{"code":"600xxx","name":"股票名"}...]}。'
+          + 'suggestions 只对「无数据信号」给分（0=警惕,1=中性,2=向好），有数据的信号给 null。'
+          + 'predictedConcepts：2-8 个，用 A 股常见的新浪概念板块名（如"新能源车""半导体""人工智能""白酒""创新药"）；'
+          + 'predictedIndustries：1-5 个，用新浪行业板块名（如"银行""电力""军工"）；'
+          + 'predictedStocks：0-10 只，只输出你非常确定代码正确的个股（code 为 6 位 A 股代码）。'
+          + '板块名尽量贴近新浪概念/行业板块的实际命名，便于点击后在「板块成分股」直接加载。';
         const user = '【行情快照 ' + (qd ? qd.updatedAt : '无') + '】\n'
           + '市场宽度：上涨 ' + V('upCount') + ' / 下跌 ' + V('downCount') + '，涨停 ' + V('limitUpCount') + '，跌停 ' + V('limitDownCount')
           + '，两市成交额 ' + V('amountYi') + '，上涨占比 ' + V('ratioUp') + '\n'
@@ -11438,11 +11517,30 @@ const app = createApp({
           quantMsg.value = 'AI 返回内容无法解析为研判 JSON（模型：' + (D.settings.aiModel || '') + '）：' + res.content.slice(0, 80);
           return;
         }
+        const predicted = {
+          concepts: Array.isArray(j.predictedConcepts) ? j.predictedConcepts.slice(0, 8).map(String) : [],
+          industries: Array.isArray(j.predictedIndustries) ? j.predictedIndustries.slice(0, 5).map(String) : [],
+          stocks: Array.isArray(j.predictedStocks) ? j.predictedStocks.slice(0, 10)
+            .map(s => ({ code: String(s && s.code || ''), name: String(s && s.name || '') }))
+            .filter(s => s.name || s.code) : []
+        };
         quantAiReport.value = {
           model: D.settings.aiModel || 'AI',
           summary: String(j.summary),
-          checks: Array.isArray(j.checks) ? j.checks.slice(0, 8).map(c => ({ item: String(c.item || ''), advice: String(c.advice || '') })) : []
+          checks: Array.isArray(j.checks) ? j.checks.slice(0, 8).map(c => ({ item: String(c.item || ''), advice: String(c.advice || '') })) : [],
+          predicted,
+          predictedAt: Date.now()
         };
+        // 写入预测表（草稿，可保存）
+        quantAiDrafts.value.unshift({
+          id: 'qa_' + Date.now() + '_' + Math.random().toString(36).slice(2, 7),
+          at: Date.now(),
+          model: D.settings.aiModel || 'AI',
+          concepts: predicted.concepts,
+          industries: predicted.industries,
+          stocks: predicted.stocks,
+          summary: String(j.summary)
+        });
         // 自动填分：仅当该信号所有跟踪项都无实时数据时才采纳 AI 建议
         let applied = 0;
         const sug = j.suggestions || {};
@@ -11700,7 +11798,8 @@ const app = createApp({
       currentQuant, quantTotalOf, quantLevelOf, quantHistory, quantTrend,
       saveQuantScore, editQuantScore, cancelQuantEdit, deleteQuantScore,
       // 量化板块：数据端口 / 自动打分 / 共振选股
-      quantData, quantFetchedAt, quantFetching, quantSearching, quantMsg, quantAiReport, quantAiBusy,
+      quantData, quantFetchedAt, quantFetching, quantSearching, quantMsg, quantAiReport, quantAiBusy, quantAiDrafts,
+      quantAiPredictionsView, saveAiPrediction, deleteAiPrediction, openAiConceptInSector, fmtTime,
       isVacuumMonth, quantMetricSpec, quantMetricVal, quantMetricScore, quantRowInfo, quantOrderHint,
       fetchQuantData, decideQuant, callQuantAI, quantResonanceBoards, quantSearchResonance,
       quantPredict, quantPredResult, quantPredicting, quantPredHistory, deleteQuantPrediction,

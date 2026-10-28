@@ -30,6 +30,7 @@ const Store = {
       sectorPools: [],        // 概念/行业选股板块：[{id, name, bk, type, date, stocks: [...]}]
       quantScores: [],        // 量化板块打分记录：[{id, board:'post'|'intraday', date, s1..s4, b1..b4, total, level, createdAt, updatedAt}]
       quantPredictions: [],   // 盘前预测记录：[{id, board, targetDate(预测对象日), basisDate(预测时数据日), s1..s4, total, level, basis:[], createdAt}]
+      quantAiPredictions: [], // AI 研判预测记录：[{id, at(预测时间), model, concepts:[], industries:[], stocks:[{code,name}], summary, createdAt}]
       favorites: [],          // 收藏股票：[{code, name, favDate, note}]
       catMeta: {},             // 子类标注：{ "概念归类::人工智能": { color:'#ff0000', note:'重点' }, ... }（概念/行业归类行右侧颜色与备注）
       holdings: {},            // 用户持仓：{ [username]: [{id, code, name, entryDate, entryPrice, currentPrice, shares, direction, fee, note, createdAt, updatedAt}] }
@@ -393,6 +394,20 @@ const Store = {
   deleteQuantPrediction(id) {
     const i = this.data.quantPredictions.findIndex(r => r.id === id);
     if (i >= 0) { this.data.quantPredictions.splice(i, 1); this.saveNow(); return true; }
+    return false;
+  },
+
+  // ===== AI 研判预测记录 =====
+  addQuantAiPrediction(rec) {
+    rec.id = this.uid('qa');
+    rec.createdAt = Date.now();
+    this.data.quantAiPredictions.push(rec);
+    this.saveNow();
+    return rec;
+  },
+  deleteQuantAiPrediction(id) {
+    const i = this.data.quantAiPredictions.findIndex(r => r.id === id);
+    if (i >= 0) { this.data.quantAiPredictions.splice(i, 1); this.saveNow(); return true; }
     return false;
   },
 

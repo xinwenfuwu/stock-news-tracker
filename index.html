@@ -4,12 +4,12 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>股市信息分析系统</title>
-  <link rel="stylesheet" href="css/style.css?v=20261027d">
+  <link rel="stylesheet" href="css/style.css?v=20261027e">
   <!-- Vue 3 全局构建版（v3.4.21 · 自托管）
        原先走 unpkg.com CDN：国内网络对 unpkg 的连通性不稳定，一旦该请求长时间挂起，
        <head> 里的阻塞脚本会让整页停在白屏、后续 auth-boot.js 根本不会执行。
        改为同源托管后，启动链路不再依赖任何第三方 CDN。 -->
-  <script src="js/vue.global.prod.js?v=20261027d"></script>
+  <script src="js/vue.global.prod.js?v=20261027e"></script>
 </head>
 <body class="auth-locked">
   <!-- ===== 登录关卡：登录通过前业务脚本不会被加载 ===== -->
@@ -2988,6 +2988,34 @@
                   <li v-for="(c, i) in quantAiReport.checks" :key="i"><b>{{ c.item }}</b>：{{ c.advice }}</li>
                 </ul>
               </div>
+              <div class="q-ai-pred" v-if="quantAiPredictionsView.length">
+                <div class="q-ai-pred-title">📋 AI 预测记录（点「概念 / 行业」名可在「板块成分股」查看其成分股）</div>
+                <div class="q-table-wrap">
+                  <table class="q-table q-ai-pred-tbl">
+                    <thead><tr><th>时间</th><th>预测概念</th><th>预测行业</th><th>预测股票</th><th>保存</th><th>解释文字</th></tr></thead>
+                    <tbody>
+                      <tr v-for="p in quantAiPredictionsView" :key="p.id">
+                        <td data-label="时间">{{ fmtTime(p.at) }}</td>
+                        <td data-label="预测概念" class="q-chips">
+                          <span v-for="c in (p.concepts||[])" :key="c" class="q-chip" :title="'在「板块成分股」查看「'+c+'」成分股'" @click="openAiConceptInSector(c)">{{ c }}</span>
+                          <span v-if="!(p.concepts&&p.concepts.length)" class="muted">—</span>
+                        </td>
+                        <td data-label="预测行业" class="q-chips">
+                          <span v-for="c in (p.industries||[])" :key="c" class="q-chip q-chip-ind" :title="'在「板块成分股」查看「'+c+'」成分股'" @click="openAiConceptInSector(c)">{{ c }}</span>
+                          <span v-if="!(p.industries&&p.industries.length)" class="muted">—</span>
+                        </td>
+                        <td data-label="预测股票" class="q-stocks">{{ (p.stocks||[]).map(s=>s.name||s.code).join('、') || '—' }}</td>
+                        <td data-label="保存" class="q-ops">
+                          <button v-if="!p.saved" class="btn btn-xs btn-primary" type="button" @click="saveAiPrediction(p)">保存</button>
+                          <span v-else class="muted">已保存</span>
+                          <button class="btn btn-xs btn-danger" type="button" @click="deleteAiPrediction(p)" title="删除该条预测">删</button>
+                        </td>
+                        <td data-label="解释文字" class="muted">（无需填写）</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
               <div class="q-reso" v-if="quantResonanceBoards.length">
                 <div class="q-reso-title">共振候选板块（情绪+资金+业绩齐共振）：</div>
                 <span v-for="b in quantResonanceBoards.slice(0, 10)" :key="b.name" class="q-reso-chip">
@@ -5278,14 +5306,14 @@
     </transition>
   </div>
 
-  <script src="js/auth.js?v=20261027d"></script>
-  <script src="js/auth-sync.js?v=20261027d"></script>
+  <script src="js/auth.js?v=20261027e"></script>
+  <script src="js/auth-sync.js?v=20261027e"></script>
   <!-- 边缘加速默认站点（batch37 治本：Cloudflare Worker 代理东财/腾讯，缓解 JSONP 限流误报）。
        若你所在地区 workers.dev 访问慢，可在「设置 → 行情加速地址」清空即恢复纯直连。 -->
   <script>window.__SNT_ACCEL__ = 'https://sichina.dpdns.org';</script>
   <!-- 扫码支付二维码渲染库（第三方 qrcodejs，本地托管避免外链失效）。renderQr 会先检测全局 QRCode 是否存在。 -->
-  <script src="assets/qrcode.min.js?v=20261027d"></script>
-  <script src="js/auth-boot.js?v=20261027d"></script>
+  <script src="assets/qrcode.min.js?v=20261027e"></script>
+  <script src="js/auth-boot.js?v=20261027e"></script>
   <!-- store / stock-api / hot-topics / app 由 auth-boot.js 在登录通过后动态装载，
        未登录时它们不会被下载，业务数据也不会进入内存 -->
 </body>
