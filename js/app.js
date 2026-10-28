@@ -2072,12 +2072,13 @@ const app = createApp({
       showToast('已删除', 'success');
     }
 
-    // ---------- AI 新闻解读（OpenAI 兼容，浏览器端调用用户自己的 Key）----------
+    // ---------- AI 新闻解读（OpenAI 兼容；经可选代理 Worker 转发以绕过浏览器 CORS）----------
     const aiGenerating = ref(false);
+    // 配置了「代理地址」时，Key 由 Worker 服务端注入（可留空）；否则需本机 Key。
     const aiConfigured = computed(() =>
       !!(D.settings.aiEndpoint && D.settings.aiEndpoint.trim()) &&
-      !!(D.settings.aiKey && D.settings.aiKey.trim()) &&
-      !!(D.settings.aiModel && D.settings.aiModel.trim())
+      !!(D.settings.aiModel && D.settings.aiModel.trim()) &&
+      !!(D.settings.aiProxy && D.settings.aiProxy.trim() || D.settings.aiKey && D.settings.aiKey.trim())
     );
 
     /**
@@ -2122,17 +2123,23 @@ const app = createApp({
      * 但实测国内五家（DeepSeek / 硅基流动 / 智谱 / 阿里百炼 / Kimi）浏览器直连全都通，
      * 真正失败的绝大多数是「填了境外地址、域名被墙」，此时部署代理也未必管用。
      */
-    async function explainAiFetchFailure(endpoint) {
-      const net = await probeEndpointReachable(endpoint, 8000);
+    async function explainAiFetchFailure(target, useProxy) {
+      const net = await probeEndpointReachable(target, 8000);
+      if (useProxy) {
+        if (net.ok) {
+          return 'AI 代理 Worker 可达，但浏览器仍报跨域（CORS）：请确认 Worker 代码已正确返回 '
+            + '`Access-Control-Allow-Origin` 响应头（本仓库 worker/ai-proxy.js 已含此头），并重新部署 Worker。';
+        }
+        return '连不上 AI 代理 Worker：请检查「AI 代理地址」是否填对、Worker 是否已部署、以及它是否可达。';
+      }
       if (net.ok) {
-        return '浏览器跨域（CORS）拦截：这个地址能连通，但不允许网页直接调用。'
-          + '办法一：换国内可直连的接口（DeepSeek / 硅基流动 / 智谱 GLM / 阿里百炼 / Kimi 均可浏览器直连）；'
-          + '办法二：部署 worker/ai-proxy.js 用代理转发（顺带把 Key 藏到服务端）。';
+        return '浏览器跨域（CORS）拦截：这个地址网络能连通，但不允许网页直接调用。'
+          + '这些 OpenAI 兼容接口（含智谱 / DeepSeek / 硅基流动 / 阿里百炼 / Kimi）默认都不返回 CORS 头，'
+          + '浏览器无法直接调用。解决办法：部署 worker/ai-proxy.js（Cloudflare Worker）作为代理，'
+          + '在「设置 → AI 解读」里填「AI 代理地址」，由服务端转发并隐藏 Key。';
       }
       if (net.timeout) {
-        return '连不上这个地址（8 秒内无任何响应），该域名在当前网络多半被拦截。'
-          + '这不是 CORS 问题，部署代理也未必能解决——请改用国内可直连的接口'
-          + '（DeepSeek / 硅基流动 / 智谱 GLM / 阿里百炼 / Kimi）。';
+        return '连不上这个地址（8 秒内无任何响应），该域名在当前网络多半被拦截。这不是 CORS 问题——可在「AI 代理地址」填 Cloudflare 代理 Worker 转发。';
       }
       return '这个地址解析不到，或当前网络已断开（' + net.error + '）：请检查地址是否拼错、网络是否正常。';
     }
@@ -2146,35 +2153,45 @@ const app = createApp({
       const endpoint = pick('endpoint', D.settings.aiEndpoint || '').trim();
       const key = pick('key', D.settings.aiKey || '').trim();
       const model = pick('model', D.settings.aiModel || '').trim();
-      if (!endpoint || !key || !model) {
-        return { ok: false, error: '未配置 AI 接口（设置 → AI 解读：需填写 API 地址、密钥、模型）' };
+      const proxy = pick('proxy', D.settings.aiProxy || '').trim();
+      // 代理模式：请求发往 Worker（target），由它转发到真实上游并注入 Key；浏览器不再需要 Key。
+      const useProxy = !!proxy;
+      const target = useProxy
+        ? (proxy.replace(/\/+$/, '') + '/proxy?up=' + encodeURIComponent(endpoint))
+        : endpoint;
+      if (!endpoint || !model || (!key && !useProxy)) {
+        return { ok: false, error: '未配置 AI 接口（设置 → AI 解读：需填写 API 地址、模型' + (useProxy ? '' : '、密钥') + (useProxy ? '，或在「AI 代理地址」里填 Worker 地址' : '') + '）' };
       }
       const timeoutMs = o.timeoutMs || 60000;
       const body = { model, messages, temperature: 0.6, stream: false };
       if (o.maxTokens) body.max_tokens = o.maxTokens;
       // 慢响应兜底：15 秒还没动静就先并行探一次网络层。
       // 若探针判定「根本连不上」，立刻中止请求 —— 被墙的地址不必让用户干等满 60 秒。
+      // 代理模式下探的是 Worker 地址（应当可达），非代理模式探真实上游。
       let netVerdict = '';
       try {
         const ctrl = new AbortController();
         const timer = setTimeout(() => ctrl.abort(), timeoutMs);
         const slowTimer = setTimeout(function () {
-          probeEndpointReachable(endpoint, 6000).then(function (net) {
+          probeEndpointReachable(target, 6000).then(function (net) {
             if (net.ok) return;
             netVerdict = net.timeout
-              ? '连不上这个地址（无任何响应），该域名在当前网络多半被拦截。'
-                + '这不是 CORS 问题，部署代理也未必能解决——请改用国内可直连的接口'
-                + '（DeepSeek / 硅基流动 / 智谱 GLM / 阿里百炼 / Kimi）。'
+              ? (useProxy
+                  ? '连不上 AI 代理 Worker（无任何响应）：请检查「AI 代理地址」是否填对、Worker 是否已部署。'
+                  : '连不上这个地址（无任何响应），该域名在当前网络多半被拦截。这不是 CORS 问题，部署代理也未必能解决——可在「AI 代理地址」填 Cloudflare 代理 Worker。')
               : '这个地址解析不到，或当前网络已断开（' + net.error + '）：请检查地址是否拼错、网络是否正常。';
             try { ctrl.abort(); } catch (e) { /* ignore */ }
           }).catch(function () { /* 探针自身失败不影响主流程 */ });
         }, 15000);
         let r;
         try {
-          r = await fetch(endpoint, {
+          const headers = { 'Content-Type': 'application/json' };
+          // 代理模式：仅当本机填了 Key 才带 Authorization（Worker 优先用服务端 Secret，没有则回退透传）。
+          if (key) headers['Authorization'] = 'Bearer ' + key;
+          r = await fetch(target, {
             method: 'POST',
             signal: ctrl.signal,
-            headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + key },
+            headers,
             body: JSON.stringify(body)
           });
         } finally { clearTimeout(timer); clearTimeout(slowTimer); }
@@ -2197,7 +2214,7 @@ const app = createApp({
         if (/abort|timeout/i.test(msg)) {
           msg = 'AI 请求超时（' + Math.round(timeoutMs / 1000) + 's 内无响应）：检查网络，或换国内可直连的接口';
         } else if (/Failed to fetch|CORS|NetworkError|跨域|Load failed/i.test(msg)) {
-          msg = await explainAiFetchFailure(endpoint);
+          msg = await explainAiFetchFailure(target, useProxy);
         }
         return { ok: false, error: msg };
       }
@@ -5451,6 +5468,7 @@ const app = createApp({
     const sectorSearching = ref(false);
     const sectorLoading = ref(false);    // 板块成分股加载中
     const sectorIndustryOpen = ref(false); // 板块详情内「行业」勾选下拉是否展开
+    const sectorPickIndustryOpen = ref(false); // 勾选弹窗内「行业」勾选下拉是否展开
     const sectorDetail = reactive({ show: false, data: { stocks: [] }, nameEdit: false, nameDraft: '' });
     const sectorDetailSort = reactive({ key: 'dailyChange', dir: 'desc' });
     // 板块详情：筛选栏与「字段含义」说明的一键收起/展开（收起以显示更多股票内容）
@@ -5469,10 +5487,12 @@ const app = createApp({
       // batch53：交集筛选时记录「源板块」。交集板块没有公开接口（bk 是前端生成的虚拟码），
       //         记住源板块后即可随时用它们**重算交集**，而不是拿虚拟码去查一个不存在的接口。
       blocks: [],
-      // 筛选：去除301/688/北交所/ST；industry='' 表示不限行业
-      filter: { no301: false, no688: false, noBj: false, noST: false, industry: '' },
+      // 筛选：去除301/688/北交所/ST；industries=[] 表示不限行业（多选）
+      filter: { no301: false, no688: false, noBj: false, noST: false, industries: [] },
       industryLoading: false,   // 是否正在补全行业字段
-      industryDone: false       // 本次弹窗是否已尝试补全过行业
+      industryDone: false,      // 本次弹窗是否已尝试补全过行业
+      sortKey: '',              // 勾选弹窗表格排序字段（目前支持 'relevance'）
+      sortDir: ''               // 排序方向：'' / 'desc' / 'asc'
     });
     // 板块列表加载失败标志（用于显示重试/加载全部）
     const sectorLoadError = ref(false);
@@ -6303,7 +6323,7 @@ const app = createApp({
       sectorPick.selected = {};
       sectorPick.bk = '';
       sectorPick.blocks = (blocks || []).map(b => ({ bk: b.bk, name: b.name, type: b.type || '' }));
-      sectorPick.filter.industry = '';      // 切换板块时重置行业筛选
+      sectorPick.filter.industries = [];      // 切换板块时重置行业筛选
       sectorPick.industryDone = false;
       const names = blocks.map(b => b.name).join(' ∩ ');
       sectorPick.name = names;
@@ -6369,7 +6389,7 @@ const app = createApp({
       sectorPick.type = block.type || '';
       sectorPick.stocks = [];
       sectorPick.selected = {};
-      sectorPick.filter.industry = '';      // 切换板块时重置行业筛选
+      sectorPick.filter.industries = [];      // 切换板块时重置行业筛选
       sectorPick.industryDone = false;
       showToast(`正在获取「${block.name}」成分股...`, 'info');
       try {
@@ -6441,7 +6461,7 @@ const app = createApp({
       if (f.no688 && /^688/.test(code)) return true;          // 科创板
       if (f.noBj && /^(4|8|92)/.test(code)) return true;      // 北交所（4/8/92开头）
       if (f.noST && /ST/i.test(name)) return true;            // ST/*ST
-      if (f.industry && (s.industry || '未知') !== f.industry) return true; // 行业筛选
+      if (f.industries && f.industries.length && !f.industries.includes(s.industry || '未知')) return true; // 行业多选筛选
       return false;
     }
     /** 当前成分股涉及的全部行业（去重、中文排序），用于下拉选项 */
@@ -6553,6 +6573,27 @@ const app = createApp({
       return visibleSectorPickStocks.value.filter(s => sectorPick.selected[s.code]).length;
     });
 
+    // 勾选弹窗表格排序：相关度（升/降序切换，未命中相关度的排末尾）
+    const SORT_KEYS = { relevance: s => (s.relevance == null ? null : +s.relevance) };
+    function toggleSectorPickSort(key) {
+      if (sectorPick.sortKey !== key) { sectorPick.sortKey = key; sectorPick.sortDir = 'desc'; }
+      else if (sectorPick.sortDir === 'desc') { sectorPick.sortDir = 'asc'; }
+      else if (sectorPick.sortDir === 'asc') { sectorPick.sortKey = ''; sectorPick.sortDir = ''; }
+      else { sectorPick.sortDir = 'desc'; }
+    }
+    function sectorPickSortIcon(key) {
+      if (sectorPick.sortKey !== key) return '↕️';
+      return sectorPick.sortDir === 'desc' ? '⬇️' : '⬆️';
+    }
+    const sortedSectorPickStocks = computed(() => {
+      const list = visibleSectorPickStocks.value;
+      if (!sectorPick.sortKey || !SORT_KEYS[sectorPick.sortKey]) return list;
+      // 无相关度视为「最小」（−∞），升序时排最前、降序时排最后，两种方向都符合直觉
+      const getv = (s) => { const v = SORT_KEYS[sectorPick.sortKey](s); return (v == null) ? -Infinity : v; };
+      const dir = sectorPick.sortDir === 'asc' ? 1 : -1;
+      return [...list].sort((a, b) => (getv(a) - getv(b)) * dir);
+    });
+
     // 确认保存勾选的股票到概念选股板块
     function confirmSectorPick() {
       const selected = visibleSectorPickStocks.value.filter(s => sectorPick.selected[s.code]);
@@ -6575,7 +6616,7 @@ const app = createApp({
       Store.addSectorPool(sector);
       recomputePoolAvg(sector);
       sectorPick.show = false;
-      sectorPick.filter = { no301: false, no688: false, noBj: false, noST: false, industry: '', biz: '' };
+      sectorPick.filter = { no301: false, no688: false, noBj: false, noST: false, industries: [], biz: '' };
       sectorResults.value = [];
       sectorSearch.value = '';
       showToast(`已保存板块「${sectorPick.name}」共 ${selected.length} 只股票`, 'success');
@@ -10561,6 +10602,7 @@ const app = createApp({
     const aiEndpoint = ref('');
     const aiKey = ref('');
     const aiModel = ref('');
+    const aiProxy = ref('');   // 可选：AI 代理 Worker 地址，填后 AI 调用走它（解决 CORS + 隐藏 Key）
     // 跨设备免码登录（GitHub 注册表）配置：独立本地键，不进 D.settings（避免随设置导出泄露）
     const authAdminToken = ref('');
     // 20261018e：管理员「重置密码」密钥（与 Cloudflare Worker 的 ADMIN_RESET_KEY 环境变量对应）。
@@ -10577,12 +10619,12 @@ const app = createApp({
      * （Gemini 2.5 Flash 约 15 RPM / 1500 RPD），多用户/高频场景易触发 429。
      * OpenAI 则被拦截（8s 无响应），列出来只为提示风险，模型名用户可以自己改。 */
     const AI_PRESETS = [
+      { name: '智谱 GLM', endpoint: 'https://open.bigmodel.cn/api/paas/v4/chat/completions', model: 'glm-4-flash', tip: '国内 · glm-4-flash 永久免费 · 需填「AI 代理地址」绕 CORS' },
+      { name: 'DeepSeek', endpoint: 'https://api.deepseek.com/v1/chat/completions', model: 'deepseek-flash', tip: '国内 · 新户有免费额度 · 需填「AI 代理地址」绕 CORS' },
+      { name: '硅基流动', endpoint: 'https://api.siliconflow.cn/v1/chat/completions', model: 'Qwen/Qwen2.5-7B-Instruct', tip: '国内 · 注册有免费额度 · 需填「AI 代理地址」绕 CORS' },
+      { name: '阿里百炼', endpoint: 'https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions', model: 'qwen-plus', tip: '国内 · 需填「AI 代理地址」绕 CORS' },
+      { name: 'Kimi', endpoint: 'https://api.moonshot.cn/v1/chat/completions', model: 'moonshot-v1-8k', tip: '国内 · 需填「AI 代理地址」绕 CORS' },
       { name: 'Google Gemini', endpoint: 'https://generativelanguage.googleapis.com/v1beta/openai/chat/completions', model: 'gemini-2.5-flash', tip: '免费档 · 需能访问 Google 网络(VPN)' },
-      { name: 'DeepSeek', endpoint: 'https://api.deepseek.com/v1/chat/completions', model: 'deepseek-flash', tip: '国内可直连 · 新户送 500 万免费 tokens' },
-      { name: '硅基流动', endpoint: 'https://api.siliconflow.cn/v1/chat/completions', model: 'Qwen/Qwen2.5-7B-Instruct', tip: '国内可直连 · 注册有免费额度' },
-      { name: '智谱 GLM', endpoint: 'https://open.bigmodel.cn/api/paas/v4/chat/completions', model: 'glm-4-flash', tip: '国内可直连 · glm-4-flash 免费' },
-      { name: '阿里百炼', endpoint: 'https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions', model: 'qwen-plus', tip: '国内可直连' },
-      { name: 'Kimi', endpoint: 'https://api.moonshot.cn/v1/chat/completions', model: 'moonshot-v1-8k', tip: '国内可直连' },
       { name: 'OpenAI', endpoint: 'https://api.openai.com/v1/chat/completions', model: 'gpt-4o-mini', tip: '⚠️ 国内无法直连，需自备代理' }
     ];
     const aiTesting = ref(false);
@@ -10594,7 +10636,7 @@ const app = createApp({
       aiModel.value = p.model;
       aiTestResult.state = '';
       aiTestResult.text = '';
-      showToast('已填入「' + p.name + '」的接口地址与模型名，请再填你自己的 API Key', 'success');
+      showToast('已填入「' + p.name + '」的接口地址与模型名。请再填你的 API Key（或填「AI 代理地址」并把 Key 存进 Worker Secret）', 'success');
     }
 
     /**
@@ -10606,29 +10648,32 @@ const app = createApp({
       const ep = (aiEndpoint.value || '').trim();
       const key = (aiKey.value || '').trim();
       const model = (aiModel.value || '').trim();
-      if (!ep || !key || !model) {
+      const proxy = (aiProxy.value || '').trim();
+      if (!ep || !model || (!key && !proxy)) {
         aiTestResult.state = 'fail';
-        aiTestResult.text = '请先把「API 地址 / API Key / 模型名」三项都填上，再点测试。';
+        aiTestResult.text = '请先填「API 地址 / 模型名」' + (proxy ? '' : ' 以及 API Key') + '，再点测试。'
+          + (proxy ? '（已填代理地址时 Key 可留空，由 Worker 服务端注入）' : '');
         return;
       }
       aiTesting.value = true;
       aiTestResult.state = '';
-      aiTestResult.text = '第 1 步：检查网络能否连通该地址…';
+      // 代理模式：第 1 步探 Worker（应可达）；非代理模式：探真实上游。
+      const probeTarget = proxy ? (proxy.replace(/\/+$/, '') + '/proxy?up=' + encodeURIComponent(ep)) : ep;
+      aiTestResult.text = '第 1 步：检查网络能否连通' + (proxy ? ' AI 代理 Worker' : '该地址') + '…';
       try {
-        const net = await probeEndpointReachable(ep, 8000);
+        const net = await probeEndpointReachable(probeTarget, 8000);
         if (!net.ok) {
           aiTestResult.state = 'fail';
           aiTestResult.text = net.timeout
-            ? '❌ 第 1 步不通过：8 秒内没有任何响应，该域名在当前网络多半被拦截。'
-              + '这不是 CORS 问题——请换国内可直连的厂商（点上方的厂商按钮即可），或自备代理地址。'
+            ? '❌ 第 1 步不通过：8 秒内没有任何响应，' + (proxy ? 'AI 代理 Worker 可能未部署或地址填错。' : '该域名在当前网络多半被拦截——请在「AI 代理地址」填 Cloudflare 代理 Worker。')
             : '❌ 第 1 步不通过：地址解析不到或网络已断开（' + net.error + '）。请检查地址是否拼错、网络是否正常。';
           return;
         }
-        aiTestResult.text = '✅ 第 1 步通过：网络可达。第 2 步：用你的 Key 真实调用一次…';
+        aiTestResult.text = '✅ 第 1 步通过：网络可达。第 2 步：' + (proxy ? '经代理 Worker ' : '用你的 Key ') + '真实调用一次…';
         const t0 = Date.now();
         const res = await callOpenAICompat(
           [{ role: 'user', content: '只回复两个字：收到' }],
-          { maxTokens: 16, timeoutMs: 30000, cfg: { endpoint: ep, key, model } }
+          { maxTokens: 16, timeoutMs: 30000, cfg: { endpoint: ep, key, model, proxy } }
         );
         const ms = Date.now() - t0;
         if (res.ok) {
@@ -10654,6 +10699,7 @@ const app = createApp({
         aiEndpoint.value = D.settings.aiEndpoint || '';
         aiKey.value = D.settings.aiKey || '';
         aiModel.value = D.settings.aiModel || '';
+        aiProxy.value = D.settings.aiProxy || '';
         aiTesting.value = false;
         try {
           authAdminToken.value = (localStorage.getItem('snt-auth-admin-token') || '').trim();
@@ -10686,6 +10732,7 @@ const app = createApp({
       D.settings.aiEndpoint = (aiEndpoint.value || '').trim();
       D.settings.aiKey = (aiKey.value || '').trim();
       D.settings.aiModel = (aiModel.value || '').trim();
+      D.settings.aiProxy = (aiProxy.value || '').trim();
       // 保存跨设备登录令牌（独立键，不进 D.settings）
       try {
         localStorage.setItem('snt-auth-admin-token', (authAdminToken.value || '').trim());
@@ -11676,7 +11723,7 @@ const app = createApp({
       allCategories, fmt, fmtPct, fmtSigned, fmtDateCN, numClass, pctClass, parseStocks, stocksText, pureCode,
       fmtYi, sRatio,
       showSettings, showPrefs, settingsText, proxyUrl, accelBase, saveSettings, clearAllData, dataStats,
-      aiEndpoint, aiKey, aiModel, aiConfigured, aiGenerating, callOpenAICompat, generateNewsInterpretation,
+      aiEndpoint, aiKey, aiModel, aiProxy, aiConfigured, aiGenerating, callOpenAICompat, generateNewsInterpretation,
       AI_PRESETS, applyAiPreset, aiTesting, aiTestResult, aiTestConnection,
       exportData, importData,
       // 云端同步
@@ -11719,6 +11766,7 @@ const app = createApp({
       sectorPick, sectorPickCount, toggleSelectAllSector, confirmSectorPick,
       visibleSectorPickStocks, sectorPickFiltered, computeSectorPickRelevance, pickChg, sectorPickEmptyHint,
       sectorPickIndustries, sectorPickIndustryLoaded, loadSectorPickIndustries,
+      sortedSectorPickStocks, toggleSectorPickSort, sectorPickSortIcon, sectorPickIndustryOpen,
       sectorSel, sectorSelCount, sectorSelIntersecting, sectorSelError,
       addSubSector, removeSubSector, clearSectorSel, startIntersectFilter, openSectorSelPick,
       loadSectorStocks, refreshSectorDetail, openSectorDetail, startEditSectorName,

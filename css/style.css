@@ -1354,6 +1354,9 @@ body {
 .sector-pick-item .spc-ind { color: var(--text-secondary); font-size: 12px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .sector-pick-head .spc-num,
 .sector-pick-head .spc-code { text-align: left; }
+.sector-pick-head .spc-sortable { cursor: pointer; user-select: none; white-space: nowrap; }
+.sector-pick-head .spc-sortable:hover { color: var(--primary, #3b6fe0); }
+.sector-pick-head .spc-sort-caret { font-size: 10px; opacity: 0.7; margin-left: 2px; }
 .sector-pick-item .spc-num { font-size: 13px; font-variant-numeric: tabular-nums; }
 .sector-pick-item .spc-biz {
   font-size: 12px;

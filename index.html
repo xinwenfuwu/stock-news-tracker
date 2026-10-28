@@ -4,12 +4,12 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>股市信息分析系统</title>
-  <link rel="stylesheet" href="css/style.css?v=20261027g">
+  <link rel="stylesheet" href="css/style.css?v=20261028a">
   <!-- Vue 3 全局构建版（v3.4.21 · 自托管）
        原先走 unpkg.com CDN：国内网络对 unpkg 的连通性不稳定，一旦该请求长时间挂起，
        <head> 里的阻塞脚本会让整页停在白屏、后续 auth-boot.js 根本不会执行。
        改为同源托管后，启动链路不再依赖任何第三方 CDN。 -->
-  <script src="js/vue.global.prod.js?v=20261027g"></script>
+  <script src="js/vue.global.prod.js?v=20261028a"></script>
 </head>
 <body class="auth-locked">
   <!-- ===== 登录关卡：登录通过前业务脚本不会被加载 ===== -->
@@ -4337,15 +4337,28 @@
                 <span v-else>🔗 算相关度</span>
               </button>
             </label>
-            <!-- 行业筛选（弹窗上部右侧） -->
+            <!-- 行业筛选（弹窗上部右侧）：多选勾选下拉，未勾选 = 全部行业 -->
             <label class="sector-pick-industry" v-if="sectorPick.stocks.length">
               <span class="muted small">行业</span>
-              <select v-model="sectorPick.filter.industry">
-                <option value="">全部行业</option>
-                <option v-for="ind in sectorPickIndustries" :key="ind" :value="ind">
-                  {{ ind }}（{{ sectorPick.stocks.filter(s => (s.industry || '未知') === ind).length }}）
-                </option>
-              </select>
+              <div class="filter-field industry-dropdown-field" style="align-self:center">
+                <button type="button" class="industry-dropdown-toggle" @click="sectorPickIndustryOpen = !sectorPickIndustryOpen">
+                  选择行业<span v-if="sectorPick.filter.industries.length" class="ind-badge">{{ sectorPick.filter.industries.length }}</span>
+                  <span class="ind-caret">{{ sectorPickIndustryOpen ? '▴' : '▾' }}</span>
+                </button>
+                <div class="industry-dropdown-panel" v-show="sectorPickIndustryOpen" @click.stop>
+                  <div class="industry-check-list">
+                    <label class="industry-check-item" v-for="ind in sectorPickIndustries" :key="ind"
+                           :title="'勾选后仅显示「' + ind + '」行业的成分股'">
+                      <input type="checkbox" :value="ind" v-model="sectorPick.filter.industries">
+                      <span>{{ ind }}（{{ sectorPick.stocks.filter(s => (s.industry || '未知') === ind).length }}）</span>
+                    </label>
+                    <div class="industry-check-actions">
+                      <button type="button" class="btn btn-sm" @click="sectorPick.filter.industries = sectorPickIndustries.slice()">全选</button>
+                      <button type="button" class="btn btn-sm" @click="sectorPick.filter.industries = []">清空</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
               <button class="btn btn-sm" @click="loadSectorPickIndustries(true)"
                       :disabled="sectorPick.industryLoading" title="重新拉取成分股的所属行业">🔄 行业</button>
             </label>
@@ -4375,11 +4388,12 @@
               <span class="spc-num">现价</span>
               <span class="spc-num">涨跌幅</span>
               <span class="spc-num">总市值</span>
-              <span class="spc-num">相关度</span>
+              <span class="spc-num spc-sortable" @click="toggleSectorPickSort('relevance')"
+                    title="点击按相关度排序（升/降序切换）">相关度 <span class="spc-sort-caret">{{ sectorPickSortIcon('relevance') }}</span></span>
               <span class="spc-biz">主营业务</span>
               <span class="spc-ind">行业</span>
             </div>
-            <div class="sector-pick-item" v-for="s in visibleSectorPickStocks" :key="s.code"
+            <div class="sector-pick-item" v-for="s in sortedSectorPickStocks" :key="s.code"
                  :class="{ checked: !!sectorPick.selected[s.code], 'tail-buy-hit-item': isTailBuyHit(s) }">
               <label class="spc-check">
                 <input type="checkbox" v-model="sectorPick.selected[s.code]">
@@ -4645,13 +4659,17 @@
             </div>
           </div>
           <div class="form-row">
-            <label>API 地址（OpenAI 兼容）请填到 <code>/v1/chat/completions</code> 这一级，不要只填域名。国内推荐 <b>DeepSeek / 硅基流动 / 智谱 GLM / 阿里百炼 / Kimi</b>——这五家浏览器可以直连，无需任何代理。如需免费档也可选 <b>Google Gemini</b>（预设已填好地址，但 googleapis.com 在中国大陆通常需 VPN/代理才能访问）。</label>
-            <input v-model="aiEndpoint" placeholder="https://api.deepseek.com/v1/chat/completions">
+            <label>API 地址（OpenAI 兼容）请填到 <code>/chat/completions</code> 这一级，不要只填域名。点上方厂商按钮会自动填入对应地址与模型名。国内可选 <b>智谱 GLM / DeepSeek / 硅基流动 / 阿里百炼 / Kimi</b>（网络不被墙，但<strong>浏览器直连会被 CORS 拦截</strong>，必须配合下面的「AI 代理地址」使用）。如需免费档也可选 <b>Google Gemini</b>（预设已填好地址，但 googleapis.com 在中国大陆通常需 VPN/代理才能访问）。</label>
+            <input v-model="aiEndpoint" placeholder="https://open.bigmodel.cn/api/paas/v4/chat/completions">
           </div>
           <div class="form-row-3">
-            <div><label>API Key</label><input type="password" v-model="aiKey" placeholder="sk-...（仅存本地浏览器）" autocomplete="new-password"></div>
-            <div><label>模型名</label><input v-model="aiModel" placeholder="如 deepseek-chat"></div>
+            <div><label>API Key</label><input type="password" v-model="aiKey" placeholder="sk-...（仅存本地；用代理且 Worker 已存 Secret 时可留空）" autocomplete="new-password"></div>
+            <div><label>模型名</label><input v-model="aiModel" placeholder="如 glm-4-flash"></div>
             <div><label>状态</label><span :class="['ai-state', aiConfigured ? 'ok' : 'warn']">{{ aiConfigured ? '✅ 已配置' : '⚠️ 未配置' }}</span></div>
+          </div>
+          <div class="form-row">
+            <label>AI 代理地址（Cloudflare Worker，<b>强烈推荐 · 解决浏览器 CORS 并隐藏 Key</b>）这些 OpenAI 兼容接口默认不允许网页直接调用，浏览器会报跨域。填此地址后，所有 AI 调用改走你的 Worker，由它服务端转发并注入 Key。部署方法见仓库 <code>worker/ai-proxy.js</code> 顶部注释。格式如 <code>https://ai-proxy.你的子域.workers.dev</code>。留空则浏览器直连（基本都会因 CORS 失败）。</label>
+            <input v-model="aiProxy" placeholder="https://ai-proxy.你的子域.workers.dev（留空=浏览器直连，大概率被 CORS 拦截）">
           </div>
           <div class="form-row">
             <label>连接自检点这里会先探网络连通性、再用你的 Key 真实调用一次，能准确区分「域名被墙」「CORS 拦截」「Key 无效」三种情况。</label>
@@ -4663,8 +4681,8 @@
             </div>
           </div>
           <div class="info-box small">
-            <p><b>密钥安全：</b>Key 仅保存在你本机浏览器的 localStorage，不会上传到本站服务器（本站是纯静态 GitHub Pages，无后端）。多设备需各自配置。</p>
-            <p><b>遇到「连不上 / Failed to fetch」怎么办：</b>先用上面的「🧪 测试连接」看清是哪一步不通。若是<b>境外地址</b>（如 <code>api.openai.com</code>、Gemini 的 <code>googleapis.com</code> 在中国大陆需 VPN/代理）被拦截，换国内厂商（DeepSeek / 硅基流动 / 智谱 GLM / 阿里百炼 / Kimi）即可，<b>不必</b>部署代理；只有当「网络可达但仍被 CORS 拦截」、或你不想把 Key 放在浏览器里时，才需要 <code>worker/ai-proxy.js</code>（Cloudflare Worker，免费）。</p>
+            <p><b>密钥安全：</b>Key 仅保存在你本机浏览器的 localStorage，不会上传到本站服务器（本站是纯静态 GitHub Pages，无后端）。多设备需各自配置。若填了「AI 代理地址」且 Worker 里已用 Secret 存了 Key，则本机可把 Key 留空，真正做到服务端隐藏。</p>
+            <p><b>遇到「连不上 / Failed to fetch / CORS 拦截」怎么办：</b>先用上面的「🧪 测试连接」看清是哪一步不通。绝大多数情况下根因是<strong>浏览器跨域</strong>——这些 LLM 官方接口（含智谱 / DeepSeek / 硅基流动 / 阿里百炼 / Kimi）都不返回 CORS 头，网页无法直连。解决办法就是部署 <code>worker/ai-proxy.js</code>（Cloudflare Worker，免费），把地址填到「AI 代理地址」一栏。只有 <code>api.openai.com</code>、Gemini 的 <code>googleapis.com</code> 这类<strong>境外</strong>地址才是被墙（需 VPN/代理），国内厂商只是被 CORS 拦、与网络无关。</p>
           </div>
         </div>
         <div class="modal-footer">
@@ -5346,14 +5364,14 @@
     </transition>
   </div>
 
-  <script src="js/auth.js?v=20261027g"></script>
-  <script src="js/auth-sync.js?v=20261027g"></script>
+  <script src="js/auth.js?v=20261028a"></script>
+  <script src="js/auth-sync.js?v=20261028a"></script>
   <!-- 边缘加速默认站点（batch37 治本：Cloudflare Worker 代理东财/腾讯，缓解 JSONP 限流误报）。
        若你所在地区 workers.dev 访问慢，可在「设置 → 行情加速地址」清空即恢复纯直连。 -->
   <script>window.__SNT_ACCEL__ = 'https://sichina.dpdns.org';</script>
   <!-- 扫码支付二维码渲染库（第三方 qrcodejs，本地托管避免外链失效）。renderQr 会先检测全局 QRCode 是否存在。 -->
-  <script src="assets/qrcode.min.js?v=20261027g"></script>
-  <script src="js/auth-boot.js?v=20261027g"></script>
+  <script src="assets/qrcode.min.js?v=20261028a"></script>
+  <script src="js/auth-boot.js?v=20261028a"></script>
   <!-- store / stock-api / hot-topics / app 由 auth-boot.js 在登录通过后动态装载，
        未登录时它们不会被下载，业务数据也不会进入内存 -->
 </body>
