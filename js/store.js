@@ -31,6 +31,7 @@ const Store = {
       quantScores: [],        // 量化板块打分记录：[{id, board:'post'|'intraday', date, s1..s4, b1..b4, total, level, createdAt, updatedAt}]
       quantPredictions: [],   // 盘前预测记录：[{id, board, targetDate(预测对象日), basisDate(预测时数据日), s1..s4, total, level, basis:[], createdAt}]
       quantAiPredictions: [], // AI 研判预测记录：[{id, at(预测时间), model, concepts:[], industries:[], stocks:[{code,name}], summary, createdAt}]
+      quantAiTableRecords: [], // 量化预测明细表（DeepSeek 按跟踪项量化）：[{id, at, board, industries:[2], concept1:{name,stocks:[3]}, concept2:{name,stocks:[3]}, topStocks:[3], createdAt}]
       favorites: [],          // 收藏股票：[{code, name, favDate, note}]
       catMeta: {},             // 子类标注：{ "概念归类::人工智能": { color:'#ff0000', note:'重点' }, ... }（概念/行业归类行右侧颜色与备注）
       holdings: {},            // 用户持仓：{ [username]: [{id, code, name, entryDate, entryPrice, currentPrice, shares, direction, fee, note, createdAt, updatedAt}] }
@@ -408,6 +409,21 @@ const Store = {
   deleteQuantAiPrediction(id) {
     const i = this.data.quantAiPredictions.findIndex(r => r.id === id);
     if (i >= 0) { this.data.quantAiPredictions.splice(i, 1); this.saveNow(); return true; }
+    return false;
+  },
+
+  // ===== 量化预测明细表（DeepSeek 按跟踪项量化计算） =====
+  addQuantAiTableRecord(rec) {
+    rec.id = this.uid('qt');
+    rec.createdAt = Date.now();
+    this.data.quantAiTableRecords.unshift(rec);
+    if (this.data.quantAiTableRecords.length > 50) this.data.quantAiTableRecords.length = 50; // 上限保护
+    this.saveNow();
+    return rec;
+  },
+  deleteQuantAiTableRecord(id) {
+    const i = this.data.quantAiTableRecords.findIndex(r => r.id === id);
+    if (i >= 0) { this.data.quantAiTableRecords.splice(i, 1); this.saveNow(); return true; }
     return false;
   },
 

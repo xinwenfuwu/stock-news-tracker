@@ -11324,6 +11324,12 @@ const app = createApp({
       else { const i = quantAiDrafts.value.findIndex(x => x.id === p.id); if (i >= 0) quantAiDrafts.value.splice(i, 1); }
       showToast('已删除一条 AI 预测记录', 'info');
     }
+    /** 量化预测明细表（DeepSeek 按跟踪项量化计算的固定结构记录，按时间倒序）。 */
+    const quantAiTableView = computed(() => (D.quantAiTableRecords || []).slice().sort((a, b) => (b.at || 0) - (a.at || 0)));
+    function deleteAiTableRecord(p) {
+      Store.deleteQuantAiTableRecord(p.id);
+      showToast('已删除一条量化预测明细', 'info');
+    }
     /** 点击预测表中的「概念/行业」→ 在顶部导航「板块成分股」页加载其成分股（符合量化板块同套指标列）。 */
     async function openAiConceptInSector(name) {
       if (!name) return;
@@ -11487,11 +11493,14 @@ const app = createApp({
           + '请只基于快照数据和你的市场知识做推理，不要编造快照里没有的具体数字。'
           + '输出必须是严格的 JSON 对象（不要 markdown 代码块、不要多余文字），格式：'
           + '{"summary":"200字以内的综合研判","checks":[{"item":"跟踪项","advice":"该跟踪项怎么判断/去哪查"}],"suggestions":{"s1":0-2或null,"s2":0-2或null,"s3":0-2或null,"s4":0-2或null},'
-          + '"predictedConcepts":["概念板块名1","概念板块名2"...],"predictedIndustries":["行业板块名1"...],"predictedStocks":[{"code":"600xxx","name":"股票名"}...]}。'
+          + '"predictedConcepts":["概念板块名1","概念板块名2"...],"predictedIndustries":["行业板块名1"...],"predictedStocks":[{"code":"600xxx","name":"股票名"}...],'
+          + '"predictionTable":{"industries":["行业1","行业2"],"concept1":{"name":"概念1","stocks":["股1","股2","股3"]},"concept2":{"name":"概念2","stocks":["股1","股2","股3"]},"topStocks":["股1","股2","股3"]}}。'
           + 'suggestions 只对「无数据信号」给分（0=警惕,1=中性,2=向好），有数据的信号给 null。'
           + 'predictedConcepts：2-8 个，用 A 股常见的新浪概念板块名（如"新能源车""半导体""人工智能""白酒""创新药"）；'
           + 'predictedIndustries：1-5 个，用新浪行业板块名（如"银行""电力""军工"）；'
           + 'predictedStocks：0-10 只，只输出你非常确定代码正确的个股（code 为 6 位 A 股代码）。'
+          + 'predictionTable 为「量化预测明细表」固定结构：industries 最多2个（行业板块名）；concept1/concept2 各1个概念板块名+最多3只个股；'
+          + 'topStocks 为不归属于上述概念、但整体最看好的3只个股。所有板块/个股名尽量贴近新浪实际命名，便于点击后在「板块成分股」直接加载。'
           + '板块名尽量贴近新浪概念/行业板块的实际命名，便于点击后在「板块成分股」直接加载。';
         const user = '【行情快照 ' + (qd ? qd.updatedAt : '无') + '】\n'
           + '市场宽度：上涨 ' + V('upCount') + ' / 下跌 ' + V('downCount') + '，涨停 ' + V('limitUpCount') + '，跌停 ' + V('limitDownCount')
@@ -11541,6 +11550,19 @@ const app = createApp({
           stocks: predicted.stocks,
           summary: String(j.summary)
         });
+        // 写入量化预测明细表（DeepSeek 按跟踪项量化计算的固定结构，自动保存为记录）
+        if (j.predictionTable) {
+          const arr = (a, n) => (Array.isArray(a) ? a.map(String).filter(Boolean) : []).slice(0, n);
+          const concept = (c) => (c && c.name != null ? { name: String(c.name), stocks: arr(c.stocks, 3) } : { name: '', stocks: [] });
+          Store.addQuantAiTableRecord({
+            at: Date.now(),
+            board: board,
+            industries: arr(j.predictionTable.industries, 2),
+            concept1: concept(j.predictionTable.concept1),
+            concept2: concept(j.predictionTable.concept2),
+            topStocks: arr(j.predictionTable.topStocks, 3)
+          });
+        }
         // 自动填分：仅当该信号所有跟踪项都无实时数据时才采纳 AI 建议
         let applied = 0;
         const sug = j.suggestions || {};
@@ -11800,6 +11822,7 @@ const app = createApp({
       // 量化板块：数据端口 / 自动打分 / 共振选股
       quantData, quantFetchedAt, quantFetching, quantSearching, quantMsg, quantAiReport, quantAiBusy, quantAiDrafts,
       quantAiPredictionsView, saveAiPrediction, deleteAiPrediction, openAiConceptInSector, fmtTime,
+      quantAiTableView, deleteAiTableRecord,
       isVacuumMonth, quantMetricSpec, quantMetricVal, quantMetricScore, quantRowInfo, quantOrderHint,
       fetchQuantData, decideQuant, callQuantAI, quantResonanceBoards, quantSearchResonance,
       quantPredict, quantPredResult, quantPredicting, quantPredHistory, deleteQuantPrediction,

@@ -4,12 +4,12 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>股市信息分析系统</title>
-  <link rel="stylesheet" href="css/style.css?v=20261027e">
+  <link rel="stylesheet" href="css/style.css?v=20261027f">
   <!-- Vue 3 全局构建版（v3.4.21 · 自托管）
        原先走 unpkg.com CDN：国内网络对 unpkg 的连通性不稳定，一旦该请求长时间挂起，
        <head> 里的阻塞脚本会让整页停在白屏、后续 auth-boot.js 根本不会执行。
        改为同源托管后，启动链路不再依赖任何第三方 CDN。 -->
-  <script src="js/vue.global.prod.js?v=20261027e"></script>
+  <script src="js/vue.global.prod.js?v=20261027f"></script>
 </head>
 <body class="auth-locked">
   <!-- ===== 登录关卡：登录通过前业务脚本不会被加载 ===== -->
@@ -2988,6 +2988,46 @@
                   <li v-for="(c, i) in quantAiReport.checks" :key="i"><b>{{ c.item }}</b>：{{ c.advice }}</li>
                 </ul>
               </div>
+              <div class="q-ai-table" v-if="quantAiTableView.length">
+                <div class="q-ai-table-title">📊 量化预测明细表（DeepSeek 按跟踪项量化计算 · 点击概念名可在「板块成分股」查看成分股 · 上限 50 条）</div>
+                <div class="q-table-wrap">
+                  <table class="q-table q-ai-table-tbl">
+                    <thead>
+                      <tr>
+                        <th rowspan="2">时间</th>
+                        <th colspan="2">预测行业</th>
+                        <th colspan="4">预测概念1</th>
+                        <th colspan="4">预测概念2</th>
+                        <th colspan="3">预测股票（综合）</th>
+                      </tr>
+                      <tr>
+                        <th>行业1</th><th>行业2</th>
+                        <th>概念名</th><th>股1</th><th>股2</th><th>股3</th>
+                        <th>概念名</th><th>股1</th><th>股2</th><th>股3</th>
+                        <th>股1</th><th>股2</th><th>股3</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr v-for="p in quantAiTableView" :key="p.id">
+                        <td data-label="时间">{{ fmtTime(p.at) }}<span class="q-board-tag" v-if="p.board">{{ p.board === 'post' ? '盘后' : '盘中' }}</span><button class="q-del" type="button" @click="deleteAiTableRecord(p)" title="删除该条明细">✕</button></td>
+                        <td data-label="行业1">{{ (p.industries && p.industries[0]) || '—' }}</td>
+                        <td data-label="行业2">{{ (p.industries && p.industries[1]) || '—' }}</td>
+                        <td data-label="概念1" class="q-chip-cell"><span v-if="p.concept1 && p.concept1.name" class="q-chip" :title="'在「板块成分股」查看「'+p.concept1.name+'」成分股'" @click="openAiConceptInSector(p.concept1.name)">{{ p.concept1.name }}</span><span v-else class="muted">—</span></td>
+                        <td data-label="概念1股1">{{ (p.concept1 && p.concept1.stocks[0]) || '—' }}</td>
+                        <td data-label="概念1股2">{{ (p.concept1 && p.concept1.stocks[1]) || '—' }}</td>
+                        <td data-label="概念1股3">{{ (p.concept1 && p.concept1.stocks[2]) || '—' }}</td>
+                        <td data-label="概念2" class="q-chip-cell"><span v-if="p.concept2 && p.concept2.name" class="q-chip" :title="'在「板块成分股」查看「'+p.concept2.name+'」成分股'" @click="openAiConceptInSector(p.concept2.name)">{{ p.concept2.name }}</span><span v-else class="muted">—</span></td>
+                        <td data-label="概念2股1">{{ (p.concept2 && p.concept2.stocks[0]) || '—' }}</td>
+                        <td data-label="概念2股2">{{ (p.concept2 && p.concept2.stocks[1]) || '—' }}</td>
+                        <td data-label="概念2股3">{{ (p.concept2 && p.concept2.stocks[2]) || '—' }}</td>
+                        <td data-label="综合股1">{{ (p.topStocks && p.topStocks[0]) || '—' }}</td>
+                        <td data-label="综合股2">{{ (p.topStocks && p.topStocks[1]) || '—' }}</td>
+                        <td data-label="综合股3">{{ (p.topStocks && p.topStocks[2]) || '—' }}</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
               <div class="q-ai-pred" v-if="quantAiPredictionsView.length">
                 <div class="q-ai-pred-title">📋 AI 预测记录（点「概念 / 行业」名可在「板块成分股」查看其成分股）</div>
                 <div class="q-table-wrap">
@@ -5306,14 +5346,14 @@
     </transition>
   </div>
 
-  <script src="js/auth.js?v=20261027e"></script>
-  <script src="js/auth-sync.js?v=20261027e"></script>
+  <script src="js/auth.js?v=20261027f"></script>
+  <script src="js/auth-sync.js?v=20261027f"></script>
   <!-- 边缘加速默认站点（batch37 治本：Cloudflare Worker 代理东财/腾讯，缓解 JSONP 限流误报）。
        若你所在地区 workers.dev 访问慢，可在「设置 → 行情加速地址」清空即恢复纯直连。 -->
   <script>window.__SNT_ACCEL__ = 'https://sichina.dpdns.org';</script>
   <!-- 扫码支付二维码渲染库（第三方 qrcodejs，本地托管避免外链失效）。renderQr 会先检测全局 QRCode 是否存在。 -->
-  <script src="assets/qrcode.min.js?v=20261027e"></script>
-  <script src="js/auth-boot.js?v=20261027e"></script>
+  <script src="assets/qrcode.min.js?v=20261027f"></script>
+  <script src="js/auth-boot.js?v=20261027f"></script>
   <!-- store / stock-api / hot-topics / app 由 auth-boot.js 在登录通过后动态装载，
        未登录时它们不会被下载，业务数据也不会进入内存 -->
 </body>

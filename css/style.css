@@ -3903,6 +3903,17 @@ body.guest-mode #app { display: none; }
 .q-chip:hover { background: #c7d2fe; }
 .q-chip-ind { background: #dcfce7; color: #166534; border-color: #bbf7d0; }
 .q-chip-ind:hover { background: #bbf7d0; }
+/* 量化预测明细表（DeepSeek 按跟踪项量化计算的固定 14 字段表） */
+.q-ai-table { border: 1px solid #bfdbfe; border-radius: 8px; padding: 10px 12px; margin: 8px 0; background: #eff6ff; }
+.q-ai-table-title { font-size: 12.5px; font-weight: 600; color: #1e40af; margin-bottom: 8px; }
+.q-ai-table-tbl { width: 100%; border-collapse: collapse; font-size: 11.5px; }
+.q-ai-table-tbl th, .q-ai-table-tbl td { border: 1px solid #e5e7eb; padding: 4px 6px; text-align: left; vertical-align: top; line-height: 1.5; }
+.q-ai-table-tbl thead th { background: #dbeafe; color: #1e3a8a; font-weight: 600; white-space: nowrap; }
+.q-ai-table-tbl thead tr:first-child th { text-align: center; }
+.q-ai-table-tbl .q-chip-cell .q-chip { font-size: 11px; }
+.q-del { margin-left: 6px; color: #dc2626; cursor: pointer; font-size: 11px; border: none; background: none; padding: 0 2px; vertical-align: middle; }
+.q-del:hover { text-decoration: underline; }
+.q-board-tag { margin-left: 4px; font-size: 10px; color: #64748b; }
 .q-stocks { color: #0f172a; line-height: 1.6; }
 .q-ops { white-space: nowrap; }
 .muted { color: #94a3b8; }
