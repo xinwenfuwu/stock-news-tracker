@@ -10570,11 +10570,15 @@ const app = createApp({
     const remotePendingLoading = ref(false);
 
     /* ---------- AI 解读：常见厂商一键预设 + 连接测试 ----------
-     * 下列五家国内厂商的接口**允许浏览器直连**（经真实浏览器实测：CORS 预检通过、
+     * 下列国内厂商的接口**允许浏览器直连**（经真实浏览器实测：CORS 预检通过、
      * 带 Authorization 的 POST 能拿到可读响应体），所以在国内无需任何代理即可用。
+     * Google Gemini 的 OpenAI 兼容接口也支持浏览器直连（CORS 通过），但其域名
+     * googleapis.com 在中国大陆通常被墙——需自备 VPN/代理才能访问；免费档额度有限
+     * （Gemini 2.5 Flash 约 15 RPM / 1500 RPD），多用户/高频场景易触发 429。
      * OpenAI 则被拦截（8s 无响应），列出来只为提示风险，模型名用户可以自己改。 */
     const AI_PRESETS = [
-      { name: 'DeepSeek', endpoint: 'https://api.deepseek.com/v1/chat/completions', model: 'deepseek-chat', tip: '国内可直连 · 站长常用' },
+      { name: 'Google Gemini', endpoint: 'https://generativelanguage.googleapis.com/v1beta/openai/chat/completions', model: 'gemini-2.5-flash', tip: '免费档 · 需能访问 Google 网络(VPN)' },
+      { name: 'DeepSeek', endpoint: 'https://api.deepseek.com/v1/chat/completions', model: 'deepseek-flash', tip: '国内可直连 · 新户送 500 万免费 tokens' },
       { name: '硅基流动', endpoint: 'https://api.siliconflow.cn/v1/chat/completions', model: 'Qwen/Qwen2.5-7B-Instruct', tip: '国内可直连 · 注册有免费额度' },
       { name: '智谱 GLM', endpoint: 'https://open.bigmodel.cn/api/paas/v4/chat/completions', model: 'glm-4-flash', tip: '国内可直连 · glm-4-flash 免费' },
       { name: '阿里百炼', endpoint: 'https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions', model: 'qwen-plus', tip: '国内可直连' },
@@ -11467,7 +11471,7 @@ const app = createApp({
     async function callQuantAI(board) {
       if (quantAiBusy.value) return;
       if (!aiConfigured.value) {
-        showToast('请先在「设置 → AI 解读」配置 AI 接口（点 DeepSeek 一键预设，填入你的 API Key）', 'info');
+        showToast('请先在「设置 → AI 解读」配置 AI 接口（点 Gemini/DeepSeek 等一键预设，填入你的 API Key）', 'info');
         showSettings.value = true;
         return;
       }

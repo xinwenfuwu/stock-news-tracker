@@ -4,12 +4,12 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>股市信息分析系统</title>
-  <link rel="stylesheet" href="css/style.css?v=20261027f">
+  <link rel="stylesheet" href="css/style.css?v=20261027g">
   <!-- Vue 3 全局构建版（v3.4.21 · 自托管）
        原先走 unpkg.com CDN：国内网络对 unpkg 的连通性不稳定，一旦该请求长时间挂起，
        <head> 里的阻塞脚本会让整页停在白屏、后续 auth-boot.js 根本不会执行。
        改为同源托管后，启动链路不再依赖任何第三方 CDN。 -->
-  <script src="js/vue.global.prod.js?v=20261027f"></script>
+  <script src="js/vue.global.prod.js?v=20261027g"></script>
 </head>
 <body class="auth-locked">
   <!-- ===== 登录关卡：登录通过前业务脚本不会被加载 ===== -->
@@ -2972,14 +2972,14 @@
                 <button class="btn btn-ai btn-sm" type="button" :disabled="quantSearching" @click="quantSearchResonance()">
                   <span v-if="quantSearching">⏳ 选股中…</span><span v-else>🔍 一键搜索共振选股</span>
                 </button>
-                <button class="btn btn-ai btn-sm" type="button" :disabled="quantAiBusy" @click="callQuantAI(quantTab)" title="把行情快照交给 DeepSeek 分析（需在设置→AI 解读里配置 Key）">
+                <button class="btn btn-ai btn-sm" type="button" :disabled="quantAiBusy" @click="callQuantAI(quantTab)" title="把行情快照交给配置的大模型分析（设置→AI 解读，可点 Gemini/DeepSeek 等一键预设）">
                   <span v-if="quantAiBusy">⏳ AI 研判中…</span><span v-else>🤖 AI 研判（DeepSeek）</span>
                 </button>
                 <button class="btn btn-sm" type="button" :disabled="quantPredicting" @click="quantPredict(quantTab)" title="按「当日打分决策表」同一套逻辑自动打分定档位：14:50 前预测今天，14:50 后预测下一交易日">
                   <span v-if="quantPredicting">⏳ 预测中…</span><span v-else>🔮 盘前预测</span>
                 </button>
               </div>
-              <div class="q-src">数据来源 · 概念板块信息：新浪板块名单（经代理，取一次后本地缓存）+ 成分股换手（直连） · 个股信息：新浪全市场扫描 + 腾讯指数行情（均可直连） · AI 研判：DeepSeek（设置里点一键预设，填 Key 即用）</div>
+              <div class="q-src">数据来源 · 概念板块信息：新浪板块名单（经代理，取一次后本地缓存）+ 成分股换手（直连） · 个股信息：新浪全市场扫描 + 腾讯指数行情（均可直连） · AI 研判：可配 Gemini Flash（免费）/ DeepSeek 等（设置里点一键预设，填 Key 即用）</div>
               <div class="q-msg" v-if="quantMsg">{{ quantMsg }}</div>
               <div class="q-ai" v-if="quantAiReport">
                 <div class="q-ai-head">🤖 AI 研判报告（{{ quantAiReport.model }}）</div>
@@ -4645,7 +4645,7 @@
             </div>
           </div>
           <div class="form-row">
-            <label>API 地址（OpenAI 兼容）请填到 <code>/v1/chat/completions</code> 这一级，不要只填域名。国内推荐 <b>DeepSeek / 硅基流动 / 智谱 GLM / 阿里百炼 / Kimi</b>——这五家浏览器可以直连，无需任何代理。</label>
+            <label>API 地址（OpenAI 兼容）请填到 <code>/v1/chat/completions</code> 这一级，不要只填域名。国内推荐 <b>DeepSeek / 硅基流动 / 智谱 GLM / 阿里百炼 / Kimi</b>——这五家浏览器可以直连，无需任何代理。如需免费档也可选 <b>Google Gemini</b>（预设已填好地址，但 googleapis.com 在中国大陆通常需 VPN/代理才能访问）。</label>
             <input v-model="aiEndpoint" placeholder="https://api.deepseek.com/v1/chat/completions">
           </div>
           <div class="form-row-3">
@@ -4664,7 +4664,7 @@
           </div>
           <div class="info-box small">
             <p><b>密钥安全：</b>Key 仅保存在你本机浏览器的 localStorage，不会上传到本站服务器（本站是纯静态 GitHub Pages，无后端）。多设备需各自配置。</p>
-            <p><b>遇到「连不上 / Failed to fetch」怎么办：</b>先用上面的「🧪 测试连接」看清是哪一步不通。若是<b>境外地址</b>（如 <code>api.openai.com</code>）在国内被拦截，换国内厂商即可，<b>不必</b>部署代理；只有当「网络可达但仍被 CORS 拦截」、或你不想把 Key 放在浏览器里时，才需要 <code>worker/ai-proxy.js</code>（Cloudflare Worker，免费）。</p>
+            <p><b>遇到「连不上 / Failed to fetch」怎么办：</b>先用上面的「🧪 测试连接」看清是哪一步不通。若是<b>境外地址</b>（如 <code>api.openai.com</code>、Gemini 的 <code>googleapis.com</code> 在中国大陆需 VPN/代理）被拦截，换国内厂商（DeepSeek / 硅基流动 / 智谱 GLM / 阿里百炼 / Kimi）即可，<b>不必</b>部署代理；只有当「网络可达但仍被 CORS 拦截」、或你不想把 Key 放在浏览器里时，才需要 <code>worker/ai-proxy.js</code>（Cloudflare Worker，免费）。</p>
           </div>
         </div>
         <div class="modal-footer">
@@ -5346,14 +5346,14 @@
     </transition>
   </div>
 
-  <script src="js/auth.js?v=20261027f"></script>
-  <script src="js/auth-sync.js?v=20261027f"></script>
+  <script src="js/auth.js?v=20261027g"></script>
+  <script src="js/auth-sync.js?v=20261027g"></script>
   <!-- 边缘加速默认站点（batch37 治本：Cloudflare Worker 代理东财/腾讯，缓解 JSONP 限流误报）。
        若你所在地区 workers.dev 访问慢，可在「设置 → 行情加速地址」清空即恢复纯直连。 -->
   <script>window.__SNT_ACCEL__ = 'https://sichina.dpdns.org';</script>
   <!-- 扫码支付二维码渲染库（第三方 qrcodejs，本地托管避免外链失效）。renderQr 会先检测全局 QRCode 是否存在。 -->
-  <script src="assets/qrcode.min.js?v=20261027f"></script>
-  <script src="js/auth-boot.js?v=20261027f"></script>
+  <script src="assets/qrcode.min.js?v=20261027g"></script>
+  <script src="js/auth-boot.js?v=20261027g"></script>
   <!-- store / stock-api / hot-topics / app 由 auth-boot.js 在登录通过后动态装载，
        未登录时它们不会被下载，业务数据也不会进入内存 -->
 </body>
