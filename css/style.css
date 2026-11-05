@@ -2241,6 +2241,9 @@ body {
 .bc-fill { display: block; height: 100%; border-radius: 4px; }
 /* 计数 / 占比：定宽 + 右对齐，所有行的百分比右边缘落在同一条垂直线上 */
 .bc-count { text-align: right; font-weight: 400; font-variant-numeric: tabular-nums; overflow: hidden; }
+/* batch-sentiment：概念/行业归类新闻数着色——利好(bull)红、利空(bear)绿（A 股习惯） */
+.bc-count.sent-bull { color: #e0322f; font-weight: 700; }
+.bc-count.sent-bear { color: #15a05a; font-weight: 700; }
 .bc-pct { text-align: right; color: var(--text-placeholder); font-variant-numeric: tabular-nums; overflow: hidden; }
 /* batch55：序 / 增 / 数 一键排序按钮 + 📊成分股按钮 + 排序工具条 */
 .bc-sort { justify-self: center; min-width: 0; text-align: center; font-variant-numeric: tabular-nums;
