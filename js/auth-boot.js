@@ -27,7 +27,7 @@
   'use strict';
 
   // 与 index.html 中静态资源版本号保持一致，避免升级后命中旧缓存
-  var ASSET_V = '20261105a';
+  var ASSET_V = '20261105b';
 
   // 管理员点开「注册申请导入链接」后，申请码暂存在这里，等业务层（app.js）就绪后取走
   var IMPORT_KEY = 'snt-pending-import-v1';
@@ -309,7 +309,7 @@
     if (elLoading) {
       elLoading.hidden = !busy;
       if (elLoadingText) elLoadingText.textContent = text || '';
-    }    [elLoginForm, elRegisterForm, elCodePanel, elRenew].forEach(function (f) {
+    }    [elLoginForm, elRegisterForm, elCodePanel].forEach(function (f) {
       if (!f) return;
       Array.prototype.forEach.call(f.querySelectorAll('input, button'), function (el) { el.disabled = busy; });
     });
@@ -320,8 +320,7 @@
     login: '请登录后使用',
     register: '注册新账号 · 提交后需管理员审核',
     regdone: '注册申请已提交',
-    code: '粘贴管理员发来的准入码',
-    renew: '会员服务 · 开通 / 续费'
+    code: '粘贴管理员发来的准入码'
   };
 
   function showForm(which) {
@@ -329,7 +328,6 @@
     if (elRegisterForm) elRegisterForm.hidden = which !== 'register';
     if (elRegDone) elRegDone.hidden = which !== 'regdone';
     if (elCodePanel) elCodePanel.hidden = which !== 'code';
-    if (elRenew) elRenew.hidden = which !== 'renew';
     if (elSub) elSub.textContent = SUB_TEXT[which] || SUB_TEXT.login;
     // 隐私要求：账号信息只允许出现在登录框。打开注册面板时清空一次，
     // 防止个别浏览器无视 autocomplete="off" 把已保存账号自动填进注册表单。
@@ -355,8 +353,7 @@
       setup: '#setup-username',
       register: '#reg-username',
       code: '#auth-code-input',
-      login: '#login-username',
-      renew: '#auth-renew-user'
+      login: '#login-username'
     };
     var sel = focusMap[which];
     var first = sel ? $(sel) : null;
@@ -849,7 +846,6 @@
   /* ---------------- 事件绑定 ---------------- */
 
   function bind() {
-    bindRenewPanel();   // 20261016f：会员服务（开通/续费）面板
     if (elLoginForm) {
       elLoginForm.addEventListener('submit', function (e) {
         e.preventDefault();
@@ -864,24 +860,6 @@
             setBusy('');
             // 待审核：给出可操作的下一步（粘贴准入码 / 重新取申请码），而不是干等
             if (r.status === Auth.STATUS.PENDING) showPendingGuide(u);
-            // 20261016f：门禁类错误（试用结束 / 会员过期 / 被停用）——直接给「去会员服务续费」的出路，
-            // 落实用户规范「过期后重新支付 → 管理员审核开通后使用」
-            else if (/试用已结束|暂无有效|无法使用|已被停用/.test(String(r.error || ''))) {
-              showMsgHtml(
-                '<div class="auth-guide-title">🔒 ' + escHtml(r.error) + '</div>'
-                + '<div class="auth-guide-text">你可以在登录页「👑 会员服务（开通/续费）」重新扫码支付并提交申请，'
-                + '管理员核对账单后按你的支付时间开通；也可把用户名发给管理员，由他直接开通。</div>'
-                + '<div class="auth-msg-actions">'
-                + '<button type="button" class="auth-guide-btn" id="auth-guide-renew">👑 去会员服务（开通/续费）</button>'
-                + '</div>', 'error');
-              var rb = document.getElementById('auth-guide-renew');
-              if (rb) rb.addEventListener('click', function () {
-                showMsg('');
-                showForm('renew');
-                var lu = $('#login-username');
-                if (lu && lu.value && elRenewUser && !elRenewUser.value) elRenewUser.value = lu.value;
-              });
-            }
             else showMsg(r.error, 'error');
             return;
           }
@@ -1024,19 +1002,14 @@
     }
 
     /* ----- 视图切换 ----- */
-    [['#auth-to-register', 'register'], ['#auth-to-code', 'code'], ['#auth-to-renew', 'renew']].forEach(function (pair) {
+    [['#auth-to-register', 'register'], ['#auth-to-code', 'code']].forEach(function (pair) {
       var btn = $(pair[0]);
       if (btn) btn.addEventListener('click', function () {
         showMsg('');
         showForm(pair[1]);
-        // 打开会员面板时预填登录框里的用户名（被门禁拦下的用户刚输入过）
-        if (pair[1] === 'renew' && elRenewUser) {
-          var lu = $('#login-username');
-          if (lu && lu.value && !elRenewUser.value) elRenewUser.value = lu.value;
-        }
       });
     });
-    ['#auth-reg-back', '#auth-reg-done-back', '#auth-code-back', '#auth-renew-back'].forEach(function (sel) {
+    ['#auth-reg-back', '#auth-reg-done-back', '#auth-code-back'].forEach(function (sel) {
       var btn = $(sel);
       if (btn) btn.addEventListener('click', function () {
         showMsg('');
