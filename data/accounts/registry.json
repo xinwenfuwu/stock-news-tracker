@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": 1793864857986,
+  "updatedAt": 1793957485531,
   "accounts": {
     "181": {
       "hash": "pbkdf2$150000$KjYyYMWup5jVGwvFBcCcOQ==$3U/UO6mfq2XHtEoimjRCc/0rz4seqfPAhnrte+JrXlw=",
@@ -255,17 +255,17 @@
       "disabled": false,
       "trialUntil": 1793951230477,
       "trialDays": 1,
-      "quotaMonths": 0,
+      "quotaMonths": 1,
       "disableDate": "",
       "registerDate": "",
-      "payMembershipUntil": 0,
-      "paidAt": 0,
-      "paidPlan": "",
-      "paidAmount": 0,
+      "payMembershipUntil": 1796549470055,
+      "paidAt": 1793957470055,
+      "paidPlan": "6m",
+      "paidAmount": 1000,
       "paidClaimIds": [],
       "placeholder": false,
       "createdAt": 1793864830477,
-      "updatedAt": 1793864857986
+      "updatedAt": 1793957485531
     }
   }
 }
