@@ -3406,8 +3406,11 @@ const app = createApp({
       const d = memberDaysLeft(u);
       return d >= 0 && d <= 7;
     }
-    /** 试用临近到期/已到期：已开通试用，且（进行中剩 <=7 天 或 已结束） */
+    /** 试用临近到期/已到期：已开通试用，且（进行中剩 <=7 天 或 已结束）
+     *  ⚠️ 关键：已购买会员（属于 6月期/12月期/24月期等付费类）的用户不计此处，
+     *  避免重复归类——付费会员归入对应付费类，仅未付费、仍处试用状态的用户才进「试用到期」。 */
     function isTrialExpiring(u) {
+      if (planOfUser(u)) return false;              // 已付费会员 → 不计入试用到期
       const tu = Number(u && u.trialUntil) || 0;
       if (tu <= 0) return false;
       if (tu < Date.now()) return true;             // 已到期
