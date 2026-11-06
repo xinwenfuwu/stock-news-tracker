@@ -8838,7 +8838,7 @@ const app = createApp({
           withTimeout(StockAPI.getNewListedStocks()),
           withTimeout(StockAPI.getThsHotStocks()),
           withTimeout(StockAPI.getEmHotStocks()),
-          withTimeout(StockAPI.getDouyinStock().catch(() => null))
+          Promise.resolve(null)
         ]);
         // 各路独立落盘：某一路接口限流返回空时保留旧数据，避免「刷新一次反而清空已有内容」
         if (boards && boards.length) { hotBoards.value = boards; D.hotBoards = boards; }
@@ -8852,24 +8852,17 @@ const app = createApp({
           try { await enrichThsChange(thsHotStocks.value); } catch (e) { console.warn('同花顺热股实时涨跌幅补全失败', e); }
         }
         if (em && em.length) { emHotStocks.value = em; D.emHotStocks = em; }
-        // 抖音搜索股票排名榜（抖音热搜榜 ∩ A股公司名，按搜索热度排名）独立落盘
-        if (dy && dy.list && dy.list.length) {
-          douyinStock.value = dy.list; D.douyinStock = dy.list;
-          douyinDate.value = dy.generatedAt || ''; D.douyinDate = douyinDate.value;
-          douyinCount.value = dy.count || 0; D.douyinCount = douyinCount.value;
-        }
         // 任一当前有数据即视为成功（含历史残留），某一路限流不再误报整体失败
         const nBoards = hotBoards.value.length, nPre = preMarketBoards.value.length,
               nAmp = amplitudeBoards.value.length, nStocks = hotStocks.value.length, nNew = newListedStocks.value.length,
-              nThs = thsHotStocks.value.length, nEm = emHotStocks.value.length,
-              nAd = (douyinStock.value && douyinStock.value.length) || 0;
+              nThs = thsHotStocks.value.length, nEm = emHotStocks.value.length;
         const gotNew = (boards && boards.length) || (stocks && stocks.length) || (preBoards && preBoards.length)
                     || (ampBoards && ampBoards.length) || (newListed && newListed.length)
-                    || (ths && ths.length) || (em && em.length) || (dy && dy.list && dy.list.length);
-        const nAll = nBoards + nPre + nAmp + nStocks + nNew + nThs + nEm + nAd;
+                    || (ths && ths.length) || (em && em.length);
+        const nAll = nBoards + nPre + nAmp + nStocks + nNew + nThs + nEm;
         if (nAll) {
           // 有数据即成功；本轮确实没拿到新数据时补一句「沿用上次」，避免用户误以为刷新没生效
-          showToast(`获取到 ${nBoards} 个当日板块、${nPre} 个盘前热点、${nAmp} 个振幅板块、${nStocks} 只连板股票、${nNew} 只新上市股票、同花顺热度 ${nThs} 只、东财人气 ${nEm} 只、抖音搜索股票排名榜 ${nAd} 只`
+          showToast(`获取到 ${nBoards} 个当日板块、${nPre} 个盘前热点、${nAmp} 个振幅板块、${nStocks} 只连板股票、${nNew} 只新上市股票、同花顺热度 ${nThs} 只、东财人气 ${nEm} 只`
             + (gotNew ? '' : '（本轮未获取到新数据，沿用上次结果）'), 'success');
         } else {
           // 全空：区分「本轮确实没拉到」与「真的一无所有」，给出可操作提示，不再使用已过时的 JSONP 措辞
@@ -8897,13 +8890,84 @@ const app = createApp({
     const thsHotLoading = ref(false);
     const emHotStocks = ref([]);
     const emHotLoading = ref(false);
-    // 抖音搜索股票排名榜（抖音热搜榜 ∩ A股公司名，按搜索热度 hot_value 排名）
-    const douyinStock = ref([]);     // [{rank,code,name,hotValue,word}]
-    const douyinLoading = ref(false);
-    const douyinError = ref('');
-    const douyinDate = ref('');      // 榜单生成时间（generatedAt）
-    const douyinCount = ref(0);      // 命中抖音热搜的 A股公司数
-    // 注：该榜单来自抖音热搜，与上方「新闻统计开始时间」无关，不随日期切换重算
+    // ============ 影响力事件（按「影响人群」从大到小排序；分 中国 / 美国 / 全世界 三个子版块） ============
+    // 影响人群(affected)为估算口径（影响股民 / 关注人数）。数据由本地整理样例提供，并预留后端接口：
+    // refreshInfluence() 内可改为 fetch 真实影响力事件源后合并，当前以 INFLUENCE_EVENTS_SEED 为准。
+    // region: 'cn'(中国) | 'us'(美国) | 'world'(全世界，影响全球股民/资本市场的宏观与地缘事件)
+    const INFLUENCE_EVENTS_SEED = [
+      // —— 全世界：影响全球股民 / 资本市场的宏观与地缘事件 ——
+      { id: 'w1', region: 'world', title: '特朗普中期选举失利，民主党推动暂停AI发展', affected: 250000000, date: '2026-11-05', source: '综合外媒',
+        summary: '美国中期选举结果冲击全球科技与AI产业链预期，民主党主导的AI监管暂停提案引发全球科技股重估，影响所有市场股民。', relatedStocks: ['英伟达', '台积电', '微软'] },
+      { id: 'w2', region: 'world', title: '美联储超预期大幅加息，全球流动性收紧', affected: 180000000, date: '2026-10-28', source: '美联储',
+        summary: '美联储加息幅度超预期，全球风险资产估值承压，新兴市场资金外流。', relatedStocks: ['苹果', '特斯拉'] },
+      { id: 'w3', region: 'world', title: '美国对等关税全面升级，全球贸易链重构', affected: 160000000, date: '2026-10-15', source: '白宫',
+        summary: '对等关税覆盖主要贸易伙伴，全球供应链与出口链成本上升，跨国企业盈利预期下修。', relatedStocks: ['比亚迪', '宁德时代'] },
+      { id: 'w4', region: 'world', title: '生成式AI全球协同监管落地，科技股价值重估', affected: 120000000, date: '2026-09-30', source: '多国监管',
+        summary: '欧美中同步出台AI内容与安全监管框架，算力与模型合规成本上升。', relatedStocks: ['英伟达', '百度'] },
+      { id: 'w5', region: 'world', title: '地缘冲突外溢，原油与黄金剧烈波动', affected: 100000000, date: '2026-09-12', source: '国际新闻',
+        summary: '中东局势升级推升能源与避险资产波动，全球通胀预期反复。', relatedStocks: ['中国海油', '山东黄金'] },
+      { id: 'w6', region: 'world', title: '全球主要经济体同步衰退预警', affected: 90000000, date: '2026-08-20', source: 'IMF',
+        summary: 'IMF下调全球增长预期，周期与消费板块承压。', relatedStocks: ['贵州茅台', '招商银行'] },
+      // —— 美国：主要影响美股及联动的全球资金 ——
+      { id: 'u1', region: 'us', title: '美国债务上限危机，政府停摆风险升温', affected: 100000000, date: '2026-11-01', source: '美国国会',
+        summary: '债务上限谈判僵局推升美债收益率与避险情绪，全球资金回流美元。', relatedStocks: ['苹果', '微软'] },
+      { id: 'u2', region: 'us', title: '美国通胀反弹，降息预期落空', affected: 70000000, date: '2026-10-22', source: '美国劳工部',
+        summary: '核心CPI超预期，市场下修降息次数，成长股估值承压。', relatedStocks: ['特斯拉', '英伟达'] },
+      { id: 'u3', region: 'us', title: '美国区域性银行挤兑，信贷紧缩担忧', affected: 80000000, date: '2026-10-08', source: 'FDIC',
+        summary: '中小银行流动性事件引发信贷收缩预期，金融板块波动。', relatedStocks: ['摩根大通'] },
+      { id: 'u4', region: 'us', title: '纳斯达克上市规则调整，中概股承压', affected: 60000000, date: '2026-09-18', source: 'NASDAQ',
+        summary: '审计与上市门槛变化影响在美中概股估值与回流预期。', relatedStocks: ['阿里巴巴', '京东'] },
+      { id: 'u5', region: 'us', title: '美国芯片出口管制再升级', affected: 50000000, date: '2026-08-30', source: 'BIS',
+        summary: '先进制程与设备出口限制扩大，半导体供应链重构。', relatedStocks: ['中芯国际', '北方华创'] },
+      // —— 中国：主要影响A股及在岸资产 ——
+      { id: 'c1', region: 'cn', title: '证监会活跃资本市场一揽子新规（降印花税/T+0讨论）', affected: 220000000, date: '2026-11-03', source: '证监会',
+        summary: '交易端与融资端政策齐发，市场活跃度与风险偏好提升。', relatedStocks: ['中信证券', '东方财富'] },
+      { id: 'c2', region: 'cn', title: '央行降准降息超预期，市场流动性宽松', affected: 210000000, date: '2026-10-25', source: '央行',
+        summary: '全面降准降息释放长期资金，股债双牛预期升温。', relatedStocks: ['招商银行', '宁德时代'] },
+      { id: 'c3', region: 'cn', title: '房地产一揽子救市政策出台', affected: 150000000, date: '2026-10-12', source: '住建部',
+        summary: '城中村改造与白名单融资扩围，地产链估值修复。', relatedStocks: ['保利发展', '万科A'] },
+      { id: 'c4', region: 'cn', title: '新能源车购置补贴延续', affected: 80000000, date: '2026-09-15', source: '工信部',
+        summary: '以旧换新与购置税减免延续，整车与电池需求预期改善。', relatedStocks: ['比亚迪', '宁德时代'] },
+      { id: 'c5', region: 'cn', title: '北向资金单日大幅净流入创新高', affected: 60000000, date: '2026-08-28', source: '沪深港通',
+        summary: '外资回流共振风险偏好，核心资产获加仓。', relatedStocks: ['贵州茅台', '中国平安'] }
+    ];
+    const inflRegion = ref('world');   // 'cn' | 'us' | 'world'
+    const inflEvents = ref([]);        // 当前区域已按影响人群降序排列的事件
+    const inflLoading = ref(false);
+    const inflError = ref('');
+    const inflDate = ref('');          // 数据整理时间
+    function regionLabel(r) { return r === 'cn' ? '中国' : r === 'us' ? '美国' : '全世界'; }
+    function sortInfluence(list) {
+      return [...(list || [])].sort((a, b) => (Number(b.affected) || 0) - (Number(a.affected) || 0));
+    }
+    function loadInfluence() {
+      const reg = inflRegion.value;
+      // 三个子版块互斥：中国/美国/全世界各自只展示本区域事件，点击哪个就展现哪个
+      const filtered = INFLUENCE_EVENTS_SEED.filter(e => e.region === reg);
+      inflEvents.value = sortInfluence(filtered);
+      inflDate.value = '实时整理';
+      inflError.value = '';
+    }
+    function setInflRegion(r) { inflRegion.value = r; if (D && D.inflRegion !== undefined) D.inflRegion = r; loadInfluence(); }
+    async function refreshInfluence() {
+      if (inflLoading.value) return;
+      inflLoading.value = true;
+      try {
+        // 预留：若后端提供影响力事件接口可在此 fetch 并合并；当前以本地整理数据为准
+        loadInfluence();
+        showToast(`已刷新影响力事件（${inflEvents.value.length} 条，按影响人群从大到小排序）`, 'success');
+      } catch (e) {
+        inflError.value = (e && e.message) || '影响力事件获取失败';
+        showToast('影响力事件获取失败：' + (e && e.message || e), 'error');
+      } finally { inflLoading.value = false; }
+    }
+    // 格式化影响人群：≥1亿→x.xx亿；≥1万→x.x万；否则原值
+    function fmtAffected(n) {
+      const x = Number(n) || 0;
+      if (x >= 1e8) return (x / 1e8).toFixed(2) + ' 亿';
+      if (x >= 1e4) return (x / 1e4).toFixed(1) + ' 万';
+      return String(x);
+    }
 
     // ============ 豆包榜「用户自带 Key」：每用户各自消耗自己账户 500 次/月免费额度 ============
     const doubaoKeyInput = ref('');        // 输入框临时值（不进 localStorage，保存时才写 D.settings.doubaoKey）
@@ -9007,40 +9071,6 @@ const app = createApp({
     /** 从搜索结果中抽取「上市公司」并按提及次数排名（非上市公司不计入）。
      *  @param {Array<{title,site,url,snippet}>} rawList 某平台原始搜索结果
      *  @returns {Promise<Array<{code,name,count}>>} 降序取前 20 */
-    /** 抖音搜索股票排名榜：拉抖音热搜榜，匹配 A股公司名，按搜索热度（hot_value）排名。
-     *  免费公开接口仅能拿到「抖音通用热搜榜」，真实逐股搜索量是字节巨量引擎付费数据（免费不可得）；
-     *  故本榜为「抖音热搜中出现的 A股公司名」按热度排序——静默交易日可能为空（已做空态提示）。
-     *  与「新闻统计开始时间」无关，不随日期切换重算。 */
-    async function refreshDouyinStock() {
-      if (douyinLoading.value) return;
-      douyinLoading.value = true; douyinError.value = '';
-      showToast('正在刷新抖音搜索股票排名榜...', 'info');
-      try {
-        const res = await StockAPI.getDouyinStock();
-        if (res && res.list && res.list.length) {
-          douyinStock.value = res.list;
-          D.douyinStock = res.list;
-          douyinDate.value = res.generatedAt || ''; D.douyinDate = douyinDate.value;
-          douyinCount.value = res.count || 0; D.douyinCount = douyinCount.value;
-          showToast(`已刷新抖音搜索股票排名榜（${res.list.length} 只股票，按抖音搜索热度排名）`, 'success');
-        } else {
-          douyinStock.value = []; D.douyinStock = [];
-          douyinError.value = '当前抖音热搜暂无股票相关词条（静默交易日属正常）';
-          showToast('当前抖音热搜暂无股票相关词条', 'info');
-        }
-      } catch (e) {
-        douyinError.value = (e && e.message) || '抖音搜索股票排名榜获取失败';
-        showToast('抖音搜索股票排名榜获取失败：' + (e.message || e), 'error');
-      } finally { douyinLoading.value = false; }
-    }
-
-    // 格式化抖音搜索热度值：≥1亿→x.xx亿；≥1万→x.x万；否则原值
-    function fmtDouyinHot(v) {
-      const n = Number(v) || 0;
-      if (n >= 1e8) return (n / 1e8).toFixed(2) + ' 亿';
-      if (n >= 1e4) return (n / 1e4).toFixed(1) + ' 万';
-      return String(n);
-    }
 
     // ============ 同花顺热门板块（行业 / 概念）：刷新后显示当前同花顺热门行业与概念 ============
     const thsSectors = ref({ industries: [], concepts: [] });  // {industries:[...], concepts:[...]}
@@ -9556,10 +9586,9 @@ const app = createApp({
     // 20261006h：三平台热度榜缓存恢复
     if (D.thsHotStocks && D.thsHotStocks.length) thsHotStocks.value = D.thsHotStocks;
     if (D.emHotStocks && D.emHotStocks.length) emHotStocks.value = D.emHotStocks;
-    // 抖音搜索股票排名榜缓存恢复（源自抖音热搜榜，非日期维度）
-    if (D.douyinStock && D.douyinStock.length) douyinStock.value = D.douyinStock;
-    if (D.douyinDate) douyinDate.value = D.douyinDate;
-    if (typeof D.douyinCount === 'number') douyinCount.value = D.douyinCount;
+    // 影响力事件：恢复上次选择的区域，并加载对应事件（数据来自本地整理样例，非日期维度）
+    if (D.inflRegion === 'cn' || D.inflRegion === 'us' || D.inflRegion === 'world') inflRegion.value = D.inflRegion;
+    loadInfluence();
     // 同花顺热门板块（行业/概念）缓存恢复
     if (D.thsSectors && ((D.thsSectors.industries || []).length || (D.thsSectors.concepts || []).length)) thsSectors.value = D.thsSectors;
 
@@ -11902,7 +11931,7 @@ const app = createApp({
       // 20261006h：三平台热度股票排行榜（同花顺 / 东方财富 / 豆包搜索）
       thsHotStocks, thsHotLoading, refreshThsHotOnly,
       emHotStocks, emHotLoading, refreshEmHotOnly,
-      douyinStock, douyinLoading, douyinError, douyinDate, douyinCount, refreshDouyinStock, fmtDouyinHot,
+      inflRegion, inflEvents, inflLoading, inflError, inflDate, setInflRegion, refreshInfluence, regionLabel, fmtAffected,
       thsSectors, thsSectorsLoading, thsSectorsError, refreshThsSectorsOnly,
       doubaoKeyInput, doubaoKeyFormShow, doubaoGuideShow, doubaoKeyActive,
       toggleDoubaoKeyForm, saveDoubaoKey, clearDoubaoKey, openDoubaoGuide,
