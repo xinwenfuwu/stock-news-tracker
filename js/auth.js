@@ -1166,6 +1166,9 @@
         if (!(Number(u.trialDays) > 0)) u.trialDays = 1;
         u.createdAt = Number(u.createdAt) || now;
         u.updatedAt = now;
+        // 20261106b：所有用户注册时即记录注册时间（'YYYY-MM-DD'），供管理员「用户管理」统一展示注册时间信息；
+        // 缺失时才补（复用已有值，避免覆盖管理员手填的注册日期）。
+        if (!u.registerDate) u.registerDate = localDateStr(now);
         if (!Array.isArray(u.logins)) u.logins = [];
         var idx = exist ? self.users.indexOf(exist) : -1;
         if (idx >= 0) self.users[idx] = u; else self.users.push(u);

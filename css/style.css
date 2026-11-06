@@ -3738,6 +3738,26 @@ body.guest-mode #app { display: none; }
 .um-stat-num { display: block; font-size: 22px; font-weight: 700; color: var(--text); line-height: 1.2; }
 .um-stat-lbl { display: block; font-size: 12px; color: var(--text-placeholder); margin-top: 4px; }
 .um-stat-rev .um-stat-num { color: #b45309; }
+/* 20261106b：统计卡可点击 + 临近到期高亮 */
+.um-stat-click { cursor: pointer; transition: border-color .15s, box-shadow .15s, transform .1s; }
+.um-stat-click:hover { border-color: var(--accent, #2b6cb0); box-shadow: 0 1px 6px rgba(43,108,176,.18); }
+.um-stat-click.active { border-color: var(--accent, #2b6cb0); box-shadow: 0 0 0 2px rgba(43,108,176,.22) inset; background: var(--surface); }
+.um-stat-warn .um-stat-num { color: #c2410c; }
+.um-stat-warn.active .um-stat-num { color: #c2410c; }
+/* 临近到期提醒横幅 */
+.um-expiry-banner { border: 1px solid #f0b27a; background: #fff7ed; border-radius: var(--radius); padding: 10px 14px; margin-bottom: 14px; }
+.um-expiry-banner-head { font-weight: 700; color: #c2410c; margin-bottom: 8px; font-size: 13px; }
+.um-expiry-chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.um-expiry-chip { border: 1px solid #f0b27a; background: #fff; color: #c2410c; border-radius: 999px; padding: 3px 10px; font-size: 12px; cursor: pointer; transition: background .15s; }
+.um-expiry-chip:hover { background: #ffedd5; }
+.um-expiry-chip.is-member { border-color: #f59e0b; color: #b45309; }
+.um-expiry-chip.is-trial { border-color: #fb7185; color: #be123c; }
+/* 统计明细表 */
+.um-stat-detail { border: 1px solid var(--border); border-radius: var(--radius); margin-bottom: 14px; overflow: hidden; background: var(--surface); }
+.um-stat-detail-head { display: flex; justify-content: space-between; align-items: center; padding: 10px 14px; background: var(--surface-alt); font-weight: 600; color: var(--text); border-bottom: 1px solid var(--border); }
+.um-table-sm { font-size: 13px; }
+.um-row-warn { background: #fff7ed; }
+.um-row-warn td { color: #c2410c; }
 .um-cat { border: 1px solid var(--border); border-radius: var(--radius); margin-bottom: 14px; overflow: hidden; background: var(--surface); }
 .um-cat-head { display: flex; justify-content: space-between; align-items: center; padding: 10px 14px; background: var(--surface-alt); font-weight: 600; color: var(--text); border-bottom: 1px solid var(--border); }
 .um-cat-table { width: 100%; border-collapse: collapse; font-size: 13px; }

@@ -77,6 +77,7 @@ const app = createApp({
     document.addEventListener('auth:ready', function () {
       authUser.value = (A && A.user) ? A.user : null;
       startAccessRecheck();   // 20261016f：会员/试用到期即时失效（用户规范：过期即无法使用）
+      checkExpiryReminder();   // 20261106b：登录即检查会员临期提醒（<=7 天）
     });
     /* 20261016f：运行时门禁复查（用户规范落地）——
      * 「管理员审核并通过授权以后，在有效期内均可正常使用；过了有效期以后，该账号需要无法使用」。
@@ -99,6 +100,8 @@ const app = createApp({
             stopAccessRecheck();
             showToast((r.error || '试用/会员已到期') + '，账号已退出；请重新扫码支付，经管理员审核开通后使用', 'error', 12000);
             setTimeout(() => { try { location.reload(); } catch (e) {} }, 2000);
+          } else if (r && r.ok) {
+            checkExpiryReminder();   // 20261106b：会员剩 <=7 天时给用户提示续费
           }
         } catch (e) { /* 单次异常（如存储不可用）不影响下个周期 */ }
       }, 60000);
@@ -158,6 +161,8 @@ const app = createApp({
        umAuth: 'trial' 试用非会员 | '6m' 6月期 | '1y' 12月期 | '2y' 24月期 | 'none' 未开通使用 */
     const umTab = ref('review');
     const umAuth = ref('trial');
+    // 20261106b：统计卡片点击筛选（null=未选；点击统计卡即按类别定位下方账号清单）
+    const umStatFilter = ref(null);
     // 会员搜索（管理员 / 普通用户注册 / 授权使用 / 审核区 各面板共用）
     const umSearch = ref('');
     function umSearchMatch(s) {
@@ -3388,6 +3393,77 @@ const app = createApp({
         时段: '试用' + days + '天'
       };
     }
+    // ===== 20261106b：试用/会员临近到期统计 + 可点击统计定位账号 =====
+    const EXPIRE_WARN_MS = 7 * 24 * 60 * 60 * 1000;   // 临近到期阈值：仅剩 7 天（含）即算「临近到期」
+    /** 会员剩余天数：有效付费会员返回 >=0 的整数天；无有效会员返回 -1 */
+    function memberDaysLeft(u) {
+      const pmu = Number(u && u.payMembershipUntil) || 0;
+      if (pmu <= Date.now()) return -1;
+      return Math.ceil((pmu - Date.now()) / (24 * 60 * 60 * 1000));
+    }
+    /** 会员临近到期（剩 0~7 天） */
+    function isMemberExpiring(u) {
+      const d = memberDaysLeft(u);
+      return d >= 0 && d <= 7;
+    }
+    /** 试用临近到期/已到期：已开通试用，且（进行中剩 <=7 天 或 已结束） */
+    function isTrialExpiring(u) {
+      const tu = Number(u && u.trialUntil) || 0;
+      if (tu <= 0) return false;
+      if (tu < Date.now()) return true;             // 已到期
+      return (tu - Date.now()) <= EXPIRE_WARN_MS;   // 进行中剩 <=7 天
+    }
+    /** 统计卡点击筛选标签文案 */
+    function statFilterLabel() {
+      const m = {
+        total: '全部账号', trialExpiring: '试用到期', memberExpiring: '会员临近到期',
+        paid: '付费会员', trial: '免费试用', pending: '待审核', admin: '管理员'
+      };
+      return m[umStatFilter.value] || '统计明细';
+    }
+    /** 统计卡点击后，下方明细表展示的账号清单 */
+    function umStatFilteredList() {
+      const all = (userList.value || []);
+      const f = umStatFilter.value;
+      if (!f) return [];
+      const ok = {
+        total: function () { return true; },
+        trialExpiring: isTrialExpiring,
+        memberExpiring: isMemberExpiring,
+        paid: function (u) { return !!planOfUser(u); },
+        trial: function (u) { return !!u.trialActive; },
+        pending: function (u) { return u.status === 'pending'; },
+        admin: function (u) { return u.role === 'admin'; }
+      }[f];
+      return ok ? all.filter(ok) : [];
+    }
+    function setStatFilter(f) { umStatFilter.value = (umStatFilter.value === f) ? null : f; }
+    function clearStatFilter() { umStatFilter.value = null; }
+    /** 管理员「临近到期提醒」横幅数据：会员/试用剩 <=7 天的账号，按剩余天数升序 */
+    function expiringSoonList() {
+      const all = (userList.value || []);
+      return all.filter(function (u) { return isMemberExpiring(u) || isTrialExpiring(u); })
+        .map(function (u) {
+          const isMem = memberDaysLeft(u) >= 0;
+          const until = isMem ? Number(u.payMembershipUntil) : (Number(u.trialUntil) || 0);
+          const left = isMem ? memberDaysLeft(u) : Math.max(0, Math.ceil((Number(u.trialUntil) || 0 - Date.now()) / 86400000));
+          return { username: u.username, role: u.role, kind: isMem ? '会员' : '试用', daysLeft: left, until: until, statusText: memberStatusText(u) };
+        })
+        .sort(function (a, b) { return a.daysLeft - b.daysLeft; });
+    }
+    /** 用户侧会员临期提醒（<=7 天）：每天最多提示一次；管理员不提示 */
+    let _expiryWarnKey = '';
+    function checkExpiryReminder() {
+      const au = authUser.value;
+      if (!au || au.role === 'admin') return;
+      const d = memberDaysLeft(au);
+      if (d < 0 || d > 7) return;
+      const key = au.username + '@' + fmtDateNum(Date.now());
+      if (_expiryWarnKey === key) return;
+      _expiryWarnKey = key;
+      showToast('您的会员将于 ' + d + ' 天后到期（' + fmtDateNum(Number(au.payMembershipUntil) || 0) + '），请及时续费以免中断使用', 'warn', 10000);
+    }
+
     // 管理员总览：所有账号按会员类型精准分类 + 汇总统（分类和统计分析）
     function adminClassify() {
       const list = (userList.value || []);
@@ -3419,6 +3495,9 @@ const app = createApp({
         trialCount: cats.trial.items.length,
         pendingCount: cats.pending.items.length,
         adminCount: cats.admin.items.length,
+        // 20261106b：临近到期统计（<=7 天）
+        expiringTrialCount: list.filter(isTrialExpiring).length,
+        memberExpiringCount: list.filter(isMemberExpiring).length,
         revenue: cats['6m'].items.length * 1000 + cats['1y'].items.length * 2000 + cats['2y'].items.length * 4000
       };
       // 分类展示顺序：24月期（¥4000）→ 免费试用 → 6月期（¥1000）→ 12月期（¥2000）
@@ -11918,6 +11997,9 @@ const app = createApp({
       // batch-A：会员后台（个人码方案）
       memberClaims, memberManual, loadMemberClaims, refreshMemberClaims, grantMemberClaim, rejectMemberClaim, rejectConfirmId, grantMemberManual, trialUsersList, registeredNoMemberList, reviewClaims, umSearch, umSearchMatch,
       planAmount, planMonthsNum, planName, planMonthText, planOfUser, claimFields, trialFields, adminClassify,
+      // 20261106b：临近到期统计 / 可点击统计定位账号 / 到期提醒
+      umStatFilter, setStatFilter, clearStatFilter, umStatFilteredList, statFilterLabel, expiringSoonList,
+      memberDaysLeft, isMemberExpiring, isTrialExpiring, checkExpiryReminder,
       paidPlanOf, paidDateText, planCategoryText, quotaInputVal,
       authCatItems, isAccountShown, approvedZoneList, refreshApprovedZone, refreshPendingRegistrations, refreshingPending,
       // 20261016j：审核通过区「💾 保存」（改动上传云端后端）
