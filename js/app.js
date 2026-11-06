@@ -3446,7 +3446,7 @@ const app = createApp({
         .map(function (u) {
           const isMem = memberDaysLeft(u) >= 0;
           const until = isMem ? Number(u.payMembershipUntil) : (Number(u.trialUntil) || 0);
-          const left = isMem ? memberDaysLeft(u) : Math.max(0, Math.ceil((Number(u.trialUntil) || 0 - Date.now()) / 86400000));
+          const left = isMem ? memberDaysLeft(u) : Math.max(0, Math.ceil(((Number(u.trialUntil) || 0) - Date.now()) / 86400000));
           return { username: u.username, role: u.role, kind: isMem ? '会员' : '试用', daysLeft: left, until: until, statusText: memberStatusText(u) };
         })
         .sort(function (a, b) { return a.daysLeft - b.daysLeft; });
@@ -11978,7 +11978,7 @@ const app = createApp({
       askClearLocalBusinessData, doClearLocalBusinessData
       ,
       // 登录账号与权限
-      authUser, authInitial, authExpiryText, can, fmtDateTime, doLogout, userMenuOpen,
+      authUser, authInitial, authExpiryText, can, fmtDateTime, fmtDateNum, doLogout, userMenuOpen,
       otherAccounts, openUserMenu, switchAccount, addAccount,
       userModal, userList, openUserManage, recoverUsersByAdmin, addUserByAdmin, changeUserRole,
       umTab, umAuth,
