@@ -901,6 +901,7 @@ body {
 .infl-region.r-cn { background: #fee2e2; color: #b91c1c; }
 .infl-region.r-us { background: #dbeafe; color: #1d4ed8; }
 .infl-region.r-world { background: #dcfce7; color: #15803d; }
+.infl-concept { padding: 1px 8px; border-radius: 999px; background: #ecfdf5; color: #047857; border: 1px solid #d1fae5; font-size: 11px; font-weight: 600; }
 .infl-affected { font-size: 12px; }
 .infl-affected b { color: #c2410c; }
 .infl-summary { margin-top: 4px; line-height: 1.5; color: var(--text-muted, #64748b); }

@@ -8890,63 +8890,88 @@ const app = createApp({
     const thsHotLoading = ref(false);
     const emHotStocks = ref([]);
     const emHotLoading = ref(false);
-    // ============ 影响力事件（按「影响人群」从大到小排序；分 中国 / 美国 / 全世界 三个子版块） ============
-    // 「影响人群」= 受该事件波及的投资者 / 市场参与者估算人数。数据由本地整理样例提供，并预留后端接口：
-    // refreshInfluence() 内可改为 fetch 真实影响力事件源后合并，当前以 INFLUENCE_EVENTS_SEED 为准。
-    // region: 'cn'(中国) | 'us'(美国) | 'world'(全世界，影响全球股民/资本市场的宏观与地缘事件)
+    // ============ 影响力事件（按「影响股民数」从大到小排序；分 中国 / 美国 / 全世界 三个子版块） ============
+    // 数据由本地整理样例提供，并预留后端接口：refreshInfluence() 内可改为 fetch 真实事件源后合并。
+    // region: 'cn'(中国) | 'us'(美国) | 'world'(全世界)
     //
-    // ===== 影响人群估算口径（20261107a 修正：分区域分层）=====
-    // 不同区域事件的「潜在触达人群天花板」相差一个数量级以上，必须分开估算：
-    //   · 中国(cn) / 美国(us)：只波及单一市场股民，量级为「亿」（如 A 股投资者约 2.2 亿）；
-    //   · 全世界(world)：宏观 / 地缘 / 科技事件波及「全球各国」投资者与资本市场参与者，量级为「数十亿」。
-    // 此前 world 事件错误沿用了「单一国家股民数」量级（0.9~2.5 亿），与「影响全球」定位严重不符：
-    // 例如「特朗普中期选举失利 / 民主党推动暂停 AI 发展」影响几乎全球所有 AI 投资者与全市场股民，
-    // 应为数十亿量级并稳居第一，而非 2.5 亿。现全世界按「全球基数 × 波及系数(reach)」估算。
-    const WORLD_REACH_BASE = 5_000_000_000; // 全球潜在受影响人群基数 ≈ 50 亿（全球网民 / 资本市场参与者量级）
-    // 全世界事件影响人群 = 全球基数 × reach（reach 为事件波及各区域人群的覆盖广度 0~1）；中国/美国用绝对值
-    function resolveAffected(e) {
-      if (e.affected != null) return e.affected;                     // 中国/美国：直接给定单一市场股民数
-      return Math.round(WORLD_REACH_BASE * (Number(e.reach) || 0));  // 全世界：全球基数 × 波及系数
+    // ===== 统计口径（20261107b 修正：只统计「投资该事件所涉概念相关股票」的股民人数）=====
+    // 「影响股民数」= 投资该事件所涉「概念板块」相关股票的股民人数估算，
+    // 只统计真正持有 / 交易这些概念股票的人，不含未投资该概念的人群，也不按泛人口或全球人口估算。
+    // 三个子版块统一此口径，仅市场范围不同：
+    //   · 全世界(world)：全球主要市场投资该概念股票的股民数（跨市场汇总）；
+    //   · 中国(cn)：A 股市场投资该概念股票的股民数；
+    //   · 美国(us)：美股市场投资该概念股票的股民数。
+    // 数据来源：CONCEPT_INVESTORS[区域][概念] = 该区域投资该概念相关股票的股民人数（本地整理估算值）。
+    // 每条事件用 concept 引用概念，影响股民数由查表得到，排序按此人数从大到小。
+    const CONCEPT_INVESTORS = {
+      world: {
+        ai:      { name: 'AI / 算力',         n: 360000000 },  // 全球投资 AI / 算力相关股票的股民
+        finance: { name: '全球金融 / 利率',   n: 320000000 },
+        trade:   { name: '全球贸易 / 出口链', n: 280000000 },
+        aiApp:   { name: 'AI 应用 / 软件',    n: 250000000 },
+        energy:  { name: '能源 / 贵金属',     n: 200000000 },
+        macro:   { name: '全球宏观 / 周期',   n: 180000000 }
+      },
+      cn: {
+        broker:   { name: '券商 / 资本市场',  n: 190000000 },  // A 股投资券商及资本市场相关股票的股民
+        bank:     { name: '银行 / 流动性',    n: 170000000 },
+        property: { name: '房地产链',         n: 110000000 },
+        nev:      { name: '新能源车 / 电池',  n: 80000000 },
+        core:     { name: '外资核心资产',     n: 60000000 }
+      },
+      us: {
+        usFinance: { name: '美债 / 金融',      n: 90000000 },  // 美股投资美债 / 金融相关股票的股民
+        usMacro:   { name: '美股宏观 / 利率',  n: 80000000 },
+        usBank:    { name: '银行股',           n: 70000000 },
+        adr:       { name: '中概股',           n: 50000000 },
+        chip:      { name: '半导体',           n: 45000000 }
+      }
+    };
+    function conceptOf(e) { return (CONCEPT_INVESTORS[e.region] || {})[e.concept] || null; }
+    // 影响股民数 = 该事件所涉概念在对应市场的相关股票投资者人数；概念名一并返回供界面展示
+    function resolveInfluence(e) {
+      const c = conceptOf(e);
+      return { ...e, affected: c ? c.n : 0, conceptName: c ? c.name : '综合' };
     }
     const INFLUENCE_EVENTS_SEED = [
-      // —— 全世界：影响全球各国投资者 / 资本市场的宏观与地缘事件（影响人群为「数十亿」量级）——
-      { id: 'w1', region: 'world', title: '特朗普中期选举失利，民主党推动暂停AI发展', reach: 0.96, date: '2026-11-05', source: '综合外媒',
-        summary: '美国中期选举结果冲击全球科技与AI产业链预期，民主党主导的AI监管暂停提案波及几乎全球各国AI投资者与全市场股民，影响面覆盖全球、影响人群量级达数十亿。', relatedStocks: ['英伟达', '台积电', '微软'] },
-      { id: 'w2', region: 'world', title: '美联储超预期大幅加息，全球流动性收紧', reach: 0.90, date: '2026-10-28', source: '美联储',
-        summary: '美联储加息幅度超预期，全球风险资产估值承压，新兴市场资金外流，波及全球主要市场投资者。', relatedStocks: ['苹果', '特斯拉'] },
-      { id: 'w3', region: 'world', title: '美国对等关税全面升级，全球贸易链重构', reach: 0.84, date: '2026-10-15', source: '白宫',
-        summary: '对等关税覆盖主要贸易伙伴，全球供应链与出口链成本上升，跨国企业盈利预期下修，波及全球贸易相关市场。', relatedStocks: ['比亚迪', '宁德时代'] },
-      { id: 'w4', region: 'world', title: '生成式AI全球协同监管落地，科技股价值重估', reach: 0.78, date: '2026-09-30', source: '多国监管',
-        summary: '欧美中同步出台AI内容与安全监管框架，算力与模型合规成本上升，影响全球AI产业链投资者。', relatedStocks: ['英伟达', '百度'] },
-      { id: 'w5', region: 'world', title: '地缘冲突外溢，原油与黄金剧烈波动', reach: 0.70, date: '2026-09-12', source: '国际新闻',
-        summary: '中东局势升级推升能源与避险资产波动，全球通胀预期反复，波及全球大宗与权益市场参与者。', relatedStocks: ['中国海油', '山东黄金'] },
-      { id: 'w6', region: 'world', title: '全球主要经济体同步衰退预警', reach: 0.64, date: '2026-08-20', source: 'IMF',
-        summary: 'IMF下调全球增长预期，周期与消费板块承压，影响全球主要市场投资者。', relatedStocks: ['贵州茅台', '招商银行'] },
-      // —— 美国：主要影响美股及联动的全球资金 ——
-      { id: 'u1', region: 'us', title: '美国债务上限危机，政府停摆风险升温', affected: 100000000, date: '2026-11-01', source: '美国国会',
-        summary: '债务上限谈判僵局推升美债收益率与避险情绪，全球资金回流美元。', relatedStocks: ['苹果', '微软'] },
-      { id: 'u2', region: 'us', title: '美国通胀反弹，降息预期落空', affected: 70000000, date: '2026-10-22', source: '美国劳工部',
-        summary: '核心CPI超预期，市场下修降息次数，成长股估值承压。', relatedStocks: ['特斯拉', '英伟达'] },
-      { id: 'u3', region: 'us', title: '美国区域性银行挤兑，信贷紧缩担忧', affected: 80000000, date: '2026-10-08', source: 'FDIC',
-        summary: '中小银行流动性事件引发信贷收缩预期，金融板块波动。', relatedStocks: ['摩根大通'] },
-      { id: 'u4', region: 'us', title: '纳斯达克上市规则调整，中概股承压', affected: 60000000, date: '2026-09-18', source: 'NASDAQ',
-        summary: '审计与上市门槛变化影响在美中概股估值与回流预期。', relatedStocks: ['阿里巴巴', '京东'] },
-      { id: 'u5', region: 'us', title: '美国芯片出口管制再升级', affected: 50000000, date: '2026-08-30', source: 'BIS',
-        summary: '先进制程与设备出口限制扩大，半导体供应链重构。', relatedStocks: ['中芯国际', '北方华创'] },
-      // —— 中国：主要影响A股及在岸资产 ——
-      { id: 'c1', region: 'cn', title: '证监会活跃资本市场一揽子新规（降印花税/T+0讨论）', affected: 220000000, date: '2026-11-03', source: '证监会',
-        summary: '交易端与融资端政策齐发，市场活跃度与风险偏好提升。', relatedStocks: ['中信证券', '东方财富'] },
-      { id: 'c2', region: 'cn', title: '央行降准降息超预期，市场流动性宽松', affected: 210000000, date: '2026-10-25', source: '央行',
-        summary: '全面降准降息释放长期资金，股债双牛预期升温。', relatedStocks: ['招商银行', '宁德时代'] },
-      { id: 'c3', region: 'cn', title: '房地产一揽子救市政策出台', affected: 150000000, date: '2026-10-12', source: '住建部',
-        summary: '城中村改造与白名单融资扩围，地产链估值修复。', relatedStocks: ['保利发展', '万科A'] },
-      { id: 'c4', region: 'cn', title: '新能源车购置补贴延续', affected: 80000000, date: '2026-09-15', source: '工信部',
-        summary: '以旧换新与购置税减免延续，整车与电池需求预期改善。', relatedStocks: ['比亚迪', '宁德时代'] },
-      { id: 'c5', region: 'cn', title: '北向资金单日大幅净流入创新高', affected: 60000000, date: '2026-08-28', source: '沪深港通',
-        summary: '外资回流共振风险偏好，核心资产获加仓。', relatedStocks: ['贵州茅台', '中国平安'] }
+      // —— 全世界：全球主要市场投资该概念相关股票的股民数 ——
+      { id: 'w1', region: 'world', concept: 'ai', title: '特朗普中期选举失利，民主党推动暂停AI发展', date: '2026-11-05', source: '综合外媒',
+        summary: '美国中期选举结果冲击全球科技与AI产业链预期，民主党主导的AI监管暂停提案直接影响全球投资 AI / 算力相关股票的股民，涉及概念投资者数量居首。', relatedStocks: ['英伟达', '台积电', '微软'] },
+      { id: 'w2', region: 'world', concept: 'finance', title: '美联储超预期大幅加息，全球流动性收紧', date: '2026-10-28', source: '美联储',
+        summary: '美联储加息幅度超预期，全球风险资产估值承压，直接影响投资全球金融 / 利率相关股票的股民。', relatedStocks: ['苹果', '特斯拉'] },
+      { id: 'w3', region: 'world', concept: 'trade', title: '美国对等关税全面升级，全球贸易链重构', date: '2026-10-15', source: '白宫',
+        summary: '对等关税覆盖主要贸易伙伴，全球供应链与出口链成本上升，影响投资全球贸易 / 出口链相关股票的股民。', relatedStocks: ['比亚迪', '宁德时代'] },
+      { id: 'w4', region: 'world', concept: 'aiApp', title: '生成式AI全球协同监管落地，科技股价值重估', date: '2026-09-30', source: '多国监管',
+        summary: '欧美中同步出台AI内容与安全监管框架，算力与模型合规成本上升，影响投资 AI 应用 / 软件相关股票的股民。', relatedStocks: ['英伟达', '百度'] },
+      { id: 'w5', region: 'world', concept: 'energy', title: '地缘冲突外溢，原油与黄金剧烈波动', date: '2026-09-12', source: '国际新闻',
+        summary: '中东局势升级推升能源与避险资产波动，影响投资能源 / 贵金属相关股票的股民。', relatedStocks: ['中国海油', '山东黄金'] },
+      { id: 'w6', region: 'world', concept: 'macro', title: '全球主要经济体同步衰退预警', date: '2026-08-20', source: 'IMF',
+        summary: 'IMF下调全球增长预期，周期与消费板块承压，影响投资全球宏观 / 周期相关股票的股民。', relatedStocks: ['贵州茅台', '招商银行'] },
+      // —— 美国：美股市场投资该概念相关股票的股民数 ——
+      { id: 'u1', region: 'us', concept: 'usFinance', title: '美国债务上限危机，政府停摆风险升温', date: '2026-11-01', source: '美国国会',
+        summary: '债务上限谈判僵局推升美债收益率与避险情绪，影响投资美债 / 金融相关股票的股民。', relatedStocks: ['苹果', '微软'] },
+      { id: 'u2', region: 'us', concept: 'usMacro', title: '美国通胀反弹，降息预期落空', date: '2026-10-22', source: '美国劳工部',
+        summary: '核心CPI超预期，市场下修降息次数，影响投资美股宏观 / 利率敏感股票的股民。', relatedStocks: ['特斯拉', '英伟达'] },
+      { id: 'u3', region: 'us', concept: 'usBank', title: '美国区域性银行挤兑，信贷紧缩担忧', date: '2026-10-08', source: 'FDIC',
+        summary: '中小银行流动性事件引发信贷收缩预期，影响投资银行股的股民。', relatedStocks: ['摩根大通'] },
+      { id: 'u4', region: 'us', concept: 'adr', title: '纳斯达克上市规则调整，中概股承压', date: '2026-09-18', source: 'NASDAQ',
+        summary: '审计与上市门槛变化影响在美中概股估值，影响投资中概股的股民。', relatedStocks: ['阿里巴巴', '京东'] },
+      { id: 'u5', region: 'us', concept: 'chip', title: '美国芯片出口管制再升级', date: '2026-08-30', source: 'BIS',
+        summary: '先进制程与设备出口限制扩大，半导体供应链重构，影响投资半导体相关股票的股民。', relatedStocks: ['中芯国际', '北方华创'] },
+      // —— 中国：A 股市场投资该概念相关股票的股民数 ——
+      { id: 'c1', region: 'cn', concept: 'broker', title: '证监会活跃资本市场一揽子新规（降印花税/T+0讨论）', date: '2026-11-03', source: '证监会',
+        summary: '交易端与融资端政策齐发，市场活跃度与风险偏好提升，影响投资券商 / 资本市场相关股票的股民。', relatedStocks: ['中信证券', '东方财富'] },
+      { id: 'c2', region: 'cn', concept: 'bank', title: '央行降准降息超预期，市场流动性宽松', date: '2026-10-25', source: '央行',
+        summary: '全面降准降息释放长期资金，股债双牛预期升温，影响投资银行 / 流动性相关股票的股民。', relatedStocks: ['招商银行', '宁德时代'] },
+      { id: 'c3', region: 'cn', concept: 'property', title: '房地产一揽子救市政策出台', date: '2026-10-12', source: '住建部',
+        summary: '城中村改造与白名单融资扩围，地产链估值修复，影响投资房地产链相关股票的股民。', relatedStocks: ['保利发展', '万科A'] },
+      { id: 'c4', region: 'cn', concept: 'nev', title: '新能源车购置补贴延续', date: '2026-09-15', source: '工信部',
+        summary: '以旧换新与购置税减免延续，整车与电池需求预期改善，影响投资新能源车 / 电池相关股票的股民。', relatedStocks: ['比亚迪', '宁德时代'] },
+      { id: 'c5', region: 'cn', concept: 'core', title: '北向资金单日大幅净流入创新高', date: '2026-08-28', source: '沪深港通',
+        summary: '外资回流共振风险偏好，影响投资外资核心资产相关股票的股民。', relatedStocks: ['贵州茅台', '中国平安'] }
     ];
     const inflRegion = ref('world');   // 'cn' | 'us' | 'world'
-    const inflEvents = ref([]);        // 当前区域已按影响人群降序排列的事件
+    const inflEvents = ref([]);        // 当前区域已按影响股民数降序排列的事件
     const inflLoading = ref(false);
     const inflError = ref('');
     const inflDate = ref('');          // 数据整理时间
@@ -8957,9 +8982,8 @@ const app = createApp({
     function loadInfluence() {
       const reg = inflRegion.value;
       // 三个子版块互斥：中国/美国/全世界各自只展示本区域事件，点击哪个就展现哪个
-      // 归一影响人群：全世界按「全球基数 × reach」折算为数十亿量级；中国/美国沿用单一市场股民绝对值
-      const filtered = INFLUENCE_EVENTS_SEED.filter(e => e.region === reg)
-        .map(e => ({ ...e, affected: resolveAffected(e) }));
+      // 统一口径：影响股民数 = 该事件所涉概念在对应市场相关股票的投资者人数（只统计持有该概念股票的人）
+      const filtered = INFLUENCE_EVENTS_SEED.filter(e => e.region === reg).map(resolveInfluence);
       inflEvents.value = sortInfluence(filtered);
       inflDate.value = '实时整理';
       inflError.value = '';
@@ -8971,19 +8995,16 @@ const app = createApp({
       try {
         // 预留：若后端提供影响力事件接口可在此 fetch 并合并；当前以本地整理数据为准
         loadInfluence();
-        showToast(`已刷新影响力事件（${inflEvents.value.length} 条，按影响人群从大到小排序）`, 'success');
+        showToast(`已刷新影响力事件（${inflEvents.value.length} 条，按影响股民数从大到小排序）`, 'success');
       } catch (e) {
         inflError.value = (e && e.message) || '影响力事件获取失败';
         showToast('影响力事件获取失败：' + (e && e.message || e), 'error');
       } finally { inflLoading.value = false; }
     }
-    // 格式化影响人群：数十亿→x.x 亿；亿级(单国)→x.xx 亿；≥1万→x.x 万；否则原值
+    // 格式化影响股民数：≥1亿→x.xx 亿；≥1万→x.x 万；否则原值
     function fmtAffected(n) {
       const x = Number(n) || 0;
-      if (x >= 1e8) {
-        const yi = x / 1e8;
-        return (yi >= 10 ? yi.toFixed(1) : yi.toFixed(2)) + ' 亿'; // 全世界(数十亿)1 位小数，单国(亿级)2 位
-      }
+      if (x >= 1e8) return (x / 1e8).toFixed(2) + ' 亿';
       if (x >= 1e4) return (x / 1e4).toFixed(1) + ' 万';
       return String(x);
     }
