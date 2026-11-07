@@ -8891,23 +8891,37 @@ const app = createApp({
     const emHotStocks = ref([]);
     const emHotLoading = ref(false);
     // ============ 影响力事件（按「影响人群」从大到小排序；分 中国 / 美国 / 全世界 三个子版块） ============
-    // 影响人群(affected)为估算口径（影响股民 / 关注人数）。数据由本地整理样例提供，并预留后端接口：
+    // 「影响人群」= 受该事件波及的投资者 / 市场参与者估算人数。数据由本地整理样例提供，并预留后端接口：
     // refreshInfluence() 内可改为 fetch 真实影响力事件源后合并，当前以 INFLUENCE_EVENTS_SEED 为准。
     // region: 'cn'(中国) | 'us'(美国) | 'world'(全世界，影响全球股民/资本市场的宏观与地缘事件)
+    //
+    // ===== 影响人群估算口径（20261107a 修正：分区域分层）=====
+    // 不同区域事件的「潜在触达人群天花板」相差一个数量级以上，必须分开估算：
+    //   · 中国(cn) / 美国(us)：只波及单一市场股民，量级为「亿」（如 A 股投资者约 2.2 亿）；
+    //   · 全世界(world)：宏观 / 地缘 / 科技事件波及「全球各国」投资者与资本市场参与者，量级为「数十亿」。
+    // 此前 world 事件错误沿用了「单一国家股民数」量级（0.9~2.5 亿），与「影响全球」定位严重不符：
+    // 例如「特朗普中期选举失利 / 民主党推动暂停 AI 发展」影响几乎全球所有 AI 投资者与全市场股民，
+    // 应为数十亿量级并稳居第一，而非 2.5 亿。现全世界按「全球基数 × 波及系数(reach)」估算。
+    const WORLD_REACH_BASE = 5_000_000_000; // 全球潜在受影响人群基数 ≈ 50 亿（全球网民 / 资本市场参与者量级）
+    // 全世界事件影响人群 = 全球基数 × reach（reach 为事件波及各区域人群的覆盖广度 0~1）；中国/美国用绝对值
+    function resolveAffected(e) {
+      if (e.affected != null) return e.affected;                     // 中国/美国：直接给定单一市场股民数
+      return Math.round(WORLD_REACH_BASE * (Number(e.reach) || 0));  // 全世界：全球基数 × 波及系数
+    }
     const INFLUENCE_EVENTS_SEED = [
-      // —— 全世界：影响全球股民 / 资本市场的宏观与地缘事件 ——
-      { id: 'w1', region: 'world', title: '特朗普中期选举失利，民主党推动暂停AI发展', affected: 250000000, date: '2026-11-05', source: '综合外媒',
-        summary: '美国中期选举结果冲击全球科技与AI产业链预期，民主党主导的AI监管暂停提案引发全球科技股重估，影响所有市场股民。', relatedStocks: ['英伟达', '台积电', '微软'] },
-      { id: 'w2', region: 'world', title: '美联储超预期大幅加息，全球流动性收紧', affected: 180000000, date: '2026-10-28', source: '美联储',
-        summary: '美联储加息幅度超预期，全球风险资产估值承压，新兴市场资金外流。', relatedStocks: ['苹果', '特斯拉'] },
-      { id: 'w3', region: 'world', title: '美国对等关税全面升级，全球贸易链重构', affected: 160000000, date: '2026-10-15', source: '白宫',
-        summary: '对等关税覆盖主要贸易伙伴，全球供应链与出口链成本上升，跨国企业盈利预期下修。', relatedStocks: ['比亚迪', '宁德时代'] },
-      { id: 'w4', region: 'world', title: '生成式AI全球协同监管落地，科技股价值重估', affected: 120000000, date: '2026-09-30', source: '多国监管',
-        summary: '欧美中同步出台AI内容与安全监管框架，算力与模型合规成本上升。', relatedStocks: ['英伟达', '百度'] },
-      { id: 'w5', region: 'world', title: '地缘冲突外溢，原油与黄金剧烈波动', affected: 100000000, date: '2026-09-12', source: '国际新闻',
-        summary: '中东局势升级推升能源与避险资产波动，全球通胀预期反复。', relatedStocks: ['中国海油', '山东黄金'] },
-      { id: 'w6', region: 'world', title: '全球主要经济体同步衰退预警', affected: 90000000, date: '2026-08-20', source: 'IMF',
-        summary: 'IMF下调全球增长预期，周期与消费板块承压。', relatedStocks: ['贵州茅台', '招商银行'] },
+      // —— 全世界：影响全球各国投资者 / 资本市场的宏观与地缘事件（影响人群为「数十亿」量级）——
+      { id: 'w1', region: 'world', title: '特朗普中期选举失利，民主党推动暂停AI发展', reach: 0.96, date: '2026-11-05', source: '综合外媒',
+        summary: '美国中期选举结果冲击全球科技与AI产业链预期，民主党主导的AI监管暂停提案波及几乎全球各国AI投资者与全市场股民，影响面覆盖全球、影响人群量级达数十亿。', relatedStocks: ['英伟达', '台积电', '微软'] },
+      { id: 'w2', region: 'world', title: '美联储超预期大幅加息，全球流动性收紧', reach: 0.90, date: '2026-10-28', source: '美联储',
+        summary: '美联储加息幅度超预期，全球风险资产估值承压，新兴市场资金外流，波及全球主要市场投资者。', relatedStocks: ['苹果', '特斯拉'] },
+      { id: 'w3', region: 'world', title: '美国对等关税全面升级，全球贸易链重构', reach: 0.84, date: '2026-10-15', source: '白宫',
+        summary: '对等关税覆盖主要贸易伙伴，全球供应链与出口链成本上升，跨国企业盈利预期下修，波及全球贸易相关市场。', relatedStocks: ['比亚迪', '宁德时代'] },
+      { id: 'w4', region: 'world', title: '生成式AI全球协同监管落地，科技股价值重估', reach: 0.78, date: '2026-09-30', source: '多国监管',
+        summary: '欧美中同步出台AI内容与安全监管框架，算力与模型合规成本上升，影响全球AI产业链投资者。', relatedStocks: ['英伟达', '百度'] },
+      { id: 'w5', region: 'world', title: '地缘冲突外溢，原油与黄金剧烈波动', reach: 0.70, date: '2026-09-12', source: '国际新闻',
+        summary: '中东局势升级推升能源与避险资产波动，全球通胀预期反复，波及全球大宗与权益市场参与者。', relatedStocks: ['中国海油', '山东黄金'] },
+      { id: 'w6', region: 'world', title: '全球主要经济体同步衰退预警', reach: 0.64, date: '2026-08-20', source: 'IMF',
+        summary: 'IMF下调全球增长预期，周期与消费板块承压，影响全球主要市场投资者。', relatedStocks: ['贵州茅台', '招商银行'] },
       // —— 美国：主要影响美股及联动的全球资金 ——
       { id: 'u1', region: 'us', title: '美国债务上限危机，政府停摆风险升温', affected: 100000000, date: '2026-11-01', source: '美国国会',
         summary: '债务上限谈判僵局推升美债收益率与避险情绪，全球资金回流美元。', relatedStocks: ['苹果', '微软'] },
@@ -8943,7 +8957,9 @@ const app = createApp({
     function loadInfluence() {
       const reg = inflRegion.value;
       // 三个子版块互斥：中国/美国/全世界各自只展示本区域事件，点击哪个就展现哪个
-      const filtered = INFLUENCE_EVENTS_SEED.filter(e => e.region === reg);
+      // 归一影响人群：全世界按「全球基数 × reach」折算为数十亿量级；中国/美国沿用单一市场股民绝对值
+      const filtered = INFLUENCE_EVENTS_SEED.filter(e => e.region === reg)
+        .map(e => ({ ...e, affected: resolveAffected(e) }));
       inflEvents.value = sortInfluence(filtered);
       inflDate.value = '实时整理';
       inflError.value = '';
@@ -8961,10 +8977,13 @@ const app = createApp({
         showToast('影响力事件获取失败：' + (e && e.message || e), 'error');
       } finally { inflLoading.value = false; }
     }
-    // 格式化影响人群：≥1亿→x.xx亿；≥1万→x.x万；否则原值
+    // 格式化影响人群：数十亿→x.x 亿；亿级(单国)→x.xx 亿；≥1万→x.x 万；否则原值
     function fmtAffected(n) {
       const x = Number(n) || 0;
-      if (x >= 1e8) return (x / 1e8).toFixed(2) + ' 亿';
+      if (x >= 1e8) {
+        const yi = x / 1e8;
+        return (yi >= 10 ? yi.toFixed(1) : yi.toFixed(2)) + ' 亿'; // 全世界(数十亿)1 位小数，单国(亿级)2 位
+      }
       if (x >= 1e4) return (x / 1e4).toFixed(1) + ' 万';
       return String(x);
     }
