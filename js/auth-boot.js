@@ -27,7 +27,7 @@
   'use strict';
 
   // 与 index.html 中静态资源版本号保持一致，避免升级后命中旧缓存
-  var ASSET_V = '20261108f';
+  var ASSET_V = '20261108g';
 
   // 管理员点开「注册申请导入链接」后，申请码暂存在这里，等业务层（app.js）就绪后取走
   var IMPORT_KEY = 'snt-pending-import-v1';
@@ -123,7 +123,7 @@
   // 会员收款码：管理员提供的静态微信收款码（与站内「会员服务」弹窗一致），打开即见，无需后端下单。
   // 后端商户扫码（/pay/create）在未配置微信/支付宝商户号时返回 503，故此路径仅作为可选增强，
   // 默认以静态收款码保证「点击会员服务即出二维码」的体验。
-  var RENEW_WX_QR = 'assets/wechat-pay-qr.jpg?v=20261108f';
+  var RENEW_WX_QR = 'assets/wechat-pay-qr.jpg?v=20261108g';
   var renewPlan = '6m';
 
   function renewMsg(text, type) {
