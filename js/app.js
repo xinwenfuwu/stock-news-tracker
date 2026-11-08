@@ -8994,6 +8994,12 @@ const app = createApp({
     const inflLoading = ref(false);
     const inflError = ref('');
     const inflDate = ref('');          // 数据整理时间
+    // 20261108b：口径说明可一键隐藏（按钮在说明文字左侧）；状态写入 Store.data，由 autosave 落盘并随 Gist 同步
+    const inflInfoHidden = ref(false);
+    function toggleInflInfo() {
+      inflInfoHidden.value = !inflInfoHidden.value;
+      if (D) D.inflInfoHidden = inflInfoHidden.value;
+    }
     function regionLabel(r) { return r === 'cn' ? '中国' : r === 'us' ? '美国' : '全世界'; }
     function sortLabel() { return inflSortBy.value === 'people' ? '影响人数' : '影响股民数'; }
     function sortInfluence(list) {
@@ -9655,6 +9661,8 @@ const app = createApp({
     // 影响力事件：恢复上次选择的区域与排序口径，并加载对应事件（数据来自本地整理样例，非日期维度）
     if (D.inflRegion === 'cn' || D.inflRegion === 'us' || D.inflRegion === 'world') inflRegion.value = D.inflRegion;
     if (D.inflSortBy === 'people' || D.inflSortBy === 'investors') inflSortBy.value = D.inflSortBy;
+    // 20261108b：恢复「口径说明」的隐藏状态（用户上次点了隐藏，刷新后仍保持隐藏）
+    if (typeof D.inflInfoHidden === 'boolean') inflInfoHidden.value = D.inflInfoHidden;
     loadInfluence();
     // 同花顺热门板块（行业/概念）缓存恢复
     if (D.thsSectors && ((D.thsSectors.industries || []).length || (D.thsSectors.concepts || []).length)) thsSectors.value = D.thsSectors;
@@ -11999,6 +12007,8 @@ const app = createApp({
       thsHotStocks, thsHotLoading, refreshThsHotOnly,
       emHotStocks, emHotLoading, refreshEmHotOnly,
       inflRegion, inflEvents, inflLoading, inflError, inflDate, inflSortBy, setInflRegion, setInflSort, sortLabel, refreshInfluence, regionLabel, fmtAffected,
+      // 20261108b：口径说明一键隐藏/显示
+      inflInfoHidden, toggleInflInfo,
       thsSectors, thsSectorsLoading, thsSectorsError, refreshThsSectorsOnly,
       doubaoKeyInput, doubaoKeyFormShow, doubaoGuideShow, doubaoKeyActive,
       toggleDoubaoKeyForm, saveDoubaoKey, clearDoubaoKey, openDoubaoGuide,
