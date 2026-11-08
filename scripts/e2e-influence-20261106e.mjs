@@ -85,15 +85,21 @@ function parseAffected(t) {
   return m[2] === '亿' ? v * 1e8 : v * 1e4;
 }
 async function readInflRows(page) {
-  return await page.$$eval('.infl-event-list .infl-event', els => els.map(e => ({
-    rank: (e.querySelector('.hot-rank') || {}).textContent.trim(),
-    title: (e.querySelector('.infl-title') || {}).textContent.trim(),
-    region: (e.querySelector('.infl-region') || {}).textContent.trim(),
-    concept: (e.querySelector('.infl-concept') || { textContent: '' }).textContent.trim(),
-    people: (e.querySelector('.infl-people') || { textContent: '' }).textContent.replace(/\s+/g, ' ').trim(),
-    affected: (e.querySelector('.infl-affected:not(.infl-people)') || { textContent: '' }).textContent.replace(/\s+/g, ' ').trim(),
-    share: (e.querySelector('.infl-share') || { textContent: '' }).textContent.trim()
-  })));
+  // 20261108i：影响力事件现分「左：影响力事件 / 中：未来事件」双面板，默认只读取左侧面板（第一个 .infl-event-list）
+  return await page.evaluate(() => {
+    const list = document.querySelectorAll('.infl-event-list')[0];
+    if (!list) return [];
+    const els = list.querySelectorAll('.infl-event');
+    return Array.from(els).map(e => ({
+      rank: (e.querySelector('.hot-rank') || {}).textContent.trim(),
+      title: (e.querySelector('.infl-title') || {}).textContent.trim(),
+      region: (e.querySelector('.infl-region') || {}).textContent.trim(),
+      concept: (e.querySelector('.infl-concept') || { textContent: '' }).textContent.trim(),
+      people: (e.querySelector('.infl-people') || { textContent: '' }).textContent.replace(/\s+/g, ' ').trim(),
+      affected: (e.querySelector('.infl-affected:not(.infl-people)') || { textContent: '' }).textContent.replace(/\s+/g, ' ').trim(),
+      share: (e.querySelector('.infl-share') || { textContent: '' }).textContent.trim()
+    }));
+  });
 }
 
 const main = async () => {
@@ -134,12 +140,17 @@ const main = async () => {
   await loginFresh(page);
   await goHot(page);
 
+  // 20261108i：影响力事件现分「左：影响力事件 / 中：未来事件（同结构）」双面板，
+  // 原影响力事件断言全部锁定到左面板，避免与中面板未来事件（同款 .infl-* 选择器）冲突触发 strict mode
+  const inflPanel = page.locator('.hot-top-row > .hot-panel').nth(0);   // 左：影响力事件
+  const futurePanel = page.locator('.hot-top-row > .hot-panel').nth(1); // 中：未来事件
+
   // 1) 默认「全世界」+ 默认按「影响股民数」排序；20261108a 起两个指标同时存在
   let rows = await readInflRows(page);
   console.log('   全世界 行:', JSON.stringify(rows.slice(0, 6)));
   const worldTop = parseAffected(rows[0].affected);
-  check('默认进入「全世界」子版块', (await page.locator('.infl-region-tabs .infl-tab.active').innerText()).includes('全世界'));
-  check('默认排序口径 = 按影响股民数', (await page.locator('.infl-sort-btn.active').innerText()).includes('影响股民数'));
+  check('默认进入「全世界」子版块', (await inflPanel.locator('.infl-region-tabs .infl-tab.active').innerText()).includes('全世界'));
+  check('默认排序口径 = 按影响股民数', (await inflPanel.locator('.infl-sort-btn.active').innerText()).includes('影响股民数'));
   check('全世界共 20 条事件', rows.length === 20, String(rows.length));
   check('全世界 #1 = 特朗普中期选举失利', rows[0].title.includes('特朗普中期选举失利'));
   check('每条同时显示「影响人数」与「影响股民数」', rows.every(r => r.people.includes('影响人数') && r.affected.includes('影响股民数')), rows[0].people + ' | ' + rows[0].affected);
@@ -152,21 +163,21 @@ const main = async () => {
   check('全世界 #20 影响股民数最小（2800.0 万）', rows[19].affected.includes('2800.0 万'), rows[19].affected);
 
   // 2) 切换排序口径为「按影响人数」：#1 应为触达率最高的能源事件（52.48 亿）
-  await page.click('.infl-sort-btn:has-text("按影响人数")');
+  await inflPanel.locator('.infl-sort-btn:has-text("按影响人数")').click();
   await page.waitForTimeout(200);
   rows = await readInflRows(page);
   console.log('   全世界(按影响人数) 行:', JSON.stringify(rows.slice(0, 2)));
-  check('排序切换后按钮 active = 按影响人数', (await page.locator('.infl-sort-btn.active').innerText()).includes('影响人数'));
+  check('排序切换后按钮 active = 按影响人数', (await inflPanel.locator('.infl-sort-btn.active').innerText()).includes('影响人数'));
   check('按影响人数排序 #1 = 地缘冲突外溢(能源 52.48 亿)', rows[0].title.includes('地缘冲突外溢') && rows[0].people.includes('52.48 亿'), rows[0].title + ' / ' + rows[0].people);
   check('按影响人数降序：#1 > #2', parseAffected(rows[0].people) >= parseAffected(rows[1].people), rows[0].people + ' / ' + rows[1].people);
 
   // 3) 切回默认口径并进入「中国」：新增 AI 短剧审核监管事件（影响人数极大、股民极少）
-  await page.click('.infl-sort-btn:has-text("按影响股民数")');
-  await page.click('.infl-region-tabs .infl-tab:has-text("中国")');
+  await inflPanel.locator('.infl-sort-btn:has-text("按影响股民数")').click();
+  await inflPanel.locator('.infl-region-tabs .infl-tab:has-text("中国")').click();
   await page.waitForTimeout(200);
   rows = await readInflRows(page);
   console.log('   中国 行:', JSON.stringify(rows.slice(0, 6)));
-  check('切换到「中国」子版块', (await page.locator('.infl-region-tabs .infl-tab.active').innerText()).includes('中国'));
+  check('切换到「中国」子版块', (await inflPanel.locator('.infl-region-tabs .infl-tab.active').innerText()).includes('中国'));
   check('中国共 20 条事件（含 AI 短剧监管）', rows.length === 20, String(rows.length));
   check('中国 #1 = 证监会活跃资本市场新规（按股民数）', rows[0].title.includes('证监会活跃资本市场'));
   check('中国 #1 影响股民数 = 1.90 亿 / 影响人数 = 4.51 亿', rows[0].affected.includes('1.90 亿') && rows[0].people.includes('4.51 亿'), rows[0].affected + ' | ' + rows[0].people);
@@ -180,19 +191,19 @@ const main = async () => {
   check('三区域统一公式：全世界 #1 股民数 > 中国 #1 股民数', worldTop > parseAffected(rows[0].affected), worldTop + ' vs ' + parseAffected(rows[0].affected));
 
   // 中国按「影响人数」排序 → AI 短剧监管应升到 #1
-  await page.click('.infl-sort-btn:has-text("按影响人数")');
+  await inflPanel.locator('.infl-sort-btn:has-text("按影响人数")').click();
   await page.waitForTimeout(200);
   rows = await readInflRows(page);
   console.log('   中国(按影响人数) #1:', JSON.stringify(rows[0]));
   check('中国按影响人数排序 #1 = AI 短剧审核监管（9.87 亿）', rows[0].title.includes('AI 短剧审核监管') && rows[0].people.includes('9.87 亿'), rows[0].title + ' / ' + rows[0].people);
-  await page.click('.infl-sort-btn:has-text("按影响股民数")');
+  await inflPanel.locator('.infl-sort-btn:has-text("按影响股民数")').click();
 
   // 4) 切换到「美国」：同一公式，影响人数 2.65 亿 > 影响股民数 9000 万
-  await page.click('.infl-region-tabs .infl-tab:has-text("美国")');
+  await inflPanel.locator('.infl-region-tabs .infl-tab:has-text("美国")').click();
   await page.waitForTimeout(200);
   rows = await readInflRows(page);
   console.log('   美国 行:', JSON.stringify(rows.slice(0, 5)));
-  check('切换到「美国」子版块', (await page.locator('.infl-region-tabs .infl-tab.active').innerText()).includes('美国'));
+  check('切换到「美国」子版块', (await inflPanel.locator('.infl-region-tabs .infl-tab.active').innerText()).includes('美国'));
   check('美国共 20 条事件', rows.length === 20, String(rows.length));
   check('美国 #1 = 美国债务上限危机', rows[0].title.includes('美国债务上限危机'));
   check('美国 #1 影响股民数 = 9000.0 万', rows[0].affected.includes('9000.0 万'), rows[0].affected);
@@ -200,24 +211,25 @@ const main = async () => {
   check('美国 20 条每条 A ≥ S 且按股民数降序', rows.every(r => parseAffected(r.people) >= parseAffected(r.affected)) && parseAffected(rows[0].affected) >= parseAffected(rows[19].affected));
 
   // 5) 三个区域互不影响：回到全世界仍是 6 条
-  await page.click('.infl-region-tabs .infl-tab:has-text("全世界")');
+  await inflPanel.locator('.infl-region-tabs .infl-tab:has-text("全世界")').click();
   await page.waitForTimeout(200);
   rows = await readInflRows(page);
   check('回到全世界仍为 20 条', rows.length === 20, String(rows.length));
 
-  // 6) 20261108b：口径说明左侧的「隐藏说明」按钮，点击后整段说明隐藏不显示
-  const infoBtn = page.locator('.infl-info-btn');
-  const infoText = page.locator('.infl-info-text');
+  // 6) 20261108b：口径说明左侧的「隐藏说明」按钮，点击后整段说明隐藏不显示（锁定左面板）
+  const infoBtn = inflPanel.locator('.infl-info-btn');
+  const infoText = inflPanel.locator('.infl-info-text');
   check('口径说明左侧存在隐藏按钮', (await infoBtn.count()) === 1 && (await infoBtn.innerText()).includes('隐藏说明'));
   check('默认显示口径说明（含公式 A = max）', await infoText.isVisible() && (await infoText.innerText()).includes('A = max(P × r, S)'));
   check('按钮确实位于说明文字左侧', await page.evaluate(() => {
-    const b = document.querySelector('.infl-info-btn').getBoundingClientRect();
-    const t = document.querySelector('.infl-info-text').getBoundingClientRect();
+    const panels = document.querySelectorAll('.hot-top-row > .hot-panel');
+    const b = panels[0].querySelector('.infl-info-btn').getBoundingClientRect();
+    const t = panels[0].querySelector('.infl-info-text').getBoundingClientRect();
     return b.width > 0 && t.width > 0 && b.right <= t.left + 1 && b.top < t.bottom;
   }));
   await infoBtn.click();
   await page.waitForTimeout(200);
-  check('点击后说明文字隐藏不显示', !(await infoText.isVisible()) && !(await page.locator('.infl-info').innerText()).includes('A = max'));
+  check('点击后说明文字隐藏不显示', !(await infoText.isVisible()) && !(await inflPanel.locator('.infl-info').innerText()).includes('A = max'));
   check('按钮切换为「显示说明」', (await infoBtn.innerText()).includes('显示说明'));
   check('隐藏状态写入 Store.data（可跨设备同步）', await page.evaluate(() => typeof Store !== 'undefined' && !!(Store.data && Store.data.inflInfoHidden === true)));
   const persisted = await page.waitForFunction(() => {
@@ -244,56 +256,65 @@ const main = async () => {
   }, ADMIN_PW);
   await waitAppReady(page);
   await goHot(page);
-  check('刷新页面后仍保持隐藏（持久化恢复）', !(await page.locator('.infl-info-text').isVisible()));
-  await page.locator('.infl-info-btn').click();
+  // 重新加载后重新锁定左面板 locator（旧 locator 仍指向同一 DOM，但显式重建更稳）
+  const inflPanel2 = page.locator('.hot-top-row > .hot-panel').nth(0);
+  const infoBtn2 = inflPanel2.locator('.infl-info-btn');
+  const infoText2 = inflPanel2.locator('.infl-info-text');
+  check('刷新页面后仍保持隐藏（持久化恢复）', !(await infoText2.isVisible()));
+  await infoBtn2.click();
   await page.waitForTimeout(150);
-  check('刷新后仍可用按钮恢复显示说明', await page.locator('.infl-info-text').isVisible());
+  check('刷新后仍可用按钮恢复显示说明', await infoText2.isVisible());
 
-  // 7) 20261108c：每区 20 条 + 列表内部下滑滑条 + 影响力事件板块框大小不变
+  // 7) 20261108c：每区 20 条 + 列表内部下滑滑条 + 影响力事件板块框大小不变（锁定左面板）
   const listBox = await page.evaluate(() => {
-    const l = document.querySelector('.infl-event-list');
+    const l = document.querySelectorAll('.infl-event-list')[0];
     return { client: l.clientHeight, scroll: l.scrollHeight, overflow: getComputedStyle(l).overflowY };
   });
   check('全世界 20 条事件全部渲染', (await readInflRows(page)).length === 20);
   check('列表可下滑查看（scrollHeight > clientHeight）', listBox.scroll > listBox.client, JSON.stringify(listBox));
   check('列表高度固定 420px（卡片框不被 20 条撑大）', Math.abs(listBox.client - 420) <= 2 && listBox.overflow === 'auto', JSON.stringify(listBox));
-  const panelH = async () => await page.evaluate(() => document.querySelector('.infl-region-tabs').closest('.hot-panel').getBoundingClientRect().height);
+  const panelH = async () => await page.evaluate(() => document.querySelectorAll('.infl-region-tabs')[0].closest('.hot-panel').getBoundingClientRect().height);
   const hWorld = await panelH();
-  await page.click('.infl-region-tabs .infl-tab:has-text("中国")');
+  await inflPanel.locator('.infl-region-tabs .infl-tab:has-text("中国")').click();
   await page.waitForTimeout(150);
   const hCn = await panelH();
   check('切到中国仍为 20 条', (await readInflRows(page)).length === 20);
-  await page.click('.infl-region-tabs .infl-tab:has-text("美国")');
+  await inflPanel.locator('.infl-region-tabs .infl-tab:has-text("美国")').click();
   await page.waitForTimeout(150);
   const hUs = await panelH();
   check('切到美国仍为 20 条', (await readInflRows(page)).length === 20);
   check('三区域切换后影响力事件框高度不变', Math.abs(hWorld - hCn) < 2 && Math.abs(hWorld - hUs) < 2, [hWorld, hCn, hUs].join(' / '));
-  await page.evaluate(() => { const l = document.querySelector('.infl-event-list'); l.scrollTop = l.scrollHeight; });
+  await page.evaluate(() => { const l = document.querySelectorAll('.infl-event-list')[0]; l.scrollTop = l.scrollHeight; });
   await page.waitForTimeout(150);
   const lastInView = await page.evaluate(() => {
-    const l = document.querySelector('.infl-event-list');
+    const l = document.querySelectorAll('.infl-event-list')[0];
     const lb = l.getBoundingClientRect(), eb = l.querySelector('.infl-event:last-child').getBoundingClientRect();
     return eb.height > 0 && eb.top >= lb.top - 2 && eb.bottom <= lb.bottom + 2;
   });
   check('下滑到底可见第 20 条事件', lastInView);
-  await page.click('.infl-region-tabs .infl-tab:has-text("全世界")');
+  await inflPanel.locator('.infl-region-tabs .infl-tab:has-text("全世界")').click();
 
   // 8) 20261108c：同花顺热门板块 —— 行业 / 概念 Tab 互斥切换（同影响力事件按钮样式）
-  const thsTabs = page.locator('.ths-tabs .infl-tab');
+  // 20261108i：顶行同花顺原件已被「未来事件」覆盖，仅剩三并排内的 .ths-tabs-copy 副本
+  const thsTabs = page.locator('.ths-tabs-copy .infl-tab');
   check('同花顺出现两个 Tab（行业板块 / 概念板块）', (await thsTabs.count()) === 2 && (await thsTabs.nth(0).innerText()).includes('行业板块') && (await thsTabs.nth(1).innerText()).includes('概念板块'));
-  check('两个板块复用影响力事件同一套 .infl-tab 按钮样式', await page.evaluate(() => document.querySelectorAll('.infl-region-tabs .infl-tab').length === 3 && document.querySelectorAll('.ths-tabs .infl-tab').length === 2));
-  check('默认激活「行业板块」', (await page.locator('.ths-tabs .infl-tab.active').innerText()).includes('行业板块'));
-  check('默认只显示行业板块列表', await page.locator('.ths-sector-list[data-kind="industry"]').isVisible() && !(await page.locator('.ths-sector-list[data-kind="concept"]').isVisible()));
-  check('行业列表渲染缓存数据（2 条）', (await page.locator('.ths-sector-list[data-kind="industry"] .hot-item').count()) === 2);
-  await page.click('.ths-tabs .infl-tab:has-text("概念板块")');
+  check('两个板块复用影响力事件同一套 .infl-tab 按钮样式', await page.evaluate(() => {
+    const first = document.querySelectorAll('.hot-top-row > .hot-panel')[0];
+    return first.querySelectorAll('.infl-region-tabs .infl-tab').length === 3
+      && document.querySelectorAll('.ths-tabs-copy .infl-tab').length === 2;
+  }));
+  check('默认激活「行业板块」', (await page.locator('.ths-tabs-copy .infl-tab.active').innerText()).includes('行业板块'));
+  check('默认只显示行业板块列表', await page.locator('.ths-sector-copy-list[data-kind="industry"]').isVisible() && !(await page.locator('.ths-sector-copy-list[data-kind="concept"]').isVisible()));
+  check('行业列表渲染缓存数据（2 条）', (await page.locator('.ths-sector-copy-list[data-kind="industry"] .hot-item').count()) === 2);
+  await page.click('.ths-tabs-copy .infl-tab:has-text("概念板块")');
   await page.waitForTimeout(150);
-  check('点击后激活态切到「概念板块」', (await page.locator('.ths-tabs .infl-tab.active').innerText()).includes('概念板块'));
-  check('切换后只显示概念板块列表', await page.locator('.ths-sector-list[data-kind="concept"]').isVisible() && !(await page.locator('.ths-sector-list[data-kind="industry"]').isVisible()));
-  check('概念列表渲染缓存数据（1 条）', (await page.locator('.ths-sector-list[data-kind="concept"] .hot-item').count()) === 1);
+  check('点击后激活态切到「概念板块」', (await page.locator('.ths-tabs-copy .infl-tab.active').innerText()).includes('概念板块'));
+  check('切换后只显示概念板块列表', await page.locator('.ths-sector-copy-list[data-kind="concept"]').isVisible() && !(await page.locator('.ths-sector-copy-list[data-kind="industry"]').isVisible()));
+  check('概念列表渲染缓存数据（1 条）', (await page.locator('.ths-sector-copy-list[data-kind="concept"] .hot-item').count()) === 1);
   check('Tab 选择持久化到 Store.data', await page.evaluate(() => typeof Store !== 'undefined' && !!(Store.data && Store.data.thsSectorTab === 'concept')));
-  await page.click('.ths-tabs .infl-tab:has-text("行业板块")');
+  await page.click('.ths-tabs-copy .infl-tab:has-text("行业板块")');
   await page.waitForTimeout(150);
-  check('可切回「行业板块」', await page.locator('.ths-sector-list[data-kind="industry"]').isVisible());
+  check('可切回「行业板块」', await page.locator('.ths-sector-copy-list[data-kind="industry"]').isVisible());
 
   // 8a) 20261108h：原「盘前热点板块」位置改为同花顺热门板块副本（顶行原件保留，两处共用同一份数据与 Tab 状态）
   const row3Titles = await page.locator('.hot-row-3 .hot-panel .panel-title').allInnerTexts();
@@ -309,17 +330,28 @@ const main = async () => {
   check('副本默认只显示行业列表', await page.locator('.ths-sector-copy-list[data-kind="industry"]').isVisible()
     && !(await page.locator('.ths-sector-copy-list[data-kind="concept"]').isVisible()));
   check('副本行业列表渲染缓存数据（2 条）', (await page.locator('.ths-sector-copy-list[data-kind="industry"] .hot-item').count()) === 2);
-  check('顶行原面板仍在（复制而非搬移）', (await page.locator('.hot-top-row .hot-panel .panel-title').allInnerTexts()).some(t => t.includes('同花顺热门板块')));
+  check('顶行同花顺原件已被「未来事件」覆盖（顶行不再含同花顺热门板块）', !(await page.locator('.hot-top-row .hot-panel .panel-title').allInnerTexts()).some(t => t.includes('同花顺热门板块')));
   await page.click('.ths-tabs-copy .infl-tab:has-text("概念板块")');
   await page.waitForTimeout(150);
   check('副本切到概念板块后自身列表切换', await page.locator('.ths-sector-copy-list[data-kind="concept"]').isVisible()
     && !(await page.locator('.ths-sector-copy-list[data-kind="industry"]').isVisible()));
   check('副本概念列表渲染缓存数据（1 条）', (await page.locator('.ths-sector-copy-list[data-kind="concept"] .hot-item').count()) === 1);
-  check('两处共享 Tab 状态：顶行原件同步切到概念板块', (await page.locator('.ths-tabs .infl-tab.active').innerText()).includes('概念板块')
-    && await page.locator('.ths-sector-list[data-kind="concept"]').isVisible());
-  await page.click('.ths-tabs .infl-tab:has-text("行业板块")');
+  await page.click('.ths-tabs-copy .infl-tab:has-text("行业板块")');
   await page.waitForTimeout(150);
-  check('反向联动：顶行切回行业后副本也切回', await page.locator('.ths-sector-copy-list[data-kind="industry"]').isVisible());
+  check('副本可切回行业板块（自身状态独立维护）', await page.locator('.ths-sector-copy-list[data-kind="industry"]').isVisible()
+    && !(await page.locator('.ths-sector-copy-list[data-kind="concept"]').isVisible()));
+
+  // 8c) 20261108i：原「中间 同花顺热门板块」位置已被「未来事件」覆盖（同影响力事件结构，与左面板共享数据与 Tab 状态）
+  check('顶行第二格标题 = 未来事件（已覆盖中间同花顺）', (await futurePanel.locator('.panel-title').innerText()).includes('未来事件'));
+  check('未来事件面板含 中国/美国/全世界 三个子版块', (await futurePanel.locator('.infl-region-tabs .infl-tab').count()) === 3);
+  check('未来事件含「影响人数 / 影响股民数」双指标排序按钮', (await futurePanel.locator('.infl-sort-btn').count()) === 2);
+  check('未来事件与左侧影响力事件共享同一份事件数据（同样 20 条）', (await futurePanel.locator('.infl-event-list .infl-event').count()) === 20, String(await futurePanel.locator('.infl-event-list .infl-event').count()));
+  // 在左面板切到「中国」，未来事件应同步（共享状态）
+  await inflPanel.locator('.infl-region-tabs .infl-tab:has-text("中国")').click();
+  await page.waitForTimeout(150);
+  check('共享状态：左面板切到「中国」后未来事件首条不再是最初的「特朗普...」（同步生效）', !(await futurePanel.locator('.infl-event-list .infl-event .infl-title').first().innerText()).includes('特朗普中期选举失利'));
+  await inflPanel.locator('.infl-region-tabs .infl-tab:has-text("全世界")').click();
+  await page.waitForTimeout(150);
 
   // 8b) 20261108d：连板股票 —— 「10日内 / 连板」Tab 互斥切换（不显示说明文字）
   const lbPanel = page.locator('.lianban-tabs').locator('xpath=ancestor::div[contains(@class,"hot-panel")][1]');

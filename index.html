@@ -4,12 +4,12 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>股市信息分析系统</title>
-  <link rel="stylesheet" href="css/style.css?v=20261108h">
+  <link rel="stylesheet" href="css/style.css?v=20261108i">
   <!-- Vue 3 全局构建版（v3.4.21 · 自托管）
        原先走 unpkg.com CDN：国内网络对 unpkg 的连通性不稳定，一旦该请求长时间挂起，
        <head> 里的阻塞脚本会让整页停在白屏、后续 auth-boot.js 根本不会执行。
        改为同源托管后，启动链路不再依赖任何第三方 CDN。 -->
-  <script src="js/vue.global.prod.js?v=20261108h"></script>
+  <script src="js/vue.global.prod.js?v=20261108i"></script>
 </head>
 <body class="auth-locked">
   <!-- ===== 登录关卡：登录通过前业务脚本不会被加载 ===== -->
@@ -95,7 +95,7 @@
         <input class="auth-input" type="text" id="auth-renew-user" placeholder="用户名（你注册时用的）" maxlength="20" autocomplete="off">
         <div class="auth-renew-plans" id="auth-renew-plans"></div>
         <div class="auth-renew-qr" id="auth-renew-qr">
-          <div class="auth-renew-qrbox"><img id="auth-renew-wx" src="assets/wechat-pay-qr.jpg?v=20261108h" alt="微信支付收款码"><span>微信支付（扫码支付）</span></div>
+          <div class="auth-renew-qrbox"><img id="auth-renew-wx" src="assets/wechat-pay-qr.jpg?v=20261108i" alt="微信支付收款码"><span>微信支付（扫码支付）</span></div>
           <div class="muted small" style="margin-top:6px;color:#c2410c;font-weight:600">支付时请添加会员备注，付款成功截图保存</div>
         </div>
         <input class="auth-input" type="text" id="auth-renew-amount" inputmode="decimal" placeholder="支付金额（必填，如 1000）" autocomplete="off">
@@ -1604,7 +1604,7 @@
                   <div class="qr-row">
                     <div class="qr-box">
                       <div class="qr-cap">推荐使用微信支付</div>
-                      <img src="assets/wechat-pay-qr.jpg?v=20261108h" alt="微信支付收款码" class="qr-pay-img">
+                      <img src="assets/wechat-pay-qr.jpg?v=20261108i" alt="微信支付收款码" class="qr-pay-img">
                       <div class="qr-cap" style="margin-top:6px;color:#c2410c;font-weight:600">支付时请添加会员备注，付款成功截图保存</div>
                       <div class="qr-cap muted small">火柴盒网络服务</div>
                     </div>
@@ -3276,44 +3276,68 @@
               </div>
             </div>
 
-            <!-- 同花顺热门板块（行业/概念）：刷新后显示当前同花顺热门行业与概念 -->
+            <!-- 20261108i：原「中间 同花顺热门板块」改为「未来事件」（与左侧影响力事件同结构、共享同一份数据与 Tab 状态；豆包 Key 为独立功能，不在此副本重复） -->
             <div class="hot-panel">
               <div class="panel-title-row">
-                <h3 class="panel-title" style="margin:0">🟠 同花顺热门板块</h3>
-                <button class="btn btn-sm" @click="refreshThsSectorsOnly" :disabled="thsSectorsLoading" title="刷新同花顺热门行业与概念（按热度排名）">
-                  <span v-if="thsSectorsLoading">⏳ 刷新中...</span>
+                <h3 class="panel-title" style="margin:0">🔮 未来事件</h3>
+                <button class="btn btn-sm" @click="refreshInfluence" :disabled="inflLoading" :title="'按' + sortLabel() + '从大到小刷新当前区域事件'">
+                  <span v-if="inflLoading">⏳ 刷新中...</span>
                   <span v-else>🔄 刷新数据</span>
                 </button>
               </div>
-              <p class="muted small" style="margin:-4px 0 10px">同花顺热门板块（按热度排名，含涨跌幅 / 上榜标签 / 涨停统计）。点击 Tab 在<b>行业</b>与<b>概念</b>之间切换，数据来自同花顺。</p>
-              <!-- 20261108c：行业 / 概念 Tab 互斥切换，沿用影响力事件子版块按钮样式（蓝色实心=当前选中） -->
-              <div class="infl-tabs ths-tabs">
-                <button class="infl-tab" :class="{active: thsSectorTab==='industry'}" @click="setThsSectorTab('industry')">🏭 行业板块</button>
-                <button class="infl-tab" :class="{active: thsSectorTab==='concept'}" @click="setThsSectorTab('concept')">💡 概念板块</button>
+
+              <!-- 三个子版块：中国 / 美国 / 全世界，点击切换 -->
+              <div class="infl-tabs infl-region-tabs">
+                <button class="infl-tab" :class="{active: inflRegion==='cn'}" @click="setInflRegion('cn')">🇨🇳 中国</button>
+                <button class="infl-tab" :class="{active: inflRegion==='us'}" @click="setInflRegion('us')">🇺🇸 美国</button>
+                <button class="infl-tab" :class="{active: inflRegion==='world'}" @click="setInflRegion('world')">🌍 全世界</button>
               </div>
-              <template v-if="thsSectors.industries.length || thsSectors.concepts.length">
-                <div class="hot-list ths-sector-list" data-kind="industry" v-show="thsSectorTab==='industry'">
-                  <div class="hot-item hot-item-click" v-for="(s, i) in thsSectors.industries" :key="'i' + s.code"
-                       @click="openSectorSelPick({ bk: 'THS:' + s.code, name: s.name, type: s.type })"
-                       :title="s.name + ' · 热度 ' + s.heat + (s.hotTag ? ' · ' + s.hotTag : '') + (s.limitTag ? ' · ' + s.limitTag : '') + '｜点击查看/筛选成分股'">
-                    <span class="hot-rank">{{ s.order || (i + 1) }}</span>
-                    <span class="hot-name">{{ s.name }}<span class="muted small" v-if="s.code"> {{ s.code }}</span></span>
-                    <span class="hot-val" :class="pctClass(s.change)">{{ fmtPct(s.change) }}</span>
+
+              <!-- 两个指标均可作为排序依据 -->
+              <div class="infl-sortbar">
+                <span class="muted small">排序依据：</span>
+                <button class="infl-sort-btn" :class="{active: inflSortBy==='investors'}" @click="setInflSort('investors')">按影响股民数</button>
+                <button class="infl-sort-btn" :class="{active: inflSortBy==='people'}" @click="setInflSort('people')">按影响人数</button>
+                <span class="muted small infl-sort-hint">当前：{{ sortLabel() }} 从大到小</span>
+              </div>
+
+              <!-- 口径说明左侧的一键隐藏按钮 -->
+              <div class="infl-info">
+                <button type="button" class="infl-info-btn" @click="toggleInflInfo" :title="inflInfoHidden ? '显示口径说明' : '隐藏口径说明'">{{ inflInfoHidden ? '👁 显示说明' : '🙈 隐藏说明' }}</button>
+                <div class="infl-info-text" v-show="!inflInfoHidden">
+                  <p class="muted small" style="margin:8px 0 10px">
+                    📅 数据整理时间：<b>{{ inflDate || '—' }}</b>　·　当前区域 <b>{{ regionLabel(inflRegion) }}</b> 共 <b>{{ inflEvents.length }}</b> 条事件<br/>
+                    <b>双指标（同时存在）：</b>「<b>影响人数</b>」= 该事件影响到<b>生产 + 生活</b>的全部相关人数（从业者 / 上下游、使用该产品服务的消费者与用户、泛受影响公众，<b>并包含股民</b>）；「<b>影响股民数</b>」= 其中<b>投资该事件所涉概念相关股票</b>的股民人数，是影响人数的子集。<br/>
+                    <b>计算公式：</b>影响人数 A = 影响股民数 S + 非投资人群 N，其中 N = P × r − S；等价写作 <b>A = max(P × r, S)</b>（max 保证 S ⊆ A）。P = 区域人口基数（🌍 全世界 82 亿 / 🇨🇳 中国 14.1 亿 / 🇺🇸 美国 3.4 亿）；r = 该概念「生产生活场景」在区域人口中的触达率（生活消费 / 通用型概念高、专业投资型概念低）；股民占比 = S / A。<br/>
+                    <b>例：</b>🇨🇳 中国「AI 短剧审核监管」→ 大量中国人看短剧，r = 0.70 → <b>影响人数 9.87 亿</b>，但投资短剧 / 影视传媒概念股的<b>股民仅 3500 万</b>（占 3.5%）。三个子版块用<b>同一公式</b>，仅 P 与 r 不同。数值为本地整理估算样例，可在数据源处调整。
+                  </p>
+                </div>
+              </div>
+
+              <!-- 事件列表（与左侧影响力事件共享 inflEvents；key 加 future- 前缀避免与左侧列表重复 key 告警） -->
+              <div class="infl-list-head muted small" v-if="inflEvents.length">共 {{ inflEvents.length }} 条 · 在列表内下滑查看更多 ↓</div>
+              <div v-if="inflEvents.length" class="hot-list infl-event-list">
+                <div class="hot-item infl-event" v-for="(e, i) in inflEvents" :key="'future-' + e.id" style="display:flex;gap:8px;align-items:flex-start;">
+                  <span class="hot-rank">{{ i + 1 }}</span>
+                  <div style="flex:1;min-width:0;">
+                    <div class="infl-title">{{ e.title }}</div>
+                    <div class="infl-meta muted small">
+                      <span class="infl-region" :class="'r-' + e.region">{{ regionLabel(e.region) }}</span>
+                      <span class="infl-concept" v-if="e.conceptName">涉及概念：{{ e.conceptName }}</span>
+                      <span class="infl-affected infl-people">影响人数 <b>{{ fmtAffected(e.affectedPeople) }}</b>人</span>
+                      <span class="infl-affected">影响股民数 <b>{{ fmtAffected(e.affected) }}</b>人<span class="infl-share" v-if="e.investorShare">（占 {{ e.investorShare }}%）</span></span>
+                      <span v-if="e.date">· {{ e.date }}</span>
+                      <span v-if="e.source">· {{ e.source }}</span>
+                    </div>
+                    <div class="infl-summary muted small">{{ e.summary }}</div>
+                    <div v-if="e.relatedStocks && e.relatedStocks.length" class="infl-stocks">
+                      <span v-for="s in e.relatedStocks" :key="s" class="infl-stock-chip">{{ s }}</span>
+                    </div>
                   </div>
                 </div>
-                <div class="hot-list ths-sector-list" data-kind="concept" v-show="thsSectorTab==='concept'">
-                  <div class="hot-item hot-item-click" v-for="(s, i) in thsSectors.concepts" :key="'c' + s.code"
-                       @click="openSectorSelPick({ bk: 'THS:' + s.code, name: s.name, type: s.type })"
-                       :title="s.name + ' · 热度 ' + s.heat + (s.hotTag ? ' · ' + s.hotTag : '') + (s.limitTag ? ' · ' + s.limitTag : '') + '｜点击查看/筛选成分股'">
-                    <span class="hot-rank">{{ s.order || (i + 1) }}</span>
-                    <span class="hot-name">{{ s.name }}<span class="muted small" v-if="s.code"> {{ s.code }}</span></span>
-                    <span class="hot-val" :class="pctClass(s.change)">{{ fmtPct(s.change) }}</span>
-                  </div>
-                </div>
-              </template>
-              <div class="muted small" v-else-if="thsSectorsLoading">正在加载同花顺热门板块…</div>
-              <div class="muted small" v-else-if="thsSectorsError">{{ thsSectorsError }}</div>
-              <div class="muted small" v-else>点击「刷新数据」加载当前同花顺热门行业与概念</div>
+              </div>
+              <div class="muted small" v-else-if="inflError">{{ inflError }}</div>
+              <div class="muted small" v-else>该区域暂无影响力事件</div>
             </div>
 
             <!-- 连板股票（Tab：10日内 = 近 10 交易日涨停次数降序前 25，原逻辑；连板 = 仅「未断板」的真实连续涨停股，按连板数降序，最多 50 只） -->
@@ -3362,9 +3386,9 @@
             <p>添加股票信息时，股票数量最好不要超过 <b>30</b> 个，服务器有限。</p>
           </div>
 
-          <!-- 三并排（20261108h 起）：同花顺热门板块（副本） | 同花顺热度榜 | 东方财富人气榜 -->
+          <!-- 三并排（20261108i 起）：同花顺热门板块（副本） | 同花顺热度榜 | 东方财富人气榜 -->
           <div class="hot-row-3">
-            <!-- 20261108h：原「盘前热点板块」位置改为「同花顺热门板块」副本（与顶行共用 thsSectors / thsSectorTab，切换任一处两处同步） -->
+            <!-- 20261108i：原「盘前热点板块」位置改为「同花顺热门板块」副本（与顶行共用 thsSectors / thsSectorTab，切换任一处两处同步） -->
             <div class="hot-panel ths-sector-copy">
               <div class="panel-title-row">
                 <h3 class="panel-title" style="margin:0">🟠 同花顺热门板块</h3>
@@ -5472,14 +5496,14 @@
     </transition>
   </div>
 
-  <script src="js/auth.js?v=20261108h"></script>
-  <script src="js/auth-sync.js?v=20261108h"></script>
+  <script src="js/auth.js?v=20261108i"></script>
+  <script src="js/auth-sync.js?v=20261108i"></script>
   <!-- 边缘加速默认站点（batch37 治本：Cloudflare Worker 代理东财/腾讯，缓解 JSONP 限流误报）。
        若你所在地区 workers.dev 访问慢，可在「设置 → 行情加速地址」清空即恢复纯直连。 -->
   <script>window.__SNT_ACCEL__ = 'https://sichina.dpdns.org';</script>
   <!-- 扫码支付二维码渲染库（第三方 qrcodejs，本地托管避免外链失效）。renderQr 会先检测全局 QRCode 是否存在。 -->
-  <script src="assets/qrcode.min.js?v=20261108h"></script>
-  <script src="js/auth-boot.js?v=20261108h"></script>
+  <script src="assets/qrcode.min.js?v=20261108i"></script>
+  <script src="js/auth-boot.js?v=20261108i"></script>
   <!-- store / stock-api / hot-topics / app 由 auth-boot.js 在登录通过后动态装载，
        未登录时它们不会被下载，业务数据也不会进入内存 -->
 </body>
