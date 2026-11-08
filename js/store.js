@@ -48,16 +48,17 @@ const Store = {
       amplitudeBoards: [],    // 缓存最近一次振幅板块
       thsHotStocks: [],       // 20261006h：同花顺热度榜
       emHotStocks: [],        // 20261006h：东方财富人气榜
-      douyinStock: [],        // 抖音搜索股票排名榜：[{rank,code,name,hotValue,word}] 按抖音热搜中 A股公司名的搜索热度排名
-      douyinDate: '',         // 榜单生成时间（generatedAt）
-      douyinCount: 0,         // 命中抖音热搜的 A股公司数
+      inflRegion: 'world',    // 影响力事件：当前选中的区域子版块（'cn'中国 | 'us'美国 | 'world'全世界）
+      inflSortBy: 'investors',// 影响力事件：排序口径（'investors'按影响股民数 | 'people'按影响人数）
       settings: {
         categories: [...this.DEFAULT_CATEGORIES],
         proxyUrl: '',            // Cloudflare Worker 代理地址，用于一键抓取新闻
-        // AI 解读（可选）：OpenAI 兼容接口，浏览器端调用，密钥仅存本地
-        aiEndpoint: '',          // 如 https://api.deepseek.com/v1/chat/completions
-        aiKey: '',               // 用户自己的 LLM API Key（仅存本地 localStorage）
-        aiModel: '',             // 模型名，如 deepseek-chat
+        // AI 解读（可选）：OpenAI 兼容接口。浏览器直连会被 CORS 拦截，
+        // 推荐填「AI 代理地址」（Cloudflare Worker）由服务端转发并隐藏 Key。
+        aiEndpoint: '',          // 官方 chat/completions 地址，如 https://open.bigmodel.cn/api/paas/v4/chat/completions
+        aiKey: '',               // 用户自己的 LLM API Key（仅存本地 localStorage；用代理且 Worker 已存 Secret 时可留空）
+        aiModel: '',             // 模型名，如 glm-4-flash
+        aiProxy: '',             // 可选：AI 代理 Worker 地址（Cloudflare），填后所有 AI 调用走它，解决 CORS 并隐藏 Key
         doubaoKey: ''            // 用户自己的火山引擎「联网搜索」API Key（仅存本地 localStorage，不传服务器；填入后豆包榜走各自账户 500 次/月免费额度）
       }
     };
@@ -179,6 +180,7 @@ const Store = {
     if (typeof this.data.settings.aiKey !== 'string') this.data.settings.aiKey = '';
     if (typeof this.data.settings.doubaoKey !== 'string') this.data.settings.doubaoKey = '';
     if (typeof this.data.settings.aiModel !== 'string') this.data.settings.aiModel = '';
+    if (typeof this.data.settings.aiProxy !== 'string') this.data.settings.aiProxy = '';
     // 快讯来源名（可在「全球信息」页右栏标题上改）与分类维度（题材/概念/行业）
     if (typeof this.data.settings.briefSource !== 'string' || !this.data.settings.briefSource.trim()) {
       this.data.settings.briefSource = '格隆汇';

@@ -8890,48 +8890,64 @@ const app = createApp({
     const thsHotLoading = ref(false);
     const emHotStocks = ref([]);
     const emHotLoading = ref(false);
-    // ============ 影响力事件（按「影响股民数」从大到小排序；分 中国 / 美国 / 全世界 三个子版块） ============
+    // ============ 影响力事件（双指标：影响人数 / 影响股民数；分 中国 / 美国 / 全世界 三个子版块） ============
     // 数据由本地整理样例提供，并预留后端接口：refreshInfluence() 内可改为 fetch 真实事件源后合并。
     // region: 'cn'(中国) | 'us'(美国) | 'world'(全世界)
     //
-    // ===== 统计口径（20261107b 修正：只统计「投资该事件所涉概念相关股票」的股民人数）=====
-    // 「影响股民数」= 投资该事件所涉「概念板块」相关股票的股民人数估算，
-    // 只统计真正持有 / 交易这些概念股票的人，不含未投资该概念的人群，也不按泛人口或全球人口估算。
-    // 三个子版块统一此口径，仅市场范围不同：
-    //   · 全世界(world)：全球主要市场投资该概念股票的股民数（跨市场汇总）；
-    //   · 中国(cn)：A 股市场投资该概念股票的股民数；
-    //   · 美国(us)：美股市场投资该概念股票的股民数。
-    // 数据来源：CONCEPT_INVESTORS[区域][概念] = 该区域投资该概念相关股票的股民人数（本地整理估算值）。
-    // 每条事件用 concept 引用概念，影响股民数由查表得到，排序按此人数从大到小。
-    const CONCEPT_INVESTORS = {
+    // ===== 双指标计算模型（20261108a 新增「影响人数」，与「影响股民数」同时存在）=====
+    //  · 影响股民数 S：投资该事件所涉「概念板块」相关股票的股民人数（财务直接暴露人群，沿用 20261107b 口径）。
+    //  · 影响人数   A：该事件影响到「生产 + 生活」的全部相关人数，且包含股民数（S ⊆ A）：
+    //                  该概念的从业者 / 上下游、使用该产品服务的消费者与用户、泛受影响公众，再加上持股股民。
+    //  公式：A = 影响股民数 S + 非投资人群 N，其中 N = P × r − S；
+    //        P = 区域人口基数，r = 该概念对应「生产生活场景」在区域人口中的触达率(0~1)；
+    //        等价写法 A = max(P × r, S)（max 保证 S ⊆ A，不会出现股民数大于影响人数）。
+    //        股民占比 = S / A；非投资人群 N = A − S。
+    //  · P（2026 估算）：全世界 82 亿 / 中国 14.1 亿 / 美国 3.4 亿。三个子版块用同一公式，仅 P 与 r 不同。
+    //  · r 按概念性质取：生活消费 / 通用型概念（短剧、AI 应用、能源、利率、房地产）触达率高，
+    //    专业投资型概念（券商、中概股、半导体）触达率低。
+    //  · 例：中国「AI 短剧审核监管」→ 大量中国人看短剧，r=0.70 → A = max(14.1亿×0.70, 3500万) = 9.87 亿人；
+    //    但投资「AI 短剧 / 微短剧」概念股的股民仅 S=3500 万（占 3.5%）——两指标的差距正是本模型要表达的。
+    const REGION_POP = { world: 8200000000, cn: 1410000000, us: 340000000 };
+    // CONCEPT_SCOPE[区域][概念] = { name 概念名, n 影响股民数 S, r 生产生活触达率 }
+    const CONCEPT_SCOPE = {
       world: {
-        ai:      { name: 'AI / 算力',         n: 360000000 },  // 全球投资 AI / 算力相关股票的股民
-        finance: { name: '全球金融 / 利率',   n: 320000000 },
-        trade:   { name: '全球贸易 / 出口链', n: 280000000 },
-        aiApp:   { name: 'AI 应用 / 软件',    n: 250000000 },
-        energy:  { name: '能源 / 贵金属',     n: 200000000 },
-        macro:   { name: '全球宏观 / 周期',   n: 180000000 }
+        ai:      { name: 'AI / 算力',         n: 360000000, r: 0.58 },
+        finance: { name: '全球金融 / 利率',   n: 320000000, r: 0.62 },
+        trade:   { name: '全球贸易 / 出口链', n: 280000000, r: 0.55 },
+        aiApp:   { name: 'AI 应用 / 软件',    n: 250000000, r: 0.60 },
+        energy:  { name: '能源 / 贵金属',     n: 200000000, r: 0.64 },
+        macro:   { name: '全球宏观 / 周期',   n: 180000000, r: 0.61 }
       },
       cn: {
-        broker:   { name: '券商 / 资本市场',  n: 190000000 },  // A 股投资券商及资本市场相关股票的股民
-        bank:     { name: '银行 / 流动性',    n: 170000000 },
-        property: { name: '房地产链',         n: 110000000 },
-        nev:      { name: '新能源车 / 电池',  n: 80000000 },
-        core:     { name: '外资核心资产',     n: 60000000 }
+        broker:     { name: '券商 / 资本市场',  n: 190000000, r: 0.32 },
+        bank:       { name: '银行 / 流动性',    n: 170000000, r: 0.45 },
+        property:   { name: '房地产链',         n: 110000000, r: 0.58 },
+        nev:        { name: '新能源车 / 电池',  n:  80000000, r: 0.28 },
+        core:       { name: '外资核心资产',     n:  60000000, r: 0.22 },
+        shortDrama: { name: 'AI 短剧 / 微短剧', n:  35000000, r: 0.70 } // 生活消费型：看短剧的人极多、持股者很少
       },
       us: {
-        usFinance: { name: '美债 / 金融',      n: 90000000 },  // 美股投资美债 / 金融相关股票的股民
-        usMacro:   { name: '美股宏观 / 利率',  n: 80000000 },
-        usBank:    { name: '银行股',           n: 70000000 },
-        adr:       { name: '中概股',           n: 50000000 },
-        chip:      { name: '半导体',           n: 45000000 }
+        usFinance: { name: '美债 / 金融',      n: 90000000, r: 0.78 },
+        usMacro:   { name: '美股宏观 / 利率',  n: 80000000, r: 0.80 },
+        usBank:    { name: '银行股',           n: 70000000, r: 0.62 },
+        adr:       { name: '中概股',           n: 50000000, r: 0.24 },
+        chip:      { name: '半导体',           n: 45000000, r: 0.28 }
       }
     };
-    function conceptOf(e) { return (CONCEPT_INVESTORS[e.region] || {})[e.concept] || null; }
-    // 影响股民数 = 该事件所涉概念在对应市场的相关股票投资者人数；概念名一并返回供界面展示
+    function conceptOf(e) { return (CONCEPT_SCOPE[e.region] || {})[e.concept] || null; }
+    // 归一双指标：affected=影响股民数 S，affectedPeople=影响人数 A(含 S)，investorShare=股民占比(%)
     function resolveInfluence(e) {
       const c = conceptOf(e);
-      return { ...e, affected: c ? c.n : 0, conceptName: c ? c.name : '综合' };
+      const S = c ? c.n : 0;
+      const P = REGION_POP[e.region] || 0;
+      const A = Math.max(S, Math.round(P * (c ? c.r : 0)));   // A = max(P×r, S)，保证 S ⊆ A
+      return {
+        ...e,
+        affected: S,                                                  // 影响股民数（默认排序口径）
+        affectedPeople: A,                                           // 影响人数（生产生活全部相关人数，含股民）
+        investorShare: A > 0 ? Math.round(S / A * 1000) / 10 : 0,   // 股民占影响人数的比例
+        conceptName: c ? c.name : '综合'
+      };
     }
     const INFLUENCE_EVENTS_SEED = [
       // —— 全世界：全球主要市场投资该概念相关股票的股民数 ——
@@ -8968,40 +8984,50 @@ const app = createApp({
       { id: 'c4', region: 'cn', concept: 'nev', title: '新能源车购置补贴延续', date: '2026-09-15', source: '工信部',
         summary: '以旧换新与购置税减免延续，整车与电池需求预期改善，影响投资新能源车 / 电池相关股票的股民。', relatedStocks: ['比亚迪', '宁德时代'] },
       { id: 'c5', region: 'cn', concept: 'core', title: '北向资金单日大幅净流入创新高', date: '2026-08-28', source: '沪深港通',
-        summary: '外资回流共振风险偏好，影响投资外资核心资产相关股票的股民。', relatedStocks: ['贵州茅台', '中国平安'] }
+        summary: '外资回流共振风险偏好，影响投资外资核心资产相关股票的股民。', relatedStocks: ['贵州茅台', '中国平安'] },
+      { id: 'c6', region: 'cn', concept: 'shortDrama', title: 'AI 短剧审核监管新规落地，微短剧行业全面合规整改', date: '2026-11-06', source: '广电总局',
+        summary: 'AI 生成短剧纳入内容审核与标识管理，海量短剧观众、创作者、平台从业者与广告主的生产生活均受影响，但其中真正投资短剧 / 影视传媒概念股的股民只是很小一部分。', relatedStocks: ['中文在线', '掌阅科技', '芒果超媒'] }
     ];
     const inflRegion = ref('world');   // 'cn' | 'us' | 'world'
-    const inflEvents = ref([]);        // 当前区域已按影响股民数降序排列的事件
+    const inflSortBy = ref('investors'); // 'investors' 按影响股民数排序 | 'people' 按影响人数排序
+    const inflEvents = ref([]);        // 当前区域已按 inflSortBy 指定指标降序排列的事件
     const inflLoading = ref(false);
     const inflError = ref('');
     const inflDate = ref('');          // 数据整理时间
     function regionLabel(r) { return r === 'cn' ? '中国' : r === 'us' ? '美国' : '全世界'; }
+    function sortLabel() { return inflSortBy.value === 'people' ? '影响人数' : '影响股民数'; }
     function sortInfluence(list) {
-      return [...(list || [])].sort((a, b) => (Number(b.affected) || 0) - (Number(a.affected) || 0));
+      const key = inflSortBy.value === 'people' ? 'affectedPeople' : 'affected';
+      return [...(list || [])].sort((a, b) => (Number(b[key]) || 0) - (Number(a[key]) || 0));
     }
     function loadInfluence() {
       const reg = inflRegion.value;
       // 三个子版块互斥：中国/美国/全世界各自只展示本区域事件，点击哪个就展现哪个
-      // 统一口径：影响股民数 = 该事件所涉概念在对应市场相关股票的投资者人数（只统计持有该概念股票的人）
+      // 双指标同时存在：影响股民数 S（投资该概念股票的股民）+ 影响人数 A（生产生活全部相关人数，含 S）
       const filtered = INFLUENCE_EVENTS_SEED.filter(e => e.region === reg).map(resolveInfluence);
       inflEvents.value = sortInfluence(filtered);
       inflDate.value = '实时整理';
       inflError.value = '';
     }
     function setInflRegion(r) { inflRegion.value = r; if (D && D.inflRegion !== undefined) D.inflRegion = r; loadInfluence(); }
+    function setInflSort(k) {
+      inflSortBy.value = (k === 'people') ? 'people' : 'investors';
+      if (D && D.inflSortBy !== undefined) D.inflSortBy = inflSortBy.value;
+      loadInfluence();
+    }
     async function refreshInfluence() {
       if (inflLoading.value) return;
       inflLoading.value = true;
       try {
         // 预留：若后端提供影响力事件接口可在此 fetch 并合并；当前以本地整理数据为准
         loadInfluence();
-        showToast(`已刷新影响力事件（${inflEvents.value.length} 条，按影响股民数从大到小排序）`, 'success');
+        showToast(`已刷新影响力事件（${inflEvents.value.length} 条，按${sortLabel()}从大到小排序）`, 'success');
       } catch (e) {
         inflError.value = (e && e.message) || '影响力事件获取失败';
         showToast('影响力事件获取失败：' + (e && e.message || e), 'error');
       } finally { inflLoading.value = false; }
     }
-    // 格式化影响股民数：≥1亿→x.xx 亿；≥1万→x.x 万；否则原值
+    // 格式化人数（影响人数 / 影响股民数通用）：≥1亿→x.xx 亿；≥1万→x.x 万；否则原值
     function fmtAffected(n) {
       const x = Number(n) || 0;
       if (x >= 1e8) return (x / 1e8).toFixed(2) + ' 亿';
@@ -9626,8 +9652,9 @@ const app = createApp({
     // 20261006h：三平台热度榜缓存恢复
     if (D.thsHotStocks && D.thsHotStocks.length) thsHotStocks.value = D.thsHotStocks;
     if (D.emHotStocks && D.emHotStocks.length) emHotStocks.value = D.emHotStocks;
-    // 影响力事件：恢复上次选择的区域，并加载对应事件（数据来自本地整理样例，非日期维度）
+    // 影响力事件：恢复上次选择的区域与排序口径，并加载对应事件（数据来自本地整理样例，非日期维度）
     if (D.inflRegion === 'cn' || D.inflRegion === 'us' || D.inflRegion === 'world') inflRegion.value = D.inflRegion;
+    if (D.inflSortBy === 'people' || D.inflSortBy === 'investors') inflSortBy.value = D.inflSortBy;
     loadInfluence();
     // 同花顺热门板块（行业/概念）缓存恢复
     if (D.thsSectors && ((D.thsSectors.industries || []).length || (D.thsSectors.concepts || []).length)) thsSectors.value = D.thsSectors;
@@ -11971,7 +11998,7 @@ const app = createApp({
       // 20261006h：三平台热度股票排行榜（同花顺 / 东方财富 / 豆包搜索）
       thsHotStocks, thsHotLoading, refreshThsHotOnly,
       emHotStocks, emHotLoading, refreshEmHotOnly,
-      inflRegion, inflEvents, inflLoading, inflError, inflDate, setInflRegion, refreshInfluence, regionLabel, fmtAffected,
+      inflRegion, inflEvents, inflLoading, inflError, inflDate, inflSortBy, setInflRegion, setInflSort, sortLabel, refreshInfluence, regionLabel, fmtAffected,
       thsSectors, thsSectorsLoading, thsSectorsError, refreshThsSectorsOnly,
       doubaoKeyInput, doubaoKeyFormShow, doubaoGuideShow, doubaoKeyActive,
       toggleDoubaoKeyForm, saveDoubaoKey, clearDoubaoKey, openDoubaoGuide,
