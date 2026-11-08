@@ -295,6 +295,32 @@ const main = async () => {
   await page.waitForTimeout(150);
   check('可切回「行业板块」', await page.locator('.ths-sector-list[data-kind="industry"]').isVisible());
 
+  // 8a) 20261108h：原「盘前热点板块」位置改为同花顺热门板块副本（顶行原件保留，两处共用同一份数据与 Tab 状态）
+  const row3Titles = await page.locator('.hot-row-3 .hot-panel .panel-title').allInnerTexts();
+  check('三并排第一格已是「同花顺热门板块」', /同花顺热门板块/.test(row3Titles[0] || ''), row3Titles.join('|'));
+  check('原「盘前热点板块」已被覆盖（页面不再出现该标题）', !(await page.locator('.hot-stack').innerText()).includes('盘前热点板块'));
+  const copyPanel = page.locator('.hot-panel.ths-sector-copy');
+  check('副本面板只出现 1 次且位于三并排内', (await copyPanel.count()) === 1
+    && await page.locator('.hot-row-3 .hot-panel.ths-sector-copy').count() === 1);
+  const copyTabs = page.locator('.ths-tabs-copy .infl-tab');
+  check('副本含行业 / 概念两个 Tab', (await copyTabs.count()) === 2
+    && (await copyTabs.nth(0).innerText()).includes('行业板块')
+    && (await copyTabs.nth(1).innerText()).includes('概念板块'));
+  check('副本默认只显示行业列表', await page.locator('.ths-sector-copy-list[data-kind="industry"]').isVisible()
+    && !(await page.locator('.ths-sector-copy-list[data-kind="concept"]').isVisible()));
+  check('副本行业列表渲染缓存数据（2 条）', (await page.locator('.ths-sector-copy-list[data-kind="industry"] .hot-item').count()) === 2);
+  check('顶行原面板仍在（复制而非搬移）', (await page.locator('.hot-top-row .hot-panel .panel-title').allInnerTexts()).some(t => t.includes('同花顺热门板块')));
+  await page.click('.ths-tabs-copy .infl-tab:has-text("概念板块")');
+  await page.waitForTimeout(150);
+  check('副本切到概念板块后自身列表切换', await page.locator('.ths-sector-copy-list[data-kind="concept"]').isVisible()
+    && !(await page.locator('.ths-sector-copy-list[data-kind="industry"]').isVisible()));
+  check('副本概念列表渲染缓存数据（1 条）', (await page.locator('.ths-sector-copy-list[data-kind="concept"] .hot-item').count()) === 1);
+  check('两处共享 Tab 状态：顶行原件同步切到概念板块', (await page.locator('.ths-tabs .infl-tab.active').innerText()).includes('概念板块')
+    && await page.locator('.ths-sector-list[data-kind="concept"]').isVisible());
+  await page.click('.ths-tabs .infl-tab:has-text("行业板块")');
+  await page.waitForTimeout(150);
+  check('反向联动：顶行切回行业后副本也切回', await page.locator('.ths-sector-copy-list[data-kind="industry"]').isVisible());
+
   // 8b) 20261108d：连板股票 —— 「10日内 / 连板」Tab 互斥切换（不显示说明文字）
   const lbPanel = page.locator('.lianban-tabs').locator('xpath=ancestor::div[contains(@class,"hot-panel")][1]');
   const lbTabs = page.locator('.lianban-tabs .infl-tab');

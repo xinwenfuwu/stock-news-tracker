@@ -4,12 +4,12 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>股市信息分析系统</title>
-  <link rel="stylesheet" href="css/style.css?v=20261108g">
+  <link rel="stylesheet" href="css/style.css?v=20261108h">
   <!-- Vue 3 全局构建版（v3.4.21 · 自托管）
        原先走 unpkg.com CDN：国内网络对 unpkg 的连通性不稳定，一旦该请求长时间挂起，
        <head> 里的阻塞脚本会让整页停在白屏、后续 auth-boot.js 根本不会执行。
        改为同源托管后，启动链路不再依赖任何第三方 CDN。 -->
-  <script src="js/vue.global.prod.js?v=20261108g"></script>
+  <script src="js/vue.global.prod.js?v=20261108h"></script>
 </head>
 <body class="auth-locked">
   <!-- ===== 登录关卡：登录通过前业务脚本不会被加载 ===== -->
@@ -95,7 +95,7 @@
         <input class="auth-input" type="text" id="auth-renew-user" placeholder="用户名（你注册时用的）" maxlength="20" autocomplete="off">
         <div class="auth-renew-plans" id="auth-renew-plans"></div>
         <div class="auth-renew-qr" id="auth-renew-qr">
-          <div class="auth-renew-qrbox"><img id="auth-renew-wx" src="assets/wechat-pay-qr.jpg?v=20261108g" alt="微信支付收款码"><span>微信支付（扫码支付）</span></div>
+          <div class="auth-renew-qrbox"><img id="auth-renew-wx" src="assets/wechat-pay-qr.jpg?v=20261108h" alt="微信支付收款码"><span>微信支付（扫码支付）</span></div>
           <div class="muted small" style="margin-top:6px;color:#c2410c;font-weight:600">支付时请添加会员备注，付款成功截图保存</div>
         </div>
         <input class="auth-input" type="text" id="auth-renew-amount" inputmode="decimal" placeholder="支付金额（必填，如 1000）" autocomplete="off">
@@ -1604,7 +1604,7 @@
                   <div class="qr-row">
                     <div class="qr-box">
                       <div class="qr-cap">推荐使用微信支付</div>
-                      <img src="assets/wechat-pay-qr.jpg?v=20261108g" alt="微信支付收款码" class="qr-pay-img">
+                      <img src="assets/wechat-pay-qr.jpg?v=20261108h" alt="微信支付收款码" class="qr-pay-img">
                       <div class="qr-cap" style="margin-top:6px;color:#c2410c;font-weight:600">支付时请添加会员备注，付款成功截图保存</div>
                       <div class="qr-cap muted small">火柴盒网络服务</div>
                     </div>
@@ -3362,28 +3362,45 @@
             <p>添加股票信息时，股票数量最好不要超过 <b>30</b> 个，服务器有限。</p>
           </div>
 
-          <!-- 三并排：盘前热点板块 | 尾盘买入法（筛选） | 振幅板块 -->
+          <!-- 三并排（20261108h 起）：同花顺热门板块（副本） | 同花顺热度榜 | 东方财富人气榜 -->
           <div class="hot-row-3">
-            <!-- 盘前热点板块 -->
-            <div class="hot-panel">
+            <!-- 20261108h：原「盘前热点板块」位置改为「同花顺热门板块」副本（与顶行共用 thsSectors / thsSectorTab，切换任一处两处同步） -->
+            <div class="hot-panel ths-sector-copy">
               <div class="panel-title-row">
-                <h3 class="panel-title" style="margin:0">🌅 盘前热点板块</h3>
-                <button class="btn btn-sm" @click="refreshPreMarketBoards" :disabled="preMarketLoading" title="只刷新「盘前热点板块」，不影响其他子版块">
-                  <span v-if="preMarketLoading">⏳ 刷新中...</span>
+                <h3 class="panel-title" style="margin:0">🟠 同花顺热门板块</h3>
+                <button class="btn btn-sm" @click="refreshThsSectorsOnly" :disabled="thsSectorsLoading" title="刷新同花顺热门行业与概念（按热度排名）">
+                  <span v-if="thsSectorsLoading">⏳ 刷新中...</span>
                   <span v-else>🔄 刷新数据</span>
                 </button>
               </div>
-              <div class="hot-list" v-if="preMarketBoards.length">
-                <div class="hot-item hot-item-click" v-for="(b, i) in preMarketBoards" :key="i"
-                     :class="{ active: hotBoardActive === b.name }"
-                     @click="askHotExclude({ type: 'board', board: b })"
-                     :title="'点击在下方「股票明细」中显示「' + b.name + '」的全部成分股'">
-                  <span class="hot-rank">{{ i + 1 }}</span>
-                  <span class="hot-name">{{ b.name }}</span>
-                  <span class="hot-val" :class="pctClass(b.change)">{{ fmtPct(b.change) }}</span>
-                </div>
+              <p class="muted small" style="margin:-4px 0 10px">同花顺热门板块（按热度排名，含涨跌幅 / 上榜标签 / 涨停统计）。点击 Tab 在<b>行业</b>与<b>概念</b>之间切换，数据来自同花顺。</p>
+              <div class="infl-tabs ths-tabs-copy">
+                <button class="infl-tab" :class="{active: thsSectorTab==='industry'}" @click="setThsSectorTab('industry')">🏭 行业板块</button>
+                <button class="infl-tab" :class="{active: thsSectorTab==='concept'}" @click="setThsSectorTab('concept')">💡 概念板块</button>
               </div>
-              <div class="muted small" v-else>点击「获取热门板块」加载</div>
+              <template v-if="thsSectors.industries.length || thsSectors.concepts.length">
+                <div class="hot-list ths-sector-copy-list" data-kind="industry" v-show="thsSectorTab==='industry'">
+                  <div class="hot-item hot-item-click" v-for="(s, i) in thsSectors.industries" :key="'ci' + s.code"
+                       @click="openSectorSelPick({ bk: 'THS:' + s.code, name: s.name, type: s.type })"
+                       :title="s.name + ' · 热度 ' + s.heat + (s.hotTag ? ' · ' + s.hotTag : '') + (s.limitTag ? ' · ' + s.limitTag : '') + '｜点击查看/筛选成分股'">
+                    <span class="hot-rank">{{ s.order || (i + 1) }}</span>
+                    <span class="hot-name">{{ s.name }}<span class="muted small" v-if="s.code"> {{ s.code }}</span></span>
+                    <span class="hot-val" :class="pctClass(s.change)">{{ fmtPct(s.change) }}</span>
+                  </div>
+                </div>
+                <div class="hot-list ths-sector-copy-list" data-kind="concept" v-show="thsSectorTab==='concept'">
+                  <div class="hot-item hot-item-click" v-for="(s, i) in thsSectors.concepts" :key="'cc' + s.code"
+                       @click="openSectorSelPick({ bk: 'THS:' + s.code, name: s.name, type: s.type })"
+                       :title="s.name + ' · 热度 ' + s.heat + (s.hotTag ? ' · ' + s.hotTag : '') + (s.limitTag ? ' · ' + s.limitTag : '') + '｜点击查看/筛选成分股'">
+                    <span class="hot-rank">{{ s.order || (i + 1) }}</span>
+                    <span class="hot-name">{{ s.name }}<span class="muted small" v-if="s.code"> {{ s.code }}</span></span>
+                    <span class="hot-val" :class="pctClass(s.change)">{{ fmtPct(s.change) }}</span>
+                  </div>
+                </div>
+              </template>
+              <div class="muted small" v-else-if="thsSectorsLoading">正在加载同花顺热门板块…</div>
+              <div class="muted small" v-else-if="thsSectorsError">{{ thsSectorsError }}</div>
+              <div class="muted small" v-else>点击「刷新数据」加载当前同花顺热门行业与概念</div>
             </div>
 
             <!-- 同花顺热度股票排行榜（20261006i）：反代 dq.10jqka.com.cn 热股榜 -->
@@ -5455,14 +5472,14 @@
     </transition>
   </div>
 
-  <script src="js/auth.js?v=20261108g"></script>
-  <script src="js/auth-sync.js?v=20261108g"></script>
+  <script src="js/auth.js?v=20261108h"></script>
+  <script src="js/auth-sync.js?v=20261108h"></script>
   <!-- 边缘加速默认站点（batch37 治本：Cloudflare Worker 代理东财/腾讯，缓解 JSONP 限流误报）。
        若你所在地区 workers.dev 访问慢，可在「设置 → 行情加速地址」清空即恢复纯直连。 -->
   <script>window.__SNT_ACCEL__ = 'https://sichina.dpdns.org';</script>
   <!-- 扫码支付二维码渲染库（第三方 qrcodejs，本地托管避免外链失效）。renderQr 会先检测全局 QRCode 是否存在。 -->
-  <script src="assets/qrcode.min.js?v=20261108g"></script>
-  <script src="js/auth-boot.js?v=20261108g"></script>
+  <script src="assets/qrcode.min.js?v=20261108h"></script>
+  <script src="js/auth-boot.js?v=20261108h"></script>
   <!-- store / stock-api / hot-topics / app 由 auth-boot.js 在登录通过后动态装载，
        未登录时它们不会被下载，业务数据也不会进入内存 -->
 </body>

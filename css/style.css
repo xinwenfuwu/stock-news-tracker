@@ -907,8 +907,11 @@ body {
 .infl-event-list::-webkit-scrollbar-thumb:hover { background: #9aa8be; }
 .infl-event-list::-webkit-scrollbar-track { background: transparent; }
 .infl-list-head { display: flex; justify-content: flex-end; margin: 2px 0 4px; }
-/* 同花顺热门板块：行业 / 概念 Tab 切换（复用 .infl-tab 蓝色实心选中样式） */
-.ths-tabs { margin: 4px 0 10px; }
+/* 同花顺热门板块：行业 / 概念 Tab 切换（复用 .infl-tab 蓝色实心选中样式）
+   20261108h：原「盘前热点板块」位置也放了一份同花顺热门板块副本，
+   Tab / 列表另用 -copy 后缀类名，避免与顶行原面板的定位选择器互相干扰；外观与行为一致。 */
+.ths-tabs, .ths-tabs-copy { margin: 4px 0 10px; }
+.ths-sector-copy-list { max-height: 360px; }
 /* 20261108d：连板股票「10日内 / 连板」Tab 切换（复用 .infl-tab 蓝色实心选中样式） */
 .lianban-tabs { margin: 2px 0 10px; }
 .lianban-list { max-height: 360px; }
