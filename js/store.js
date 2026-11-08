@@ -51,6 +51,7 @@ const Store = {
       inflRegion: 'world',    // 影响力事件：当前选中的区域子版块（'cn'中国 | 'us'美国 | 'world'全世界）
       inflSortBy: 'investors',// 影响力事件：排序口径（'investors'按影响股民数 | 'people'按影响人数）
       inflInfoHidden: false,  // 影响力事件：口径说明是否已隐藏（20261108b，按钮在说明文字左侧）
+      futureRegion: 'breaking', // 未来事件：当前选中的子版块（'breaking'突发 | 'future'未来）（20261108j）
       thsSectorTab: 'industry', // 同花顺热门板块：当前选中的 Tab（'industry' 行业 | 'concept' 概念，20261108c）
       lianbanTab: 'days10',     // 连板股票：当前选中的口径 Tab（'days10' 近10日涨停次数 | 'streak' 只算连续涨停板，20261108d）
       settings: {

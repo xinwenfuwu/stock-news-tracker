@@ -140,7 +140,7 @@ const main = async () => {
   await loginFresh(page);
   await goHot(page);
 
-  // 20261108i：影响力事件现分「左：影响力事件 / 中：未来事件（同结构）」双面板，
+  // 20261108j：影响力事件现分「左：影响力事件 / 中：未来事件（独立 突发/未来）」双面板，
   // 原影响力事件断言全部锁定到左面板，避免与中面板未来事件（同款 .infl-* 选择器）冲突触发 strict mode
   const inflPanel = page.locator('.hot-top-row > .hot-panel').nth(0);   // 左：影响力事件
   const futurePanel = page.locator('.hot-top-row > .hot-panel').nth(1); // 中：未来事件
@@ -341,16 +341,49 @@ const main = async () => {
   check('副本可切回行业板块（自身状态独立维护）', await page.locator('.ths-sector-copy-list[data-kind="industry"]').isVisible()
     && !(await page.locator('.ths-sector-copy-list[data-kind="concept"]').isVisible()));
 
-  // 8c) 20261108i：原「中间 同花顺热门板块」位置已被「未来事件」覆盖（同影响力事件结构，与左面板共享数据与 Tab 状态）
-  check('顶行第二格标题 = 未来事件（已覆盖中间同花顺）', (await futurePanel.locator('.panel-title').innerText()).includes('未来事件'));
-  check('未来事件面板含 中国/美国/全世界 三个子版块', (await futurePanel.locator('.infl-region-tabs .infl-tab').count()) === 3);
-  check('未来事件含「影响人数 / 影响股民数」双指标排序按钮', (await futurePanel.locator('.infl-sort-btn').count()) === 2);
-  check('未来事件与左侧影响力事件共享同一份事件数据（同样 20 条）', (await futurePanel.locator('.infl-event-list .infl-event').count()) === 20, String(await futurePanel.locator('.infl-event-list .infl-event').count()));
-  // 在左面板切到「中国」，未来事件应同步（共享状态）
-  await inflPanel.locator('.infl-region-tabs .infl-tab:has-text("中国")').click();
+  // 8c) 20261108j：中间「未来事件」面板已与左侧「影响力事件」完全解耦，子版块为「突发 / 未来」
+  //     突发 = 全球当前正在发生的大事件；未来 = 未来三个月内全球将要发生的大事件（显示日期 + 距今天数倒计时）
+  check('顶行第二格标题 = 未来事件', (await futurePanel.locator('.panel-title').innerText()).includes('未来事件'));
+  check('未来事件面板含「突发 / 未来」两个子版块（不再含中国/美国/全世界）',
+    (await futurePanel.locator('.infl-region-tabs .infl-tab').count()) === 2
+    && (await futurePanel.locator('.infl-region-tabs .infl-tab:has-text("突发")').count()) === 1
+    && (await futurePanel.locator('.infl-region-tabs .infl-tab:has-text("未来")').count()) === 1);
+  check('未来事件默认进入「突发」子版块', (await futurePanel.locator('.infl-region-tabs .infl-tab.active').innerText()).includes('突发'));
+  check('突发子版块显示全球当前大事件（≥1 条，且含真实事件标题）',
+    (await futurePanel.locator('.infl-event-list .infl-event').count()) >= 1
+    && (await futurePanel.locator('.infl-event-list .infl-event .infl-title').first().innerText()).includes('反AI数据中心'));
+  check('突发事件卡片含「🏷 标签」', await page.evaluate(() => {
+    const p = document.querySelectorAll('.hot-top-row > .hot-panel')[1];
+    const it = p.querySelector('.infl-event');
+    return !!it && !!it.querySelector('.infl-concept');
+  }));
+  // 切到「未来」子版块
+  await futurePanel.locator('.infl-region-tabs .infl-tab:has-text("未来")').click();
   await page.waitForTimeout(150);
-  check('共享状态：左面板切到「中国」后未来事件首条不再是最初的「特朗普...」（同步生效）', !(await futurePanel.locator('.infl-event-list .infl-event .infl-title').first().innerText()).includes('特朗普中期选举失利'));
-  await inflPanel.locator('.infl-region-tabs .infl-tab:has-text("全世界")').click();
+  check('切到「未来」后子版块激活态转移', (await futurePanel.locator('.infl-region-tabs .infl-tab.active').innerText()).includes('未来'));
+  const futCount = await futurePanel.locator('.infl-event-list .infl-event').count();
+  check('未来子版块显示未来三个月内全球大事件（≥5 条）', futCount >= 5, String(futCount));
+  check('未来事件卡片显示「📅 日期」与「⏳ 还有 N 天」倒计时', await page.evaluate(() => {
+    const p = document.querySelectorAll('.hot-top-row > .hot-panel')[1];
+    const it = p.querySelector('.infl-event-list .infl-event');
+    return !!it && !!it.querySelector('.infl-meta') && /还有 \d+ 天/.test(it.querySelector('.infl-meta').textContent);
+  }));
+  check('未来事件按日期升序（最近/最临近的排前）', await page.evaluate(() => {
+    const p = document.querySelectorAll('.hot-top-row > .hot-panel')[1];
+    const ds = Array.from(p.querySelectorAll('.infl-event')).map(e => {
+      const m = (e.querySelector('.infl-meta') || {}).textContent.match(/(\d{4}-\d{2}-\d{2})/);
+      return m ? m[1] : null;
+    }).filter(Boolean);
+    for (let i = 1; i < ds.length; i++) if (ds[i] < ds[i-1]) return false;
+    return ds.length > 1;
+  }));
+  check('未来事件含典型真实事件（G20 领导人峰会 / CES 2027 / 美联储FOMC）', await page.evaluate(() => {
+    const p = document.querySelectorAll('.hot-top-row > .hot-panel')[1];
+    const txt = p.innerText;
+    return txt.includes('G20 领导人峰会') && txt.includes('CES 2027') && txt.includes('美联储FOMC');
+  }));
+  check('未来事件子版块选择持久化到 Store.data', await page.evaluate(() => typeof Store !== 'undefined' && Store.data && Store.data.futureRegion === 'future'));
+  await futurePanel.locator('.infl-region-tabs .infl-tab:has-text("突发")').click();
   await page.waitForTimeout(150);
 
   // 8b) 20261108d：连板股票 —— 「10日内 / 连板」Tab 互斥切换（不显示说明文字）

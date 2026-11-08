@@ -932,6 +932,8 @@ body {
 .infl-sort-hint { margin-left: auto; }
 .infl-affected { font-size: 12px; }
 .infl-affected b { color: #c2410c; }
+.infl-countdown { color: #e67e22; font-weight: 600; }
+.future-tabs .infl-tab.active { background: #7c3aed; border-color: #7c3aed; }
 .infl-people { padding: 1px 8px; border-radius: 999px; background: #eff6ff; border: 1px solid #dbeafe; }
 .infl-people b { color: #1d4ed8; }
 .infl-share { color: var(--text-muted, #64748b); }
