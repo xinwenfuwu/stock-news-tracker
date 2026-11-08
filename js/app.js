@@ -7075,23 +7075,31 @@ const app = createApp({
     const hotBoards = ref([]);
     const hotStocks = ref([]);
     // 20261108d：连板股票分「10日内 / 连板」两种口径，Tab 互斥切换（沿用影响力事件按钮样式）
-    //  'days10' = 近 10 个交易日涨停次数降序（原逻辑，完全不变）
-    //  'streak' = 只计算连续涨停板（boardCount >= 2）的股票，按连板数从大到小排序
+    //  'days10' = 近 10 个交易日涨停次数降序前 25（原逻辑，完全不变）
+    // 20261108f：'streak' 改为只显示「最新交易日仍涨停 = 未断板」的真实连续涨停股，
+    //   断板股连板数归零并剔除；按实际连板数从大到小，最多 50 只。
     const lianbanTab = ref('days10');
     function setLianbanTab(k) {
       lianbanTab.value = (k === 'streak') ? 'streak' : 'days10';
       if (D) D.lianbanTab = lianbanTab.value;   // Store autosave 自动落盘 + Gist 同步
     }
+    const LIANBAN_MAX = 50;
     const lianbanStocks = computed(() => {
       const list = hotStocks.value || [];
-      if (lianbanTab.value !== 'streak') return list;   // 「10日内」保持原样，不改排序、不过滤
-      return list.filter(s => (Number(s.boardCount) || 0) >= 2)   // 首板（1 板）不算连续涨停，剔除
+      if (lianbanTab.value !== 'streak') return list.slice(0, 25);   // 「10日内」原口径：前 25 只、原顺序
+      // 兼容旧缓存 / Gist 同步回来的老数据（无 isContinuous 字段）：回退到旧的 boardCount>=2 过滤，
+      // 避免升级后存量用户看到空白列表；新数据一律按「未断板」严格筛选。
+      const hasNew = list.some(s => typeof s.isContinuous === 'boolean');
+      const boardOf = (s) => Number(hasNew ? (s.streakCount || s.boardCount) : s.boardCount) || 0;
+      return list
+        .filter(s => (!hasNew || s.isContinuous === true) && boardOf(s) >= 2)
         .slice()
         .sort((a, b) =>
-          ((Number(b.boardCount) || 0) - (Number(a.boardCount) || 0)) ||  // 连板数从大到小
+          (boardOf(b) - boardOf(a)) ||                       // 实际连板数从大到小
           ((Number(b.ztCount) || 0) - (Number(a.ztCount) || 0)) ||
           ((Number(b.change) || 0) - (Number(a.change) || 0)) ||
-          String(a.code || '').localeCompare(String(b.code || '')));
+          String(a.code || '').localeCompare(String(b.code || '')))
+        .slice(0, LIANBAN_MAX);                             // 不超过 50 只
     });
     const newListedStocks = ref([]);
     const preMarketBoards = ref([]);
@@ -8918,7 +8926,7 @@ const app = createApp({
         const nAll = nBoards + nPre + nAmp + nStocks + nNew + nThs + nEm;
         if (nAll) {
           // 有数据即成功；本轮确实没拿到新数据时补一句「沿用上次」，避免用户误以为刷新没生效
-          showToast(`获取到 ${nBoards} 个当日板块、${nPre} 个盘前热点、${nAmp} 个振幅板块、${nStocks} 只连板股票、${nNew} 只新上市股票、同花顺热度 ${nThs} 只、东财人气 ${nEm} 只`
+          showToast(`获取到 ${nBoards} 个当日板块、${nPre} 个盘前热点、${nAmp} 个振幅板块、${Math.min(nStocks, 25)} 只连板股票、${nNew} 只新上市股票、同花顺热度 ${nThs} 只、东财人气 ${nEm} 只`
             + (gotNew ? '' : '（本轮未获取到新数据，沿用上次结果）'), 'success');
         } else {
           // 全空：区分「本轮确实没拉到」与「真的一无所有」，给出可操作提示，不再使用已过时的 JSONP 措辞
@@ -9402,7 +9410,8 @@ const app = createApp({
         if (list && list.length) {
           hotStocks.value = list;
           D.hotStocks = list;
-          showToast(`已刷新 ${list.length} 只连板股票`, 'success');
+          const nStreak = list.filter(s => s.isContinuous === true && (Number(s.streakCount) || 0) >= 2).length;
+          showToast(`已刷新连板股票（10日内 ${Math.min(list.length, 25)} 只 / 未断板连板 ${nStreak} 只）`, 'success');
         } else if (prevLen) {
           // 这次没拿到新数据（限流/非交易时段接口空），本地还有上次数据 → 沿用，不算失败
           showToast(`未获取到新数据，继续沿用上次 ${prevLen} 条`, 'info');

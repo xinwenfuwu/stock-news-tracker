@@ -4634,7 +4634,8 @@ const StockAPI = {
 
   // ============ 连板股票（近 10 个交易日内涨停次数排行） ============
   /**
-   * 获取「连板股票」排行：近 10 个交易日内涨停板最多的股票，按涨停次数降序取前 25。
+   * 获取「连板股票」排行：近 10 个交易日内涨停板最多的股票，按涨停次数降序取前 25（「10日内」口径）。
+   * 20261108f 起额外附带「未断板连续涨停」补充行（isContinuous / streakCount），供「连板」Tab 使用。
    *
    * 数据源：东财涨停板池（push2ex.eastmoney.com/getTopicZTPool），单次即返回当日全市场涨停股，
    * 每只带 lbc（连板数）、zttj.days/ct（统计窗口天数 / 窗口内涨停次数）、hybk（所属行业）。
@@ -4651,7 +4652,7 @@ const StockAPI = {
    *          boardCount=连板数, ztCount=近10交易日涨停次数, boomCount=炸板次数
    */
   async getLimitUpStreak() {
-    return this._withCache('ztpool:10d25', API_TTL.SECTOR, () => this._getLimitUpStreakRaw(), v => !!(v && v.length));
+    return this._withCache('ztpool:10d25:20261108f', API_TTL.SECTOR, () => this._getLimitUpStreakRaw(), v => !!(v && v.length));
   },
 
   /**
@@ -4702,6 +4703,7 @@ const StockAPI = {
 
     // ② 并发回扫：4 路并行（原为串行，10 个交易日要等 10 个来回），凑满 10 个有效交易日即收工
     const collected = new Map();   // pureCode -> { i, it }，i 越小日期越新
+    const daySets = new Map();     // i(候选序号) -> Set<pureCode>：该交易日全部涨停股
     const dates = [];
     const CONC = 4;
     let cursor = 0, inflight = 0;
@@ -4720,10 +4722,13 @@ const StockAPI = {
         catch (e) { console.debug('涨停池单日抓取异常，跳过', s, e && e.message); }
         inflight--;
         if (!r || !r.ok) continue;                 // 非交易日 / 未开盘 → 不计入窗口，继续回扫
-        dates.push({ date: s, tc: r.tc });
+        dates.push({ date: s, tc: r.tc, i: i });
+        const set = new Set();
+        daySets.set(i, set);
         for (const it of r.pool) {
           const pure = String(it.c || '').trim();
           if (!pure) continue;
+          set.add(pure);
           // 同一只股可能连续多日涨停：只保留**日期最新**的一条
           // （并发抓取下完成顺序不确定，必须按候选序号比较，不能靠「后写覆盖」）
           const prev = collected.get(pure);
@@ -4733,6 +4738,20 @@ const StockAPI = {
     };
     await Promise.all(Array.from({ length: CONC }, worker));
     if (!dates.length) return [];
+
+    // 20261108f：最新一个「成功抓到涨停池」的交易日。
+    // 只有当天仍在涨停池里的股票才算「未断板」；最近一次涨停早于该日的股票就是断板，一律归零剔除。
+    const latestI = Math.min(...dates.map(d => d.i));
+    const dayIdx = Array.from(daySets.keys()).sort((a, b) => a - b);   // 日期由新到旧
+    /** 从最新交易日往前逐日数连续涨停，中间任一天没涨停立即中断（断板） */
+    function countStreak(pure) {
+      let n = 0;
+      for (const i of dayIdx) {
+        if (!daySets.get(i).has(pure)) break;
+        n++;
+      }
+      return n;
+    }
 
     const rows = [];
     for (const entry of collected.values()) {
@@ -4745,18 +4764,24 @@ const StockAPI = {
       const pure = String(it.c || '').trim();
       const m = String(it.m);
       const prefix = m === '1' ? 'sh' : (m === '0' ? 'sz' : (pure.startsWith('6') ? 'sh' : 'sz'));
+      const isContinuous = entry.i === latestI;
+      // 连板数量：以「自算连续涨停天数」为主（保证绝不断板），东财 lbc 兜底窗口截断
+      // （例如 12 连板但只回扫 10 个交易日，自算最多 10，用 lbc 补回真实板数）；断板股强制 0。
+      const streakCount = isContinuous ? Math.max(countStreak(pure), lbc) : 0;
       rows.push({
         name: it.n || '',
         code: prefix + pure,
         pureCode: pure,
         market: m,
         change: it.zdp != null ? parseFloat(it.zdp) : null,
-        boardCount: lbc,                 // 连板数
+        boardCount: lbc,                 // 连板数（东财口径，「10日内」沿用）
         ztCount: ztCount,                // 近 10 交易日涨停次数（主排序键）
         boomCount: it.zbc != null ? Number(it.zbc) : 0,   // 炸板次数
         days: zttj.days != null ? Number(zttj.days) : null,
         industry: it.hybk || '',
-        firstLimitTime: it.fbt != null ? String(it.fbt) : ''
+        firstLimitTime: it.fbt != null ? String(it.fbt) : '',
+        isContinuous: isContinuous,      // 20261108f：最新交易日仍涨停 = 未断板
+        streakCount: streakCount         // 20261108f：真实连续涨停板数（断板 = 0）
       });
     }
     // ③ 排序：涨停次数降序 → 连板数降序 → 当日涨幅降序 → 行业 → 代码（稳定）
@@ -4766,7 +4791,29 @@ const StockAPI = {
       ((b.change || 0) - (a.change || 0)) ||
       String(a.industry).localeCompare(String(b.industry), 'zh') ||
       String(a.code).localeCompare(String(b.code)));
-    return rows.slice(0, 25);
+
+    // 「10日内」口径严格保持原样：前 25 只、原顺序（UI 侧仍 slice(0,25)）。
+    // 20261108f：把「未断板且 2 板及以上」的股票额外并入返回数组（最多 50 只），供「连板」Tab
+    // 独立筛选；这些股票可能排在 ztCount 前 25 之外，不能被旧口径截断丢掉。
+    const top25 = rows.slice(0, 25);
+    const streakExtra = rows
+      .filter(r => r.isContinuous && r.streakCount >= 2)
+      .slice()
+      .sort((a, b) =>
+        (b.streakCount - a.streakCount) ||
+        (b.ztCount - a.ztCount) ||
+        ((b.change || 0) - (a.change || 0)) ||
+        String(a.code).localeCompare(String(b.code)))
+      .slice(0, 50);
+    const out = top25.slice();
+    const seen = new Set(out.map(r => r.code));
+    for (const r of streakExtra) {
+      if (out.length >= 75) break;   // 控制本地持久化体积：25 + 最多 50
+      if (seen.has(r.code)) continue;
+      seen.add(r.code);
+      out.push(r);
+    }
+    return out;
   },
 
   // ============ 同类股票（同主营业务/产品的 A 股公司） ============
