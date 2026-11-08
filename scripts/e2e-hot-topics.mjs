@@ -119,12 +119,16 @@ const main = async () => {
     const n = await page.locator('.source-card .source-items li').count();
     check('展示出新闻条目', n > 0, 'items=' + n);
     const cards = await page.locator('.source-card').count();
-    check('渲染 10 个来源卡片', cards === 10, 'cards=' + cards);
+    check('渲染 11 个来源卡片（含新增财联社）', cards === 11, 'cards=' + cards);
     const upd = (await page.locator(FIN_TOOLBAR).innerText()).replace(/\s+/g, ' ');
-    check('标注数据来自内置快照（历史/自动抓取快照）且非实时', /（历史）|自动抓取快照/.test(upd) && !/（实时）/.test(upd), upd);
-    // 序号列（1..10 站顺序）
+    // 当前 UI 已改为「时间段模式」：更新文案为「…（覆盖 N 天，按时间段合并）」
+    check('标注数据来自时间段快照（按时间段合并）且非实时', /按时间段合并|覆盖\s*\d+\s*天/.test(upd) && !/（实时）/.test(upd), upd);
+    // 序号列（1..11 站顺序；20261108e 新增第 11 个「财联社」）
     const ranks = await page.locator('.source-card .src-rank').allInnerTexts();
-    check('来源按 1..10 顺序编号', ranks.slice(0, 10).join(',') === '1,2,3,4,5,6,7,8,9,10', ranks.join(','));
+    check('来源按 1..11 顺序编号', ranks.slice(0, 11).join(',') === '1,2,3,4,5,6,7,8,9,10,11', ranks.join(','));
+    const names = await page.locator('.source-card .src-name').allInnerTexts();
+    check('第 11 个平台是「财联社」', (names[10] || '').includes('财联社'), names.join(','));
+    check('证券时报平台存在', names.some(n => n.includes('证券时报')), names.join(','));
     check('页面无 JS 报错', errors.length === 0, errors.join(' | '));
     await ctx.close();
   }
@@ -137,44 +141,34 @@ const main = async () => {
     await page.locator(FIN_TOOLBAR + ' button').first().click();
     await page.waitForSelector('.toast', { timeout: 30000 });
     const toast = (await page.locator('.toast').innerText()).replace(/\s+/g, ' ');
-    check('提示已加载最新自动抓取快照（非「不可用/回退」）',
-      /已加载最新自动抓取快照|已展示最新自动抓取快照/.test(toast) && !/不可用/.test(toast), toast);
-    check('提示里带上了最新日期（今日快照）', /2026-09-17/.test(toast), toast);
+    check('提示已按时间段加载快照（非「不可用/回退」）',
+      /已加载.*火热话题/.test(toast) && !/不可用/.test(toast), toast);
+    check('提示里带上了统计窗口日期', /\d{4}年\d{1,2}月\d{1,2}日/.test(toast), toast);
     const n = await page.locator('.source-card .source-items li').count();
     check('刷新后仍有新闻条目（来源含真实数据）', n > 0, 'items=' + n);
     const upd = (await page.locator(FIN_TOOLBAR).innerText()).replace(/\s+/g, ' ');
-    check('更新时间标注为自动抓取快照', /自动抓取快照/.test(upd), upd);
+    check('更新时间标注为按时间段合并', /按时间段合并/.test(upd), upd);
     check('页面无 JS 报错', errors.length === 0, errors.join(' | '));
     await ctx.close();
   }
 
   // ---------------- 场景 2：代理不可达 → 点刷新应回退 ----------------
-  console.log('2) 代理不可达（模拟 workers.dev 被拦截）：点「刷新热门话题」应展示快照并给友好提示');
+  console.log('2) 代理不可达（模拟 workers.dev 被拦截）：仍应展示 11 个平台与快照新闻');
   {
-    // 127.0.0.1:65500 无监听，连接被拒，等价于「代理不可达」
+    // 127.0.0.1:65500 无监听，连接被拒，等价于「代理不可达」。
+    // 当前主路径为「时间段快照」(refreshDailyTopics)，不依赖代理，故代理故障不应影响任何平台。
     const { ctx, page, errors } = await openApp(browser, A.port, 'http://127.0.0.1:65500');
     await waitItems(page);
     await page.locator(FIN_TOOLBAR + ' button').first().click();
-    // 等 toast 出现
     await page.waitForSelector('.toast', { timeout: 30000 });
     const toast = (await page.locator('.toast').innerText()).replace(/\s+/g, ' ');
-    check('代理不可达时仍展示快照并给友好提示（不再报「各金融源暂未取到数据」）',
-      /已展示最新自动抓取快照/.test(toast) && !/各金融源暂未取到数据/.test(toast), toast);
-    check('提示改为「正常回退」口径，不再出现「不可用/失败」这类报错措辞',
-      !/不可用|失败/.test(toast), toast);
-    // 常驻解释条：比 toast 更持久，讲清楚「为什么现在看到的是快照、想真·实时该怎么办」
-    const liveNote = (await page.locator('#ht-daily .ht-live-note').innerText()).replace(/\s+/g, ' ');
-    check('展示常驻说明条并解释原因（实时增强源未连通 → 仍为最新快照）',
-      /实时增强源/.test(liveNote) && /自动抓取快照/.test(liveNote) && /不影响使用/.test(liveNote), liveNote);
+    check('代理不可达时仍按时间段加载快照（不报「各金融源暂未取到数据」）',
+      /已加载.*火热话题/.test(toast) && !/各金融源暂未取到数据/.test(toast), toast);
+    check('提示不含「不可用/失败」这类报错措辞', !/不可用|失败/.test(toast), toast);
     const n = await page.locator('.source-card .source-items li').count();
     check('回退后仍有新闻条目可看', n > 0, 'items=' + n);
-    const segActive = (await page.locator('#ht-daily .ht-controls .seg button.active').innerText()).trim();
-    check('模式自动切到「历史」（因为展示的是快照）', segActive === '历史', segActive);
-    // 切到「历史」应把解释条清掉（用户已明确要看历史，不必再解释实时）
-    await page.locator('#ht-daily .ht-controls .seg button', { hasText: '历史' }).click();
-    await page.waitForTimeout(300);
-    check('用户显式点「历史」后解释条消失',
-      await page.locator('#ht-daily .ht-live-note').count() === 0, 'note=' + await page.locator('#ht-daily .ht-live-note').count());
+    const cards = await page.locator('.source-card').count();
+    check('代理不可达时 11 个平台卡片仍齐全', cards === 11, 'cards=' + cards);
     check('页面无 JS 报错', errors.length === 0, errors.join(' | '));
     await ctx.close();
   }
@@ -205,8 +199,8 @@ const main = async () => {
     await page.locator('button', { hasText: '生成统计' }).first().click();
     await page.waitForSelector('.sc-card', { timeout: 25000 });
     const scCount = await page.locator('.sc-card').count();
-    check('渲染 10 个站点的分类统计卡', scCount === 10, 'sc=' + scCount);
-    const covered = (await page.locator('#ht-analysis .ht-controls .muted').first().innerText()).replace(/\s+/g, ' ');
+    check('渲染 11 个站点的分类统计卡', scCount === 11, 'sc=' + scCount);
+    const covered = (await page.locator('#ht-analysis .ht-controls .muted').allInnerTexts()).join(' ').replace(/\s+/g, ' ');
     check('显示覆盖天数与条数', /覆盖\s*\d+\s*天/.test(covered) && /\d+\s*条/.test(covered), covered);
     const bars = await page.locator('.sc-bar').count();
     check('存在分类分布条', bars > 0, 'bars=' + bars);
@@ -219,7 +213,7 @@ const main = async () => {
       const rows = await page.locator('.ov-detail-row').count();
       check('展开后能看到具体站点与标题', rows > 0, 'rows=' + rows);
       const ratioTxt = (await page.locator('.overlap-item .ov-ratio').first().innerText()).trim();
-      check('比例显示为 N/10 格式', /^\d+\/10$/.test(ratioTxt), ratioTxt);
+      check('比例显示为 N/11 格式', /^\d+\/11$/.test(ratioTxt), ratioTxt);
     }
     check('页面无 JS 报错', errors.length === 0, errors.join(' | '));
     await ctx.close();
@@ -300,23 +294,41 @@ const main = async () => {
     await ctx.close();
   }
 
-  // ---------------- 场景 6：当日无快照 → 回退前一可用日 ----------------
-  console.log('6) 当日无快照：应自动回退到「前一个可用日期」的快照');
+  // ---------------- 场景 6：11 源快照（含财联社 24h 电报、证券时报）完整渲染 ----------------
+  console.log('6) 20261108e：11 源快照中财联社 / 证券时报真实新闻渲染');
   {
     const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'htn-'));
     fs.cpSync(ROOT, tmp, { recursive: true, filter: (src) => !src.includes('_repo_tmp') && !src.includes('.git') });
     const dir = path.join(tmp, 'data', 'hot-topics');
-    // 删掉「今天」09-17，只留 09-16，并同步更新清单 → 自动回退到前一个可用日 09-16
-    fs.rmSync(path.join(dir, '2026-09-17.json'), { force: true });
+    // 只保留补写过 11 个来源的今日快照，清单指向它
+    for (const f of fs.readdirSync(dir)) {
+      if (/^2026-\d\d-\d\d\.json$/.test(f) && f !== '2026-11-08.json') fs.rmSync(path.join(dir, f), { force: true });
+    }
     fs.writeFileSync(path.join(dir, 'index.json'),
-      JSON.stringify({ updatedAt: new Date().toISOString(), latest: '2026-09-16', dates: ['2026-09-16'] }, null, 2));
+      JSON.stringify({ updatedAt: new Date().toISOString(), latest: '2026-11-08', dates: ['2026-11-08'] }, null, 2));
     const B = await serveStatic(tmp);
-    const { ctx, page } = await openApp(browser, B.port, '');
+    const { ctx, page, errors } = await openApp(browser, B.port, '');
     await waitItems(page);
-    const upd = (await page.locator(FIN_TOOLBAR).innerText()).replace(/\s+/g, ' ');
-    check('回退到前一个可用日期 2026-09-16', /2026-09-16/.test(upd), upd);
-    const dateVal = await page.locator('.ht-date').inputValue();
-    check('日期控件同步为 2026-09-16', dateVal === '2026-09-16', dateVal);
+
+    const snap = JSON.parse(fs.readFileSync(path.join(dir, '2026-11-08.json'), 'utf8'));
+    check('今日快照含 11 个来源', (snap.sources || []).length === 11, 'sources=' + (snap.sources || []).length);
+    const clsSrc = (snap.sources || []).find(s => s.key === 'cls');
+    const stcnSrc = (snap.sources || []).find(s => s.key === 'stcn');
+    check('财联社快照含 50 条 24 小时电报', !!(clsSrc && clsSrc.items.length === 50), 'cls=' + (clsSrc ? clsSrc.items.length : 'missing'));
+    check('财联社条目均带北京时间时间戳', !!(clsSrc && clsSrc.items.every(i => /^\d{4}-\d\d-\d\d \d\d:\d\d$/.test(i.time))), 'first=' + (clsSrc && clsSrc.items[0] && clsSrc.items[0].time));
+    check('财联社条目链接指向 cls.cn', !!(clsSrc && clsSrc.items.every(i => /cls\.cn/.test(i.url))), 'first=' + (clsSrc && clsSrc.items[0] && clsSrc.items[0].url));
+    check('证券时报快照含 50 条真实新闻', !!(stcnSrc && stcnSrc.items.length === 50), 'stcn=' + (stcnSrc ? stcnSrc.items.length : 'missing'));
+    check('证券时报条目链接指向 stcn.com', !!(stcnSrc && stcnSrc.items.every(i => /stcn\.com/.test(i.url))), 'first=' + (stcnSrc && stcnSrc.items[0] && stcnSrc.items[0].url));
+
+    const cards = await page.locator('.source-card').count();
+    check('页面稳定渲染 11 个平台', cards === 11, 'cards=' + cards);
+    const clsCard = page.locator('.source-card').filter({ hasText: '财联社' });
+    const clsRows = await clsCard.locator('.source-items li').count();
+    check('财联社卡片显示新闻条目（不再空白）', clsRows > 0, 'rows=' + clsRows);
+    const stcnCard = page.locator('.source-card').filter({ hasText: '证券时报' });
+    const stcnRows = await stcnCard.locator('.source-items li').count();
+    check('证券时报卡片显示新闻条目（修复 0 条）', stcnRows > 0, 'rows=' + stcnRows);
+    check('页面无 JS 报错', errors.length === 0, errors.join(' | '));
     await ctx.close();
     B.srv.close();
     fs.rmSync(tmp, { recursive: true, force: true });

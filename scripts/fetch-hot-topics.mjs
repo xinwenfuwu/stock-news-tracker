@@ -1,5 +1,5 @@
 /* ============================================================
- * fetch-hot-topics.mjs — 每日定时抓取 10 个金融软件 Top10 热点
+ * fetch-hot-topics.mjs — 每日定时抓取 11 个金融软件 Top10 热点
  * 供 GitHub Action 使用：结果写入 data/hot-topics/YYYY-MM-DD.json
  * 复用 js/hot-topics.js 的分类与来源配置（单一数据源）。
  * 用法：node scripts/fetch-hot-topics.mjs [YYYY-MM-DD]
@@ -143,6 +143,21 @@ function parseSource(parse, key, payload) {
   } else if (parse === 'json_gelonghui') {
     const arr = (payload && payload.result && payload.result.data) || (payload && payload.data) || [];
     for (const it of arr.slice(0, HOT_TOPN)) push(it.content || it.title || it.text, it.created_at || it.time, 'https://www.gelonghui.com/');
+  } else if (parse === 'json_cls') {
+    /* 20261108e：财联社 7×24 滚动电报 → data.roll_data[]。
+     * ctime 是 Unix 秒，必须显式 +8h 换成北京时间字符串；若直接交给 normTime 会按 UTC 输出，
+     * 比实际早 8 小时，进而被「新闻统计开始时间」窗口误杀。 */
+    const arr = (payload && payload.data && payload.data.roll_data)
+      || (payload && payload.data && payload.data.depth_list) || [];
+    for (const it of arr.slice(0, HOT_TOPN)) {
+      const text = it.title || it.brief || String(it.content || '').replace(/<[^>]*>/g, '');
+      const ts = Number(it.ctime || it.time || 0);
+      const time = ts >= 1e9 && ts < 1e11
+        ? new Date((ts + 8 * 3600) * 1000).toISOString().slice(0, 16).replace('T', ' ')
+        : (it.time || '');
+      const u = it.id ? ('https://www.cls.cn/detail/' + it.id) : 'https://www.cls.cn/telegraph';
+      push(text, time, u);
+    }
   } else if (parse && parse.startsWith('html_')) {
     // HTML 兜底：剥离脚本/样式/注释后，正则抽取正文标题链接
     const html = String(payload || '')
@@ -181,42 +196,64 @@ function parseSource(parse, key, payload) {
   return out.filter(it => { if (seen2.has(it.text)) return false; seen2.add(it.text); return true; });
 }
 
-/** 抓单个源：主端点，必要时回退到备用端点（如东财 JSON 失效时改抓 HTML 列表页） */
+/** 抓单个源：主端点 + 若干候选端点逐个重试（20261108e：证券时报境外超时专用）。
+ *  s.timeout 可单独放宽某源的超时；s.fallbacks 为候选端点数组，任一返回 >=3 条即收工。 */
 async function fetchSource(s) {
+  const timeoutMs = Number(s.timeout) || 8000;
   const tryEndpoint = async (url, forceHtml) => {
     if (!url) return [];
     const hdr = SRC_HEADERS[s.parse] || null;
     if (forceHtml || (s.parse && s.parse.startsWith('html_'))) {
-      const html = await fetchText(url, { headers: hdr });
+      const html = await fetchText(url, { headers: hdr, timeout: timeoutMs });
       return parseSource('html_body', s.key, html);
     }
-    const j = await fetchText(url, { isJson: true, headers: hdr });
+    const j = await fetchText(url, { isJson: true, headers: hdr, timeout: timeoutMs });
     return parseSource(s.parse, s.key, j);
   };
 
   let items = [];
-  try {
-    if (s.parse === 'news_eastmoney') {
-      const url = 'https://newsapi.eastmoney.com/kuaixun/v1/getlist_102_ajax.html?_=' + Date.now();
-      try { items = await tryEndpoint(url, false); }
-      catch (e) { console.warn(`  [${s.name}] 7x24 接口异常: ${e.message}`); }
-    } else {
-      items = await tryEndpoint(s.endpoint, false);
+  if (s.parse === 'news_eastmoney') {
+    const url = 'https://newsapi.eastmoney.com/kuaixun/v1/getlist_102_ajax.html?_=' + Date.now();
+    try { items = await tryEndpoint(url, false); }
+    catch (e) { console.warn(`  [${s.name}] 7x24 接口异常: ${e.message}`); }
+    if (items.length < 3 && s.fallback) {
+      console.log(`  [${s.name}] 主端点仅 ${items.length} 条，改试备用端点 ${s.fallback}`);
+      try {
+        const alt = await tryEndpoint(s.fallback, true);
+        if (alt.length > items.length) items = alt;
+      } catch (e) { console.warn(`  [${s.name}] 备用端点失败: ${e.message}`); }
     }
-  } catch (e) {
-    console.warn(`  [${s.name}] 主端点失败: ${e.message}`);
+    return items;
   }
 
-  if (items.length < 3 && s.fallback) {
-    console.log(`  [${s.name}] 主端点仅 ${items.length} 条，改试备用端点 ${s.fallback}`);
+  const candidates = [s.endpoint, ...(Array.isArray(s.fallbacks) ? s.fallbacks : [])]
+    .concat(s.fallback ? [s.fallback] : []).filter(Boolean);
+  for (let i = 0; i < candidates.length; i++) {
     try {
-      const alt = await tryEndpoint(s.fallback, true);
-      if (alt.length > items.length) items = alt;
+      const got = await tryEndpoint(candidates[i], false);
+      if (got.length > items.length) items = got;
+      if (items.length >= 3) break;
     } catch (e) {
-      console.warn(`  [${s.name}] 备用端点失败: ${e.message}`);
+      console.warn(`  [${s.name}] 端点 ${i + 1}/${candidates.length} 失败: ${e.message}`);
     }
   }
   return items;
+}
+
+/** 从最近 N 天快照里取某源的历史条目：仅当「本次 + 当日累积」全为空时兜底，
+ *  避免境外 IP 被源站拦截时该平台长期 0 条（20261108e 证券时报）。 */
+function prevDateStr(date, days) {
+  return new Date(Date.parse(date + 'T00:00:00Z') - days * 86400000).toISOString().slice(0, 10);
+}
+function fallbackItemsFromRecent(dir, key, date, maxDays = 14) {
+  for (let i = 1; i <= maxDays; i++) {
+    try {
+      const p = JSON.parse(readFileSync(join(dir, prevDateStr(date, i) + '.json'), 'utf8'));
+      const s = (p.sources || []).find(x => x.key === key);
+      if (s && Array.isArray(s.items) && s.items.length) return s.items.slice(0, HOT_TOPN);
+    } catch (e) { /* 该日无快照，继续往前找 */ }
+  }
+  return [];
 }
 
 /* ============================================================
@@ -412,7 +449,7 @@ async function main() {
   const dir = join(ROOT, 'data', 'hot-topics');
   mkdirSync(dir, { recursive: true });
 
-  // ===== 10 个金融软件热点榜（只能取"当前实时榜单"，无法回溯历史）=====
+  // ===== 11 个金融软件热点榜（只能取"当前实时榜单"，无法回溯历史）=====
   // 请求R3：由「每 2h 覆盖写」改为「按天累积去重」——否则当天早中段出现的
   // 热点会被后续 run 覆盖丢失，时间窗统计覆盖不全（正是用户反馈"远少于平台实际"的残余根因之一）。
   const SOURCE_ACCUM_MAX = 200;   // 单源单日累积上限（12 次/天 × 50 兜底），约束仓库体积
@@ -427,7 +464,7 @@ async function main() {
         for (const ps of prev.sources) prevByKey[ps.key] = new Map((ps.items || []).map(it => [it.text, it]));
       }
     } catch (e) { /* 首次生成 */ }
-    console.log(`开始抓取 ${DATE} 的 10 个金融软件热点（累积模式）...`);
+    console.log(`开始抓取 ${DATE} 的 ${ht.SOURCE_ORDER.length} 个金融软件热点（累积模式）...`);
     for (const s of ht.SOURCE_ORDER) {
       let items = [];
       try { items = await fetchSource(s); }
@@ -439,6 +476,14 @@ async function main() {
         else m.set(it.text, it);
       }
       let merged = [...m.values()];
+      if (!merged.length) {
+        // 本次与当日累积都为 0（多为境外 IP 被源站拦截）→ 继承最近快照，避免平台空白
+        const inherited = fallbackItemsFromRecent(dir, s.key, DATE);
+        if (inherited.length) {
+          merged = inherited;
+          console.log(`     [${s.name}] 本次 0 条，继承最近快照 ${inherited.length} 条`);
+        }
+      }
       if (merged.length > SOURCE_ACCUM_MAX) merged = merged.slice(0, SOURCE_ACCUM_MAX);
       sources.push({ rank: s.rank, key: s.key, name: s.name, color: s.color, items: merged });
       console.log(`  ${s.rank}. ${s.name}: 本次 ${items.length} 条，累积 ${merged.length} 条`);
@@ -448,7 +493,7 @@ async function main() {
     writeFileSync(file, JSON.stringify(snapshot, null, 2), 'utf8');
     console.log(`已写入 ${file}（累积模式）`);
   } else {
-    console.log(`跳过「10 个金融软件热点」：目标日 ${DATE} 不是今天（${todayStr()}）。`);
+    console.log(`跳过「${ht.SOURCE_ORDER.length} 个金融软件热点」：目标日 ${DATE} 不是今天（${todayStr()}）。`);
     console.log('  各来源只提供"当前实时榜单"，没有历史接口；若照写会把今天的榜单盖上昨天的日期，污染历史快照。');
     console.log('  本次只抓取可按时间回溯的「格隆汇每日快讯」。');
   }

@@ -39,7 +39,10 @@ const ALLOW_HOSTS = [
    *       ② 华尔街见闻原先压根没进白名单（走代理必 403，这是它长期 0 条的原因之一），
    *          且旧域名 api-prod.wallstreetcn.com 已下线，改用实测可用的 api-one。 */
   'www.stcn.com',             // 证券时报（替代投实）
-  'api-one.wallstcn.com'      // 华尔街见闻 7x24 快讯
+  'api-one.wallstcn.com',     // 华尔街见闻 7x24 快讯
+  // 20261108e：财联社 7×24 小时电报（第 11 个新闻平台）+ 证券时报备用域名
+  'www.cls.cn',
+  'stcn.com'
 ];
 
 // 请求R：部分源站校验自定义请求头（金十缺 x-app-id 会 403），按上游域名补发
@@ -47,7 +50,11 @@ const HOST_HEADERS = {
   'flash-api.jin10.com': { 'x-app-id': 'SO1EJGmNgCtmpcPF', 'x-version': '1.0.0', 'Referer': 'https://flash.jin10.com/' },
   'zhibo.sina.com.cn': { 'Referer': 'https://finance.sina.com.cn/7x24/' },
   // 请求T：华尔街见闻接口校验来源，缺 Referer 会被拒
-  'api-one.wallstcn.com': { 'Referer': 'https://wallstreetcn.com/' }
+  'api-one.wallstcn.com': { 'Referer': 'https://wallstreetcn.com/' },
+  // 20261108e：财联社电报 / 证券时报，补浏览器 UA 与来源，降低被 WAF 拦截概率
+  'www.cls.cn': { 'Referer': 'https://www.cls.cn/telegraph', 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36' },
+  'www.stcn.com': { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36' },
+  'stcn.com': { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36' }
 };
 
 // ============================ 工具函数 ============================

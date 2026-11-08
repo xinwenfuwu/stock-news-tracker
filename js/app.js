@@ -7100,7 +7100,7 @@ const app = createApp({
     const hotPanelsHidden = ref(false);
     const financePushHidden = ref(false);
     const hotSort = reactive({ key: 'dailyChange', dir: 'desc' });
-    // 全球信息页：火热话题（10 个金融软件热门消息）+ 格隆汇每日快讯分类统计
+    // 全球信息页：火热话题（11 个金融软件热门消息）+ 格隆汇每日快讯分类统计
     const hotTopicsSources = ref([]);
     const hotTopicsMerged = ref([]);
     const hotTopicsLoading = ref(false);
@@ -7516,6 +7516,26 @@ const app = createApp({
       return m.slice(0, 20);
     }
 
+    /** 20261108e：以 HotTopics.SOURCE_ORDER（11 个平台）为骨架补齐任意快照。
+     *  历史快照只落库了当时存在的源（如新增财联社前的 10 个），若直接渲染会让新平台整块消失；
+     *  这里统一补成 11 张卡片，缺失的源显示「该日暂无该平台数据」。 */
+    function withSourceSkeleton(srcs) {
+      const order = (typeof HotTopics !== 'undefined' && Array.isArray(HotTopics.SOURCE_ORDER))
+        ? HotTopics.SOURCE_ORDER : [];
+      if (!order.length) return srcs || [];
+      const byKey = new Map((srcs || []).map(s => [s.key, s]));
+      return order.map(s => {
+        const base = { rank: s.rank, key: s.key, name: s.name, color: s.color };
+        const cur = byKey.get(s.key);
+        if (!cur) return { ...base, items: [], loading: false, error: '该日暂无该平台数据' };
+        const items = cur.items || [];
+        return {
+          ...cur, ...base, items, loading: false,
+          error: items.length ? null : (cur.error || '该日该源无数据')
+        };
+      });
+    }
+
     /**
      * 读取「仓库内置的最新可用快照」（同源，GitHub Pages 直出，不依赖任何代理）。
      * 先读清单 data/hot-topics/index.json 定位最新日期，读不到则从今天起向前回溯。
@@ -7535,11 +7555,7 @@ const app = createApp({
           const r = await fetch(`./data/hot-topics/${d}.json`, { cache: 'no-store' });
           if (!r.ok) continue;
           const snap = await r.json();
-          const srcs = (snap.sources || []).map(s => ({
-            ...s, loading: false,
-            items: s.items || [],
-            error: (s.items && s.items.length) ? null : '该源暂无数据'
-          }));
+          const srcs = withSourceSkeleton(snap.sources);  // 保证 11 个平台骨架齐全
           if (!srcs.some(s => s.items.length)) continue; // 全空快照跳过
           return { date: d, generatedAt: snap.generatedAt || '', sources: srcs };
         } catch (e) { /* 继续回溯前一天 */ }
@@ -7575,13 +7591,33 @@ const app = createApp({
           for (const p of proxies) {
             const ht = await StockAPI.fetchHotTopics(p);
             if (ht.sources && ht.sources.some(s => s.items.length)) {
-              hotTopicsSources.value = ht.sources;
-              hotTopicsMerged.value = ht.merged || [];
-              saveLocalHotTopicSnapshot(ht.sources);
+              /* 20261108e：按源合并——实时抓取失败的源（代理被源站拦截 / 解析为空）
+               * 用已加载的仓库快照对应源补齐，避免「证券时报」这类单源被整体覆盖成空白；
+               * 快照里存在但实时列表缺失的新平台（如财联社）也一并保留。 */
+              const snapByKey = new Map((fb ? fb.sources : []).map(s => [s.key, s]));
+              const seen = new Set();
+              const mergedSources = [];
+              for (const s of ht.sources) {
+                seen.add(s.key);
+                if (s.items && s.items.length) mergedSources.push(s);
+                else {
+                  const prev = snapByKey.get(s.key);
+                  mergedSources.push(prev && prev.items && prev.items.length
+                    ? { ...s, items: prev.items, loading: false, error: null }
+                    : s);
+                }
+              }
+              if (fb) for (const ps of fb.sources) {
+                if (!seen.has(ps.key)) mergedSources.push({ ...ps, loading: false, error: null });
+              }
+              mergedSources.sort((a, b) => (a.rank || 0) - (b.rank || 0));
+              hotTopicsSources.value = mergedSources;
+              hotTopicsMerged.value = buildMergedList(mergedSources);
+              saveLocalHotTopicSnapshot(mergedSources);
               hotTopicsUpdated.value = new Date().toLocaleString('zh-CN', { hour12: false }) + '（实时）';
               htMode.value = 'live';
               htLiveNote.value = '';
-              showToast(`已更新为最新实时抓取（${ht.sources.filter(s => s.items.length).length} 个来源）`, 'success');
+              showToast(`已更新为最新实时抓取（${mergedSources.filter(s => (s.items || []).length).length} 个来源）`, 'success');
               return;
             }
           }
@@ -7680,8 +7716,9 @@ const app = createApp({
           s.loading = false;
           s.error = s.items.length ? null : '该时间段内无数据';
         });
-        hotTopicsSources.value = list;
-        hotTopicsMerged.value = buildMergedList(list);
+        const skeleton = withSourceSkeleton(list);   // 20261108e：稳定显示 11 个平台
+        hotTopicsSources.value = skeleton;
+        hotTopicsMerged.value = buildMergedList(skeleton);
         const startStr = HT.fmtWindowCN(ws.getTime());
         const endStr = HT.fmtWindowCN(we.getTime());
         hotTopicsUpdated.value = `${startStr} - ${endStr}（覆盖 ${dayCount} 天，按时间段合并）`;
@@ -8660,7 +8697,7 @@ const app = createApp({
       if (!snap || !snap.sources) { snap = getLocalHotTopicSnapshot(date); fromLocal = true; }
       if (snap && snap.sources && snap.sources.length) {
         hotTopicDateHasData.value = true;
-        hotTopicsSources.value = snap.sources.map(s => ({ ...s, loading: false, error: (s.items && s.items.length) ? null : '该日该源无数据' }));
+        hotTopicsSources.value = withSourceSkeleton(snap.sources);
         hotTopicsUpdated.value = (snap.generatedAt ? new Date(snap.generatedAt).toLocaleString('zh-CN', { hour12: false }) : date) + (fromLocal ? '（本地快照）' : '（历史）');
         return;
       }
@@ -8748,7 +8785,7 @@ const app = createApp({
           }
         }
         for (const [, _v] of winBySource) flat.push(..._v.items);
-        // 实时叠加：已配置代理 → 拉取十个平台此刻真实热点，按 源+文本 去重合并（修复「刷新不拉实时」）
+        // 实时叠加：已配置代理 → 拉取 11 个平台此刻真实热点，按 源+文本 去重合并（修复「刷新不拉实时」）
         let liveAdded = 0;
         const _proxies = String(D.settings.proxyUrl || '').split(/[\s,;]+/).map(x => x.trim()).filter(Boolean);
         if (_proxies.length) {

@@ -30,7 +30,7 @@ const cl = ht.clusterItems(synth);
 const btc = cl.find(c => c.repTitle.indexOf('比特币') >= 0);
 assert('比特币话题聚为 1 簇', !!btc);
 assert('比特币出现在 3 个站点', btc && btc.siteRanks.length === 3, btc && btc.siteRanks.length);
-assert('比特币比例 = 3/10', btc && btc.ratio === '3/10', btc && btc.ratio);
+assert('比特币比例 = 3/11（分母随 11 个平台自动变化）', btc && btc.ratio === '3/11', btc && btc.ratio);
 assert('比特币覆盖站点序号 [1,2,3]', btc && JSON.stringify(btc.siteRanks.slice().sort()) === JSON.stringify([1, 2, 3]));
 assert('天气话题单独成簇(1站)', cl.some(c => c.repTitle.indexOf('天气') >= 0 && c.siteRanks.length === 1));
 assert('按站点数降序（比特币在前）', cl[0].siteRanks.length >= cl[cl.length - 1].siteRanks.length);
@@ -42,7 +42,7 @@ const stats = ht.siteCategoryStats(synth.concat([
 const a = stats.find(s => s.key === 'gelonghui');
 assert('站点1(格隆汇) 总数为 2', a && a.total === 2, a && a.total);
 assert('站点1 财经=1 政治政策=1', a && a.byCat['财经'] === 1 && a.byCat['政治政策'] === 1, a && JSON.stringify(a.byCat));
-assert('输出 10 个站点占位', stats.length === 10, stats.length);
+assert('输出 11 个站点占位（20261108e 新增财联社）', stats.length === 11, stats.length);
 
 console.log('4) 真实种子数据（仓库内最新的两个快照）端到端');
 function load(date) {

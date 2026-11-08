@@ -1,6 +1,6 @@
 /* ============================================================
  * hot-topics.js — 火热话题共享逻辑
- * 1) 10 个金融软件来源（按用户指定排序）
+ * 1) 11 个金融软件来源（按用户指定排序）
  * 2) 7 大分类关键词词典 + classify()
  * 3) 跨站同话题聚类 clusterItems()（算出每条新闻在几个站出现）
  * 4) 标题归一化 / 相似度工具
@@ -49,7 +49,7 @@
     '财经': ['股市', '股票', 'A股', '港股', '美股', '上市', '退市', 'IPO', '融资', '并购', '收购', '重组', '财报', '营收', '利润', '分红', '股价', '涨停', '跌停', '基金', '债券', '期货', '黄金', '原油', '比特币', '加密货币', '券商', '银行', '保险', '房地产', '新能源', '光伏', '锂电', '储能', '造车', '业绩', '市值', '成交额', '北向资金', '主力', '板块', '指数', '散户', '机构', '量化', '期权', '融券', '印花税']
   };
 
-  /* ---------- 10 个金融软件来源（严格按用户指定排序） ---------- */
+  /* ---------- 11 个金融软件来源（严格按用户指定排序） ---------- */
   /* parse 类型：
    *  json_<key>  -> 标准 JSON 解析
    *  html_<key>  -> 经 Worker /proxy 返回的 HTML，用正则/DOMParser 抽取
@@ -67,13 +67,30 @@
     /* 请求T：投实官网**没有任何公开新闻流**——整站只有一个 App 产品落地页，
      * m. / api. 子域泛解析回同一页，/news 与 /api/telegraph 均 404，HTML 抽取只能抓到页脚备案号。
      * 故换成证券时报（stcn.com）：UTF-8 无编码问题，实测首页可抽到 195 条真实标题，A股/上市公司导向。 */
-    { rank: 7, key: 'stcn', name: '证券时报', color: '#c8102e', parse: 'html_stcn', endpoint: 'https://www.stcn.com/', base: 'https://www.stcn.com' },
+    /* 20261108e：Actions（境外 IP）访问 https://www.stcn.com/ 稳定 8s 超时 → 该源长期 0 条。
+     * 配多个候选端点（含不带 www 的 stcn.com、体积更小的要闻列表页），主端点失败逐个重试；
+     * 仍全失败时由 fetch-hot-topics.mjs 从最近快照继承，保证平台不空白。 */
+    { rank: 7, key: 'stcn', name: '证券时报', color: '#c8102e', parse: 'html_stcn',
+      endpoint: 'https://www.stcn.com/', base: 'https://www.stcn.com', timeout: 20000,
+      fallbacks: [
+        'https://stcn.com/',
+        'https://www.stcn.com/article/list/yw.html',
+        'https://stcn.com/article/list/yw.html',
+        'https://www.stcn.com/article/list/xw.html'
+      ] },
     /* 请求T：原 endpoint 用的旧 api-prod 域名 **已彻底下线**（连接超时），这是该源长期 0 条的根因。
      * 换成实测可用的 api-one.wallstcn.com + channel=global-channel，一次返回 50 条。 */
     { rank: 8, key: 'wscn', name: '华尔街见闻', color: '#222222', parse: 'json_wscn', endpoint: 'https://api-one.wallstcn.com/apiv1/content/lives?channel=global-channel&client=pc&limit=50' },
     // 请求R：万得 → 金十数据实时快讯（字段 time / data.content）
     { rank: 9, key: 'jin10', name: '金十数据', color: '#1267c7', parse: 'json_jin10', endpoint: 'https://flash-api.jin10.com/get_flash_list?channel=-8200&vip=1', base: 'https://flash.jin10.com' },
-    { rank: 10, key: 'cs', name: '中国证券', color: '#b91c1c', parse: 'html_cs', endpoint: 'https://www.cs.com.cn/', base: 'https://www.cs.com.cn' }
+    { rank: 10, key: 'cs', name: '中国证券', color: '#b91c1c', parse: 'html_cs', endpoint: 'https://www.cs.com.cn/', base: 'https://www.cs.com.cn' },
+    /* 20261108e：第 11 个平台「财联社」——7×24 小时滚动电报。
+     * 官方 /v1/roll/get_roll_list 需要静态签名：参数按 key 字典序拼成 query → SHA1 → MD5 = sign。
+     * sign 只依赖参数、不含时间戳，可预计算后固化在 URL 中；rn=50 一次返回 50 条（含 ctime/title/brief/id）。
+     * 数据源：https://www.cls.cn/telegraph（财联社 A股 24 小时电报）。 */
+    { rank: 11, key: 'cls', name: '财联社', color: '#d4380d', parse: 'json_cls',
+      endpoint: 'https://www.cls.cn/v1/roll/get_roll_list?app=CailianpressWeb&category=&last_time=&os=web&refresh_type=1&rn=50&sv=7.7.5&sign=d41556984a26bb242d388ce81c66a176',
+      base: 'https://www.cls.cn' }
   ];
 
   const SOURCE_BY_KEY = {};

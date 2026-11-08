@@ -6245,7 +6245,7 @@ const StockAPI = {
   // ============ 火热话题 / 全球信息 ============
 
   /**
-   * 抓取「火热话题」：按用户指定排序从 10 个金融软件分别拉取 Top10 影响股市的新闻。
+   * 抓取「火热话题」：按用户指定排序从 11 个金融软件分别拉取 Top10 影响股市的新闻。
    * 经 Cloudflare Worker 代理（东方财富走 /news，其余走 /proxy?url=）绕过跨域，逐源并行容错。
    * 每条自动用 HotTopics.classify 打 7 类标签（财经/政治政策/经济/军事/科技/社会热点/百强企业）。
    * @returns {Promise<{ok:boolean, error?:string, sources:Array, merged:Array}>}
@@ -6279,8 +6279,16 @@ const StockAPI = {
             items = this._extractFromHtml(html, s.key, s.base).slice(0, 10);
           }
         } else {
-          const txt = await this._proxyText(`${base}/proxy?url=${encodeURIComponent(s.endpoint)}`);
-          items = this._parseHotSource(s.parse, s.key, txt).slice(0, 10);
+          /* 20261108e：证券时报等源在部分代理节点会超时，逐个尝试候选端点，
+           * 任一返回非空即收工；单源失败不再让该平台变成空白（app.js 还会用快照按源兜底）。 */
+          const urls = [s.endpoint, ...(Array.isArray(s.fallbacks) ? s.fallbacks : [])].filter(Boolean);
+          for (const u of urls) {
+            try {
+              const txt = await this._proxyText(`${base}/proxy?url=${encodeURIComponent(u)}`);
+              const got = this._parseHotSource(s.parse, s.key, txt).slice(0, 10);
+              if (got.length) { items = got; break; }
+            } catch (e) { /* 试下一个候选端点 */ }
+          }
         }
         s.items = items;
         if (!items.length) s.error = '解析为空（源页面结构变化或非新闻页）';
@@ -6731,6 +6739,17 @@ const StockAPI = {
     } else if (parse === 'json_gelonghui' && j) {
       const arr = (j.result && j.result.data) || (j.data && j.data) || [];
       for (const it of arr) push(it.content || it.title || it.text, it.created_at || it.time, 'https://www.gelonghui.com/');
+    } else if (parse === 'json_cls' && j) {
+      // 20261108e：财联社 7×24 滚动电报 → data.roll_data[]（ctime 为 Unix 秒，需 +8h 转北京时间）
+      const arr = (j.data && j.data.roll_data) || (j.data && j.data.depth_list) || [];
+      for (const it of arr) {
+        const ts = Number(it.ctime || it.time || 0);
+        const time = (ts >= 1e9 && ts < 1e11)
+          ? new Date((ts + 8 * 3600) * 1000).toISOString().slice(0, 16).replace('T', ' ')
+          : (it.time || '');
+        const text = it.title || it.brief || String(it.content || '').replace(/<[^>]*>/g, '');
+        push(text, time, it.id ? ('https://www.cls.cn/detail/' + it.id) : 'https://www.cls.cn/telegraph');
+      }
     } else if (parse && parse.indexOf('html_') === 0 && txt) {
       // HTML 兜底：抽取页面中的标题级文本
       return this._extractFromHtml(txt, key);
