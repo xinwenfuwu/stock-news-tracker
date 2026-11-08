@@ -52,6 +52,7 @@ const Store = {
       inflSortBy: 'investors',// 影响力事件：排序口径（'investors'按影响股民数 | 'people'按影响人数）
       inflInfoHidden: false,  // 影响力事件：口径说明是否已隐藏（20261108b，按钮在说明文字左侧）
       thsSectorTab: 'industry', // 同花顺热门板块：当前选中的 Tab（'industry' 行业 | 'concept' 概念，20261108c）
+      lianbanTab: 'days10',     // 连板股票：当前选中的口径 Tab（'days10' 近10日涨停次数 | 'streak' 只算连续涨停板，20261108d）
       settings: {
         categories: [...this.DEFAULT_CATEGORIES],
         proxyUrl: '',            // Cloudflare Worker 代理地址，用于一键抓取新闻

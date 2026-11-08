@@ -7074,6 +7074,25 @@ const app = createApp({
     const hotLoading = ref(false);
     const hotBoards = ref([]);
     const hotStocks = ref([]);
+    // 20261108d：连板股票分「10日内 / 连板」两种口径，Tab 互斥切换（沿用影响力事件按钮样式）
+    //  'days10' = 近 10 个交易日涨停次数降序（原逻辑，完全不变）
+    //  'streak' = 只计算连续涨停板（boardCount >= 2）的股票，按连板数从大到小排序
+    const lianbanTab = ref('days10');
+    function setLianbanTab(k) {
+      lianbanTab.value = (k === 'streak') ? 'streak' : 'days10';
+      if (D) D.lianbanTab = lianbanTab.value;   // Store autosave 自动落盘 + Gist 同步
+    }
+    const lianbanStocks = computed(() => {
+      const list = hotStocks.value || [];
+      if (lianbanTab.value !== 'streak') return list;   // 「10日内」保持原样，不改排序、不过滤
+      return list.filter(s => (Number(s.boardCount) || 0) >= 2)   // 首板（1 板）不算连续涨停，剔除
+        .slice()
+        .sort((a, b) =>
+          ((Number(b.boardCount) || 0) - (Number(a.boardCount) || 0)) ||  // 连板数从大到小
+          ((Number(b.ztCount) || 0) - (Number(a.ztCount) || 0)) ||
+          ((Number(b.change) || 0) - (Number(a.change) || 0)) ||
+          String(a.code || '').localeCompare(String(b.code || '')));
+    });
     const newListedStocks = ref([]);
     const preMarketBoards = ref([]);
     const amplitudeBoards = ref([]);
@@ -9793,6 +9812,8 @@ const app = createApp({
     // 初始化时若有缓存的热门数据则恢复
     if (D.hotBoards && D.hotBoards.length) hotBoards.value = D.hotBoards;
     if (D.hotStocks && D.hotStocks.length) hotStocks.value = D.hotStocks;
+    // 20261108d：恢复上次选中的「10日内 / 连板」口径
+    if (D.lianbanTab === 'streak' || D.lianbanTab === 'days10') lianbanTab.value = D.lianbanTab;
     if (D.preMarketBoards && D.preMarketBoards.length) preMarketBoards.value = D.preMarketBoards;
     if (D.amplitudeBoards && D.amplitudeBoards.length) amplitudeBoards.value = D.amplitudeBoards;
     if (D.newListedStocks && D.newListedStocks.length) newListedStocks.value = D.newListedStocks;
@@ -12117,6 +12138,8 @@ const app = createApp({
       reverse, reverseSorted, reverseSort, setReverseSort, reverseBusiness, reverseSortIcon,
       // 页面3
       hotDate, hotLoading, hotBoards, hotStocks, newListedStocks, preMarketBoards, amplitudeBoards, conceptFreq,
+      // 20261108d：连板股票「10日内 / 连板」Tab 切换
+      lianbanTab, setLianbanTab, lianbanStocks,
       hotBoardActive, hotBoardLoading, hotDetailIsStock, openHotBoard, openHotStock, clearHotBoard,
       hotExclude, askHotExclude, cancelHotExclude, confirmHotExclude,
       hotFilterStocks,

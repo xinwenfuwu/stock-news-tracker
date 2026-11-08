@@ -4,12 +4,12 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>股市信息分析系统</title>
-  <link rel="stylesheet" href="css/style.css?v=20261108c">
+  <link rel="stylesheet" href="css/style.css?v=20261108d">
   <!-- Vue 3 全局构建版（v3.4.21 · 自托管）
        原先走 unpkg.com CDN：国内网络对 unpkg 的连通性不稳定，一旦该请求长时间挂起，
        <head> 里的阻塞脚本会让整页停在白屏、后续 auth-boot.js 根本不会执行。
        改为同源托管后，启动链路不再依赖任何第三方 CDN。 -->
-  <script src="js/vue.global.prod.js?v=20261108c"></script>
+  <script src="js/vue.global.prod.js?v=20261108d"></script>
 </head>
 <body class="auth-locked">
   <!-- ===== 登录关卡：登录通过前业务脚本不会被加载 ===== -->
@@ -95,7 +95,7 @@
         <input class="auth-input" type="text" id="auth-renew-user" placeholder="用户名（你注册时用的）" maxlength="20" autocomplete="off">
         <div class="auth-renew-plans" id="auth-renew-plans"></div>
         <div class="auth-renew-qr" id="auth-renew-qr">
-          <div class="auth-renew-qrbox"><img id="auth-renew-wx" src="assets/wechat-pay-qr.jpg?v=20261108c" alt="微信支付收款码"><span>微信支付（扫码支付）</span></div>
+          <div class="auth-renew-qrbox"><img id="auth-renew-wx" src="assets/wechat-pay-qr.jpg?v=20261108d" alt="微信支付收款码"><span>微信支付（扫码支付）</span></div>
           <div class="muted small" style="margin-top:6px;color:#c2410c;font-weight:600">支付时请添加会员备注，付款成功截图保存</div>
         </div>
         <input class="auth-input" type="text" id="auth-renew-amount" inputmode="decimal" placeholder="支付金额（必填，如 1000）" autocomplete="off">
@@ -1604,7 +1604,7 @@
                   <div class="qr-row">
                     <div class="qr-box">
                       <div class="qr-cap">推荐使用微信支付</div>
-                      <img src="assets/wechat-pay-qr.jpg?v=20261108c" alt="微信支付收款码" class="qr-pay-img">
+                      <img src="assets/wechat-pay-qr.jpg?v=20261108d" alt="微信支付收款码" class="qr-pay-img">
                       <div class="qr-cap" style="margin-top:6px;color:#c2410c;font-weight:600">支付时请添加会员备注，付款成功截图保存</div>
                       <div class="qr-cap muted small">火柴盒网络服务</div>
                     </div>
@@ -3316,17 +3316,22 @@
               <div class="muted small" v-else>点击「刷新数据」加载当前同花顺热门行业与概念</div>
             </div>
 
-            <!-- 连板股票（近 10 个交易日内涨停次数最多的股票，降序取前 25；原「当日热门股票」） -->
+            <!-- 连板股票（Tab：10日内 = 近 10 交易日涨停次数降序，原逻辑；连板 = 只算连续涨停板，按连板数降序） -->
             <div class="hot-panel">
               <div class="panel-title-row">
                 <h3 class="panel-title" style="margin:0">🚀 连板股票</h3>
-                <button class="btn btn-sm" @click="refreshHotStocksOnly" :disabled="hotStocksLoading" title="只刷新「连板股票」（近 10 个交易日内涨停次数最多的股票，降序取前 25），不影响其他子版块">
+                <button class="btn btn-sm" @click="refreshHotStocksOnly" :disabled="hotStocksLoading" title="刷新「连板股票」数据，不影响其他子版块">
                   <span v-if="hotStocksLoading">⏳ 刷新中...</span>
                   <span v-else>🔄 刷新数据</span>
                 </button>
               </div>
-              <div class="hot-list" v-if="hotStocks.length">
-                <div class="hot-item hot-item-click" v-for="(s, i) in hotStocks" :key="i"
+              <!-- 20261108d：10日内 / 连板 两种口径 Tab 互斥切换（沿用影响力事件按钮样式，不显示说明文字） -->
+              <div class="infl-tabs lianban-tabs">
+                <button class="infl-tab" :class="{active: lianbanTab==='days10'}" @click="setLianbanTab('days10')">📅 10日内</button>
+                <button class="infl-tab" :class="{active: lianbanTab==='streak'}" @click="setLianbanTab('streak')">🔥 连板</button>
+              </div>
+              <div class="hot-list lianban-list" v-if="lianbanStocks.length">
+                <div class="hot-item hot-item-click" v-for="(s, i) in lianbanStocks" :key="lianbanTab + '-' + i"
                      :class="{ active: hotBoardActive === s.name && hotDetailIsStock }"
                      @click="askHotExclude({ type: 'stock', stock: s })"
                      :title="'点击在下方「股票明细」中显示个股「' + s.name + '」的详细信息｜近 10 个交易日涨停 ' + (s.ztCount || 1) + ' 次'
@@ -3336,12 +3341,19 @@
                   <span class="hot-rank">{{ i + 1 }}</span>
                   <span class="hot-name">{{ s.name }}</span>
                   <span class="hot-val" style="display:flex; flex-direction:column; align-items:flex-end; line-height:1.25;">
-                    <span style="color:#dc2626; font-weight:700;">{{ s.boardCount || 1 }}板</span>
-                    <span class="muted small" style="font-weight:400;">10日{{ s.ztCount || 1 }}次</span>
+                    <template v-if="lianbanTab==='streak'">
+                      <span style="color:#dc2626; font-weight:700;">{{ s.boardCount || 2 }}连板</span>
+                      <span class="muted small" style="font-weight:400;">连续涨停</span>
+                    </template>
+                    <template v-else>
+                      <span style="color:#dc2626; font-weight:700;">{{ s.boardCount || 1 }}板</span>
+                      <span class="muted small" style="font-weight:400;">10日{{ s.ztCount || 1 }}次</span>
+                    </template>
                   </span>
                 </div>
               </div>
-              <div class="muted small" v-else>点击「获取热门板块」加载</div>
+              <div class="muted small" v-else-if="lianbanTab==='streak'">当前无连续涨停（2 板及以上）股票</div>
+              <div class="muted small" v-else>点击「刷新数据」加载</div>
             </div>
           </div>
 
@@ -5443,14 +5455,14 @@
     </transition>
   </div>
 
-  <script src="js/auth.js?v=20261108c"></script>
-  <script src="js/auth-sync.js?v=20261108c"></script>
+  <script src="js/auth.js?v=20261108d"></script>
+  <script src="js/auth-sync.js?v=20261108d"></script>
   <!-- 边缘加速默认站点（batch37 治本：Cloudflare Worker 代理东财/腾讯，缓解 JSONP 限流误报）。
        若你所在地区 workers.dev 访问慢，可在「设置 → 行情加速地址」清空即恢复纯直连。 -->
   <script>window.__SNT_ACCEL__ = 'https://sichina.dpdns.org';</script>
   <!-- 扫码支付二维码渲染库（第三方 qrcodejs，本地托管避免外链失效）。renderQr 会先检测全局 QRCode 是否存在。 -->
-  <script src="assets/qrcode.min.js?v=20261108c"></script>
-  <script src="js/auth-boot.js?v=20261108c"></script>
+  <script src="assets/qrcode.min.js?v=20261108d"></script>
+  <script src="js/auth-boot.js?v=20261108d"></script>
   <!-- store / stock-api / hot-topics / app 由 auth-boot.js 在登录通过后动态装载，
        未登录时它们不会被下载，业务数据也不会进入内存 -->
 </body>

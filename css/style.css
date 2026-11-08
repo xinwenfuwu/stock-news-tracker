@@ -909,6 +909,9 @@ body {
 .infl-list-head { display: flex; justify-content: flex-end; margin: 2px 0 4px; }
 /* 同花顺热门板块：行业 / 概念 Tab 切换（复用 .infl-tab 蓝色实心选中样式） */
 .ths-tabs { margin: 4px 0 10px; }
+/* 20261108d：连板股票「10日内 / 连板」Tab 切换（复用 .infl-tab 蓝色实心选中样式） */
+.lianban-tabs { margin: 2px 0 10px; }
+.lianban-list { max-height: 360px; }
 @media (max-width: 640px) { .infl-event-list { height: 340px; max-height: 340px; } }
 .infl-event { align-items: flex-start; flex-direction: row; padding: 9px 10px; }
 .infl-title { font-size: 13px; font-weight: 600; color: var(--text); line-height: 1.35; }
