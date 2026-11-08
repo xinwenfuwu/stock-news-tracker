@@ -8916,7 +8916,22 @@ const app = createApp({
         trade:   { name: '全球贸易 / 出口链', n: 280000000, r: 0.55 },
         aiApp:   { name: 'AI 应用 / 软件',    n: 250000000, r: 0.60 },
         energy:  { name: '能源 / 贵金属',     n: 200000000, r: 0.64 },
-        macro:   { name: '全球宏观 / 周期',   n: 180000000, r: 0.61 }
+        macro:   { name: '全球宏观 / 周期',   n: 180000000, r: 0.61 },
+        // 20261108c：全世界补足 20 条（股民数递减，r 均 ≤0.55 以保持「按影响人数」#1 仍为能源事件）
+        semi:    { name: '全球半导体 / 芯片', n: 165000000, r: 0.42 },
+        green:   { name: '全球新能源 / 光伏', n: 150000000, r: 0.38 },
+        idc:     { name: '全球数据中心 / 算力', n: 140000000, r: 0.35 },
+        ship:    { name: '全球航运 / 运价',   n: 125000000, r: 0.30 },
+        grain:   { name: '全球粮食 / 农业',   n: 110000000, r: 0.52 },
+        pharma:  { name: '全球医药 / 医保',   n: 100000000, r: 0.50 },
+        rare:    { name: '稀土 / 关键矿产',   n:  90000000, r: 0.28 },
+        crypto:  { name: '数字货币 / 稳定币', n:  80000000, r: 0.33 },
+        climate: { name: '全球气候 / 减排',   n:  70000000, r: 0.55 },
+        ecom:    { name: '跨境电商 / 物流',   n:  60000000, r: 0.40 },
+        sat:     { name: '卫星互联网 / 通信', n:  50000000, r: 0.25 },
+        cyber:   { name: '网络安全 / 数据',   n:  42000000, r: 0.45 },
+        luxury:  { name: '全球消费 / 奢侈品', n:  35000000, r: 0.32 },
+        sports:  { name: '赛事经济 / 文旅',   n:  28000000, r: 0.36 }
       },
       cn: {
         broker:     { name: '券商 / 资本市场',  n: 190000000, r: 0.32 },
@@ -8924,14 +8939,45 @@ const app = createApp({
         property:   { name: '房地产链',         n: 110000000, r: 0.58 },
         nev:        { name: '新能源车 / 电池',  n:  80000000, r: 0.28 },
         core:       { name: '外资核心资产',     n:  60000000, r: 0.22 },
-        shortDrama: { name: 'AI 短剧 / 微短剧', n:  35000000, r: 0.70 } // 生活消费型：看短剧的人极多、持股者很少
+        shortDrama: { name: 'AI 短剧 / 微短剧', n:  35000000, r: 0.70 }, // 生活消费型：看短剧的人极多、持股者很少
+        // 20261108c：中国补足 20 条（r 均 <0.70，保证 AI 短剧仍是「按影响人数」#1）
+        llm:        { name: '国产大模型 / AI',  n:  30000000, r: 0.45 },
+        semiEq:     { name: '半导体设备 / 国产', n:  27000000, r: 0.25 },
+        vbp:        { name: '医保集采 / 医药',  n:  24000000, r: 0.60 },
+        consume:    { name: '首发经济 / 消费',  n:  21000000, r: 0.55 },
+        lowAlt:     { name: '低空经济 / 通航',  n:  18000000, r: 0.22 },
+        elec:       { name: '电力市场 / 公用',  n:  15000000, r: 0.48 },
+        dataEl:     { name: '数据要素 / 确权',  n:  13000000, r: 0.30 },
+        crossEcom:  { name: '跨境电商 / 出海',  n:  11000000, r: 0.35 },
+        robot:      { name: '人形机器人',       n:   9000000, r: 0.20 },
+        silver:     { name: '银发经济 / 养老',  n:   7500000, r: 0.58 },
+        seed:       { name: '种业 / 农业',      n:   6000000, r: 0.40 },
+        compute:    { name: '算力券 / 智算',    n:   4500000, r: 0.18 },
+        metro:      { name: '城轨 / 基建',      n:   3200000, r: 0.50 },
+        dramaOut:   { name: '短剧出海 / 传媒',  n:   2000000, r: 0.42 }
       },
       us: {
         usFinance: { name: '美债 / 金融',      n: 90000000, r: 0.78 },
         usMacro:   { name: '美股宏观 / 利率',  n: 80000000, r: 0.80 },
         usBank:    { name: '银行股',           n: 70000000, r: 0.62 },
         adr:       { name: '中概股',           n: 50000000, r: 0.24 },
-        chip:      { name: '半导体',           n: 45000000, r: 0.28 }
+        chip:      { name: '半导体',           n: 45000000, r: 0.28 },
+        // 20261108c：美国补足 20 条（r 均 ≤0.70，保证「按影响人数」#1 仍为美股宏观事件）
+        aiCapex:   { name: '美股AI资本开支',   n: 40000000, r: 0.55 },
+        medicare:  { name: '美国医保 / 医疗',  n: 36000000, r: 0.68 },
+        shale:     { name: '页岩油 / 能源',    n: 32000000, r: 0.42 },
+        retail:    { name: '美国零售 / 消费',  n: 28000000, r: 0.70 },
+        mortgage:  { name: '美国房贷 / 地产',  n: 25000000, r: 0.60 },
+        evTax:     { name: '美国电动车 / 补贴', n: 22000000, r: 0.35 },
+        defense:   { name: '美国军工 / 国防',  n: 19000000, r: 0.30 },
+        antitrust: { name: '美国反垄断 / 科技', n: 16000000, r: 0.45 },
+        stable:    { name: '美国稳定币 / 支付', n: 14000000, r: 0.28 },
+        power:     { name: '美国电力 / 公用',  n: 12000000, r: 0.38 },
+        agri:      { name: '美国农业 / 出口',  n: 10000000, r: 0.32 },
+        stream:    { name: '美国流媒体 / 传媒', n:  8500000, r: 0.66 },
+        airline:   { name: '美国航空 / 出行',  n:  7000000, r: 0.48 },
+        endow:     { name: '美国高校基金 / 税', n:  5000000, r: 0.22 },
+        space:     { name: '美国商业航天',     n:  3500000, r: 0.18 }
       }
     };
     function conceptOf(e) { return (CONCEPT_SCOPE[e.region] || {})[e.concept] || null; }
@@ -8963,6 +9009,35 @@ const app = createApp({
         summary: '中东局势升级推升能源与避险资产波动，影响投资能源 / 贵金属相关股票的股民。', relatedStocks: ['中国海油', '山东黄金'] },
       { id: 'w6', region: 'world', concept: 'macro', title: '全球主要经济体同步衰退预警', date: '2026-08-20', source: 'IMF',
         summary: 'IMF下调全球增长预期，周期与消费板块承压，影响投资全球宏观 / 周期相关股票的股民。', relatedStocks: ['贵州茅台', '招商银行'] },
+      // 20261108c 扩充：全世界再补 14 条（股民数 1.65 亿 → 0.28 亿递减，r 均 ≤0.55）
+      { id: 'w7', region: 'world', concept: 'semi', title: '全球半导体库存周期见底，晶圆厂扩产提速', date: '2026-08-08', source: 'SEMI',
+        summary: '库存去化结束叠加AI芯片需求，全球晶圆厂资本开支上修，影响投资半导体产业链的股民。', relatedStocks: ['台积电', '中芯国际'] },
+      { id: 'w8', region: 'world', concept: 'green', title: '全球光伏装机预期上调，组件价格企稳', date: '2026-07-26', source: 'IEA',
+        summary: '主要经济体上调新能源装机目标，组件价格触底回升，影响投资光伏与新能源相关股票的股民。', relatedStocks: ['隆基绿能', '阳光电源'] },
+      { id: 'w9', region: 'world', concept: 'idc', title: '全球AI数据中心用电激增，电网投资加码', date: '2026-07-12', source: '国际能源署',
+        summary: '算力需求推升数据中心电力消耗，多国追加电网与储能投资，影响投资算力基础设施的股民。', relatedStocks: ['英伟达', '施耐德电气'] },
+      { id: 'w10', region: 'world', concept: 'ship', title: '红海航线复航预期反复，集运运价大幅波动', date: '2026-06-28', source: '航运交易所',
+        summary: '关键航道通行不确定导致运价与保费剧烈波动，影响投资航运与出口链相关股票的股民。', relatedStocks: ['中远海控', '马士基'] },
+      { id: 'w11', region: 'world', concept: 'grain', title: '全球粮食减产预警，农产品期货走高', date: '2026-06-15', source: '联合国粮农组织',
+        summary: '极端天气扰动主产区供给，粮价与农资成本上行，影响投资农业与食品相关股票的股民。', relatedStocks: ['先正达', '中粮糖业'] },
+      { id: 'w12', region: 'world', concept: 'pharma', title: '全球药价谈判机制扩围，仿制药格局重塑', date: '2026-05-30', source: 'WHO',
+        summary: '多国联合议价压低专利药价格，仿制药与CXO分工变化，影响投资医药相关股票的股民。', relatedStocks: ['恒瑞医药', '药明康德'] },
+      { id: 'w13', region: 'world', concept: 'rare', title: '关键矿产出口管制升级，稀土供应链重构', date: '2026-05-16', source: '综合外媒',
+        summary: '稀土与锂钴等关键矿产管制加码，下游磁材与电池成本承压，影响投资资源类股票的股民。', relatedStocks: ['北方稀土', '赣锋锂业'] },
+      { id: 'w14', region: 'world', concept: 'crypto', title: '多国稳定币牌照落地，跨境支付格局变化', date: '2026-05-02', source: '各国央行',
+        summary: '稳定币合规化推进，传统清算与支付机构面临分流，影响投资金融科技相关股票的股民。', relatedStocks: ['Visa', 'Coinbase'] },
+      { id: 'w15', region: 'world', concept: 'climate', title: '全球气候峰会达成减排新协议', date: '2026-04-18', source: 'UNFCCC',
+        summary: '新一轮减排承诺覆盖钢铁、水泥等高耗能行业，影响投资碳交易与环保相关股票的股民。', relatedStocks: ['宁德时代', '比亚迪'] },
+      { id: 'w16', region: 'world', concept: 'ecom', title: '跨境电商小额包裹税改全面实施', date: '2026-04-04', source: 'WTO',
+        summary: '多国取消小额包裹免税，直邮模式成本抬升，影响投资跨境电商与物流相关股票的股民。', relatedStocks: ['亚马逊', '顺丰控股'] },
+      { id: 'w17', region: 'world', concept: 'sat', title: '低轨卫星频谱分配落定，直连手机商用提速', date: '2026-03-21', source: 'ITU',
+        summary: '频谱与轨道资源落定推动卫星互联网商用，影响投资通信与卫星制造相关股票的股民。', relatedStocks: ['中国卫通', 'SpaceX 产业链'] },
+      { id: 'w18', region: 'world', concept: 'cyber', title: '跨国企业大规模数据泄露事件', date: '2026-03-08', source: '综合外媒',
+        summary: '云服务与身份系统遭攻击引发合规整改，影响投资网络安全相关股票的股民。', relatedStocks: ['奇安信', 'Palo Alto'] },
+      { id: 'w19', region: 'world', concept: 'luxury', title: '全球奢侈品消费增速放缓', date: '2026-02-22', source: '贝恩',
+        summary: '高净值消费趋于谨慎，奢侈品集团下调指引，影响投资可选消费相关股票的股民。', relatedStocks: ['LVMH', '贵州茅台'] },
+      { id: 'w20', region: 'world', concept: 'sports', title: '国际大型赛事带动文旅与转播产业链', date: '2026-02-08', source: '综合外媒',
+        summary: '赛事周期拉动转播权、广告与出境游需求，影响投资文旅传媒相关股票的股民。', relatedStocks: ['分众传媒', '携程'] },
       // —— 美国：美股市场投资该概念相关股票的股民数 ——
       { id: 'u1', region: 'us', concept: 'usFinance', title: '美国债务上限危机，政府停摆风险升温', date: '2026-11-01', source: '美国国会',
         summary: '债务上限谈判僵局推升美债收益率与避险情绪，影响投资美债 / 金融相关股票的股民。', relatedStocks: ['苹果', '微软'] },
@@ -8974,6 +9049,37 @@ const app = createApp({
         summary: '审计与上市门槛变化影响在美中概股估值，影响投资中概股的股民。', relatedStocks: ['阿里巴巴', '京东'] },
       { id: 'u5', region: 'us', concept: 'chip', title: '美国芯片出口管制再升级', date: '2026-08-30', source: 'BIS',
         summary: '先进制程与设备出口限制扩大，半导体供应链重构，影响投资半导体相关股票的股民。', relatedStocks: ['中芯国际', '北方华创'] },
+      // 20261108c 扩充：美国再补 15 条（股民数 4000 万 → 350 万递减，r 均 ≤0.70）
+      { id: 'u6', region: 'us', concept: 'aiCapex', title: '美股科技巨头上调AI资本开支指引', date: '2026-08-20', source: '公司财报',
+        summary: '云厂商集体上修算力投入，服务器与光模块需求外溢，影响投资AI资本开支链条的股民。', relatedStocks: ['微软', '英伟达'] },
+      { id: 'u7', region: 'us', concept: 'medicare', title: '美国医保控费新规压低药企报价', date: '2026-08-06', source: 'CMS',
+        summary: '医保谈判目录扩容压缩专利药利润，影响投资医疗与保险相关股票的股民。', relatedStocks: ['联合健康', '礼来'] },
+      { id: 'u8', region: 'us', concept: 'shale', title: '美国页岩油产量创历史新高', date: '2026-07-24', source: 'EIA',
+        summary: '供给增加压制油价，页岩油资本纪律与炼化价差变化，影响投资能源股的股民。', relatedStocks: ['埃克森美孚', '雪佛龙'] },
+      { id: 'u9', region: 'us', concept: 'retail', title: '美国零售销售连续两月下滑', date: '2026-07-10', source: '美国商务部',
+        summary: '居民消费走弱拖累可选零售业绩，影响投资消费与信用卡相关股票的股民。', relatedStocks: ['沃尔玛', '亚马逊'] },
+      { id: 'u10', region: 'us', concept: 'mortgage', title: '美国30年期房贷利率重回高位', date: '2026-06-26', source: '房地美',
+        summary: '按揭成本上行抑制成屋成交，影响投资地产链与房贷金融相关股票的股民。', relatedStocks: ['富国银行', '莱纳房产'] },
+      { id: 'u11', region: 'us', concept: 'evTax', title: '美国电动车税收抵免退坡', date: '2026-06-12', source: '美国财政部',
+        summary: '购车补贴退坡压制短期需求，影响投资电动车与充电网络相关股票的股民。', relatedStocks: ['特斯拉', 'Rivian'] },
+      { id: 'u12', region: 'us', concept: 'defense', title: '美国国防授权法案扩大军工订单', date: '2026-05-29', source: '五角大楼',
+        summary: '预算倾斜导弹与无人系统采购，影响投资国防军工相关股票的股民。', relatedStocks: ['洛克希德·马丁', '雷神'] },
+      { id: 'u13', region: 'us', concept: 'antitrust', title: '美国司法部对科技巨头提起反垄断诉讼', date: '2026-05-15', source: 'DOJ',
+        summary: '平台分发与广告业务面临拆分压力，影响投资大型科技股的股民。', relatedStocks: ['谷歌', 'Meta'] },
+      { id: 'u14', region: 'us', concept: 'stable', title: '美国稳定币监管框架立法通过', date: '2026-05-01', source: '美国国会',
+        summary: '储备与发行规则明确，银行与支付机构加速入场，影响投资金融科技股的股民。', relatedStocks: ['Circle', '摩根大通'] },
+      { id: 'u15', region: 'us', concept: 'power', title: '美国数据中心用电挤占居民电网容量', date: '2026-04-17', source: 'FERC',
+        summary: '区域电价上行推动公用事业与储能投资，影响投资电力股与用电企业的股民。', relatedStocks: ['杜克能源', '特斯拉'] },
+      { id: 'u16', region: 'us', concept: 'agri', title: '美国农产品出口订单大幅下滑', date: '2026-04-03', source: 'USDA',
+        summary: '海外采购放缓压低大豆玉米价格，影响投资农业与农机相关股票的股民。', relatedStocks: ['迪尔', '邦吉'] },
+      { id: 'u17', region: 'us', concept: 'stream', title: '美国主流流媒体平台集体涨价', date: '2026-03-20', source: '公司公告',
+        summary: '订阅提价与广告套餐并行，ARPU 提升但流失率承压，影响投资传媒股的股民。', relatedStocks: ['奈飞', '迪士尼'] },
+      { id: 'u18', region: 'us', concept: 'airline', title: '美国航空安全事件引发监管排查', date: '2026-03-06', source: 'FAA',
+        summary: '机队检查与航班削减推高运营成本，影响投资航空与旅出游行相关股票的股民。', relatedStocks: ['达美航空', '波音'] },
+      { id: 'u19', region: 'us', concept: 'endow', title: '美国高校捐赠基金投资收益税上调', date: '2026-02-20', source: '美国国税局',
+        summary: '税负上升改变长期资产配置，影响投资资管与私募相关股票的股民。', relatedStocks: ['贝莱德', '高盛'] },
+      { id: 'u20', region: 'us', concept: 'space', title: '美国商业航天发射牌照审批放宽', date: '2026-02-06', source: 'FAA',
+        summary: '发射频次上限提高带动卫星与地面设备需求，影响投资商业航天相关股票的股民。', relatedStocks: ['Rocket Lab', '铱星'] },
       // —— 中国：A 股市场投资该概念相关股票的股民数 ——
       { id: 'c1', region: 'cn', concept: 'broker', title: '证监会活跃资本市场一揽子新规（降印花税/T+0讨论）', date: '2026-11-03', source: '证监会',
         summary: '交易端与融资端政策齐发，市场活跃度与风险偏好提升，影响投资券商 / 资本市场相关股票的股民。', relatedStocks: ['中信证券', '东方财富'] },
@@ -8986,7 +9092,36 @@ const app = createApp({
       { id: 'c5', region: 'cn', concept: 'core', title: '北向资金单日大幅净流入创新高', date: '2026-08-28', source: '沪深港通',
         summary: '外资回流共振风险偏好，影响投资外资核心资产相关股票的股民。', relatedStocks: ['贵州茅台', '中国平安'] },
       { id: 'c6', region: 'cn', concept: 'shortDrama', title: 'AI 短剧审核监管新规落地，微短剧行业全面合规整改', date: '2026-11-06', source: '广电总局',
-        summary: 'AI 生成短剧纳入内容审核与标识管理，海量短剧观众、创作者、平台从业者与广告主的生产生活均受影响，但其中真正投资短剧 / 影视传媒概念股的股民只是很小一部分。', relatedStocks: ['中文在线', '掌阅科技', '芒果超媒'] }
+        summary: 'AI 生成短剧纳入内容审核与标识管理，海量短剧观众、创作者、平台从业者与广告主的生产生活均受影响，但其中真正投资短剧 / 影视传媒概念股的股民只是很小一部分。', relatedStocks: ['中文在线', '掌阅科技', '芒果超媒'] },
+      // 20261108c 扩充：中国再补 14 条（股民数 3000 万 → 200 万递减，r 均 <0.70）
+      { id: 'c7', region: 'cn', concept: 'llm', title: '国产大模型全面开源，应用生态加速落地', date: '2026-08-18', source: '工信部',
+        summary: '基础模型开源降低调用门槛，政企应用与智能体加速铺开，影响投资国产AI相关股票的股民。', relatedStocks: ['科大讯飞', '金山办公'] },
+      { id: 'c8', region: 'cn', concept: 'semiEq', title: '半导体设备国产化率突破关键节点', date: '2026-08-04', source: '行业协会',
+        summary: '刻蚀、薄膜与量测设备验证通过，产线招标向本土厂商倾斜，影响投资半导体设备股的股民。', relatedStocks: ['北方华创', '中微公司'] },
+      { id: 'c9', region: 'cn', concept: 'vbp', title: '医保集采扩围至高值耗材', date: '2026-07-21', source: '国家医保局',
+        summary: '集采规则调整压低耗材价格，医院与患者覆盖面广、但持股人群相对有限。', relatedStocks: ['迈瑞医疗', '乐普医疗'] },
+      { id: 'c10', region: 'cn', concept: 'consume', title: '首发经济与消费券政策落地', date: '2026-07-07', source: '商务部',
+        summary: '首店首展与消费补贴刺激线下客流，影响投资零售与消费服务相关股票的股民。', relatedStocks: ['永辉超市', '中国中免'] },
+      { id: 'c11', region: 'cn', concept: 'lowAlt', title: '低空经济试点城市扩容', date: '2026-06-23', source: '民航局',
+        summary: 'eVTOL 航线与起降点审批放开，影响投资通航、无人机与空管相关股票的股民。', relatedStocks: ['亿航智能', '中信海直'] },
+      { id: 'c12', region: 'cn', concept: 'elec', title: '电力市场化交易规则修订', date: '2026-06-09', source: '国家能源局',
+        summary: '现货与绿电交易机制完善，发电侧电价弹性提升，影响投资电力与公用事业股的股民。', relatedStocks: ['长江电力', '国电南瑞'] },
+      { id: 'c13', region: 'cn', concept: 'dataEl', title: '数据要素入表试点扩围', date: '2026-05-26', source: '财政部',
+        summary: '数据资源可确权入表，运营商与政务数据厂商估值重估，影响投资数据要素股的股民。', relatedStocks: ['易华录', '数据港'] },
+      { id: 'c14', region: 'cn', concept: 'crossEcom', title: '跨境电商综合试验区再扩容', date: '2026-05-12', source: '国务院',
+        summary: '通关与退税便利化扩至更多城市，影响投资跨境电商与海外仓相关股票的股民。', relatedStocks: ['跨境通', '顺丰控股'] },
+      { id: 'c15', region: 'cn', concept: 'robot', title: '人形机器人量产线投产', date: '2026-04-28', source: '工信部',
+        summary: '整机成本下探带动零部件订单，影响投资减速器、伺服与传感器相关股票的股民。', relatedStocks: ['汇川技术', '三花智控'] },
+      { id: 'c16', region: 'cn', concept: 'silver', title: '银发经济支持政策出台', date: '2026-04-14', source: '国务院',
+        summary: '适老化改造与养老服务补贴覆盖面广，影响投资养老、康复与保险相关股票的股民。', relatedStocks: ['中国平安', '鱼跃医疗'] },
+      { id: 'c17', region: 'cn', concept: 'seed', title: '种业振兴行动推进，生物育种审批提速', date: '2026-03-31', source: '农业农村部',
+        summary: '转基因品种审定扩容，影响投资种业与农化相关股票的股民。', relatedStocks: ['隆平高科', '大北农'] },
+      { id: 'c18', region: 'cn', concept: 'compute', title: '多地发放算力券补贴智算需求', date: '2026-03-17', source: '地方发改委',
+        summary: '智算中心利用率提升，影响投资IDC与服务器相关股票的股民。', relatedStocks: ['浪潮信息', '光环新网'] },
+      { id: 'c19', region: 'cn', concept: 'metro', title: '城市轨道交通新线审批提速', date: '2026-03-03', source: '发改委',
+        summary: '基建投资前置带动车辆与信号系统订单，影响投资轨交装备相关股票的股民。', relatedStocks: ['中国中车', '交控科技'] },
+      { id: 'c20', region: 'cn', concept: 'dramaOut', title: '网络短剧出海扶持计划发布', date: '2026-02-18', source: '广电总局',
+        summary: '译制与海外发行补贴落地，观众覆盖面大但投资相关概念股的股民很少。', relatedStocks: ['中文在线', '芒果超媒'] }
     ];
     const inflRegion = ref('world');   // 'cn' | 'us' | 'world'
     const inflSortBy = ref('investors'); // 'investors' 按影响股民数排序 | 'people' 按影响人数排序
@@ -9145,6 +9280,12 @@ const app = createApp({
      *  @returns {Promise<Array<{code,name,count}>>} 降序取前 20 */
 
     // ============ 同花顺热门板块（行业 / 概念）：刷新后显示当前同花顺热门行业与概念 ============
+    // 20261108c：行业 / 概念 改为 Tab 互斥切换（与影响力事件三个子版块同一套按钮样式），点击哪个显示哪个
+    const thsSectorTab = ref('industry');  // 'industry' 行业板块 | 'concept' 概念板块
+    function setThsSectorTab(k) {
+      thsSectorTab.value = (k === 'concept') ? 'concept' : 'industry';
+      if (D) D.thsSectorTab = thsSectorTab.value;   // Store autosave 自动落盘 + Gist 同步
+    }
     const thsSectors = ref({ industries: [], concepts: [] });  // {industries:[...], concepts:[...]}
     const thsSectorsLoading = ref(false);
     const thsSectorsError = ref('');
@@ -9666,6 +9807,8 @@ const app = createApp({
     loadInfluence();
     // 同花顺热门板块（行业/概念）缓存恢复
     if (D.thsSectors && ((D.thsSectors.industries || []).length || (D.thsSectors.concepts || []).length)) thsSectors.value = D.thsSectors;
+    // 20261108c：恢复上次选中的「行业 / 概念」Tab
+    if (D.thsSectorTab === 'concept' || D.thsSectorTab === 'industry') thsSectorTab.value = D.thsSectorTab;
 
     // ===== 尾盘买入法筛选（batch19 + batch22）：对当前「当日股票明细」按 8 项条件筛选 =====
     // 条件：涨幅 3%-5% / 换手率 5%-10% / 量比 1.5-2.5 / 市值 50亿-200亿 /
@@ -12009,7 +12152,7 @@ const app = createApp({
       inflRegion, inflEvents, inflLoading, inflError, inflDate, inflSortBy, setInflRegion, setInflSort, sortLabel, refreshInfluence, regionLabel, fmtAffected,
       // 20261108b：口径说明一键隐藏/显示
       inflInfoHidden, toggleInflInfo,
-      thsSectors, thsSectorsLoading, thsSectorsError, refreshThsSectorsOnly,
+      thsSectors, thsSectorsLoading, thsSectorsError, refreshThsSectorsOnly, thsSectorTab, setThsSectorTab,
       doubaoKeyInput, doubaoKeyFormShow, doubaoGuideShow, doubaoKeyActive,
       toggleDoubaoKeyForm, saveDoubaoKey, clearDoubaoKey, openDoubaoGuide,
       // 全球信息页：火热话题 + 格隆汇每日快讯

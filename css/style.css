@@ -893,7 +893,23 @@ body {
 }
 .infl-tab:hover { border-color: var(--accent, #2b6cb0); }
 .infl-tab.active { background: var(--accent, #2b6cb0); border-color: var(--accent, #2b6cb0); color: #fff; font-weight: 600; }
-.infl-event-list { max-height: 420px; }
+/* 20261108c：事件扩到每区 20 条 —— 列表固定高度 + 内部下拉滑条，卡片框大小不随条数变化 */
+.infl-event-list {
+  height: 420px;
+  max-height: 420px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  scrollbar-color: #c3ccdb transparent;
+}
+.infl-event-list::-webkit-scrollbar { width: 8px; }
+.infl-event-list::-webkit-scrollbar-thumb { background: #c3ccdb; border-radius: 8px; }
+.infl-event-list::-webkit-scrollbar-thumb:hover { background: #9aa8be; }
+.infl-event-list::-webkit-scrollbar-track { background: transparent; }
+.infl-list-head { display: flex; justify-content: flex-end; margin: 2px 0 4px; }
+/* 同花顺热门板块：行业 / 概念 Tab 切换（复用 .infl-tab 蓝色实心选中样式） */
+.ths-tabs { margin: 4px 0 10px; }
+@media (max-width: 640px) { .infl-event-list { height: 340px; max-height: 340px; } }
 .infl-event { align-items: flex-start; flex-direction: row; padding: 9px 10px; }
 .infl-title { font-size: 13px; font-weight: 600; color: var(--text); line-height: 1.35; }
 .infl-meta { display: flex; flex-wrap: wrap; gap: 6px 8px; margin-top: 3px; align-items: center; }
