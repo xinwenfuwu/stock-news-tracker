@@ -1,54 +1,53 @@
 {
-  "generatedAt": "2026-11-09 15:16",
+  "generatedAt": "2026-11-09 15:29",
   "generatedBy": "GitHub Actions · 多源实时聚合",
   "sourceCount": 5,
-  "autoCount": 5,
+  "autoCount": 6,
   "events": [
     {
-      "id": "ap17h05df",
-      "title": "对于共和党在美国中期选举败选，美国总统特朗普在美国哥伦比亚广播公司（CBS）《60分钟》节目当地时间11月8日晚播出的专访中表示，失利的首要原因是自己未出现在选票上——“如果我的…",
+      "id": "ap1jti4qt",
+      "title": "11月9日，外交部发言人郭嘉昆主持例行记者会。法新社记者提问，美国总统特朗普说，他可能会同中国和俄罗斯两国元首在APEC深圳峰会期间举行会晤，讨论终止美伊冲突以及无核化等问题。请…",
       "tag": "人物/特朗普",
       "region": "美国",
-      "concept": "shale",
-      "time": "2026-11-09 14:53",
-      "datetime": "2026-11-09 14:53",
-      "source": "新浪7×24",
-      "url": "https://finance.sina.cn/7x24/2026-11-09/detail-iniycmtw2930243.d.html",
-      "summary": "对于共和党在美国中期选举败选，美国总统特朗普在美国哥伦比亚广播公司（CBS）《60分钟》节目当地时间11月8日晚播出的专访中表示，失利的首要原因是自己未出现在选票上——“如果我的名字在选票上，结局会大不一样”。他同时也承认深层原因是选民不喜欢战争、油价上涨，以及对以色列的强烈反感情绪。当被问及是否会为2028年某位共和党总统候选人背书时，他表示，“大概率会，但也不一定”。他说…",
+      "concept": "usFinance",
+      "time": "2026-11-09 15:22",
+      "datetime": "2026-11-09 15:22",
+      "source": "华尔街见闻",
+      "url": "https://wallstreetcn.com/livenews/3196752",
+      "summary": "11月9日，外交部发言人郭嘉昆主持例行记者会。法新社记者提问，美国总统特朗普说，他可能会同中国和俄罗斯两国元首在APEC深圳峰会期间举行会晤，讨论终止美伊冲突以及无核化等问题。请问外交部能否就此提供更多细节？郭嘉昆表示，中方就中俄美元首会晤同相关方保持着沟通。“关于你提到的具体问题，我目前没有可以提供的信息。”（澎湃新闻）",
       "relatedStocks": [
-        "中国石油",
-        "紫金矿业"
+        "美股科技",
+        "黄金"
       ],
       "bullConcepts": [
-        "油气",
-        "贵金属"
+        "黄金",
+        "防御板块"
       ],
       "bearConcepts": [
-        "高耗能制造"
+        "高估值成长股"
       ],
       "bullIndustries": [
-        "石油开采",
-        "贵金属"
+        "银行",
+        "黄金"
       ],
       "bearIndustries": [
-        "航空运输",
-        "化工"
+        "高杠杆地产"
       ],
-      "heat": 42,
-      "momentum": 41,
+      "heat": 60,
+      "momentum": 71,
       "_auto": true
     },
     {
-      "id": "aphk0rr5",
-      "title": "特朗普《60分钟》专访要点：经济表现亮眼、无意升级对伊打击、不在乎自己的净资产、移民问题做得过火了",
+      "id": "apvwocb",
+      "title": "11月9日，外交部发言人郭嘉昆主持例行记者会。有外媒记者提问，据《华盛顿邮报》报道，特朗普政府要求中国协助其结束与伊朗的冲突，请问外交部能否证实？郭嘉昆指出，美伊战事延宕不符合当…",
       "tag": "人物/特朗普",
-      "region": "美国",
-      "concept": "defense",
-      "time": "2026-11-09 14:43",
-      "datetime": "2026-11-09 14:43",
-      "source": "环球市场播报",
-      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-09/doc-iniycmua3294367.shtml",
-      "summary": "共和党在中期选举遭遇一连串惨重失利数日之后，美国总统特朗普依旧为自己的经济政策以及对伊朗战争辩护，但他承认在经济议题上“宣传话术做得很差”...",
+      "region": "中国",
+      "concept": "core",
+      "time": "2026-11-09 15:22",
+      "datetime": "2026-11-09 15:22",
+      "source": "华尔街见闻",
+      "url": "https://wallstreetcn.com/livenews/3196751",
+      "summary": "11月9日，外交部发言人郭嘉昆主持例行记者会。有外媒记者提问，据《华盛顿邮报》报道，特朗普政府要求中国协助其结束与伊朗的冲突，请问外交部能否证实？郭嘉昆指出，美伊战事延宕不符合当事方和国际社会的共同利益，相关方应该坚持和平选择，通过对话谈判化解争端，推动尽早恢复中东海湾地区的和平安宁。（澎湃新闻）",
       "relatedStocks": [
         "军工",
         "黄金"
@@ -68,21 +67,21 @@
         "航空",
         "旅游"
       ],
-      "heat": 42,
-      "momentum": 31,
+      "heat": 60,
+      "momentum": 76,
       "_auto": true
     },
     {
-      "id": "ap1h6l61c",
-      "title": "英伟达美股夜盘跌幅扩大至近6%，此前黄仁勋承认婚外情并致歉。",
+      "id": "ap1s2qzi5",
+      "title": "受黄仁勋被调查影响，英伟达在Tradegate价格较上周五美股收盘下跌6%。",
       "tag": "人物/黄仁勋",
       "region": "美国",
       "concept": "aiCapex",
-      "time": "2026-11-09 14:54",
-      "datetime": "2026-11-09 14:54",
+      "time": "2026-11-09 15:25",
+      "datetime": "2026-11-09 15:25",
       "source": "华尔街见闻",
-      "url": "https://wallstreetcn.com/livenews/3196726",
-      "summary": "英伟达美股夜盘跌幅扩大至近6%，此前黄仁勋承认婚外情并致歉。",
+      "url": "https://wallstreetcn.com/livenews/3196754",
+      "summary": "受黄仁勋被调查影响，英伟达在Tradegate价格较上周五美股收盘下跌6%。",
       "relatedStocks": [
         "英伟达",
         "微软",
@@ -104,8 +103,74 @@
       "bearIndustries": [
         "传统IT服务"
       ],
-      "heat": 51,
-      "momentum": 41,
+      "heat": 60,
+      "momentum": 51,
+      "_auto": true
+    },
+    {
+      "id": "apfyho9o",
+      "title": "美官员称与黄仁勋婚外情女子为中国情报机构工作 外交部：纯属捕风捉影",
+      "tag": "人物/黄仁勋",
+      "region": "美国",
+      "concept": "aiCapex",
+      "time": "2026-11-09 15:21",
+      "datetime": "2026-11-09 15:21",
+      "source": "财联社",
+      "url": "https://www.cls.cn/detail/2528953",
+      "summary": "【美官员称与黄仁勋婚外情女子为中国情报机构工作，外交部：纯属捕风捉影】财联社11月9日电，外交部发言人郭嘉昆主持例行记者会。法新社记者提问，英伟达CEO黄仁勋周日承认与一名女子存在婚外情，英伟达已对黄仁勋启动调查。此前，美国官员称该女子为中国情报机构工作。中国外交部能否就此事作出回应？这起事件是否会影响下周中美元首在深圳的会晤？对此，郭嘉昆表示：“我们此前已就此作出回应，所谓…",
+      "relatedStocks": [
+        "英伟达",
+        "微软",
+        "台积电"
+      ],
+      "bullConcepts": [
+        "AI算力",
+        "半导体",
+        "国产替代"
+      ],
+      "bearConcepts": [
+        "传统软件"
+      ],
+      "bullIndustries": [
+        "半导体",
+        "AI应用",
+        "算力基础设施"
+      ],
+      "bearIndustries": [
+        "传统IT服务"
+      ],
+      "heat": 64,
+      "momentum": 56,
+      "_auto": true
+    },
+    {
+      "id": "ap1vec8md",
+      "title": "马斯克：Cybertruck的订单量远超我们的产量",
+      "tag": "人物/马斯克",
+      "region": "全球",
+      "concept": "macro",
+      "time": "2026-11-09 15:22",
+      "datetime": "2026-11-09 15:22",
+      "source": "新浪7×24",
+      "url": "https://finance.sina.cn/7x24/2026-11-09/detail-iniycmua3326533.d.html",
+      "summary": "【马斯克：Cybertruck的订单量远超我们的产量】Cybertruck的订单增速远远超过我们的产能。我们会尽量多生产，这条产线大约 8 个月后停产，但届时不得不给大量客户退还定金。这并非像传统媒体不实报道所说的Cybertruck不盈利，真实原因是：赛博皮卡工艺复杂带来的机会成本，已经远远高于增产Cybercab所能创造的价值。",
+      "relatedStocks": [
+        "宽基指数"
+      ],
+      "bullConcepts": [
+        "防御板块"
+      ],
+      "bearConcepts": [
+        "周期股"
+      ],
+      "bullIndustries": [
+        "公用事业"
+      ],
+      "bearIndustries": [
+        "顺周期"
+      ],
+      "heat": 55,
+      "momentum": 46,
       "_auto": true
     },
     {
@@ -136,42 +201,6 @@
       ],
       "heat": 24,
       "momentum": 26,
-      "_auto": true
-    },
-    {
-      "id": "ap1ibjf9i",
-      "title": "特朗普回应“黄仁勋出轨”：我没听说他做错了什么，谁还没和别人交往过呢？",
-      "tag": "人物/黄仁勋",
-      "region": "美国",
-      "concept": "aiCapex",
-      "time": "2026-11-09 09:55",
-      "datetime": "2026-11-09 09:55",
-      "source": "环球市场播报",
-      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-09/doc-iniyazea3025897.shtml",
-      "summary": "英伟达首席执行官黄仁勋陷入个人关系风波。面对记者提问，美国总统特朗普公开为其辩护，称自己“没听说他做错了什么”，并表示：“他只是和某个人有过交往。",
-      "relatedStocks": [
-        "英伟达",
-        "微软",
-        "台积电"
-      ],
-      "bullConcepts": [
-        "AI算力",
-        "半导体",
-        "国产替代"
-      ],
-      "bearConcepts": [
-        "传统软件"
-      ],
-      "bullIndustries": [
-        "半导体",
-        "AI应用",
-        "算力基础设施"
-      ],
-      "bearIndustries": [
-        "传统IT服务"
-      ],
-      "heat": 46,
-      "momentum": 18,
       "_auto": true
     },
     {

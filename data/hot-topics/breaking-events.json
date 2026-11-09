@@ -1,43 +1,9 @@
 {
-  "generatedAt": "2026-11-09 15:16",
+  "generatedAt": "2026-11-09 15:29",
   "generatedBy": "GitHub Actions · 多源实时聚合",
   "sourceCount": 5,
   "autoCount": 18,
   "events": [
-    {
-      "id": "ab17h05df",
-      "title": "对于共和党在美国中期选举败选，美国总统特朗普在美国哥伦比亚广播公司（CBS）《60分钟》节目当地时间11月8日晚播出的专访中表示，失利的首要原因是自己未出现在选票上——“如果我的…",
-      "tag": "能源/资源",
-      "region": "美国",
-      "concept": "shale",
-      "time": "2026-11-09 14:53",
-      "datetime": "2026-11-09 14:53",
-      "source": "新浪7×24",
-      "url": "https://finance.sina.cn/7x24/2026-11-09/detail-iniycmtw2930243.d.html",
-      "summary": "对于共和党在美国中期选举败选，美国总统特朗普在美国哥伦比亚广播公司（CBS）《60分钟》节目当地时间11月8日晚播出的专访中表示，失利的首要原因是自己未出现在选票上——“如果我的名字在选票上，结局会大不一样”。他同时也承认深层原因是选民不喜欢战争、油价上涨，以及对以色列的强烈反感情绪。当被问及是否会为2028年某位共和党总统候选人背书时，他表示，“大概率会，但也不一定”。他说…",
-      "relatedStocks": [
-        "中国石油",
-        "紫金矿业"
-      ],
-      "bullConcepts": [
-        "油气",
-        "贵金属"
-      ],
-      "bearConcepts": [
-        "高耗能制造"
-      ],
-      "bullIndustries": [
-        "石油开采",
-        "贵金属"
-      ],
-      "bearIndustries": [
-        "航空运输",
-        "化工"
-      ],
-      "heat": 42,
-      "momentum": 41,
-      "_auto": true
-    },
     {
       "id": "abhk0rr5",
       "title": "特朗普《60分钟》专访要点：经济表现亮眼、无意升级对伊打击、不在乎自己的净资产、移民问题做得过火了",
@@ -68,21 +34,21 @@
         "航空",
         "旅游"
       ],
-      "heat": 42,
-      "momentum": 31,
+      "heat": 38,
+      "momentum": 26,
       "_auto": true
     },
     {
-      "id": "ab99z774",
-      "title": "三星电子半导体蚀刻工艺配方外泄至美国半导体设备商泛林（LamResearch）韩国分支机构。泛林为三星电子产线供应蚀刻、沉积设备，原本仅可获取双方约定范围内、用于设备维护与性能优…",
+      "id": "ab1s2qzi5",
+      "title": "受黄仁勋被调查影响，英伟达在Tradegate价格较上周五美股收盘下跌6%。",
       "tag": "科技/AI",
       "region": "美国",
       "concept": "aiCapex",
-      "time": "2026-11-09 15:01",
-      "datetime": "2026-11-09 15:01",
-      "source": "新浪7×24",
-      "url": "https://finance.sina.cn/7x24/2026-11-09/detail-iniycmty6531180.d.html",
-      "summary": "三星电子半导体蚀刻工艺配方外泄至美国半导体设备商泛林（LamResearch）韩国分支机构。泛林为三星电子产线供应蚀刻、沉积设备，原本仅可获取双方约定范围内、用于设备维护与性能优化的产线监控数据；经核查，泛林通过不当请求，多次拿到三星电子未许可对外传出的工艺配方独立文件。三星电子于今年下半年发现该事件，总部层面将此事定性为重大技术泄露并严肃处置。",
+      "time": "2026-11-09 15:25",
+      "datetime": "2026-11-09 15:25",
+      "source": "华尔街见闻",
+      "url": "https://wallstreetcn.com/livenews/3196754",
+      "summary": "受黄仁勋被调查影响，英伟达在Tradegate价格较上周五美股收盘下跌6%。",
       "relatedStocks": [
         "英伟达",
         "微软",
@@ -104,8 +70,104 @@
       "bearIndustries": [
         "传统IT服务"
       ],
-      "heat": 24,
+      "heat": 60,
+      "momentum": 51,
+      "_auto": true
+    },
+    {
+      "id": "abfyho9o",
+      "title": "美官员称与黄仁勋婚外情女子为中国情报机构工作 外交部：纯属捕风捉影",
+      "tag": "科技/AI",
+      "region": "美国",
+      "concept": "aiCapex",
+      "time": "2026-11-09 15:21",
+      "datetime": "2026-11-09 15:21",
+      "source": "财联社",
+      "url": "https://www.cls.cn/detail/2528953",
+      "summary": "【美官员称与黄仁勋婚外情女子为中国情报机构工作，外交部：纯属捕风捉影】财联社11月9日电，外交部发言人郭嘉昆主持例行记者会。法新社记者提问，英伟达CEO黄仁勋周日承认与一名女子存在婚外情，英伟达已对黄仁勋启动调查。此前，美国官员称该女子为中国情报机构工作。中国外交部能否就此事作出回应？这起事件是否会影响下周中美元首在深圳的会晤？对此，郭嘉昆表示：“我们此前已就此作出回应，所谓…",
+      "relatedStocks": [
+        "英伟达",
+        "微软",
+        "台积电"
+      ],
+      "bullConcepts": [
+        "AI算力",
+        "半导体",
+        "国产替代"
+      ],
+      "bearConcepts": [
+        "传统软件"
+      ],
+      "bullIndustries": [
+        "半导体",
+        "AI应用",
+        "算力基础设施"
+      ],
+      "bearIndustries": [
+        "传统IT服务"
+      ],
+      "heat": 64,
+      "momentum": 56,
+      "_auto": true
+    },
+    {
+      "id": "ab137bzt7",
+      "title": "张雪机车在米兰展出，机油盖、水箱盖、油箱盖，能拆的全被薅走，零件被偷，连油箱锁、后视镜都没放过。此前，张雪还曾提醒别的中国展商要注意财产安全。两个月前，张雪团队的大巴还在意大利被…",
+      "tag": "宏观/综合",
+      "region": "中国",
+      "concept": "broker",
+      "time": "2026-11-09 15:26",
+      "datetime": "2026-11-09 15:26",
+      "source": "新浪7×24",
+      "url": "https://finance.sina.cn/7x24/2026-11-09/detail-iniycmua3330244.d.html",
+      "summary": "张雪机车在米兰展出，机油盖、水箱盖、油箱盖，能拆的全被薅走，零件被偷，连油箱锁、后视镜都没放过。此前，张雪还曾提醒别的中国展商要注意财产安全。两个月前，张雪团队的大巴还在意大利被偷，6名成员的背包被盗，1人护照丢失。（看看新闻）",
+      "relatedStocks": [
+        "宽基指数"
+      ],
+      "bullConcepts": [
+        "防御板块"
+      ],
+      "bearConcepts": [
+        "周期股"
+      ],
+      "bullIndustries": [
+        "公用事业"
+      ],
+      "bearIndustries": [
+        "顺周期"
+      ],
+      "heat": 46,
       "momentum": 36,
+      "_auto": true
+    },
+    {
+      "id": "ab128kpvg",
+      "title": "当地时间9日上午，胡塞武装称沙特主导的联军空袭了也门荷台达省一家工厂和拉赫季省的一所学校。（央视新闻）",
+      "tag": "宏观/综合",
+      "region": "全球",
+      "concept": "macro",
+      "time": "2026-11-09 15:17",
+      "datetime": "2026-11-09 15:17",
+      "source": "华尔街见闻",
+      "url": "https://wallstreetcn.com/livenews/3196747",
+      "summary": "当地时间9日上午，胡塞武装称沙特主导的联军空袭了也门荷台达省一家工厂和拉赫季省的一所学校。（央视新闻）",
+      "relatedStocks": [
+        "宽基指数"
+      ],
+      "bullConcepts": [
+        "防御板块"
+      ],
+      "bearConcepts": [
+        "周期股"
+      ],
+      "bullIndustries": [
+        "公用事业"
+      ],
+      "bearIndustries": [
+        "顺周期"
+      ],
+      "heat": 33,
+      "momentum": 46,
       "_auto": true
     },
     {
@@ -140,7 +202,7 @@
       "bearIndustries": [
         "传统IT服务"
       ],
-      "heat": 33,
+      "heat": 29,
       "momentum": 31,
       "_auto": true
     },
@@ -211,33 +273,37 @@
       "_auto": true
     },
     {
-      "id": "abhvpwp3",
-      "title": "欧盟起诉IBM及其合作伙伴 边境管理系统项目陷入困境",
-      "tag": "宏观/综合",
-      "region": "欧洲",
+      "id": "abtj3vem",
+      "title": "俄罗斯列宁格勒州州长：无人机袭击后，当地一炼油厂起火。",
+      "tag": "地缘/政治",
+      "region": "全球",
       "concept": "macro",
-      "time": "2026-11-09 14:17",
-      "datetime": "2026-11-09 14:17",
-      "source": "环球市场播报",
-      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-09/doc-iniycmua3278710.shtml",
-      "summary": "欧盟已对IBM及另外两家欧洲公司提起诉讼，原因是这三家公司在开发欧盟新型智能边境管理系统的过程中多次延期。今年夏天，该系统的推广曾导致欧洲各地机场出现大范围混乱。",
+      "time": "2026-11-09 15:25",
+      "datetime": "2026-11-09 15:25",
+      "source": "新浪7×24",
+      "url": "https://finance.sina.cn/7x24/2026-11-09/detail-iniycmty6553459.d.html",
+      "summary": "俄罗斯列宁格勒州州长：无人机袭击后，当地一炼油厂起火。",
       "relatedStocks": [
-        "宽基指数"
+        "军工",
+        "黄金"
       ],
       "bullConcepts": [
-        "防御板块"
+        "军工",
+        "避险资产"
       ],
       "bearConcepts": [
-        "周期股"
+        "风险资产"
       ],
       "bullIndustries": [
-        "公用事业"
+        "军工",
+        "黄金"
       ],
       "bearIndustries": [
-        "顺周期"
+        "航空",
+        "旅游"
       ],
-      "heat": 29,
-      "momentum": 31,
+      "heat": 24,
+      "momentum": 36,
       "_auto": true
     },
     {
@@ -269,6 +335,36 @@
       "bearIndustries": [
         "航空运输",
         "化工"
+      ],
+      "heat": 29,
+      "momentum": 36,
+      "_auto": true
+    },
+    {
+      "id": "ab1i5f5vp",
+      "title": "欧盟就边境系统项目纠纷起诉IBM及其合作方",
+      "tag": "宏观/综合",
+      "region": "美国",
+      "concept": "usMacro",
+      "time": "2026-11-09 15:03",
+      "datetime": "2026-11-09 15:03",
+      "source": "环球市场播报",
+      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-09/doc-iniycmua3310028.shtml",
+      "summary": "内部文件显示，负责该系统的欧盟机构EU-Lisa已对美国科技企业IBM、法国IT集团源讯（Atos）以及意大利防务承包商莱昂纳多提起诉讼，原因是项目多次延期...",
+      "relatedStocks": [
+        "宽基指数"
+      ],
+      "bullConcepts": [
+        "防御板块"
+      ],
+      "bearConcepts": [
+        "周期股"
+      ],
+      "bullIndustries": [
+        "公用事业"
+      ],
+      "bearIndustries": [
+        "顺周期"
       ],
       "heat": 29,
       "momentum": 36,
@@ -307,43 +403,7 @@
         "传统IT服务"
       ],
       "heat": 51,
-      "momentum": 41,
-      "_auto": true
-    },
-    {
-      "id": "ab2er4mm",
-      "title": "凯投宏观：AI投资明年将放缓，2028年恐下滑10%",
-      "tag": "科技/AI",
-      "region": "美国",
-      "concept": "aiCapex",
-      "time": "2026-11-09 14:58",
-      "datetime": "2026-11-09 14:58",
-      "source": "新浪7×24",
-      "url": "https://finance.sina.cn/7x24/2026-11-09/detail-iniycmua3304581.d.html",
-      "summary": "【凯投宏观：AI投资明年将放缓，2028年恐下滑10%】凯投宏观（Capital Economics）指出，尽管投资者近期已遭受重创，但随着AI投资热潮逐渐消退，美股还将面临更严重的暴跌。该机构首席经济顾问Vicky Redwood在上周五的一份报告中表示，虽然AI具备提升生产力的潜力，但她对能否产生足够的收入来维持当前的投资增速持悲观态度。少数几家超大规模云服务商今年的支出…",
-      "relatedStocks": [
-        "英伟达",
-        "微软",
-        "台积电"
-      ],
-      "bullConcepts": [
-        "AI算力",
-        "半导体",
-        "国产替代"
-      ],
-      "bearConcepts": [
-        "传统软件"
-      ],
-      "bullIndustries": [
-        "半导体",
-        "AI应用",
-        "算力基础设施"
-      ],
-      "bearIndustries": [
-        "传统IT服务"
-      ],
-      "heat": 24,
-      "momentum": 36,
+      "momentum": 31,
       "_auto": true
     },
     {
@@ -412,43 +472,7 @@
       "bearIndustries": [
         "传统IT服务"
       ],
-      "heat": 38,
-      "momentum": 18,
-      "_auto": true
-    },
-    {
-      "id": "abw0wvj5",
-      "title": "瑞银CEO安 Sergio Ermotti表示，过去几周AI相关股票大幅回调，反映出投资者此前对该行业抱有的期望过高。其在悉尼举行的一场瑞银会议上表示，美国近期中期选举结果以及全…",
-      "tag": "科技/AI",
-      "region": "美国",
-      "concept": "aiCapex",
-      "time": "2026-11-09 11:13",
-      "datetime": "2026-11-09 11:13",
-      "source": "华尔街见闻",
-      "url": "https://wallstreetcn.com/livenews/3196637",
-      "summary": "瑞银CEO安 Sergio Ermotti表示，过去几周AI相关股票大幅回调，反映出投资者此前对该行业抱有的期望过高。其在悉尼举行的一场瑞银会议上表示，美国近期中期选举结果以及全球围绕基础设施建设影响的讨论，可能导致AI行业实现预期成果的进程推迟。虽然他对AI的发展最终将带来积极的经济成果持乐观态度，但他个人认为，“我们达到这一目标的速度被夸大了一些”。",
-      "relatedStocks": [
-        "英伟达",
-        "微软",
-        "台积电"
-      ],
-      "bullConcepts": [
-        "AI算力",
-        "半导体",
-        "国产替代"
-      ],
-      "bearConcepts": [
-        "传统软件"
-      ],
-      "bullIndustries": [
-        "半导体",
-        "AI应用",
-        "算力基础设施"
-      ],
-      "bearIndustries": [
-        "传统IT服务"
-      ],
-      "heat": 38,
+      "heat": 33,
       "momentum": 18,
       "_auto": true
     },
@@ -559,16 +583,16 @@
       "_auto": true
     },
     {
-      "id": "ab1d3dyq7",
-      "title": "AI退潮反噬大宗！“焊料之王”锡遭血洗 背后究竟冤不冤？",
+      "id": "abon1qm9",
+      "title": "黄仁勋风波引发美国科技圈分歧：有人力挺 有人警告",
       "tag": "科技/AI",
       "region": "美国",
       "concept": "aiCapex",
-      "time": "2026-11-09 14:04",
-      "datetime": "2026-11-09 14:04",
-      "source": "市场资讯",
-      "url": "https://finance.sina.com.cn/roll/2026-11-09/doc-iniycmtw2903626.shtml",
-      "summary": "转自：财联社 财联社11月9日讯（编辑 潇湘）随着投资者迅速重新评估美国数据中心的需求前景，AI概念股的暴跌正在迅速波及至金属市场…… 被誉为“焊料之王”的锡...",
+      "time": "2026-11-09 09:15",
+      "datetime": "2026-11-09 09:15",
+      "source": "滚动播报",
+      "url": "https://finance.sina.com.cn/world/2026-11-09/doc-iniyauwk3471488.shtml",
+      "summary": "北京时间11月9日，据《商业内幕》报道，英伟达CEO黄仁勋因个人关系问题及相关调查陷入舆论风波后，美国科技界、华尔街投资人及政界人士纷纷发表看法。",
       "relatedStocks": [
         "英伟达",
         "微软",
@@ -590,41 +614,7 @@
       "bearIndustries": [
         "传统IT服务"
       ],
-      "heat": 29,
-      "momentum": 26,
-      "_auto": true
-    },
-    {
-      "id": "ab15cvxvh",
-      "title": "当地州长：俄罗斯基里希工业区遭无人机袭击",
-      "tag": "地缘/政治",
-      "region": "全球",
-      "concept": "macro",
-      "time": "2026-11-09 12:55",
-      "datetime": "2026-11-09 12:55",
-      "source": "环球市场播报",
-      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-09/doc-iniycfna6591895.shtml",
-      "summary": "州长亚历山大·德罗兹坚科表示，隔夜无人机袭击了俄罗斯列宁格勒州基里希的工业区，防空系统在该地区击落了113架无人机。基里希是俄罗斯最大的炼油厂之一——苏尔古特石油天然...",
-      "relatedStocks": [
-        "军工",
-        "黄金"
-      ],
-      "bullConcepts": [
-        "军工",
-        "避险资产"
-      ],
-      "bearConcepts": [
-        "风险资产"
-      ],
-      "bullIndustries": [
-        "军工",
-        "黄金"
-      ],
-      "bearIndustries": [
-        "航空",
-        "旅游"
-      ],
-      "heat": 29,
+      "heat": 46,
       "momentum": 18,
       "_auto": true
     },
