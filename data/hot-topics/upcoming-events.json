@@ -1,10 +1,10 @@
 {
-  "generatedAt": "2026-11-09 17:36",
+  "generatedAt": "2026-11-10 04:38",
   "generatedBy": "GitHub Actions · 财经日历 + 多源新闻 + 精选底库",
   "sourceCount": 5,
-  "calendarCount": 62,
-  "seedCount": 49,
-  "autoCount": 17,
+  "calendarCount": 44,
+  "seedCount": 47,
+  "autoCount": 12,
   "events": [
     {
       "id": "uc3",
@@ -47,44 +47,6 @@
       ]
     },
     {
-      "id": "uc1",
-      "title": "2026太空云产业生态大会暨中科星云成立大会",
-      "tag": "会议/商业航天",
-      "date": "2026-11-09",
-      "endDate": "2026-11-09",
-      "region": "中国",
-      "scope": "cn",
-      "location": "合肥·中安创谷科技园",
-      "concept": "lowAlt",
-      "source": "合肥发布/澎湃新闻/观点网",
-      "importance": 95,
-      "summary": "今日举行。主题「太空云生·星云筑基」，由合肥市政府与中科院空天信息创新研究院联合主办，围绕太空算力网、太空云技术体系、星载智能感知与计算、天地协同应用展开，并举行中科星云成立仪式与成果发布。",
-      "relatedStocks": [
-        "中科星图",
-        "商业航天",
-        "卫星互联网",
-        "算力"
-      ]
-    },
-    {
-      "id": "uc5",
-      "title": "中国10月CPI、PPI数据发布",
-      "tag": "数据/宏观",
-      "date": "2026-11-09",
-      "region": "中国",
-      "scope": "cn",
-      "location": "北京",
-      "concept": "broker",
-      "source": "国家统计局",
-      "importance": 88,
-      "summary": "今日公布10月通胀数据，是判断四季度货币政策空间与顺周期板块定价的关键依据。",
-      "relatedStocks": [
-        "A股宽基",
-        "消费",
-        "周期股"
-      ]
-    },
-    {
       "id": "uc9",
       "title": "Web Summit 2026",
       "tag": "会议/科技",
@@ -123,22 +85,6 @@
       ]
     },
     {
-      "id": "au13tgkyo",
-      "title": "2026全球环境与可持续发展大会暨长三角绿色科技创新周",
-      "tag": "宏观/综合/日程",
-      "date": "2026-11-09",
-      "region": "中国",
-      "scope": "cn",
-      "concept": "broker",
-      "source": "每日经济新闻·财经日历",
-      "summary": "计划于 2026-11-09 举行或公布，来源：每日经济新闻·财经日历。",
-      "relatedStocks": [
-        "宽基指数"
-      ],
-      "importance": 72,
-      "_auto": true
-    },
-    {
       "id": "uc10",
       "title": "KubeCon + CloudNativeCon 北美大会",
       "tag": "会议/云",
@@ -157,76 +103,6 @@
         "微软",
         "谷歌"
       ]
-    },
-    {
-      "id": "au16s4ubr",
-      "title": "首届知识产权和人工智能全球论坛",
-      "tag": "科技/AI/日程",
-      "date": "2026-11-09",
-      "region": "全球",
-      "scope": "world",
-      "concept": "ai",
-      "source": "每日经济新闻·财经日历",
-      "summary": "计划于 2026-11-09 举行或公布，来源：每日经济新闻·财经日历。",
-      "relatedStocks": [
-        "英伟达",
-        "微软",
-        "台积电"
-      ],
-      "importance": 69,
-      "_auto": true
-    },
-    {
-      "id": "au1rge0xh",
-      "title": "2026年新型电力装备与工程应用高质量发展大会",
-      "tag": "能源/资源/日程",
-      "date": "2026-11-09",
-      "region": "全球",
-      "scope": "world",
-      "concept": "energy",
-      "source": "每日经济新闻·财经日历",
-      "summary": "计划于 2026-11-09 举行或公布，来源：每日经济新闻·财经日历。",
-      "relatedStocks": [
-        "中国石油",
-        "紫金矿业"
-      ],
-      "importance": 69,
-      "_auto": true
-    },
-    {
-      "id": "au1711qym",
-      "title": "2026AI动漫产教融合出海大会",
-      "tag": "科技/AI/日程",
-      "date": "2026-11-09",
-      "region": "全球",
-      "scope": "world",
-      "concept": "ai",
-      "source": "每日经济新闻·财经日历",
-      "summary": "计划于 2026-11-09 举行或公布，来源：每日经济新闻·财经日历。",
-      "relatedStocks": [
-        "英伟达",
-        "微软",
-        "台积电"
-      ],
-      "importance": 69,
-      "_auto": true
-    },
-    {
-      "id": "autk9y5m",
-      "title": "第十七届国际先进电动车锂电池大会",
-      "tag": "能源/资源/日程",
-      "date": "2026-11-09",
-      "region": "全球",
-      "scope": "world",
-      "concept": "energy",
-      "source": "每日经济新闻·财经日历",
-      "summary": "计划于 2026-11-09 举行或公布，来源：每日经济新闻·财经日历。",
-      "relatedStocks": [
-        "中国石油",
-        "紫金矿业"
-      ],
-      "importance": 69,
-      "_auto": true
     },
     {
       "id": "uc6",
@@ -352,6 +228,39 @@
       "_auto": true
     },
     {
+      "id": "au3fy9rn",
+      "title": "美国防长海格塞斯再次面临弹劾动议 众议院最快周三表决",
+      "tag": "宏观/综合/日程",
+      "date": "2026-11-10",
+      "region": "美国",
+      "scope": "us",
+      "concept": "usMacro",
+      "source": "财联社",
+      "summary": "【美国防长海格塞斯再次面临弹劾动议 众议院最快周三表决】财联社11月10日电，美国共和党众议员Thomas Massie最快将于周一提出弹劾国防部长海格塞斯的动议。Massie在社交媒体上公布了列举对海格塞斯指控的决议案，并计划在众议院周一中午12点开会后再次提出弹劾条款。此举将推动众议院最早于周三就该动议进行全院表决。Massie周一早上在社交媒体发帖称…",
+      "relatedStocks": [
+        "宽基指数"
+      ],
+      "importance": 62,
+      "_auto": true
+    },
+    {
+      "id": "auw6kgvo",
+      "title": "本田将在美国投资30亿美元建设新汽车工厂 扩大混合动力汽车产能",
+      "tag": "金融/宏观/日程",
+      "date": "2026-11-10",
+      "region": "美国",
+      "scope": "us",
+      "concept": "usFinance",
+      "source": "财联社",
+      "summary": "【本田将在美国投资30亿美元建设新汽车工厂 扩大混合动力汽车产能】财联社11月10日电，本田宣布，将投资30亿美元在美国俄亥俄州建设一座新的汽车工厂，并对俄亥俄州、阿拉巴马州和佐治亚州的多处生产设施进行战略投资，以扩大美国混合动力汽车及相关发动机、混合动力系统产能。新工厂预计创造超过2000个就业岗位，年产能约24万辆汽车，计划于2029年投产。投资完成后…",
+      "relatedStocks": [
+        "美股科技",
+        "黄金"
+      ],
+      "importance": 62,
+      "_auto": true
+    },
+    {
       "id": "uc11",
       "title": "COP31 世界领导人峰会",
       "tag": "峰会/气候",
@@ -421,22 +330,6 @@
         "炼化",
         "物流"
       ]
-    },
-    {
-      "id": "au1dc46du",
-      "title": "商务部新闻发布会",
-      "tag": "宏观/综合/日程",
-      "date": "2026-11-12",
-      "region": "中国",
-      "scope": "cn",
-      "concept": "broker",
-      "source": "华尔街见闻",
-      "summary": "计划于 2026-11-12 举行或公布，来源：华尔街见闻。",
-      "relatedStocks": [
-        "宽基指数"
-      ],
-      "importance": 62,
-      "_auto": true
     },
     {
       "id": "uc15",
@@ -563,39 +456,19 @@
       "_auto": true
     },
     {
-      "id": "auz2j88f",
-      "title": "神州半导体IPO申请11月16日上会",
-      "tag": "科技/AI/日程",
+      "id": "au1f6rh11",
+      "title": "SpaceX活动",
+      "tag": "宏观/综合/日程",
       "date": "2026-11-16",
-      "region": "中国",
-      "scope": "cn",
-      "concept": "llm",
+      "region": "全球",
+      "scope": "world",
+      "concept": "macro",
       "source": "财联社",
-      "summary": "上海证券交易所上市审核委员会定于2026年11月16日召开2026年第58次上市审核委员会审议会议。审议江苏神州半导体科技股份有限公司的首发事项。",
+      "summary": "计划于 2026-11-16 举行或公布，来源：财联社。",
       "relatedStocks": [
-        "英伟达",
-        "微软",
-        "台积电"
+        "宽基指数"
       ],
-      "importance": 62,
-      "_auto": true
-    },
-    {
-      "id": "au1go2ga2",
-      "title": "上海证券交易所上市审核委员会",
-      "tag": "科技/AI/日程",
-      "date": "2026-11-16",
-      "region": "中国",
-      "scope": "cn",
-      "concept": "llm",
-      "source": "华尔街见闻",
-      "summary": "计划于 2026-11-16 举行或公布，来源：华尔街见闻。",
-      "relatedStocks": [
-        "英伟达",
-        "微软",
-        "台积电"
-      ],
-      "importance": 62,
+      "importance": 59,
       "_auto": true
     },
     {
