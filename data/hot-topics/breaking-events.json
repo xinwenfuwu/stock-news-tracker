@@ -1,9 +1,244 @@
 {
-  "generatedAt": "2026-11-09 15:29",
+  "generatedAt": "2026-11-09 17:12",
   "generatedBy": "GitHub Actions · 多源实时聚合",
   "sourceCount": 5,
   "autoCount": 18,
   "events": [
+    {
+      "id": "abl1tws8",
+      "title": "瑞银CEO：市场在修正过高预期 不必太关注“蓝色浪潮”",
+      "tag": "科技/AI",
+      "region": "美国",
+      "concept": "aiCapex",
+      "time": "2026-11-09 16:36",
+      "datetime": "2026-11-09 16:36",
+      "source": "财联社",
+      "url": "https://www.cls.cn/detail/2529075",
+      "summary": "【瑞银CEO：市场在修正过高预期 不必太关注“蓝色浪潮”】财联社11月9日电，瑞银CEO表示，过去几周美股AI板块的大幅回调，是市场对该板块此前过高预期的一次修正。他也承认美国中期选举结果可能会减缓人工智能基础设施投资，推迟AI行业兑现价值成果的节奏。建议客户在进行资产配置时，不要过度关注短期政治问题。",
+      "relatedStocks": [
+        "英伟达",
+        "微软",
+        "台积电"
+      ],
+      "bullConcepts": [
+        "AI算力",
+        "半导体",
+        "国产替代"
+      ],
+      "bearConcepts": [
+        "传统软件"
+      ],
+      "bullIndustries": [
+        "半导体",
+        "AI应用",
+        "算力基础设施"
+      ],
+      "bearIndustries": [
+        "传统IT服务"
+      ],
+      "heat": 33,
+      "momentum": 26,
+      "_auto": true
+    },
+    {
+      "id": "abezgwew",
+      "title": "SpaceX资深董事会成员辞职",
+      "tag": "新能源车",
+      "region": "全球",
+      "concept": "green",
+      "time": "2026-11-09 17:10",
+      "datetime": "2026-11-09 17:10",
+      "source": "环球市场播报",
+      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-09/doc-iniycrzz3342605.shtml",
+      "summary": "唐纳德・哈里森曾是 SpaceX 董事之一，参与评估 SpaceX 与特斯拉合并的可行性。 SpaceX 在周五提交的监管文件披露，任职多年的董事会成员唐纳德・哈里森（Donald...",
+      "relatedStocks": [
+        "特斯拉",
+        "比亚迪"
+      ],
+      "bullConcepts": [
+        "智能驾驶",
+        "动力电池"
+      ],
+      "bearConcepts": [
+        "传统车企"
+      ],
+      "bullIndustries": [
+        "智能驾驶",
+        "锂电池"
+      ],
+      "bearIndustries": [
+        "传统汽车制造"
+      ],
+      "heat": 38,
+      "momentum": 41,
+      "_auto": true
+    },
+    {
+      "id": "ab1af1wvb",
+      "title": "英伟达股价盘前跌超4%，因黄仁勋的婚外情引发董事会调查。",
+      "tag": "科技/AI",
+      "region": "全球",
+      "concept": "ai",
+      "time": "2026-11-09 17:02",
+      "datetime": "2026-11-09 17:02",
+      "source": "财联社",
+      "url": "https://www.cls.cn/detail/2529129",
+      "summary": "英伟达股价盘前跌超4%，因黄仁勋的婚外情引发董事会调查。",
+      "relatedStocks": [
+        "英伟达",
+        "微软",
+        "台积电"
+      ],
+      "bullConcepts": [
+        "AI算力",
+        "半导体",
+        "国产替代"
+      ],
+      "bearConcepts": [
+        "传统软件"
+      ],
+      "bullIndustries": [
+        "半导体",
+        "AI应用",
+        "算力基础设施"
+      ],
+      "bearIndustries": [
+        "传统IT服务"
+      ],
+      "heat": 29,
+      "momentum": 36,
+      "_auto": true
+    },
+    {
+      "id": "ab3jsvso",
+      "title": "GE Vernova获德国风电项目新订单 将供应3台风力涡轮机",
+      "tag": "宏观/综合",
+      "region": "欧洲",
+      "concept": "macro",
+      "time": "2026-11-09 17:10",
+      "datetime": "2026-11-09 17:10",
+      "source": "财联社",
+      "url": "https://www.cls.cn/detail/2529156",
+      "summary": "【GE Vernova获德国风电项目新订单 将供应3台风力涡轮机】财联社11月9日电，GE Vernova宣布，已与德国Stadtwerke Heidenheim AG签署协议，将为德国Schlotberg-Jüchsen风电场供应3台5.5兆瓦陆上风力涡轮机，总装机容量16.5兆瓦。订单包含为期20年的长期服务协议。此次合作是双方第六个风电项目，完成后Stadtwerke …",
+      "relatedStocks": [
+        "宽基指数"
+      ],
+      "bullConcepts": [
+        "防御板块"
+      ],
+      "bearConcepts": [
+        "周期股"
+      ],
+      "bullIndustries": [
+        "公用事业"
+      ],
+      "bearIndustries": [
+        "顺周期"
+      ],
+      "heat": 24,
+      "momentum": 36,
+      "_auto": true
+    },
+    {
+      "id": "ab10ov935",
+      "title": "NASA卫星影像显示：俄罗斯基里希炼油厂或已起火",
+      "tag": "能源/资源",
+      "region": "全球",
+      "concept": "energy",
+      "time": "2026-11-09 16:50",
+      "datetime": "2026-11-09 16:50",
+      "source": "环球市场播报",
+      "url": "https://finance.sina.com.cn/world/2026-11-09/doc-iniycrzz3331161.shtml",
+      "summary": "乌克兰几乎每日持续打击俄能源设施，一座坐落于俄罗斯波罗的海沿岸的大型炼油厂在夜间遇袭后疑似起火。 NASA火灾信息资源管理系统周一拍摄的影像显示...",
+      "relatedStocks": [
+        "中国石油",
+        "紫金矿业"
+      ],
+      "bullConcepts": [
+        "油气",
+        "贵金属"
+      ],
+      "bearConcepts": [
+        "高耗能制造"
+      ],
+      "bullIndustries": [
+        "石油开采",
+        "贵金属"
+      ],
+      "bearIndustries": [
+        "航空运输",
+        "化工"
+      ],
+      "heat": 29,
+      "momentum": 36,
+      "_auto": true
+    },
+    {
+      "id": "abvg6001",
+      "title": "今年台风个数创21世纪新高",
+      "tag": "宏观/综合",
+      "region": "中国",
+      "concept": "broker",
+      "time": "2026-11-09 16:27",
+      "datetime": "2026-11-09 16:27",
+      "source": "财联社",
+      "url": "https://www.cls.cn/detail/2529057",
+      "summary": "财联社11月9日电，据中国气象局，11月7日14时，2026年第32号台风“查帕卡”在西北太平洋洋面生成。台风“查帕卡”的生成，使2026年的台风生成数量创下21世纪以来最高纪录。",
+      "relatedStocks": [
+        "宽基指数"
+      ],
+      "bullConcepts": [
+        "防御板块"
+      ],
+      "bearConcepts": [
+        "周期股"
+      ],
+      "bullIndustries": [
+        "公用事业"
+      ],
+      "bearIndustries": [
+        "顺周期"
+      ],
+      "heat": 24,
+      "momentum": 26,
+      "_auto": true
+    },
+    {
+      "id": "ab1wgakt",
+      "title": "英伟达CEO婚外情丑闻及美伊谈判破裂引发市场波动，比特币价格涨跌交迭",
+      "tag": "科技/AI",
+      "region": "美国",
+      "concept": "aiCapex",
+      "time": "2026-11-09 14:35",
+      "datetime": "2026-11-09 14:35",
+      "source": "环球市场播报",
+      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-09/doc-iniycmtw2920409.shtml",
+      "summary": "比特币价格再次出现剧烈波动，导致价值数亿美元的杠杆看涨头寸遭到强制平仓。 过去几个小时，比特币价格出现剧烈的双向波动，再次提醒交易员杠杆交易可能带来的风险。",
+      "relatedStocks": [
+        "英伟达",
+        "微软",
+        "台积电"
+      ],
+      "bullConcepts": [
+        "AI算力",
+        "半导体",
+        "国产替代"
+      ],
+      "bearConcepts": [
+        "传统软件"
+      ],
+      "bullIndustries": [
+        "半导体",
+        "AI应用",
+        "算力基础设施"
+      ],
+      "bearIndustries": [
+        "传统IT服务"
+      ],
+      "heat": 42,
+      "momentum": 18,
+      "_auto": true
+    },
     {
       "id": "abhk0rr5",
       "title": "特朗普《60分钟》专访要点：经济表现亮眼、无意升级对伊打击、不在乎自己的净资产、移民问题做得过火了",
@@ -33,6 +268,42 @@
       "bearIndustries": [
         "航空",
         "旅游"
+      ],
+      "heat": 24,
+      "momentum": 18,
+      "_auto": true
+    },
+    {
+      "id": "ab1h9dhae",
+      "title": "英伟达B300报价涨到2300万，AI算力租赁迎来新机会？",
+      "tag": "科技/AI",
+      "region": "中国",
+      "concept": "llm",
+      "time": "2026-11-09 15:31",
+      "datetime": "2026-11-09 15:31",
+      "source": "市场资讯",
+      "url": "https://finance.sina.com.cn/blockchain/qklhz/2026-11-09/doc-iniycmtu6306459.shtml",
+      "summary": "文章来源：博链BroadChain博链财经 最近，国内AI算力圈流行一句玩笑：“老黄（黄仁勋）谈个恋爱，直接把国内AI算力圈干懵了。” 玩笑归玩笑，背后的市场情绪却很真实。",
+      "relatedStocks": [
+        "英伟达",
+        "微软",
+        "台积电"
+      ],
+      "bullConcepts": [
+        "AI算力",
+        "半导体",
+        "国产替代"
+      ],
+      "bearConcepts": [
+        "传统软件"
+      ],
+      "bullIndustries": [
+        "半导体",
+        "AI应用",
+        "算力基础设施"
+      ],
+      "bearIndustries": [
+        "传统IT服务"
       ],
       "heat": 38,
       "momentum": 26,
@@ -70,74 +341,8 @@
       "bearIndustries": [
         "传统IT服务"
       ],
-      "heat": 60,
-      "momentum": 51,
-      "_auto": true
-    },
-    {
-      "id": "abfyho9o",
-      "title": "美官员称与黄仁勋婚外情女子为中国情报机构工作 外交部：纯属捕风捉影",
-      "tag": "科技/AI",
-      "region": "美国",
-      "concept": "aiCapex",
-      "time": "2026-11-09 15:21",
-      "datetime": "2026-11-09 15:21",
-      "source": "财联社",
-      "url": "https://www.cls.cn/detail/2528953",
-      "summary": "【美官员称与黄仁勋婚外情女子为中国情报机构工作，外交部：纯属捕风捉影】财联社11月9日电，外交部发言人郭嘉昆主持例行记者会。法新社记者提问，英伟达CEO黄仁勋周日承认与一名女子存在婚外情，英伟达已对黄仁勋启动调查。此前，美国官员称该女子为中国情报机构工作。中国外交部能否就此事作出回应？这起事件是否会影响下周中美元首在深圳的会晤？对此，郭嘉昆表示：“我们此前已就此作出回应，所谓…",
-      "relatedStocks": [
-        "英伟达",
-        "微软",
-        "台积电"
-      ],
-      "bullConcepts": [
-        "AI算力",
-        "半导体",
-        "国产替代"
-      ],
-      "bearConcepts": [
-        "传统软件"
-      ],
-      "bullIndustries": [
-        "半导体",
-        "AI应用",
-        "算力基础设施"
-      ],
-      "bearIndustries": [
-        "传统IT服务"
-      ],
-      "heat": 64,
-      "momentum": 56,
-      "_auto": true
-    },
-    {
-      "id": "ab137bzt7",
-      "title": "张雪机车在米兰展出，机油盖、水箱盖、油箱盖，能拆的全被薅走，零件被偷，连油箱锁、后视镜都没放过。此前，张雪还曾提醒别的中国展商要注意财产安全。两个月前，张雪团队的大巴还在意大利被…",
-      "tag": "宏观/综合",
-      "region": "中国",
-      "concept": "broker",
-      "time": "2026-11-09 15:26",
-      "datetime": "2026-11-09 15:26",
-      "source": "新浪7×24",
-      "url": "https://finance.sina.cn/7x24/2026-11-09/detail-iniycmua3330244.d.html",
-      "summary": "张雪机车在米兰展出，机油盖、水箱盖、油箱盖，能拆的全被薅走，零件被偷，连油箱锁、后视镜都没放过。此前，张雪还曾提醒别的中国展商要注意财产安全。两个月前，张雪团队的大巴还在意大利被偷，6名成员的背包被盗，1人护照丢失。（看看新闻）",
-      "relatedStocks": [
-        "宽基指数"
-      ],
-      "bullConcepts": [
-        "防御板块"
-      ],
-      "bearConcepts": [
-        "周期股"
-      ],
-      "bullIndustries": [
-        "公用事业"
-      ],
-      "bearIndustries": [
-        "顺周期"
-      ],
-      "heat": 46,
-      "momentum": 36,
+      "heat": 24,
+      "momentum": 26,
       "_auto": true
     },
     {
@@ -166,93 +371,21 @@
       "bearIndustries": [
         "顺周期"
       ],
-      "heat": 33,
-      "momentum": 46,
+      "heat": 24,
+      "momentum": 26,
       "_auto": true
     },
     {
-      "id": "ab1wgakt",
-      "title": "英伟达CEO婚外情丑闻及美伊谈判破裂引发市场波动，比特币价格涨跌交迭",
-      "tag": "科技/AI",
-      "region": "美国",
-      "concept": "aiCapex",
-      "time": "2026-11-09 14:35",
-      "datetime": "2026-11-09 14:35",
-      "source": "环球市场播报",
-      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-09/doc-iniycmtw2920409.shtml",
-      "summary": "比特币价格再次出现剧烈波动，导致价值数亿美元的杠杆看涨头寸遭到强制平仓。 过去几个小时，比特币价格出现剧烈的双向波动，再次提醒交易员杠杆交易可能带来的风险。",
-      "relatedStocks": [
-        "英伟达",
-        "微软",
-        "台积电"
-      ],
-      "bullConcepts": [
-        "AI算力",
-        "半导体",
-        "国产替代"
-      ],
-      "bearConcepts": [
-        "传统软件"
-      ],
-      "bullIndustries": [
-        "半导体",
-        "AI应用",
-        "算力基础设施"
-      ],
-      "bearIndustries": [
-        "传统IT服务"
-      ],
-      "heat": 29,
-      "momentum": 31,
-      "_auto": true
-    },
-    {
-      "id": "ab10ovr3f",
-      "title": "英伟达法兰克福股价下跌5.9%，此前公司对黄仁勋展开调查。",
-      "tag": "科技/AI",
-      "region": "全球",
-      "concept": "ai",
-      "time": "2026-11-09 15:06",
-      "datetime": "2026-11-09 15:06",
-      "source": "新浪7×24",
-      "url": "https://finance.sina.cn/7x24/2026-11-09/detail-iniycmty6536780.d.html",
-      "summary": "英伟达法兰克福股价下跌5.9%，此前公司对黄仁勋展开调查。",
-      "relatedStocks": [
-        "英伟达",
-        "微软",
-        "台积电"
-      ],
-      "bullConcepts": [
-        "AI算力",
-        "半导体",
-        "国产替代"
-      ],
-      "bearConcepts": [
-        "传统软件"
-      ],
-      "bullIndustries": [
-        "半导体",
-        "AI应用",
-        "算力基础设施"
-      ],
-      "bearIndustries": [
-        "传统IT服务"
-      ],
-      "heat": 55,
-      "momentum": 46,
-      "_auto": true
-    },
-    {
-      "id": "abw4nrmd",
-      "title": "花旗预计日本股市年底前反弹：近期暴跌已过度计入经济衰退风险",
+      "id": "abhvpwp3",
+      "title": "欧盟起诉IBM及其合作伙伴 边境管理系统项目陷入困境",
       "tag": "宏观/综合",
-      "region": "全球",
+      "region": "欧洲",
       "concept": "macro",
-      "time": "2026-11-09 14:43",
-      "datetime": "2026-11-09 14:43",
+      "time": "2026-11-09 14:17",
+      "datetime": "2026-11-09 14:17",
       "source": "环球市场播报",
-      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-09/doc-iniycmtu6277088.shtml",
-      "summary": "11月9日，花旗表示，日本股市有望在2026年年底前迎来反弹，认为11月6日的大幅抛售已提前反映了经济衰退情景，但该行并不预计日本或全球经济将陷入衰退。",
+      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-09/doc-iniycmua3278710.shtml",
+      "summary": "欧盟已对IBM及另外两家欧洲公司提起诉讼，原因是这三家公司在开发欧盟新型智能边境管理系统的过程中多次延期。今年夏天，该系统的推广曾导致欧洲各地机场出现大范围混乱。",
       "relatedStocks": [
         "宽基指数"
       ],
@@ -269,280 +402,6 @@
         "顺周期"
       ],
       "heat": 29,
-      "momentum": 31,
-      "_auto": true
-    },
-    {
-      "id": "abtj3vem",
-      "title": "俄罗斯列宁格勒州州长：无人机袭击后，当地一炼油厂起火。",
-      "tag": "地缘/政治",
-      "region": "全球",
-      "concept": "macro",
-      "time": "2026-11-09 15:25",
-      "datetime": "2026-11-09 15:25",
-      "source": "新浪7×24",
-      "url": "https://finance.sina.cn/7x24/2026-11-09/detail-iniycmty6553459.d.html",
-      "summary": "俄罗斯列宁格勒州州长：无人机袭击后，当地一炼油厂起火。",
-      "relatedStocks": [
-        "军工",
-        "黄金"
-      ],
-      "bullConcepts": [
-        "军工",
-        "避险资产"
-      ],
-      "bearConcepts": [
-        "风险资产"
-      ],
-      "bullIndustries": [
-        "军工",
-        "黄金"
-      ],
-      "bearIndustries": [
-        "航空",
-        "旅游"
-      ],
-      "heat": 24,
-      "momentum": 36,
-      "_auto": true
-    },
-    {
-      "id": "ab10ov935",
-      "title": "NASA卫星影像显示：俄罗斯基里希炼油厂或已起火",
-      "tag": "能源/资源",
-      "region": "全球",
-      "concept": "energy",
-      "time": "2026-11-09 15:12",
-      "datetime": "2026-11-09 15:12",
-      "source": "新浪7×24",
-      "url": "https://finance.sina.cn/7x24/2026-11-09/detail-iniycmtu6294593.d.html",
-      "summary": "【NASA卫星影像显示：俄罗斯基里希炼油厂或已起火】乌克兰持续打击俄罗斯能源设施，波罗的海沿岸一座大型炼油厂在夜间遇袭后疑似起火。NASA火灾信息资源管理系统的影像显示，基里希炼油厂区出现多处热异常信号。这类打击意在削弱支撑俄方战事的石油收入，把战火引至俄罗斯本土。",
-      "relatedStocks": [
-        "中国石油",
-        "紫金矿业"
-      ],
-      "bullConcepts": [
-        "油气",
-        "贵金属"
-      ],
-      "bearConcepts": [
-        "高耗能制造"
-      ],
-      "bullIndustries": [
-        "石油开采",
-        "贵金属"
-      ],
-      "bearIndustries": [
-        "航空运输",
-        "化工"
-      ],
-      "heat": 29,
-      "momentum": 36,
-      "_auto": true
-    },
-    {
-      "id": "ab1i5f5vp",
-      "title": "欧盟就边境系统项目纠纷起诉IBM及其合作方",
-      "tag": "宏观/综合",
-      "region": "美国",
-      "concept": "usMacro",
-      "time": "2026-11-09 15:03",
-      "datetime": "2026-11-09 15:03",
-      "source": "环球市场播报",
-      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-09/doc-iniycmua3310028.shtml",
-      "summary": "内部文件显示，负责该系统的欧盟机构EU-Lisa已对美国科技企业IBM、法国IT集团源讯（Atos）以及意大利防务承包商莱昂纳多提起诉讼，原因是项目多次延期...",
-      "relatedStocks": [
-        "宽基指数"
-      ],
-      "bullConcepts": [
-        "防御板块"
-      ],
-      "bearConcepts": [
-        "周期股"
-      ],
-      "bullIndustries": [
-        "公用事业"
-      ],
-      "bearIndustries": [
-        "顺周期"
-      ],
-      "heat": 29,
-      "momentum": 36,
-      "_auto": true
-    },
-    {
-      "id": "ab1h6l61c",
-      "title": "英伟达美股夜盘跌幅扩大至近6%，此前黄仁勋承认婚外情并致歉。",
-      "tag": "科技/AI",
-      "region": "美国",
-      "concept": "aiCapex",
-      "time": "2026-11-09 14:54",
-      "datetime": "2026-11-09 14:54",
-      "source": "华尔街见闻",
-      "url": "https://wallstreetcn.com/livenews/3196726",
-      "summary": "英伟达美股夜盘跌幅扩大至近6%，此前黄仁勋承认婚外情并致歉。",
-      "relatedStocks": [
-        "英伟达",
-        "微软",
-        "台积电"
-      ],
-      "bullConcepts": [
-        "AI算力",
-        "半导体",
-        "国产替代"
-      ],
-      "bearConcepts": [
-        "传统软件"
-      ],
-      "bullIndustries": [
-        "半导体",
-        "AI应用",
-        "算力基础设施"
-      ],
-      "bearIndustries": [
-        "传统IT服务"
-      ],
-      "heat": 51,
-      "momentum": 31,
-      "_auto": true
-    },
-    {
-      "id": "ab10dpr47",
-      "title": "11月9日涨停分析",
-      "tag": "能源/资源",
-      "region": "全球",
-      "concept": "energy",
-      "time": "2026-11-09 15:15",
-      "datetime": "2026-11-09 15:15",
-      "source": "财联社",
-      "url": "https://www.cls.cn/detail/2528943",
-      "summary": "财联社11月9日电，今日全市场共54股涨停，连板股总数9只，44股封板未遂，封板率为55%（不含ST股、退市股）。焦点股方面，光伏概念股闽发铝业11天7板，短剧概念股文投控股14天7板、大晟文化6天4板，医疗板块澳洋健康9天5板。",
-      "relatedStocks": [
-        "中国石油",
-        "紫金矿业"
-      ],
-      "bullConcepts": [
-        "油气",
-        "贵金属"
-      ],
-      "bearConcepts": [
-        "高耗能制造"
-      ],
-      "bullIndustries": [
-        "石油开采",
-        "贵金属"
-      ],
-      "bearIndustries": [
-        "航空运输",
-        "化工"
-      ],
-      "heat": 24,
-      "momentum": 36,
-      "_auto": true
-    },
-    {
-      "id": "ab1m3fida",
-      "title": "创业板指冲高回落涨0.56%，PCB、煤炭板块集体走强。 恒指半日涨0.2%，恒生科技指数涨0.1%，恒生生物科技指数涨2%。 中国10月CPI同比增0.7%，中国10月PPI同…",
-      "tag": "科技/AI",
-      "region": "中国",
-      "concept": "llm",
-      "time": "2026-11-09 12:35",
-      "datetime": "2026-11-09 12:35",
-      "source": "华尔街见闻",
-      "url": "https://wallstreetcn.com/livenews/3196656",
-      "summary": "创业板指冲高回落涨0.56%，PCB、煤炭板块集体走强。 恒指半日涨0.2%，恒生科技指数涨0.1%，恒生生物科技指数涨2%。 中国10月CPI同比增0.7%，中国10月PPI同比增5.7%，创2022年6月以来最高。 国务院关税税则委员会：在2个月内继续暂停实施24%的对美加征关税税率，保留10%的对美加征关税税率。 黄仁勋涉婚外情，发布致英伟达全员信，特朗普称仍愿意带黄仁…",
-      "relatedStocks": [
-        "英伟达",
-        "微软",
-        "台积电"
-      ],
-      "bullConcepts": [
-        "AI算力",
-        "半导体",
-        "国产替代"
-      ],
-      "bearConcepts": [
-        "传统软件"
-      ],
-      "bullIndustries": [
-        "半导体",
-        "AI应用",
-        "算力基础设施"
-      ],
-      "bearIndustries": [
-        "传统IT服务"
-      ],
-      "heat": 33,
-      "momentum": 18,
-      "_auto": true
-    },
-    {
-      "id": "abz6y9ka",
-      "title": "英伟达股价在Robinhood平台下跌，黄仁勋私生活丑闻引发董事会调查",
-      "tag": "科技/AI",
-      "region": "美国",
-      "concept": "aiCapex",
-      "time": "2026-11-09 12:00",
-      "datetime": "2026-11-09 12:00",
-      "source": "环球市场播报",
-      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-09/doc-iniycfmy2975930.shtml",
-      "summary": "在英伟达首席执行官黄仁勋承认与一名女性有染后，公司董事会启动了针对他的调查，英伟达股价随之走低。当地时间纽约时间周日夜间，该股在Robinhood交易平台上下跌约3...",
-      "relatedStocks": [
-        "英伟达",
-        "微软",
-        "台积电"
-      ],
-      "bullConcepts": [
-        "AI算力",
-        "半导体",
-        "国产替代"
-      ],
-      "bearConcepts": [
-        "传统软件"
-      ],
-      "bullIndustries": [
-        "半导体",
-        "AI应用",
-        "算力基础设施"
-      ],
-      "bearIndustries": [
-        "传统IT服务"
-      ],
-      "heat": 51,
-      "momentum": 18,
-      "_auto": true
-    },
-    {
-      "id": "abxbqbie",
-      "title": "特朗普：预计俄乌战争结束后 乌克兰版图将“略有不同”",
-      "tag": "地缘/政治",
-      "region": "美国",
-      "concept": "defense",
-      "time": "2026-11-09 08:28",
-      "datetime": "2026-11-09 08:28",
-      "source": "环球市场播报",
-      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-09/doc-iniyauwh6662278.shtml",
-      "summary": "特朗普总统在媒体提问时表示，乌克兰“最终的版图会略有不同”。 在谈及结束俄乌战争时，他说：“我认为我们会搞定这件事，而且我认为这事会发生。”",
-      "relatedStocks": [
-        "军工",
-        "黄金"
-      ],
-      "bullConcepts": [
-        "军工",
-        "避险资产"
-      ],
-      "bearConcepts": [
-        "风险资产"
-      ],
-      "bullIndustries": [
-        "军工",
-        "黄金"
-      ],
-      "bearIndustries": [
-        "航空",
-        "旅游"
-      ],
-      "heat": 55,
       "momentum": 18,
       "_auto": true
     },
@@ -578,7 +437,107 @@
       "bearIndustries": [
         "传统IT服务"
       ],
+      "heat": 24,
+      "momentum": 18,
+      "_auto": true
+    },
+    {
+      "id": "abzb05z8",
+      "title": "欧洲股市周一开盘涨跌不一，英伟达调查风波及关键经济数据令市场承压",
+      "tag": "科技/AI",
+      "region": "美国",
+      "concept": "aiCapex",
+      "time": "2026-11-09 16:08",
+      "datetime": "2026-11-09 16:08",
+      "source": "环球市场播报",
+      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-09/doc-iniycmtw2979003.shtml",
+      "summary": "11月9日，欧洲股市周一开盘表现平淡，投资者关注英伟达董事会对首席执行官黄仁勋展开独立调查的消息，同时等待本周即将公布的美国通胀及欧元区经济增长数据。",
+      "relatedStocks": [
+        "英伟达",
+        "微软",
+        "台积电"
+      ],
+      "bullConcepts": [
+        "AI算力",
+        "半导体",
+        "国产替代"
+      ],
+      "bearConcepts": [
+        "传统软件"
+      ],
+      "bullIndustries": [
+        "半导体",
+        "AI应用",
+        "算力基础设施"
+      ],
+      "bearIndustries": [
+        "传统IT服务"
+      ],
       "heat": 46,
+      "momentum": 26,
+      "_auto": true
+    },
+    {
+      "id": "abw4nrmd",
+      "title": "花旗预计日本股市年底前反弹：近期暴跌已过度计入经济衰退风险",
+      "tag": "宏观/综合",
+      "region": "全球",
+      "concept": "macro",
+      "time": "2026-11-09 14:43",
+      "datetime": "2026-11-09 14:43",
+      "source": "环球市场播报",
+      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-09/doc-iniycmtu6277088.shtml",
+      "summary": "11月9日，花旗表示，日本股市有望在2026年年底前迎来反弹，认为11月6日的大幅抛售已提前反映了经济衰退情景，但该行并不预计日本或全球经济将陷入衰退。",
+      "relatedStocks": [
+        "宽基指数"
+      ],
+      "bullConcepts": [
+        "防御板块"
+      ],
+      "bearConcepts": [
+        "周期股"
+      ],
+      "bullIndustries": [
+        "公用事业"
+      ],
+      "bearIndustries": [
+        "顺周期"
+      ],
+      "heat": 24,
+      "momentum": 18,
+      "_auto": true
+    },
+    {
+      "id": "ab15cvxvh",
+      "title": "当地州长：俄罗斯基里希工业区遭无人机袭击",
+      "tag": "地缘/政治",
+      "region": "全球",
+      "concept": "macro",
+      "time": "2026-11-09 12:55",
+      "datetime": "2026-11-09 12:55",
+      "source": "环球市场播报",
+      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-09/doc-iniycfna6591895.shtml",
+      "summary": "州长亚历山大·德罗兹坚科表示，隔夜无人机袭击了俄罗斯列宁格勒州基里希的工业区，防空系统在该地区击落了113架无人机。基里希是俄罗斯最大的炼油厂之一——苏尔古特石油天然...",
+      "relatedStocks": [
+        "军工",
+        "黄金"
+      ],
+      "bullConcepts": [
+        "军工",
+        "避险资产"
+      ],
+      "bearConcepts": [
+        "风险资产"
+      ],
+      "bullIndustries": [
+        "军工",
+        "黄金"
+      ],
+      "bearIndustries": [
+        "航空",
+        "旅游"
+      ],
+      "heat": 29,
       "momentum": 18,
       "_auto": true
     },
@@ -614,7 +573,43 @@
       "bearIndustries": [
         "传统IT服务"
       ],
-      "heat": 46,
+      "heat": 24,
+      "momentum": 18,
+      "_auto": true
+    },
+    {
+      "id": "ab1h6l61c",
+      "title": "英伟达美股夜盘跌幅扩大至近6%，此前黄仁勋承认婚外情并致歉。",
+      "tag": "科技/AI",
+      "region": "美国",
+      "concept": "aiCapex",
+      "time": "2026-11-09 14:54",
+      "datetime": "2026-11-09 14:54",
+      "source": "华尔街见闻",
+      "url": "https://wallstreetcn.com/livenews/3196726",
+      "summary": "英伟达美股夜盘跌幅扩大至近6%，此前黄仁勋承认婚外情并致歉。",
+      "relatedStocks": [
+        "英伟达",
+        "微软",
+        "台积电"
+      ],
+      "bullConcepts": [
+        "AI算力",
+        "半导体",
+        "国产替代"
+      ],
+      "bearConcepts": [
+        "传统软件"
+      ],
+      "bullIndustries": [
+        "半导体",
+        "AI应用",
+        "算力基础设施"
+      ],
+      "bearIndustries": [
+        "传统IT服务"
+      ],
+      "heat": 24,
       "momentum": 18,
       "_auto": true
     },
