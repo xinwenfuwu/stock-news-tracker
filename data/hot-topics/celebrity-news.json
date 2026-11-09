@@ -1,0 +1,596 @@
+{
+  "generatedAt": "2026-11-09 15:16",
+  "generatedBy": "GitHub Actions · 多源实时聚合",
+  "sourceCount": 5,
+  "autoCount": 5,
+  "events": [
+    {
+      "id": "ap17h05df",
+      "title": "对于共和党在美国中期选举败选，美国总统特朗普在美国哥伦比亚广播公司（CBS）《60分钟》节目当地时间11月8日晚播出的专访中表示，失利的首要原因是自己未出现在选票上——“如果我的…",
+      "tag": "人物/特朗普",
+      "region": "美国",
+      "concept": "shale",
+      "time": "2026-11-09 14:53",
+      "datetime": "2026-11-09 14:53",
+      "source": "新浪7×24",
+      "url": "https://finance.sina.cn/7x24/2026-11-09/detail-iniycmtw2930243.d.html",
+      "summary": "对于共和党在美国中期选举败选，美国总统特朗普在美国哥伦比亚广播公司（CBS）《60分钟》节目当地时间11月8日晚播出的专访中表示，失利的首要原因是自己未出现在选票上——“如果我的名字在选票上，结局会大不一样”。他同时也承认深层原因是选民不喜欢战争、油价上涨，以及对以色列的强烈反感情绪。当被问及是否会为2028年某位共和党总统候选人背书时，他表示，“大概率会，但也不一定”。他说…",
+      "relatedStocks": [
+        "中国石油",
+        "紫金矿业"
+      ],
+      "bullConcepts": [
+        "油气",
+        "贵金属"
+      ],
+      "bearConcepts": [
+        "高耗能制造"
+      ],
+      "bullIndustries": [
+        "石油开采",
+        "贵金属"
+      ],
+      "bearIndustries": [
+        "航空运输",
+        "化工"
+      ],
+      "heat": 42,
+      "momentum": 41,
+      "_auto": true
+    },
+    {
+      "id": "aphk0rr5",
+      "title": "特朗普《60分钟》专访要点：经济表现亮眼、无意升级对伊打击、不在乎自己的净资产、移民问题做得过火了",
+      "tag": "人物/特朗普",
+      "region": "美国",
+      "concept": "defense",
+      "time": "2026-11-09 14:43",
+      "datetime": "2026-11-09 14:43",
+      "source": "环球市场播报",
+      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-09/doc-iniycmua3294367.shtml",
+      "summary": "共和党在中期选举遭遇一连串惨重失利数日之后，美国总统特朗普依旧为自己的经济政策以及对伊朗战争辩护，但他承认在经济议题上“宣传话术做得很差”...",
+      "relatedStocks": [
+        "军工",
+        "黄金"
+      ],
+      "bullConcepts": [
+        "军工",
+        "避险资产"
+      ],
+      "bearConcepts": [
+        "风险资产"
+      ],
+      "bullIndustries": [
+        "军工",
+        "黄金"
+      ],
+      "bearIndustries": [
+        "航空",
+        "旅游"
+      ],
+      "heat": 42,
+      "momentum": 31,
+      "_auto": true
+    },
+    {
+      "id": "ap1h6l61c",
+      "title": "英伟达美股夜盘跌幅扩大至近6%，此前黄仁勋承认婚外情并致歉。",
+      "tag": "人物/黄仁勋",
+      "region": "美国",
+      "concept": "aiCapex",
+      "time": "2026-11-09 14:54",
+      "datetime": "2026-11-09 14:54",
+      "source": "华尔街见闻",
+      "url": "https://wallstreetcn.com/livenews/3196726",
+      "summary": "英伟达美股夜盘跌幅扩大至近6%，此前黄仁勋承认婚外情并致歉。",
+      "relatedStocks": [
+        "英伟达",
+        "微软",
+        "台积电"
+      ],
+      "bullConcepts": [
+        "AI算力",
+        "半导体",
+        "国产替代"
+      ],
+      "bearConcepts": [
+        "传统软件"
+      ],
+      "bullIndustries": [
+        "半导体",
+        "AI应用",
+        "算力基础设施"
+      ],
+      "bearIndustries": [
+        "传统IT服务"
+      ],
+      "heat": 51,
+      "momentum": 41,
+      "_auto": true
+    },
+    {
+      "id": "ap1fiwzkr",
+      "title": "民主党称特朗普家族与马斯克或面临国会审查",
+      "tag": "人物/马斯克",
+      "region": "美国",
+      "concept": "usMacro",
+      "time": "2026-11-09 14:23",
+      "datetime": "2026-11-09 14:23",
+      "source": "环球市场播报",
+      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-09/doc-iniycmty6505932.shtml",
+      "summary": "美国众议院监督委员会首席民主党议员、加州众议员罗伯特·加西亚表示，明年1月民主党掌控国会后，总统唐纳德·特朗普的家人以及埃隆·马斯克这类商业盟友或将接受国会审查。",
+      "relatedStocks": [
+        "宽基指数"
+      ],
+      "bullConcepts": [
+        "防御板块"
+      ],
+      "bearConcepts": [
+        "周期股"
+      ],
+      "bullIndustries": [
+        "公用事业"
+      ],
+      "bearIndustries": [
+        "顺周期"
+      ],
+      "heat": 24,
+      "momentum": 26,
+      "_auto": true
+    },
+    {
+      "id": "ap1ibjf9i",
+      "title": "特朗普回应“黄仁勋出轨”：我没听说他做错了什么，谁还没和别人交往过呢？",
+      "tag": "人物/黄仁勋",
+      "region": "美国",
+      "concept": "aiCapex",
+      "time": "2026-11-09 09:55",
+      "datetime": "2026-11-09 09:55",
+      "source": "环球市场播报",
+      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-09/doc-iniyazea3025897.shtml",
+      "summary": "英伟达首席执行官黄仁勋陷入个人关系风波。面对记者提问，美国总统特朗普公开为其辩护，称自己“没听说他做错了什么”，并表示：“他只是和某个人有过交往。",
+      "relatedStocks": [
+        "英伟达",
+        "微软",
+        "台积电"
+      ],
+      "bullConcepts": [
+        "AI算力",
+        "半导体",
+        "国产替代"
+      ],
+      "bearConcepts": [
+        "传统软件"
+      ],
+      "bullIndustries": [
+        "半导体",
+        "AI应用",
+        "算力基础设施"
+      ],
+      "bearIndustries": [
+        "传统IT服务"
+      ],
+      "heat": 46,
+      "momentum": 18,
+      "_auto": true
+    },
+    {
+      "id": "p1",
+      "title": "马斯克：xAI 将深度整合进特斯拉，年内目标全自动驾驶",
+      "tag": "科技/AI",
+      "region": "美国",
+      "concept": "aiCapex",
+      "time": "2026-11-09",
+      "datetime": "2026-11-09 10:00",
+      "source": "路透/特斯拉官网",
+      "summary": "马斯克在财报电话会上表示，xAI 大模型将全面接入特斯拉车机与 Optimus 机器人，并宣称 2027 年前实现全自动驾驶（FSD）规模化落地，市场对其兑现能力看法分化。",
+      "relatedStocks": [
+        "特斯拉",
+        "AI芯片"
+      ],
+      "bullConcepts": [
+        "自动驾驶",
+        "AI应用",
+        "机器人"
+      ],
+      "bearConcepts": [
+        "传统车企"
+      ],
+      "bullIndustries": [
+        "智能驾驶",
+        "AI应用"
+      ],
+      "bearIndustries": [
+        "传统汽车制造"
+      ],
+      "heat": 92,
+      "momentum": 85
+    },
+    {
+      "id": "p2",
+      "title": "特朗普：将对AI芯片出口实施新的配额管制",
+      "tag": "政治/科技",
+      "region": "美国",
+      "concept": "usMacro",
+      "time": "2026-11-09",
+      "datetime": "2026-11-09 08:30",
+      "source": "白宫/彭博",
+      "summary": "特朗普宣布对高端 AI 芯片及半导体设备出口设置新的国别配额，称「不能让对手免费获得最先进算力」。英伟达与 AMD 对华及部分第三方市场出货预期承压。",
+      "relatedStocks": [
+        "英伟达",
+        "AMD",
+        "半导体"
+      ],
+      "bullConcepts": [
+        "国产替代",
+        "半导体设备"
+      ],
+      "bearConcepts": [
+        "英伟达",
+        "AI算力出口"
+      ],
+      "bullIndustries": [
+        "半导体设备(国产)",
+        "信创"
+      ],
+      "bearIndustries": [
+        "AI芯片出口链"
+      ],
+      "heat": 90,
+      "momentum": 80
+    },
+    {
+      "id": "p3",
+      "title": "黄仁勋在SC26公布下一代GPU路线图，强调「主权AI」",
+      "tag": "科技/AI",
+      "region": "美国",
+      "concept": "aiCapex",
+      "time": "2026-11-07",
+      "datetime": "2026-11-07 20:00",
+      "source": "英伟达/财联社",
+      "summary": "黄仁勋在超算大会（SC26）演讲中发布下一代 GPU 架构路线图，提出「主权 AI」将成各国刚需，预计算力需求在未来三年再翻数倍；同时重申公司稳健运营。",
+      "relatedStocks": [
+        "英伟达",
+        "AI芯片"
+      ],
+      "bullConcepts": [
+        "AI算力",
+        "先进封装",
+        "HBM"
+      ],
+      "bearConcepts": [],
+      "bullIndustries": [
+        "AI芯片",
+        "先进封装",
+        "存储"
+      ],
+      "bearIndustries": [],
+      "heat": 86,
+      "momentum": 70
+    },
+    {
+      "id": "p4",
+      "title": "巴菲特：伯克希尔Q3减持苹果至历史低位，现金储备创新高",
+      "tag": "投资/市场",
+      "region": "美国",
+      "concept": "usFinance",
+      "time": "2026-11-06",
+      "datetime": "2026-11-06 19:00",
+      "source": "伯克希尔13F/ CNBC",
+      "summary": "伯克希尔披露三季度继续大幅减持苹果，现金等价物规模刷新历史纪录；巴菲特称「在估值高位保持耐心是纪律」，引发市场对科技股见顶的讨论。",
+      "relatedStocks": [
+        "苹果",
+        "美股"
+      ],
+      "bullConcepts": [
+        "高股息",
+        "防御板块"
+      ],
+      "bearConcepts": [
+        "苹果",
+        "科技龙头"
+      ],
+      "bullIndustries": [
+        "公用事业",
+        "银行"
+      ],
+      "bearIndustries": [
+        "消费电子",
+        "科技巨头"
+      ],
+      "heat": 70,
+      "momentum": 45
+    },
+    {
+      "id": "p5",
+      "title": "普京：俄方愿就能源出口与 OPEC+ 协调减产",
+      "tag": "地缘/能源",
+      "region": "全球",
+      "concept": "energy",
+      "time": "2026-11-08",
+      "datetime": "2026-11-08 15:00",
+      "source": "克里姆林宫/塔斯社",
+      "summary": "普京在能源论坛表示，俄罗斯准备与 OPEC+ 协调原油产量以稳定价格，并称欧洲能源安全离不开俄方供应；言论提振油价与避险资产。",
+      "relatedStocks": [
+        "中国海油",
+        "山东黄金"
+      ],
+      "bullConcepts": [
+        "石油",
+        "天然气"
+      ],
+      "bearConcepts": [
+        "航空",
+        "化工(成本端)"
+      ],
+      "bullIndustries": [
+        "石油开采",
+        "能源设备"
+      ],
+      "bearIndustries": [
+        "航空运输",
+        "化工"
+      ],
+      "heat": 80,
+      "momentum": 75
+    },
+    {
+      "id": "p6",
+      "title": "拜登签署AI安全行政令补充条款，强化前沿模型审查",
+      "tag": "政治/科技",
+      "region": "美国",
+      "concept": "usMacro",
+      "time": "2026-11-05",
+      "datetime": "2026-11-05 14:00",
+      "source": "白宫",
+      "summary": "拜登政府发布 AI 安全行政令补充条款，要求万亿参数以上前沿模型在训练前须向联邦报备，并强化算力出口管制；硅谷呼吁「平衡创新与安全」。",
+      "relatedStocks": [
+        "AI",
+        "云计算"
+      ],
+      "bullConcepts": [
+        "合规",
+        "网络安全"
+      ],
+      "bearConcepts": [
+        "AI算力",
+        "大模型"
+      ],
+      "bullIndustries": [
+        "网络安全",
+        "法律合规"
+      ],
+      "bearIndustries": [
+        "AI应用",
+        "云平台"
+      ],
+      "heat": 65,
+      "momentum": 40
+    },
+    {
+      "id": "p7",
+      "title": "马云：AI 将重塑中小企业出海，阿里通义继续开源",
+      "tag": "科技/AI",
+      "region": "中国",
+      "concept": "llm",
+      "time": "2026-11-09",
+      "datetime": "2026-11-09 11:00",
+      "source": "阿里云栖/新华社",
+      "summary": "马云在云栖大会视频致辞中称，AI 让中小企业第一次具备「全球货架」能力，阿里通义千问将坚持开源路线，并加大东南亚与中东市场投入。",
+      "relatedStocks": [
+        "阿里巴巴",
+        "阿里云"
+      ],
+      "bullConcepts": [
+        "国产大模型",
+        "跨境电商"
+      ],
+      "bearConcepts": [],
+      "bullIndustries": [
+        "AI应用",
+        "跨境电商",
+        "云服务"
+      ],
+      "bearIndustries": [],
+      "heat": 78,
+      "momentum": 72
+    },
+    {
+      "id": "p8",
+      "title": "雷军：小米汽车10月交付破3万，智驾全量推送",
+      "tag": "科技/汽车",
+      "region": "中国",
+      "concept": "nev",
+      "time": "2026-11-08",
+      "datetime": "2026-11-08 20:00",
+      "source": "小米/财联社",
+      "summary": "雷军宣布小米汽车单月交付突破 3 万台，城市 NOA 智驾功能已全量推送；并称首款增程 SUV 将于次年一季度上市，剑指家庭用车主流市场。",
+      "relatedStocks": [
+        "小米集团",
+        "智能驾驶"
+      ],
+      "bullConcepts": [
+        "智能驾驶",
+        "新能源车"
+      ],
+      "bearConcepts": [],
+      "bullIndustries": [
+        "新能源车",
+        "智能驾驶"
+      ],
+      "bearIndustries": [],
+      "heat": 82,
+      "momentum": 78
+    },
+    {
+      "id": "p9",
+      "title": "Altman：AGI 或于2027年到来，OpenAI 将设安全委员会",
+      "tag": "科技/AI",
+      "region": "美国",
+      "concept": "aiCapex",
+      "time": "2026-11-07",
+      "datetime": "2026-11-07 22:00",
+      "source": "OpenAI/彭博",
+      "summary": "萨姆·奥尔特曼在公开访谈中表示通用人工智能（AGI）有望在 2027 年前后出现，OpenAI 将成立独立安全委员会并引入外部审计，回应监管与社会关切。",
+      "relatedStocks": [
+        "AI",
+        "算力"
+      ],
+      "bullConcepts": [
+        "AI算力",
+        "云计算"
+      ],
+      "bearConcepts": [],
+      "bullIndustries": [
+        "AI",
+        "算力基础设施"
+      ],
+      "bearIndustries": [],
+      "heat": 75,
+      "momentum": 68
+    },
+    {
+      "id": "p10",
+      "title": "扎克伯格：Meta 开源 Llama 4 多模态版本",
+      "tag": "科技/AI",
+      "region": "美国",
+      "concept": "aiCapex",
+      "time": "2026-11-06",
+      "datetime": "2026-11-06 10:00",
+      "source": "Meta/路透",
+      "summary": "扎克伯格宣布 Meta 开源 Llama 4 多模态大模型，支持图像、视频与语音统一理解，称「开放生态才能赢」，并计划将其嵌入 Meta 全系应用与广告系统。",
+      "relatedStocks": [
+        "Meta",
+        "AI"
+      ],
+      "bullConcepts": [
+        "AI应用",
+        "开源生态"
+      ],
+      "bearConcepts": [],
+      "bullIndustries": [
+        "AI应用",
+        "社交广告"
+      ],
+      "bearIndustries": [],
+      "heat": 68,
+      "momentum": 50
+    },
+    {
+      "id": "p11",
+      "title": "库克：苹果 Apple Intelligence 明年覆盖全系设备",
+      "tag": "科技/消费电子",
+      "region": "美国",
+      "concept": "aiCapex",
+      "time": "2026-11-05",
+      "datetime": "2026-11-05 09:00",
+      "source": "苹果/彭博",
+      "summary": "蒂姆·库克在投资者日上表示，Apple Intelligence 将于明年覆盖 iPhone、iPad 与 Mac 全系设备，并深度整合 Siri；市场关注其对换机周期的拉动。",
+      "relatedStocks": [
+        "苹果",
+        "消费电子"
+      ],
+      "bullConcepts": [
+        "AI终端",
+        "消费电子"
+      ],
+      "bearConcepts": [],
+      "bullIndustries": [
+        "消费电子",
+        "AI终端"
+      ],
+      "bearIndustries": [],
+      "heat": 60,
+      "momentum": 38
+    },
+    {
+      "id": "p12",
+      "title": "贝佐斯：蓝色起源将承接 NASA 登月着陆器大单",
+      "tag": "科技/航天",
+      "region": "美国",
+      "concept": "usMacro",
+      "time": "2026-11-07",
+      "datetime": "2026-11-07 12:00",
+      "source": "蓝色起源/NASA",
+      "summary": "贝佐斯旗下蓝色起源宣布获 NASA 新一代登月着陆器主合同，估值与订单规模创商业航天纪录，带动航天产业链与卫星互联网板块情绪。",
+      "relatedStocks": [
+        "亚马逊",
+        "卫星互联网"
+      ],
+      "bullConcepts": [
+        "商业航天",
+        "卫星互联网"
+      ],
+      "bearConcepts": [],
+      "bullIndustries": [
+        "航天装备",
+        "卫星互联网"
+      ],
+      "bearIndustries": [],
+      "heat": 64,
+      "momentum": 55
+    },
+    {
+      "id": "p13",
+      "title": "孙正义：软银拟设千亿美元 AI 产业基金",
+      "tag": "投资/AI",
+      "region": "美国",
+      "concept": "aiCapex",
+      "time": "2026-11-09",
+      "datetime": "2026-11-09 09:30",
+      "source": "软银/日经",
+      "summary": "孙正义宣布软银将牵头设立规模达千亿美元的 AI 产业基金，重点投向算力、机器人与能源基础设施，称「AI 是继电力之后最大的范式转移」。",
+      "relatedStocks": [
+        "AI",
+        "算力"
+      ],
+      "bullConcepts": [
+        "AI算力",
+        "机器人",
+        "能源"
+      ],
+      "bearConcepts": [],
+      "bullIndustries": [
+        "AI",
+        "算力基础设施",
+        "机器人"
+      ],
+      "bearIndustries": [],
+      "heat": 70,
+      "momentum": 66
+    },
+    {
+      "id": "p14",
+      "title": "索罗斯基金：警告美股AI估值过热，减持科技龙头",
+      "tag": "投资/市场",
+      "region": "美国",
+      "concept": "usFinance",
+      "time": "2026-11-04",
+      "datetime": "2026-11-04 16:00",
+      "source": "13F/金融时报",
+      "summary": "索罗斯基金管理公司最新持仓显示，其大幅减持多家科技龙头并增持黄金与公用事业，称「AI 叙事透支了未来现金流」，警示市场拥挤交易风险。",
+      "relatedStocks": [
+        "美股科技",
+        "黄金"
+      ],
+      "bullConcepts": [
+        "黄金",
+        "防御板块"
+      ],
+      "bearConcepts": [
+        "AI科技股",
+        "半导体"
+      ],
+      "bullIndustries": [
+        "黄金",
+        "公用事业"
+      ],
+      "bearIndustries": [
+        "科技龙头",
+        "半导体"
+      ],
+      "heat": 58,
+      "momentum": 35
+    }
+  ]
+}

@@ -54,17 +54,17 @@ async function newPage(browser) {
   await page.route('**github.io/**', r => r.abort());
   await page.route('**sichina.dpdns.org/**', r => r.abort());
   await page.route('**/data/**', r => r.abort());
-  // 本地静态服务已托管 data/breaking-events.json；放行该路径（覆盖上面的 **/data/** abort），
-  // 使「突发」实时数据源在离线 e2e 中可正常读取（含真实事件「黄仁勋」等）
+  // 20261109d：快照已迁到 data/hot-topics/（随 hot-topics.yml 一起提交）；放行该路径
+  // （覆盖上面的 **/data/** abort），使「突发/人物」实时数据在离线 e2e 中可正常读取
   await page.route('**/breaking-events.json**', r => {
     try {
-      const f = path.join(ROOT, 'data', 'breaking-events.json');
+      const f = path.join(ROOT, 'data', 'hot-topics', 'breaking-events.json');
       r.fulfill({ status: 200, contentType: 'application/json; charset=utf-8', body: fs.readFileSync(f, 'utf8') });
     } catch (e) { r.fulfill({ status: 404, contentType: 'text/plain', body: 'nf' }); }
   });
   await page.route('**/celebrity-news.json**', r => {
     try {
-      const f = path.join(ROOT, 'data', 'celebrity-news.json');
+      const f = path.join(ROOT, 'data', 'hot-topics', 'celebrity-news.json');
       r.fulfill({ status: 200, contentType: 'application/json; charset=utf-8', body: fs.readFileSync(f, 'utf8') });
     } catch (e) { r.fulfill({ status: 404, contentType: 'text/plain', body: 'nf' }); }
   });
@@ -448,8 +448,10 @@ const main = async () => {
   await futurePanel.locator('.infl-region-tabs .infl-tab:has-text("突发")').click();
   await page.waitForTimeout(120);
   // 红色新事件：拦截 breaking-events.json，追加一条全新事件 b999
-  const baseBreaking = JSON.parse(fs.readFileSync(path.join(ROOT, 'data', 'breaking-events.json'), 'utf8'));
-  const aug = [...baseBreaking, { id: 'b999', title: '[自动化测试]突发：某科技巨头突发的重大事件', tag: '测试', region: '美国', concept: 'aiCapex', time: '2026-11-09', source: '测试', summary: '仅用于验证红色新事件标识', relatedStocks: ['测试'] }];
+  const baseBreakingRaw = JSON.parse(fs.readFileSync(path.join(ROOT, 'data', 'hot-topics', 'breaking-events.json'), 'utf8'));
+  // 20261109d：数据快照已升级为 { generatedAt, events }，兼容取 events
+  const baseArr = Array.isArray(baseBreakingRaw) ? baseBreakingRaw : baseBreakingRaw.events;
+  const aug = [...baseArr, { id: 'b999', title: '[自动化测试]突发：某科技巨头突发的重大事件', tag: '测试', region: '美国', concept: 'aiCapex', time: '2026-11-09', source: '测试', summary: '仅用于验证红色新事件标识', relatedStocks: ['测试'] }];
   await page.route('**/breaking-events.json**', r => r.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(aug) }));
   await futurePanel.locator('button:has-text("刷新数据")').click();
   await page.waitForTimeout(220);
@@ -512,6 +514,31 @@ const main = async () => {
   check('突发排序条含「按飙升度 / 按时间」',
     (await futurePanel.locator('.infl-sortbar .infl-sort-btn:has-text("按飙升度")').count()) === 1
     && (await futurePanel.locator('.infl-sortbar .infl-sort-btn:has-text("按时间")').count()) === 1);
+  // 20261109d：数据自动更新管道（复用 hot-topics.yml 定时任务 + Pages legacy push 即发布）
+  const dBrk = JSON.parse(fs.readFileSync(path.join(ROOT, 'data', 'hot-topics', 'breaking-events.json'), 'utf8'));
+  const dCel = JSON.parse(fs.readFileSync(path.join(ROOT, 'data', 'hot-topics', 'celebrity-news.json'), 'utf8'));
+  check('[20261109d] 数据快照为 {generatedAt, events} 且含自动抓取条目',
+    !Array.isArray(dBrk) && !!dBrk.generatedAt && Array.isArray(dBrk.events) && dBrk.events.some(e => e._auto)
+    && !Array.isArray(dCel) && !!dCel.generatedAt && Array.isArray(dCel.events) && dCel.events.some(e => e._auto));
+  check('[20261109d] 自动事件字段完整（分钟级时间 + heat/momentum + 利好利空四组）',
+    dBrk.events.filter(e => e._auto).every(e => /^\d{4}-\d{2}-\d{2} \d{2}:\d{2}$/.test(e.datetime || '')
+      && typeof e.heat === 'number' && typeof e.momentum === 'number'
+      && Array.isArray(e.bullConcepts) && Array.isArray(e.bearConcepts)
+      && Array.isArray(e.bullIndustries) && Array.isArray(e.bearIndustries) && !!e.concept));
+  check('[20261109d] 面板显示「📡 数据更新于 <时间>」',
+    (await futurePanel.locator('.future-databar').count()) === 1
+    && /数据更新于\s*\d{4}-\d{2}-\d{2}/.test(await futurePanel.locator('.future-databar').innerText()));
+  const wf = fs.readFileSync(path.join(ROOT, '.github', 'workflows', 'hot-topics.yml'), 'utf8');
+  const hotFetcher = fs.readFileSync(path.join(ROOT, 'scripts', 'fetch-hot-topics.mjs'), 'utf8');
+  const fetcher = fs.readFileSync(path.join(ROOT, 'scripts', 'fetch-breaking-events.mjs'), 'utf8');
+  const appSrc = fs.readFileSync(path.join(ROOT, 'js', 'app.js'), 'utf8');
+  check('[20261109d] 自动更新管道：复用 hot-topics 定时任务 + git add 覆盖 + 幂等/兜底',
+    wf.includes("cron: '0 */2 * * *'") && wf.includes('git add -A data/hot-topics')
+    && hotFetcher.includes("await import('./fetch-breaking-events.mjs')")
+    && fetcher.includes('srcSinaRoll') && fetcher.includes('srcCls') && fetcher.includes('srcToutiao')
+    && fetcher.includes('arr.filter(x => x && !x._auto)') && fetcher.includes('有效新闻过少'));
+  check('[20261109d] 前端读取 data/hot-topics/ 下的自动更新快照',
+    appSrc.includes('data/hot-topics/breaking-events.json') && appSrc.includes('data/hot-topics/celebrity-news.json'));
   await page.unroute('**/celebrity-news.json**');
 
 

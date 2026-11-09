@@ -626,6 +626,15 @@ async function main() {
     const sf = join(dir, `briefs-${SINA_SOURCE_NAME}-${d}.json`);
     if (existsSync(sf)) { try { unlinkSync(sf); console.log(`  清理过期快讯 briefs-${SINA_SOURCE_NAME}-${d}.json`); } catch (e) { /* ignore */ } }
   }
+
+  // 20261109d：顺带生成「突发 / 人物」实时数据。输出落在 data/hot-topics/ 下，
+  // 随本 workflow 的 `git add -A data/hot-topics` 一起提交；Pages 为 legacy(main 根目录)，push 即发布。
+  // 用 try/catch 隔离，保证抓取失败绝不影响原有火热话题快照。
+  try {
+    await import('./fetch-breaking-events.mjs');
+  } catch (e) {
+    console.warn('  [突发/人物抓取] 失败（不影响火热话题）：' + (e && e.message));
+  }
 }
 
 main().catch(e => { console.error(e); process.exit(1); });

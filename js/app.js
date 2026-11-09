@@ -9368,10 +9368,12 @@ const app = createApp({
     // 运行时拉取人物榜单（data/celebrity-news.json）；失败回退 CELEBRITY_EVENTS_SEED
     async function fetchCelebrityNews() {
       try {
-        const r = await fetch('data/celebrity-news.json?_=' + Date.now(), { cache: 'no-store' });
+        const r = await fetch('data/hot-topics/celebrity-news.json?_=' + Date.now(), { cache: 'no-store' });
         if (!r.ok) throw new Error('HTTP ' + r.status);
         const j = await r.json();
         const arr = Array.isArray(j) ? j : (j && j.events) || [];
+        // 20261109d：抓取脚本写入 generatedAt，用于面板展示「数据自动更新时间」
+        futureDataTime.value = (!Array.isArray(j) && j && j.generatedAt) || '';
         return (arr && arr.length) ? arr : null;
       } catch (e) { return null; }
     }
@@ -9381,6 +9383,8 @@ const app = createApp({
     const futureError = ref('');
     const futureDate = ref('');
     const futureLastRefresh = ref('');
+    // 20261109d：数据文件由 GitHub Actions 每小时自动抓取生成，记录其 generatedAt
+    const futureDataTime = ref('');
     // 20261109a：双指标排序口径（与影响力事件同逻辑）：'investors' 按影响股民数 | 'people' 按影响人数 | 'date' 仅未来子版块可用（按日期升序）
     const futureSortBy = ref('investors');
     // 20261109a：突发自动刷新（每 futureRefreshMs 拉取 data/breaking-events.json，新出现事件红色标识）
@@ -9454,10 +9458,12 @@ const app = createApp({
     // 运行时拉取实时突发数据源（data/breaking-events.json）；失败回退 BREAKING_EVENTS_SEED
     async function fetchBreakingEvents() {
       try {
-        const r = await fetch('data/breaking-events.json?_=' + Date.now(), { cache: 'no-store' });
+        const r = await fetch('data/hot-topics/breaking-events.json?_=' + Date.now(), { cache: 'no-store' });
         if (!r.ok) throw new Error('HTTP ' + r.status);
         const j = await r.json();
         const arr = Array.isArray(j) ? j : (j && j.events) || [];
+        // 20261109d：抓取脚本写入 generatedAt，用于面板展示「数据自动更新时间」
+        futureDataTime.value = (!Array.isArray(j) && j && j.generatedAt) || '';
         return (arr && arr.length) ? arr : null;
       } catch (e) { return null; }
     }
@@ -9487,7 +9493,11 @@ const app = createApp({
         list = sortFuture(list);
       }
       futureEvents.value = list;
-      futureDate.value = '实时整理';
+      // 20261109d：突发/人物展示抓取快照的真实更新时间；未来子版块为静态编排
+      if (reg === 'future') futureDate.value = '全网整理的未来事件';
+      else futureDate.value = futureDataTime.value
+        ? ('多源实时聚合 · 数据更新于 ' + futureDataTime.value)
+        : '实时整理';
       futureError.value = '';
       futureLastRefresh.value = new Date().toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' });
     }

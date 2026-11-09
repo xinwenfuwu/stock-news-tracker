@@ -1,0 +1,1024 @@
+{
+  "generatedAt": "2026-11-09 15:16",
+  "generatedBy": "GitHub Actions · 多源实时聚合",
+  "sourceCount": 5,
+  "autoCount": 18,
+  "events": [
+    {
+      "id": "ab17h05df",
+      "title": "对于共和党在美国中期选举败选，美国总统特朗普在美国哥伦比亚广播公司（CBS）《60分钟》节目当地时间11月8日晚播出的专访中表示，失利的首要原因是自己未出现在选票上——“如果我的…",
+      "tag": "能源/资源",
+      "region": "美国",
+      "concept": "shale",
+      "time": "2026-11-09 14:53",
+      "datetime": "2026-11-09 14:53",
+      "source": "新浪7×24",
+      "url": "https://finance.sina.cn/7x24/2026-11-09/detail-iniycmtw2930243.d.html",
+      "summary": "对于共和党在美国中期选举败选，美国总统特朗普在美国哥伦比亚广播公司（CBS）《60分钟》节目当地时间11月8日晚播出的专访中表示，失利的首要原因是自己未出现在选票上——“如果我的名字在选票上，结局会大不一样”。他同时也承认深层原因是选民不喜欢战争、油价上涨，以及对以色列的强烈反感情绪。当被问及是否会为2028年某位共和党总统候选人背书时，他表示，“大概率会，但也不一定”。他说…",
+      "relatedStocks": [
+        "中国石油",
+        "紫金矿业"
+      ],
+      "bullConcepts": [
+        "油气",
+        "贵金属"
+      ],
+      "bearConcepts": [
+        "高耗能制造"
+      ],
+      "bullIndustries": [
+        "石油开采",
+        "贵金属"
+      ],
+      "bearIndustries": [
+        "航空运输",
+        "化工"
+      ],
+      "heat": 42,
+      "momentum": 41,
+      "_auto": true
+    },
+    {
+      "id": "abhk0rr5",
+      "title": "特朗普《60分钟》专访要点：经济表现亮眼、无意升级对伊打击、不在乎自己的净资产、移民问题做得过火了",
+      "tag": "地缘/政治",
+      "region": "美国",
+      "concept": "defense",
+      "time": "2026-11-09 14:43",
+      "datetime": "2026-11-09 14:43",
+      "source": "环球市场播报",
+      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-09/doc-iniycmua3294367.shtml",
+      "summary": "共和党在中期选举遭遇一连串惨重失利数日之后，美国总统特朗普依旧为自己的经济政策以及对伊朗战争辩护，但他承认在经济议题上“宣传话术做得很差”...",
+      "relatedStocks": [
+        "军工",
+        "黄金"
+      ],
+      "bullConcepts": [
+        "军工",
+        "避险资产"
+      ],
+      "bearConcepts": [
+        "风险资产"
+      ],
+      "bullIndustries": [
+        "军工",
+        "黄金"
+      ],
+      "bearIndustries": [
+        "航空",
+        "旅游"
+      ],
+      "heat": 42,
+      "momentum": 31,
+      "_auto": true
+    },
+    {
+      "id": "ab99z774",
+      "title": "三星电子半导体蚀刻工艺配方外泄至美国半导体设备商泛林（LamResearch）韩国分支机构。泛林为三星电子产线供应蚀刻、沉积设备，原本仅可获取双方约定范围内、用于设备维护与性能优…",
+      "tag": "科技/AI",
+      "region": "美国",
+      "concept": "aiCapex",
+      "time": "2026-11-09 15:01",
+      "datetime": "2026-11-09 15:01",
+      "source": "新浪7×24",
+      "url": "https://finance.sina.cn/7x24/2026-11-09/detail-iniycmty6531180.d.html",
+      "summary": "三星电子半导体蚀刻工艺配方外泄至美国半导体设备商泛林（LamResearch）韩国分支机构。泛林为三星电子产线供应蚀刻、沉积设备，原本仅可获取双方约定范围内、用于设备维护与性能优化的产线监控数据；经核查，泛林通过不当请求，多次拿到三星电子未许可对外传出的工艺配方独立文件。三星电子于今年下半年发现该事件，总部层面将此事定性为重大技术泄露并严肃处置。",
+      "relatedStocks": [
+        "英伟达",
+        "微软",
+        "台积电"
+      ],
+      "bullConcepts": [
+        "AI算力",
+        "半导体",
+        "国产替代"
+      ],
+      "bearConcepts": [
+        "传统软件"
+      ],
+      "bullIndustries": [
+        "半导体",
+        "AI应用",
+        "算力基础设施"
+      ],
+      "bearIndustries": [
+        "传统IT服务"
+      ],
+      "heat": 24,
+      "momentum": 36,
+      "_auto": true
+    },
+    {
+      "id": "ab1wgakt",
+      "title": "英伟达CEO婚外情丑闻及美伊谈判破裂引发市场波动，比特币价格涨跌交迭",
+      "tag": "科技/AI",
+      "region": "美国",
+      "concept": "aiCapex",
+      "time": "2026-11-09 14:35",
+      "datetime": "2026-11-09 14:35",
+      "source": "环球市场播报",
+      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-09/doc-iniycmtw2920409.shtml",
+      "summary": "比特币价格再次出现剧烈波动，导致价值数亿美元的杠杆看涨头寸遭到强制平仓。 过去几个小时，比特币价格出现剧烈的双向波动，再次提醒交易员杠杆交易可能带来的风险。",
+      "relatedStocks": [
+        "英伟达",
+        "微软",
+        "台积电"
+      ],
+      "bullConcepts": [
+        "AI算力",
+        "半导体",
+        "国产替代"
+      ],
+      "bearConcepts": [
+        "传统软件"
+      ],
+      "bullIndustries": [
+        "半导体",
+        "AI应用",
+        "算力基础设施"
+      ],
+      "bearIndustries": [
+        "传统IT服务"
+      ],
+      "heat": 33,
+      "momentum": 31,
+      "_auto": true
+    },
+    {
+      "id": "ab10ovr3f",
+      "title": "英伟达法兰克福股价下跌5.9%，此前公司对黄仁勋展开调查。",
+      "tag": "科技/AI",
+      "region": "全球",
+      "concept": "ai",
+      "time": "2026-11-09 15:06",
+      "datetime": "2026-11-09 15:06",
+      "source": "新浪7×24",
+      "url": "https://finance.sina.cn/7x24/2026-11-09/detail-iniycmty6536780.d.html",
+      "summary": "英伟达法兰克福股价下跌5.9%，此前公司对黄仁勋展开调查。",
+      "relatedStocks": [
+        "英伟达",
+        "微软",
+        "台积电"
+      ],
+      "bullConcepts": [
+        "AI算力",
+        "半导体",
+        "国产替代"
+      ],
+      "bearConcepts": [
+        "传统软件"
+      ],
+      "bullIndustries": [
+        "半导体",
+        "AI应用",
+        "算力基础设施"
+      ],
+      "bearIndustries": [
+        "传统IT服务"
+      ],
+      "heat": 55,
+      "momentum": 46,
+      "_auto": true
+    },
+    {
+      "id": "abw4nrmd",
+      "title": "花旗预计日本股市年底前反弹：近期暴跌已过度计入经济衰退风险",
+      "tag": "宏观/综合",
+      "region": "全球",
+      "concept": "macro",
+      "time": "2026-11-09 14:43",
+      "datetime": "2026-11-09 14:43",
+      "source": "环球市场播报",
+      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-09/doc-iniycmtu6277088.shtml",
+      "summary": "11月9日，花旗表示，日本股市有望在2026年年底前迎来反弹，认为11月6日的大幅抛售已提前反映了经济衰退情景，但该行并不预计日本或全球经济将陷入衰退。",
+      "relatedStocks": [
+        "宽基指数"
+      ],
+      "bullConcepts": [
+        "防御板块"
+      ],
+      "bearConcepts": [
+        "周期股"
+      ],
+      "bullIndustries": [
+        "公用事业"
+      ],
+      "bearIndustries": [
+        "顺周期"
+      ],
+      "heat": 29,
+      "momentum": 31,
+      "_auto": true
+    },
+    {
+      "id": "abhvpwp3",
+      "title": "欧盟起诉IBM及其合作伙伴 边境管理系统项目陷入困境",
+      "tag": "宏观/综合",
+      "region": "欧洲",
+      "concept": "macro",
+      "time": "2026-11-09 14:17",
+      "datetime": "2026-11-09 14:17",
+      "source": "环球市场播报",
+      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-09/doc-iniycmua3278710.shtml",
+      "summary": "欧盟已对IBM及另外两家欧洲公司提起诉讼，原因是这三家公司在开发欧盟新型智能边境管理系统的过程中多次延期。今年夏天，该系统的推广曾导致欧洲各地机场出现大范围混乱。",
+      "relatedStocks": [
+        "宽基指数"
+      ],
+      "bullConcepts": [
+        "防御板块"
+      ],
+      "bearConcepts": [
+        "周期股"
+      ],
+      "bullIndustries": [
+        "公用事业"
+      ],
+      "bearIndustries": [
+        "顺周期"
+      ],
+      "heat": 29,
+      "momentum": 31,
+      "_auto": true
+    },
+    {
+      "id": "ab10ov935",
+      "title": "NASA卫星影像显示：俄罗斯基里希炼油厂或已起火",
+      "tag": "能源/资源",
+      "region": "全球",
+      "concept": "energy",
+      "time": "2026-11-09 15:12",
+      "datetime": "2026-11-09 15:12",
+      "source": "新浪7×24",
+      "url": "https://finance.sina.cn/7x24/2026-11-09/detail-iniycmtu6294593.d.html",
+      "summary": "【NASA卫星影像显示：俄罗斯基里希炼油厂或已起火】乌克兰持续打击俄罗斯能源设施，波罗的海沿岸一座大型炼油厂在夜间遇袭后疑似起火。NASA火灾信息资源管理系统的影像显示，基里希炼油厂区出现多处热异常信号。这类打击意在削弱支撑俄方战事的石油收入，把战火引至俄罗斯本土。",
+      "relatedStocks": [
+        "中国石油",
+        "紫金矿业"
+      ],
+      "bullConcepts": [
+        "油气",
+        "贵金属"
+      ],
+      "bearConcepts": [
+        "高耗能制造"
+      ],
+      "bullIndustries": [
+        "石油开采",
+        "贵金属"
+      ],
+      "bearIndustries": [
+        "航空运输",
+        "化工"
+      ],
+      "heat": 29,
+      "momentum": 36,
+      "_auto": true
+    },
+    {
+      "id": "ab1h6l61c",
+      "title": "英伟达美股夜盘跌幅扩大至近6%，此前黄仁勋承认婚外情并致歉。",
+      "tag": "科技/AI",
+      "region": "美国",
+      "concept": "aiCapex",
+      "time": "2026-11-09 14:54",
+      "datetime": "2026-11-09 14:54",
+      "source": "华尔街见闻",
+      "url": "https://wallstreetcn.com/livenews/3196726",
+      "summary": "英伟达美股夜盘跌幅扩大至近6%，此前黄仁勋承认婚外情并致歉。",
+      "relatedStocks": [
+        "英伟达",
+        "微软",
+        "台积电"
+      ],
+      "bullConcepts": [
+        "AI算力",
+        "半导体",
+        "国产替代"
+      ],
+      "bearConcepts": [
+        "传统软件"
+      ],
+      "bullIndustries": [
+        "半导体",
+        "AI应用",
+        "算力基础设施"
+      ],
+      "bearIndustries": [
+        "传统IT服务"
+      ],
+      "heat": 51,
+      "momentum": 41,
+      "_auto": true
+    },
+    {
+      "id": "ab2er4mm",
+      "title": "凯投宏观：AI投资明年将放缓，2028年恐下滑10%",
+      "tag": "科技/AI",
+      "region": "美国",
+      "concept": "aiCapex",
+      "time": "2026-11-09 14:58",
+      "datetime": "2026-11-09 14:58",
+      "source": "新浪7×24",
+      "url": "https://finance.sina.cn/7x24/2026-11-09/detail-iniycmua3304581.d.html",
+      "summary": "【凯投宏观：AI投资明年将放缓，2028年恐下滑10%】凯投宏观（Capital Economics）指出，尽管投资者近期已遭受重创，但随着AI投资热潮逐渐消退，美股还将面临更严重的暴跌。该机构首席经济顾问Vicky Redwood在上周五的一份报告中表示，虽然AI具备提升生产力的潜力，但她对能否产生足够的收入来维持当前的投资增速持悲观态度。少数几家超大规模云服务商今年的支出…",
+      "relatedStocks": [
+        "英伟达",
+        "微软",
+        "台积电"
+      ],
+      "bullConcepts": [
+        "AI算力",
+        "半导体",
+        "国产替代"
+      ],
+      "bearConcepts": [
+        "传统软件"
+      ],
+      "bullIndustries": [
+        "半导体",
+        "AI应用",
+        "算力基础设施"
+      ],
+      "bearIndustries": [
+        "传统IT服务"
+      ],
+      "heat": 24,
+      "momentum": 36,
+      "_auto": true
+    },
+    {
+      "id": "ab10dpr47",
+      "title": "11月9日涨停分析",
+      "tag": "能源/资源",
+      "region": "全球",
+      "concept": "energy",
+      "time": "2026-11-09 15:15",
+      "datetime": "2026-11-09 15:15",
+      "source": "财联社",
+      "url": "https://www.cls.cn/detail/2528943",
+      "summary": "财联社11月9日电，今日全市场共54股涨停，连板股总数9只，44股封板未遂，封板率为55%（不含ST股、退市股）。焦点股方面，光伏概念股闽发铝业11天7板，短剧概念股文投控股14天7板、大晟文化6天4板，医疗板块澳洋健康9天5板。",
+      "relatedStocks": [
+        "中国石油",
+        "紫金矿业"
+      ],
+      "bullConcepts": [
+        "油气",
+        "贵金属"
+      ],
+      "bearConcepts": [
+        "高耗能制造"
+      ],
+      "bullIndustries": [
+        "石油开采",
+        "贵金属"
+      ],
+      "bearIndustries": [
+        "航空运输",
+        "化工"
+      ],
+      "heat": 24,
+      "momentum": 36,
+      "_auto": true
+    },
+    {
+      "id": "ab1m3fida",
+      "title": "创业板指冲高回落涨0.56%，PCB、煤炭板块集体走强。 恒指半日涨0.2%，恒生科技指数涨0.1%，恒生生物科技指数涨2%。 中国10月CPI同比增0.7%，中国10月PPI同…",
+      "tag": "科技/AI",
+      "region": "中国",
+      "concept": "llm",
+      "time": "2026-11-09 12:35",
+      "datetime": "2026-11-09 12:35",
+      "source": "华尔街见闻",
+      "url": "https://wallstreetcn.com/livenews/3196656",
+      "summary": "创业板指冲高回落涨0.56%，PCB、煤炭板块集体走强。 恒指半日涨0.2%，恒生科技指数涨0.1%，恒生生物科技指数涨2%。 中国10月CPI同比增0.7%，中国10月PPI同比增5.7%，创2022年6月以来最高。 国务院关税税则委员会：在2个月内继续暂停实施24%的对美加征关税税率，保留10%的对美加征关税税率。 黄仁勋涉婚外情，发布致英伟达全员信，特朗普称仍愿意带黄仁…",
+      "relatedStocks": [
+        "英伟达",
+        "微软",
+        "台积电"
+      ],
+      "bullConcepts": [
+        "AI算力",
+        "半导体",
+        "国产替代"
+      ],
+      "bearConcepts": [
+        "传统软件"
+      ],
+      "bullIndustries": [
+        "半导体",
+        "AI应用",
+        "算力基础设施"
+      ],
+      "bearIndustries": [
+        "传统IT服务"
+      ],
+      "heat": 38,
+      "momentum": 18,
+      "_auto": true
+    },
+    {
+      "id": "abw0wvj5",
+      "title": "瑞银CEO安 Sergio Ermotti表示，过去几周AI相关股票大幅回调，反映出投资者此前对该行业抱有的期望过高。其在悉尼举行的一场瑞银会议上表示，美国近期中期选举结果以及全…",
+      "tag": "科技/AI",
+      "region": "美国",
+      "concept": "aiCapex",
+      "time": "2026-11-09 11:13",
+      "datetime": "2026-11-09 11:13",
+      "source": "华尔街见闻",
+      "url": "https://wallstreetcn.com/livenews/3196637",
+      "summary": "瑞银CEO安 Sergio Ermotti表示，过去几周AI相关股票大幅回调，反映出投资者此前对该行业抱有的期望过高。其在悉尼举行的一场瑞银会议上表示，美国近期中期选举结果以及全球围绕基础设施建设影响的讨论，可能导致AI行业实现预期成果的进程推迟。虽然他对AI的发展最终将带来积极的经济成果持乐观态度，但他个人认为，“我们达到这一目标的速度被夸大了一些”。",
+      "relatedStocks": [
+        "英伟达",
+        "微软",
+        "台积电"
+      ],
+      "bullConcepts": [
+        "AI算力",
+        "半导体",
+        "国产替代"
+      ],
+      "bearConcepts": [
+        "传统软件"
+      ],
+      "bullIndustries": [
+        "半导体",
+        "AI应用",
+        "算力基础设施"
+      ],
+      "bearIndustries": [
+        "传统IT服务"
+      ],
+      "heat": 38,
+      "momentum": 18,
+      "_auto": true
+    },
+    {
+      "id": "abz6y9ka",
+      "title": "英伟达股价在Robinhood平台下跌，黄仁勋私生活丑闻引发董事会调查",
+      "tag": "科技/AI",
+      "region": "美国",
+      "concept": "aiCapex",
+      "time": "2026-11-09 12:00",
+      "datetime": "2026-11-09 12:00",
+      "source": "环球市场播报",
+      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-09/doc-iniycfmy2975930.shtml",
+      "summary": "在英伟达首席执行官黄仁勋承认与一名女性有染后，公司董事会启动了针对他的调查，英伟达股价随之走低。当地时间纽约时间周日夜间，该股在Robinhood交易平台上下跌约3...",
+      "relatedStocks": [
+        "英伟达",
+        "微软",
+        "台积电"
+      ],
+      "bullConcepts": [
+        "AI算力",
+        "半导体",
+        "国产替代"
+      ],
+      "bearConcepts": [
+        "传统软件"
+      ],
+      "bullIndustries": [
+        "半导体",
+        "AI应用",
+        "算力基础设施"
+      ],
+      "bearIndustries": [
+        "传统IT服务"
+      ],
+      "heat": 51,
+      "momentum": 18,
+      "_auto": true
+    },
+    {
+      "id": "abxbqbie",
+      "title": "特朗普：预计俄乌战争结束后 乌克兰版图将“略有不同”",
+      "tag": "地缘/政治",
+      "region": "美国",
+      "concept": "defense",
+      "time": "2026-11-09 08:28",
+      "datetime": "2026-11-09 08:28",
+      "source": "环球市场播报",
+      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-09/doc-iniyauwh6662278.shtml",
+      "summary": "特朗普总统在媒体提问时表示，乌克兰“最终的版图会略有不同”。 在谈及结束俄乌战争时，他说：“我认为我们会搞定这件事，而且我认为这事会发生。”",
+      "relatedStocks": [
+        "军工",
+        "黄金"
+      ],
+      "bullConcepts": [
+        "军工",
+        "避险资产"
+      ],
+      "bearConcepts": [
+        "风险资产"
+      ],
+      "bullIndustries": [
+        "军工",
+        "黄金"
+      ],
+      "bearIndustries": [
+        "航空",
+        "旅游"
+      ],
+      "heat": 55,
+      "momentum": 18,
+      "_auto": true
+    },
+    {
+      "id": "ab1ibjf9i",
+      "title": "特朗普回应“黄仁勋出轨”：我没听说他做错了什么，谁还没和别人交往过呢？",
+      "tag": "科技/AI",
+      "region": "美国",
+      "concept": "aiCapex",
+      "time": "2026-11-09 09:55",
+      "datetime": "2026-11-09 09:55",
+      "source": "环球市场播报",
+      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-09/doc-iniyazea3025897.shtml",
+      "summary": "英伟达首席执行官黄仁勋陷入个人关系风波。面对记者提问，美国总统特朗普公开为其辩护，称自己“没听说他做错了什么”，并表示：“他只是和某个人有过交往。",
+      "relatedStocks": [
+        "英伟达",
+        "微软",
+        "台积电"
+      ],
+      "bullConcepts": [
+        "AI算力",
+        "半导体",
+        "国产替代"
+      ],
+      "bearConcepts": [
+        "传统软件"
+      ],
+      "bullIndustries": [
+        "半导体",
+        "AI应用",
+        "算力基础设施"
+      ],
+      "bearIndustries": [
+        "传统IT服务"
+      ],
+      "heat": 46,
+      "momentum": 18,
+      "_auto": true
+    },
+    {
+      "id": "ab1d3dyq7",
+      "title": "AI退潮反噬大宗！“焊料之王”锡遭血洗 背后究竟冤不冤？",
+      "tag": "科技/AI",
+      "region": "美国",
+      "concept": "aiCapex",
+      "time": "2026-11-09 14:04",
+      "datetime": "2026-11-09 14:04",
+      "source": "市场资讯",
+      "url": "https://finance.sina.com.cn/roll/2026-11-09/doc-iniycmtw2903626.shtml",
+      "summary": "转自：财联社 财联社11月9日讯（编辑 潇湘）随着投资者迅速重新评估美国数据中心的需求前景，AI概念股的暴跌正在迅速波及至金属市场…… 被誉为“焊料之王”的锡...",
+      "relatedStocks": [
+        "英伟达",
+        "微软",
+        "台积电"
+      ],
+      "bullConcepts": [
+        "AI算力",
+        "半导体",
+        "国产替代"
+      ],
+      "bearConcepts": [
+        "传统软件"
+      ],
+      "bullIndustries": [
+        "半导体",
+        "AI应用",
+        "算力基础设施"
+      ],
+      "bearIndustries": [
+        "传统IT服务"
+      ],
+      "heat": 29,
+      "momentum": 26,
+      "_auto": true
+    },
+    {
+      "id": "ab15cvxvh",
+      "title": "当地州长：俄罗斯基里希工业区遭无人机袭击",
+      "tag": "地缘/政治",
+      "region": "全球",
+      "concept": "macro",
+      "time": "2026-11-09 12:55",
+      "datetime": "2026-11-09 12:55",
+      "source": "环球市场播报",
+      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-09/doc-iniycfna6591895.shtml",
+      "summary": "州长亚历山大·德罗兹坚科表示，隔夜无人机袭击了俄罗斯列宁格勒州基里希的工业区，防空系统在该地区击落了113架无人机。基里希是俄罗斯最大的炼油厂之一——苏尔古特石油天然...",
+      "relatedStocks": [
+        "军工",
+        "黄金"
+      ],
+      "bullConcepts": [
+        "军工",
+        "避险资产"
+      ],
+      "bearConcepts": [
+        "风险资产"
+      ],
+      "bullIndustries": [
+        "军工",
+        "黄金"
+      ],
+      "bearIndustries": [
+        "航空",
+        "旅游"
+      ],
+      "heat": 29,
+      "momentum": 18,
+      "_auto": true
+    },
+    {
+      "id": "b1",
+      "title": "欧洲15国爆发反AI数据中心抗议浪潮",
+      "tag": "社会/环保抗议",
+      "region": "欧洲",
+      "concept": "idc",
+      "time": "2026-11-06 起 · 进行中",
+      "datetime": "2026-11-06 09:00",
+      "source": "路透/联合早报/中国日报",
+      "summary": "数百人闯入微软阿姆斯特丹数据中心工地、喷涂反AI标语并爬上起重机；\"停止肮脏数据中心\"联盟在英国、爱尔兰、法国、德国、波兰、丹麦、意大利等15国协同示威。都柏林约2000人游行、赫尔辛基约1300人集会；苏格兰75个组织计划11月14日在爱丁堡再游行，要求暂停大型数据中心建设。",
+      "relatedStocks": [
+        "微软",
+        "英伟达",
+        "电力/公用事业"
+      ],
+      "bullConcepts": [
+        "绿电",
+        "环保",
+        "节能"
+      ],
+      "bearConcepts": [
+        "数据中心",
+        "AI算力",
+        "云计算"
+      ],
+      "bullIndustries": [
+        "环保工程",
+        "电力运营"
+      ],
+      "bearIndustries": [
+        "数据中心建设",
+        "算力基础设施"
+      ],
+      "heat": 80,
+      "momentum": 50
+    },
+    {
+      "id": "b2",
+      "title": "美股11月5日暴跌，AI板块领跌",
+      "tag": "金融市场",
+      "region": "美国",
+      "concept": "aiCapex",
+      "time": "2026-11-05",
+      "datetime": "2026-11-05 16:00",
+      "source": "美联社/商业内幕",
+      "summary": "美国三大股指创2025年4月以来最大单日跌幅，冲击集中在AI相关领域；分析指与民主党中期选举大胜、市场预期AI监管趋严有关，科技股市值大幅缩水，英伟达单日重挫约9%。",
+      "relatedStocks": [
+        "英伟达",
+        "微软",
+        "Meta",
+        "特斯拉"
+      ],
+      "bullConcepts": [
+        "黄金",
+        "防御板块"
+      ],
+      "bearConcepts": [
+        "AI算力",
+        "半导体",
+        "云计算"
+      ],
+      "bullIndustries": [
+        "黄金",
+        "公用事业"
+      ],
+      "bearIndustries": [
+        "半导体",
+        "消费电子"
+      ],
+      "heat": 85,
+      "momentum": 70
+    },
+    {
+      "id": "b3",
+      "title": "美国AI监管立法潮升温，反数据中心候选人进入国会",
+      "tag": "政治/监管",
+      "region": "美国",
+      "concept": "usMacro",
+      "time": "2026-11 起",
+      "datetime": "2026-11-06 12:00",
+      "source": "综合外媒",
+      "summary": "中期选举后，以反对数据中心为核心主张的候选人击败现任议员；民主党准备2027年1月掌控国会后推出AI立法潮，CoreWeave等云厂商承诺\"负责任开发\"，信贷市场开始给数据中心项目重新定价。",
+      "relatedStocks": [
+        "AI算力",
+        "云厂商"
+      ],
+      "bullConcepts": [
+        "网络安全",
+        "合规"
+      ],
+      "bearConcepts": [
+        "AI算力",
+        "云计算"
+      ],
+      "bullIndustries": [
+        "网络安全",
+        "法律合规服务"
+      ],
+      "bearIndustries": [
+        "AI应用",
+        "算力扩张"
+      ],
+      "heat": 78,
+      "momentum": 60
+    },
+    {
+      "id": "b4",
+      "title": "谷歌芬兰数据中心遭刑事调查",
+      "tag": "监管/环保",
+      "region": "欧洲",
+      "concept": "idc",
+      "time": "2026-11",
+      "datetime": "2026-11-04 10:30",
+      "source": "路透",
+      "summary": "谷歌在芬兰的数据中心项目因土地清理问题面临刑事调查；意大利、葡萄牙同步收紧数据中心环保法规，微软退出英国一处因基建延误的数据中心项目。",
+      "relatedStocks": [
+        "谷歌",
+        "数据中心"
+      ],
+      "bullConcepts": [
+        "绿电",
+        "环保"
+      ],
+      "bearConcepts": [
+        "数据中心",
+        "云计算"
+      ],
+      "bullIndustries": [
+        "环保"
+      ],
+      "bearIndustries": [
+        "数据中心",
+        "互联网服务"
+      ],
+      "heat": 62,
+      "momentum": 40
+    },
+    {
+      "id": "b5",
+      "title": "全球AI算力基建进入\"有约束增长\"期",
+      "tag": "产业/资本",
+      "region": "全球",
+      "concept": "ai",
+      "time": "2026-11-07",
+      "datetime": "2026-11-07 15:00",
+      "source": "今日头条/路透",
+      "summary": "街头、选票、企业公关与信贷市场同时指向同一判断：AI算力基建\"无约束扩张\"阶段结束，进入由民意、政治与资本共同定价的\"有约束增长\"期，选址逻辑从电价/税收转向社区接受度与电网接入。",
+      "relatedStocks": [
+        "算力",
+        "电力",
+        "地产"
+      ],
+      "bullConcepts": [
+        "电网",
+        "储能",
+        "电力"
+      ],
+      "bearConcepts": [
+        "盲目扩张算力",
+        "高耗能数据中心"
+      ],
+      "bullIndustries": [
+        "电力设备",
+        "储能"
+      ],
+      "bearIndustries": [
+        "无合规高耗能项目"
+      ],
+      "heat": 88,
+      "momentum": 65
+    },
+    {
+      "id": "b6",
+      "title": "欧盟呼吁加快自建数据中心算力",
+      "tag": "政策",
+      "region": "欧洲",
+      "concept": "idc",
+      "time": "2026-11",
+      "datetime": "2026-11-03 18:00",
+      "source": "路透",
+      "summary": "欧盟技术事务主管表示欧洲需要更多数据中心以支撑AI发展，但强调须以\"不推高居民电价、不造成停电、不破坏环境\"为前提，在AI竞争力与公众保护间求平衡。",
+      "relatedStocks": [
+        "欧洲科技",
+        "电力"
+      ],
+      "bullConcepts": [
+        "数据中心",
+        "AI算力",
+        "电力"
+      ],
+      "bearConcepts": [
+        "高耗能不合规数据中心"
+      ],
+      "bullIndustries": [
+        "数据中心",
+        "电力"
+      ],
+      "bearIndustries": [
+        "无合规中小数据中心"
+      ],
+      "heat": 55,
+      "momentum": 30
+    },
+    {
+      "id": "b8",
+      "title": "霍尔木兹海峡三艘油轮爆炸起火，伊朗多地遭袭",
+      "tag": "地缘/能源",
+      "region": "全球",
+      "concept": "energy",
+      "time": "2026-11-08",
+      "datetime": "2026-11-08 11:20",
+      "source": "央视/塔斯尼姆通讯社",
+      "summary": "伊朗革命卫队称11月8日当天已有三艘违规油轮在霍尔木兹海峡东部禁航区触雷爆炸起火；同日格什姆岛等地传出爆炸声，伊朗称遭美军袭击。特朗普宣布针对伊朗的\"铁门\"特遣行动全面展开。海峡通航风险推升原油与航运溢价。",
+      "relatedStocks": [
+        "中国海油",
+        "山东黄金",
+        "航运"
+      ],
+      "bullConcepts": [
+        "石油",
+        "黄金",
+        "油运",
+        "军工"
+      ],
+      "bearConcepts": [
+        "航空",
+        "化工(成本端)"
+      ],
+      "bullIndustries": [
+        "石油开采",
+        "航运",
+        "黄金",
+        "军工"
+      ],
+      "bearIndustries": [
+        "航空运输",
+        "化工"
+      ],
+      "heat": 90,
+      "momentum": 88
+    },
+    {
+      "id": "b9",
+      "title": "沙特阿美石油大楼遭袭受损（利雅得）",
+      "tag": "地缘/能源",
+      "region": "全球",
+      "concept": "energy",
+      "time": "2026-11-08",
+      "datetime": "2026-11-08 14:45",
+      "source": "新华社/沙特联军",
+      "summary": "沙特首都利雅得金融区遭袭击，沙特阿美石油公司大楼受损；此前沙特主导的多国联军拦截并摧毁胡塞武装向利雅得发射的导弹。事件加剧中东能源供应与避险情绪。",
+      "relatedStocks": [
+        "中国海油",
+        "山东黄金",
+        "石油"
+      ],
+      "bullConcepts": [
+        "石油",
+        "黄金",
+        "军工"
+      ],
+      "bearConcepts": [
+        "航空"
+      ],
+      "bullIndustries": [
+        "石油",
+        "黄金",
+        "军工"
+      ],
+      "bearIndustries": [
+        "航空",
+        "炼化"
+      ],
+      "heat": 82,
+      "momentum": 80
+    },
+    {
+      "id": "b10",
+      "title": "Anthropic 拟11月16日当周登陆纳斯达克IPO",
+      "tag": "企业活动/AI",
+      "region": "美国",
+      "concept": "aiCapex",
+      "time": "2026-11-16（预计）",
+      "datetime": "2026-11-08 09:00",
+      "source": "路透/SEC S-1",
+      "summary": "Anthropic已公开递交S-1，潜在买家讨论1.2万亿至1.3万亿美元估值区间；三季度营收约169.6亿美元、环比增45%，但算力支出承诺已近8954亿美元。IPO为美股AI链重要风向标。",
+      "relatedStocks": [
+        "AI",
+        "美股"
+      ],
+      "bullConcepts": [
+        "AI算力",
+        "云计算",
+        "AI应用"
+      ],
+      "bearConcepts": [],
+      "bullIndustries": [
+        "AI",
+        "云计算",
+        "算力"
+      ],
+      "bearIndustries": [],
+      "heat": 75,
+      "momentum": 58
+    },
+    {
+      "id": "b11",
+      "title": "OpenAI 以1.25万亿美元估值完成约110亿美元融资",
+      "tag": "企业活动/AI",
+      "region": "全球",
+      "concept": "ai",
+      "time": "2026-11-05",
+      "datetime": "2026-11-05 23:10",
+      "source": "彭博",
+      "summary": "OpenAI以约1.25万亿美元估值完成约110亿美元新融资（整轮或扩至200亿），总裁称企业客户已贡献过半收入、预计2027年具备上市条件。一级市场大额融资与二级市场AI抛售同时出现。",
+      "relatedStocks": [
+        "AI",
+        "算力"
+      ],
+      "bullConcepts": [
+        "AI算力",
+        "云计算"
+      ],
+      "bearConcepts": [],
+      "bullIndustries": [
+        "AI",
+        "算力基础设施"
+      ],
+      "bearIndustries": [],
+      "heat": 80,
+      "momentum": 65
+    },
+    {
+      "id": "b12",
+      "title": "纳斯达克拟12月6日实施\"23/5\"交易制度（每日仅休1小时）",
+      "tag": "市场制度/美股",
+      "region": "美国",
+      "concept": "usFinance",
+      "time": "2026-11-08",
+      "datetime": "2026-11-08 08:00",
+      "source": "纳斯达克/腾讯财经",
+      "summary": "纳斯达克计划12月6日实施每周5天、每日23小时连续交易，仅保留美东20:00-21:00一小时休市；新增隔夜时段对应北京时间10:00-17:00，覆盖A股主要交易时段，为1971年以来重大变革。",
+      "relatedStocks": [
+        "美股",
+        "券商"
+      ],
+      "bullConcepts": [
+        "券商",
+        "金融科技"
+      ],
+      "bearConcepts": [],
+      "bullIndustries": [
+        "券商",
+        "金融IT"
+      ],
+      "bearIndustries": [],
+      "heat": 72,
+      "momentum": 55
+    },
+    {
+      "id": "b13",
+      "title": "英伟达1140万美元AI芯片货物在美被盗",
+      "tag": "安全/供应链",
+      "region": "美国",
+      "concept": "chip",
+      "time": "2026-11-08",
+      "datetime": "2026-11-08 13:15",
+      "source": "央视财经/奥克兰警方",
+      "summary": "美国加州奥克兰警方调查一起涉及英伟达的AI芯片与硬件被盗案，价值高达1140万美元（约7610万元人民币）。涉案卡车8月29日从奥克兰出发运往得州，途中多次长时间停靠后失联，9月13日报案，目前尚未抓获嫌疑人。",
+      "relatedStocks": [
+        "英伟达",
+        "AI芯片"
+      ],
+      "bullConcepts": [
+        "竞品芯片",
+        "华为昇腾",
+        "AMD"
+      ],
+      "bearConcepts": [
+        "英伟达"
+      ],
+      "bullIndustries": [
+        "半导体(竞品)",
+        "存储"
+      ],
+      "bearIndustries": [
+        "英伟达产业链",
+        "AI芯片"
+      ],
+      "heat": 70,
+      "momentum": 62
+    }
+  ]
+}
