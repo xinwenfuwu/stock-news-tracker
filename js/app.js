@@ -7394,6 +7394,137 @@ const app = createApp({
       return arr;
     });
 
+    // ============================================================
+    // 20261109g：舆情洞察面板（热门板块页 · 板块成分股上方）
+    // 复刻 WorkBuddy「舆情洞察专家」的结构化输出方法论：
+    //  1) 本地舆情统计（免 AI、免配置）：当日新闻概念提及热度榜 + 多空关键词情绪比
+    //  2) AI 舆情洞察报告（一键生成）：当日新闻 + 当前选中热门板块 → callOpenAICompat
+    //     → 严格按【舆情综述】【热点主题】【利好方向】【利空风险】【板块舆情画像】分段解析渲染
+    // 纯展示，不写回新闻数据。
+    // ============================================================
+    const sentiOpen = ref(true);            // 面板展开/收起
+    const sentiStatsOpen = ref(true);       // 本地热度榜展开/收起
+    const sentiLoading = ref(false);
+    const sentiError = ref('');
+    const sentiOverview = ref('');
+    const sentiThemes = ref([]);            // [{ name, heat, tone, boards }]
+    const sentiBullish = ref('');
+    const sentiBearish = ref('');
+    const sentiProfile = ref('');
+    const sentiBoard = ref('');             // 生成报告时的板块名（快照，不随后续点击变化）
+    const sentiAt = ref('');                // 生成时间
+
+    // 多空情绪关键词表（本地规则统计，覆盖常见 A 股财经快讯用语）
+    const SENTI_BULL_WORDS = ['利好', '上涨', '涨停', '大涨', '增长', '预增', '突破', '中标', '获批', '签约', '并购', '重组', '回购', '增持', '涨价', '提价', '扩产', '投产', '订单', '超预期', '催化', '新高', '景气'];
+    const SENTI_BEAR_WORDS = ['利空', '下跌', '跌停', '大跌', '亏损', '预亏', '下滑', '警告', '处罚', '立案', '减持', '质押', '退市', '诉讼', '仲裁', '降级', '暴雷', '召回', '调查', '警示', '商誉减值', '解除合同'];
+
+    /** 当日新闻（与 conceptFreq 同口径：n.date === hotDate） */
+    const sentiNewsOfDay = computed(() => D.news.filter(n => n.date === hotDate.value));
+    /** 话题热度榜：直接复用 conceptFreq（当日新闻概念提及次数），取前 10 */
+    const sentiTopics = computed(() => conceptFreq.value.slice(0, 10));
+    /** 多空关键词计数：逐条新闻统计命中次数 */
+    const sentiMood = computed(() => {
+      let bull = 0, bear = 0;
+      for (const n of sentiNewsOfDay.value) {
+        const text = String(n.content || '');
+        for (const w of SENTI_BULL_WORDS) { if (text.indexOf(w) >= 0) bull++; }
+        for (const w of SENTI_BEAR_WORDS) { if (text.indexOf(w) >= 0) bear++; }
+      }
+      const total = bull + bear;
+      return { bull, bear, total, bullPct: total ? Math.round(bull / total * 100) : 0 };
+    });
+
+    /** 解析 AI 返回的【】分段 → 结构化报告 */
+    function parseSentimentReport(text) {
+      const seg = (name, nextNames) => {
+        // 注意：无后续分段时不能写 (?=|$)——空前瞻分支会让惰性捕获恒为空串；
+        // 此时也不用惰性分组（没有终止边界，惰性同样恒为空），直接贪婪捕获到文本末尾。
+        const look = nextNames.length ? '(?=' + nextNames.map(n => '【\\s*' + n + '\\s*】').join('|') + ')' : '';
+        const body = nextNames.length ? '([\\s\\S]*?)' : '([\\s\\S]*)';
+        const re = new RegExp('【\\s*' + name + '\\s*】' + body + look);
+        const m = text.match(re);
+        return m ? m[1].trim() : '';
+      };
+      const overview = seg('舆情综述', ['热点主题', '利好方向', '利空风险', '板块舆情画像']);
+      const themesRaw = seg('热点主题', ['利好方向', '利空风险', '板块舆情画像']);
+      const bullish = seg('利好方向', ['利空风险', '板块舆情画像']);
+      const bearish = seg('利空风险', ['板块舆情画像']);
+      const profile = seg('板块舆情画像', []);
+      // 热点主题行解析：主题｜热度｜倾向｜关联板块（容忍 ｜/| 两种分隔符与缺列）
+      const themes = [];
+      for (const line of themesRaw.split('\n')) {
+        const t = line.trim().replace(/^[-•*\d.\s]+/, '');
+        if (!t) continue;
+        const cols = t.split(/[｜|]/).map(s => s.trim()).filter(Boolean);
+        if (!cols.length) continue;
+        themes.push({ name: cols[0] || '', heat: cols[1] || '', tone: cols[2] || '', boards: cols[3] || '' });
+      }
+      return { overview, themes, bullish, bearish, profile };
+    }
+
+    /** 一键生成 AI 舆情洞察报告 */
+    async function runSentimentInsight() {
+      const news = sentiNewsOfDay.value;
+      if (!news.length) {
+        sentiError.value = '当日（' + hotDate.value + '）暂无新闻数据：请先到「新闻追踪」页导入或粘贴该日新闻，再生成舆情洞察。';
+        return;
+      }
+      if (!aiConfigured.value) {
+        sentiError.value = '未配置 AI 接口（设置 → AI 解读：需填写 API 地址、密钥、模型，或配置 AI 代理地址）';
+        return;
+      }
+      sentiError.value = '';
+      sentiLoading.value = true;
+      sentiBoard.value = hotBoardActive.value || '';
+      try {
+        // 新闻摘要：每条截断 100 字，总量封顶（约 60 条 / 12000 字），避免超上下文
+        const lines = [];
+        let budget = 12000;
+        for (const n of news.slice(0, 60)) {
+          const cat = (n.conceptCategory || n.category || '').trim();
+          const stocks = String(n.relatedStocks || '').trim();
+          const body = String(n.content || '').replace(/\s+/g, ' ').trim().slice(0, 100);
+          const seg = '· ' + (cat ? '[' + cat + '] ' : '') + body + (stocks ? '（关联：' + stocks + '）' : '');
+          if (budget - seg.length < 0) break;
+          budget -= seg.length;
+          lines.push(seg);
+        }
+        const boardCtx = (hotBoardActive.value && hotFilterStocks.value.length)
+          ? '\n\n用户当前正在查看热门板块「' + hotBoardActive.value + '」，其成分股包括：'
+            + hotFilterStocks.value.slice(0, 30).map(s => s.name || s.code).join('、')
+          : '';
+        const sys = '你是资深 A 股舆情分析师，语言精炼、专业、客观，不夸大、不喊单，输出结构化舆情洞察报告。';
+        const user = '以下是 ' + hotDate.value + ' 的财经新闻列表（方括号内为概念/行业分类，末尾括号为关联股票）：\n\n'
+          + lines.join('\n') + boardCtx
+          + '\n\n请基于以上新闻生成当日舆情洞察报告，严格按下面五个分段输出（保留【】标记，不要使用 Markdown 代码块、不要加额外前后缀）：\n\n'
+          + '【舆情综述】\n（用 3-4 句话概括当日整体舆情基调：市场情绪偏多/偏空/分化、主要驱动事件、资金关注焦点）\n\n'
+          + '【热点主题】\n（列出 5-8 个当日最热主题，每行严格按「主题｜热度(高/中/低)｜倾向(利好/利空/中性)｜关联板块」格式，用全角｜分隔）\n\n'
+          + '【利好方向】\n（当日利好舆情集中的方向：概念/行业 + 一句话理由，多条换行）\n\n'
+          + '【利空风险】\n（当日需要警惕的利空与风险提示：概念/行业 + 一句话理由，多条换行；若无则写「暂无明显利空」）\n\n'
+          + '【板块舆情画像】\n（结合' + (boardCtx ? '上述板块成分股' : '整体市场') + '，给出该板块/市场的舆情画像与操作参考，3-4 句话）';
+        const res = await callOpenAICompat(
+          [{ role: 'system', content: sys }, { role: 'user', content: user }],
+          { maxTokens: 2000, timeoutMs: 120000 }
+        );
+        if (!res.ok) { sentiError.value = res.error || 'AI 调用失败'; return; }
+        const r = parseSentimentReport(res.content || '');
+        if (!r.overview && !r.themes.length) {
+          sentiError.value = 'AI 返回内容无法解析为结构化报告，原始内容：' + (res.content || '').slice(0, 200);
+          return;
+        }
+        sentiOverview.value = r.overview;
+        sentiThemes.value = r.themes;
+        sentiBullish.value = r.bullish;
+        sentiBearish.value = r.bearish;
+        sentiProfile.value = r.profile;
+        sentiAt.value = new Date().toLocaleString('zh-CN', { hour12: false });
+      } catch (e) {
+        sentiError.value = (e && e.message) ? e.message : String(e);
+      } finally {
+        sentiLoading.value = false;
+      }
+    }
+
     // 当日股票表（从当日新闻关联股票汇总，或手动加载）
     function loadHotData() {
       const daily = Store.getDailyStocks(hotDate.value);
@@ -13507,6 +13638,9 @@ const app = createApp({
       reverse, reverseSorted, reverseSort, setReverseSort, reverseBusiness, reverseSortIcon,
       // 页面3
       hotDate, hotLoading, hotBoards, hotStocks, newListedStocks, preMarketBoards, amplitudeBoards, conceptFreq,
+      // 20261109g：舆情洞察面板（板块成分股上方）
+      sentiOpen, sentiStatsOpen, sentiLoading, sentiError, sentiAt, runSentimentInsight,
+      sentiTopics, sentiMood, sentiNewsOfDay, sentiOverview, sentiThemes, sentiBullish, sentiBearish, sentiProfile, sentiBoard,
       // 20261108d：连板股票「10日内 / 连板」Tab 切换
       lianbanTab, setLianbanTab, lianbanStocks,
       hotBoardActive, hotBoardLoading, hotDetailIsStock, openHotBoard, openHotStock, clearHotBoard,

@@ -4165,3 +4165,56 @@ body.guest-mode #app { display: none; }
     margin-top: 14px;
   }
 }
+
+/* ===== 20261109g：舆情洞察面板（热门板块页 · 板块成分股上方） ===== */
+.senti-panel {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 12px 14px;
+  margin: 10px 0 14px;
+}
+.senti-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
+.senti-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+.senti-stats {
+  display: grid; grid-template-columns: 1.4fr 1fr; gap: 14px;
+  background: var(--surface-alt); border: 1px solid var(--border); border-radius: var(--radius);
+  padding: 10px 12px; margin-top: 8px;
+}
+.senti-col-title { font-weight: 600; font-size: 13px; margin-bottom: 8px; }
+.senti-topic { display: flex; align-items: center; gap: 8px; margin-bottom: 5px; }
+.senti-topic-name { flex: 0 0 112px; font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.senti-topic-bar { flex: 1; height: 10px; background: var(--border); border-radius: 5px; overflow: hidden; }
+.senti-topic-fill { display: block; height: 100%; background: var(--primary); border-radius: 5px; }
+.senti-topic-count { flex: 0 0 26px; text-align: right; font-size: 12px; color: var(--text-secondary); }
+.senti-mood-bar { display: flex; height: 14px; border-radius: 7px; overflow: hidden; margin-top: 4px; }
+.senti-mood-bull { background: var(--up); }      /* 红涨：利好 */
+.senti-mood-bear { background: var(--down); }    /* 绿跌：利空 */
+.senti-mood-legend { display: flex; justify-content: space-between; gap: 10px; font-size: 12px; margin-top: 6px; }
+.senti-mood-legend .bull { color: var(--up); }
+.senti-mood-legend .bear { color: var(--down); }
+.senti-error {
+  margin-top: 8px; padding: 8px 10px; font-size: 13px;
+  color: var(--danger); background: #fef2f2; border: 1px solid #fecaca; border-radius: var(--radius);
+}
+.senti-report { margin-top: 10px; display: grid; gap: 8px; }
+.senti-sec { background: var(--surface-alt); border: 1px solid var(--border); border-radius: var(--radius); padding: 10px 12px; }
+.senti-sec-title { font-weight: 600; font-size: 13px; margin-bottom: 6px; }
+.senti-sec p { font-size: 13px; line-height: 1.7; white-space: pre-wrap; margin: 0; }
+.senti-table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+.senti-table th, .senti-table td { border-bottom: 1px solid var(--border); padding: 5px 8px; text-align: left; }
+.senti-table th { color: var(--text-secondary); font-weight: 600; background: var(--surface); }
+.senti-table .tone-bull { color: var(--up); font-weight: 600; }
+.senti-table .tone-bear { color: var(--down); font-weight: 600; }
+
+/* 移动端卡片式适配：单列堆叠、表格转块 */
+@media (max-width: 768px) {
+  .senti-stats { grid-template-columns: 1fr; }
+  .senti-head { flex-direction: column; align-items: stretch; }
+  .senti-topic-name { flex-basis: 84px; }
+  .senti-table thead { display: none; }
+  .senti-table tr { display: block; border-bottom: 1px solid var(--border); padding: 6px 0; }
+  .senti-table td { display: inline; border: none; padding: 0 8px 0 0; }
+  .senti-table td:first-child::after { content: '｜'; color: var(--muted); }
+}

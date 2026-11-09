@@ -4,12 +4,12 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>股市信息分析系统</title>
-  <link rel="stylesheet" href="css/style.css?v=20261109f">
+  <link rel="stylesheet" href="css/style.css?v=20261109g">
   <!-- Vue 3 全局构建版（v3.4.21 · 自托管）
        原先走 unpkg.com CDN：国内网络对 unpkg 的连通性不稳定，一旦该请求长时间挂起，
        <head> 里的阻塞脚本会让整页停在白屏、后续 auth-boot.js 根本不会执行。
        改为同源托管后，启动链路不再依赖任何第三方 CDN。 -->
-  <script src="js/vue.global.prod.js?v=20261109f"></script>
+  <script src="js/vue.global.prod.js?v=20261109g"></script>
 </head>
 <body class="auth-locked">
   <!-- ===== 登录关卡：登录通过前业务脚本不会被加载 ===== -->
@@ -95,7 +95,7 @@
         <input class="auth-input" type="text" id="auth-renew-user" placeholder="用户名（你注册时用的）" maxlength="20" autocomplete="off">
         <div class="auth-renew-plans" id="auth-renew-plans"></div>
         <div class="auth-renew-qr" id="auth-renew-qr">
-          <div class="auth-renew-qrbox"><img id="auth-renew-wx" src="assets/wechat-pay-qr.jpg?v=20261109f" alt="微信支付收款码"><span>微信支付（扫码支付）</span></div>
+          <div class="auth-renew-qrbox"><img id="auth-renew-wx" src="assets/wechat-pay-qr.jpg?v=20261109g" alt="微信支付收款码"><span>微信支付（扫码支付）</span></div>
           <div class="muted small" style="margin-top:6px;color:#c2410c;font-weight:600">支付时请添加会员备注，付款成功截图保存</div>
         </div>
         <input class="auth-input" type="text" id="auth-renew-amount" inputmode="decimal" placeholder="支付金额（必填，如 1000）" autocomplete="off">
@@ -1604,7 +1604,7 @@
                   <div class="qr-row">
                     <div class="qr-box">
                       <div class="qr-cap">推荐使用微信支付</div>
-                      <img src="assets/wechat-pay-qr.jpg?v=20261109f" alt="微信支付收款码" class="qr-pay-img">
+                      <img src="assets/wechat-pay-qr.jpg?v=20261109g" alt="微信支付收款码" class="qr-pay-img">
                       <div class="qr-cap" style="margin-top:6px;color:#c2410c;font-weight:600">支付时请添加会员备注，付款成功截图保存</div>
                       <div class="qr-cap muted small">火柴盒网络服务</div>
                     </div>
@@ -3506,7 +3506,90 @@
           </div>
         </div>
 
-        
+        <!-- 20261109g：舆情洞察面板（复刻 WorkBuddy「舆情洞察专家」结构化输出）——置于「板块成分股」上方 -->
+        <div class="senti-panel" v-show="sentiOpen">
+          <div class="senti-head">
+            <h3 class="panel-title" style="margin:0">🧭 舆情洞察 <span class="muted small">（{{ hotDate }} · 共 {{ sentiNewsOfDay.length }} 条新闻）</span></h3>
+            <div class="senti-actions">
+              <button class="btn btn-sm" @click="sentiStatsOpen = !sentiStatsOpen">{{ sentiStatsOpen ? '▴ 收起热度榜' : '▾ 本地热度榜' }}</button>
+              <button class="btn btn-sm btn-primary" @click="runSentimentInsight" :disabled="sentiLoading"
+                      :title="'对 ' + hotDate + ' 的全部新闻做 AI 舆情洞察' + (hotBoardActive ? '，并结合当前板块「' + hotBoardActive + '」' : '')">
+                <span v-if="sentiLoading">⏳ AI 分析中...</span>
+                <span v-else>✨ 生成 AI 舆情洞察</span>
+              </button>
+              <button class="btn btn-sm" @click="sentiOpen = false" title="收起面板">✕</button>
+            </div>
+          </div>
+          <p class="muted small" style="margin:6px 0 10px">
+            口径：本地热度榜=当日新闻的概念分类提及次数（与下方「概念频次」同源）；多空情绪=新闻正文中利好/利空关键词命中数；
+            AI 报告=当日新闻（含概念分类与关联股票）{{ hotBoardActive ? ' + 当前板块「' + hotBoardActive + '」成分股' : '' }} 交给 AI 生成结构化舆情洞察。AI 生成内容仅供参考，不构成投资建议。
+          </p>
+          <!-- 本地舆情统计（免 AI、免配置） -->
+          <div class="senti-stats" v-if="sentiStatsOpen">
+            <div class="senti-col">
+              <div class="senti-col-title">📈 话题热度榜（概念提及 Top10）</div>
+              <div v-if="sentiTopics.length" class="senti-topic-list">
+                <div class="senti-topic" v-for="t in sentiTopics" :key="t.name">
+                  <span class="senti-topic-name" :title="t.name + '：' + t.count + ' 条'">{{ t.name }}</span>
+                  <span class="senti-topic-bar"><span class="senti-topic-fill" :style="{ width: t.width + '%' }"></span></span>
+                  <span class="senti-topic-count">{{ t.count }}</span>
+                </div>
+              </div>
+              <div class="muted small" v-else>当日暂无带概念分类的新闻</div>
+            </div>
+            <div class="senti-col">
+              <div class="senti-col-title">⚖️ 多空情绪（关键词命中）</div>
+              <div class="senti-mood" v-if="sentiMood.total">
+                <div class="senti-mood-bar">
+                  <span class="senti-mood-bull" :style="{ width: sentiMood.bullPct + '%' }"></span>
+                  <span class="senti-mood-bear" :style="{ width: (100 - sentiMood.bullPct) + '%' }"></span>
+                </div>
+                <div class="senti-mood-legend">
+                  <span class="bull">利好 {{ sentiMood.bull }} 次（{{ sentiMood.bullPct }}%）</span>
+                  <span class="bear">利空 {{ sentiMood.bear }} 次（{{ 100 - sentiMood.bullPct }}%）</span>
+                </div>
+              </div>
+              <div class="muted small" v-else>当日新闻中暂未命中多空关键词</div>
+            </div>
+          </div>
+          <!-- 错误提示 -->
+          <div class="senti-error" v-if="sentiError">{{ sentiError }}</div>
+          <!-- AI 报告（结构化五分段） -->
+          <div class="senti-report" v-if="sentiAt">
+            <div class="senti-sec">
+              <div class="senti-sec-title">📰 舆情综述</div>
+              <p>{{ sentiOverview }}</p>
+            </div>
+            <div class="senti-sec" v-if="sentiThemes.length">
+              <div class="senti-sec-title">🔥 热点主题</div>
+              <table class="senti-table">
+                <thead><tr><th>主题</th><th>热度</th><th>倾向</th><th>关联板块</th></tr></thead>
+                <tbody>
+                  <tr v-for="(t, i) in sentiThemes" :key="i">
+                    <td>{{ t.name }}</td>
+                    <td>{{ t.heat }}</td>
+                    <td><span :class="{ 'tone-bull': /利好/.test(t.tone), 'tone-bear': /利空/.test(t.tone) && !/利好/.test(t.tone) }">{{ t.tone }}</span></td>
+                    <td>{{ t.boards }}</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <div class="senti-sec" v-if="sentiBullish">
+              <div class="senti-sec-title">✅ 利好方向</div>
+              <p>{{ sentiBullish }}</p>
+            </div>
+            <div class="senti-sec" v-if="sentiBearish">
+              <div class="senti-sec-title">⚠️ 利空风险</div>
+              <p>{{ sentiBearish }}</p>
+            </div>
+            <div class="senti-sec" v-if="sentiProfile">
+              <div class="senti-sec-title">🎯 {{ sentiBoard ? '板块舆情画像（' + sentiBoard + '）' : '市场舆情画像' }}</div>
+              <p>{{ sentiProfile }}</p>
+            </div>
+            <div class="muted small" style="margin-top:6px">AI 报告生成于 {{ sentiAt }}</div>
+          </div>
+        </div>
+
         <div class="page-toolbar">
           <div class="toolbar-left">
             <h2 class="page-title" style="margin:0">🎯 板块成分股</h2>
@@ -5531,14 +5614,14 @@
     </transition>
   </div>
 
-  <script src="js/auth.js?v=20261109f"></script>
-  <script src="js/auth-sync.js?v=20261109f"></script>
+  <script src="js/auth.js?v=20261109g"></script>
+  <script src="js/auth-sync.js?v=20261109g"></script>
   <!-- 边缘加速默认站点（batch37 治本：Cloudflare Worker 代理东财/腾讯，缓解 JSONP 限流误报）。
        若你所在地区 workers.dev 访问慢，可在「设置 → 行情加速地址」清空即恢复纯直连。 -->
   <script>window.__SNT_ACCEL__ = 'https://sichina.dpdns.org';</script>
   <!-- 扫码支付二维码渲染库（第三方 qrcodejs，本地托管避免外链失效）。renderQr 会先检测全局 QRCode 是否存在。 -->
-  <script src="assets/qrcode.min.js?v=20261109f"></script>
-  <script src="js/auth-boot.js?v=20261109f"></script>
+  <script src="assets/qrcode.min.js?v=20261109g"></script>
+  <script src="js/auth-boot.js?v=20261109g"></script>
   <!-- store / stock-api / hot-topics / app 由 auth-boot.js 在登录通过后动态装载，
        未登录时它们不会被下载，业务数据也不会进入内存 -->
 </body>
