@@ -4,12 +4,12 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>股市信息分析系统</title>
-  <link rel="stylesheet" href="css/style.css?v=20261109h">
+  <link rel="stylesheet" href="css/style.css?v=20261109i">
   <!-- Vue 3 全局构建版（v3.4.21 · 自托管）
        原先走 unpkg.com CDN：国内网络对 unpkg 的连通性不稳定，一旦该请求长时间挂起，
        <head> 里的阻塞脚本会让整页停在白屏、后续 auth-boot.js 根本不会执行。
        改为同源托管后，启动链路不再依赖任何第三方 CDN。 -->
-  <script src="js/vue.global.prod.js?v=20261109h"></script>
+  <script src="js/vue.global.prod.js?v=20261109i"></script>
 </head>
 <body class="auth-locked">
   <!-- ===== 登录关卡：登录通过前业务脚本不会被加载 ===== -->
@@ -95,7 +95,7 @@
         <input class="auth-input" type="text" id="auth-renew-user" placeholder="用户名（你注册时用的）" maxlength="20" autocomplete="off">
         <div class="auth-renew-plans" id="auth-renew-plans"></div>
         <div class="auth-renew-qr" id="auth-renew-qr">
-          <div class="auth-renew-qrbox"><img id="auth-renew-wx" src="assets/wechat-pay-qr.jpg?v=20261109h" alt="微信支付收款码"><span>微信支付（扫码支付）</span></div>
+          <div class="auth-renew-qrbox"><img id="auth-renew-wx" src="assets/wechat-pay-qr.jpg?v=20261109i" alt="微信支付收款码"><span>微信支付（扫码支付）</span></div>
           <div class="muted small" style="margin-top:6px;color:#c2410c;font-weight:600">支付时请添加会员备注，付款成功截图保存</div>
         </div>
         <input class="auth-input" type="text" id="auth-renew-amount" inputmode="decimal" placeholder="支付金额（必填，如 1000）" autocomplete="off">
@@ -1604,7 +1604,7 @@
                   <div class="qr-row">
                     <div class="qr-box">
                       <div class="qr-cap">推荐使用微信支付</div>
-                      <img src="assets/wechat-pay-qr.jpg?v=20261109h" alt="微信支付收款码" class="qr-pay-img">
+                      <img src="assets/wechat-pay-qr.jpg?v=20261109i" alt="微信支付收款码" class="qr-pay-img">
                       <div class="qr-cap" style="margin-top:6px;color:#c2410c;font-weight:600">支付时请添加会员备注，付款成功截图保存</div>
                       <div class="qr-cap muted small">火柴盒网络服务</div>
                     </div>
@@ -3225,7 +3225,7 @@
                 <button type="button" class="infl-info-btn" @click="toggleInflInfo" :title="inflInfoHidden ? '显示口径说明' : '隐藏口径说明'">{{ inflInfoHidden ? '👁 显示说明' : '🙈 隐藏说明' }}</button>
                 <div class="infl-info-text" v-show="!inflInfoHidden">
                   <p class="muted small" style="margin:8px 0 10px">
-                    📅 数据整理时间：<b>{{ inflDate || '—' }}</b>　·　当前区域 <b>{{ regionLabel(inflRegion) }}</b> 共 <b>{{ inflEvents.length }}</b> 条事件<br/>
+                    📅 数据整理时间：<b>{{ inflDate || '—' }}</b>　·　统计窗口 <b>近 {{ INFL_WINDOW_DAYS }} 日内（{{ inflWindowLabel }}）</b>　·　当前区域 <b>{{ regionLabel(inflRegion) }}</b> 共 <b>{{ inflEvents.length }}</b> 条事件<br/>
                     <b>双指标（同时存在）：</b>「<b>影响人数</b>」= 该事件影响到<b>生产 + 生活</b>的全部相关人数（从业者 / 上下游、使用该产品服务的消费者与用户、泛受影响公众，<b>并包含股民</b>）；「<b>影响股民数</b>」= 其中<b>投资该事件所涉概念相关股票</b>的股民人数，是影响人数的子集。<br/>
                     <b>计算公式：</b>影响人数 A = 影响股民数 S + 非投资人群 N，其中 N = P × r − S；等价写作 <b>A = max(P × r, S)</b>（max 保证 S ⊆ A）。P = 区域人口基数（🌍 全世界 82 亿 / 🇨🇳 中国 14.1 亿 / 🇺🇸 美国 3.4 亿）；r = 该概念「生产生活场景」在区域人口中的触达率（生活消费 / 通用型概念高、专业投资型概念低）；股民占比 = S / A。<br/>
                     <b>例：</b>🇨🇳 中国「AI 短剧审核监管」→ 大量中国人看短剧，r = 0.70 → <b>影响人数 9.87 亿</b>，但投资短剧 / 影视传媒概念股的<b>股民仅 3500 万</b>（占 3.5%）。三个子版块用<b>同一公式</b>，仅 P 与 r 不同。数值为本地整理估算样例，可在数据源处调整。
@@ -3235,7 +3235,7 @@
 
               <!-- 影响力事件列表：按当前排序口径（影响人数 / 影响股民数）降序；20261108c 固定高度 + 内部滑条，卡片框大小不变 -->
               <div class="infl-list-head muted small" v-if="inflEvents.length">共 {{ inflEvents.length }} 条 · 在列表内下滑查看更多 ↓</div>
-              <div v-if="inflEvents.length" class="hot-list infl-event-list">
+              <div v-if="inflEvents.length" class="hot-list infl-event-list infl-main-list">
                 <div class="hot-item infl-event" v-for="(e, i) in inflEvents" :key="e.id" style="display:flex;gap:8px;align-items:flex-start;">
                   <span class="hot-rank">{{ i + 1 }}</span>
                   <div style="flex:1;min-width:0;">
@@ -3256,7 +3256,7 @@
                 </div>
               </div>
               <div class="muted small" v-else-if="inflError">{{ inflError }}</div>
-              <div class="muted small" v-else>该区域暂无影响力事件</div>
+              <div class="muted small" v-else>近 {{ INFL_WINDOW_DAYS }} 日内该区域暂无影响力事件</div>
 
               <!-- 豆包联网搜索 Key（独立功能，用于豆包榜/联网搜索，与上方影响力事件无关） -->
               <div style="margin-top:14px;border-top:1px dashed #e0e0e0;padding-top:10px;">
@@ -5615,14 +5615,14 @@
     </transition>
   </div>
 
-  <script src="js/auth.js?v=20261109h"></script>
-  <script src="js/auth-sync.js?v=20261109h"></script>
+  <script src="js/auth.js?v=20261109i"></script>
+  <script src="js/auth-sync.js?v=20261109i"></script>
   <!-- 边缘加速默认站点（batch37 治本：Cloudflare Worker 代理东财/腾讯，缓解 JSONP 限流误报）。
        若你所在地区 workers.dev 访问慢，可在「设置 → 行情加速地址」清空即恢复纯直连。 -->
   <script>window.__SNT_ACCEL__ = 'https://sichina.dpdns.org';</script>
   <!-- 扫码支付二维码渲染库（第三方 qrcodejs，本地托管避免外链失效）。renderQr 会先检测全局 QRCode 是否存在。 -->
-  <script src="assets/qrcode.min.js?v=20261109h"></script>
-  <script src="js/auth-boot.js?v=20261109h"></script>
+  <script src="assets/qrcode.min.js?v=20261109i"></script>
+  <script src="js/auth-boot.js?v=20261109i"></script>
   <!-- store / stock-api / hot-topics / app 由 auth-boot.js 在登录通过后动态装载，
        未登录时它们不会被下载，业务数据也不会进入内存 -->
 </body>

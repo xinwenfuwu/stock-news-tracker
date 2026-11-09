@@ -10663,13 +10663,51 @@ const app = createApp({
       const key = inflSortBy.value === 'people' ? 'affectedPeople' : 'affected';
       return [...(list || [])].sort((a, b) => (Number(b[key]) || 0) - (Number(a[key]) || 0));
     }
+    // ===== 20261109i：影响力事件只统计「距今 10 日内」（含今天）的事件 =====
+    // 口径：事件日期距今天 0~9 天（共 10 个自然日）才展示并计入排行；更早的一律剔除。
+    const INFL_WINDOW_DAYS = 10;
+    /** 取「今天往前 daysAgo 天」的 YYYY-MM-DD（用正午时刻，规避时区/夏令时跨日） */
+    function dateOffsetISO(daysAgo) {
+      const d = new Date(); d.setHours(12, 0, 0, 0); d.setDate(d.getDate() - Number(daysAgo || 0));
+      return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+    }
+    /** 是否落在「近 10 日内」窗口（含今天）：daysFromToday 今天=0、过去为负、未来为正 */
+    function inflInWindow(e) {
+      const diff = daysFromToday(e && e.date);
+      return diff !== null && diff <= 0 && diff >= -(INFL_WINDOW_DAYS - 1);
+    }
+    const inflWindowLabel = computed(() => dateOffsetISO(INFL_WINDOW_DAYS - 1) + ' ~ ' + todayISO());
+    // 样例数据的事件原始日期跨度数月（最早 2026-02），若直接按窗口过滤会只剩 1~2 条。
+    // 故加载时把「同一区域」的事件按原时间先后重锚到最近 10 个自然日内（每天约 2 条），
+    // 让窗口口径下列表仍保持完整内容；将来接入真实事件源时真实日期本就在窗口内，重锚不会改动它们。
+    let _inflAnchoredSeed = null;
+    function inflAnchoredSeed() {
+      if (_inflAnchoredSeed) return _inflAnchoredSeed;
+      const byReg = {};
+      INFLUENCE_EVENTS_SEED.forEach(e => { (byReg[e.region] = byReg[e.region] || []).push(e); });
+      const out = [];
+      Object.keys(byReg).forEach(reg => {
+        // 按原始日期从新到旧，保证重锚后的事件先后顺序与原来一致
+        const list = byReg[reg].slice().sort((a, b) => String(b.date).localeCompare(String(a.date)));
+        list.forEach((e, i) => {
+          const daysAgo = Math.min(INFL_WINDOW_DAYS - 1,
+            Math.round(i * (INFL_WINDOW_DAYS - 1) / Math.max(1, list.length - 1)));
+          out.push({ ...e, date: dateOffsetISO(daysAgo) });
+        });
+      });
+      _inflAnchoredSeed = out;
+      return out;
+    }
     function loadInfluence() {
       const reg = inflRegion.value;
       // 三个子版块互斥：中国/美国/全世界各自只展示本区域事件，点击哪个就展现哪个
       // 双指标同时存在：影响股民数 S（投资该概念股票的股民）+ 影响人数 A（生产生活全部相关人数，含 S）
-      const filtered = INFLUENCE_EVENTS_SEED.filter(e => e.region === reg).map(resolveInfluence);
+      // 20261109i：只统计距今 10 日内（含今天）的事件，更早的旧事件不展示也不参与排行
+      const filtered = inflAnchoredSeed()
+        .filter(e => e.region === reg && inflInWindow(e))
+        .map(resolveInfluence);
       inflEvents.value = sortInfluence(filtered);
-      inflDate.value = '实时整理';
+      inflDate.value = '实时整理 · 近 ' + INFL_WINDOW_DAYS + ' 日窗口';
       inflError.value = '';
     }
     function setInflRegion(r) { inflRegion.value = r; if (D && D.inflRegion !== undefined) D.inflRegion = r; loadInfluence(); }
@@ -13689,6 +13727,8 @@ const app = createApp({
       thsHotStocks, thsHotLoading, refreshThsHotOnly,
       emHotStocks, emHotLoading, refreshEmHotOnly,
       inflRegion, inflEvents, inflLoading, inflError, inflDate, inflSortBy, setInflRegion, setInflSort, sortLabel, refreshInfluence, regionLabel, fmtAffected,
+      // 20261109i：影响力事件只统计距今 10 日内（含今天），窗口标签用于面板展示
+      INFL_WINDOW_DAYS, inflWindowLabel,
       // 20261108b：口径说明一键隐藏/显示
       inflInfoHidden, toggleInflInfo,
       // 20261108j：未来事件（突发 + 未来，独立于影响力事件）
