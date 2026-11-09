@@ -1,9 +1,17 @@
 /* ============================================================
- * fetch-breaking-events.mjs — 定时抓取「真实、及时」的突发 / 世界名人新闻
+ * fetch-breaking-events.mjs — 定时抓取「真实、及时」的突发 / 世界名人新闻 / 全球未来事件
  *
  * 供 GitHub Actions 使用（也可本机 `node scripts/fetch-breaking-events.mjs`）：
  *   多源 best-effort 聚合 → 词典筛选 → 真实热度/飙升信号 → 生成
- *   data/breaking-events.json 与 data/celebrity-news.json
+ *   data/breaking-events.json、data/celebrity-news.json 与 data/hot-topics/upcoming-events.json
+ *
+ * 20261109e 新增「未来事件」搜索逻辑（用户反馈：当天在合肥举办的太空云产业生态大会没有出现）：
+ *   · 新增结构化财经日历源（每日经济新闻财经日历，每条自带 YYYY-MM-DD），覆盖中国/美国/全球会议、
+ *     政策、数据、财报、展会；再叠加现有 6 路新闻源里「将于…举行/召开/公布」且能解析出未来日期的条目。
+ *   · 与人工精选底库 data/upcoming-events.json（已核实的中美全球重大事件，含太空云大会/COP31/APEC深圳/
+ *     珠海航展/G20/FOMC）合并，按 2-gram 相似度去重。
+ *   · 统一按「北京时间今天」过滤：date 和 endDate 都早于今天的事件直接剔除（含今日与进行中的会期）。
+ *   · 输出带 scope(cn|us|world) / region / location / importance，前端可按中国/美国/全球筛选并按日期排序。
  *
  * 设计要点：
  *  1) 纯 Node 内置模块，无第三方依赖；任一新闻源失败不影响其它源。
@@ -33,15 +41,19 @@ const ROOT = join(__dirname, '..');
 // 这样无需新增/修改 .github/workflows 下的任何文件（该目录需要 workflow scope）。
 const OUT_BREAK = join(ROOT, 'data', 'hot-topics', 'breaking-events.json');
 const OUT_PEOPLE = join(ROOT, 'data', 'hot-topics', 'celebrity-news.json');
+const OUT_UPCOMING = join(ROOT, 'data', 'hot-topics', 'upcoming-events.json');
 // 人工精选底库保留在旧路径（研判字段完整），每轮从这里读取、输出到上面的新路径
 const SEED_BREAK = join(ROOT, 'data', 'breaking-events.json');
 const SEED_PEOPLE = join(ROOT, 'data', 'celebrity-news.json');
+const SEED_UPCOMING = join(ROOT, 'data', 'upcoming-events.json');
 
 const UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36';
 const TIMEOUT = 9000;
 const MAX_AUTO_BREAK = 18;   // 自动突发最多保留条数
 const MAX_AUTO_PEOPLE = 16;  // 自动人物最多保留条数
 const KEEP_HOURS = 72;       // 只保留近 72 小时的真实新闻
+const MAX_AUTO_UPCOMING = 55;      // 自动未来事件最多保留条数
+const UPCOMING_WINDOW_DAYS = 210;  // 未来事件窗口（约 7 个月）
 
 /* ---------------- 基础工具 ---------------- */
 
@@ -259,6 +271,34 @@ const SOURCES = [
   ['新浪7×24', srcSina7x24], ['今日头条热榜', srcToutiao], ['格隆汇', srcGelonghui]
 ];
 
+/* ---------------- 未来事件专用：结构化财经日历（20261109e） ----------------
+ * 每日经济新闻「财经日历」是服务端渲染的 HTML，每条形如
+ *   <li><abbr class="time">2026-11-09</abbr><span>第31届联合国气候变化大会将于…</span></li>
+ * 自带真实日期，覆盖中国宏观数据/会议、美国 CPI/FOMC/非农、全球峰会与展会，
+ * 比从新闻标题里猜日期稳定得多，是「未来事件搜索」的主数据源。
+ * ------------------------------------------------------------------------ */
+async function srcNbdCalendar() {
+  const urls = ['https://www.nbd.com.cn/??slb94', 'https://www.nbd.com.cn/'];
+  for (const u of urls) {
+    try {
+      const r = await withTimeout(fetch(u, {
+        headers: { 'User-Agent': UA, 'Accept': 'text/html,*/*;q=0.8', 'Accept-Language': 'zh-CN,zh;q=0.9' }
+      }), TIMEOUT, u);
+      if (!r.ok) continue;
+      const html = await r.text();
+      const re = /<abbr class="time">\s*(\d{4}-\d{2}-\d{2})\s*<\/abbr>\s*<span>([\s\S]*?)<\/span>/g;
+      const out = [];
+      let m;
+      while ((m = re.exec(html)) !== null) {
+        const title = cleanText(m[2]);
+        if (title.length >= 5) out.push({ date: m[1], title, source: '每日经济新闻·财经日历' });
+      }
+      if (out.length) return out;
+    } catch (e) { console.warn('  [每经财经日历] ' + u + ' → ' + e.message); }
+  }
+  return [];
+}
+
 /* ---------------- 分类词典 ---------------- */
 
 /** 突发大事件信号词（权重）；候选需累计权重 >= 4 */
@@ -364,10 +404,13 @@ const TOPICS = [
     bull: ['防御板块'], bear: ['周期股'], bullInd: ['公用事业'], bearInd: ['顺周期'], stocks: ['宽基指数'] }
 ];
 
+// 20261109e：补中国城市 / 部委名 —— 财经日历里大量条目只写「在广州举办」「上海…召开」，
+// 不识别城市会把中国事件误判成「全球」，导致「中国」筛选漏事件。
+const CN_RE = /(中国|A股|沪深|上证|深证|人民币|国务院|发改委|商务部|央行|港股|内地|国新办|国家统计局|工信部|证监会|财政部|海关总署|国内|我国|北京|上海|广州|深圳|合肥|武汉|珠海|成都|杭州|南京|苏州|天津|重庆|西安|九江|扬州|济南|青岛|大连|郑州|长沙|乌镇|香港|澳门|台湾)/;
 function detectRegion(text) {
-  if (/(中国|A股|沪深|上证|深证|人民币|国务院|发改委|商务部|央行|港股|内地)/.test(text) && !/(美国|美方|美元|美联储)/.test(text)) return '中国';
-  if (/(美国|美联储|美元|美股|白宫|特朗普|拜登|硅谷|纳斯达克|美债|华盛顿|纽约|华尔街)/.test(text)) return '美国';
-  if (/(欧洲|欧盟|德国|法国|英国|意大利|西班牙|欧央行|伦敦|巴黎|柏林|布鲁塞尔)/.test(text)) return '欧洲';
+  if (CN_RE.test(text) && !/(美国|美方|美元|美联储)/.test(text)) return '中国';
+  if (/(美国|美联储|美元|美股|白宫|特朗普|拜登|硅谷|纳斯达克|美债|华盛顿|纽约|华尔街|旧金山|芝加哥|拉斯维加斯|盐湖城)/.test(text)) return '美国';
+  if (/(欧洲|欧盟|德国|法国|英国|意大利|西班牙|欧央行|伦敦|巴黎|柏林|布鲁塞尔|慕尼黑|赫尔辛基|里斯本|达沃斯|安塔利亚)/.test(text)) return '欧洲';
   return '全球';
 }
 
@@ -376,6 +419,171 @@ function classify(text) {
   const region = detectRegion(text);
   const scope = region === '美国' ? 'us' : (region === '中国' ? 'cn' : 'world');
   return { topic: t, region, concept: t.concept[scope] };
+}
+
+/* ---------------- 未来事件：日期解析 / 重要度 / 合并（20261109e） ----------
+ * 目标：中国 / 美国 / 全世界的重大「将要发生」事件都要进榜，且当天与进行中事件不能被过滤掉。
+ *  · 财经日历条目自带真实日期；新闻条目则从「将于/定于…11月18日」等表述中解析出日期。
+ *  · 所有条目统一按北京时间今天过滤：date < today 且 endDate < today 的直接淘汰。
+ * ------------------------------------------------------------------------ */
+function bjToday() {
+  return new Date(Date.now() + 8 * 3600000).toISOString().slice(0, 10);
+}
+function addDays(iso, n) {
+  const d = new Date(iso + 'T00:00:00Z');
+  if (isNaN(d.getTime())) return '';
+  d.setUTCDate(d.getUTCDate() + n);
+  return d.toISOString().slice(0, 10);
+}
+function isoFromParts(y, m, d) {
+  if (!(y >= 2020 && y <= 2100 && m >= 1 && m <= 12 && d >= 1 && d <= 31)) return '';
+  const iso = `${y}-${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+  const dt = new Date(iso + 'T00:00:00Z');
+  return (dt.getUTCMonth() + 1 === m && dt.getUTCDate() === d) ? iso : '';
+}
+function monthDayIso(m, d, today) {
+  const y = +today.slice(0, 4);
+  let iso = isoFromParts(y, m, d);
+  // 不带年份的「11月9日」：若已早于今天，视为明年的同月同日
+  if (iso && iso < today) iso = isoFromParts(y + 1, m, d);
+  return iso;
+}
+function parseFutureDate(text, today) {
+  const s = String(text || '');
+  let m = s.match(/(20\d{2})\s*年\s*(\d{1,2})\s*月\s*(\d{1,2})\s*日?/);
+  if (m) return isoFromParts(+m[1], +m[2], +m[3]);
+  m = s.match(/(20\d{2})-(\d{1,2})-(\d{1,2})/);
+  if (m) return isoFromParts(+m[1], +m[2], +m[3]);
+  // 「11月13-16日」「11月13至16日」取会期起始日
+  m = s.match(/(\d{1,2})\s*月\s*(\d{1,2})\s*[-‑~～至到]\s*\d{1,2}\s*[日号]?/);
+  if (m) return monthDayIso(+m[1], +m[2], today);
+  m = s.match(/(\d{1,2})\s*月\s*(\d{1,2})\s*[日号]/);
+  if (m) return monthDayIso(+m[1], +m[2], today);
+  if (/(明天|明日)/.test(s)) return addDays(today, 1);
+  if (/(后天)/.test(s)) return addDays(today, 2);
+  if (/(下周)/.test(s)) return addDays(today, 7);
+  if (/(下个?月)/.test(s)) return addDays(today, 30);
+  if (/(今天|今日)/.test(s)) return today;
+  return null;
+}
+
+/** 财经日历里「美国10月CPI同比(%)，今值--，预期值…」→「美国10月CPI数据发布」 */
+function cleanCalendarTitle(raw) {
+  const t = String(raw || '');
+  if (/今值|预期值|前值/.test(t)) {
+    const base = t.split(/[，,]/)[0]
+      .replace(/(同比|环比)\s*[（(]%[)）]/g, '')
+      .replace(/\s+/g, ' ').trim();
+    return base ? (base + (/发布|公布|数据|报告|指数$/.test(base) ? '' : '数据发布')) : '';
+  }
+  return cleanText(t).replace(/[，,]\s*$/, '');
+}
+
+/** 未来事件「重大程度」信号词权重；只收录达到阈值的条目，避免小会/科普刷屏 */
+const FUTURE_RULES = [
+  { re: /(领导人|峰会|首脑|G20|APEC|G7|金砖|联合国|COP\d+|论坛|大会|博览会|航展|展会|高交会|进博会|CES|达沃斯|世界经济论坛|FOMC|议息|超级计算|Web Summit)/i, w: 5 },
+  { re: /(利率决议|点阵图|会议纪要|降息|加息|降准|LPR|货币政策|财政政策|中央经济工作会议|两会|褐皮书|听证会)/, w: 5 },
+  { re: /(CPI|PPI|PCE|非农|就业报告|GDP|PMI|社融|进出口|外贸|经济数据|数据公布|数据发布|准备金率)/i, w: 4 },
+  { re: /(财报|业绩|发布会|新品|上市|IPO|招股|生效|实施|调价窗口|调整窗口|揭晓|投产)/, w: 3 },
+  { re: /(将于|定于|拟于|即将|计划于|预计于|开幕|召开|举行|举办|启动|开展)/, w: 2 },
+  { re: /(选举|公投|投票|表决|谈判|签署|签约|发射|首飞|试飞)/, w: 3 }
+];
+const FUTURE_NOISE = /(回顾|复盘|盘点|周报|日报|早报|晚报|解读|点评|观察|收盘|涨停|跌停|龙虎榜|公告精选|机构调研|涨超|跌超|个股异动|如何|怎么办)/;
+const FUTURE_MARK = /(将于|定于|拟于|即将|计划于|预计于|届时|召开|举行|举办|开幕|发布|公布|上市|生效|实施|财报|议息|峰会|大会|论坛)/;
+function futureWeight(text) {
+  let w = 0;
+  for (const r of FUTURE_RULES) if (r.re.test(text)) w += r.w;
+  return w;
+}
+
+/** 财经日历/新闻里的完整句 → 干净事件名（日期另存 date 字段，标题不再重复「将于X月X日举行」） */
+function cleanUpcomingTitle(raw) {
+  let s = cleanText(raw);
+  if (s.length > 48) s = s.split(/[，,。]/)[0];
+  const before = s;
+  s = s.replace(/(?:将于|定于|拟于|计划于|预计于|于)\s*(?:20\d{2}\s*年)?\s*\d{1,2}\s*月\s*\d{1,2}\s*日?\s*(?:[-‑~～至到]\s*\d{1,2}\s*日?)?\s*(?:\([^)]*\)|（[^）]*）)?\s*(?:[上下]午\s*\d{1,2}\s*时?)?\s*(?:在[^，,。]{0,14})?[^，,。]{0,24}$/u, '').trim();
+  if (s.length < 8) {
+    const type = (cleanText(raw).match(/(新闻发布会|发布会|听证会|论坛|峰会|大会|展会|说明会|上市|投产|研讨会|交流会)/) || [])[1] || '活动';
+    s = (s + type).trim();
+  }
+  s = s.replace(/[，,。；;\s]+$/, '');
+  // 去掉日期尾巴后若仍是多段长句，再取首个语义段作为事件名
+  if (s.length > 26 && /[，,。]/.test(s)) s = s.split(/[，,。]/)[0];
+  return s || before;
+}
+
+function buildUpcoming(it, date, weight, today) {
+  const title = it.cleanTitle || cleanUpcomingTitle(it.title);
+  const cls = classify(title + ' ' + (it.summary || ''));
+  const scope = cls.region === '美国' ? 'us' : (cls.region === '中国' ? 'cn' : 'world');
+  const days = Math.round((Date.parse(date + 'T00:00:00Z') - Date.parse(today + 'T00:00:00Z')) / 86400000);
+  // 自动条目重要度上限 88，始终低于人工精选底库（90+），同日排序时精选事件优先
+  const importance = clamp(Math.round(26 + weight * 5
+    + (days <= 7 ? 8 : days <= 30 ? 4 : 0) + (scope !== 'world' ? 3 : 0)), 0, 88);
+  return {
+    id: stableId(title + '|' + date, 'au'),
+    title: cut(title, 84),
+    tag: cls.topic.tag + '/日程',
+    date,
+    region: cls.region,
+    scope,
+    concept: cls.concept,
+    source: it.source,
+    summary: it.summary && it.summary !== it.title
+      ? cut(it.summary, 180)
+      : `计划于 ${date} 举行或公布，来源：${it.source}。`,
+    relatedStocks: cls.topic.stocks,
+    importance,
+    _auto: true
+  };
+}
+
+/** 三路合并：精选底库（已核实，最高优先）+ 财经日历 + 新闻里解析出的未来事件 */
+function buildUpcomingEvents(calItems, news, today) {
+  const maxDate = addDays(today, UPCOMING_WINDOW_DAYS);
+  const seed = loadSeed(SEED_UPCOMING).filter(e =>
+    e && e.date && e.date <= maxDate && (e.endDate || e.date) >= today
+  );
+  const seedTitles = seed.map(s => s.title);
+  const cand = [];
+  const push = (title, summary, source, date, weight) => {
+    const t = cleanText(title);
+    if (!t || t.length < 6 || date < today || date > maxDate) return;
+    if (seedTitles.some(s => similar(t, s) >= 0.48)) return;       // 精选底库优先，避免重复
+    if (cand.some(c => similar(t, c.title) >= 0.60)) return;        // 自动条目内部去重
+    cand.push({ title: t, summary, source, date, weight });
+  };
+  for (const it of calItems) {
+    if (FUTURE_NOISE.test(it.title)) continue;
+    const w = futureWeight(it.title);
+    if (w < 3) continue;
+    push(cleanCalendarTitle(it.title), it.title, it.source, it.date, w);
+  }
+  for (const it of news) {
+    if (FUTURE_NOISE.test(it.title)) continue;
+    const text = it.title + ' ' + (it.summary || '');
+    if (!FUTURE_MARK.test(text)) continue;
+    const w = futureWeight(text);
+    if (w < 5) continue;
+    const date = parseFutureDate(text, today);
+    if (!date) continue;
+    push(it.title, it.summary || it.title, it.source, date, w);
+  }
+  cand.sort((a, b) => b.weight - a.weight || a.date.localeCompare(b.date));
+  const perDay = new Map();
+  const auto = [];
+  for (const c of cand) {
+    const n = perDay.get(c.date) || 0;
+    if (n >= 5) continue;                       // 同一天最多 5 条，避免小会挤掉重大日程
+    if (auto.length >= MAX_AUTO_UPCOMING) break;
+    perDay.set(c.date, n + 1);
+    auto.push(buildUpcoming(c, c.date, c.weight, today));
+  }
+  const events = [...seed, ...auto].sort((a, b) =>
+    (a.date || '').localeCompare(b.date || '')
+    || (Number(b.importance) || 0) - (Number(a.importance) || 0)
+  );
+  return { events, seedCount: seed.length, autoCount: auto.length };
 }
 
 /* ---------------- 主流程 ---------------- */
@@ -457,6 +665,10 @@ export async function main() {
     console.log(`  ${name}: ${got.length} 条`);
     all.push(...got);
   }
+  // 20261109e：未来事件主数据源 —— 结构化财经日历（中国/美国/全球会议、政策、数据、展会）
+  const today = bjToday();
+  const cal = await srcNbdCalendar();
+  console.log(`  每经财经日历: ${cal.length} 条（未来事件专用）`);
 
   // 时间窗 + 标题去重
   const cutoff = Date.now() - KEEP_HOURS * 3600000;
@@ -474,10 +686,26 @@ export async function main() {
   const hotTitles = items.filter(it => it.heatOnly).map(it => it.title);
   console.log(`合计 ${all.length} 条 → 去重/时效过滤后 ${items.length} 条（真实新闻 ${newsItems.length} + 热榜信号 ${hotTitles.length}），可用源 ${okSources}/${SOURCES.length}`);
 
-  if (newsItems.length < 8) {
-    console.warn('⚠️ 有效新闻过少（疑似网络异常），保留现有 json 不覆盖。');
-    return;
+  // 20261109e：未来事件不依赖「突发新闻是否充足」。即便 6 路新闻源全挂，
+  // 只要财经日历或精选底库可用，也照常生成 upcoming-events.json，保证今日/未来事件不消失。
+  const newsOk = newsItems.length >= 8;
+  if (!newsOk) console.warn('⚠️ 有效新闻过少（疑似网络异常），突发/人物保留现有 json 不覆盖；未来事件仍照常生成。');
+  const upcoming = buildUpcomingEvents(cal, newsOk ? newsItems : [], today);
+  if (upcoming.events.length) {
+    writeFileSync(OUT_UPCOMING, JSON.stringify({
+      generatedAt: fmtBJ(Date.now()),
+      generatedBy: 'GitHub Actions · 财经日历 + 多源新闻 + 精选底库',
+      sourceCount: okSources,
+      calendarCount: cal.length,
+      seedCount: upcoming.seedCount,
+      autoCount: upcoming.autoCount,
+      events: upcoming.events
+    }, null, 2) + '\n', 'utf8');
+    console.log(`✓ data/hot-topics/upcoming-events.json：${upcoming.events.length} 条（精选 ${upcoming.seedCount} + 自动 ${upcoming.autoCount}），基准日 ${today}`);
+  } else {
+    console.warn('⚠️ 未来事件为空，保留现有 upcoming-events.json 不覆盖。');
   }
+  if (!newsOk) return;
 
   // 建立真实热度信号：关键词 → 出现条数 / 近 1 小时出现条数
   const byKw = new Map(), recentByKw = new Map();

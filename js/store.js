@@ -56,6 +56,7 @@ const Store = {
       futureAutoRefresh: true,   // 未来事件·突发：是否开启自动刷新（20261109a）
       futureRefreshMs: 600000,   // 未来事件·突发：自动刷新间隔（600000=10分钟 | 3600000=1小时，20261109a）
       futureSeenIds: [],         // 未来事件·突发：已展示过的事件 id（用于「新事件红色标识」，20261109a）
+      futureScope: 'all',        // 未来事件·未来：覆盖范围筛选（'all'全部 | 'cn'中国 | 'us'美国 | 'world'全球，20261109e）
       thsSectorTab: 'industry', // 同花顺热门板块：当前选中的 Tab（'industry' 行业 | 'concept' 概念，20261108c）
       lianbanTab: 'days10',     // 连板股票：当前选中的口径 Tab（'days10' 近10日涨停次数 | 'streak' 只算连续涨停板，20261108d）
       settings: {

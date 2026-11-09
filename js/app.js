@@ -9257,40 +9257,916 @@ const app = createApp({
         heat: 55, momentum: 30 }
     ];
     const UPCOMING_EVENTS = [
-      { id: 'u1', title: '英伟达(NVIDIA) 2027财年Q3财报', tag: '企业活动/财报', date: '2026-11-17', region: '美国', concept: 'aiCapex', source: '公司日历',
-        summary: 'AI芯片龙头披露最新季度业绩与指引，为美股AI链风向标（预计收盘后）。', relatedStocks: ['英伟达', 'AI算力'] },
-      { id: 'u2', title: 'Blockchain Life 2026', tag: '会议/加密', date: '2026-12-01', region: '迪拜', concept: 'crypto',
-        summary: '全球区块链与加密资产大会，聚焦合规稳定币与RWA。', relatedStocks: ['Coinbase', '加密'] },
-      { id: 'u3', title: 'NeurIPS 2026（全球AI顶会）', tag: '会议/科技', date: '2026-12-06', region: '悉尼', concept: 'ai',
-        summary: '人工智能与机器学习顶级学术会议，前沿模型与Agent研究集中发布。', relatedStocks: ['AI', '算力'] },
-      { id: 'u4', title: 'Bitcoin MENA 2026', tag: '会议/加密', date: '2026-12-07', region: '阿布扎比', concept: 'crypto',
-        summary: '中东数字资产大会，聚焦比特币与合规框架。', relatedStocks: ['比特币', '加密'] },
-      { id: 'u5', title: 'GITEX Global 2026', tag: '会议/科技', date: '2026-12-07', region: '迪拜', concept: 'ai',
-        summary: '中东最大科技展，AI、网络安全与初创生态集中展示。', relatedStocks: ['AI', '网络安全'] },
-      { id: 'u6', title: 'The AI Summit New York 2026', tag: '会议/AI', date: '2026-12-09', region: '纽约', concept: 'aiCapex',
-        summary: '北美AI产业峰会，企业级AI落地与治理议题。', relatedStocks: ['AI', '企业软件'] },
-      { id: 'u7', title: 'G20 第四次Sherpa会议', tag: '政治/经济', date: '2026-12-10', region: '迈阿密', concept: 'usMacro',
-        summary: 'G20领导人峰会前最后协调，影响全球宏观与贸易议程。', relatedStocks: ['全球宏观'] },
-      { id: 'u8', title: 'G20 领导人峰会 2026', tag: '政治/经济', date: '2026-12-14', region: '迈阿密', concept: 'usMacro',
-        summary: '全球主要经济体领导人会晤，聚焦供应链、能源与金融治理，市场关注政策信号。', relatedStocks: ['全球宏观'] },
-      { id: 'u9', title: 'CES 2027（国际消费电子展）', tag: '会议/科技', date: '2027-01-06', region: '拉斯维加斯', concept: 'aiCapex',
-        summary: '全球最大消费电子展，AI终端、智能汽车与机器人新品集中发布，为年初科技股重要催化。', relatedStocks: ['消费电子', 'AI终端', '机器人'] },
-      { id: 'u10', title: '世界经济论坛年会 2027（达沃斯）', tag: '经济/政治', date: '2027-01-18', region: '达沃斯', concept: 'finance',
-        summary: '全球政商领袖年会，议题涵盖AI治理、能源转型与地缘经济，影响风险偏好。', relatedStocks: ['全球宏观'] },
-      { id: 'u11', title: '美联储FOMC 议息会议', tag: '经济/美债会议', date: '2027-01-26', region: '华盛顿', concept: 'usFinance',
-        summary: '美联储公布利率决议与前瞻指引，为全球流动性与美债收益率定调。', relatedStocks: ['美债', '美股', '黄金'] },
-      { id: 'u12', title: '苹果(AAPL) 2027财年Q1财报（假期季）', tag: '企业活动/财报', date: '2027-01-27', region: '美国', concept: 'aiCapex',
-        summary: '苹果披露假日季度业绩（预计），iPhone与服务业收入为市场焦点（日期为历史规律估计，以公司公告为准）。', relatedStocks: ['苹果', '消费电子'] },
-      { id: 'u13', title: '微软(MSFT) 财报', tag: '企业活动/财报', date: '2027-01-28', region: '美国', concept: 'aiCapex',
-        summary: '微软披露云与AI资本开支进展（预计）。', relatedStocks: ['微软', 'AI算力'] },
-      { id: 'u14', title: '亚马逊(AMZN) 财报', tag: '企业活动/财报', date: '2027-01-28', region: '美国', concept: 'aiCapex',
-        summary: '亚马逊披露零售与云业务业绩（预计）。', relatedStocks: ['亚马逊'] },
-      { id: 'u15', title: 'Web Summit Qatar 2027', tag: '会议/科技', date: '2027-01-31', region: '多哈', concept: 'ai',
-        summary: '中东科技与创业峰会，全球创始人与投资人汇聚。', relatedStocks: ['科技', '创投'] },
-      { id: 'u16', title: '谷歌(GOOGL) 财报', tag: '企业活动/财报', date: '2027-02-03', region: '美国', concept: 'aiCapex',
-        summary: '谷歌披露搜索与云业务业绩（预计）。', relatedStocks: ['谷歌'] },
-      { id: 'u17', title: '特斯拉(TSLA)/Meta 财报', tag: '企业活动/财报', date: '2027-01-20', region: '美国', concept: 'aiCapex',
-        summary: '特斯拉与Meta披露业绩（预计区间1/20-2/3）。', relatedStocks: ['特斯拉', 'Meta'] }
+      {
+        "id": "uc1",
+        "title": "2026太空云产业生态大会暨中科星云成立大会",
+        "tag": "会议/商业航天",
+        "date": "2026-11-09",
+        "endDate": "2026-11-09",
+        "region": "中国",
+        "scope": "cn",
+        "location": "合肥·中安创谷科技园",
+        "concept": "lowAlt",
+        "source": "合肥发布/澎湃新闻/观点网",
+        "importance": 95,
+        "summary": "今日举行。主题「太空云生·星云筑基」，由合肥市政府与中科院空天信息创新研究院联合主办，围绕太空算力网、太空云技术体系、星载智能感知与计算、天地协同应用展开，并举行中科星云成立仪式与成果发布。",
+        "relatedStocks": [
+          "中科星图",
+          "商业航天",
+          "卫星互联网",
+          "算力"
+        ]
+      },
+      {
+        "id": "uc2",
+        "title": "第31届联合国气候变化大会（COP31）",
+        "tag": "峰会/气候",
+        "date": "2026-11-09",
+        "endDate": "2026-11-20",
+        "region": "全球",
+        "scope": "world",
+        "location": "土耳其安塔利亚",
+        "concept": "climate",
+        "source": "联合国/UNFCCC",
+        "importance": 96,
+        "summary": "11月9日开幕、会期至20日。198个缔约方谈判气候资金、能源转型与适应议题，11月11-12日举行世界领导人峰会；澳大利亚担任谈判主席，土耳其主办。",
+        "relatedStocks": [
+          "光伏",
+          "绿电",
+          "碳交易",
+          "新能源"
+        ]
+      },
+      {
+        "id": "uc3",
+        "title": "第九届中国国际进口博览会（进博会）",
+        "tag": "展会/开放",
+        "date": "2026-11-05",
+        "endDate": "2026-11-10",
+        "region": "中国",
+        "scope": "cn",
+        "location": "上海·国家会展中心",
+        "concept": "consume",
+        "source": "商务部/上海市政府",
+        "importance": 90,
+        "summary": "会期至11月10日，4142家境外企业参展，六大展区聚焦医疗器械、智能出行、技术装备与消费品，虹桥国际经济论坛同期举行并发布《世界开放报告2026》。",
+        "relatedStocks": [
+          "消费",
+          "医疗器械",
+          "跨境电商",
+          "物流"
+        ]
+      },
+      {
+        "id": "uc4",
+        "title": "2026商业航天论坛",
+        "tag": "会议/商业航天",
+        "date": "2026-11-09",
+        "endDate": "2026-11-10",
+        "region": "中国",
+        "scope": "cn",
+        "location": "武汉",
+        "concept": "lowAlt",
+        "source": "上海证券报财经日历",
+        "importance": 82,
+        "summary": "与太空云产业生态大会同期，聚焦商业航天发射、卫星互联网与空天信息产业链，为国内商业航天板块密集催化窗口。",
+        "relatedStocks": [
+          "商业航天",
+          "卫星互联网",
+          "航天装备"
+        ]
+      },
+      {
+        "id": "uc5",
+        "title": "中国10月CPI、PPI数据发布",
+        "tag": "数据/宏观",
+        "date": "2026-11-09",
+        "region": "中国",
+        "scope": "cn",
+        "location": "北京",
+        "concept": "broker",
+        "source": "国家统计局",
+        "importance": 88,
+        "summary": "今日公布10月通胀数据，是判断四季度货币政策空间与顺周期板块定价的关键依据。",
+        "relatedStocks": [
+          "A股宽基",
+          "消费",
+          "周期股"
+        ]
+      },
+      {
+        "id": "uc6",
+        "title": "美国10月CPI数据发布",
+        "tag": "数据/通胀",
+        "date": "2026-11-10",
+        "region": "美国",
+        "scope": "us",
+        "location": "华盛顿",
+        "concept": "usMacro",
+        "source": "美国劳工统计局(BLS)",
+        "importance": 94,
+        "summary": "北京时间11月10日晚公布，前值同比3.7%。为12月FOMC是否继续按兵不动的核心输入，直接牵动美债收益率与全球风险资产。",
+        "relatedStocks": [
+          "美股科技",
+          "美债",
+          "黄金"
+        ]
+      },
+      {
+        "id": "uc7",
+        "title": "中国10月进出口数据发布",
+        "tag": "数据/外贸",
+        "date": "2026-11-10",
+        "region": "中国",
+        "scope": "cn",
+        "location": "北京",
+        "concept": "crossEcom",
+        "source": "海关总署",
+        "importance": 80,
+        "summary": "公布10月进出口与贸易顺差，观察外需韧性、出海链与汇率预期。",
+        "relatedStocks": [
+          "跨境电商",
+          "航运",
+          "出口链"
+        ]
+      },
+      {
+        "id": "uc8",
+        "title": "第108届中国电子展（CEF）",
+        "tag": "展会/电子",
+        "date": "2026-11-10",
+        "endDate": "2026-11-12",
+        "region": "中国",
+        "scope": "cn",
+        "location": "上海",
+        "concept": "semiEq",
+        "source": "上海证券报财经日历",
+        "importance": 72,
+        "summary": "国内电子元器件与半导体产业链年度展会，新型储能、功率半导体与国产设备为焦点。",
+        "relatedStocks": [
+          "半导体设备",
+          "元器件",
+          "储能"
+        ]
+      },
+      {
+        "id": "uc9",
+        "title": "Web Summit 2026",
+        "tag": "会议/科技",
+        "date": "2026-11-09",
+        "endDate": "2026-11-12",
+        "region": "欧洲",
+        "scope": "world",
+        "location": "里斯本",
+        "concept": "aiApp",
+        "source": "全球科技活动日历",
+        "importance": 84,
+        "summary": "全球最大科技创业峰会之一，AI、互联网与创投议题集中，欧洲AI监管与融资环境为关注点。",
+        "relatedStocks": [
+          "AI应用",
+          "创投",
+          "云计算"
+        ]
+      },
+      {
+        "id": "uc10",
+        "title": "KubeCon + CloudNativeCon 北美大会",
+        "tag": "会议/云",
+        "date": "2026-11-09",
+        "endDate": "2026-11-12",
+        "region": "美国",
+        "scope": "us",
+        "location": "盐湖城",
+        "concept": "aiCapex",
+        "source": "全球科技活动日历",
+        "importance": 70,
+        "summary": "云原生与AI基础设施年度会议，通常伴随头部云厂商发布新算力/推理平台。",
+        "relatedStocks": [
+          "云计算",
+          "AI算力",
+          "微软",
+          "谷歌"
+        ]
+      },
+      {
+        "id": "uc11",
+        "title": "COP31 世界领导人峰会",
+        "tag": "峰会/气候",
+        "date": "2026-11-11",
+        "endDate": "2026-11-12",
+        "region": "全球",
+        "scope": "world",
+        "location": "土耳其安塔利亚",
+        "concept": "climate",
+        "source": "UNFCCC",
+        "importance": 88,
+        "summary": "COP31框架下的国家与政府首脑峰会，气候融资与能源转型承诺为市场关注焦点。",
+        "relatedStocks": [
+          "绿电",
+          "碳交易",
+          "新能源"
+        ]
+      },
+      {
+        "id": "uc12",
+        "title": "electronica 2026 与 SEMICON Europa 2026",
+        "tag": "展会/半导体",
+        "date": "2026-11-10",
+        "endDate": "2026-11-13",
+        "region": "欧洲",
+        "scope": "world",
+        "location": "德国慕尼黑",
+        "concept": "semi",
+        "source": "全球科技活动日历",
+        "importance": 78,
+        "summary": "欧洲最大电子展与半导体设备展同期举行，汽车电子、功率半导体、先进封装与制造设备为主要议题。",
+        "relatedStocks": [
+          "半导体设备",
+          "功率半导体",
+          "汽车电子"
+        ]
+      },
+      {
+        "id": "uc13",
+        "title": "百度世界2026",
+        "tag": "发布会/AI",
+        "date": "2026-11-12",
+        "region": "中国",
+        "scope": "cn",
+        "location": "北京",
+        "concept": "llm",
+        "source": "每日经济新闻财经日历",
+        "importance": 82,
+        "summary": "百度年度技术大会，通常发布文心大模型、智能云与自动驾驶/智能体最新进展。",
+        "relatedStocks": [
+          "百度",
+          "国产大模型",
+          "智能驾驶"
+        ]
+      },
+      {
+        "id": "uc14",
+        "title": "国内成品油调价窗口",
+        "tag": "政策/能源",
+        "date": "2026-11-12",
+        "region": "中国",
+        "scope": "cn",
+        "location": "北京",
+        "concept": "elec",
+        "source": "上海证券报财经日历",
+        "importance": 66,
+        "summary": "新一轮成品油价格调整窗口开启，影响炼化、物流与交运成本端。",
+        "relatedStocks": [
+          "中国石油",
+          "炼化",
+          "物流"
+        ]
+      },
+      {
+        "id": "uc15",
+        "title": "美国10月PPI数据发布",
+        "tag": "数据/通胀",
+        "date": "2026-11-13",
+        "region": "美国",
+        "scope": "us",
+        "location": "华盛顿",
+        "concept": "usMacro",
+        "source": "美国劳工统计局(BLS)",
+        "importance": 76,
+        "summary": "生产者物价指数，用于校验CPI传导与上游价格压力。",
+        "relatedStocks": [
+          "美股",
+          "美债",
+          "大宗商品"
+        ]
+      },
+      {
+        "id": "uc16",
+        "title": "SC26 国际超级计算大会",
+        "tag": "会议/算力",
+        "date": "2026-11-15",
+        "endDate": "2026-11-20",
+        "region": "美国",
+        "scope": "us",
+        "location": "芝加哥",
+        "concept": "aiCapex",
+        "source": "全球科技活动日历",
+        "importance": 84,
+        "summary": "全球HPC与GPU顶级会议，英伟达等厂商常在此发布新一代GPU路线与集群方案。",
+        "relatedStocks": [
+          "英伟达",
+          "AI算力",
+          "液冷",
+          "HBM"
+        ]
+      },
+      {
+        "id": "uc17",
+        "title": "金融机构外汇存款准备金率上调至6%",
+        "tag": "政策/汇率",
+        "date": "2026-11-15",
+        "region": "中国",
+        "scope": "cn",
+        "location": "北京",
+        "concept": "bank",
+        "source": "中国人民银行",
+        "importance": 78,
+        "summary": "央行上调外汇存款准备金率2个百分点，影响人民币汇率预期与银行外汇流动性。",
+        "relatedStocks": [
+          "银行",
+          "人民币汇率",
+          "出口链"
+        ]
+      },
+      {
+        "id": "uc18",
+        "title": "中国10月经济数据 + 国新办新闻发布会",
+        "tag": "数据/宏观",
+        "date": "2026-11-16",
+        "region": "中国",
+        "scope": "cn",
+        "location": "北京",
+        "concept": "broker",
+        "source": "国家统计局/国新办",
+        "importance": 84,
+        "summary": "公布规上工业增加值、社零、固定资产投资与70城房价，是四季度稳增长政策力度的观察窗口。",
+        "relatedStocks": [
+          "A股宽基",
+          "地产链",
+          "消费"
+        ]
+      },
+      {
+        "id": "uc19",
+        "title": "英伟达(NVIDIA) 2027财年Q3财报",
+        "tag": "企业活动/财报",
+        "date": "2026-11-17",
+        "region": "美国",
+        "scope": "us",
+        "location": "加州圣克拉拉",
+        "concept": "aiCapex",
+        "source": "公司日历（预计，以公告为准）",
+        "importance": 96,
+        "summary": "AI芯片龙头披露季度业绩与下季指引，为全球AI资本开支链最重要的风向标（日期按历年规律预计）。",
+        "relatedStocks": [
+          "英伟达",
+          "AI算力",
+          "台积电",
+          "HBM"
+        ]
+      },
+      {
+        "id": "uc20",
+        "title": "APEC 工商领导人峰会",
+        "tag": "峰会/经济",
+        "date": "2026-11-17",
+        "endDate": "2026-11-18",
+        "region": "中国",
+        "scope": "cn",
+        "location": "深圳",
+        "concept": "core",
+        "source": "中国贸促会/每日经济新闻",
+        "importance": 88,
+        "summary": "APEC领导人会议配套活动，全球工商领袖聚焦亚太供应链、数字经济与AI合作。",
+        "relatedStocks": [
+          "外贸",
+          "数字经济",
+          "深圳本地股"
+        ]
+      },
+      {
+        "id": "uc21",
+        "title": "Microsoft Ignite 2026",
+        "tag": "会议/AI",
+        "date": "2026-11-17",
+        "endDate": "2026-11-20",
+        "region": "美国",
+        "scope": "us",
+        "location": "旧金山",
+        "concept": "aiCapex",
+        "source": "全球科技活动日历",
+        "importance": 80,
+        "summary": "微软企业云与AI Agent年度大会，Azure AI基建与Copilot商业化进度为焦点。",
+        "relatedStocks": [
+          "微软",
+          "云计算",
+          "AI应用"
+        ]
+      },
+      {
+        "id": "uc22",
+        "title": "2026中国国际光伏与储能产业大会",
+        "tag": "会议/新能源",
+        "date": "2026-11-17",
+        "endDate": "2026-11-20",
+        "region": "中国",
+        "scope": "cn",
+        "location": "成都",
+        "concept": "elec",
+        "source": "每日经济新闻财经日历",
+        "importance": 74,
+        "summary": "光伏与储能产业链年度大会，关注反内卷、价格自律与新型储能装机预期。",
+        "relatedStocks": [
+          "光伏",
+          "储能",
+          "逆变器"
+        ]
+      },
+      {
+        "id": "uc23",
+        "title": "APEC 第三十三次领导人非正式会议",
+        "tag": "峰会/外交",
+        "date": "2026-11-18",
+        "endDate": "2026-11-19",
+        "region": "中国",
+        "scope": "cn",
+        "location": "深圳",
+        "concept": "core",
+        "source": "外交部/中国日报",
+        "importance": 98,
+        "summary": "中国第三次担任APEC东道主，主题「建设亚太共同体，促进共同繁荣」，21个成员经济体领导人出席，聚焦贸易开放、数字经济与人工智能合作。",
+        "relatedStocks": [
+          "外贸",
+          "人工智能",
+          "跨境电商",
+          "深圳本地股"
+        ]
+      },
+      {
+        "id": "uc24",
+        "title": "Singapore FinTech Festival 2026",
+        "tag": "会议/金融科技",
+        "date": "2026-11-18",
+        "endDate": "2026-11-20",
+        "region": "全球",
+        "scope": "world",
+        "location": "新加坡",
+        "concept": "finance",
+        "source": "全球科技活动日历",
+        "importance": 72,
+        "summary": "亚洲最大金融科技盛会，聚焦金融AI、数字支付与央行数字货币。",
+        "relatedStocks": [
+          "金融科技",
+          "数字支付",
+          "银行IT"
+        ]
+      },
+      {
+        "id": "uc25",
+        "title": "Slush 2026 科技创业大会",
+        "tag": "会议/创投",
+        "date": "2026-11-18",
+        "endDate": "2026-11-19",
+        "region": "欧洲",
+        "scope": "world",
+        "location": "赫尔辛基",
+        "concept": "aiApp",
+        "source": "全球科技活动日历",
+        "importance": 64,
+        "summary": "欧洲顶级创业与风险投资大会，早期AI与深科技项目集中亮相。",
+        "relatedStocks": [
+          "创投",
+          "AI应用"
+        ]
+      },
+      {
+        "id": "uc26",
+        "title": "虹桥国际科技周",
+        "tag": "展会/科技",
+        "date": "2026-11-20",
+        "endDate": "2026-11-22",
+        "region": "中国",
+        "scope": "cn",
+        "location": "上海",
+        "concept": "robot",
+        "source": "全球科技活动日历",
+        "importance": 68,
+        "summary": "聚焦AI、机器人与智能工业，承接进博会技术溢出效应。",
+        "relatedStocks": [
+          "机器人",
+          "AI",
+          "智能装备"
+        ]
+      },
+      {
+        "id": "uc27",
+        "title": "美国Q3 GDP二次估计与9月PCE物价指数",
+        "tag": "数据/宏观",
+        "date": "2026-11-25",
+        "region": "美国",
+        "scope": "us",
+        "location": "华盛顿",
+        "concept": "usMacro",
+        "source": "美国经济分析局(BEA)",
+        "importance": 82,
+        "summary": "同日公布GDP与个人收入支出（含PCE），叠加美联储褐皮书，构成12月议息前的完整宏观图像。",
+        "relatedStocks": [
+          "美股",
+          "美债",
+          "美元"
+        ]
+      },
+      {
+        "id": "uc28",
+        "title": "第二十八届中国国际高新技术成果交易会（高交会）",
+        "tag": "展会/科技",
+        "date": "2026-11-26",
+        "endDate": "2026-11-28",
+        "region": "中国",
+        "scope": "cn",
+        "location": "深圳",
+        "concept": "semiEq",
+        "source": "全球科技活动日历",
+        "importance": 80,
+        "summary": "中国规模最大科技成果展，半导体、商业航天、机器人与低空经济为热门展区。",
+        "relatedStocks": [
+          "半导体",
+          "商业航天",
+          "机器人",
+          "低空经济"
+        ]
+      },
+      {
+        "id": "uc29",
+        "title": "AWS re:Invent 2026",
+        "tag": "会议/云",
+        "date": "2026-11-30",
+        "endDate": "2026-12-04",
+        "region": "美国",
+        "scope": "us",
+        "location": "拉斯维加斯",
+        "concept": "aiCapex",
+        "source": "全球科技活动日历",
+        "importance": 82,
+        "summary": "亚马逊云科技年度大会，自研AI芯片、推理服务与资本开支指引常在此发布。",
+        "relatedStocks": [
+          "亚马逊",
+          "云计算",
+          "AI芯片"
+        ]
+      },
+      {
+        "id": "uc30",
+        "title": "Blockchain Life 2026",
+        "tag": "会议/加密",
+        "date": "2026-12-01",
+        "region": "全球",
+        "scope": "world",
+        "location": "迪拜",
+        "concept": "crypto",
+        "source": "会议官网",
+        "importance": 62,
+        "summary": "全球区块链与加密资产大会，聚焦合规稳定币与RWA。",
+        "relatedStocks": [
+          "Coinbase",
+          "加密",
+          "稳定币"
+        ]
+      },
+      {
+        "id": "uc31",
+        "title": "美国11月非农就业报告",
+        "tag": "数据/就业",
+        "date": "2026-12-04",
+        "region": "美国",
+        "scope": "us",
+        "location": "华盛顿",
+        "concept": "usMacro",
+        "source": "美国劳工统计局(BLS)",
+        "importance": 90,
+        "summary": "12月FOMC前最重要的就业数据，影响降息路径与美元流动性定价。",
+        "relatedStocks": [
+          "美股",
+          "美债",
+          "黄金"
+        ]
+      },
+      {
+        "id": "uc32",
+        "title": "NeurIPS 2026（全球AI顶会）",
+        "tag": "会议/AI",
+        "date": "2026-12-06",
+        "region": "全球",
+        "scope": "world",
+        "location": "悉尼",
+        "concept": "ai",
+        "source": "会议官网",
+        "importance": 78,
+        "summary": "人工智能与机器学习顶级学术会议，前沿模型与智能体研究集中发布。",
+        "relatedStocks": [
+          "AI",
+          "算力",
+          "大模型"
+        ]
+      },
+      {
+        "id": "uc33",
+        "title": "第十六届中国国际航空航天博览会（珠海航展）",
+        "tag": "展会/军工",
+        "date": "2026-12-07",
+        "endDate": "2026-12-13",
+        "region": "中国",
+        "scope": "cn",
+        "location": "广东珠海",
+        "concept": "lowAlt",
+        "source": "中国经济网/航展组委会",
+        "importance": 94,
+        "summary": "中国航展三十周年，超1100家企业参展、室内展览面积超15万平方米，空军海军多型新装备同台亮相，「一展三区」新格局。",
+        "relatedStocks": [
+          "军工",
+          "商业航天",
+          "航空装备",
+          "无人机"
+        ]
+      },
+      {
+        "id": "uc34",
+        "title": "Bitcoin MENA 2026",
+        "tag": "会议/加密",
+        "date": "2026-12-07",
+        "region": "全球",
+        "scope": "world",
+        "location": "阿布扎比",
+        "concept": "crypto",
+        "source": "会议官网",
+        "importance": 56,
+        "summary": "中东数字资产大会，聚焦比特币与合规框架。",
+        "relatedStocks": [
+          "比特币",
+          "加密"
+        ]
+      },
+      {
+        "id": "uc35",
+        "title": "GITEX Global 2026",
+        "tag": "会议/科技",
+        "date": "2026-12-07",
+        "region": "全球",
+        "scope": "world",
+        "location": "迪拜",
+        "concept": "ai",
+        "source": "会议官网",
+        "importance": 58,
+        "summary": "中东最大科技展，AI、网络安全与初创生态集中展示（日期以官方公告为准）。",
+        "relatedStocks": [
+          "AI",
+          "网络安全"
+        ]
+      },
+      {
+        "id": "uc36",
+        "title": "美联储FOMC 12月议息会议（含SEP与点阵图）",
+        "tag": "会议/利率",
+        "date": "2026-12-08",
+        "endDate": "2026-12-09",
+        "region": "美国",
+        "scope": "us",
+        "location": "华盛顿",
+        "concept": "usFinance",
+        "source": "美联储官方日历",
+        "importance": 98,
+        "summary": "12月8-9日两天会议，9日公布利率决议、经济预测与点阵图并举行主席发布会；为2026年最后一次议息，决定全球流动性年末基调。",
+        "relatedStocks": [
+          "美债",
+          "美股",
+          "黄金",
+          "美元"
+        ]
+      },
+      {
+        "id": "uc37",
+        "title": "The AI Summit New York 2026",
+        "tag": "会议/AI",
+        "date": "2026-12-09",
+        "region": "美国",
+        "scope": "us",
+        "location": "纽约",
+        "concept": "aiCapex",
+        "source": "会议官网",
+        "importance": 60,
+        "summary": "北美AI产业峰会，企业级AI落地与治理议题。",
+        "relatedStocks": [
+          "AI",
+          "企业软件"
+        ]
+      },
+      {
+        "id": "uc38",
+        "title": "G20 第四次协调人（Sherpa）会议",
+        "tag": "政治/经济",
+        "date": "2026-12-10",
+        "endDate": "2026-12-12",
+        "region": "美国",
+        "scope": "us",
+        "location": "迈阿密",
+        "concept": "usMacro",
+        "source": "G20 官网",
+        "importance": 74,
+        "summary": "领导人峰会前最后一次协调会议，敲定公报与政策议程。",
+        "relatedStocks": [
+          "全球宏观"
+        ]
+      },
+      {
+        "id": "uc39",
+        "title": "中央经济工作会议（预计）",
+        "tag": "政策/顶层会议",
+        "date": "2026-12-10",
+        "endDate": "2026-12-12",
+        "region": "中国",
+        "scope": "cn",
+        "location": "北京",
+        "concept": "broker",
+        "source": "历年惯例（日期预计，以官方公告为准）",
+        "importance": 96,
+        "summary": "通常在12月中旬举行，部署次年经济工作与财政货币政策基调，对A股来年主线有决定性影响（日期按历年惯例预计）。",
+        "relatedStocks": [
+          "A股宽基",
+          "内需消费",
+          "基建",
+          "券商"
+        ]
+      },
+      {
+        "id": "uc40",
+        "title": "美国11月CPI数据发布",
+        "tag": "数据/通胀",
+        "date": "2026-12-10",
+        "region": "美国",
+        "scope": "us",
+        "location": "华盛顿",
+        "concept": "usMacro",
+        "source": "美国劳工统计局(BLS)",
+        "importance": 84,
+        "summary": "12月FOMC决议次日公布，属于决议后的新增信息，可能引发利率预期再定价。",
+        "relatedStocks": [
+          "美股",
+          "美债",
+          "黄金"
+        ]
+      },
+      {
+        "id": "uc41",
+        "title": "G20 领导人峰会 2026",
+        "tag": "峰会/政治",
+        "date": "2026-12-14",
+        "endDate": "2026-12-15",
+        "region": "美国",
+        "scope": "us",
+        "location": "迈阿密·特朗普国家多拉尔",
+        "concept": "usMacro",
+        "source": "美国国务院/G20 官网",
+        "importance": 98,
+        "summary": "美国总统特朗普主持，21个成员经济体领导人出席，三大议程为消除监管负担、可负担能源供应链、新技术与创新；聚焦供应链、能源与金融治理。",
+        "relatedStocks": [
+          "全球宏观",
+          "能源",
+          "美股"
+        ]
+      },
+      {
+        "id": "uc42",
+        "title": "美国11月PPI数据发布",
+        "tag": "数据/通胀",
+        "date": "2026-12-15",
+        "region": "美国",
+        "scope": "us",
+        "location": "华盛顿",
+        "concept": "usMacro",
+        "source": "美国劳工统计局(BLS)",
+        "importance": 70,
+        "summary": "生产者物价指数，补充验证年末通胀黏性。",
+        "relatedStocks": [
+          "美股",
+          "美债"
+        ]
+      },
+      {
+        "id": "uc43",
+        "title": "美国11月PCE与Q3 GDP终值",
+        "tag": "数据/宏观",
+        "date": "2026-12-23",
+        "region": "美国",
+        "scope": "us",
+        "location": "华盛顿",
+        "concept": "usFinance",
+        "source": "美国经济分析局(BEA)",
+        "importance": 78,
+        "summary": "美联储最看重的通胀指标与GDP终值同日公布。",
+        "relatedStocks": [
+          "美债",
+          "美元",
+          "美股"
+        ]
+      },
+      {
+        "id": "uc44",
+        "title": "美联储12月FOMC会议纪要",
+        "tag": "会议/纪要",
+        "date": "2026-12-30",
+        "region": "美国",
+        "scope": "us",
+        "location": "华盛顿",
+        "concept": "usFinance",
+        "source": "美联储官方日历",
+        "importance": 68,
+        "summary": "披露12月议息讨论细节与委员分歧，影响来年一季度降息预期。",
+        "relatedStocks": [
+          "美债",
+          "美股",
+          "黄金"
+        ]
+      },
+      {
+        "id": "uc45",
+        "title": "CES 2027（国际消费电子展）",
+        "tag": "展会/科技",
+        "date": "2027-01-06",
+        "region": "美国",
+        "scope": "us",
+        "location": "拉斯维加斯",
+        "concept": "aiCapex",
+        "source": "CES 官网（日期按惯例）",
+        "importance": 92,
+        "summary": "全球最大消费电子展，AI终端、智能汽车与机器人新品集中发布，为年初科技股重要催化。",
+        "relatedStocks": [
+          "消费电子",
+          "AI终端",
+          "机器人"
+        ]
+      },
+      {
+        "id": "uc46",
+        "title": "世界经济论坛年会 2027（达沃斯）",
+        "tag": "经济/政治",
+        "date": "2027-01-18",
+        "region": "欧洲",
+        "scope": "world",
+        "location": "瑞士达沃斯",
+        "concept": "macro",
+        "source": "WEF 官网（日期按惯例）",
+        "importance": 88,
+        "summary": "全球政商领袖年会，议题涵盖AI治理、能源转型与地缘经济，影响全年风险偏好。",
+        "relatedStocks": [
+          "全球宏观"
+        ]
+      },
+      {
+        "id": "uc47",
+        "title": "美股科技巨头财报季（特斯拉/Meta/苹果/微软/谷歌）",
+        "tag": "企业活动/财报",
+        "date": "2027-01-27",
+        "endDate": "2027-02-03",
+        "region": "美国",
+        "scope": "us",
+        "location": "美国",
+        "concept": "aiCapex",
+        "source": "公司日历（按历年规律预计）",
+        "importance": 90,
+        "summary": "2027年1月下旬至2月初，苹果、微软、亚马逊、谷歌、Meta、特斯拉陆续披露假期季业绩与AI资本开支指引（日期为预计）。",
+        "relatedStocks": [
+          "苹果",
+          "微软",
+          "谷歌",
+          "Meta",
+          "特斯拉"
+        ]
+      },
+      {
+        "id": "uc48",
+        "title": "美联储FOMC 2027年1月议息会议",
+        "tag": "会议/利率",
+        "date": "2027-01-26",
+        "region": "美国",
+        "scope": "us",
+        "location": "华盛顿",
+        "concept": "usFinance",
+        "source": "美联储日历（预计）",
+        "importance": 84,
+        "summary": "2027年首次议息，公布利率决议与前瞻指引。",
+        "relatedStocks": [
+          "美债",
+          "美股",
+          "黄金"
+        ]
+      },
+      {
+        "id": "uc49",
+        "title": "Web Summit Qatar 2027",
+        "tag": "会议/科技",
+        "date": "2027-01-31",
+        "region": "全球",
+        "scope": "world",
+        "location": "多哈",
+        "concept": "ai",
+        "source": "会议官网",
+        "importance": 60,
+        "summary": "中东科技与创业峰会，全球创始人与投资人汇聚。",
+        "relatedStocks": [
+          "科技",
+          "创投"
+        ]
+      }
     ];
     // 人物板块：全球名人发言 / 重大新闻（与 breaking 同结构，fetch 失败时回退到此）
     const CELEBRITY_EVENTS_SEED = [
@@ -9393,6 +10269,36 @@ const app = createApp({
     const futureSeenIds = ref(new Set());      // 已展示过的突发 id（用于判断「新」）
     let futureRefreshTimer = null;
     function futureRegionLabel(r) { return r === 'breaking' ? '突发' : (r === 'people' ? '人物' : '未来'); }
+    // ===== 20261109e：未来事件「中国 / 美国 / 全球」全覆盖 + 过期过滤 =====
+    // 根因：原「未来」子版块只是 17 条写死的数组，无中国会议、无自动抓取、无日期过滤，
+    // 导致 11/9 当天在合肥举办的「太空云产业生态大会」等同日/进行中事件完全不展示。
+    // 现在：运行时读多源聚合快照（财经日历 + 6 路新闻 + 精选底库），并统一按今天过滤。
+    const futureScope = ref('all');      // all | cn | us | world（仅未来子版块生效）
+    const futureAllEvents = ref([]);     // 区域筛选前的全量，用于按钮上的计数
+    function todayISO() {
+      const d = new Date();
+      return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+    }
+    // 进行中的会期（date 已过但 endDate 未过）必须保留；已结束的直接淘汰
+    function isUpcoming(e) { return !!(e && e.date && (e.endDate || e.date) >= todayISO()); }
+    function futureIsOngoing(e) {
+      const d = daysFromToday(e && e.date);
+      return d !== null && d < 0 && !!(e && e.endDate && e.endDate >= todayISO());
+    }
+    function upcomingScope(e) {
+      const s = e && e.scope;
+      if (s === 'cn' || s === 'us' || s === 'world') return s;
+      const ir = FUTURE_REGION_MAP[e && e.region] || 'world';
+      return ir === 'cn' ? 'cn' : (ir === 'us' ? 'us' : 'world');
+    }
+    function futureScopeCounts() {
+      const c = { all: 0, cn: 0, us: 0, world: 0 };
+      futureAllEvents.value.forEach(e => { c.all++; const s = upcomingScope(e); if (c[s] !== undefined) c[s]++; });
+      return c;
+    }
+    function futureScopeLabel() {
+      return ({ all: '全部', cn: '中国', us: '美国', world: '全球' })[futureScope.value] || '全部';
+    }
     // 距今天数：以本地零点对齐，避免时区导致 ±1 天误差
     function daysFromToday(iso) {
       const now = new Date(); now.setHours(0, 0, 0, 0);
@@ -9445,7 +10351,9 @@ const app = createApp({
     function sortFuture(list) {
       const k = futureSortBy.value;
       const arr = [...(list || [])];
-      if (k === 'date') return arr.sort((a, b) => (a.date || '').localeCompare(b.date || ''));
+      // 20261109e：同日事件按重要度降序（人工精选底库 > 自动抓取条目），今日/进行中的排最前
+      if (k === 'date') return arr.sort((a, b) => (a.date || '').localeCompare(b.date || '')
+        || (Number(b.importance) || 0) - (Number(a.importance) || 0));
       if (k === 'time') return arr.sort((a, b) => _evtSortTime(b) - _evtSortTime(a));   // 离现在最近在前
       if (k === 'surge') return arr.sort((a, b) => (Number(b.surge) || 0) - (Number(a.surge) || 0));
       const key = (k === 'people') ? 'affectedPeople' : 'affected';
@@ -9454,6 +10362,18 @@ const app = createApp({
     function persistFutureSeen() {
       if (D) D.futureSeenIds = Array.from(futureSeenIds.value);
       if (typeof Store !== 'undefined' && Store.saveNow) Store.saveNow();
+    }
+    // 20261109e：运行时拉取「未来事件」多源聚合快照（财经日历 + 6 路新闻 + 精选底库）。
+    // fetch 失败时回退内嵌 UPCOMING_EVENTS（同样含太空云大会 / COP31 / APEC深圳 / G20 / FOMC）。
+    async function fetchUpcomingEvents() {
+      try {
+        const r = await fetch('data/hot-topics/upcoming-events.json?_=' + Date.now(), { cache: 'no-store' });
+        if (!r.ok) throw new Error('HTTP ' + r.status);
+        const j = await r.json();
+        const arr = Array.isArray(j) ? j : (j && j.events) || [];
+        if (!Array.isArray(j) && j && j.generatedAt) futureDataTime.value = j.generatedAt;
+        return (arr && arr.length) ? arr : null;
+      } catch (e) { return null; }
     }
     // 运行时拉取实时突发数据源（data/breaking-events.json）；失败回退 BREAKING_EVENTS_SEED
     async function fetchBreakingEvents() {
@@ -9488,13 +10408,22 @@ const app = createApp({
         list.forEach(e => { e.surge = computeSurge(e); e._new = false; });   // 人物为静态榜单，不标红
         list = sortFuture(list);
       } else {
-        list = [...UPCOMING_EVENTS].map(resolveFutureImpact);
-        list.forEach(e => { e.surge = computeSurge(e); });
+        // 20261109e：优先用多源聚合快照；失败回退内嵌精选底库（同样覆盖中美及全球重大事件）
+        const remote = await fetchUpcomingEvents();
+        const src = (remote && remote.length) ? remote : UPCOMING_EVENTS;
+        // 统一按「今天」过滤：已结束剔除，今日举行与会期进行中的一律保留
+        const all = src.filter(isUpcoming).map(resolveFutureImpact);
+        all.forEach(e => { e._scope = upcomingScope(e); e.surge = computeSurge(e); });
+        futureAllEvents.value = all;
+        list = (futureScope.value === 'all') ? [...all] : all.filter(e => e._scope === futureScope.value);
         list = sortFuture(list);
       }
+      if (reg !== 'future') futureAllEvents.value = [];
       futureEvents.value = list;
-      // 20261109d：突发/人物展示抓取快照的真实更新时间；未来子版块为静态编排
-      if (reg === 'future') futureDate.value = '全网整理的未来事件';
+      // 20261109e：三个子版块都展示抓取快照真实更新时间；未来事件不再是静态编排
+      if (reg === 'future') futureDate.value = futureDataTime.value
+        ? ('多源实时聚合 · 中国/美国/全球 · 数据更新于 ' + futureDataTime.value)
+        : '多源实时聚合 · 中国/美国/全球（本地精选底库）';
       else futureDate.value = futureDataTime.value
         ? ('多源实时聚合 · 数据更新于 ' + futureDataTime.value)
         : '实时整理';
@@ -9507,6 +10436,13 @@ const app = createApp({
       // 未来默认按日期；突发/人物默认按影响股民数（排序口径与突发一致）
       futureSortBy.value = (r === 'future') ? 'date' : 'investors';
       if (D && D.futureSortBy !== undefined) D.futureSortBy = futureSortBy.value;
+      loadFutureData();
+    }
+    // 20261109e：未来子版块的覆盖范围筛选（全部 / 中国 / 美国 / 全球），持久化到 Store.data
+    function setFutureScope(s) {
+      if (s !== 'all' && s !== 'cn' && s !== 'us' && s !== 'world') s = 'all';
+      futureScope.value = s;
+      if (D) D.futureScope = s;
       loadFutureData();
     }
     function setFutureSort(k) {
@@ -10246,6 +11182,7 @@ const app = createApp({
     if (D.futureSortBy === 'date' || D.futureSortBy === 'investors' || D.futureSortBy === 'people' || D.futureSortBy === 'surge' || D.futureSortBy === 'time') futureSortBy.value = D.futureSortBy;
     if (typeof D.futureAutoRefresh === 'boolean') futureAutoRefresh.value = D.futureAutoRefresh;
     if (D.futureRefreshMs) futureRefreshMs.value = D.futureRefreshMs;
+    if (D.futureScope === 'all' || D.futureScope === 'cn' || D.futureScope === 'us' || D.futureScope === 'world') futureScope.value = D.futureScope;
     if (Array.isArray(D.futureSeenIds)) D.futureSeenIds.forEach(x => futureSeenIds.value.add(x));
     loadFutureData({ initial: true });
     startFutureAutoRefresh();
@@ -12601,6 +13538,7 @@ const app = createApp({
       // 20261108j：未来事件（突发 + 未来，独立于影响力事件）
       futureRegion, futureEvents, futureLoading, futureError, futureDate, futureLastRefresh, futureSortBy, futureAutoRefresh, futureRefreshMs,
       futureRegionLabel, daysFromToday, setFutureRegion, refreshFuture, futureSortLabel, setFutureSort, setFutureAutoRefresh, setFutureRefreshMs, surgeClass,
+      futureScope, futureScopeLabel, futureScopeCounts, setFutureScope, futureIsOngoing,
       thsSectors, thsSectorsLoading, thsSectorsError, refreshThsSectorsOnly, thsSectorTab, setThsSectorTab,
       doubaoKeyInput, doubaoKeyFormShow, doubaoGuideShow, doubaoKeyActive,
       toggleDoubaoKeyForm, saveDoubaoKey, clearDoubaoKey, openDoubaoGuide,

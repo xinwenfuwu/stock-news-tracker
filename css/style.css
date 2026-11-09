@@ -943,6 +943,11 @@ body {
 .future-auto .btn-warn:hover { background: #d97706; }
 /* 20261109d：抓取快照的真实更新时间条 */
 .future-databar { margin: 3px 0 5px; color: #0e7490; font-weight: 500; }
+/* 20261109e：未来事件「中国/美国/全球」覆盖筛选、地点、今日/进行中倒计时 */
+.future-scope { display: flex; flex-wrap: wrap; align-items: center; gap: 5px; margin: 5px 0 6px; }
+.future-scope .infl-sort-btn { padding: 2px 8px; }
+.infl-location { color: #475569; }
+.infl-countdown--today { color: #dc2626; font-weight: 700; }
 .infl-event--new { box-shadow: inset 0 0 0 2px #ef4444; background: #fff5f5; border-radius: 8px; }
 .infl-new-badge { color: #ef4444; font-weight: 700; font-size: 12px; margin-left: 4px; }
 .infl-people { padding: 1px 8px; border-radius: 999px; background: #eff6ff; border: 1px solid #dbeafe; }

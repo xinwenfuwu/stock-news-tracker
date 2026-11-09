@@ -68,6 +68,13 @@ async function newPage(browser) {
       r.fulfill({ status: 200, contentType: 'application/json; charset=utf-8', body: fs.readFileSync(f, 'utf8') });
     } catch (e) { r.fulfill({ status: 404, contentType: 'text/plain', body: 'nf' }); }
   });
+  // 20261109e：未来事件多源聚合快照（含太空云大会等中国/美国/全球重大日程）
+  await page.route('**/upcoming-events.json**', r => {
+    try {
+      const f = path.join(ROOT, 'data', 'hot-topics', 'upcoming-events.json');
+      r.fulfill({ status: 200, contentType: 'application/json; charset=utf-8', body: fs.readFileSync(f, 'utf8') });
+    } catch (e) { r.fulfill({ status: 404, contentType: 'text/plain', body: 'nf' }); }
+  });
   return { ctx, page, errors };
 }
 
@@ -380,8 +387,11 @@ const main = async () => {
   check('未来子版块显示未来三个月内全球大事件（≥5 条）', futCount >= 5, String(futCount));
   check('未来事件卡片显示「📅 日期」与「⏳ 还有 N 天」倒计时', await page.evaluate(() => {
     const p = document.querySelectorAll('.hot-top-row > .hot-panel')[1];
-    const it = p.querySelector('.infl-event-list .infl-event');
-    return !!it && !!it.querySelector('.infl-meta') && /还有 \d+ 天/.test(it.querySelector('.infl-meta').textContent);
+    const cards = Array.from(p.querySelectorAll('.infl-event-list .infl-event'));
+    return cards.some(c => {
+      const m = c.querySelector('.infl-meta');
+      return !!m && /📅\s*\d{4}-\d{2}-\d{2}/.test(m.textContent) && /还有 \d+ 天/.test(m.textContent);
+    }) && cards.some(c => /📅\s*\d{4}-\d{2}-\d{2}/.test((c.querySelector('.infl-meta') || {}).textContent || ''));
   }));
   check('未来事件按日期升序（最近/最临近的排前）', await page.evaluate(() => {
     const p = document.querySelectorAll('.hot-top-row > .hot-panel')[1];
@@ -398,6 +408,62 @@ const main = async () => {
     return txt.includes('G20 领导人峰会') && txt.includes('CES 2027') && txt.includes('美联储FOMC');
   }));
   check('未来事件子版块选择持久化到 Store.data', await page.evaluate(() => typeof Store !== 'undefined' && Store.data && Store.data.futureRegion === 'future'));
+
+  // ---- 20261109e：未来事件「中国/美国/全球」全覆盖 + 今日/进行中 + 过期过滤 ----
+  check('未来事件含今日举行的「太空云产业生态大会」与「COP31」', await page.evaluate(() => {
+    const txt = document.querySelectorAll('.hot-top-row > .hot-panel')[1].innerText;
+    return txt.includes('太空云产业生态大会') && txt.includes('COP31');
+  }));
+  check('今日事件显示「今天举行」、进行中会期显示「进行中」', await page.evaluate(() => {
+    const t = document.querySelectorAll('.hot-top-row > .hot-panel')[1].querySelector('.infl-event-list').innerText;
+    return t.includes('今天举行') && t.includes('进行中');
+  }));
+  check('未来事件已剔除结束日期早于今天的事件', await page.evaluate(() => {
+    const p = document.querySelectorAll('.hot-top-row > .hot-panel')[1];
+    const d = new Date();
+    const today = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+    const cards = Array.from(p.querySelectorAll('.infl-event'));
+    return cards.length > 0 && cards.every(c => {
+      const ms = ((c.querySelector('.infl-meta') || {}).textContent || '').match(/\d{4}-\d{2}-\d{2}/g);
+      return !ms || ms.some(x => x >= today);
+    });
+  }));
+  check('未来子版块显示多源聚合快照的数据更新时间', (await futurePanel.locator('.future-databar').count()) === 1
+    && /数据更新于\s*\d{4}-\d{2}-\d{2}/.test(await futurePanel.locator('.future-databar').innerText()));
+  check('未来子版块提供「全部 / 中国 / 美国 / 全球」覆盖筛选', await page.evaluate(() => {
+    const p = document.querySelectorAll('.hot-top-row > .hot-panel')[1];
+    const b = Array.from(p.querySelectorAll('.future-scope .infl-sort-btn')).map(x => x.textContent.trim());
+    return b.length === 4 && /全部/.test(b[0]) && /中国/.test(b[1]) && /美国/.test(b[2]) && /全球/.test(b[3]);
+  }));
+  await futurePanel.locator('.future-scope .infl-sort-btn:has-text("中国")').click();
+  await page.waitForTimeout(200);
+  check('切「中国」后只显示中国事件，且 Store.futureScope=cn', await page.evaluate(() => {
+    const p = document.querySelectorAll('.hot-top-row > .hot-panel')[1];
+    const rows = Array.from(p.querySelectorAll('.infl-event'));
+    return rows.length >= 5 && rows.every(r => ((r.querySelector('.infl-region') || {}).textContent || '').includes('中国'))
+      && typeof Store !== 'undefined' && Store.data && Store.data.futureScope === 'cn';
+  }));
+  await futurePanel.locator('.future-scope .infl-sort-btn:has-text("美国")').click();
+  await page.waitForTimeout(200);
+  check('切「美国」后只显示美国事件，且 Store.futureScope=us', await page.evaluate(() => {
+    const p = document.querySelectorAll('.hot-top-row > .hot-panel')[1];
+    const rows = Array.from(p.querySelectorAll('.infl-event'));
+    return rows.length >= 5 && rows.every(r => ((r.querySelector('.infl-region') || {}).textContent || '').includes('美国'))
+      && typeof Store !== 'undefined' && Store.data && Store.data.futureScope === 'us';
+  }));
+  await futurePanel.locator('.future-scope .infl-sort-btn:has-text("全球")').click();
+  await page.waitForTimeout(200);
+  check('切「全球」后不含中国/美国事件，且 Store.futureScope=world', await page.evaluate(() => {
+    const p = document.querySelectorAll('.hot-top-row > .hot-panel')[1];
+    const rows = Array.from(p.querySelectorAll('.infl-event'));
+    return rows.length >= 5 && rows.every(r => {
+      const t = (r.querySelector('.infl-region') || {}).textContent || '';
+      return !t.includes('中国') && !t.includes('美国');
+    }) && typeof Store !== 'undefined' && Store.data && Store.data.futureScope === 'world';
+  }));
+  await futurePanel.locator('.future-scope .infl-sort-btn:has-text("全部")').click();
+  await page.waitForTimeout(200);
+
   await futurePanel.locator('.infl-region-tabs .infl-tab:has-text("突发")').click();
   await page.waitForTimeout(150);
 
