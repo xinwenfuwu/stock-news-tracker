@@ -10242,14 +10242,15 @@ const app = createApp({
         bullIndustries: ['黄金', '公用事业'], bearIndustries: ['科技龙头', '半导体'] }
     ];
     // 运行时拉取人物榜单（data/celebrity-news.json）；失败回退 CELEBRITY_EVENTS_SEED
-    async function fetchCelebrityNews() {
+    async function fetchCelebrityNews(seq) {
       try {
         const r = await fetch('data/hot-topics/celebrity-news.json?_=' + Date.now(), { cache: 'no-store' });
         if (!r.ok) throw new Error('HTTP ' + r.status);
         const j = await r.json();
         const arr = Array.isArray(j) ? j : (j && j.events) || [];
         // 20261109d：抓取脚本写入 generatedAt，用于面板展示「数据自动更新时间」
-        futureDataTime.value = (!Array.isArray(j) && j && j.generatedAt) || '';
+        // 20261109f：过期请求不得覆盖新请求的数据时间
+        if (seq === undefined || seq === futureLoadSeq) futureDataTime.value = (!Array.isArray(j) && j && j.generatedAt) || '';
         return (arr && arr.length) ? arr : null;
       } catch (e) { return null; }
     }
@@ -10268,6 +10269,9 @@ const app = createApp({
     const futureRefreshMs = ref(600000);      // 默认 10 分钟；可选 3600000（1 小时）
     const futureSeenIds = ref(new Set());      // 已展示过的突发 id（用于判断「新」）
     let futureRefreshTimer = null;
+    // 20261109f：异步加载序号。快速切换子版块 / 覆盖范围时，旧请求后返回会覆盖新结果，
+    // 这里用 seq 丢弃过期响应，保证「中国/美国/全球」筛选始终与当前选择一致。
+    let futureLoadSeq = 0;
     function futureRegionLabel(r) { return r === 'breaking' ? '突发' : (r === 'people' ? '人物' : '未来'); }
     // ===== 20261109e：未来事件「中国 / 美国 / 全球」全覆盖 + 过期过滤 =====
     // 根因：原「未来」子版块只是 17 条写死的数组，无中国会议、无自动抓取、无日期过滤，
@@ -10365,33 +10369,37 @@ const app = createApp({
     }
     // 20261109e：运行时拉取「未来事件」多源聚合快照（财经日历 + 6 路新闻 + 精选底库）。
     // fetch 失败时回退内嵌 UPCOMING_EVENTS（同样含太空云大会 / COP31 / APEC深圳 / G20 / FOMC）。
-    async function fetchUpcomingEvents() {
+    async function fetchUpcomingEvents(seq) {
       try {
         const r = await fetch('data/hot-topics/upcoming-events.json?_=' + Date.now(), { cache: 'no-store' });
         if (!r.ok) throw new Error('HTTP ' + r.status);
         const j = await r.json();
         const arr = Array.isArray(j) ? j : (j && j.events) || [];
-        if (!Array.isArray(j) && j && j.generatedAt) futureDataTime.value = j.generatedAt;
+        if (seq === undefined || seq === futureLoadSeq) futureDataTime.value = (!Array.isArray(j) && j && j.generatedAt) || '';
         return (arr && arr.length) ? arr : null;
       } catch (e) { return null; }
     }
     // 运行时拉取实时突发数据源（data/breaking-events.json）；失败回退 BREAKING_EVENTS_SEED
-    async function fetchBreakingEvents() {
+    async function fetchBreakingEvents(seq) {
       try {
         const r = await fetch('data/hot-topics/breaking-events.json?_=' + Date.now(), { cache: 'no-store' });
         if (!r.ok) throw new Error('HTTP ' + r.status);
         const j = await r.json();
         const arr = Array.isArray(j) ? j : (j && j.events) || [];
         // 20261109d：抓取脚本写入 generatedAt，用于面板展示「数据自动更新时间」
-        futureDataTime.value = (!Array.isArray(j) && j && j.generatedAt) || '';
+        if (seq === undefined || seq === futureLoadSeq) futureDataTime.value = (!Array.isArray(j) && j && j.generatedAt) || '';
         return (arr && arr.length) ? arr : null;
       } catch (e) { return null; }
     }
     async function loadFutureData({ initial = false } = {}) {
+      // 20261109f：每次加载分配序号；快速切换子版块/覆盖范围时，旧请求后返回不得覆盖新结果
+      const seq = ++futureLoadSeq;
       const reg = futureRegion.value;
+      const scopeAtStart = futureScope.value;
       let list = [];
+      let allUpcoming = null;
       if (reg === 'breaking') {
-        const remote = await fetchBreakingEvents();
+        const remote = await fetchBreakingEvents(seq);
         const src = (remote && remote.length) ? remote : BREAKING_EVENTS_SEED;
         // initial：首屏把这些 id 标记为已见，避免初始事件被误标红；非 initial：新 id 标红，加载后延迟标记为已见
         if (initial) { src.forEach(e => futureSeenIds.value.add(e.id)); persistFutureSeen(); }
@@ -10402,23 +10410,24 @@ const app = createApp({
           setTimeout(() => { src.forEach(e => futureSeenIds.value.add(e.id)); persistFutureSeen(); }, 80);
         }
       } else if (reg === 'people') {
-        const remote = await fetchCelebrityNews();
+        const remote = await fetchCelebrityNews(seq);
         const src = (remote && remote.length) ? remote : CELEBRITY_EVENTS_SEED;
         list = src.map(resolveFutureImpact);
         list.forEach(e => { e.surge = computeSurge(e); e._new = false; });   // 人物为静态榜单，不标红
         list = sortFuture(list);
       } else {
         // 20261109e：优先用多源聚合快照；失败回退内嵌精选底库（同样覆盖中美及全球重大事件）
-        const remote = await fetchUpcomingEvents();
+        const remote = await fetchUpcomingEvents(seq);
         const src = (remote && remote.length) ? remote : UPCOMING_EVENTS;
         // 统一按「今天」过滤：已结束剔除，今日举行与会期进行中的一律保留
         const all = src.filter(isUpcoming).map(resolveFutureImpact);
         all.forEach(e => { e._scope = upcomingScope(e); e.surge = computeSurge(e); });
-        futureAllEvents.value = all;
-        list = (futureScope.value === 'all') ? [...all] : all.filter(e => e._scope === futureScope.value);
+        allUpcoming = all;
+        list = (scopeAtStart === 'all') ? [...all] : all.filter(e => e._scope === scopeAtStart);
         list = sortFuture(list);
       }
-      if (reg !== 'future') futureAllEvents.value = [];
+      if (seq !== futureLoadSeq) return;   // 过期响应直接丢弃
+      futureAllEvents.value = (reg === 'future' && allUpcoming) ? allUpcoming : [];
       futureEvents.value = list;
       // 20261109e：三个子版块都展示抓取快照真实更新时间；未来事件不再是静态编排
       if (reg === 'future') futureDate.value = futureDataTime.value
