@@ -3305,7 +3305,7 @@
                 <span class="muted small" v-if="futureLastRefresh">· 上次刷新 {{ futureLastRefresh }}</span>
               </div>
               <div class="muted small" style="margin:6px 0 2px">
-                <template v-if="futureRegion==='breaking'">⚡ 突发：全球当前正在发生的大事件（多源实时抓取，每小时自动更新；每 {{ futureRefreshMs===600000 ? '10分钟' : '1小时' }} 刷新，新事件标红 🆕）</template>
+                <template v-if="futureRegion==='breaking'">⚡ 突发：全球当前正在发生的大事件（多源实时抓取，定时自动更新；每 {{ futureRefreshMs===600000 ? '10分钟' : '1小时' }} 刷新，新事件标红 🆕）</template>
                 <template v-else-if="futureRegion==='people'">👤 人物：全球名人发言与重大新闻（多源实时聚合），排序口径与突发一致（按影响股民数 / 影响人数 / 飙升度 / 时间）</template>
                 <template v-else>🔮 未来：未来三个月内全球将要发生的大事件，显示时间与距今天数</template>
               </div>
