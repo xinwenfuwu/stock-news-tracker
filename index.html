@@ -4,12 +4,12 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>股市信息分析系统</title>
-  <link rel="stylesheet" href="css/style.css?v=20261109g">
+  <link rel="stylesheet" href="css/style.css?v=20261109h">
   <!-- Vue 3 全局构建版（v3.4.21 · 自托管）
        原先走 unpkg.com CDN：国内网络对 unpkg 的连通性不稳定，一旦该请求长时间挂起，
        <head> 里的阻塞脚本会让整页停在白屏、后续 auth-boot.js 根本不会执行。
        改为同源托管后，启动链路不再依赖任何第三方 CDN。 -->
-  <script src="js/vue.global.prod.js?v=20261109g"></script>
+  <script src="js/vue.global.prod.js?v=20261109h"></script>
 </head>
 <body class="auth-locked">
   <!-- ===== 登录关卡：登录通过前业务脚本不会被加载 ===== -->
@@ -95,7 +95,7 @@
         <input class="auth-input" type="text" id="auth-renew-user" placeholder="用户名（你注册时用的）" maxlength="20" autocomplete="off">
         <div class="auth-renew-plans" id="auth-renew-plans"></div>
         <div class="auth-renew-qr" id="auth-renew-qr">
-          <div class="auth-renew-qrbox"><img id="auth-renew-wx" src="assets/wechat-pay-qr.jpg?v=20261109g" alt="微信支付收款码"><span>微信支付（扫码支付）</span></div>
+          <div class="auth-renew-qrbox"><img id="auth-renew-wx" src="assets/wechat-pay-qr.jpg?v=20261109h" alt="微信支付收款码"><span>微信支付（扫码支付）</span></div>
           <div class="muted small" style="margin-top:6px;color:#c2410c;font-weight:600">支付时请添加会员备注，付款成功截图保存</div>
         </div>
         <input class="auth-input" type="text" id="auth-renew-amount" inputmode="decimal" placeholder="支付金额（必填，如 1000）" autocomplete="off">
@@ -1604,7 +1604,7 @@
                   <div class="qr-row">
                     <div class="qr-box">
                       <div class="qr-cap">推荐使用微信支付</div>
-                      <img src="assets/wechat-pay-qr.jpg?v=20261109g" alt="微信支付收款码" class="qr-pay-img">
+                      <img src="assets/wechat-pay-qr.jpg?v=20261109h" alt="微信支付收款码" class="qr-pay-img">
                       <div class="qr-cap" style="margin-top:6px;color:#c2410c;font-weight:600">支付时请添加会员备注，付款成功截图保存</div>
                       <div class="qr-cap muted small">火柴盒网络服务</div>
                     </div>
@@ -3375,7 +3375,8 @@
               <div class="muted small" v-else>该子版块暂无事件</div>
             </div>
 
-            <!-- 连板股票（Tab：10日内 = 近 10 交易日涨停次数降序前 25，原逻辑；连板 = 仅「未断板」的真实连续涨停股，按连板数降序，最多 50 只） -->
+            <!-- 连板股票（Tab：10日内 = 近 10 个交易日「涨停板数量」从大到小，允许断板，前 25；
+                 连板 = 仅「未断板」的真实连续涨停股，按连板数降序，最多 50 只） -->
             <div class="hot-panel">
               <div class="panel-title-row">
                 <h3 class="panel-title" style="margin:0">🚀 连板股票</h3>
@@ -3393,7 +3394,7 @@
                 <div class="hot-item hot-item-click" v-for="(s, i) in lianbanStocks" :key="lianbanTab + '-' + i"
                      :class="{ active: hotBoardActive === s.name && hotDetailIsStock }"
                      @click="askHotExclude({ type: 'stock', stock: s })"
-                     :title="'点击在下方「股票明细」中显示个股「' + s.name + '」的详细信息｜近 10 个交易日涨停 ' + (s.ztCount || 1) + ' 次'
+                     :title="'点击在下方「股票明细」中显示个股「' + s.name + '」的详细信息｜近 10 个交易日涨停 ' + (s.ztCount || 1) + ' 次（可断板）'
                        + ((s.streakCount || s.boardCount) ? '，当前 ' + (s.streakCount || s.boardCount) + ' 连板' : '')
                        + (s.industry ? '｜' + s.industry : '')
                        + (s.boomCount ? '｜炸板 ' + s.boomCount + ' 次' : '')">
@@ -3405,8 +3406,8 @@
                       <span class="muted small" style="font-weight:400;">连续涨停</span>
                     </template>
                     <template v-else>
-                      <span style="color:#dc2626; font-weight:700;">{{ s.boardCount || 1 }}板</span>
-                      <span class="muted small" style="font-weight:400;">10日{{ s.ztCount || 1 }}次</span>
+                      <span style="color:#dc2626; font-weight:700;">{{ s.ztCount || 1 }}次涨停</span>
+                      <span class="muted small" style="font-weight:400;">10日内 · 当前{{ s.boardCount || 1 }}板</span>
                     </template>
                   </span>
                 </div>
@@ -5614,14 +5615,14 @@
     </transition>
   </div>
 
-  <script src="js/auth.js?v=20261109g"></script>
-  <script src="js/auth-sync.js?v=20261109g"></script>
+  <script src="js/auth.js?v=20261109h"></script>
+  <script src="js/auth-sync.js?v=20261109h"></script>
   <!-- 边缘加速默认站点（batch37 治本：Cloudflare Worker 代理东财/腾讯，缓解 JSONP 限流误报）。
        若你所在地区 workers.dev 访问慢，可在「设置 → 行情加速地址」清空即恢复纯直连。 -->
   <script>window.__SNT_ACCEL__ = 'https://sichina.dpdns.org';</script>
   <!-- 扫码支付二维码渲染库（第三方 qrcodejs，本地托管避免外链失效）。renderQr 会先检测全局 QRCode 是否存在。 -->
-  <script src="assets/qrcode.min.js?v=20261109g"></script>
-  <script src="js/auth-boot.js?v=20261109g"></script>
+  <script src="assets/qrcode.min.js?v=20261109h"></script>
+  <script src="js/auth-boot.js?v=20261109h"></script>
   <!-- store / stock-api / hot-topics / app 由 auth-boot.js 在登录通过后动态装载，
        未登录时它们不会被下载，业务数据也不会进入内存 -->
 </body>

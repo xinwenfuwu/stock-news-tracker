@@ -7075,7 +7075,8 @@ const app = createApp({
     const hotBoards = ref([]);
     const hotStocks = ref([]);
     // 20261108d：连板股票分「10日内 / 连板」两种口径，Tab 互斥切换（沿用影响力事件按钮样式）
-    //  'days10' = 近 10 个交易日涨停次数降序前 25（原逻辑，完全不变）
+    //  'days10' = 近 10 个交易日「涨停板数量」从大到小排序（20261109h：允许断板，只按涨停天数排名；
+    //             次数相同再看连板数 → 当日涨幅 → 代码，取前 25）
     // 20261108f：'streak' 改为只显示「最新交易日仍涨停 = 未断板」的真实连续涨停股，
     //   断板股连板数归零并剔除；按实际连板数从大到小，最多 50 只。
     const lianbanTab = ref('days10');
@@ -7086,7 +7087,19 @@ const app = createApp({
     const LIANBAN_MAX = 50;
     const lianbanStocks = computed(() => {
       const list = hotStocks.value || [];
-      if (lianbanTab.value !== 'streak') return list.slice(0, 25);   // 「10日内」原口径：前 25 只、原顺序
+      if (lianbanTab.value !== 'streak') {
+        // 20261109h：「10日内」= A股近 10 个交易日涨停板数量从大到小（可断板）。
+        // 服务端已按自算涨停天数排序，这里再兜底排一次（兼容 Gist/本地旧缓存里未排序的数据）。
+        const num = (v) => Number(v) || 0;
+        return list
+          .slice()
+          .sort((a, b) =>
+            (num(b.ztCount) - num(a.ztCount)) ||
+            (num(b.boardCount) - num(a.boardCount)) ||
+            (num(b.change) - num(a.change)) ||
+            String(a.code || '').localeCompare(String(b.code || '')))
+          .slice(0, 25);
+      }
       // 兼容旧缓存 / Gist 同步回来的老数据（无 isContinuous 字段）：回退到旧的 boardCount>=2 过滤，
       // 避免升级后存量用户看到空白列表；新数据一律按「未断板」严格筛选。
       const hasNew = list.some(s => typeof s.isContinuous === 'boolean');
@@ -10844,7 +10857,7 @@ const app = createApp({
       }
     }
 
-    /** ③ 只刷新「连板股票」（近 10 交易日涨停次数降序取前 25） */
+    /** ③ 只刷新「连板股票」（近 10 个交易日涨停板数量从大到小，可断板，取前 25） */
     async function refreshHotStocksOnly() {
       if (hotStocksLoading.value) return;
       hotStocksLoading.value = true;

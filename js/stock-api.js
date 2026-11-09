@@ -4636,6 +4636,9 @@ const StockAPI = {
   /**
    * 获取「连板股票」排行：近 10 个交易日内涨停板最多的股票，按涨停次数降序取前 25（「10日内」口径）。
    * 20261108f 起额外附带「未断板连续涨停」补充行（isContinuous / streakCount），供「连板」Tab 使用。
+   * 20261109h：「10日内」口径改为**自算**——涨停次数 = 该股在本次回扫到的 10 个交易日涨停池中出现的
+   *   天数（允许断板，不要求连续），不再用东财 zttj.ct（它的统计窗口 days 与本 10 日窗口不一致，
+   *   会把窗口外／不足窗口的涨停一并计入，导致排序与「10日内」名不符实）。
    *
    * 数据源：东财涨停板池（push2ex.eastmoney.com/getTopicZTPool），单次即返回当日全市场涨停股，
    * 每只带 lbc（连板数）、zttj.days/ct（统计窗口天数 / 窗口内涨停次数）、hybk（所属行业）。
@@ -4644,15 +4647,15 @@ const StockAPI = {
    *
    * 计算口径（与需求一致）：
    *   统计窗口 = 近 10 个交易日（含当日）；
-   *   主排序   = 窗口内涨停次数（zttj.ct 为准，缺失时回退 lbc）降序；
+   *   主排序   = 窗口内涨停天数（自算：daySets 命中天数，可断板）降序；
    *   次序     = 连板数（lbc）降序 → 当日涨幅降序 → 行业名 → 代码（保证结果稳定可复现）；
    *   取前 25 只。
    *
    * @returns {Promise<Array<{name,code,pureCode,market,change,boardCount,ztCount,boomCount,days,industry,firstLimitTime}>>}
-   *          boardCount=连板数, ztCount=近10交易日涨停次数, boomCount=炸板次数
+   *          boardCount=连板数, ztCount=近10交易日涨停天数（可断板）, boomCount=炸板次数
    */
   async getLimitUpStreak() {
-    return this._withCache('ztpool:10d25:20261108f', API_TTL.SECTOR, () => this._getLimitUpStreakRaw(), v => !!(v && v.length));
+    return this._withCache('ztpool:10d25:20261109h', API_TTL.SECTOR, () => this._getLimitUpStreakRaw(), v => !!(v && v.length));
   },
 
   /**
@@ -4669,7 +4672,8 @@ const StockAPI = {
    *   ③ 边缘加速 —— 已配置且未熔断时才真正发起（被墙时立即跳过，见 _accelOpen）。
    */
   async _fetchZtPool(dateStr) {
-    const url = `https://push2ex.eastmoney.com/getTopicZTPool?ut=7eea3edcaed734bea9cbfc24409ed989&dpt=wz.ztzt&Pageindex=0&pagesize=300&sort=fbt%3Aasc&date=${dateStr}`;
+    // pagesize=500：强势行情单日涨停家数可破 300，取 500 避免尾部被截断导致涨停次数少算
+    const url = `https://push2ex.eastmoney.com/getTopicZTPool?ut=7eea3edcaed734bea9cbfc24409ed989&dpt=wz.ztzt&Pageindex=0&pagesize=500&sort=fbt%3Aasc&date=${dateStr}`;
     /** 把各路径的原始回包统一成 { ok, tc, pool }；结构不对返回 null（继续等其他路径） */
     const pick = (json) => {
       const pool = json && json.data && Array.isArray(json.data.pool) ? json.data.pool : null;
@@ -4752,15 +4756,27 @@ const StockAPI = {
       }
       return n;
     }
+    /**
+     * 20261109h：「10日内」涨停天数（可断板）——统计该股在本次回扫到的交易日涨停池中出现的天数，
+     * 不要求连续。这就是「A股 10 日内涨停板数量」，也是「10日内」Tab 的主排序键。
+     */
+    function countWindowZt(pure) {
+      let n = 0;
+      for (const i of dayIdx) {
+        if (daySets.get(i).has(pure)) n++;
+      }
+      return n;
+    }
 
     const rows = [];
     for (const entry of collected.values()) {
       const it = entry.it;
-      // zttj.ct = 统计窗口内涨停次数（东财口径为近 N 日，days 即窗口天数）；缺失则回退连板数
+      // zttj.ct = 东财统计窗口内涨停次数（窗口 days 不一定是 10 日）；仅作兜底，
+      // 20261109h 起主口径改为「本次 10 个交易日窗口内实际涨停天数」（可断板）。
       const zttj = it.zttj || {};
       const ct = (zttj.ct != null && !isNaN(Number(zttj.ct))) ? Number(zttj.ct) : null;
       const lbc = (it.lbc != null && !isNaN(Number(it.lbc))) ? Number(it.lbc) : 1;
-      const ztCount = ct != null ? ct : lbc;
+      const ztCount = countWindowZt(String(it.c || '').trim()) || (ct != null ? ct : lbc);
       const pure = String(it.c || '').trim();
       const m = String(it.m);
       const prefix = m === '1' ? 'sh' : (m === '0' ? 'sz' : (pure.startsWith('6') ? 'sh' : 'sz'));
@@ -4777,14 +4793,14 @@ const StockAPI = {
         boardCount: lbc,                 // 连板数（东财口径，「10日内」沿用）
         ztCount: ztCount,                // 近 10 交易日涨停次数（主排序键）
         boomCount: it.zbc != null ? Number(it.zbc) : 0,   // 炸板次数
-        days: zttj.days != null ? Number(zttj.days) : null,
+        days: dayIdx.length,             // 20261109h：本次统计窗口交易日数（=实际回扫到的交易日数）
         industry: it.hybk || '',
         firstLimitTime: it.fbt != null ? String(it.fbt) : '',
         isContinuous: isContinuous,      // 20261108f：最新交易日仍涨停 = 未断板
         streakCount: streakCount         // 20261108f：真实连续涨停板数（断板 = 0）
       });
     }
-    // ③ 排序：涨停次数降序 → 连板数降序 → 当日涨幅降序 → 行业 → 代码（稳定）
+    // ③ 排序：窗口内涨停天数降序（可断板）→ 连板数降序 → 当日涨幅降序 → 行业 → 代码（稳定）
     rows.sort((a, b) =>
       (b.ztCount - a.ztCount) ||
       (b.boardCount - a.boardCount) ||
@@ -4792,7 +4808,9 @@ const StockAPI = {
       String(a.industry).localeCompare(String(b.industry), 'zh') ||
       String(a.code).localeCompare(String(b.code)));
 
-    // 「10日内」口径严格保持原样：前 25 只、原顺序（UI 侧仍 slice(0,25)）。
+    // 「10日内」口径：按窗口内涨停天数降序取前 25（可断板，天数相同再看连板数/涨幅）。
+    // 20261108f：把「未断板且 2 板及以上」的股票额外并入返回数组（最多 50 只），供「连板」Tab
+    // 独立筛选；这些股票可能排在 ztCount 前 25 之外，不能被旧口径截断丢掉。
     // 20261108f：把「未断板且 2 板及以上」的股票额外并入返回数组（最多 50 只），供「连板」Tab
     // 独立筛选；这些股票可能排在 ztCount 前 25 之外，不能被旧口径截断丢掉。
     const top25 = rows.slice(0, 25);
