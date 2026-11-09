@@ -52,6 +52,10 @@ const Store = {
       inflSortBy: 'investors',// 影响力事件：排序口径（'investors'按影响股民数 | 'people'按影响人数）
       inflInfoHidden: false,  // 影响力事件：口径说明是否已隐藏（20261108b，按钮在说明文字左侧）
       futureRegion: 'breaking', // 未来事件：当前选中的子版块（'breaking'突发 | 'future'未来）（20261108j）
+      futureSortBy: 'investors', // 未来事件：排序口径（'investors'按影响股民数 | 'people'按影响人数 | 'date'按日期，20261109a）
+      futureAutoRefresh: true,   // 未来事件·突发：是否开启自动刷新（20261109a）
+      futureRefreshMs: 600000,   // 未来事件·突发：自动刷新间隔（600000=10分钟 | 3600000=1小时，20261109a）
+      futureSeenIds: [],         // 未来事件·突发：已展示过的事件 id（用于「新事件红色标识」，20261109a）
       thsSectorTab: 'industry', // 同花顺热门板块：当前选中的 Tab（'industry' 行业 | 'concept' 概念，20261108c）
       lianbanTab: 'days10',     // 连板股票：当前选中的口径 Tab（'days10' 近10日涨停次数 | 'streak' 只算连续涨停板，20261108d）
       settings: {

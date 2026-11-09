@@ -54,6 +54,14 @@ async function newPage(browser) {
   await page.route('**github.io/**', r => r.abort());
   await page.route('**sichina.dpdns.org/**', r => r.abort());
   await page.route('**/data/**', r => r.abort());
+  // 本地静态服务已托管 data/breaking-events.json；放行该路径（覆盖上面的 **/data/** abort），
+  // 使「突发」实时数据源在离线 e2e 中可正常读取（含真实事件「黄仁勋」等）
+  await page.route('**/breaking-events.json**', r => {
+    try {
+      const f = path.join(ROOT, 'data', 'breaking-events.json');
+      r.fulfill({ status: 200, contentType: 'application/json; charset=utf-8', body: fs.readFileSync(f, 'utf8') });
+    } catch (e) { r.fulfill({ status: 404, contentType: 'text/plain', body: 'nf' }); }
+  });
   return { ctx, page, errors };
 }
 
@@ -351,7 +359,7 @@ const main = async () => {
   check('未来事件默认进入「突发」子版块', (await futurePanel.locator('.infl-region-tabs .infl-tab.active').innerText()).includes('突发'));
   check('突发子版块显示全球当前大事件（≥1 条，且含真实事件标题）',
     (await futurePanel.locator('.infl-event-list .infl-event').count()) >= 1
-    && (await futurePanel.locator('.infl-event-list .infl-event .infl-title').first().innerText()).includes('反AI数据中心'));
+    && (await futurePanel.locator('.infl-event-list').innerText()).includes('反AI数据中心'));
   check('突发事件卡片含「🏷 标签」', await page.evaluate(() => {
     const p = document.querySelectorAll('.hot-top-row > .hot-panel')[1];
     const it = p.querySelector('.infl-event');
@@ -385,6 +393,65 @@ const main = async () => {
   check('未来事件子版块选择持久化到 Store.data', await page.evaluate(() => typeof Store !== 'undefined' && Store.data && Store.data.futureRegion === 'future'));
   await futurePanel.locator('.infl-region-tabs .infl-tab:has-text("突发")').click();
   await page.waitForTimeout(150);
+
+  // 8c-续 20261109a：未来事件双指标 + 排序依据 + 突发自动刷新 + 红色新事件
+  check('突发事件卡片含「影响人数 / 影响股民数」双指标', await page.evaluate(() => {
+    const p = document.querySelectorAll('.hot-top-row > .hot-panel')[1];
+    const it = p.querySelector('.infl-event');
+    if (!it) return false;
+    const t = it.textContent;
+    return t.includes('影响人数') && t.includes('影响股民数');
+  }));
+  check('突发事件含真实事件「黄仁勋承认婚外情」（来自实时数据源 data/breaking-events.json）', await page.evaluate(() => {
+    const p = document.querySelectorAll('.hot-top-row > .hot-panel')[1];
+    return /黄仁勋/.test(p.innerText);
+  }));
+  check('未来事件排序条含「按影响股民数 / 按影响人数」',
+    (await futurePanel.locator('.infl-sortbar .infl-sort-btn:has-text("按影响股民数")').count()) === 1
+    && (await futurePanel.locator('.infl-sortbar .infl-sort-btn:has-text("按影响人数")').count()) === 1);
+  await futurePanel.locator('.infl-sortbar .infl-sort-btn:has-text("按影响人数")').click();
+  await page.waitForTimeout(120);
+  check('切「按影响人数」排序 → Store.futureSortBy=people 且激活态转移',
+    (await page.evaluate(() => typeof Store !== 'undefined' && Store.data && Store.data.futureSortBy === 'people'))
+    && (await futurePanel.locator('.infl-sortbar .infl-sort-btn.active:has-text("按影响人数")').count()) === 1);
+  check('突发子版块含「暂停/开启自动刷新」控件 + 「10分钟/1小时」间隔', 
+    (await futurePanel.locator('button:has-text("暂停自动刷新"), button:has-text("开启自动刷新")').count()) >= 1
+    && (await futurePanel.locator('.future-auto .infl-sort-btn:has-text("10分钟")').count()) === 1
+    && (await futurePanel.locator('.future-auto .infl-sort-btn:has-text("1小时")').count()) === 1);
+  // 暂停自动刷新
+  await futurePanel.locator('button:has-text("暂停自动刷新")').click();
+  await page.waitForTimeout(80);
+  check('点击暂停 → Store.futureAutoRefresh=false 且按钮转「开启自动刷新」',
+    (await page.evaluate(() => typeof Store !== 'undefined' && Store.data && Store.data.futureAutoRefresh === false))
+    && (await futurePanel.locator('button:has-text("开启自动刷新")').count()) === 1);
+  // 改间隔为 1 小时
+  await futurePanel.locator('.future-auto .infl-sort-btn:has-text("1小时")').click();
+  await page.waitForTimeout(80);
+  check('改间隔为 1 小时 → Store.futureRefreshMs=3600000', await page.evaluate(() => typeof Store !== 'undefined' && Store.data && Store.data.futureRefreshMs === 3600000));
+  // 重新开启
+  await futurePanel.locator('button:has-text("开启自动刷新")').click();
+  await page.waitForTimeout(80);
+  check('再次开启 → Store.futureAutoRefresh=true', await page.evaluate(() => typeof Store !== 'undefined' && Store.data && Store.data.futureAutoRefresh === true));
+  // 未来子版块排序条额外含「按日期」，且未来子版块不含自动刷新控件
+  await futurePanel.locator('.infl-region-tabs .infl-tab:has-text("未来")').click();
+  await page.waitForTimeout(120);
+  check('未来子版块排序条含「按日期」（突发不含自动刷新控件）',
+    (await futurePanel.locator('.infl-sortbar .infl-sort-btn:has-text("按日期")').count()) === 1
+    && (await futurePanel.locator('.future-auto').count()) === 0);
+  await futurePanel.locator('.infl-region-tabs .infl-tab:has-text("突发")').click();
+  await page.waitForTimeout(120);
+  // 红色新事件：拦截 breaking-events.json，追加一条全新事件 b999
+  const baseBreaking = JSON.parse(fs.readFileSync(path.join(ROOT, 'data', 'breaking-events.json'), 'utf8'));
+  const aug = [...baseBreaking, { id: 'b999', title: '[自动化测试]突发：某科技巨头突发的重大事件', tag: '测试', region: '美国', concept: 'aiCapex', time: '2026-11-09', source: '测试', summary: '仅用于验证红色新事件标识', relatedStocks: ['测试'] }];
+  await page.route('**/breaking-events.json**', r => r.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(aug) }));
+  await futurePanel.locator('button:has-text("刷新数据")').click();
+  await page.waitForTimeout(220);
+  check('自动刷新追加的新事件以红色标识（.infl-event--new + 🆕 新）', await page.evaluate(() => {
+    const p = document.querySelectorAll('.hot-top-row > .hot-panel')[1];
+    const news = Array.from(p.querySelectorAll('.infl-event--new'));
+    return news.length >= 1 && news.some(e => /🆕 新/.test(e.textContent));
+  }));
+  await page.unroute('**/breaking-events.json**');
 
   // 8b) 20261108d：连板股票 —— 「10日内 / 连板」Tab 互斥切换（不显示说明文字）
   const lbPanel = page.locator('.lianban-tabs').locator('xpath=ancestor::div[contains(@class,"hot-panel")][1]');

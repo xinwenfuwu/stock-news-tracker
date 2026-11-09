@@ -9188,64 +9188,72 @@ const app = createApp({
         summary: '译制与海外发行补贴落地，观众覆盖面大但投资相关概念股的股民很少。', relatedStocks: ['中文在线', '芒果超媒'] }
     ];
 
-    // ===== 未来事件（20261108j）：突发 + 未来 两个独立子版块 =====
-    //  · 突发：全球当前正在发生的大事件（数据取自 2026-11 全网公开报道，实时整理）
+    // ===== 未来事件（20261108j → 20261109a）：突发 + 未来 两个独立子版块 =====
+    //  · 突发：全球当前正在发生的大事件（运行时从 data/breaking-events.json 实时拉取，含黄仁勋等真实事件；下方 SEED 为拉取失败兜底）
     //  · 未来：未来三个月内全球将要发生的大事件，显示「日期」与「距今天数」倒计时
     // 与左侧「影响力事件」完全解耦：拥有独立的 futureRegion 与 futureEvents，不共享任何状态。
-    const BREAKING_EVENTS = [
-      { id: 'b1', title: '欧洲15国爆发反AI数据中心抗议浪潮', tag: '社会/环保抗议', region: '欧洲', time: '2026-11-06 起 · 进行中', source: '路透/联合早报/中国日报',
+    // 双指标（影响人数 / 影响股民数）复用「影响力事件」同一套计算逻辑（resolveInfluence）：A = max(P×r, S)。
+    // 事件 display region（欧洲/美国/全球/…）→ 影响区域口径（cn/us/world），再取对应 CONCEPT_SCOPE 的 n(S) 与 r。
+    const FUTURE_REGION_MAP = {
+      '欧洲': 'world', '美国': 'us', '全球': 'world', '中国': 'cn',
+      '华盛顿': 'us', '纽约': 'us', '迈阿密': 'us', '拉斯维加斯': 'us',
+      '迪拜': 'world', '阿布扎比': 'world', '悉尼': 'world', '多哈': 'world', '达沃斯': 'world'
+    };
+    // 突发事件兜底种子（与 data/breaking-events.json 核心重合；fetch 失败时回退到此）
+    const BREAKING_EVENTS_SEED = [
+      { id: 'b1', title: '欧洲15国爆发反AI数据中心抗议浪潮', tag: '社会/环保抗议', region: '欧洲', concept: 'idc', time: '2026-11-06 起 · 进行中', source: '路透/联合早报/中国日报',
         summary: '数百人闯入微软阿姆斯特丹数据中心工地、喷涂反AI标语并爬上起重机；"停止肮脏数据中心"联盟在英国、爱尔兰、法国、德国、波兰、丹麦、意大利等15国协同示威。都柏林约2000人游行、赫尔辛基约1300人集会；苏格兰75个组织计划11月14日在爱丁堡再游行，要求暂停大型数据中心建设。',
         relatedStocks: ['微软', '英伟达', '电力/公用事业'] },
-      { id: 'b2', title: '美股11月5日暴跌，AI板块领跌', tag: '金融市场', region: '美国', time: '2026-11-05', source: '美联社/商业内幕',
-        summary: '美国三大股指创2025年4月以来最大单日跌幅，冲击集中在AI相关领域；分析指与民主党中期选举大胜、市场预期AI监管趋严有关，科技股市值大幅缩水。',
+      { id: 'b2', title: '美股11月5日暴跌，AI板块领跌', tag: '金融市场', region: '美国', concept: 'aiCapex', time: '2026-11-05', source: '美联社/商业内幕',
+        summary: '美国三大股指创2025年4月以来最大单日跌幅，冲击集中在AI相关领域；分析指与民主党中期选举大胜、市场预期AI监管趋严有关，科技股市值大幅缩水，英伟达单日重挫约9%。',
         relatedStocks: ['英伟达', '微软', 'Meta', '特斯拉'] },
-      { id: 'b3', title: '美国AI监管立法潮升温，反数据中心候选人进入国会', tag: '政治/监管', region: '美国', time: '2026-11 起', source: '综合外媒',
+      { id: 'b3', title: '美国AI监管立法潮升温，反数据中心候选人进入国会', tag: '政治/监管', region: '美国', concept: 'usMacro', time: '2026-11 起', source: '综合外媒',
         summary: '中期选举后，以反对数据中心为核心主张的候选人击败现任议员；民主党准备2027年1月掌控国会后推出AI立法潮，CoreWeave等云厂商承诺"负责任开发"，信贷市场开始给数据中心项目重新定价。',
         relatedStocks: ['AI算力', '云厂商'] },
-      { id: 'b4', title: '谷歌芬兰数据中心遭刑事调查', tag: '监管/环保', region: '欧洲', time: '2026-11', source: '路透',
+      { id: 'b4', title: '谷歌芬兰数据中心遭刑事调查', tag: '监管/环保', region: '欧洲', concept: 'idc', time: '2026-11', source: '路透',
         summary: '谷歌在芬兰的数据中心项目因土地清理问题面临刑事调查；意大利、葡萄牙同步收紧数据中心环保法规，微软退出英国一处因基建延误的数据中心项目。',
         relatedStocks: ['谷歌', '数据中心'] },
-      { id: 'b5', title: '全球AI算力基建进入"有约束增长"期', tag: '产业/资本', region: '全球', time: '2026-11-07', source: '今日头条/路透',
+      { id: 'b5', title: '全球AI算力基建进入"有约束增长"期', tag: '产业/资本', region: '全球', concept: 'ai', time: '2026-11-07', source: '今日头条/路透',
         summary: '街头、选票、企业公关与信贷市场同时指向同一判断：AI算力基建"无约束扩张"阶段结束，进入由民意、政治与资本共同定价的"有约束增长"期，选址逻辑从电价/税收转向社区接受度与电网接入。',
         relatedStocks: ['算力', '电力', '地产'] },
-      { id: 'b6', title: '欧盟呼吁加快自建数据中心算力', tag: '政策', region: '欧洲', time: '2026-11', source: '路透',
+      { id: 'b6', title: '欧盟呼吁加快自建数据中心算力', tag: '政策', region: '欧洲', concept: 'idc', time: '2026-11', source: '路透',
         summary: '欧盟技术事务主管表示欧洲需要更多数据中心以支撑AI发展，但强调须以"不推高居民电价、不造成停电、不破坏环境"为前提，在AI竞争力与公众保护间求平衡。',
         relatedStocks: ['欧洲科技', '电力'] }
     ];
     const UPCOMING_EVENTS = [
-      { id: 'u1', title: '英伟达(NVIDIA) 2027财年Q3财报', tag: '企业活动/财报', date: '2026-11-17', region: '美国', source: '公司日历',
+      { id: 'u1', title: '英伟达(NVIDIA) 2027财年Q3财报', tag: '企业活动/财报', date: '2026-11-17', region: '美国', concept: 'aiCapex', source: '公司日历',
         summary: 'AI芯片龙头披露最新季度业绩与指引，为美股AI链风向标（预计收盘后）。', relatedStocks: ['英伟达', 'AI算力'] },
-      { id: 'u2', title: 'Blockchain Life 2026', tag: '会议/加密', date: '2026-12-01', region: '迪拜',
+      { id: 'u2', title: 'Blockchain Life 2026', tag: '会议/加密', date: '2026-12-01', region: '迪拜', concept: 'crypto',
         summary: '全球区块链与加密资产大会，聚焦合规稳定币与RWA。', relatedStocks: ['Coinbase', '加密'] },
-      { id: 'u3', title: 'NeurIPS 2026（全球AI顶会）', tag: '会议/科技', date: '2026-12-06', region: '悉尼',
+      { id: 'u3', title: 'NeurIPS 2026（全球AI顶会）', tag: '会议/科技', date: '2026-12-06', region: '悉尼', concept: 'ai',
         summary: '人工智能与机器学习顶级学术会议，前沿模型与Agent研究集中发布。', relatedStocks: ['AI', '算力'] },
-      { id: 'u4', title: 'Bitcoin MENA 2026', tag: '会议/加密', date: '2026-12-07', region: '阿布扎比',
+      { id: 'u4', title: 'Bitcoin MENA 2026', tag: '会议/加密', date: '2026-12-07', region: '阿布扎比', concept: 'crypto',
         summary: '中东数字资产大会，聚焦比特币与合规框架。', relatedStocks: ['比特币', '加密'] },
-      { id: 'u5', title: 'GITEX Global 2026', tag: '会议/科技', date: '2026-12-07', region: '迪拜',
+      { id: 'u5', title: 'GITEX Global 2026', tag: '会议/科技', date: '2026-12-07', region: '迪拜', concept: 'ai',
         summary: '中东最大科技展，AI、网络安全与初创生态集中展示。', relatedStocks: ['AI', '网络安全'] },
-      { id: 'u6', title: 'The AI Summit New York 2026', tag: '会议/AI', date: '2026-12-09', region: '纽约',
+      { id: 'u6', title: 'The AI Summit New York 2026', tag: '会议/AI', date: '2026-12-09', region: '纽约', concept: 'aiCapex',
         summary: '北美AI产业峰会，企业级AI落地与治理议题。', relatedStocks: ['AI', '企业软件'] },
-      { id: 'u7', title: 'G20 第四次Sherpa会议', tag: '政治/经济', date: '2026-12-10', region: '迈阿密',
+      { id: 'u7', title: 'G20 第四次Sherpa会议', tag: '政治/经济', date: '2026-12-10', region: '迈阿密', concept: 'usMacro',
         summary: 'G20领导人峰会前最后协调，影响全球宏观与贸易议程。', relatedStocks: ['全球宏观'] },
-      { id: 'u8', title: 'G20 领导人峰会 2026', tag: '政治/经济', date: '2026-12-14', region: '迈阿密（Doral）',
+      { id: 'u8', title: 'G20 领导人峰会 2026', tag: '政治/经济', date: '2026-12-14', region: '迈阿密', concept: 'usMacro',
         summary: '全球主要经济体领导人会晤，聚焦供应链、能源与金融治理，市场关注政策信号。', relatedStocks: ['全球宏观'] },
-      { id: 'u9', title: 'CES 2027（国际消费电子展）', tag: '会议/科技', date: '2027-01-06', region: '拉斯维加斯',
+      { id: 'u9', title: 'CES 2027（国际消费电子展）', tag: '会议/科技', date: '2027-01-06', region: '拉斯维加斯', concept: 'aiCapex',
         summary: '全球最大消费电子展，AI终端、智能汽车与机器人新品集中发布，为年初科技股重要催化。', relatedStocks: ['消费电子', 'AI终端', '机器人'] },
-      { id: 'u10', title: '世界经济论坛年会 2027（达沃斯）', tag: '经济/政治', date: '2027-01-18', region: '达沃斯',
+      { id: 'u10', title: '世界经济论坛年会 2027（达沃斯）', tag: '经济/政治', date: '2027-01-18', region: '达沃斯', concept: 'finance',
         summary: '全球政商领袖年会，议题涵盖AI治理、能源转型与地缘经济，影响风险偏好。', relatedStocks: ['全球宏观'] },
-      { id: 'u11', title: '美联储FOMC 议息会议', tag: '经济/美债会议', date: '2027-01-26', region: '华盛顿',
+      { id: 'u11', title: '美联储FOMC 议息会议', tag: '经济/美债会议', date: '2027-01-26', region: '华盛顿', concept: 'usFinance',
         summary: '美联储公布利率决议与前瞻指引，为全球流动性与美债收益率定调。', relatedStocks: ['美债', '美股', '黄金'] },
-      { id: 'u12', title: '苹果(AAPL) 2027财年Q1财报（假期季）', tag: '企业活动/财报', date: '2027-01-27', region: '美国',
+      { id: 'u12', title: '苹果(AAPL) 2027财年Q1财报（假期季）', tag: '企业活动/财报', date: '2027-01-27', region: '美国', concept: 'aiCapex',
         summary: '苹果披露假日季度业绩（预计），iPhone与服务业收入为市场焦点（日期为历史规律估计，以公司公告为准）。', relatedStocks: ['苹果', '消费电子'] },
-      { id: 'u13', title: '微软(MSFT) 财报', tag: '企业活动/财报', date: '2027-01-28', region: '美国',
+      { id: 'u13', title: '微软(MSFT) 财报', tag: '企业活动/财报', date: '2027-01-28', region: '美国', concept: 'aiCapex',
         summary: '微软披露云与AI资本开支进展（预计）。', relatedStocks: ['微软', 'AI算力'] },
-      { id: 'u14', title: '亚马逊(AMZN) 财报', tag: '企业活动/财报', date: '2027-01-28', region: '美国',
+      { id: 'u14', title: '亚马逊(AMZN) 财报', tag: '企业活动/财报', date: '2027-01-28', region: '美国', concept: 'aiCapex',
         summary: '亚马逊披露零售与云业务业绩（预计）。', relatedStocks: ['亚马逊'] },
-      { id: 'u15', title: 'Web Summit Qatar 2027', tag: '会议/科技', date: '2027-01-31', region: '多哈',
+      { id: 'u15', title: 'Web Summit Qatar 2027', tag: '会议/科技', date: '2027-01-31', region: '多哈', concept: 'ai',
         summary: '中东科技与创业峰会，全球创始人与投资人汇聚。', relatedStocks: ['科技', '创投'] },
-      { id: 'u16', title: '谷歌(GOOGL) 财报', tag: '企业活动/财报', date: '2027-02-03', region: '美国',
+      { id: 'u16', title: '谷歌(GOOGL) 财报', tag: '企业活动/财报', date: '2027-02-03', region: '美国', concept: 'aiCapex',
         summary: '谷歌披露搜索与云业务业绩（预计）。', relatedStocks: ['谷歌'] },
-      { id: 'u17', title: '特斯拉(TSLA)/Meta 财报', tag: '企业活动/财报', date: '2027-01-20', region: '美国',
+      { id: 'u17', title: '特斯拉(TSLA)/Meta 财报', tag: '企业活动/财报', date: '2027-01-20', region: '美国', concept: 'aiCapex',
         summary: '特斯拉与Meta披露业绩（预计区间1/20-2/3）。', relatedStocks: ['特斯拉', 'Meta'] }
     ];
     const futureRegion = ref('breaking');   // 'breaking' 突发 | 'future' 未来
@@ -9253,6 +9261,14 @@ const app = createApp({
     const futureLoading = ref(false);
     const futureError = ref('');
     const futureDate = ref('');
+    const futureLastRefresh = ref('');
+    // 20261109a：双指标排序口径（与影响力事件同逻辑）：'investors' 按影响股民数 | 'people' 按影响人数 | 'date' 仅未来子版块可用（按日期升序）
+    const futureSortBy = ref('investors');
+    // 20261109a：突发自动刷新（每 futureRefreshMs 拉取 data/breaking-events.json，新出现事件红色标识）
+    const futureAutoRefresh = ref(true);
+    const futureRefreshMs = ref(600000);      // 默认 10 分钟；可选 3600000（1 小时）
+    const futureSeenIds = ref(new Set());      // 已展示过的突发 id（用于判断「新」）
+    let futureRefreshTimer = null;
     function futureRegionLabel(r) { return r === 'breaking' ? '突发' : '未来'; }
     // 距今天数：以本地零点对齐，避免时区导致 ±1 天误差
     function daysFromToday(iso) {
@@ -9261,24 +9277,112 @@ const app = createApp({
       if (isNaN(d.getTime())) return null;
       return Math.round((d - now) / 86400000);
     }
-    function loadFuture() {
+    // 复用「影响力事件」同一套双指标计算（A = max(P×r, S)、股民占比 S/A）：display region → 影响区域口径
+    function resolveFutureImpact(e) {
+      const ir = FUTURE_REGION_MAP[e.region] || 'world';
+      const r = resolveInfluence({ ...e, region: ir, concept: e.concept });
+      r.region = e.region;   // 还原展示用 region 文案
+      r._ir = ir;            // 影响区域口径（用于配色 class）
+      return r;
+    }
+    function futureSortLabel() {
+      const k = futureSortBy.value;
+      return k === 'date' ? '日期' : (k === 'people' ? '影响人数' : '影响股民数');
+    }
+    function sortFuture(list) {
+      const k = futureSortBy.value;
+      if (k === 'date') return [...(list || [])].sort((a, b) => (a.date || '').localeCompare(b.date || ''));
+      const key = k === 'people' ? 'affectedPeople' : 'affected';
+      return [...(list || [])].sort((a, b) => (Number(b[key]) || 0) - (Number(a[key]) || 0));
+    }
+    function persistFutureSeen() {
+      if (D) D.futureSeenIds = Array.from(futureSeenIds.value);
+      if (typeof Store !== 'undefined' && Store.saveNow) Store.saveNow();
+    }
+    // 运行时拉取实时突发数据源（data/breaking-events.json）；失败回退 BREAKING_EVENTS_SEED
+    async function fetchBreakingEvents() {
+      try {
+        const r = await fetch('data/breaking-events.json?_=' + Date.now(), { cache: 'no-store' });
+        if (!r.ok) throw new Error('HTTP ' + r.status);
+        const j = await r.json();
+        const arr = Array.isArray(j) ? j : (j && j.events) || [];
+        return (arr && arr.length) ? arr : null;
+      } catch (e) { return null; }
+    }
+    async function loadFutureData({ initial = false } = {}) {
       const reg = futureRegion.value;
-      const src = reg === 'breaking' ? BREAKING_EVENTS : UPCOMING_EVENTS;
-      // 突发按数组顺序（最新在前）；未来按日期升序（最临近的排前）
-      futureEvents.value = reg === 'future' ? [...src].sort((a, b) => (a.date < b.date ? -1 : a.date > b.date ? 1 : 0)) : src;
+      let list = [];
+      if (reg === 'breaking') {
+        const remote = await fetchBreakingEvents();
+        const src = (remote && remote.length) ? remote : BREAKING_EVENTS_SEED;
+        // initial：首屏把这些 id 标记为已见，避免初始事件被误标红；非 initial：新 id 标红，加载后延迟标记为已见
+        if (initial) { src.forEach(e => futureSeenIds.value.add(e.id)); persistFutureSeen(); }
+        list = src.map(resolveFutureImpact);
+        list.forEach(e => { e._new = !futureSeenIds.value.has(e.id); });
+        list = sortFuture(list);
+        if (!initial) {
+          setTimeout(() => { src.forEach(e => futureSeenIds.value.add(e.id)); persistFutureSeen(); }, 80);
+        }
+      } else {
+        list = [...UPCOMING_EVENTS].map(resolveFutureImpact);
+        list = sortFuture(list);
+      }
+      futureEvents.value = list;
       futureDate.value = '实时整理';
       futureError.value = '';
+      futureLastRefresh.value = new Date().toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' });
     }
-    function setFutureRegion(r) { futureRegion.value = r; if (D && D.futureRegion !== undefined) D.futureRegion = r; loadFuture(); }
-    async function refreshFuture() {
+    function setFutureRegion(r) {
+      futureRegion.value = r;
+      if (D && D.futureRegion !== undefined) D.futureRegion = r;
+      futureSortBy.value = (r === 'future') ? 'date' : 'investors';   // 未来默认按日期，突发默认按影响股民数
+      if (D && D.futureSortBy !== undefined) D.futureSortBy = futureSortBy.value;
+      loadFutureData();
+    }
+    function setFutureSort(k) {
+      if (k !== 'date' && k !== 'people' && k !== 'investors') k = 'investors';
+      futureSortBy.value = k;
+      if (D && D.futureSortBy !== undefined) D.futureSortBy = k;
+      loadFutureData();
+    }
+    function startFutureAutoRefresh() {
+      stopFutureAutoRefresh();
+      if (!futureAutoRefresh.value) return;
+      futureRefreshTimer = setInterval(() => {
+        if (futureRegion.value === 'breaking') refreshFuture(true);
+      }, futureRefreshMs.value);
+    }
+    function stopFutureAutoRefresh() {
+      if (futureRefreshTimer) { clearInterval(futureRefreshTimer); futureRefreshTimer = null; }
+    }
+    function setFutureAutoRefresh(on) {
+      futureAutoRefresh.value = !!on;
+      if (D) D.futureAutoRefresh = futureAutoRefresh.value;
+      if (futureAutoRefresh.value) startFutureAutoRefresh(); else stopFutureAutoRefresh();
+      showToast(futureAutoRefresh.value ? '已开启突发自动刷新' : '已暂停突发自动刷新', 'info');
+    }
+    function setFutureRefreshMs(ms) {
+      futureRefreshMs.value = ms;
+      if (D) D.futureRefreshMs = ms;
+      startFutureAutoRefresh();   // 用新间隔重启轮询
+    }
+    async function refreshFuture(silent) {
       if (futureLoading.value) return;
       futureLoading.value = true;
       try {
-        loadFuture();
-        showToast(`已刷新未来事件（${futureEvents.value.length} 条，${futureRegionLabel(futureRegion.value)}）`, 'success');
+        await loadFutureData();
+        const reg = futureRegionLabel(futureRegion.value);
+        const newCount = futureEvents.value.filter(e => e._new).length;
+        if (!silent) {
+          let msg = `已刷新未来事件（${futureEvents.value.length} 条，${reg}）`;
+          if (futureRegion.value === 'breaking' && newCount > 0) msg += `，🔴 新突发 ${newCount} 条`;
+          showToast(msg, 'success');
+        } else if (futureRegion.value === 'breaking' && newCount > 0) {
+          showToast(`突发自动刷新：发现 ${newCount} 条新事件`, 'success');
+        }
       } catch (e) {
         futureError.value = (e && e.message) || '未来事件获取失败';
-        showToast('未来事件获取失败：' + (e && e.message || e), 'error');
+        if (!silent) showToast('未来事件获取失败：' + (e && e.message || e), 'error');
       } finally { futureLoading.value = false; }
     }
 
@@ -9967,9 +10071,14 @@ const app = createApp({
     // 20261108b：恢复「口径说明」的隐藏状态（用户上次点了隐藏，刷新后仍保持隐藏）
     if (typeof D.inflInfoHidden === 'boolean') inflInfoHidden.value = D.inflInfoHidden;
     loadInfluence();
-    // 未来事件（20261108j）：恢复上次选中的子版块并加载对应事件（独立于影响力事件）
+    // 未来事件（20261109a）：恢复子版块 / 排序口径 / 自动刷新设置 / 已见集合，并加载（首屏 seed 已见以免误标红），启动自动刷新轮询
     if (D.futureRegion === 'breaking' || D.futureRegion === 'future') futureRegion.value = D.futureRegion;
-    loadFuture();
+    if (D.futureSortBy === 'date' || D.futureSortBy === 'investors' || D.futureSortBy === 'people') futureSortBy.value = D.futureSortBy;
+    if (typeof D.futureAutoRefresh === 'boolean') futureAutoRefresh.value = D.futureAutoRefresh;
+    if (D.futureRefreshMs) futureRefreshMs.value = D.futureRefreshMs;
+    if (Array.isArray(D.futureSeenIds)) D.futureSeenIds.forEach(x => futureSeenIds.value.add(x));
+    loadFutureData({ initial: true });
+    startFutureAutoRefresh();
     // 同花顺热门板块（行业/概念）缓存恢复
     if (D.thsSectors && ((D.thsSectors.industries || []).length || (D.thsSectors.concepts || []).length)) thsSectors.value = D.thsSectors;
     // 20261108c：恢复上次选中的「行业 / 概念」Tab
@@ -12320,7 +12429,8 @@ const app = createApp({
       // 20261108b：口径说明一键隐藏/显示
       inflInfoHidden, toggleInflInfo,
       // 20261108j：未来事件（突发 + 未来，独立于影响力事件）
-      futureRegion, futureEvents, futureLoading, futureError, futureDate, futureRegionLabel, daysFromToday, setFutureRegion, refreshFuture,
+      futureRegion, futureEvents, futureLoading, futureError, futureDate, futureLastRefresh, futureSortBy, futureAutoRefresh, futureRefreshMs,
+      futureRegionLabel, daysFromToday, setFutureRegion, refreshFuture, futureSortLabel, setFutureSort, setFutureAutoRefresh, setFutureRefreshMs,
       thsSectors, thsSectorsLoading, thsSectorsError, refreshThsSectorsOnly, thsSectorTab, setThsSectorTab,
       doubaoKeyInput, doubaoKeyFormShow, doubaoGuideShow, doubaoKeyActive,
       toggleDoubaoKeyForm, saveDoubaoKey, clearDoubaoKey, openDoubaoGuide,

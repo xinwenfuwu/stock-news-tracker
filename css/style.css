@@ -934,6 +934,15 @@ body {
 .infl-affected b { color: #c2410c; }
 .infl-countdown { color: #e67e22; font-weight: 600; }
 .future-tabs .infl-tab.active { background: #7c3aed; border-color: #7c3aed; }
+/* 20261109a：突发自动刷新控件 + 新事件红色标识 */
+.future-auto { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin: 6px 0 2px; }
+.future-auto .muted.small { margin: 0; }
+.future-auto .btn-ok { background: #16a34a; border-color: #16a34a; color: #fff; }
+.future-auto .btn-ok:hover { background: #15803d; }
+.future-auto .btn-warn { background: #f59e0b; border-color: #f59e0b; color: #fff; }
+.future-auto .btn-warn:hover { background: #d97706; }
+.infl-event--new { box-shadow: inset 0 0 0 2px #ef4444; background: #fff5f5; border-radius: 8px; }
+.infl-new-badge { color: #ef4444; font-weight: 700; font-size: 12px; margin-left: 4px; }
 .infl-people { padding: 1px 8px; border-radius: 999px; background: #eff6ff; border: 1px solid #dbeafe; }
 .infl-people b { color: #1d4ed8; }
 .infl-share { color: var(--text-muted, #64748b); }
