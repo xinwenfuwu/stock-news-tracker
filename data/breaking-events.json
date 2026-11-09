@@ -13,7 +13,9 @@
     "bullConcepts": ["绿电", "环保", "节能"],
     "bearConcepts": ["数据中心", "AI算力", "云计算"],
     "bullIndustries": ["环保工程", "电力运营"],
-    "bearIndustries": ["数据中心建设", "算力基础设施"]
+    "bearIndustries": ["数据中心建设", "算力基础设施"],
+    "heat": 80,
+    "momentum": 50
   },
   {
     "id": "b2",
@@ -29,7 +31,9 @@
     "bullConcepts": ["黄金", "防御板块"],
     "bearConcepts": ["AI算力", "半导体", "云计算"],
     "bullIndustries": ["黄金", "公用事业"],
-    "bearIndustries": ["半导体", "消费电子"]
+    "bearIndustries": ["半导体", "消费电子"],
+    "heat": 85,
+    "momentum": 70
   },
   {
     "id": "b3",
@@ -45,7 +49,9 @@
     "bullConcepts": ["网络安全", "合规"],
     "bearConcepts": ["AI算力", "云计算"],
     "bullIndustries": ["网络安全", "法律合规服务"],
-    "bearIndustries": ["AI应用", "算力扩张"]
+    "bearIndustries": ["AI应用", "算力扩张"],
+    "heat": 78,
+    "momentum": 60
   },
   {
     "id": "b4",
@@ -61,7 +67,9 @@
     "bullConcepts": ["绿电", "环保"],
     "bearConcepts": ["数据中心", "云计算"],
     "bullIndustries": ["环保"],
-    "bearIndustries": ["数据中心", "互联网服务"]
+    "bearIndustries": ["数据中心", "互联网服务"],
+    "heat": 62,
+    "momentum": 40
   },
   {
     "id": "b5",
@@ -77,7 +85,9 @@
     "bullConcepts": ["电网", "储能", "电力"],
     "bearConcepts": ["盲目扩张算力", "高耗能数据中心"],
     "bullIndustries": ["电力设备", "储能"],
-    "bearIndustries": ["无合规高耗能项目"]
+    "bearIndustries": ["无合规高耗能项目"],
+    "heat": 88,
+    "momentum": 65
   },
   {
     "id": "b6",
@@ -93,7 +103,9 @@
     "bullConcepts": ["数据中心", "AI算力", "电力"],
     "bearConcepts": ["高耗能不合规数据中心"],
     "bullIndustries": ["数据中心", "电力"],
-    "bearIndustries": ["无合规中小数据中心"]
+    "bearIndustries": ["无合规中小数据中心"],
+    "heat": 55,
+    "momentum": 30
   },
   {
     "id": "b7",
@@ -109,7 +121,9 @@
     "bullConcepts": ["竞品AI芯片", "AMD", "华为昇腾"],
     "bearConcepts": ["英伟达", "AI算力"],
     "bullIndustries": ["半导体(竞品)", "芯片设计"],
-    "bearIndustries": ["AI芯片", "英伟达产业链"]
+    "bearIndustries": ["AI芯片", "英伟达产业链"],
+    "heat": 95,
+    "momentum": 92
   },
   {
     "id": "b8",
@@ -125,7 +139,9 @@
     "bullConcepts": ["石油", "黄金", "油运", "军工"],
     "bearConcepts": ["航空", "化工(成本端)"],
     "bullIndustries": ["石油开采", "航运", "黄金", "军工"],
-    "bearIndustries": ["航空运输", "化工"]
+    "bearIndustries": ["航空运输", "化工"],
+    "heat": 90,
+    "momentum": 88
   },
   {
     "id": "b9",
@@ -141,7 +157,9 @@
     "bullConcepts": ["石油", "黄金", "军工"],
     "bearConcepts": ["航空"],
     "bullIndustries": ["石油", "黄金", "军工"],
-    "bearIndustries": ["航空", "炼化"]
+    "bearIndustries": ["航空", "炼化"],
+    "heat": 82,
+    "momentum": 80
   },
   {
     "id": "b10",
@@ -150,14 +168,16 @@
     "region": "美国",
     "concept": "aiCapex",
     "time": "2026-11-16（预计）",
-    "datetime": "2026-11-16 21:30（预计）",
+    "datetime": "2026-11-08 09:00",
     "source": "路透/SEC S-1",
     "summary": "Anthropic已公开递交S-1，潜在买家讨论1.2万亿至1.3万亿美元估值区间；三季度营收约169.6亿美元、环比增45%，但算力支出承诺已近8954亿美元。IPO为美股AI链重要风向标。",
     "relatedStocks": ["AI", "美股"],
     "bullConcepts": ["AI算力", "云计算", "AI应用"],
     "bearConcepts": [],
     "bullIndustries": ["AI", "云计算", "算力"],
-    "bearIndustries": []
+    "bearIndustries": [],
+    "heat": 75,
+    "momentum": 58
   },
   {
     "id": "b11",
@@ -173,7 +193,9 @@
     "bullConcepts": ["AI算力", "云计算"],
     "bearConcepts": [],
     "bullIndustries": ["AI", "算力基础设施"],
-    "bearIndustries": []
+    "bearIndustries": [],
+    "heat": 80,
+    "momentum": 65
   },
   {
     "id": "b12",
@@ -189,7 +211,9 @@
     "bullConcepts": ["券商", "金融科技"],
     "bearConcepts": [],
     "bullIndustries": ["券商", "金融IT"],
-    "bearIndustries": []
+    "bearIndustries": [],
+    "heat": 72,
+    "momentum": 55
   },
   {
     "id": "b13",
@@ -205,6 +229,8 @@
     "bullConcepts": ["竞品芯片", "华为昇腾", "AMD"],
     "bearConcepts": ["英伟达"],
     "bullIndustries": ["半导体(竞品)", "存储"],
-    "bearIndustries": ["英伟达产业链", "AI芯片"]
+    "bearIndustries": ["英伟达产业链", "AI芯片"],
+    "heat": 70,
+    "momentum": 62
   }
 ]

@@ -62,6 +62,12 @@ async function newPage(browser) {
       r.fulfill({ status: 200, contentType: 'application/json; charset=utf-8', body: fs.readFileSync(f, 'utf8') });
     } catch (e) { r.fulfill({ status: 404, contentType: 'text/plain', body: 'nf' }); }
   });
+  await page.route('**/celebrity-news.json**', r => {
+    try {
+      const f = path.join(ROOT, 'data', 'celebrity-news.json');
+      r.fulfill({ status: 200, contentType: 'application/json; charset=utf-8', body: fs.readFileSync(f, 'utf8') });
+    } catch (e) { r.fulfill({ status: 404, contentType: 'text/plain', body: 'nf' }); }
+  });
   return { ctx, page, errors };
 }
 
@@ -352,10 +358,11 @@ const main = async () => {
   // 8c) 20261108j：中间「未来事件」面板已与左侧「影响力事件」完全解耦，子版块为「突发 / 未来」
   //     突发 = 全球当前正在发生的大事件；未来 = 未来三个月内全球将要发生的大事件（显示日期 + 距今天数倒计时）
   check('顶行第二格标题 = 未来事件', (await futurePanel.locator('.panel-title').innerText()).includes('未来事件'));
-  check('未来事件面板含「突发 / 未来」两个子版块（不再含中国/美国/全世界）',
-    (await futurePanel.locator('.infl-region-tabs .infl-tab').count()) === 2
+  check('未来事件面板含「突发 / 未来 / 人物」三个子版块（不再含中国/美国/全世界）',
+    (await futurePanel.locator('.infl-region-tabs .infl-tab').count()) === 3
     && (await futurePanel.locator('.infl-region-tabs .infl-tab:has-text("突发")').count()) === 1
-    && (await futurePanel.locator('.infl-region-tabs .infl-tab:has-text("未来")').count()) === 1);
+    && (await futurePanel.locator('.infl-region-tabs .infl-tab:has-text("未来")').count()) === 1
+    && (await futurePanel.locator('.infl-region-tabs .infl-tab:has-text("人物")').count()) === 1);
   check('未来事件默认进入「突发」子版块', (await futurePanel.locator('.infl-region-tabs .infl-tab.active').innerText()).includes('突发'));
   check('突发子版块显示全球当前大事件（≥1 条，且含真实事件标题）',
     (await futurePanel.locator('.infl-event-list .infl-event').count()) >= 1
@@ -466,6 +473,48 @@ const main = async () => {
       && t.includes('利好行业') && t.includes('利空行业');
   }));
   await page.unroute('**/breaking-events.json**');
+
+  // 20261109c：人物板块（全球名人发言/新闻）+ 飙升度 / 时间排序
+  await futurePanel.locator('.infl-region-tabs .infl-tab:has-text("人物")').click();
+  await page.waitForTimeout(150);
+  check('人物子版块出现并加载全球名人新闻（≥1 条，含知名人物）', await page.evaluate(() => {
+    const p = document.querySelectorAll('.hot-top-row > .hot-panel')[1];
+    const t = p.innerText;
+    return p.querySelectorAll('.infl-event').length >= 1 && /(马斯克|特朗普|黄仁勋|雷军|马云|巴菲特)/.test(t);
+  }));
+  check('人物排序条含「按飙升度 / 按时间」，不含「按日期」',
+    (await futurePanel.locator('.infl-sortbar .infl-sort-btn:has-text("按飙升度")').count()) === 1
+    && (await futurePanel.locator('.infl-sortbar .infl-sort-btn:has-text("按时间")').count()) === 1
+    && (await futurePanel.locator('.infl-sortbar .infl-sort-btn:has-text("按日期")').count()) === 0);
+  check('人物卡片显示 🔥飙升度', await page.evaluate(() => {
+    const p = document.querySelectorAll('.hot-top-row > .hot-panel')[1];
+    return /🔥飙升度/.test(p.innerText);
+  }));
+  await futurePanel.locator('.infl-sortbar .infl-sort-btn:has-text("按飙升度")').click();
+  await page.waitForTimeout(120);
+  check('切「按飙升度」→ Store.futureSortBy=surge', await page.evaluate(() => typeof Store !== 'undefined' && Store.data && Store.data.futureSortBy === 'surge'));
+  check('飙升度排序结果按 surge 降序', await page.evaluate(() => {
+    const p = document.querySelectorAll('.hot-top-row > .hot-panel')[1];
+    const surgs = Array.from(p.querySelectorAll('.infl-surge')).map(e => parseInt((e.textContent.match(/(\d+)/) || [])[1] || '0', 10));
+    for (let i = 1; i < surgs.length; i++) if (surgs[i] > surgs[i - 1]) return false;
+    return surgs.length >= 2;
+  }));
+  await futurePanel.locator('.infl-sortbar .infl-sort-btn:has-text("按时间")').click();
+  await page.waitForTimeout(120);
+  check('切「按时间」→ Store.futureSortBy=time', await page.evaluate(() => typeof Store !== 'undefined' && Store.data && Store.data.futureSortBy === 'time'));
+  check('按时间排序：首条为离现在最近的事件（含「🕒」时间戳）', await page.evaluate(() => {
+    const p = document.querySelectorAll('.hot-top-row > .hot-panel')[1];
+    const first = p.querySelector('.infl-event');
+    return !!first && /🕒\s*\d{4}-\d{2}-\d{2} \d{2}:\d{2}/.test(first.textContent);
+  }));
+  await futurePanel.locator('.infl-region-tabs .infl-tab:has-text("突发")').click();
+  await page.waitForTimeout(150);
+  check('突发排序条含「按飙升度 / 按时间」',
+    (await futurePanel.locator('.infl-sortbar .infl-sort-btn:has-text("按飙升度")').count()) === 1
+    && (await futurePanel.locator('.infl-sortbar .infl-sort-btn:has-text("按时间")').count()) === 1);
+  await page.unroute('**/celebrity-news.json**');
+
+
 
   // 8b) 20261108d：连板股票 —— 「10日内 / 连板」Tab 互斥切换（不显示说明文字）
   const lbPanel = page.locator('.lianban-tabs').locator('xpath=ancestor::div[contains(@class,"hot-panel")][1]');

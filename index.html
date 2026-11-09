@@ -4,12 +4,12 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>股市信息分析系统</title>
-  <link rel="stylesheet" href="css/style.css?v=20261109b">
+  <link rel="stylesheet" href="css/style.css?v=20261109c">
   <!-- Vue 3 全局构建版（v3.4.21 · 自托管）
        原先走 unpkg.com CDN：国内网络对 unpkg 的连通性不稳定，一旦该请求长时间挂起，
        <head> 里的阻塞脚本会让整页停在白屏、后续 auth-boot.js 根本不会执行。
        改为同源托管后，启动链路不再依赖任何第三方 CDN。 -->
-  <script src="js/vue.global.prod.js?v=20261109b"></script>
+  <script src="js/vue.global.prod.js?v=20261109c"></script>
 </head>
 <body class="auth-locked">
   <!-- ===== 登录关卡：登录通过前业务脚本不会被加载 ===== -->
@@ -95,7 +95,7 @@
         <input class="auth-input" type="text" id="auth-renew-user" placeholder="用户名（你注册时用的）" maxlength="20" autocomplete="off">
         <div class="auth-renew-plans" id="auth-renew-plans"></div>
         <div class="auth-renew-qr" id="auth-renew-qr">
-          <div class="auth-renew-qrbox"><img id="auth-renew-wx" src="assets/wechat-pay-qr.jpg?v=20261109b" alt="微信支付收款码"><span>微信支付（扫码支付）</span></div>
+          <div class="auth-renew-qrbox"><img id="auth-renew-wx" src="assets/wechat-pay-qr.jpg?v=20261109c" alt="微信支付收款码"><span>微信支付（扫码支付）</span></div>
           <div class="muted small" style="margin-top:6px;color:#c2410c;font-weight:600">支付时请添加会员备注，付款成功截图保存</div>
         </div>
         <input class="auth-input" type="text" id="auth-renew-amount" inputmode="decimal" placeholder="支付金额（必填，如 1000）" autocomplete="off">
@@ -1604,7 +1604,7 @@
                   <div class="qr-row">
                     <div class="qr-box">
                       <div class="qr-cap">推荐使用微信支付</div>
-                      <img src="assets/wechat-pay-qr.jpg?v=20261109b" alt="微信支付收款码" class="qr-pay-img">
+                      <img src="assets/wechat-pay-qr.jpg?v=20261109c" alt="微信支付收款码" class="qr-pay-img">
                       <div class="qr-cap" style="margin-top:6px;color:#c2410c;font-weight:600">支付时请添加会员备注，付款成功截图保存</div>
                       <div class="qr-cap muted small">火柴盒网络服务</div>
                     </div>
@@ -3290,6 +3290,7 @@
               <div class="infl-tabs infl-region-tabs future-tabs">
                 <button class="infl-tab" :class="{active: futureRegion==='breaking'}" @click="setFutureRegion('breaking')">⚡ 突发</button>
                 <button class="infl-tab" :class="{active: futureRegion==='future'}" @click="setFutureRegion('future')">🔮 未来</button>
+                <button class="infl-tab" :class="{active: futureRegion==='people'}" @click="setFutureRegion('people')">👤 人物</button>
               </div>
 
               <!-- 20261109a：突发子版块自动刷新控件（暂停/开启 + 间隔 + 上次刷新时间） -->
@@ -3305,14 +3306,17 @@
               </div>
               <div class="muted small" style="margin:6px 0 2px">
                 <template v-if="futureRegion==='breaking'">⚡ 突发：全球当前正在发生的大事件（每 {{ futureRefreshMs===600000 ? '10分钟' : '1小时' }} 自动刷新，新事件标红 🆕）</template>
+                <template v-else-if="futureRegion==='people'">👤 人物：全球名人发言与重大新闻，排序口径与突发一致（按影响股民数 / 影响人数 / 飙升度 / 时间）</template>
                 <template v-else>🔮 未来：未来三个月内全球将要发生的大事件，显示时间与距今天数</template>
               </div>
 
-              <!-- 20261109a：双指标排序依据（与影响力事件同逻辑：影响人数 / 影响股民数；未来子版块额外支持按日期） -->
+              <!-- 20261109c：排序依据。突发/人物支持 影响股民数/影响人数/飙升度/时间；未来支持 日期/影响股民数/影响人数 -->
               <div class="infl-sortbar">
                 <span class="muted small">排序依据：</span>
                 <button class="infl-sort-btn" :class="{active: futureSortBy==='investors'}" @click="setFutureSort('investors')">按影响股民数</button>
                 <button class="infl-sort-btn" :class="{active: futureSortBy==='people'}" @click="setFutureSort('people')">按影响人数</button>
+                <button class="infl-sort-btn" v-if="futureRegion!=='future'" :class="{active: futureSortBy==='surge'}" @click="setFutureSort('surge')">按飙升度</button>
+                <button class="infl-sort-btn" v-if="futureRegion!=='future'" :class="{active: futureSortBy==='time'}" @click="setFutureSort('time')">按时间</button>
                 <button class="infl-sort-btn" v-if="futureRegion==='future'" :class="{active: futureSortBy==='date'}" @click="setFutureSort('date')">按日期</button>
                 <span class="muted small infl-sort-hint">当前：{{ futureSortLabel() }}</span>
               </div>
@@ -3330,6 +3334,7 @@
                       <span class="infl-concept" v-if="e.conceptName">涉及概念：{{ e.conceptName }}</span>
                       <span class="infl-affected infl-people">影响人数 <b>{{ fmtAffected(e.affectedPeople) }}</b>人</span>
                       <span class="infl-affected">影响股民数 <b>{{ fmtAffected(e.affected) }}</b>人<span class="infl-share" v-if="e.investorShare">（占 {{ e.investorShare }}%）</span></span>
+                      <span v-if="e.surge != null && futureRegion!=='future'" class="infl-surge" :class="surgeClass(e.surge)">🔥飙升度 {{ e.surge }}</span>
                       <span v-if="e.datetime || e.time">🕒 {{ e.datetime || e.time }}</span>
                       <span v-if="e.date">📅 {{ e.date }}</span>
                       <span v-if="e.date && daysFromToday(e.date) !== null" class="infl-countdown">⏳ 还有 {{ daysFromToday(e.date) }} 天</span>
@@ -3339,8 +3344,8 @@
                     <div v-if="e.relatedStocks && e.relatedStocks.length" class="infl-stocks">
                       <span v-for="s in e.relatedStocks" :key="s" class="infl-stock-chip">{{ s }}</span>
                     </div>
-                    <!-- 20261109b：突发子版块额外展示「利好/利空 概念 与 行业」（仅 breaking 子版块） -->
-                    <div v-if="futureRegion==='breaking' && ((e.bullConcepts && e.bullConcepts.length) || (e.bearConcepts && e.bearConcepts.length) || (e.bullIndustries && e.bullIndustries.length) || (e.bearIndustries && e.bearIndustries.length))" class="infl-bullbear">
+                    <!-- 20261109b/20261109c：突发 与 人物 子版块展示「利好/利空 概念 与 行业」 -->
+                    <div v-if="(futureRegion==='breaking' || futureRegion==='people') && ((e.bullConcepts && e.bullConcepts.length) || (e.bearConcepts && e.bearConcepts.length) || (e.bullIndustries && e.bullIndustries.length) || (e.bearIndustries && e.bearIndustries.length))" class="infl-bullbear">
                       <div v-if="e.bullConcepts && e.bullConcepts.length" class="infl-bb-row"><span class="infl-bb-tag bull">🔼 利好概念</span><span v-for="x in e.bullConcepts" :key="'bc'+x" class="infl-bb-chip bull">{{ x }}</span></div>
                       <div v-if="e.bearConcepts && e.bearConcepts.length" class="infl-bb-row"><span class="infl-bb-tag bear">🔽 利空概念</span><span v-for="x in e.bearConcepts" :key="'xc'+x" class="infl-bb-chip bear">{{ x }}</span></div>
                       <div v-if="e.bullIndustries && e.bullIndustries.length" class="infl-bb-row"><span class="infl-bb-tag bull">🔼 利好行业</span><span v-for="x in e.bullIndustries" :key="'bi'+x" class="infl-bb-chip bull">{{ x }}</span></div>
@@ -5509,14 +5514,14 @@
     </transition>
   </div>
 
-  <script src="js/auth.js?v=20261109b"></script>
-  <script src="js/auth-sync.js?v=20261109b"></script>
+  <script src="js/auth.js?v=20261109c"></script>
+  <script src="js/auth-sync.js?v=20261109c"></script>
   <!-- 边缘加速默认站点（batch37 治本：Cloudflare Worker 代理东财/腾讯，缓解 JSONP 限流误报）。
        若你所在地区 workers.dev 访问慢，可在「设置 → 行情加速地址」清空即恢复纯直连。 -->
   <script>window.__SNT_ACCEL__ = 'https://sichina.dpdns.org';</script>
   <!-- 扫码支付二维码渲染库（第三方 qrcodejs，本地托管避免外链失效）。renderQr 会先检测全局 QRCode 是否存在。 -->
-  <script src="assets/qrcode.min.js?v=20261109b"></script>
-  <script src="js/auth-boot.js?v=20261109b"></script>
+  <script src="assets/qrcode.min.js?v=20261109c"></script>
+  <script src="js/auth-boot.js?v=20261109c"></script>
   <!-- store / stock-api / hot-topics / app 由 auth-boot.js 在登录通过后动态装载，
        未登录时它们不会被下载，业务数据也不会进入内存 -->
 </body>

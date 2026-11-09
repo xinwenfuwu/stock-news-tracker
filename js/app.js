@@ -9208,7 +9208,8 @@ const app = createApp({
         bullConcepts: ['绿电', '环保', '节能'],
         bearConcepts: ['数据中心', 'AI算力', '云计算'],
         bullIndustries: ['环保工程', '电力运营'],
-        bearIndustries: ['数据中心建设', '算力基础设施'] },
+        bearIndustries: ['数据中心建设', '算力基础设施'],
+        heat: 80, momentum: 50 },
       { id: 'b2', title: '美股11月5日暴跌，AI板块领跌', tag: '金融市场', region: '美国', concept: 'aiCapex', time: '2026-11-05', source: '美联社/商业内幕',
         summary: '美国三大股指创2025年4月以来最大单日跌幅，冲击集中在AI相关领域；分析指与民主党中期选举大胜、市场预期AI监管趋严有关，科技股市值大幅缩水，英伟达单日重挫约9%。',
         relatedStocks: ['英伟达', '微软', 'Meta', '特斯拉'],
@@ -9216,7 +9217,8 @@ const app = createApp({
         bullConcepts: ['黄金', '防御板块'],
         bearConcepts: ['AI算力', '半导体', '云计算'],
         bullIndustries: ['黄金', '公用事业'],
-        bearIndustries: ['半导体', '消费电子'] },
+        bearIndustries: ['半导体', '消费电子'],
+        heat: 85, momentum: 70 },
       { id: 'b3', title: '美国AI监管立法潮升温，反数据中心候选人进入国会', tag: '政治/监管', region: '美国', concept: 'usMacro', time: '2026-11 起', source: '综合外媒',
         summary: '中期选举后，以反对数据中心为核心主张的候选人击败现任议员；民主党准备2027年1月掌控国会后推出AI立法潮，CoreWeave等云厂商承诺"负责任开发"，信贷市场开始给数据中心项目重新定价。',
         relatedStocks: ['AI算力', '云厂商'],
@@ -9224,7 +9226,8 @@ const app = createApp({
         bullConcepts: ['网络安全', '合规'],
         bearConcepts: ['AI算力', '云计算'],
         bullIndustries: ['网络安全', '法律合规服务'],
-        bearIndustries: ['AI应用', '算力扩张'] },
+        bearIndustries: ['AI应用', '算力扩张'],
+        heat: 78, momentum: 60 },
       { id: 'b4', title: '谷歌芬兰数据中心遭刑事调查', tag: '监管/环保', region: '欧洲', concept: 'idc', time: '2026-11', source: '路透',
         summary: '谷歌在芬兰的数据中心项目因土地清理问题面临刑事调查；意大利、葡萄牙同步收紧数据中心环保法规，微软退出英国一处因基建延误的数据中心项目。',
         relatedStocks: ['谷歌', '数据中心'],
@@ -9232,7 +9235,8 @@ const app = createApp({
         bullConcepts: ['绿电', '环保'],
         bearConcepts: ['数据中心', '云计算'],
         bullIndustries: ['环保'],
-        bearIndustries: ['数据中心', '互联网服务'] },
+        bearIndustries: ['数据中心', '互联网服务'],
+        heat: 62, momentum: 40 },
       { id: 'b5', title: '全球AI算力基建进入"有约束增长"期', tag: '产业/资本', region: '全球', concept: 'ai', time: '2026-11-07', source: '今日头条/路透',
         summary: '街头、选票、企业公关与信贷市场同时指向同一判断：AI算力基建"无约束扩张"阶段结束，进入由民意、政治与资本共同定价的"有约束增长"期，选址逻辑从电价/税收转向社区接受度与电网接入。',
         relatedStocks: ['算力', '电力', '地产'],
@@ -9240,7 +9244,8 @@ const app = createApp({
         bullConcepts: ['电网', '储能', '电力'],
         bearConcepts: ['盲目扩张算力', '高耗能数据中心'],
         bullIndustries: ['电力设备', '储能'],
-        bearIndustries: ['无合规高耗能项目'] },
+        bearIndustries: ['无合规高耗能项目'],
+        heat: 88, momentum: 65 },
       { id: 'b6', title: '欧盟呼吁加快自建数据中心算力', tag: '政策', region: '欧洲', concept: 'idc', time: '2026-11', source: '路透',
         summary: '欧盟技术事务主管表示欧洲需要更多数据中心以支撑AI发展，但强调须以"不推高居民电价、不造成停电、不破坏环境"为前提，在AI竞争力与公众保护间求平衡。',
         relatedStocks: ['欧洲科技', '电力'],
@@ -9248,7 +9253,8 @@ const app = createApp({
         bullConcepts: ['数据中心', 'AI算力', '电力'],
         bearConcepts: ['高耗能不合规数据中心'],
         bullIndustries: ['数据中心', '电力'],
-        bearIndustries: ['无合规中小数据中心'] }
+        bearIndustries: ['无合规中小数据中心'],
+        heat: 55, momentum: 30 }
     ];
     const UPCOMING_EVENTS = [
       { id: 'u1', title: '英伟达(NVIDIA) 2027财年Q3财报', tag: '企业活动/财报', date: '2026-11-17', region: '美国', concept: 'aiCapex', source: '公司日历',
@@ -9286,7 +9292,90 @@ const app = createApp({
       { id: 'u17', title: '特斯拉(TSLA)/Meta 财报', tag: '企业活动/财报', date: '2027-01-20', region: '美国', concept: 'aiCapex',
         summary: '特斯拉与Meta披露业绩（预计区间1/20-2/3）。', relatedStocks: ['特斯拉', 'Meta'] }
     ];
-    const futureRegion = ref('breaking');   // 'breaking' 突发 | 'future' 未来
+    // 人物板块：全球名人发言 / 重大新闻（与 breaking 同结构，fetch 失败时回退到此）
+    const CELEBRITY_EVENTS_SEED = [
+      { id: 'p1', title: '马斯克：xAI 将深度整合进特斯拉，年内目标全自动驾驶', tag: '科技/AI', region: '美国', concept: 'aiCapex', time: '2026-11-09', datetime: '2026-11-09 10:00', source: '路透/特斯拉官网',
+        summary: '马斯克在财报电话会上表示，xAI 大模型将全面接入特斯拉车机与 Optimus 机器人，并宣称 2027 年前实现全自动驾驶（FSD）规模化落地。',
+        relatedStocks: ['特斯拉', 'AI芯片'], heat: 92, momentum: 85,
+        bullConcepts: ['自动驾驶', 'AI应用', '机器人'], bearConcepts: ['传统车企'],
+        bullIndustries: ['智能驾驶', 'AI应用'], bearIndustries: ['传统汽车制造'] },
+      { id: 'p2', title: '特朗普：将对AI芯片出口实施新的配额管制', tag: '政治/科技', region: '美国', concept: 'usMacro', time: '2026-11-09', datetime: '2026-11-09 08:30', source: '白宫/彭博',
+        summary: '特朗普宣布对高端 AI 芯片及半导体设备出口设置新的国别配额，英伟达与 AMD 对华及部分第三方市场出货预期承压。',
+        relatedStocks: ['英伟达', 'AMD', '半导体'], heat: 90, momentum: 80,
+        bullConcepts: ['国产替代', '半导体设备'], bearConcepts: ['英伟达', 'AI算力出口'],
+        bullIndustries: ['半导体设备(国产)', '信创'], bearIndustries: ['AI芯片出口链'] },
+      { id: 'p3', title: '黄仁勋在SC26公布下一代GPU路线图，强调「主权AI」', tag: '科技/AI', region: '美国', concept: 'aiCapex', time: '2026-11-07', datetime: '2026-11-07 20:00', source: '英伟达/财联社',
+        summary: '黄仁勋在超算大会（SC26）演讲中发布下一代 GPU 架构路线图，提出「主权 AI」将成各国刚需。',
+        relatedStocks: ['英伟达', 'AI芯片'], heat: 86, momentum: 70,
+        bullConcepts: ['AI算力', '先进封装', 'HBM'], bearConcepts: [],
+        bullIndustries: ['AI芯片', '先进封装', '存储'], bearIndustries: [] },
+      { id: 'p4', title: '巴菲特：伯克希尔Q3减持苹果至历史低位，现金储备创新高', tag: '投资/市场', region: '美国', concept: 'usFinance', time: '2026-11-06', datetime: '2026-11-06 19:00', source: '伯克希尔13F/ CNBC',
+        summary: '伯克希尔披露三季度继续大幅减持苹果，现金等价物规模刷新历史纪录；巴菲特称「在估值高位保持耐心是纪律」。',
+        relatedStocks: ['苹果', '美股'], heat: 70, momentum: 45,
+        bullConcepts: ['高股息', '防御板块'], bearConcepts: ['苹果', '科技龙头'],
+        bullIndustries: ['公用事业', '银行'], bearIndustries: ['消费电子', '科技巨头'] },
+      { id: 'p5', title: '普京：俄方愿就能源出口与 OPEC+ 协调减产', tag: '地缘/能源', region: '全球', concept: 'energy', time: '2026-11-08', datetime: '2026-11-08 15:00', source: '克里姆林宫/塔斯社',
+        summary: '普京在能源论坛表示，俄罗斯准备与 OPEC+ 协调原油产量以稳定价格，言论提振油价与避险资产。',
+        relatedStocks: ['中国海油', '山东黄金'], heat: 80, momentum: 75,
+        bullConcepts: ['石油', '天然气'], bearConcepts: ['航空', '化工(成本端)'],
+        bullIndustries: ['石油开采', '能源设备'], bearIndustries: ['航空运输', '化工'] },
+      { id: 'p6', title: '拜登签署AI安全行政令补充条款，强化前沿模型审查', tag: '政治/科技', region: '美国', concept: 'usMacro', time: '2026-11-05', datetime: '2026-11-05 14:00', source: '白宫',
+        summary: '拜登政府发布 AI 安全行政令补充条款，要求万亿参数以上前沿模型在训练前须向联邦报备。',
+        relatedStocks: ['AI', '云计算'], heat: 65, momentum: 40,
+        bullConcepts: ['合规', '网络安全'], bearConcepts: ['AI算力', '大模型'],
+        bullIndustries: ['网络安全', '法律合规'], bearIndustries: ['AI应用', '云平台'] },
+      { id: 'p7', title: '马云：AI 将重塑中小企业出海，阿里通义继续开源', tag: '科技/AI', region: '中国', concept: 'llm', time: '2026-11-09', datetime: '2026-11-09 11:00', source: '阿里云栖/新华社',
+        summary: '马云在云栖大会视频致辞中称，AI 让中小企业第一次具备「全球货架」能力，阿里通义千问将坚持开源路线。',
+        relatedStocks: ['阿里巴巴', '阿里云'], heat: 78, momentum: 72,
+        bullConcepts: ['国产大模型', '跨境电商'], bearConcepts: [],
+        bullIndustries: ['AI应用', '跨境电商', '云服务'], bearIndustries: [] },
+      { id: 'p8', title: '雷军：小米汽车10月交付破3万，智驾全量推送', tag: '科技/汽车', region: '中国', concept: 'nev', time: '2026-11-08', datetime: '2026-11-08 20:00', source: '小米/财联社',
+        summary: '雷军宣布小米汽车单月交付突破 3 万台，城市 NOA 智驾功能已全量推送，首款增程 SUV 将于次年一季度上市。',
+        relatedStocks: ['小米集团', '智能驾驶'], heat: 82, momentum: 78,
+        bullConcepts: ['智能驾驶', '新能源车'], bearConcepts: [],
+        bullIndustries: ['新能源车', '智能驾驶'], bearIndustries: [] },
+      { id: 'p9', title: 'Altman：AGI 或于2027年到来，OpenAI 将设安全委员会', tag: '科技/AI', region: '美国', concept: 'aiCapex', time: '2026-11-07', datetime: '2026-11-07 22:00', source: 'OpenAI/彭博',
+        summary: '萨姆·奥尔特曼在公开访谈中表示通用人工智能（AGI）有望在 2027 年前后出现，OpenAI 将成立独立安全委员会。',
+        relatedStocks: ['AI', '算力'], heat: 75, momentum: 68,
+        bullConcepts: ['AI算力', '云计算'], bearConcepts: [],
+        bullIndustries: ['AI', '算力基础设施'], bearIndustries: [] },
+      { id: 'p10', title: '扎克伯格：Meta 开源 Llama 4 多模态版本', tag: '科技/AI', region: '美国', concept: 'aiCapex', time: '2026-11-06', datetime: '2026-11-06 10:00', source: 'Meta/路透',
+        summary: '扎克伯格宣布 Meta 开源 Llama 4 多模态大模型，支持图像、视频与语音统一理解，并计划嵌入 Meta 全系应用。',
+        relatedStocks: ['Meta', 'AI'], heat: 68, momentum: 50,
+        bullConcepts: ['AI应用', '开源生态'], bearConcepts: [],
+        bullIndustries: ['AI应用', '社交广告'], bearIndustries: [] },
+      { id: 'p11', title: '库克：苹果 Apple Intelligence 明年覆盖全系设备', tag: '科技/消费电子', region: '美国', concept: 'aiCapex', time: '2026-11-05', datetime: '2026-11-05 09:00', source: '苹果/彭博',
+        summary: '蒂姆·库克在投资者日上表示，Apple Intelligence 将于明年覆盖全系设备，并深度整合 Siri。',
+        relatedStocks: ['苹果', '消费电子'], heat: 60, momentum: 38,
+        bullConcepts: ['AI终端', '消费电子'], bearConcepts: [],
+        bullIndustries: ['消费电子', 'AI终端'], bearIndustries: [] },
+      { id: 'p12', title: '贝佐斯：蓝色起源将承接 NASA 登月着陆器大单', tag: '科技/航天', region: '美国', concept: 'usMacro', time: '2026-11-07', datetime: '2026-11-07 12:00', source: '蓝色起源/NASA',
+        summary: '贝佐斯旗下蓝色起源宣布获 NASA 新一代登月着陆器主合同，带动航天产业链与卫星互联网板块情绪。',
+        relatedStocks: ['亚马逊', '卫星互联网'], heat: 64, momentum: 55,
+        bullConcepts: ['商业航天', '卫星互联网'], bearConcepts: [],
+        bullIndustries: ['航天装备', '卫星互联网'], bearIndustries: [] },
+      { id: 'p13', title: '孙正义：软银拟设千亿美元 AI 产业基金', tag: '投资/AI', region: '美国', concept: 'aiCapex', time: '2026-11-09', datetime: '2026-11-09 09:30', source: '软银/日经',
+        summary: '孙正义宣布软银将牵头设立规模达千亿美元的 AI 产业基金，重点投向算力、机器人与能源基础设施。',
+        relatedStocks: ['AI', '算力'], heat: 70, momentum: 66,
+        bullConcepts: ['AI算力', '机器人', '能源'], bearConcepts: [],
+        bullIndustries: ['AI', '算力基础设施', '机器人'], bearIndustries: [] },
+      { id: 'p14', title: '索罗斯基金：警告美股AI估值过热，减持科技龙头', tag: '投资/市场', region: '美国', concept: 'usFinance', time: '2026-11-04', datetime: '2026-11-04 16:00', source: '13F/金融时报',
+        summary: '索罗斯基金管理公司最新持仓显示，其大幅减持多家科技龙头并增持黄金与公用事业，警示市场拥挤交易风险。',
+        relatedStocks: ['美股科技', '黄金'], heat: 58, momentum: 35,
+        bullConcepts: ['黄金', '防御板块'], bearConcepts: ['AI科技股', '半导体'],
+        bullIndustries: ['黄金', '公用事业'], bearIndustries: ['科技龙头', '半导体'] }
+    ];
+    // 运行时拉取人物榜单（data/celebrity-news.json）；失败回退 CELEBRITY_EVENTS_SEED
+    async function fetchCelebrityNews() {
+      try {
+        const r = await fetch('data/celebrity-news.json?_=' + Date.now(), { cache: 'no-store' });
+        if (!r.ok) throw new Error('HTTP ' + r.status);
+        const j = await r.json();
+        const arr = Array.isArray(j) ? j : (j && j.events) || [];
+        return (arr && arr.length) ? arr : null;
+      } catch (e) { return null; }
+    }
+    const futureRegion = ref('breaking');   // 'breaking' 突发 | 'future' 未来 | 'people' 人物
     const futureEvents = ref([]);
     const futureLoading = ref(false);
     const futureError = ref('');
@@ -9299,7 +9388,7 @@ const app = createApp({
     const futureRefreshMs = ref(600000);      // 默认 10 分钟；可选 3600000（1 小时）
     const futureSeenIds = ref(new Set());      // 已展示过的突发 id（用于判断「新」）
     let futureRefreshTimer = null;
-    function futureRegionLabel(r) { return r === 'breaking' ? '突发' : '未来'; }
+    function futureRegionLabel(r) { return r === 'breaking' ? '突发' : (r === 'people' ? '人物' : '未来'); }
     // 距今天数：以本地零点对齐，避免时区导致 ±1 天误差
     function daysFromToday(iso) {
       const now = new Date(); now.setHours(0, 0, 0, 0);
@@ -9317,13 +9406,46 @@ const app = createApp({
     }
     function futureSortLabel() {
       const k = futureSortBy.value;
-      return k === 'date' ? '日期' : (k === 'people' ? '影响人数' : '影响股民数');
+      if (k === 'date') return '日期';
+      if (k === 'time') return '时间';
+      if (k === 'surge') return '飙升度';
+      return (k === 'people') ? '影响人数' : '影响股民数';
     }
+    // 20261109c：飙升度 = 时间最近(40%) + 热度最高(35%) + 上升最快(25%)，0~100。
+    // 公式由本工具设定：recency 按距现在的小时数在 168h(7天)窗口内线性衰减，heat/momentum 为事件自带热度与扩散速度。
+    function _evtTimeMs(e) {
+      const s = e && (e.datetime || e.time);
+      if (!s) return null;
+      const t = new Date(String(s).replace(' ', 'T'));
+      return isNaN(t.getTime()) ? null : t.getTime();
+    }
+    function computeSurge(e) {
+      const heat = Math.max(0, Math.min(100, Number(e && e.heat) || 0));
+      const momentum = Math.max(0, Math.min(100, Number(e && e.momentum) || 0));
+      let recency = 50;   // 无时间信息时取中值
+      const ms = _evtTimeMs(e);
+      if (ms != null) {
+        const hrs = (Date.now() - ms) / 3600000;
+        if (hrs >= 0) recency = Math.max(0, Math.min(100, 100 - (hrs / 168) * 100));
+      }
+      return Math.round(0.40 * recency + 0.35 * heat + 0.25 * momentum);
+    }
+    // 飙升度配色：≥80 红(火爆) / ≥60 橙(升温) / 其余 蓝(平稳)
+    function surgeClass(s) {
+      s = Number(s) || 0;
+      if (s >= 80) return 'surge-hot';
+      if (s >= 60) return 'surge-warm';
+      return 'surge-normal';
+    }
+    function _evtSortTime(e) { const ms = _evtTimeMs(e); return ms == null ? 0 : ms; }
     function sortFuture(list) {
       const k = futureSortBy.value;
-      if (k === 'date') return [...(list || [])].sort((a, b) => (a.date || '').localeCompare(b.date || ''));
-      const key = k === 'people' ? 'affectedPeople' : 'affected';
-      return [...(list || [])].sort((a, b) => (Number(b[key]) || 0) - (Number(a[key]) || 0));
+      const arr = [...(list || [])];
+      if (k === 'date') return arr.sort((a, b) => (a.date || '').localeCompare(b.date || ''));
+      if (k === 'time') return arr.sort((a, b) => _evtSortTime(b) - _evtSortTime(a));   // 离现在最近在前
+      if (k === 'surge') return arr.sort((a, b) => (Number(b.surge) || 0) - (Number(a.surge) || 0));
+      const key = (k === 'people') ? 'affectedPeople' : 'affected';
+      return arr.sort((a, b) => (Number(b[key]) || 0) - (Number(a[key]) || 0));
     }
     function persistFutureSeen() {
       if (D) D.futureSeenIds = Array.from(futureSeenIds.value);
@@ -9348,13 +9470,20 @@ const app = createApp({
         // initial：首屏把这些 id 标记为已见，避免初始事件被误标红；非 initial：新 id 标红，加载后延迟标记为已见
         if (initial) { src.forEach(e => futureSeenIds.value.add(e.id)); persistFutureSeen(); }
         list = src.map(resolveFutureImpact);
-        list.forEach(e => { e._new = !futureSeenIds.value.has(e.id); });
+        list.forEach(e => { e.surge = computeSurge(e); e._new = !futureSeenIds.value.has(e.id); });
         list = sortFuture(list);
         if (!initial) {
           setTimeout(() => { src.forEach(e => futureSeenIds.value.add(e.id)); persistFutureSeen(); }, 80);
         }
+      } else if (reg === 'people') {
+        const remote = await fetchCelebrityNews();
+        const src = (remote && remote.length) ? remote : CELEBRITY_EVENTS_SEED;
+        list = src.map(resolveFutureImpact);
+        list.forEach(e => { e.surge = computeSurge(e); e._new = false; });   // 人物为静态榜单，不标红
+        list = sortFuture(list);
       } else {
         list = [...UPCOMING_EVENTS].map(resolveFutureImpact);
+        list.forEach(e => { e.surge = computeSurge(e); });
         list = sortFuture(list);
       }
       futureEvents.value = list;
@@ -9365,12 +9494,13 @@ const app = createApp({
     function setFutureRegion(r) {
       futureRegion.value = r;
       if (D && D.futureRegion !== undefined) D.futureRegion = r;
-      futureSortBy.value = (r === 'future') ? 'date' : 'investors';   // 未来默认按日期，突发默认按影响股民数
+      // 未来默认按日期；突发/人物默认按影响股民数（排序口径与突发一致）
+      futureSortBy.value = (r === 'future') ? 'date' : 'investors';
       if (D && D.futureSortBy !== undefined) D.futureSortBy = futureSortBy.value;
       loadFutureData();
     }
     function setFutureSort(k) {
-      if (k !== 'date' && k !== 'people' && k !== 'investors') k = 'investors';
+      if (k !== 'date' && k !== 'people' && k !== 'investors' && k !== 'surge' && k !== 'time') k = 'investors';
       futureSortBy.value = k;
       if (D && D.futureSortBy !== undefined) D.futureSortBy = k;
       loadFutureData();
@@ -10102,8 +10232,8 @@ const app = createApp({
     if (typeof D.inflInfoHidden === 'boolean') inflInfoHidden.value = D.inflInfoHidden;
     loadInfluence();
     // 未来事件（20261109a）：恢复子版块 / 排序口径 / 自动刷新设置 / 已见集合，并加载（首屏 seed 已见以免误标红），启动自动刷新轮询
-    if (D.futureRegion === 'breaking' || D.futureRegion === 'future') futureRegion.value = D.futureRegion;
-    if (D.futureSortBy === 'date' || D.futureSortBy === 'investors' || D.futureSortBy === 'people') futureSortBy.value = D.futureSortBy;
+    if (D.futureRegion === 'breaking' || D.futureRegion === 'future' || D.futureRegion === 'people') futureRegion.value = D.futureRegion;
+    if (D.futureSortBy === 'date' || D.futureSortBy === 'investors' || D.futureSortBy === 'people' || D.futureSortBy === 'surge' || D.futureSortBy === 'time') futureSortBy.value = D.futureSortBy;
     if (typeof D.futureAutoRefresh === 'boolean') futureAutoRefresh.value = D.futureAutoRefresh;
     if (D.futureRefreshMs) futureRefreshMs.value = D.futureRefreshMs;
     if (Array.isArray(D.futureSeenIds)) D.futureSeenIds.forEach(x => futureSeenIds.value.add(x));
@@ -12460,7 +12590,7 @@ const app = createApp({
       inflInfoHidden, toggleInflInfo,
       // 20261108j：未来事件（突发 + 未来，独立于影响力事件）
       futureRegion, futureEvents, futureLoading, futureError, futureDate, futureLastRefresh, futureSortBy, futureAutoRefresh, futureRefreshMs,
-      futureRegionLabel, daysFromToday, setFutureRegion, refreshFuture, futureSortLabel, setFutureSort, setFutureAutoRefresh, setFutureRefreshMs,
+      futureRegionLabel, daysFromToday, setFutureRegion, refreshFuture, futureSortLabel, setFutureSort, setFutureAutoRefresh, setFutureRefreshMs, surgeClass,
       thsSectors, thsSectorsLoading, thsSectorsError, refreshThsSectorsOnly, thsSectorTab, setThsSectorTab,
       doubaoKeyInput, doubaoKeyFormShow, doubaoGuideShow, doubaoKeyActive,
       toggleDoubaoKeyForm, saveDoubaoKey, clearDoubaoKey, openDoubaoGuide,

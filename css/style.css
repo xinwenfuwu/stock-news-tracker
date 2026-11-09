@@ -946,6 +946,11 @@ body {
 .infl-people { padding: 1px 8px; border-radius: 999px; background: #eff6ff; border: 1px solid #dbeafe; }
 .infl-people b { color: #1d4ed8; }
 .infl-share { color: var(--text-muted, #64748b); }
+/* 20261109c：飙升度标签（🔥飙升度 N）配色：≥80 红(火爆) / ≥60 橙(升温) / 其余 蓝(平稳) */
+.infl-surge { padding: 1px 8px; border-radius: 999px; font-size: 12px; font-weight: 700; border: 1px solid transparent; }
+.infl-surge.surge-hot { color: #b91c1c; background: #fef2f2; border-color: #fecaca; }
+.infl-surge.surge-warm { color: #c2410c; background: #fff7ed; border-color: #fed7aa; }
+.infl-surge.surge-normal { color: #1d4ed8; background: #eff6ff; border-color: #dbeafe; }
 .infl-summary { margin-top: 4px; line-height: 1.5; color: var(--text-muted, #64748b); }
 .infl-stocks { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 6px; }
 .infl-stock-chip { padding: 1px 8px; border-radius: 999px; background: #eef2ff; color: #4338ca; border: 1px solid #e0e7ff; font-size: 11px; }
