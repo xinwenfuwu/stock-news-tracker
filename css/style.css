@@ -949,6 +949,15 @@ body {
 .infl-summary { margin-top: 4px; line-height: 1.5; color: var(--text-muted, #64748b); }
 .infl-stocks { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 6px; }
 .infl-stock-chip { padding: 1px 8px; border-radius: 999px; background: #eef2ff; color: #4338ca; border: 1px solid #e0e7ff; font-size: 11px; }
+/* 20261109b：突发子版块「利好/利空 概念 与 行业」标签 */
+.infl-bullbear { display: flex; flex-direction: column; gap: 4px; margin-top: 7px; padding: 7px 8px; background: #f8fafc; border: 1px solid #eef2f7; border-radius: 8px; }
+.infl-bb-row { display: flex; flex-wrap: wrap; align-items: center; gap: 5px; }
+.infl-bb-tag { font-size: 11px; font-weight: 700; padding: 1px 6px; border-radius: 999px; }
+.infl-bb-tag.bull { color: #15803d; background: #dcfce7; }
+.infl-bb-tag.bear { color: #b91c1c; background: #fee2e2; }
+.infl-bb-chip { padding: 1px 8px; border-radius: 999px; font-size: 11px; border: 1px solid transparent; }
+.infl-bb-chip.bull { background: #f0fdf4; color: #166534; border-color: #bbf7d0; }
+.infl-bb-chip.bear { background: #fef2f2; color: #991b1b; border-color: #fecaca; }
 /* 20261108b：口径说明左侧的一键隐藏按钮（按钮常驻，隐藏后点「显示说明」可恢复） */
 .infl-info { display: flex; align-items: flex-start; gap: 8px; }
 .infl-info-btn { flex: none; margin-top: 8px; border: 1px solid var(--border, #d9dee8); background: var(--surface, #fff); color: var(--text-muted, #64748b); border-radius: 999px; padding: 3px 10px; font-size: 12px; line-height: 1.4; cursor: pointer; white-space: nowrap; transition: background .15s, border-color .15s, color .15s; }

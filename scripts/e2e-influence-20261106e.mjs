@@ -451,6 +451,20 @@ const main = async () => {
     const news = Array.from(p.querySelectorAll('.infl-event--new'));
     return news.length >= 1 && news.some(e => /🆕 新/.test(e.textContent));
   }));
+  check('突发事件时间精确到分钟（🕒 显示 YYYY-MM-DD HH:mm）', await page.evaluate(() => {
+    const p = document.querySelectorAll('.hot-top-row > .hot-panel')[1];
+    const hj = Array.from(p.querySelectorAll('.infl-event')).find(e => /黄仁勋/.test(e.textContent));
+    if (!hj) return false;
+    const m = hj.textContent.match(/🕒\s*(\d{4}-\d{2}-\d{2} \d{2}:\d{2})/);
+    return !!m && m[1].includes(':');
+  }));
+  check('突发卡片展示「利好/利空 概念与行业」标签与 chip', await page.evaluate(() => {
+    const p = document.querySelectorAll('.hot-top-row > .hot-panel')[1];
+    const t = p.innerText;
+    return p.querySelectorAll('.infl-bb-chip').length > 0
+      && t.includes('利好概念') && t.includes('利空概念')
+      && t.includes('利好行业') && t.includes('利空行业');
+  }));
   await page.unroute('**/breaking-events.json**');
 
   // 8b) 20261108d：连板股票 —— 「10日内 / 连板」Tab 互斥切换（不显示说明文字）

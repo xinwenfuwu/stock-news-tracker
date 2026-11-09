@@ -6,9 +6,14 @@
     "region": "欧洲",
     "concept": "idc",
     "time": "2026-11-06 起 · 进行中",
+    "datetime": "2026-11-06 09:00",
     "source": "路透/联合早报/中国日报",
     "summary": "数百人闯入微软阿姆斯特丹数据中心工地、喷涂反AI标语并爬上起重机；\"停止肮脏数据中心\"联盟在英国、爱尔兰、法国、德国、波兰、丹麦、意大利等15国协同示威。都柏林约2000人游行、赫尔辛基约1300人集会；苏格兰75个组织计划11月14日在爱丁堡再游行，要求暂停大型数据中心建设。",
-    "relatedStocks": ["微软", "英伟达", "电力/公用事业"]
+    "relatedStocks": ["微软", "英伟达", "电力/公用事业"],
+    "bullConcepts": ["绿电", "环保", "节能"],
+    "bearConcepts": ["数据中心", "AI算力", "云计算"],
+    "bullIndustries": ["环保工程", "电力运营"],
+    "bearIndustries": ["数据中心建设", "算力基础设施"]
   },
   {
     "id": "b2",
@@ -17,9 +22,14 @@
     "region": "美国",
     "concept": "aiCapex",
     "time": "2026-11-05",
+    "datetime": "2026-11-05 16:00",
     "source": "美联社/商业内幕",
     "summary": "美国三大股指创2025年4月以来最大单日跌幅，冲击集中在AI相关领域；分析指与民主党中期选举大胜、市场预期AI监管趋严有关，科技股市值大幅缩水，英伟达单日重挫约9%。",
-    "relatedStocks": ["英伟达", "微软", "Meta", "特斯拉"]
+    "relatedStocks": ["英伟达", "微软", "Meta", "特斯拉"],
+    "bullConcepts": ["黄金", "防御板块"],
+    "bearConcepts": ["AI算力", "半导体", "云计算"],
+    "bullIndustries": ["黄金", "公用事业"],
+    "bearIndustries": ["半导体", "消费电子"]
   },
   {
     "id": "b3",
@@ -28,9 +38,14 @@
     "region": "美国",
     "concept": "usMacro",
     "time": "2026-11 起",
+    "datetime": "2026-11-06 12:00",
     "source": "综合外媒",
     "summary": "中期选举后，以反对数据中心为核心主张的候选人击败现任议员；民主党准备2027年1月掌控国会后推出AI立法潮，CoreWeave等云厂商承诺\"负责任开发\"，信贷市场开始给数据中心项目重新定价。",
-    "relatedStocks": ["AI算力", "云厂商"]
+    "relatedStocks": ["AI算力", "云厂商"],
+    "bullConcepts": ["网络安全", "合规"],
+    "bearConcepts": ["AI算力", "云计算"],
+    "bullIndustries": ["网络安全", "法律合规服务"],
+    "bearIndustries": ["AI应用", "算力扩张"]
   },
   {
     "id": "b4",
@@ -39,9 +54,14 @@
     "region": "欧洲",
     "concept": "idc",
     "time": "2026-11",
+    "datetime": "2026-11-04 10:30",
     "source": "路透",
     "summary": "谷歌在芬兰的数据中心项目因土地清理问题面临刑事调查；意大利、葡萄牙同步收紧数据中心环保法规，微软退出英国一处因基建延误的数据中心项目。",
-    "relatedStocks": ["谷歌", "数据中心"]
+    "relatedStocks": ["谷歌", "数据中心"],
+    "bullConcepts": ["绿电", "环保"],
+    "bearConcepts": ["数据中心", "云计算"],
+    "bullIndustries": ["环保"],
+    "bearIndustries": ["数据中心", "互联网服务"]
   },
   {
     "id": "b5",
@@ -50,9 +70,14 @@
     "region": "全球",
     "concept": "ai",
     "time": "2026-11-07",
+    "datetime": "2026-11-07 15:00",
     "source": "今日头条/路透",
     "summary": "街头、选票、企业公关与信贷市场同时指向同一判断：AI算力基建\"无约束扩张\"阶段结束，进入由民意、政治与资本共同定价的\"有约束增长\"期，选址逻辑从电价/税收转向社区接受度与电网接入。",
-    "relatedStocks": ["算力", "电力", "地产"]
+    "relatedStocks": ["算力", "电力", "地产"],
+    "bullConcepts": ["电网", "储能", "电力"],
+    "bearConcepts": ["盲目扩张算力", "高耗能数据中心"],
+    "bullIndustries": ["电力设备", "储能"],
+    "bearIndustries": ["无合规高耗能项目"]
   },
   {
     "id": "b6",
@@ -61,9 +86,14 @@
     "region": "欧洲",
     "concept": "idc",
     "time": "2026-11",
+    "datetime": "2026-11-03 18:00",
     "source": "路透",
     "summary": "欧盟技术事务主管表示欧洲需要更多数据中心以支撑AI发展，但强调须以\"不推高居民电价、不造成停电、不破坏环境\"为前提，在AI竞争力与公众保护间求平衡。",
-    "relatedStocks": ["欧洲科技", "电力"]
+    "relatedStocks": ["欧洲科技", "电力"],
+    "bullConcepts": ["数据中心", "AI算力", "电力"],
+    "bearConcepts": ["高耗能不合规数据中心"],
+    "bullIndustries": ["数据中心", "电力"],
+    "bearIndustries": ["无合规中小数据中心"]
   },
   {
     "id": "b7",
@@ -72,9 +102,14 @@
     "region": "美国",
     "concept": "aiCapex",
     "time": "2026-11-08",
+    "datetime": "2026-11-08 21:00",
     "source": "央视/彭博/环球网/新浪财经",
     "summary": "英伟达CEO黄仁勋11月8日发布致全员公开信，承认对妻子不忠，并向家人、员工、董事会及股东致歉。英伟达董事会随即宣布启动由独立董事委员会监督、外部律师协助的独立调查，核查其是否成为外国情报行动目标；美国众议院三委员会要求黄仁勋11月18日出席闭门简报。英伟达盘后跌超3%，公司确认黄仁勋继续担任CEO。",
-    "relatedStocks": ["英伟达", "AI芯片", "美股AI"]
+    "relatedStocks": ["英伟达", "AI芯片", "美股AI"],
+    "bullConcepts": ["竞品AI芯片", "AMD", "华为昇腾"],
+    "bearConcepts": ["英伟达", "AI算力"],
+    "bullIndustries": ["半导体(竞品)", "芯片设计"],
+    "bearIndustries": ["AI芯片", "英伟达产业链"]
   },
   {
     "id": "b8",
@@ -83,9 +118,14 @@
     "region": "全球",
     "concept": "energy",
     "time": "2026-11-08",
+    "datetime": "2026-11-08 11:20",
     "source": "央视/塔斯尼姆通讯社",
     "summary": "伊朗革命卫队称11月8日当天已有三艘违规油轮在霍尔木兹海峡东部禁航区触雷爆炸起火；同日格什姆岛等地传出爆炸声，伊朗称遭美军袭击。特朗普宣布针对伊朗的\"铁门\"特遣行动全面展开。海峡通航风险推升原油与航运溢价。",
-    "relatedStocks": ["中国海油", "山东黄金", "航运"]
+    "relatedStocks": ["中国海油", "山东黄金", "航运"],
+    "bullConcepts": ["石油", "黄金", "油运", "军工"],
+    "bearConcepts": ["航空", "化工(成本端)"],
+    "bullIndustries": ["石油开采", "航运", "黄金", "军工"],
+    "bearIndustries": ["航空运输", "化工"]
   },
   {
     "id": "b9",
@@ -94,9 +134,14 @@
     "region": "全球",
     "concept": "energy",
     "time": "2026-11-08",
+    "datetime": "2026-11-08 14:45",
     "source": "新华社/沙特联军",
     "summary": "沙特首都利雅得金融区遭袭击，沙特阿美石油公司大楼受损；此前沙特主导的多国联军拦截并摧毁胡塞武装向利雅得发射的导弹。事件加剧中东能源供应与避险情绪。",
-    "relatedStocks": ["中国海油", "山东黄金", "石油"]
+    "relatedStocks": ["中国海油", "山东黄金", "石油"],
+    "bullConcepts": ["石油", "黄金", "军工"],
+    "bearConcepts": ["航空"],
+    "bullIndustries": ["石油", "黄金", "军工"],
+    "bearIndustries": ["航空", "炼化"]
   },
   {
     "id": "b10",
@@ -105,9 +150,14 @@
     "region": "美国",
     "concept": "aiCapex",
     "time": "2026-11-16（预计）",
+    "datetime": "2026-11-16 21:30（预计）",
     "source": "路透/SEC S-1",
     "summary": "Anthropic已公开递交S-1，潜在买家讨论1.2万亿至1.3万亿美元估值区间；三季度营收约169.6亿美元、环比增45%，但算力支出承诺已近8954亿美元。IPO为美股AI链重要风向标。",
-    "relatedStocks": ["AI", "美股"]
+    "relatedStocks": ["AI", "美股"],
+    "bullConcepts": ["AI算力", "云计算", "AI应用"],
+    "bearConcepts": [],
+    "bullIndustries": ["AI", "云计算", "算力"],
+    "bearIndustries": []
   },
   {
     "id": "b11",
@@ -116,9 +166,14 @@
     "region": "全球",
     "concept": "ai",
     "time": "2026-11-05",
+    "datetime": "2026-11-05 23:10",
     "source": "彭博",
     "summary": "OpenAI以约1.25万亿美元估值完成约110亿美元新融资（整轮或扩至200亿），总裁称企业客户已贡献过半收入、预计2027年具备上市条件。一级市场大额融资与二级市场AI抛售同时出现。",
-    "relatedStocks": ["AI", "算力"]
+    "relatedStocks": ["AI", "算力"],
+    "bullConcepts": ["AI算力", "云计算"],
+    "bearConcepts": [],
+    "bullIndustries": ["AI", "算力基础设施"],
+    "bearIndustries": []
   },
   {
     "id": "b12",
@@ -127,9 +182,14 @@
     "region": "美国",
     "concept": "usFinance",
     "time": "2026-11-08",
+    "datetime": "2026-11-08 08:00",
     "source": "纳斯达克/腾讯财经",
     "summary": "纳斯达克计划12月6日实施每周5天、每日23小时连续交易，仅保留美东20:00-21:00一小时休市；新增隔夜时段对应北京时间10:00-17:00，覆盖A股主要交易时段，为1971年以来重大变革。",
-    "relatedStocks": ["美股", "券商"]
+    "relatedStocks": ["美股", "券商"],
+    "bullConcepts": ["券商", "金融科技"],
+    "bearConcepts": [],
+    "bullIndustries": ["券商", "金融IT"],
+    "bearIndustries": []
   },
   {
     "id": "b13",
@@ -138,8 +198,13 @@
     "region": "美国",
     "concept": "chip",
     "time": "2026-11-08",
+    "datetime": "2026-11-08 13:15",
     "source": "央视财经/奥克兰警方",
     "summary": "美国加州奥克兰警方调查一起涉及英伟达的AI芯片与硬件被盗案，价值高达1140万美元（约7610万元人民币）。涉案卡车8月29日从奥克兰出发运往得州，途中多次长时间停靠后失联，9月13日报案，目前尚未抓获嫌疑人。",
-    "relatedStocks": ["英伟达", "AI芯片"]
+    "relatedStocks": ["英伟达", "AI芯片"],
+    "bullConcepts": ["竞品芯片", "华为昇腾", "AMD"],
+    "bearConcepts": ["英伟达"],
+    "bullIndustries": ["半导体(竞品)", "存储"],
+    "bearIndustries": ["英伟达产业链", "AI芯片"]
   }
 ]
