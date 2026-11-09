@@ -1,75 +1,160 @@
 {
-  "generatedAt": "2026-11-09 17:12",
+  "generatedAt": "2026-11-09 17:36",
   "generatedBy": "GitHub Actions · 多源实时聚合",
   "sourceCount": 5,
   "autoCount": 18,
   "events": [
     {
-      "id": "abl1tws8",
-      "title": "瑞银CEO：市场在修正过高预期 不必太关注“蓝色浪潮”",
-      "tag": "科技/AI",
+      "id": "ab1ukhj8c",
+      "title": "纳斯达克ETF华安：因交易价格溢价 11月10日起临时停牌",
+      "tag": "宏观/综合",
       "region": "美国",
-      "concept": "aiCapex",
-      "time": "2026-11-09 16:36",
-      "datetime": "2026-11-09 16:36",
-      "source": "财联社",
-      "url": "https://www.cls.cn/detail/2529075",
-      "summary": "【瑞银CEO：市场在修正过高预期 不必太关注“蓝色浪潮”】财联社11月9日电，瑞银CEO表示，过去几周美股AI板块的大幅回调，是市场对该板块此前过高预期的一次修正。他也承认美国中期选举结果可能会减缓人工智能基础设施投资，推迟AI行业兑现价值成果的节奏。建议客户在进行资产配置时，不要过度关注短期政治问题。",
+      "concept": "usMacro",
+      "time": "2026-11-09 17:18",
+      "datetime": "2026-11-09 17:18",
+      "source": "新浪7×24",
+      "url": "https://finance.sina.cn/7x24/2026-11-09/detail-iniycrzy3283691.d.html",
+      "summary": "【纳斯达克ETF华安：因交易价格溢价 11月10日起临时停牌】纳斯达克ETF华安公告称，旗下华安纳斯达克100交易型开放式指数证券投资基金（QDII）二级市场交易价格明显高于基金份额参考净值，出现较大幅度溢价。2026年11月9日，该基金二级市场收盘价为2.328元，基金份额参考净值为2.0515元。为保护投资者利益，基金将于2026年11月10日开市起停牌，当日10:30起…",
       "relatedStocks": [
-        "英伟达",
-        "微软",
-        "台积电"
+        "宽基指数"
       ],
       "bullConcepts": [
-        "AI算力",
-        "半导体",
-        "国产替代"
+        "防御板块"
       ],
       "bearConcepts": [
-        "传统软件"
+        "周期股"
       ],
       "bullIndustries": [
-        "半导体",
-        "AI应用",
-        "算力基础设施"
+        "公用事业"
       ],
       "bearIndustries": [
-        "传统IT服务"
+        "顺周期"
       ],
-      "heat": 33,
-      "momentum": 26,
+      "heat": 87,
+      "momentum": 96,
       "_auto": true
     },
     {
-      "id": "abezgwew",
-      "title": "SpaceX资深董事会成员辞职",
-      "tag": "新能源车",
-      "region": "全球",
-      "concept": "green",
-      "time": "2026-11-09 17:10",
-      "datetime": "2026-11-09 17:10",
-      "source": "环球市场播报",
-      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-09/doc-iniycrzz3342605.shtml",
-      "summary": "唐纳德・哈里森曾是 SpaceX 董事之一，参与评估 SpaceX 与特斯拉合并的可行性。 SpaceX 在周五提交的监管文件披露，任职多年的董事会成员唐纳德・哈里森（Donald...",
+      "id": "abyu9bhs",
+      "title": "纳斯达克100ETF招商：因二级市场溢价将临停并提示风险",
+      "tag": "宏观/综合",
+      "region": "美国",
+      "concept": "usMacro",
+      "time": "2026-11-09 17:18",
+      "datetime": "2026-11-09 17:18",
+      "source": "新浪7×24",
+      "url": "https://finance.sina.cn/7x24/2026-11-09/detail-iniycrzw6507745.d.html",
+      "summary": "【纳斯达克100ETF招商：因二级市场溢价将临停并提示风险】纳斯达克100ETF招商公告称，本基金二级市场交易价格明显高于基金份额参考净值，出现较大幅度溢价。2026年11月9日，本基金二级市场收盘价为2.258元，收盘时基金份额参考净值为1.9523元。为保护投资者利益，本基金将于2026年11月10日开市起停牌，当日10:30起复牌，停牌期间赎回业务照常办理。若当日溢价幅…",
       "relatedStocks": [
-        "特斯拉",
-        "比亚迪"
+        "宽基指数"
       ],
       "bullConcepts": [
-        "智能驾驶",
-        "动力电池"
+        "防御板块"
       ],
       "bearConcepts": [
-        "传统车企"
+        "周期股"
       ],
       "bullIndustries": [
-        "智能驾驶",
-        "锂电池"
+        "公用事业"
       ],
       "bearIndustries": [
-        "传统汽车制造"
+        "顺周期"
       ],
-      "heat": 38,
+      "heat": 78,
+      "momentum": 81,
+      "_auto": true
+    },
+    {
+      "id": "ab1n57fuj",
+      "title": "乌克兰能源部表示，俄罗斯袭击在夜间波及了12个地区的能源设施。俄罗斯上周对乌克兰能源、石油和天然气行业发动了128次定向袭击。",
+      "tag": "能源/资源",
+      "region": "全球",
+      "concept": "energy",
+      "time": "2026-11-09 17:17",
+      "datetime": "2026-11-09 17:17",
+      "source": "新浪7×24",
+      "url": "https://finance.sina.cn/7x24/2026-11-09/detail-iniycrzy3283090.d.html",
+      "summary": "乌克兰能源部表示，俄罗斯袭击在夜间波及了12个地区的能源设施。俄罗斯上周对乌克兰能源、石油和天然气行业发动了128次定向袭击。",
+      "relatedStocks": [
+        "中国石油",
+        "紫金矿业"
+      ],
+      "bullConcepts": [
+        "油气",
+        "贵金属"
+      ],
+      "bearConcepts": [
+        "高耗能制造"
+      ],
+      "bullIndustries": [
+        "石油开采",
+        "贵金属"
+      ],
+      "bearIndustries": [
+        "航空运输",
+        "化工"
+      ],
+      "heat": 42,
+      "momentum": 56,
+      "_auto": true
+    },
+    {
+      "id": "abhmkent",
+      "title": "*ST西发公告称，拉萨中院于2026年4月24日受理债权人对公司的重整申请，中广核资本控股有限公司因对债权表记载债权有异议，提起涉案金额3.08亿元的普通破产债权确认纠纷诉讼。近…",
+      "tag": "宏观/综合",
+      "region": "全球",
+      "concept": "macro",
+      "time": "2026-11-09 17:19",
+      "datetime": "2026-11-09 17:19",
+      "source": "新浪7×24",
+      "url": "https://finance.sina.cn/7x24/2026-11-09/detail-iniycrzy3284004.d.html",
+      "summary": "*ST西发公告称，拉萨中院于2026年4月24日受理债权人对公司的重整申请，中广核资本控股有限公司因对债权表记载债权有异议，提起涉案金额3.08亿元的普通破产债权确认纠纷诉讼。近日公司收到拉萨中院民事裁定书，原告中广核资本控股有限公司申请撤诉，法院已裁定准许。该撤诉事项不会对公司财务状况造成影响。公司已进入重整程序，若重整失败被宣告破产，股票将面临终止上市风险。",
+      "relatedStocks": [
+        "宽基指数"
+      ],
+      "bullConcepts": [
+        "防御板块"
+      ],
+      "bearConcepts": [
+        "周期股"
+      ],
+      "bullIndustries": [
+        "公用事业"
+      ],
+      "bearIndustries": [
+        "顺周期"
+      ],
+      "heat": 24,
+      "momentum": 36,
+      "_auto": true
+    },
+    {
+      "id": "abkiy2iw",
+      "title": "ST思科瑞：撤销其他风险警示，11月11日起复牌简称变更为思科瑞",
+      "tag": "宏观/综合",
+      "region": "中国",
+      "concept": "broker",
+      "time": "2026-11-09 17:24",
+      "datetime": "2026-11-09 17:24",
+      "source": "新浪7×24",
+      "url": "https://finance.sina.cn/7x24/2026-11-09/detail-iniycrzw6510796.d.html",
+      "summary": "【ST思科瑞：撤销其他风险警示，11月11日起复牌简称变更为思科瑞】ST思科瑞公告，公司股票将于2026年11月10日停牌一天，自2026年11月11日起复牌交易并撤销其他风险警示。撤销后A股简称由“ST思科瑞”变更为“思科瑞”，扩位简称由“ST思科瑞微电子”变更为“思科瑞微电子”，证券代码仍为“688053”。上海证券交易所于2026年11月9日同意公司撤销其他风险警示。公…",
+      "relatedStocks": [
+        "宽基指数"
+      ],
+      "bullConcepts": [
+        "防御板块"
+      ],
+      "bearConcepts": [
+        "周期股"
+      ],
+      "bullIndustries": [
+        "公用事业"
+      ],
+      "bearIndustries": [
+        "顺周期"
+      ],
+      "heat": 29,
       "momentum": 41,
       "_auto": true
     },
@@ -106,6 +191,40 @@
         "传统IT服务"
       ],
       "heat": 29,
+      "momentum": 26,
+      "_auto": true
+    },
+    {
+      "id": "abhrp5pg",
+      "title": "鲁比奥淡化美伊谈判取得突破的可能性 欧洲天然气价格上涨",
+      "tag": "能源/资源",
+      "region": "美国",
+      "concept": "shale",
+      "time": "2026-11-09 17:33",
+      "datetime": "2026-11-09 17:33",
+      "source": "环球市场播报",
+      "url": "https://finance.sina.com.cn/world/2026-11-09/doc-iniycrzu2891978.shtml",
+      "summary": "美国国务卿马可·鲁比奥看淡结束对伊冲突的谈判取得突破的前景，欧洲天然气价格再度走高。 该基准期货上周暴跌超17%之后，此番最大涨幅达到2.5%。",
+      "relatedStocks": [
+        "中国石油",
+        "紫金矿业"
+      ],
+      "bullConcepts": [
+        "油气",
+        "贵金属"
+      ],
+      "bearConcepts": [
+        "高耗能制造"
+      ],
+      "bullIndustries": [
+        "石油开采",
+        "贵金属"
+      ],
+      "bearIndustries": [
+        "航空运输",
+        "化工"
+      ],
+      "heat": 24,
       "momentum": 36,
       "_auto": true
     },
@@ -140,6 +259,39 @@
       "_auto": true
     },
     {
+      "id": "abezgwew",
+      "title": "SpaceX资深董事会成员辞职",
+      "tag": "新能源车",
+      "region": "全球",
+      "concept": "green",
+      "time": "2026-11-09 17:10",
+      "datetime": "2026-11-09 17:10",
+      "source": "环球市场播报",
+      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-09/doc-iniycrzz3342605.shtml",
+      "summary": "唐纳德・哈里森曾是 SpaceX 董事之一，参与评估 SpaceX 与特斯拉合并的可行性。 SpaceX 在周五提交的监管文件披露，任职多年的董事会成员唐纳德・哈里森（Donald...",
+      "relatedStocks": [
+        "特斯拉",
+        "比亚迪"
+      ],
+      "bullConcepts": [
+        "智能驾驶",
+        "动力电池"
+      ],
+      "bearConcepts": [
+        "传统车企"
+      ],
+      "bullIndustries": [
+        "智能驾驶",
+        "锂电池"
+      ],
+      "bearIndustries": [
+        "传统汽车制造"
+      ],
+      "heat": 33,
+      "momentum": 36,
+      "_auto": true
+    },
+    {
       "id": "ab10ov935",
       "title": "NASA卫星影像显示：俄罗斯基里希炼油厂或已起火",
       "tag": "能源/资源",
@@ -170,20 +322,20 @@
         "化工"
       ],
       "heat": 29,
-      "momentum": 36,
+      "momentum": 26,
       "_auto": true
     },
     {
-      "id": "abvg6001",
-      "title": "今年台风个数创21世纪新高",
+      "id": "ab76xb4p",
+      "title": "*ST华鹏：涉及融资租赁合同纠纷诉讼一审判决",
       "tag": "宏观/综合",
       "region": "中国",
       "concept": "broker",
-      "time": "2026-11-09 16:27",
-      "datetime": "2026-11-09 16:27",
-      "source": "财联社",
-      "url": "https://www.cls.cn/detail/2529057",
-      "summary": "财联社11月9日电，据中国气象局，11月7日14时，2026年第32号台风“查帕卡”在西北太平洋洋面生成。台风“查帕卡”的生成，使2026年的台风生成数量创下21世纪以来最高纪录。",
+      "time": "2026-11-09 17:29",
+      "datetime": "2026-11-09 17:29",
+      "source": "新浪7×24",
+      "url": "https://finance.sina.cn/7x24/2026-11-09/detail-iniycrzw6513335.d.html",
+      "summary": "【*ST华鹏：涉及融资租赁合同纠纷诉讼一审判决】*ST华鹏公告称，公司及子公司山东华鹏石岛玻璃制品有限公司作为被告，涉及与山东发展绿色融资租赁有限公司的融资租赁合同纠纷一案，涉案本金1.00亿元及利息、违约金等，目前已收到济南高新技术产业开发区人民法院一审判决。法院判决子公司偿还原告租金1.00亿元、留购价款300元，支付逾期租金占用利息及违约金、律师费7.50万元、诉讼保全…",
       "relatedStocks": [
         "宽基指数"
       ],
@@ -200,7 +352,107 @@
         "顺周期"
       ],
       "heat": 24,
-      "momentum": 26,
+      "momentum": 36,
+      "_auto": true
+    },
+    {
+      "id": "ab1igbbi4",
+      "title": "外媒：黄仁勋或被英伟达免职，尚未指定接班人",
+      "tag": "科技/AI",
+      "region": "全球",
+      "concept": "ai",
+      "time": "2026-11-09 17:22",
+      "datetime": "2026-11-09 17:22",
+      "source": "新浪7×24",
+      "url": "https://finance.sina.cn/7x24/2026-11-09/detail-iniycrzy3285345.d.html",
+      "summary": "【外媒：黄仁勋或被英伟达免职，尚未指定接班人】美东时间11月8日，英伟达创始人兼CEO黄仁勋于致员工信中承认婚外情，并向董事会、员工及全球股东致歉。英伟达董事会已宣布由独立董事和外部律师启动调查。彭博社报道称，作为英伟达联合创始人，黄仁勋以亲力亲为、不知疲倦的管理风格著称。这家公司尚未公布明确的接班计划，黄仁勋也没有明显的指定接班人。他多次表示希望在未来数十年继续执掌英伟达，…",
+      "relatedStocks": [
+        "英伟达",
+        "微软",
+        "台积电"
+      ],
+      "bullConcepts": [
+        "AI算力",
+        "半导体",
+        "国产替代"
+      ],
+      "bearConcepts": [
+        "传统软件"
+      ],
+      "bullIndustries": [
+        "半导体",
+        "AI应用",
+        "算力基础设施"
+      ],
+      "bearIndustries": [
+        "传统IT服务"
+      ],
+      "heat": 24,
+      "momentum": 36,
+      "_auto": true
+    },
+    {
+      "id": "ab1axua2",
+      "title": "华夏和达高科REIT：11月10日开市起停牌1小时",
+      "tag": "宏观/综合",
+      "region": "全球",
+      "concept": "macro",
+      "time": "2026-11-09 17:18",
+      "datetime": "2026-11-09 17:18",
+      "source": "新浪7×24",
+      "url": "https://finance.sina.cn/7x24/2026-11-09/detail-iniycrzu2885614.d.html",
+      "summary": "【华夏和达高科REIT：11月10日开市起停牌1小时】华夏和达高科REIT公告称，2026年11月9日基金二级市场收盘价为1.394元/份，当日收盘价偏离基准价首次达到50%。为保护基金份额持有人利益，基金自2026年11月10日深交所开市起停牌1小时，当日上午10:30起复牌；同步暂停基金通平台份额转让业务1小时，当日上午10:30起恢复。基金投资的不动产项目经营正常，无应…",
+      "relatedStocks": [
+        "宽基指数"
+      ],
+      "bullConcepts": [
+        "防御板块"
+      ],
+      "bearConcepts": [
+        "周期股"
+      ],
+      "bullIndustries": [
+        "公用事业"
+      ],
+      "bearIndustries": [
+        "顺周期"
+      ],
+      "heat": 24,
+      "momentum": 36,
+      "_auto": true
+    },
+    {
+      "id": "abhk0rr5",
+      "title": "特朗普《60分钟》专访要点：经济表现亮眼、无意升级对伊打击、不在乎自己的净资产、移民问题做得过火了",
+      "tag": "地缘/政治",
+      "region": "美国",
+      "concept": "defense",
+      "time": "2026-11-09 14:43",
+      "datetime": "2026-11-09 14:43",
+      "source": "环球市场播报",
+      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-09/doc-iniycmua3294367.shtml",
+      "summary": "共和党在中期选举遭遇一连串惨重失利数日之后，美国总统特朗普依旧为自己的经济政策以及对伊朗战争辩护，但他承认在经济议题上“宣传话术做得很差”...",
+      "relatedStocks": [
+        "军工",
+        "黄金"
+      ],
+      "bullConcepts": [
+        "军工",
+        "避险资产"
+      ],
+      "bearConcepts": [
+        "风险资产"
+      ],
+      "bullIndustries": [
+        "军工",
+        "黄金"
+      ],
+      "bearIndustries": [
+        "航空",
+        "旅游"
+      ],
+      "heat": 33,
+      "momentum": 18,
       "_auto": true
     },
     {
@@ -235,41 +487,7 @@
       "bearIndustries": [
         "传统IT服务"
       ],
-      "heat": 42,
-      "momentum": 18,
-      "_auto": true
-    },
-    {
-      "id": "abhk0rr5",
-      "title": "特朗普《60分钟》专访要点：经济表现亮眼、无意升级对伊打击、不在乎自己的净资产、移民问题做得过火了",
-      "tag": "地缘/政治",
-      "region": "美国",
-      "concept": "defense",
-      "time": "2026-11-09 14:43",
-      "datetime": "2026-11-09 14:43",
-      "source": "环球市场播报",
-      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-09/doc-iniycmua3294367.shtml",
-      "summary": "共和党在中期选举遭遇一连串惨重失利数日之后，美国总统特朗普依旧为自己的经济政策以及对伊朗战争辩护，但他承认在经济议题上“宣传话术做得很差”...",
-      "relatedStocks": [
-        "军工",
-        "黄金"
-      ],
-      "bullConcepts": [
-        "军工",
-        "避险资产"
-      ],
-      "bearConcepts": [
-        "风险资产"
-      ],
-      "bullIndustries": [
-        "军工",
-        "黄金"
-      ],
-      "bearIndustries": [
-        "航空",
-        "旅游"
-      ],
-      "heat": 24,
+      "heat": 38,
       "momentum": 18,
       "_auto": true
     },
@@ -306,7 +524,7 @@
         "传统IT服务"
       ],
       "heat": 38,
-      "momentum": 26,
+      "momentum": 18,
       "_auto": true
     },
     {
@@ -342,7 +560,7 @@
         "传统IT服务"
       ],
       "heat": 24,
-      "momentum": 26,
+      "momentum": 18,
       "_auto": true
     },
     {
@@ -370,244 +588,6 @@
       ],
       "bearIndustries": [
         "顺周期"
-      ],
-      "heat": 24,
-      "momentum": 26,
-      "_auto": true
-    },
-    {
-      "id": "abhvpwp3",
-      "title": "欧盟起诉IBM及其合作伙伴 边境管理系统项目陷入困境",
-      "tag": "宏观/综合",
-      "region": "欧洲",
-      "concept": "macro",
-      "time": "2026-11-09 14:17",
-      "datetime": "2026-11-09 14:17",
-      "source": "环球市场播报",
-      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-09/doc-iniycmua3278710.shtml",
-      "summary": "欧盟已对IBM及另外两家欧洲公司提起诉讼，原因是这三家公司在开发欧盟新型智能边境管理系统的过程中多次延期。今年夏天，该系统的推广曾导致欧洲各地机场出现大范围混乱。",
-      "relatedStocks": [
-        "宽基指数"
-      ],
-      "bullConcepts": [
-        "防御板块"
-      ],
-      "bearConcepts": [
-        "周期股"
-      ],
-      "bullIndustries": [
-        "公用事业"
-      ],
-      "bearIndustries": [
-        "顺周期"
-      ],
-      "heat": 29,
-      "momentum": 18,
-      "_auto": true
-    },
-    {
-      "id": "ab1ibjf9i",
-      "title": "特朗普回应“黄仁勋出轨”：我没听说他做错了什么，谁还没和别人交往过呢？",
-      "tag": "科技/AI",
-      "region": "美国",
-      "concept": "aiCapex",
-      "time": "2026-11-09 09:55",
-      "datetime": "2026-11-09 09:55",
-      "source": "环球市场播报",
-      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-09/doc-iniyazea3025897.shtml",
-      "summary": "英伟达首席执行官黄仁勋陷入个人关系风波。面对记者提问，美国总统特朗普公开为其辩护，称自己“没听说他做错了什么”，并表示：“他只是和某个人有过交往。",
-      "relatedStocks": [
-        "英伟达",
-        "微软",
-        "台积电"
-      ],
-      "bullConcepts": [
-        "AI算力",
-        "半导体",
-        "国产替代"
-      ],
-      "bearConcepts": [
-        "传统软件"
-      ],
-      "bullIndustries": [
-        "半导体",
-        "AI应用",
-        "算力基础设施"
-      ],
-      "bearIndustries": [
-        "传统IT服务"
-      ],
-      "heat": 24,
-      "momentum": 18,
-      "_auto": true
-    },
-    {
-      "id": "abzb05z8",
-      "title": "欧洲股市周一开盘涨跌不一，英伟达调查风波及关键经济数据令市场承压",
-      "tag": "科技/AI",
-      "region": "美国",
-      "concept": "aiCapex",
-      "time": "2026-11-09 16:08",
-      "datetime": "2026-11-09 16:08",
-      "source": "环球市场播报",
-      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-09/doc-iniycmtw2979003.shtml",
-      "summary": "11月9日，欧洲股市周一开盘表现平淡，投资者关注英伟达董事会对首席执行官黄仁勋展开独立调查的消息，同时等待本周即将公布的美国通胀及欧元区经济增长数据。",
-      "relatedStocks": [
-        "英伟达",
-        "微软",
-        "台积电"
-      ],
-      "bullConcepts": [
-        "AI算力",
-        "半导体",
-        "国产替代"
-      ],
-      "bearConcepts": [
-        "传统软件"
-      ],
-      "bullIndustries": [
-        "半导体",
-        "AI应用",
-        "算力基础设施"
-      ],
-      "bearIndustries": [
-        "传统IT服务"
-      ],
-      "heat": 46,
-      "momentum": 26,
-      "_auto": true
-    },
-    {
-      "id": "abw4nrmd",
-      "title": "花旗预计日本股市年底前反弹：近期暴跌已过度计入经济衰退风险",
-      "tag": "宏观/综合",
-      "region": "全球",
-      "concept": "macro",
-      "time": "2026-11-09 14:43",
-      "datetime": "2026-11-09 14:43",
-      "source": "环球市场播报",
-      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-09/doc-iniycmtu6277088.shtml",
-      "summary": "11月9日，花旗表示，日本股市有望在2026年年底前迎来反弹，认为11月6日的大幅抛售已提前反映了经济衰退情景，但该行并不预计日本或全球经济将陷入衰退。",
-      "relatedStocks": [
-        "宽基指数"
-      ],
-      "bullConcepts": [
-        "防御板块"
-      ],
-      "bearConcepts": [
-        "周期股"
-      ],
-      "bullIndustries": [
-        "公用事业"
-      ],
-      "bearIndustries": [
-        "顺周期"
-      ],
-      "heat": 24,
-      "momentum": 18,
-      "_auto": true
-    },
-    {
-      "id": "ab15cvxvh",
-      "title": "当地州长：俄罗斯基里希工业区遭无人机袭击",
-      "tag": "地缘/政治",
-      "region": "全球",
-      "concept": "macro",
-      "time": "2026-11-09 12:55",
-      "datetime": "2026-11-09 12:55",
-      "source": "环球市场播报",
-      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-09/doc-iniycfna6591895.shtml",
-      "summary": "州长亚历山大·德罗兹坚科表示，隔夜无人机袭击了俄罗斯列宁格勒州基里希的工业区，防空系统在该地区击落了113架无人机。基里希是俄罗斯最大的炼油厂之一——苏尔古特石油天然...",
-      "relatedStocks": [
-        "军工",
-        "黄金"
-      ],
-      "bullConcepts": [
-        "军工",
-        "避险资产"
-      ],
-      "bearConcepts": [
-        "风险资产"
-      ],
-      "bullIndustries": [
-        "军工",
-        "黄金"
-      ],
-      "bearIndustries": [
-        "航空",
-        "旅游"
-      ],
-      "heat": 29,
-      "momentum": 18,
-      "_auto": true
-    },
-    {
-      "id": "abon1qm9",
-      "title": "黄仁勋风波引发美国科技圈分歧：有人力挺 有人警告",
-      "tag": "科技/AI",
-      "region": "美国",
-      "concept": "aiCapex",
-      "time": "2026-11-09 09:15",
-      "datetime": "2026-11-09 09:15",
-      "source": "滚动播报",
-      "url": "https://finance.sina.com.cn/world/2026-11-09/doc-iniyauwk3471488.shtml",
-      "summary": "北京时间11月9日，据《商业内幕》报道，英伟达CEO黄仁勋因个人关系问题及相关调查陷入舆论风波后，美国科技界、华尔街投资人及政界人士纷纷发表看法。",
-      "relatedStocks": [
-        "英伟达",
-        "微软",
-        "台积电"
-      ],
-      "bullConcepts": [
-        "AI算力",
-        "半导体",
-        "国产替代"
-      ],
-      "bearConcepts": [
-        "传统软件"
-      ],
-      "bullIndustries": [
-        "半导体",
-        "AI应用",
-        "算力基础设施"
-      ],
-      "bearIndustries": [
-        "传统IT服务"
-      ],
-      "heat": 24,
-      "momentum": 18,
-      "_auto": true
-    },
-    {
-      "id": "ab1h6l61c",
-      "title": "英伟达美股夜盘跌幅扩大至近6%，此前黄仁勋承认婚外情并致歉。",
-      "tag": "科技/AI",
-      "region": "美国",
-      "concept": "aiCapex",
-      "time": "2026-11-09 14:54",
-      "datetime": "2026-11-09 14:54",
-      "source": "华尔街见闻",
-      "url": "https://wallstreetcn.com/livenews/3196726",
-      "summary": "英伟达美股夜盘跌幅扩大至近6%，此前黄仁勋承认婚外情并致歉。",
-      "relatedStocks": [
-        "英伟达",
-        "微软",
-        "台积电"
-      ],
-      "bullConcepts": [
-        "AI算力",
-        "半导体",
-        "国产替代"
-      ],
-      "bearConcepts": [
-        "传统软件"
-      ],
-      "bullIndustries": [
-        "半导体",
-        "AI应用",
-        "算力基础设施"
-      ],
-      "bearIndustries": [
-        "传统IT服务"
       ],
       "heat": 24,
       "momentum": 18,
