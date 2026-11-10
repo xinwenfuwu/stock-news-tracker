@@ -1,176 +1,88 @@
 {
-  "generatedAt": "2026-11-10 04:38",
+  "generatedAt": "2026-11-10 12:03",
   "generatedBy": "GitHub Actions · 多源实时聚合",
   "sourceCount": 5,
-  "autoCount": 9,
+  "autoCount": 4,
   "events": [
     {
-      "id": "ap1ny23gr",
-      "title": "美国众议院民主党领导人Hakeem Jeffries：（总统特朗普的）特使库什纳不可能是一个可靠的伙伴。",
+      "id": "apf44i5b",
+      "title": "美国国务卿鲁比奥9日说，美国和以色列正就美对以军事援助事宜讨论新的谅解备忘录。据俄新社报道，鲁比奥当天在法国参加七国集团外长会议后表示，美国总统特朗普认为以色列“现在足够繁荣富裕…",
       "tag": "人物/特朗普",
       "region": "美国",
-      "concept": "usMacro",
-      "time": "2026-11-10 04:33",
-      "datetime": "2026-11-10 04:33",
+      "concept": "defense",
+      "time": "2026-11-10 11:58",
+      "datetime": "2026-11-10 11:58",
       "source": "华尔街见闻",
-      "url": "https://wallstreetcn.com/livenews/3197150",
-      "summary": "美国众议院民主党领导人Hakeem Jeffries：（总统特朗普的）特使库什纳不可能是一个可靠的伙伴。",
+      "url": "https://wallstreetcn.com/livenews/3197381",
+      "summary": "美国国务卿鲁比奥9日说，美国和以色列正就美对以军事援助事宜讨论新的谅解备忘录。据俄新社报道，鲁比奥当天在法国参加七国集团外长会议后表示，美国总统特朗普认为以色列“现在足够繁荣富裕”，能够向美方购买武器，“美国不再需要为其提供资金”。鲁比奥说，特朗普希望尽快执行新的谅解备忘录。（新华社）",
       "relatedStocks": [
-        "宽基指数"
+        "军工",
+        "黄金"
       ],
       "bullConcepts": [
-        "防御板块"
+        "军工",
+        "避险资产"
       ],
       "bearConcepts": [
-        "周期股"
+        "风险资产"
       ],
       "bullIndustries": [
-        "公用事业"
+        "军工",
+        "黄金"
       ],
       "bearIndustries": [
-        "顺周期"
+        "航空",
+        "旅游"
       ],
-      "heat": 87,
-      "momentum": 96,
-      "_auto": true
-    },
-    {
-      "id": "ap149vmyg",
-      "title": "据知情人士透露，英伟达CEO计划出席Semafor的“硅谷与世界”活动。（路透）",
-      "tag": "人物/黄仁勋",
-      "region": "美国",
-      "concept": "aiCapex",
-      "time": "2026-11-10 04:05",
-      "datetime": "2026-11-10 04:05",
-      "source": "华尔街见闻",
-      "url": "https://wallstreetcn.com/livenews/3197140",
-      "summary": "据知情人士透露，英伟达CEO计划出席Semafor的“硅谷与世界”活动。（路透）",
-      "relatedStocks": [
-        "英伟达",
-        "微软",
-        "台积电"
-      ],
-      "bullConcepts": [
-        "AI算力",
-        "半导体",
-        "国产替代"
-      ],
-      "bearConcepts": [
-        "传统软件"
-      ],
-      "bullIndustries": [
-        "半导体",
-        "AI应用",
-        "算力基础设施"
-      ],
-      "bearIndustries": [
-        "传统IT服务"
-      ],
-      "heat": 69,
+      "heat": 24,
       "momentum": 36,
       "_auto": true
     },
     {
-      "id": "ap1bnn04c",
-      "title": "SpaceX：计划于11月16日在加利福尼亚州范登堡太空军基地4E航天发射场用猎鹰9号火箭执行USSF-266任务。",
-      "tag": "人物/马斯克",
-      "region": "全球",
-      "concept": "macro",
-      "time": "2026-11-10 04:17",
-      "datetime": "2026-11-10 04:17",
-      "source": "新浪7×24",
-      "url": "https://finance.sina.cn/7x24/2026-11-10/detail-iniyetpk6135994.d.html",
-      "summary": "SpaceX：计划于11月16日在加利福尼亚州范登堡太空军基地4E航天发射场用猎鹰9号火箭执行USSF-266任务。",
-      "relatedStocks": [
-        "宽基指数"
-      ],
-      "bullConcepts": [
-        "防御板块"
-      ],
-      "bearConcepts": [
-        "周期股"
-      ],
-      "bullIndustries": [
-        "公用事业"
-      ],
-      "bearIndustries": [
-        "顺周期"
-      ],
-      "heat": 74,
-      "momentum": 71,
-      "_auto": true
-    },
-    {
-      "id": "aprjrq0e",
-      "title": "美国总统特朗普在与卡塔尔领导人会谈后表示，卡塔尔更希望与伊朗实现和平解决，但美国已做好准备，如有必要将采取打击行动。",
+      "id": "apx4i2ut",
+      "title": "外媒爆料：内塔尼亚胡“每天”都给特朗普打电话，敦促其重启对伊朗军事打击",
       "tag": "人物/特朗普",
       "region": "美国",
-      "concept": "usMacro",
-      "time": "2026-11-10 04:18",
-      "datetime": "2026-11-10 04:18",
+      "concept": "defense",
+      "time": "2026-11-10 11:20",
+      "datetime": "2026-11-10 11:20",
       "source": "新浪7×24",
-      "url": "https://finance.sina.cn/7x24/2026-11-10/detail-iniyetpk6136196.d.html",
-      "summary": "美国总统特朗普在与卡塔尔领导人会谈后表示，卡塔尔更希望与伊朗实现和平解决，但美国已做好准备，如有必要将采取打击行动。",
+      "url": "https://finance.sina.cn/7x24/2026-11-10/detail-iniyfkma5990342.d.html",
+      "summary": "【外媒爆料：内塔尼亚胡“每天”都给特朗普打电话，敦促其重启对伊朗军事打击】据英国《金融时报》11月10日报道，消息人士透露，以色列总理内塔尼亚胡“每天”都给美国总统特朗普打电话游说对方对伊朗发动新一轮军事打击。这一消息引发以色列媒体关注。据报道，一名据称参与了相关讨论的外交官透露：“内塔尼亚胡每天都给特朗普打电话，敦促他重启军事行动。白宫内外反对战争的人士正试图阻止此事。地区…",
       "relatedStocks": [
-        "宽基指数"
+        "军工",
+        "黄金"
       ],
       "bullConcepts": [
-        "防御板块"
+        "军工",
+        "避险资产"
       ],
       "bearConcepts": [
-        "周期股"
+        "风险资产"
       ],
       "bullIndustries": [
-        "公用事业"
+        "军工",
+        "黄金"
       ],
       "bearIndustries": [
-        "顺周期"
+        "航空",
+        "旅游"
       ],
-      "heat": 47,
-      "momentum": 61,
+      "heat": 51,
+      "momentum": 31,
       "_auto": true
     },
     {
-      "id": "ap8nlegf",
-      "title": "美国国务卿鲁比奥：与法国总统马克龙讨论了联合国秘书长候选人，我们看到有两三名合格人选可出任联合国秘书长。",
-      "tag": "人物/马克龙",
-      "region": "美国",
-      "concept": "usMacro",
-      "time": "2026-11-10 03:34",
-      "datetime": "2026-11-10 03:34",
-      "source": "新浪7×24",
-      "url": "https://finance.sina.cn/7x24/2026-11-10/detail-iniyetpk6130658.d.html",
-      "summary": "美国国务卿鲁比奥：与法国总统马克龙讨论了联合国秘书长候选人，我们看到有两三名合格人选可出任联合国秘书长。",
-      "relatedStocks": [
-        "宽基指数"
-      ],
-      "bullConcepts": [
-        "防御板块"
-      ],
-      "bearConcepts": [
-        "周期股"
-      ],
-      "bullIndustries": [
-        "公用事业"
-      ],
-      "bearIndustries": [
-        "顺周期"
-      ],
-      "heat": 60,
-      "momentum": 26,
-      "_auto": true
-    },
-    {
-      "id": "ap1krqr1k",
-      "title": "英伟达的黄仁勋不再计划出席周一的Anthropic CEO论坛。（Business Insider）",
+      "id": "ap1t81iau",
+      "title": "英伟达黄仁勋遭股东集体诉讼，调查风波致英伟达市值蒸发超万亿元",
       "tag": "人物/黄仁勋",
-      "region": "全球",
-      "concept": "ai",
-      "time": "2026-11-10 02:25",
-      "datetime": "2026-11-10 02:25",
-      "source": "华尔街见闻",
-      "url": "https://wallstreetcn.com/livenews/3197103",
-      "summary": "英伟达的黄仁勋不再计划出席周一的Anthropic CEO论坛。（Business Insider）",
+      "region": "美国",
+      "concept": "aiCapex",
+      "time": "2026-11-10 11:21",
+      "datetime": "2026-11-10 11:21",
+      "source": "新浪7×24",
+      "url": "https://finance.sina.cn/7x24/2026-11-10/detail-iniyfkmh9389667.d.html",
+      "summary": "【英伟达黄仁勋遭股东集体诉讼，调查风波致英伟达市值蒸发超万亿元】英伟达董事会11月8日宣布，将针对有关首席执行官黄仁勋个人关联事项的指控启动独立调查。受相关风波影响，黄仁勋的去留成为市场焦点。当地时间9日，英伟达股价走低，最终收跌4.27%，报每股178.67美元，市值缩水约1930亿美元（约合人民币12882亿元）。而在美股收盘五分钟后，英伟达及黄仁勋便遭到股东集体诉讼，指…",
       "relatedStocks": [
         "英伟达",
         "微软",
@@ -192,21 +104,21 @@
       "bearIndustries": [
         "传统IT服务"
       ],
-      "heat": 87,
-      "momentum": 18,
+      "heat": 29,
+      "momentum": 31,
       "_auto": true
     },
     {
-      "id": "ap1ues71",
-      "title": "马斯克：SpaceX与Anthropic算力合约并非单向押注",
-      "tag": "人物/马斯克",
-      "region": "全球",
-      "concept": "ai",
-      "time": "2026-11-09 15:58",
-      "datetime": "2026-11-09 15:58",
+      "id": "ap1hz76zu",
+      "title": "11月10日外盘头条：美国政府停摆风险再现 涉出轨风波 黄仁勋退出两场活动 Anthropic或周二启动IPO正式推介",
+      "tag": "人物/黄仁勋",
+      "region": "美国",
+      "concept": "aiCapex",
+      "time": "2026-11-10 05:30",
+      "datetime": "2026-11-10 05:30",
       "source": "环球市场播报",
-      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-09/doc-iniycmua3358164.shtml",
-      "summary": "风投家Chamath Palihapitiya此前提出，SpaceX与Anthropic的算力合同里包含解约条款，SpaceX可借此向这家AI实验室大幅抬价。周日，埃隆·马斯克对此作出反驳...",
+      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-10/doc-iniyetpk6147858.shtml",
+      "summary": "全球财经媒体昨夜今晨共同关注的头条新闻主要有： 1、美国政府停摆风险再现 民主党考虑借机施压特朗普结束伊朗战争 2、英伟达CEO黄仁勋退出两场活动 日程中不再出现其姓名...",
       "relatedStocks": [
         "英伟达",
         "微软",
@@ -228,73 +140,7 @@
       "bearIndustries": [
         "传统IT服务"
       ],
-      "heat": 87,
-      "momentum": 23,
-      "_auto": true
-    },
-    {
-      "id": "apeya52i",
-      "title": "OpenAI：ChatGPT企业版现在投放到亚马逊AWS Marketplace。",
-      "tag": "人物/奥尔特曼",
-      "region": "全球",
-      "concept": "ai",
-      "time": "2026-11-10 03:05",
-      "datetime": "2026-11-10 03:05",
-      "source": "华尔街见闻",
-      "url": "https://wallstreetcn.com/livenews/3197113",
-      "summary": "OpenAI：ChatGPT企业版现在投放到亚马逊AWS Marketplace。",
-      "relatedStocks": [
-        "英伟达",
-        "微软",
-        "台积电"
-      ],
-      "bullConcepts": [
-        "AI算力",
-        "半导体",
-        "国产替代"
-      ],
-      "bearConcepts": [
-        "传统软件"
-      ],
-      "bullIndustries": [
-        "半导体",
-        "AI应用",
-        "算力基础设施"
-      ],
-      "bearIndustries": [
-        "传统IT服务"
-      ],
-      "heat": 24,
-      "momentum": 26,
-      "_auto": true
-    },
-    {
-      "id": "ap12gypn9",
-      "title": "扎克伯格：Muse Ember将成为最小模型。",
-      "tag": "人物/扎克伯格",
-      "region": "全球",
-      "concept": "macro",
-      "time": "2026-11-10 01:59",
-      "datetime": "2026-11-10 01:59",
-      "source": "华尔街见闻",
-      "url": "https://wallstreetcn.com/livenews/3197094",
-      "summary": "扎克伯格：Muse Ember将成为最小模型。",
-      "relatedStocks": [
-        "宽基指数"
-      ],
-      "bullConcepts": [
-        "防御板块"
-      ],
-      "bearConcepts": [
-        "周期股"
-      ],
-      "bullIndustries": [
-        "公用事业"
-      ],
-      "bearIndustries": [
-        "顺周期"
-      ],
-      "heat": 24,
+      "heat": 29,
       "momentum": 18,
       "_auto": true
     },
