@@ -10442,7 +10442,7 @@ const app = createApp({
     //       选了 N 日 = 只统计「事件/新闻时间距今天 0 ~ N-1 天」的条目。
     // 作用范围：inflRangeDays 管影响力事件（按事件日期）；futureRangeDays 管突发/人物（按新闻 datetime）。
     //       「未来」子版块的事件日期都在未来，无法用「近 N 日」限制，故不受影响（仍按日期排序）。
-    const NEWS_RANGE_OPTIONS = [3, 5, 7, 10, 15, 30];
+    const NEWS_RANGE_OPTIONS = [1, 3, 5, 7, 10, 15, 30];
     // 一次性迁移：旧版是单一共享值 newsRangeDays，升级后拆成两侧独立设置，把旧值继承给两边（之后各改各的）。
     // 迁移标记与 newsRangeDays 一并落盘（Store autosave），重复执行也安全（legacy 已清空则不会覆盖用户后续改动）。
     if (D && !D.newsRangeMigrated) {
