@@ -617,7 +617,7 @@
     }
     return SOURCE_ORDER.map(s => {
       const st = bySource[s.key];
-      const dist = CATEGORIES.map(cat => ({ cat, name: cat, count: st.byCat[cat] || 0, news: st.news[cat] || [], sentiment: computeCategorySentiment(st.news[cat] || []) }))
+      const dist = CATEGORIES.map(cat => ({ cat, name: cat, count: st.byCat[cat] || 0, news: st.news[cat] || [], sentiment: conceptSentiment(cat, st.news[cat] || []) }))
         .filter(d => d.count > 0)
         .sort((a, b) => b.count - a.count);
       const max = dist.length ? dist[0].count : 1;
@@ -661,7 +661,7 @@
     return SOURCE_ORDER.map(s => {
       const st = bySource[s.key];
       const dist = Object.keys(st.counter)
-        .map(name => ({ name: name, cat: name, count: st.counter[name], news: st.bucket[name] || [], sentiment: computeCategorySentiment(st.bucket[name] || []) }))
+        .map(name => ({ name: name, cat: name, count: st.counter[name], news: st.bucket[name] || [], sentiment: conceptSentiment(name, st.bucket[name] || []) }))
         .sort((a, b) => b.count - a.count || a.name.localeCompare(b.name));
       const max = dist.length ? dist[0].count : 1;
       dist.forEach(d => {
@@ -839,7 +839,7 @@
         allNews.push(it);
       }
       const topics = Object.keys(counter)
-        .map(name => ({ name, count: counter[name], samples: samples[name] || [], news: bucket[name] || [], sentiment: computeCategorySentiment(bucket[name] || []) }))
+        .map(name => ({ name, count: counter[name], samples: samples[name] || [], news: bucket[name] || [], sentiment: conceptSentiment(name, bucket[name] || []) }))
         .sort((a, b) => b.count - a.count || a.name.localeCompare(b.name));
       const max = topics.length ? topics[0].count : 1;
       topics.forEach(t => {
@@ -1062,6 +1062,36 @@
     if (sentiment === 'bull') return 'senti-bull';   // 利好 → 红（涨）
     if (sentiment === 'bear') return 'senti-bear';   // 利空 → 绿（跌）
     return '';                                        // 中性 → 不附加 class
+  }
+
+  /**
+   * 概念级情绪（batch-sentiment-v2）：在通用 A 股多空词典基础上，对「军事 / 战争 / 地缘 /
+   * 军工 / 国防」主题采用「战争视角」着色——升级对抗类词 = 利好战争(红)，缓和停火类词 = 利空战争(绿)。
+   * 这是用户明确的语义：军事战争新闻量红色=战争升级加剧、绿色=趋向和平；禁止出现同名概念三色矛盾。
+   * 通用词典把「制裁 / 风险 / 承压 / 紧张」算作利空(绿)，但对战争主题它们恰恰是升级信号，
+   * 故在战争视角下从利空词中剔除（改计入利好），使「美对俄制裁、地缘风险加剧」这类升级新闻正确显示为红。
+   * 其余概念仍走通用 A 股多空词典（红=利好该行业/概念、绿=利空，与用户“红=利好该子版块”的定义一致）。
+   */
+  const WAR_ESC = ['战争','冲突','交火','开战','战事','战役','袭击','空袭','轰炸','导弹','军演','演习','北约','美军','俄军','乌军','以军','胡塞','红海','中东局势','台海','南海','朝鲜','普京','伊朗','以伊','美伊','军援','弹药','核武器','核武','边境','封锁','俄乌','乌克兰','以色列','加沙','哈马斯','摩擦','对峙','威慑','紧张','制裁','风险','地缘','扩军','征兵','军费','军备','战云','备战','前线','沦陷','攻占','击落','巡航','舰队'];
+  const WAR_DEESC = ['停火','和谈','缓和','撤军','降级','和平','谈判','停战','调停','斡旋','降温','休战','复交','撤出','解禁','止战'];
+  // 战争视角下，这些通用利空词实为升级信号，不计入利空
+  const WAR_BEAR_SAFE = SENT_BEAR.filter(w => !['制裁','风险','承压','紧张'].includes(w));
+  function isWarTheme(name) { return /军事|战争|地缘|军工|国防|冲突/.test(name || ''); }
+  function conceptSentiment(name, newsArr) {
+    if (!isWarTheme(name)) return computeCategorySentiment(newsArr);   // 非战争主题：通用 A 股多空
+    let bull = 0, bear = 0;
+    for (const it of (newsArr || [])) {
+      const t = String((it && it.text) || '');
+      for (let i = 0; i < WAR_ESC.length; i++) if (t.indexOf(WAR_ESC[i]) >= 0) bull++;
+      for (let i = 0; i < WAR_DEESC.length; i++) if (t.indexOf(WAR_DEESC[i]) >= 0) bear++;
+      for (let i = 0; i < SENT_BULL.length; i++) if (t.indexOf(SENT_BULL[i]) >= 0) bull++;
+      for (let i = 0; i < WAR_BEAR_SAFE.length; i++) if (t.indexOf(WAR_BEAR_SAFE[i]) >= 0) bear++;
+    }
+    const total = bull + bear;
+    if (total === 0) return 'neutral';
+    if (bear / total > 0.5) return 'bear';
+    if (bull / total > 0.5) return 'bull';
+    return 'neutral';
   }
 
 
@@ -1303,8 +1333,8 @@
       // 时间新的在前（快讯本身就是时间倒序，这里再兜一次底）
       news.sort((a, b) => String(b.time || '').localeCompare(String(a.time || '')));
       const row = { key: dim.key, name: dim.name, icon: dim.icon, color: dim.color, count: news.length, news };
-      // batch-sentiment：利好(bull)→红 / 利空(bear)→绿（概念/行业归类新闻数着色用）
-      row.sentiment = computeCategorySentiment(news);
+      // batch-sentiment-v2：利好(bull)→红 / 利空(bear)→绿（概念/行业/题材归类新闻数着色用；战争主题走战争视角）
+      row.sentiment = conceptSentiment(dim.name, news);
       // batch31：标了 projectList 的维度（各省项目）额外产出可展开的项目清单
       if (dim.projectList) row.projects = briefProjectList(news);
       return row;
@@ -1483,7 +1513,7 @@
     BRIEF_INDUSTRY_DIMS, BRIEF_INDUSTRY_KEYWORDS,
     BRIEF_MODES, BRIEF_OTHER_KEY,
     // batch-senti：多空着色——利好(bull)→红 / 利空(bear)→绿（新闻数量数字同源逻辑）
-    computeCategorySentiment, newsSentiment, sentiClass,
+    computeCategorySentiment, newsSentiment, sentiClass, conceptSentiment,
     // batch31：各省项目（省市词表 / 项目特征词 / 组合命中规则 / 项目清单抽取）
     PROVINCES, PROJECT_WORDS, _hitRule, briefProjectList,
     // batch56：严格分类引擎（供单测直接断言打分/主体判定）
