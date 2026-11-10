@@ -10454,11 +10454,13 @@ const app = createApp({
     }
     // ===== 20261110c：新闻范围（近 N 日）——两个面板各自独立设置 =====
     // 位置：影响力事件 / 未来事件 两个面板标题行「🔄 刷新数据」左侧各有一个选择框，各管各的，互不同步。
-    // 语义：'' / null = 不选（影响力事件仍按默认 10 日窗口，突发/人物不限范围）；
-    //       选了 N 日 = 只统计「事件/新闻时间距今天 0 ~ N-1 天」的条目。
+    // 语义：'' / null = 不选（影响力事件仍按默认 10 交易日窗口，突发/人物不限范围）；
+    //       选了 N 日 = 只统计「以 15:00 收盘为界、跳过周末的交易日窗口」内的条目：
+    //       起点 = (N-1) 个交易日前那天的 15:00 收盘，终点 = 现在（详见 rangeStartMs / tradingDayOffsetISO）。
+    //       例：选 1 = 今天（最近交易日）15:00 ~ 现在；选 2 = 昨天（最近交易日）15:00 ~ 现在。
     // 作用范围：inflRangeDays 管影响力事件（按事件日期）；futureRangeDays 管突发/人物（按新闻 datetime）。
-    //       「未来」子版块的事件日期都在未来，无法用「近 N 日」限制，故不受影响（仍按日期排序）。
-    const NEWS_RANGE_OPTIONS = [1, 3, 5, 7, 10, 15, 30];
+    //       「未来」子版块改用 futureWithinDays：事件日期落在「今天 ~ 今天+N 个自然日」内（含进行中）。
+    const NEWS_RANGE_OPTIONS = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15];
     // 一次性迁移：旧版是单一共享值 newsRangeDays，升级后拆成两侧独立设置，把旧值继承给两边（之后各改各的）。
     // 迁移标记与 newsRangeDays 一并落盘（Store autosave），重复执行也安全（legacy 已清空则不会覆盖用户后续改动）。
     if (D && !D.newsRangeMigrated) {
@@ -10472,16 +10474,18 @@ const app = createApp({
     }
     const inflRangeDays = ref((D && Number(D.inflRangeDays)) ? Number(D.inflRangeDays) : null);
     const futureRangeDays = ref((D && Number(D.futureRangeDays)) ? Number(D.futureRangeDays) : null);
-    /** 事件/新闻时间是否落在「近 n 日」范围内；n 为空时恒为 true。
+    /** 事件/新闻时间是否落在「近 n 日（股市收盘窗口）」范围内；n 为空时恒为 true。
      *  时间字段优先级：datetime（新闻精确时间）> time > date（事件日期）。
-     *  无任何时间信息的条目保留，避免整条被误剔除。 */
+     *  窗口 = [ (n-1) 个交易日前 15:00, 现在 ]；无任何时间信息的条目保留，避免整条被误剔除。 */
     function newsInRange(e, n) {
       const days = Number(n) || 0;
       if (!days) return true;
       const raw = (e && (e.datetime || e.time || e.date)) || '';
-      const diff = daysFromToday(String(raw).slice(0, 10));
-      if (diff === null) return true;
-      return diff <= 0 && diff >= -(days - 1);
+      if (!raw) return true;
+      const t = new Date(String(raw).replace(' ', 'T')).getTime();
+      if (isNaN(t)) return true;
+      const now = Date.now();
+      return t >= rangeStartMs(days) && t <= now;
     }
     /** 选择框显示文案：n 为空 = 不选（默认） */
     function rangeLabel(n) {
@@ -10532,6 +10536,42 @@ const app = createApp({
     function todayISO() {
       const d = new Date();
       return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+    }
+    // 20261110k：股市收盘窗口（近 N 日）。以每天 15:00 收盘为边界、跳过周末（周六/周日）的交易日窗口。
+    // 近 N 日 = 起点（第 N-1 个交易日前那天的 15:00 收盘）→ 终点（现在）。
+    //   选 1 = 今天（或最近交易日）15:00 ~ 现在；选 2 = 昨天（或最近交易日）15:00 ~ 现在；以此类推。
+    function _isoOf(d) { return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); }
+    /** 取 base 当天或之前最近的一个交易日（跳过周六/周日），返回 Date（零点） */
+    function mostRecentTradingDay(base) {
+      const d = new Date(base); d.setHours(0, 0, 0, 0);
+      while (d.getDay() === 0 || d.getDay() === 6) d.setDate(d.getDate() - 1);
+      return d;
+    }
+    /** k=0 → 今天（或最近交易日）；k>=1 → 再向前数 k 个完整交易日，返回 YYYY-MM-DD */
+    function tradingDayOffsetISO(k) {
+      const d = mostRecentTradingDay(new Date());
+      for (let i = 0; i < (k | 0); i++) {
+        do { d.setDate(d.getDate() - 1); } while (d.getDay() === 0 || d.getDay() === 6);
+      }
+      return _isoOf(d);
+    }
+    /** 近 n 日窗口起点（毫秒）：第 n-1 个交易日前那天的 15:00 */
+    function rangeStartMs(n) {
+      const iso = tradingDayOffsetISO((Number(n) || 1) - 1);
+      const t = new Date(iso + 'T15:00:00');
+      return isNaN(t.getTime()) ? 0 : t.getTime();
+    }
+    /** 近 n 日窗口起点日期（YYYY-MM-DD），用于按日期比较 / 文案 */
+    function rangeStartISO(n) { return tradingDayOffsetISO((Number(n) || 1) - 1); }
+    /** 未来子版块：事件日期落在「今天 ~ 今天+N 个自然日」内（含进行中、含第 N 天）。
+     *   开始时间不超过 N 天、结束时间不早于今天，即视为「未来 N 日内」。n 为空时恒 true。 */
+    function futureWithinDays(e, n) {
+      const days = Number(n) || 0;
+      if (!days) return true;
+      const dStart = daysFromToday(e && e.date);
+      const dEnd = daysFromToday((e && e.endDate) || (e && e.date));
+      if (dStart === null || dEnd === null) return true;
+      return dStart <= days && dEnd >= 0;
     }
     // 进行中的会期（date 已过但 endDate 未过）必须保留；已结束的直接淘汰
     function isUpcoming(e) { return !!(e && e.date && (e.endDate || e.date) >= todayISO()); }
@@ -10674,7 +10714,8 @@ const app = createApp({
         const remote = await fetchUpcomingEvents(seq);
         const src = (remote && remote.length) ? remote : UPCOMING_EVENTS;
         // 统一按「今天」过滤：已结束剔除，今日举行与会期进行中的一律保留
-        const all = src.filter(isUpcoming).map(resolveFutureImpact);
+        // 20261110k：若设置了「近 N 日」范围，「未来」子版块只保留距今不超过 N 天的事件
+        const all = src.filter(isUpcoming).filter(e => futureWithinDays(e, futureRangeDays.value)).map(resolveFutureImpact);
         all.forEach(e => { e._scope = upcomingScope(e); e.surge = computeSurge(e); });
         allUpcoming = all;
         list = (scopeAtStart === 'all') ? [...all] : all.filter(e => e._scope === scopeAtStart);
@@ -10768,14 +10809,24 @@ const app = createApp({
       if (D) D.inflInfoHidden = inflInfoHidden.value;
     }
     function regionLabel(r) { return r === 'cn' ? '中国' : r === 'us' ? '美国' : '全世界'; }
-    function sortLabel() { return inflSortBy.value === 'people' ? '影响人数' : '影响股民数'; }
+    function sortLabel() {
+      const k = inflSortBy.value;
+      if (k === 'time') return '时间';
+      return k === 'people' ? '影响人数' : '影响股民数';
+    }
     function sortInfluence(list) {
-      const key = inflSortBy.value === 'people' ? 'affectedPeople' : 'affected';
+      const by = inflSortBy.value;
+      if (by === 'time') {
+        // 按时间：日期新的在前（降序）
+        return [...(list || [])].sort((a, b) => String(b.date).localeCompare(String(a.date)));
+      }
+      const key = by === 'people' ? 'affectedPeople' : 'affected';
       return [...(list || [])].sort((a, b) => (Number(b[key]) || 0) - (Number(a[key]) || 0));
     }
-    // ===== 20261109i：影响力事件只统计「距今 10 日内」（含今天）的事件 =====
-    // 口径：事件日期距今天 0~9 天（共 10 个自然日）才展示并计入排行；更早的一律剔除。
-    // 20261110c：默认 10 日；选了本面板自己的新闻范围后窗口跟随选择（见 inflDays()）。
+    // ===== 20261109i：影响力事件只统计「距今 10 交易日内」（含今天）的事件 =====
+    // 口径：事件日期落在「(N-1) 个交易日前 15:00 ~ 现在」的收盘窗口内才展示并计入排行（N 默认 10）。
+    // 20261110c：默认 10 交易日；选了本面板自己的新闻范围后窗口跟随选择（见 inflDays()）。
+    // 20261110k：窗口改为股市收盘窗口（tradingDayOffsetISO / rangeStartISO），按交易日而非自然日。
     const INFL_WINDOW_DAYS = 10;
     /** 影响力事件当前生效的窗口天数：选了「近 N 日」用它，未选则用默认 10 日 */
     function inflDays() { return Number(inflRangeDays.value) || INFL_WINDOW_DAYS; }
@@ -10784,13 +10835,14 @@ const app = createApp({
       const d = new Date(); d.setHours(12, 0, 0, 0); d.setDate(d.getDate() - Number(daysAgo || 0));
       return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
     }
-    /** 是否落在「近 N 日内」窗口（含今天）：daysFromToday 今天=0、过去为负、未来为正 */
+    /** 是否落在「近 N 交易日（股市收盘窗口）」内：事件日期 ∈ [ (N-1)交易日前 15:00 起点日期, 今天 ] */
     function inflInWindow(e) {
-      const diff = daysFromToday(e && e.date);
-      return diff !== null && diff <= 0 && diff >= -(inflDays() - 1);
+      const startISO = rangeStartISO(inflDays());
+      const date = (e && e.date) || '';
+      return date >= startISO && date <= todayISO();
     }
     const inflWindowDays = computed(() => inflDays());
-    const inflWindowLabel = computed(() => dateOffsetISO(inflDays() - 1) + ' ~ ' + todayISO());
+    const inflWindowLabel = computed(() => rangeStartISO(inflDays()) + ' 15:00（收盘窗口）~ 现在');
     // 样例数据的事件原始日期跨度数月（最早 2026-02），若直接按窗口过滤会只剩 1~2 条。
     // 故加载时把「同一区域」的事件按原时间先后重锚到最近 N 个自然日内（每天约 2 条），
     // 让窗口口径下列表仍保持完整内容；将来接入真实事件源时真实日期本就在窗口内，重锚不会改动它们。
@@ -10808,7 +10860,7 @@ const app = createApp({
         list.forEach((e, i) => {
           const daysAgo = Math.min(n - 1,
             Math.round(i * (n - 1) / Math.max(1, list.length - 1)));
-          out.push({ ...e, date: dateOffsetISO(daysAgo) });
+          out.push({ ...e, date: tradingDayOffsetISO(daysAgo) });
         });
       });
       _inflAnchorCache[n] = out;
@@ -10824,12 +10876,13 @@ const app = createApp({
         .filter(e => e.region === reg && inflInWindow(e))
         .map(resolveInfluence);
       inflEvents.value = sortInfluence(filtered);
-      inflDate.value = '实时整理 · 近 ' + inflDays() + ' 日窗口';
+      inflDate.value = '实时整理 · 近 ' + inflDays() + ' 交易日（收盘窗口）';
       inflError.value = '';
     }
     function setInflRegion(r) { inflRegion.value = r; if (D && D.inflRegion !== undefined) D.inflRegion = r; loadInfluence(); }
     function setInflSort(k) {
-      inflSortBy.value = (k === 'people') ? 'people' : 'investors';
+      if (k === 'time') inflSortBy.value = 'time';
+      else inflSortBy.value = (k === 'people') ? 'people' : 'investors';
       if (D && D.inflSortBy !== undefined) D.inflSortBy = inflSortBy.value;
       loadInfluence();
     }
@@ -11481,7 +11534,7 @@ const app = createApp({
     if (D.emHotStocks && D.emHotStocks.length) emHotStocks.value = D.emHotStocks;
     // 影响力事件：恢复上次选择的区域与排序口径，并加载对应事件（数据来自本地整理样例，非日期维度）
     if (D.inflRegion === 'cn' || D.inflRegion === 'us' || D.inflRegion === 'world') inflRegion.value = D.inflRegion;
-    if (D.inflSortBy === 'people' || D.inflSortBy === 'investors') inflSortBy.value = D.inflSortBy;
+    if (D.inflSortBy === 'people' || D.inflSortBy === 'investors' || D.inflSortBy === 'time') inflSortBy.value = D.inflSortBy;
     // 20261108b：恢复「口径说明」的隐藏状态（用户上次点了隐藏，刷新后仍保持隐藏）
     if (typeof D.inflInfoHidden === 'boolean') inflInfoHidden.value = D.inflInfoHidden;
     loadInfluence();
