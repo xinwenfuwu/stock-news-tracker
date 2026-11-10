@@ -7156,6 +7156,43 @@ const app = createApp({
       }
     }
     resetBriefWin();
+    // ===== 20261110a：每日快讯「今天 / 昨天 / 前天」快捷窗口（15:00 收盘换日口径） =====
+    // 每天收盘以后，默认窗口即「今天」（新闻统计开始时间 = 上次闭市 15:00）。
+    // 「昨天」= 上一个默认的新闻统计开始时间（默认窗口整体前移 1 个交易日）；
+    // 「前天」= 上上一个默认的新闻统计开始时间（前移 2 个交易日，跳过周末）。
+    // 点击后把起止时间框（及「上次」对比周期）自动填充为对应默认值，仍可在框内手动改。
+    const briefWinDay = ref(0);        // 当前快捷口径：0=今天 1=昨天 2=前天；手动改框后变 -1（无高亮）
+    function briefShiftedDefaults(k) {
+      const HT = ht_();
+      if (!HT || !HT.defaultWindowStart || !HT.defaultWindowEnd || !HT.shiftTradingDay) return null;
+      const H = HT.WIN_CUTOFF_HOUR;
+      if (H == null) return null;
+      const atClose = (d) => new Date(d.getFullYear(), d.getMonth(), d.getDate(), H, 0, 0, 0);
+      const dayShift = (d, n) => HT.shiftTradingDay(new Date(d.getFullYear(), d.getMonth(), d.getDate()), n);
+      const start0 = HT.defaultWindowStart();   // 「今天」窗口起点（上次闭市 15:00）
+      const end0 = HT.defaultWindowEnd();       // 「今天」窗口终点（本次闭市 15:00）
+      return {
+        start: atClose(dayShift(start0, -k)),
+        end: atClose(dayShift(end0, -k)),
+        // 「上次」对比周期同步推导 = 当前窗口紧邻的前一周期：[前移 k+1 的起点, 前移 k 的起点]
+        prevStart: atClose(dayShift(start0, -(k + 1))),
+        prevEnd: atClose(dayShift(start0, -k))
+      };
+    }
+    function setBriefWinDay(k) {
+      const HT = ht_();
+      const w = briefShiftedDefaults(k);
+      if (!w || !HT || !HT.toLocalInputValue) return;
+      briefWinStart.value = HT.toLocalInputValue(w.start);
+      briefWinEnd.value = HT.toLocalInputValue(w.end);
+      briefPrevWinStart.value = HT.toLocalInputValue(w.prevStart);
+      briefPrevWinEnd.value = HT.toLocalInputValue(w.prevEnd);
+      briefWinDay.value = k;
+      // 填充后自动按新窗口刷新一次，用户马上能看到该时间段的快讯与排名；仍可手动改框再点「刷新」
+      if (!briefLoading.value) refreshBriefCloseWindow().catch(() => {});
+    }
+    /** 手动修改时间框：取消快捷按钮高亮（说明当前是自定义窗口） */
+    function onBriefWinManualEdit() { briefWinDay.value = -1; }
     /** 时间栏文案：'2026年9月16日 15:00 - 2026年9月17日 15:00' */
     const briefWinText = computed(() => {
       const HT = ht_();
@@ -13750,6 +13787,8 @@ const app = createApp({
       briefWindow, briefWindowItems, refreshBriefCloseWindow, clearBriefWindow,
       // batch16：可编辑统计时间窗口（15:00 换日，三板块统一）
       briefWinStart, briefWinEnd, briefWinText, resetBriefWin,
+      // 20261110a：今天 / 昨天 / 前天 快捷窗口
+      briefWinDay, setBriefWinDay, onBriefWinManualEdit,
       // batch73：「上次」对比周期（「昨」排名窗口）状态
       briefPrevWinStart, briefPrevWinEnd, lastBriefLoading, loadLastBriefStats,
       onBriefDateChange, toggleBriefCat, moreBriefNews, hlBrief, autoLoadBriefs, loadBriefsNow,

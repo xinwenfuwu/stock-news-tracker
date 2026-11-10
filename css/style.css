@@ -4218,3 +4218,8 @@ body.guest-mode #app { display: none; }
   .senti-table td { display: inline; border: none; padding: 0 8px 0 0; }
   .senti-table td:first-child::after { content: '｜'; color: var(--muted); }
 }
+
+/* ===== 20261110a：每日快讯「今天/昨天/前天」快捷窗口按钮 ===== */
+.stat-win .sw-btn.sw-btn-day { padding: 3px 10px; font-size: 12px; line-height: 1; }
+.stat-win .sw-btn.sw-btn-day.active { background: var(--primary); color: #fff; border-color: var(--primary); }
+.stat-win .sw-btn.sw-btn-day.active:hover:not(:disabled) { background: var(--primary-hover); }
