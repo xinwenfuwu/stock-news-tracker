@@ -1,124 +1,180 @@
 {
-  "generatedAt": "2026-11-10 12:03",
+  "generatedAt": "2026-11-10 22:45",
   "generatedBy": "GitHub Actions · 多源实时聚合",
   "sourceCount": 5,
-  "autoCount": 4,
+  "autoCount": 7,
   "events": [
     {
-      "id": "apf44i5b",
-      "title": "美国国务卿鲁比奥9日说，美国和以色列正就美对以军事援助事宜讨论新的谅解备忘录。据俄新社报道，鲁比奥当天在法国参加七国集团外长会议后表示，美国总统特朗普认为以色列“现在足够繁荣富裕…",
-      "tag": "人物/特朗普",
-      "region": "美国",
-      "concept": "defense",
-      "time": "2026-11-10 11:58",
-      "datetime": "2026-11-10 11:58",
+      "id": "aptlbisb",
+      "title": "挪威主权财富基金首席执行官Nicolai Tangen表示，黄仁勋在打造英伟达以及领导该公司方面“做得非常出色”。 对于英伟达“近期事件”，Tangen表示不予置评。 当被问及英…",
+      "tag": "人物/黄仁勋",
+      "region": "全球",
+      "concept": "ai",
+      "time": "2026-11-10 22:37",
+      "datetime": "2026-11-10 22:37",
       "source": "华尔街见闻",
-      "url": "https://wallstreetcn.com/livenews/3197381",
-      "summary": "美国国务卿鲁比奥9日说，美国和以色列正就美对以军事援助事宜讨论新的谅解备忘录。据俄新社报道，鲁比奥当天在法国参加七国集团外长会议后表示，美国总统特朗普认为以色列“现在足够繁荣富裕”，能够向美方购买武器，“美国不再需要为其提供资金”。鲁比奥说，特朗普希望尽快执行新的谅解备忘录。（新华社）",
+      "url": "https://wallstreetcn.com/livenews/3197766",
+      "summary": "挪威主权财富基金首席执行官Nicolai Tangen表示，黄仁勋在打造英伟达以及领导该公司方面“做得非常出色”。 对于英伟达“近期事件”，Tangen表示不予置评。 当被问及英伟达是否仍像上周那样是一项好的投资时，他表示，“这是个很难回答的问题”。 “他们的技术在全球所处的地位无可匹敌，创新能力也无可匹敌。这是一家非常、非常令人印象深刻的公司。” “我们喜欢英伟达。正如你一…",
       "relatedStocks": [
-        "军工",
-        "黄金"
+        "英伟达",
+        "微软",
+        "台积电"
       ],
       "bullConcepts": [
-        "军工",
-        "避险资产"
+        "AI算力",
+        "半导体",
+        "国产替代"
       ],
       "bearConcepts": [
-        "风险资产"
+        "传统软件"
       ],
       "bullIndustries": [
-        "军工",
-        "黄金"
+        "半导体",
+        "AI应用",
+        "算力基础设施"
       ],
       "bearIndustries": [
-        "航空",
-        "旅游"
+        "传统IT服务"
+      ],
+      "heat": 38,
+      "momentum": 46,
+      "_auto": true
+    },
+    {
+      "id": "apo8nrw0",
+      "title": "拜登披露回忆录部分内容：特朗普当选后态度曾异常热情，惊得我一时语塞",
+      "tag": "人物/特朗普",
+      "region": "美国",
+      "concept": "usMacro",
+      "time": "2026-11-10 22:44",
+      "datetime": "2026-11-10 22:44",
+      "source": "新浪7×24",
+      "url": "https://finance.sina.cn/7x24/2026-11-10/detail-iniyhmwt2459133.d.html",
+      "summary": "【拜登披露回忆录部分内容：特朗普当选后态度曾异常热情，惊得我一时语塞】综合美国《赫芬顿邮报》新闻网站、《大西洋月刊》等媒体报道，美国前总统乔·拜登在即将出版的总统回忆录《Promise Me，America》中披露，2024年大选后，他与当选总统特朗普在白宫椭圆形办公室私下会面时，特朗普态度异常热情，令他一时语塞。 报道称，拜登11月9日发表在《大西洋月刊》上的回忆录节选内容…",
+      "relatedStocks": [
+        "宽基指数"
+      ],
+      "bullConcepts": [
+        "防御板块"
+      ],
+      "bearConcepts": [
+        "周期股"
+      ],
+      "bullIndustries": [
+        "公用事业"
+      ],
+      "bearIndustries": [
+        "顺周期"
       ],
       "heat": 24,
       "momentum": 36,
       "_auto": true
     },
     {
-      "id": "apx4i2ut",
-      "title": "外媒爆料：内塔尼亚胡“每天”都给特朗普打电话，敦促其重启对伊朗军事打击",
+      "id": "ap120t21p",
+      "title": "据乌克兰国际文传电讯社报道，当地时间11月9日，乌克兰常驻联合国代表安德里·梅利尼克表示，乌总统泽连斯基愿意在莫斯科以外的任何地方与俄罗斯总统普京会晤，甚至包括南极。此前俄方提出…",
+      "tag": "人物/普京",
+      "region": "全球",
+      "concept": "macro",
+      "time": "2026-11-10 21:07",
+      "datetime": "2026-11-10 21:07",
+      "source": "华尔街见闻",
+      "url": "https://wallstreetcn.com/livenews/3197722",
+      "summary": "据乌克兰国际文传电讯社报道，当地时间11月9日，乌克兰常驻联合国代表安德里·梅利尼克表示，乌总统泽连斯基愿意在莫斯科以外的任何地方与俄罗斯总统普京会晤，甚至包括南极。此前俄方提出，如果泽连斯基愿与普京会面，可以前往莫斯科。（环球网）",
+      "relatedStocks": [
+        "宽基指数"
+      ],
+      "bullConcepts": [
+        "防御板块"
+      ],
+      "bearConcepts": [
+        "周期股"
+      ],
+      "bullIndustries": [
+        "公用事业"
+      ],
+      "bearIndustries": [
+        "顺周期"
+      ],
+      "heat": 38,
+      "momentum": 26,
+      "_auto": true
+    },
+    {
+      "id": "aposaksy",
+      "title": "美国两名民主党参议员要求特朗普禁止白宫员工参与预测市场交易，质疑内幕交易监管不足",
       "tag": "人物/特朗普",
       "region": "美国",
-      "concept": "defense",
-      "time": "2026-11-10 11:20",
-      "datetime": "2026-11-10 11:20",
-      "source": "新浪7×24",
-      "url": "https://finance.sina.cn/7x24/2026-11-10/detail-iniyfkma5990342.d.html",
-      "summary": "【外媒爆料：内塔尼亚胡“每天”都给特朗普打电话，敦促其重启对伊朗军事打击】据英国《金融时报》11月10日报道，消息人士透露，以色列总理内塔尼亚胡“每天”都给美国总统特朗普打电话游说对方对伊朗发动新一轮军事打击。这一消息引发以色列媒体关注。据报道，一名据称参与了相关讨论的外交官透露：“内塔尼亚胡每天都给特朗普打电话，敦促他重启军事行动。白宫内外反对战争的人士正试图阻止此事。地区…",
-      "relatedStocks": [
-        "军工",
-        "黄金"
-      ],
-      "bullConcepts": [
-        "军工",
-        "避险资产"
-      ],
-      "bearConcepts": [
-        "风险资产"
-      ],
-      "bullIndustries": [
-        "军工",
-        "黄金"
-      ],
-      "bearIndustries": [
-        "航空",
-        "旅游"
-      ],
-      "heat": 51,
-      "momentum": 31,
-      "_auto": true
-    },
-    {
-      "id": "ap1t81iau",
-      "title": "英伟达黄仁勋遭股东集体诉讼，调查风波致英伟达市值蒸发超万亿元",
-      "tag": "人物/黄仁勋",
-      "region": "美国",
-      "concept": "aiCapex",
-      "time": "2026-11-10 11:21",
-      "datetime": "2026-11-10 11:21",
-      "source": "新浪7×24",
-      "url": "https://finance.sina.cn/7x24/2026-11-10/detail-iniyfkmh9389667.d.html",
-      "summary": "【英伟达黄仁勋遭股东集体诉讼，调查风波致英伟达市值蒸发超万亿元】英伟达董事会11月8日宣布，将针对有关首席执行官黄仁勋个人关联事项的指控启动独立调查。受相关风波影响，黄仁勋的去留成为市场焦点。当地时间9日，英伟达股价走低，最终收跌4.27%，报每股178.67美元，市值缩水约1930亿美元（约合人民币12882亿元）。而在美股收盘五分钟后，英伟达及黄仁勋便遭到股东集体诉讼，指…",
-      "relatedStocks": [
-        "英伟达",
-        "微软",
-        "台积电"
-      ],
-      "bullConcepts": [
-        "AI算力",
-        "半导体",
-        "国产替代"
-      ],
-      "bearConcepts": [
-        "传统软件"
-      ],
-      "bullIndustries": [
-        "半导体",
-        "AI应用",
-        "算力基础设施"
-      ],
-      "bearIndustries": [
-        "传统IT服务"
-      ],
-      "heat": 29,
-      "momentum": 31,
-      "_auto": true
-    },
-    {
-      "id": "ap1hz76zu",
-      "title": "11月10日外盘头条：美国政府停摆风险再现 涉出轨风波 黄仁勋退出两场活动 Anthropic或周二启动IPO正式推介",
-      "tag": "人物/黄仁勋",
-      "region": "美国",
-      "concept": "aiCapex",
-      "time": "2026-11-10 05:30",
-      "datetime": "2026-11-10 05:30",
+      "concept": "usMacro",
+      "time": "2026-11-10 20:06",
+      "datetime": "2026-11-10 20:06",
       "source": "环球市场播报",
-      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-10/doc-iniyetpk6147858.shtml",
-      "summary": "全球财经媒体昨夜今晨共同关注的头条新闻主要有： 1、美国政府停摆风险再现 民主党考虑借机施压特朗普结束伊朗战争 2、英伟达CEO黄仁勋退出两场活动 日程中不再出现其姓名...",
+      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-10/doc-iniyhfqs5821306.shtml",
+      "summary": "11月10日，美国民主党参议员伊丽莎白·沃伦（Elizabeth Warren）和杰夫·默克利（Jeff Merkley）致信白宫法律顾问威尔·沙夫（Will Scharf）...",
+      "relatedStocks": [
+        "宽基指数"
+      ],
+      "bullConcepts": [
+        "防御板块"
+      ],
+      "bearConcepts": [
+        "周期股"
+      ],
+      "bullIndustries": [
+        "公用事业"
+      ],
+      "bearIndustries": [
+        "顺周期"
+      ],
+      "heat": 24,
+      "momentum": 18,
+      "_auto": true
+    },
+    {
+      "id": "ap1aivude",
+      "title": "马克龙与海湾国家讨论霍尔木兹海峡航运保险安排",
+      "tag": "人物/马克龙",
+      "region": "美国",
+      "concept": "antitrust",
+      "time": "2026-11-10 20:16",
+      "datetime": "2026-11-10 20:16",
+      "source": "环球市场播报",
+      "url": "https://finance.sina.com.cn/world/2026-11-10/doc-iniyhfqu2602118.shtml",
+      "summary": "法国总统马克龙正与海湾国家磋商，寻求降低船舶通过霍尔木兹海峡的保险成本。自美国和以色列2月开始对伊朗发动袭击以来，该海峡航运一直受到干扰。",
+      "relatedStocks": [
+        "跨境电商",
+        "航运"
+      ],
+      "bullConcepts": [
+        "内需",
+        "国产替代"
+      ],
+      "bearConcepts": [
+        "出口链"
+      ],
+      "bullIndustries": [
+        "跨境电商",
+        "内需消费"
+      ],
+      "bearIndustries": [
+        "出口制造",
+        "航运"
+      ],
+      "heat": 24,
+      "momentum": 18,
+      "_auto": true
+    },
+    {
+      "id": "ap1cgxxb0",
+      "title": "英伟达董事会中，谁将决定黄仁勋去留的命运？",
+      "tag": "人物/黄仁勋",
+      "region": "全球",
+      "concept": "ai",
+      "time": "2026-11-10 15:18",
+      "datetime": "2026-11-10 15:18",
+      "source": "环球市场播报",
+      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-10/doc-iniyfuyw5888170.shtml",
+      "summary": "全球市值最高的公司英伟达及其深陷争议的首席执行官、联合创始人黄仁勋，如今命运交织在一起，而决定黄仁勋去留的权力掌握在一群英伟达董事手中。",
       "relatedStocks": [
         "英伟达",
         "微软",
@@ -140,7 +196,37 @@
       "bearIndustries": [
         "传统IT服务"
       ],
-      "heat": 29,
+      "heat": 24,
+      "momentum": 18,
+      "_auto": true
+    },
+    {
+      "id": "apdk4m45",
+      "title": "拜登公布病情",
+      "tag": "人物/拜登",
+      "region": "美国",
+      "concept": "usMacro",
+      "time": "2026-11-10 16:57",
+      "datetime": "2026-11-10 16:57",
+      "source": "环球市场播报",
+      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-10/doc-iniyfuza9346671.shtml",
+      "summary": "美国前总统乔・拜登周日表示，由于正与前列腺癌抗争，他没办法按计划为即将发行的总统回忆录开展大量推介访谈。 他在社交媒体上写道：“我的身体状态时好时坏。",
+      "relatedStocks": [
+        "宽基指数"
+      ],
+      "bullConcepts": [
+        "防御板块"
+      ],
+      "bearConcepts": [
+        "周期股"
+      ],
+      "bullIndustries": [
+        "公用事业"
+      ],
+      "bearIndustries": [
+        "顺周期"
+      ],
+      "heat": 24,
       "momentum": 18,
       "_auto": true
     },

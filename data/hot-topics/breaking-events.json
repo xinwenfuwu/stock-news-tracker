@@ -1,84 +1,20 @@
 {
-  "generatedAt": "2026-11-10 12:03",
+  "generatedAt": "2026-11-10 22:45",
   "generatedBy": "GitHub Actions · 多源实时聚合",
   "sourceCount": 5,
   "autoCount": 18,
   "events": [
     {
-      "id": "abx4i2ut",
-      "title": "外媒爆料：内塔尼亚胡“每天”都给特朗普打电话，敦促其重启对伊朗军事打击",
-      "tag": "地缘/政治",
-      "region": "美国",
-      "concept": "defense",
-      "time": "2026-11-10 11:20",
-      "datetime": "2026-11-10 11:20",
-      "source": "新浪7×24",
-      "url": "https://finance.sina.cn/7x24/2026-11-10/detail-iniyfkma5990342.d.html",
-      "summary": "【外媒爆料：内塔尼亚胡“每天”都给特朗普打电话，敦促其重启对伊朗军事打击】据英国《金融时报》11月10日报道，消息人士透露，以色列总理内塔尼亚胡“每天”都给美国总统特朗普打电话游说对方对伊朗发动新一轮军事打击。这一消息引发以色列媒体关注。据报道，一名据称参与了相关讨论的外交官透露：“内塔尼亚胡每天都给特朗普打电话，敦促他重启军事行动。白宫内外反对战争的人士正试图阻止此事。地区…",
-      "relatedStocks": [
-        "军工",
-        "黄金"
-      ],
-      "bullConcepts": [
-        "军工",
-        "避险资产"
-      ],
-      "bearConcepts": [
-        "风险资产"
-      ],
-      "bullIndustries": [
-        "军工",
-        "黄金"
-      ],
-      "bearIndustries": [
-        "航空",
-        "旅游"
-      ],
-      "heat": 51,
-      "momentum": 31,
-      "_auto": true
-    },
-    {
-      "id": "ab1vikfut",
-      "title": "惠誉周二发布的报告显示，华发集团发行人违约评级从BBB降为BB+。",
-      "tag": "宏观/综合",
-      "region": "全球",
-      "concept": "macro",
-      "time": "2026-11-10 11:50",
-      "datetime": "2026-11-10 11:50",
-      "source": "新浪7×24",
-      "url": "https://finance.sina.cn/7x24/2026-11-10/detail-iniyfkma6017687.d.html",
-      "summary": "惠誉周二发布的报告显示，华发集团发行人违约评级从BBB降为BB+。",
-      "relatedStocks": [
-        "宽基指数"
-      ],
-      "bullConcepts": [
-        "防御板块"
-      ],
-      "bearConcepts": [
-        "周期股"
-      ],
-      "bullIndustries": [
-        "公用事业"
-      ],
-      "bearIndustries": [
-        "顺周期"
-      ],
-      "heat": 24,
-      "momentum": 36,
-      "_auto": true
-    },
-    {
-      "id": "ab1t81iau",
-      "title": "英伟达黄仁勋遭股东集体诉讼，调查风波致英伟达市值蒸发超万亿元",
+      "id": "ab1nup2in",
+      "title": "美国10月核心CPI环比上涨0.3%超预期，12月加息50基点预期骤然升温。 沃勒释放美联储“最鹰信号”：若通胀居高不下，12月应加息50基点，需收回此前“三次预防性降息”。 冲…",
       "tag": "科技/AI",
       "region": "美国",
       "concept": "aiCapex",
-      "time": "2026-11-10 11:21",
-      "datetime": "2026-11-10 11:21",
-      "source": "新浪7×24",
-      "url": "https://finance.sina.cn/7x24/2026-11-10/detail-iniyfkmh9389667.d.html",
-      "summary": "【英伟达黄仁勋遭股东集体诉讼，调查风波致英伟达市值蒸发超万亿元】英伟达董事会11月8日宣布，将针对有关首席执行官黄仁勋个人关联事项的指控启动独立调查。受相关风波影响，黄仁勋的去留成为市场焦点。当地时间9日，英伟达股价走低，最终收跌4.27%，报每股178.67美元，市值缩水约1930亿美元（约合人民币12882亿元）。而在美股收盘五分钟后，英伟达及黄仁勋便遭到股东集体诉讼，指…",
+      "time": "2026-11-10 21:48",
+      "datetime": "2026-11-10 21:48",
+      "source": "华尔街见闻",
+      "url": "https://wallstreetcn.com/livenews/3197738",
+      "summary": "美国10月核心CPI环比上涨0.3%超预期，12月加息50基点预期骤然升温。 沃勒释放美联储“最鹰信号”：若通胀居高不下，12月应加息50基点，需收回此前“三次预防性降息”。 冲击美国科技IPO融资纪录！Anthropic最高募资904亿美元、完全稀释估值1.4万亿美元。 据央视，新一轮俄美乌三方首日会谈结束，将于明日继续进行。 阿里巴巴：建议分拆平头哥于香港联交所主板独立上…",
       "relatedStocks": [
         "英伟达",
         "微软",
@@ -100,84 +36,91 @@
       "bearIndustries": [
         "传统IT服务"
       ],
-      "heat": 29,
-      "momentum": 31,
+      "heat": 87,
+      "momentum": 86,
       "_auto": true
     },
     {
-      "id": "ab1sbeujv",
-      "title": "11月10日午间涨停分析",
-      "tag": "宏观/综合",
+      "id": "ab1rnkd51",
+      "title": "当地时间10日，也门胡塞武装称再次袭击沙特哈立德国王国际机场、金融中心、石油设施、军事集结点等目标。",
+      "tag": "地缘/政治",
+      "region": "欧洲",
+      "concept": "macro",
+      "time": "2026-11-10 22:39",
+      "datetime": "2026-11-10 22:39",
+      "source": "华尔街见闻",
+      "url": "https://wallstreetcn.com/livenews/3197768",
+      "summary": "当地时间10日，也门胡塞武装称再次袭击沙特哈立德国王国际机场、金融中心、石油设施、军事集结点等目标。",
+      "relatedStocks": [
+        "军工",
+        "黄金"
+      ],
+      "bullConcepts": [
+        "军工",
+        "避险资产"
+      ],
+      "bearConcepts": [
+        "风险资产"
+      ],
+      "bullIndustries": [
+        "军工",
+        "黄金"
+      ],
+      "bearIndustries": [
+        "航空",
+        "旅游"
+      ],
+      "heat": 47,
+      "momentum": 51,
+      "_auto": true
+    },
+    {
+      "id": "abtlbisb",
+      "title": "挪威主权财富基金首席执行官Nicolai Tangen表示，黄仁勋在打造英伟达以及领导该公司方面“做得非常出色”。 对于英伟达“近期事件”，Tangen表示不予置评。 当被问及英…",
+      "tag": "科技/AI",
+      "region": "全球",
+      "concept": "ai",
+      "time": "2026-11-10 22:37",
+      "datetime": "2026-11-10 22:37",
+      "source": "华尔街见闻",
+      "url": "https://wallstreetcn.com/livenews/3197766",
+      "summary": "挪威主权财富基金首席执行官Nicolai Tangen表示，黄仁勋在打造英伟达以及领导该公司方面“做得非常出色”。 对于英伟达“近期事件”，Tangen表示不予置评。 当被问及英伟达是否仍像上周那样是一项好的投资时，他表示，“这是个很难回答的问题”。 “他们的技术在全球所处的地位无可匹敌，创新能力也无可匹敌。这是一家非常、非常令人印象深刻的公司。” “我们喜欢英伟达。正如你一…",
+      "relatedStocks": [
+        "英伟达",
+        "微软",
+        "台积电"
+      ],
+      "bullConcepts": [
+        "AI算力",
+        "半导体",
+        "国产替代"
+      ],
+      "bearConcepts": [
+        "传统软件"
+      ],
+      "bullIndustries": [
+        "半导体",
+        "AI应用",
+        "算力基础设施"
+      ],
+      "bearIndustries": [
+        "传统IT服务"
+      ],
+      "heat": 38,
+      "momentum": 46,
+      "_auto": true
+    },
+    {
+      "id": "ab17a6p2e",
+      "title": "也门胡塞武装称，他们袭击了沙特阿拉伯东西输油管道的石油泵站。",
+      "tag": "地缘/政治",
       "region": "全球",
       "concept": "macro",
-      "time": "2026-11-10 11:50",
-      "datetime": "2026-11-10 11:50",
+      "time": "2026-11-10 22:15",
+      "datetime": "2026-11-10 22:15",
       "source": "财联社",
-      "url": "https://www.cls.cn/detail/2529898",
-      "summary": "财联社11月10日电，今日午盘全市场共51股涨停，连板股总数12只，21股封板未遂，封板率为71%（不含ST股、退市股）。焦点股方面，商业航天概念股阳光照明14天8板，短剧概念股文投控股15天8板，机器人概念股襄阳轴承14天7板，冰雪产业概念股冰山冷热9天5板。",
-      "relatedStocks": [
-        "宽基指数"
-      ],
-      "bullConcepts": [
-        "防御板块"
-      ],
-      "bearConcepts": [
-        "周期股"
-      ],
-      "bullIndustries": [
-        "公用事业"
-      ],
-      "bearIndustries": [
-        "顺周期"
-      ],
-      "heat": 24,
-      "momentum": 36,
-      "_auto": true
-    },
-    {
-      "id": "ab4i88qr",
-      "title": "美国司法部起诉Lyft，指控其拒绝为携带服务犬及使用轮椅的乘客提供出行服务，该诉讼要求Lyft赔偿受其歧视的残疾人士共计5300万美元。",
-      "tag": "金融/宏观",
-      "region": "美国",
-      "concept": "usFinance",
-      "time": "2026-11-10 09:40",
-      "datetime": "2026-11-10 09:40",
-      "source": "华尔街见闻",
-      "url": "https://wallstreetcn.com/livenews/3197293",
-      "summary": "美国司法部起诉Lyft，指控其拒绝为携带服务犬及使用轮椅的乘客提供出行服务，该诉讼要求Lyft赔偿受其歧视的残疾人士共计5300万美元。",
-      "relatedStocks": [
-        "美股科技",
-        "黄金"
-      ],
-      "bullConcepts": [
-        "黄金",
-        "防御板块"
-      ],
-      "bearConcepts": [
-        "高估值成长股"
-      ],
-      "bullIndustries": [
-        "银行",
-        "黄金"
-      ],
-      "bearIndustries": [
-        "高杠杆地产"
-      ],
-      "heat": 29,
-      "momentum": 18,
-      "_auto": true
-    },
-    {
-      "id": "abfqtypc",
-      "title": "伊朗外交部发言人巴加埃9日表示，美国取消制裁、停止战争是启动谈判的前提。巴加埃当天在例行记者会上回应美国国务卿鲁比奥的言论时称，维护伊朗人民的权利和利益并不是“不合理的要求”。美…",
-      "tag": "地缘/政治",
-      "region": "美国",
-      "concept": "defense",
-      "time": "2026-11-10 10:09",
-      "datetime": "2026-11-10 10:09",
-      "source": "华尔街见闻",
-      "url": "https://wallstreetcn.com/livenews/3197312",
-      "summary": "伊朗外交部发言人巴加埃9日表示，美国取消制裁、停止战争是启动谈判的前提。巴加埃当天在例行记者会上回应美国国务卿鲁比奥的言论时称，维护伊朗人民的权利和利益并不是“不合理的要求”。美国必须在启动任何谈判进程之前，停止非法制裁、海上封锁以及在所有战线上的战争。（新华社）",
+      "url": "https://www.cls.cn/detail/2530723",
+      "summary": "也门胡塞武装称，他们袭击了沙特阿拉伯东西输油管道的石油泵站。",
       "relatedStocks": [
         "军工",
         "黄金"
@@ -196,194 +139,22 @@
       "bearIndustries": [
         "航空",
         "旅游"
-      ],
-      "heat": 24,
-      "momentum": 26,
-      "_auto": true
-    },
-    {
-      "id": "ab1edl2ne",
-      "title": "特朗普：目前看来没必要对伊朗采取军事行动 看到了结束的势头",
-      "tag": "地缘/政治",
-      "region": "美国",
-      "concept": "defense",
-      "time": "2026-11-10 06:00",
-      "datetime": "2026-11-10 06:00",
-      "source": "环球市场播报",
-      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-10/doc-iniyexvm2813979.shtml",
-      "summary": "美国总统特朗普表示，“眼下”看来对伊朗采取军事行动不是十分必要。 特朗普在白宫向媒体发表讲话。 “我们只是维持现状，我们这么做实际上是应他们邻国的要求...",
-      "relatedStocks": [
-        "军工",
-        "黄金"
-      ],
-      "bullConcepts": [
-        "军工",
-        "避险资产"
-      ],
-      "bearConcepts": [
-        "风险资产"
-      ],
-      "bullIndustries": [
-        "军工",
-        "黄金"
-      ],
-      "bearIndustries": [
-        "航空",
-        "旅游"
-      ],
-      "heat": 55,
-      "momentum": 18,
-      "_auto": true
-    },
-    {
-      "id": "ab1abmws2",
-      "title": "三星火灾海上保险斥资17亿美元取得英国专业保险公司Canopius控制权",
-      "tag": "金融/宏观",
-      "region": "美国",
-      "concept": "usFinance",
-      "time": "2026-11-10 07:42",
-      "datetime": "2026-11-10 07:42",
-      "source": "环球市场播报",
-      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-10/doc-iniyexvh6081158.shtml",
-      "summary": "三星火灾海上保险公司将斥资约2.26万亿韩元（17亿美元），把所持英国专业保险公司Canopius Group的股份提高至80.6%。这将成为韩国金融机构规模最大的海外收购交易之一。",
-      "relatedStocks": [
-        "美股科技",
-        "黄金"
-      ],
-      "bullConcepts": [
-        "黄金",
-        "防御板块"
-      ],
-      "bearConcepts": [
-        "高估值成长股"
-      ],
-      "bullIndustries": [
-        "银行",
-        "黄金"
-      ],
-      "bearIndustries": [
-        "高杠杆地产"
       ],
       "heat": 33,
-      "momentum": 18,
+      "momentum": 46,
       "_auto": true
     },
     {
-      "id": "ab1s9ksft",
-      "title": "彻底凉了？原油周一继续暴跌，特朗普称看到伊朗冲突结束的积极势头",
-      "tag": "金融/宏观",
-      "region": "美国",
-      "concept": "usFinance",
-      "time": "2026-11-10 06:36",
-      "datetime": "2026-11-10 06:36",
-      "source": "市场资讯",
-      "url": "https://finance.sina.com.cn/money/future/fmnews/2026-11-10/doc-iniyexvh6059355.shtml",
-      "summary": "来源：能源研发中心 后市观点 周一油价再次大跌，布伦特原油一度低至90美元关口。美伊谈判向着积极的方向发展，引发了油价的继续大幅下行。",
-      "relatedStocks": [
-        "美股科技",
-        "黄金"
-      ],
-      "bullConcepts": [
-        "黄金",
-        "防御板块"
-      ],
-      "bearConcepts": [
-        "高估值成长股"
-      ],
-      "bullIndustries": [
-        "银行",
-        "黄金"
-      ],
-      "bearIndustries": [
-        "高杠杆地产"
-      ],
-      "heat": 24,
-      "momentum": 18,
-      "_auto": true
-    },
-    {
-      "id": "ab1n6mdxn",
-      "title": "美国股市：主要股指强劲反弹 黄仁勋风波下英伟达逆势承压",
-      "tag": "科技/AI",
-      "region": "美国",
-      "concept": "aiCapex",
-      "time": "2026-11-10 05:59",
-      "datetime": "2026-11-10 05:59",
-      "source": "环球市场播报",
-      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-10/doc-iniyexvm2813634.shtml",
-      "summary": "标普500指数创下逾七个月来最大涨幅，投资者在上周科技股引领的急跌后入场买进，油价下跌也提振了市场。 标普500指数收涨2.4%，11个行业板块全线上涨...",
-      "relatedStocks": [
-        "英伟达",
-        "微软",
-        "台积电"
-      ],
-      "bullConcepts": [
-        "AI算力",
-        "半导体",
-        "国产替代"
-      ],
-      "bearConcepts": [
-        "传统软件"
-      ],
-      "bullIndustries": [
-        "半导体",
-        "AI应用",
-        "算力基础设施"
-      ],
-      "bearIndustries": [
-        "传统IT服务"
-      ],
-      "heat": 29,
-      "momentum": 18,
-      "_auto": true
-    },
-    {
-      "id": "ab1wsnthq",
-      "title": "凯投宏观：人工智能股抛售若加剧 美元将面临更大压力",
-      "tag": "科技/AI",
-      "region": "美国",
-      "concept": "aiCapex",
-      "time": "2026-11-10 08:54",
-      "datetime": "2026-11-10 08:54",
-      "source": "环球市场播报",
-      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-10/doc-iniyfeci2768888.shtml",
-      "summary": "凯投宏观称，如果科技股抛售加剧，美元可能会面临更大压力，这与美元在以往市场崩盘中的表现形成对比。 “人工智能（AI）浪潮的股市受益者高度集中在美国...",
-      "relatedStocks": [
-        "英伟达",
-        "微软",
-        "台积电"
-      ],
-      "bullConcepts": [
-        "AI算力",
-        "半导体",
-        "国产替代"
-      ],
-      "bearConcepts": [
-        "传统软件"
-      ],
-      "bullIndustries": [
-        "半导体",
-        "AI应用",
-        "算力基础设施"
-      ],
-      "bearIndustries": [
-        "传统IT服务"
-      ],
-      "heat": 24,
-      "momentum": 18,
-      "_auto": true
-    },
-    {
-      "id": "abthwryu",
-      "title": "特朗普表示没必要进一步空袭伊朗 并称美国仍严阵以待",
+      "id": "ab12zlah3",
+      "title": "美国牵头斡旋的俄乌和平谈判结束首日磋商 周三继续",
       "tag": "地缘/政治",
       "region": "美国",
       "concept": "defense",
-      "time": "2026-11-10 07:25",
-      "datetime": "2026-11-10 07:25",
+      "time": "2026-11-10 22:15",
+      "datetime": "2026-11-10 22:15",
       "source": "环球市场播报",
-      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-10/doc-iniyexvk2846476.shtml",
-      "summary": "美国总统唐纳德·特朗普表示，没有必要进一步打击伊朗，但美国仍“严阵以待”。这表明，在共和党中期选举失利凸显这场战争极不得人心之后，他正准备让这场冲突降温。",
+      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-10/doc-iniyhmwt2450697.shtml",
+      "summary": "乌克兰和俄罗斯结束了由美国牵头的新一轮和平谈判首日磋商。与此同时，华盛顿和基辅的欧洲盟友强调，任何旨在结束战争的协议都必须包含可信的安全保障。",
       "relatedStocks": [
         "军工",
         "黄金"
@@ -403,21 +174,55 @@
         "航空",
         "旅游"
       ],
-      "heat": 46,
-      "momentum": 18,
+      "heat": 29,
+      "momentum": 36,
       "_auto": true
     },
     {
-      "id": "abumn4qb",
-      "title": "原油：布伦特跌至8月份以来最低 伊朗战争外交斡旋显现进展",
+      "id": "ab1hxo0dl",
+      "title": "胡塞武装称，袭击了沙特阿美位于阿布盖格的设施及利雅得的金融中心。",
+      "tag": "地缘/政治",
+      "region": "全球",
+      "concept": "macro",
+      "time": "2026-11-10 22:15",
+      "datetime": "2026-11-10 22:15",
+      "source": "财联社",
+      "url": "https://www.cls.cn/detail/2530724",
+      "summary": "胡塞武装称，袭击了沙特阿美位于阿布盖格的设施及利雅得的金融中心。",
+      "relatedStocks": [
+        "军工",
+        "黄金"
+      ],
+      "bullConcepts": [
+        "军工",
+        "避险资产"
+      ],
+      "bearConcepts": [
+        "风险资产"
+      ],
+      "bullIndustries": [
+        "军工",
+        "黄金"
+      ],
+      "bearIndustries": [
+        "航空",
+        "旅游"
+      ],
+      "heat": 24,
+      "momentum": 36,
+      "_auto": true
+    },
+    {
+      "id": "ab1ezhu4t",
+      "title": "日本烟草公司旗下7家企业在俄罗斯的资产被俄方临时接管后，该公司股价连续两天暴跌。据估算，如果日本烟草公司失去在俄经营管理权，将面临最多1.3万亿日元（1美元约合158日元）损失。…",
       "tag": "金融/宏观",
       "region": "美国",
       "concept": "usFinance",
-      "time": "2026-11-10 05:46",
-      "datetime": "2026-11-10 05:46",
-      "source": "环球市场播报",
-      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-10/doc-iniyetpn2931577.shtml",
-      "summary": "随着市场对通过外交努力结束中东战争的乐观情绪升温，原油跌至8月份以来最低，尽管该地区的袭击仍在继续。 全球基准布伦特原油下跌5.9%，结算价在每桶92美元上方。",
+      "time": "2026-11-10 21:15",
+      "datetime": "2026-11-10 21:15",
+      "source": "华尔街见闻",
+      "url": "https://wallstreetcn.com/livenews/3197726",
+      "summary": "日本烟草公司旗下7家企业在俄罗斯的资产被俄方临时接管后，该公司股价连续两天暴跌。据估算，如果日本烟草公司失去在俄经营管理权，将面临最多1.3万亿日元（1美元约合158日元）损失。俄罗斯总统普京5日和6日分别签署总统令，宣布由俄方临时接管日本烟草公司旗下7家企业在俄资产。事发后，该公司股价大跌，连续两个交易日跌停。据日本媒体10日报道，受此影响，日本烟草公司宣布取消原定26日举…",
       "relatedStocks": [
         "美股科技",
         "黄金"
@@ -435,119 +240,22 @@
       ],
       "bearIndustries": [
         "高杠杆地产"
-      ],
-      "heat": 24,
-      "momentum": 18,
-      "_auto": true
-    },
-    {
-      "id": "ab9hyrh",
-      "title": "印尼塔宁巴尔群岛附近海域发生5.4级地震",
-      "tag": "宏观/综合",
-      "region": "全球",
-      "concept": "macro",
-      "time": "2026-11-10 10:10",
-      "datetime": "2026-11-10 10:10",
-      "source": "财联社",
-      "url": "https://www.cls.cn/detail/2529773",
-      "summary": "财联社11月10日电，据印尼气象、气候和地球物理局发布的报告，当地时间11月10日8时53分，印尼马鲁古省塔宁巴尔群岛西南90公里海域发生5.4级地震，震源深度84公里。预计不会有海啸风险。",
-      "relatedStocks": [
-        "宽基指数"
-      ],
-      "bullConcepts": [
-        "防御板块"
-      ],
-      "bearConcepts": [
-        "周期股"
-      ],
-      "bullIndustries": [
-        "公用事业"
-      ],
-      "bearIndustries": [
-        "顺周期"
       ],
       "heat": 29,
       "momentum": 26,
       "_auto": true
     },
     {
-      "id": "ab16wwkdl",
-      "title": "特朗普会晤卡塔尔首相 称结束伊朗战争出现积极势头",
-      "tag": "地缘/政治",
-      "region": "美国",
-      "concept": "defense",
-      "time": "2026-11-10 06:24",
-      "datetime": "2026-11-10 06:24",
-      "source": "环球市场播报",
-      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-10/doc-iniyexvn9471221.shtml",
-      "summary": "美国总统特朗普周一与卡塔尔首相阿勒萨尼讨论伊朗战争后表示相信，这场战争正走向结束。卡塔尔一直在华盛顿和德黑兰之间进行斡旋。",
-      "relatedStocks": [
-        "军工",
-        "黄金"
-      ],
-      "bullConcepts": [
-        "军工",
-        "避险资产"
-      ],
-      "bearConcepts": [
-        "风险资产"
-      ],
-      "bullIndustries": [
-        "军工",
-        "黄金"
-      ],
-      "bearIndustries": [
-        "航空",
-        "旅游"
-      ],
-      "heat": 24,
-      "momentum": 18,
-      "_auto": true
-    },
-    {
-      "id": "ab18jd9hk",
-      "title": "纽约汇市：美元随油价走低 市场风险偏好升温",
-      "tag": "金融/宏观",
-      "region": "美国",
-      "concept": "usFinance",
-      "time": "2026-11-10 05:32",
-      "datetime": "2026-11-10 05:32",
-      "source": "环球市场播报",
-      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-10/doc-iniyetpp2937316.shtml",
-      "summary": "美元指数下跌，因油价走低且交易员对通过外交努力结束中东战争的前景转趋乐观。瑞郎在G10货币中表现最差，新西兰元涨幅居首。",
-      "relatedStocks": [
-        "美股科技",
-        "黄金"
-      ],
-      "bullConcepts": [
-        "黄金",
-        "防御板块"
-      ],
-      "bearConcepts": [
-        "高估值成长股"
-      ],
-      "bullIndustries": [
-        "银行",
-        "黄金"
-      ],
-      "bearIndustries": [
-        "高杠杆地产"
-      ],
-      "heat": 24,
-      "momentum": 18,
-      "_auto": true
-    },
-    {
-      "id": "abbga88f",
-      "title": "美众议员向众议院提交决议 要求弹劾国防部长赫格塞思",
+      "id": "aby5g7xj",
+      "title": "美国国防部长赫格塞思：弹劾行动是一场闹剧。 弹劾行动向伊朗表明，美国会惩罚自己人。 决议等同于破坏，这不是爱国。 我们控制着霍尔木兹海峡。 超过80%的伊朗核工业基础已不复存在。…",
       "tag": "宏观/综合",
       "region": "美国",
       "concept": "usMacro",
-      "time": "2026-11-10 03:20",
-      "datetime": "2026-11-10 03:20",
-      "source": "央视",
-      "url": "https://finance.sina.com.cn/jjxw/2026-11-10/doc-iniyetpn2909429.shtml",
-      "summary": "当地时间11月9日，美国肯塔基州共和党籍联邦众议员托马斯·梅西向众议院提交决议，试图推动全院就弹劾国防部长皮特·赫格塞思进行表决。",
+      "time": "2026-11-10 21:05",
+      "datetime": "2026-11-10 21:05",
+      "source": "华尔街见闻",
+      "url": "https://wallstreetcn.com/livenews/3197720",
+      "summary": "美国国防部长赫格塞思：弹劾行动是一场闹剧。 弹劾行动向伊朗表明，美国会惩罚自己人。 决议等同于破坏，这不是爱国。 我们控制着霍尔木兹海峡。 超过80%的伊朗核工业基础已不复存在。 如果伊朗采取错误行动，我们已做好了行动的充分准备。 可以看到伊朗核设施，必要时可以采取行动。 感谢特朗普总统的支持。 非常尊重副总统，万斯一直是团队的关键成员。 我同意特朗普的说法，若重来一次，我还…",
       "relatedStocks": [
         "宽基指数"
       ],
@@ -564,20 +272,54 @@
         "顺周期"
       ],
       "heat": 24,
-      "momentum": 18,
+      "momentum": 26,
       "_auto": true
     },
     {
-      "id": "ab1dfdaxm",
-      "title": "韩国交易所暂停KOSPI市场程序化买盘",
+      "id": "ab1rzxk6u",
+      "title": "美国战争部长海格塞斯表示，如果伊朗采取错误行动，美国已做好了行动的充分准备。",
+      "tag": "地缘/政治",
+      "region": "美国",
+      "concept": "defense",
+      "time": "2026-11-10 21:19",
+      "datetime": "2026-11-10 21:19",
+      "source": "财联社",
+      "url": "https://www.cls.cn/detail/2530677",
+      "summary": "美国战争部长海格塞斯表示，如果伊朗采取错误行动，美国已做好了行动的充分准备。",
+      "relatedStocks": [
+        "军工",
+        "黄金"
+      ],
+      "bullConcepts": [
+        "军工",
+        "避险资产"
+      ],
+      "bearConcepts": [
+        "风险资产"
+      ],
+      "bullIndustries": [
+        "军工",
+        "黄金"
+      ],
+      "bearIndustries": [
+        "航空",
+        "旅游"
+      ],
+      "heat": 24,
+      "momentum": 26,
+      "_auto": true
+    },
+    {
+      "id": "ab10390hs",
+      "title": "伊朗否认参与针对法国的网络攻击。伊朗外交部称法国的指控“毫无根据”。",
       "tag": "宏观/综合",
-      "region": "全球",
+      "region": "欧洲",
       "concept": "macro",
-      "time": "2026-11-10 08:30",
-      "datetime": "2026-11-10 08:30",
-      "source": "环球市场播报",
-      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-10/doc-iniyfece5983345.shtml",
-      "summary": "韩国交易所于上午09:06启动临时停牌机制，在KOSPI 200指数期货上涨逾5%后，暂时停止KOSPI市场程序化买盘。程序化买盘将暂停5分钟。",
+      "time": "2026-11-10 21:03",
+      "datetime": "2026-11-10 21:03",
+      "source": "华尔街见闻",
+      "url": "https://wallstreetcn.com/livenews/3197719",
+      "summary": "伊朗否认参与针对法国的网络攻击。伊朗外交部称法国的指控“毫无根据”。",
       "relatedStocks": [
         "宽基指数"
       ],
@@ -592,6 +334,274 @@
       ],
       "bearIndustries": [
         "顺周期"
+      ],
+      "heat": 24,
+      "momentum": 26,
+      "_auto": true
+    },
+    {
+      "id": "ab1oycobo",
+      "title": "美国国防部赫格塞思抨击弹劾提案，为伊朗战事处置辩护",
+      "tag": "地缘/政治",
+      "region": "美国",
+      "concept": "defense",
+      "time": "2026-11-10 21:42",
+      "datetime": "2026-11-10 21:42",
+      "source": "环球市场播报",
+      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-10/doc-iniyhfqw9216918.shtml",
+      "summary": "美国国防部长皮特・赫格塞思周二痛斥提出弹劾他的共和党众议员，并积极为自己在伊朗战争以及其他军事行动中的指挥决策辩护。",
+      "relatedStocks": [
+        "军工",
+        "黄金"
+      ],
+      "bullConcepts": [
+        "军工",
+        "避险资产"
+      ],
+      "bearConcepts": [
+        "风险资产"
+      ],
+      "bullIndustries": [
+        "军工",
+        "黄金"
+      ],
+      "bearIndustries": [
+        "航空",
+        "旅游"
+      ],
+      "heat": 24,
+      "momentum": 26,
+      "_auto": true
+    },
+    {
+      "id": "abzodteu",
+      "title": "特朗普称伊朗战争“很快就会结束”，淡化新一轮军事打击可能性",
+      "tag": "地缘/政治",
+      "region": "美国",
+      "concept": "defense",
+      "time": "2026-11-10 16:54",
+      "datetime": "2026-11-10 16:54",
+      "source": "环球市场播报",
+      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-10/doc-iniyfuyz2696792.shtml",
+      "summary": "核心要点特朗普表示，伊朗战事可能 “很快结束”，并称伊朗 “军事层面实际上已经溃败”。美国中期选举结果惨淡，共和党痛失国会参众两院控制权...",
+      "relatedStocks": [
+        "军工",
+        "黄金"
+      ],
+      "bullConcepts": [
+        "军工",
+        "避险资产"
+      ],
+      "bearConcepts": [
+        "风险资产"
+      ],
+      "bullIndustries": [
+        "军工",
+        "黄金"
+      ],
+      "bearIndustries": [
+        "航空",
+        "旅游"
+      ],
+      "heat": 24,
+      "momentum": 18,
+      "_auto": true
+    },
+    {
+      "id": "ab124rql4",
+      "title": "国际油价单日暴跌近6%，亚洲航空股集体大涨，韩国真航空涨近30%",
+      "tag": "金融/宏观",
+      "region": "美国",
+      "concept": "usFinance",
+      "time": "2026-11-10 14:28",
+      "datetime": "2026-11-10 14:28",
+      "source": "环球市场播报",
+      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-10/doc-iniyfqte9365762.shtml",
+      "summary": "11月10日，亚洲航空股普遍大涨，国际油价大幅下跌缓解了市场对航空公司燃油成本的担忧。此前，随着美伊冲突缓和预期升温，布伦特原油期货周一收跌5.85%至每桶92.57美元...",
+      "relatedStocks": [
+        "美股科技",
+        "黄金"
+      ],
+      "bullConcepts": [
+        "黄金",
+        "防御板块"
+      ],
+      "bearConcepts": [
+        "高估值成长股"
+      ],
+      "bullIndustries": [
+        "银行",
+        "黄金"
+      ],
+      "bearIndustries": [
+        "高杠杆地产"
+      ],
+      "heat": 24,
+      "momentum": 18,
+      "_auto": true
+    },
+    {
+      "id": "ab14swo54",
+      "title": "法国指责伊朗发动超市冰箱网络攻击，考虑实施制裁",
+      "tag": "地缘/政治",
+      "region": "欧洲",
+      "concept": "macro",
+      "time": "2026-11-10 18:19",
+      "datetime": "2026-11-10 18:19",
+      "source": "环球市场播报",
+      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-10/doc-iniyfzhy9262778.shtml",
+      "summary": "法国外交部长让-诺埃尔·巴罗（Jean-Noël Barrot）周二表示，对于10月针对法国超市冰箱发动的大规模网络攻击，法国政府“不会排除任何应对措施”。",
+      "relatedStocks": [
+        "军工",
+        "黄金"
+      ],
+      "bullConcepts": [
+        "军工",
+        "避险资产"
+      ],
+      "bearConcepts": [
+        "风险资产"
+      ],
+      "bullIndustries": [
+        "军工",
+        "黄金"
+      ],
+      "bearIndustries": [
+        "航空",
+        "旅游"
+      ],
+      "heat": 24,
+      "momentum": 18,
+      "_auto": true
+    },
+    {
+      "id": "abb5pnsj",
+      "title": "Fireworks遭遇新黑客攻击，十亿美元业务面临风险",
+      "tag": "科技/AI",
+      "region": "美国",
+      "concept": "aiCapex",
+      "time": "2026-11-10 18:00",
+      "datetime": "2026-11-10 18:00",
+      "source": "环球市场播报",
+      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-10/doc-iniyfzhx2605532.shtml",
+      "summary": "据两名知悉此次数据泄露事件的人士透露，面向开发者提供开源大模型推理与训练服务的初创公司 Fireworks，在上周向包括 Harvey 在内的部分大客户通报了一起性质更为严重的系...",
+      "relatedStocks": [
+        "英伟达",
+        "微软",
+        "台积电"
+      ],
+      "bullConcepts": [
+        "AI算力",
+        "半导体",
+        "国产替代"
+      ],
+      "bearConcepts": [
+        "传统软件"
+      ],
+      "bullIndustries": [
+        "半导体",
+        "AI应用",
+        "算力基础设施"
+      ],
+      "bearIndustries": [
+        "传统IT服务"
+      ],
+      "heat": 24,
+      "momentum": 18,
+      "_auto": true
+    },
+    {
+      "id": "ab1nmrnbt",
+      "title": "新加坡央行推出黄金托管服务，力争打造亚洲黄金交易中心",
+      "tag": "金融/宏观",
+      "region": "中国",
+      "concept": "bank",
+      "time": "2026-11-10 16:11",
+      "datetime": "2026-11-10 16:11",
+      "source": "环球市场播报",
+      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-10/doc-iniyfuyy2717287.shtml",
+      "summary": "新加坡金融管理局预计，场外黄金清算系统将于2027年第一季度正式投入市场运营。 新加坡央行正在推出黄金托管服务，以推动新加坡成为亚洲首屈一指的黄金交易中心。",
+      "relatedStocks": [
+        "美股科技",
+        "黄金"
+      ],
+      "bullConcepts": [
+        "黄金",
+        "防御板块"
+      ],
+      "bearConcepts": [
+        "高估值成长股"
+      ],
+      "bullIndustries": [
+        "银行",
+        "黄金"
+      ],
+      "bearIndustries": [
+        "高杠杆地产"
+      ],
+      "heat": 24,
+      "momentum": 18,
+      "_auto": true
+    },
+    {
+      "id": "ab15vb298",
+      "title": "马来西亚交通部长宣布其辞职决定立即生效",
+      "tag": "宏观/综合",
+      "region": "全球",
+      "concept": "macro",
+      "time": "2026-11-10 21:39",
+      "datetime": "2026-11-10 21:39",
+      "source": "财联社",
+      "url": "https://www.cls.cn/detail/2530695",
+      "summary": "财联社11月10日电，马来西亚交通部长陆兆福10日发表声明，宣布其此前的辞职决定立即生效。",
+      "relatedStocks": [
+        "宽基指数"
+      ],
+      "bullConcepts": [
+        "防御板块"
+      ],
+      "bearConcepts": [
+        "周期股"
+      ],
+      "bullIndustries": [
+        "公用事业"
+      ],
+      "bearIndustries": [
+        "顺周期"
+      ],
+      "heat": 24,
+      "momentum": 26,
+      "_auto": true
+    },
+    {
+      "id": "ab1aivude",
+      "title": "马克龙与海湾国家讨论霍尔木兹海峡航运保险安排",
+      "tag": "贸易/供应链",
+      "region": "美国",
+      "concept": "antitrust",
+      "time": "2026-11-10 20:16",
+      "datetime": "2026-11-10 20:16",
+      "source": "环球市场播报",
+      "url": "https://finance.sina.com.cn/world/2026-11-10/doc-iniyhfqu2602118.shtml",
+      "summary": "法国总统马克龙正与海湾国家磋商，寻求降低船舶通过霍尔木兹海峡的保险成本。自美国和以色列2月开始对伊朗发动袭击以来，该海峡航运一直受到干扰。",
+      "relatedStocks": [
+        "跨境电商",
+        "航运"
+      ],
+      "bullConcepts": [
+        "内需",
+        "国产替代"
+      ],
+      "bearConcepts": [
+        "出口链"
+      ],
+      "bullIndustries": [
+        "跨境电商",
+        "内需消费"
+      ],
+      "bearIndustries": [
+        "出口制造",
+        "航运"
       ],
       "heat": 24,
       "momentum": 18,
