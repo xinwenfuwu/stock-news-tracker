@@ -10435,36 +10435,56 @@ const app = createApp({
         return (arr && arr.length) ? arr : null;
       } catch (e) { return null; }
     }
-    // ===== 20261110b：新闻范围（近 N 日）——两个面板共享的筛选口径 =====
-    // 位置：影响力事件 / 未来事件 两个面板标题行「🔄 刷新数据」左侧各有一个选择框，共用同一个值。
+    // ===== 20261110c：新闻范围（近 N 日）——两个面板各自独立设置 =====
+    // 位置：影响力事件 / 未来事件 两个面板标题行「🔄 刷新数据」左侧各有一个选择框，各管各的，互不同步。
     // 语义：'' / null = 不选（影响力事件仍按默认 10 日窗口，突发/人物不限范围）；
     //       选了 N 日 = 只统计「事件/新闻时间距今天 0 ~ N-1 天」的条目。
-    // 作用范围：影响力事件（按事件日期）、突发/人物（按新闻 datetime）。
+    // 作用范围：inflRangeDays 管影响力事件（按事件日期）；futureRangeDays 管突发/人物（按新闻 datetime）。
     //       「未来」子版块的事件日期都在未来，无法用「近 N 日」限制，故不受影响（仍按日期排序）。
     const NEWS_RANGE_OPTIONS = [3, 5, 7, 10, 15, 30];
-    const newsRangeDays = ref((D && Number(D.newsRangeDays)) ? Number(D.newsRangeDays) : null);
-    /** 事件/新闻时间是否落在「近 N 日」范围内；未选范围时恒为 true。
+    // 一次性迁移：旧版是单一共享值 newsRangeDays，升级后拆成两侧独立设置，把旧值继承给两边（之后各改各的）。
+    // 迁移标记与 newsRangeDays 一并落盘（Store autosave），重复执行也安全（legacy 已清空则不会覆盖用户后续改动）。
+    if (D && !D.newsRangeMigrated) {
+      const legacy = Number(D.newsRangeDays) || null;
+      if (legacy) {
+        if (!Number(D.inflRangeDays)) D.inflRangeDays = legacy;
+        if (!Number(D.futureRangeDays)) D.futureRangeDays = legacy;
+      }
+      D.newsRangeDays = null;
+      D.newsRangeMigrated = true;
+    }
+    const inflRangeDays = ref((D && Number(D.inflRangeDays)) ? Number(D.inflRangeDays) : null);
+    const futureRangeDays = ref((D && Number(D.futureRangeDays)) ? Number(D.futureRangeDays) : null);
+    /** 事件/新闻时间是否落在「近 n 日」范围内；n 为空时恒为 true。
      *  时间字段优先级：datetime（新闻精确时间）> time > date（事件日期）。
      *  无任何时间信息的条目保留，避免整条被误剔除。 */
-    function newsInRange(e) {
-      const n = Number(newsRangeDays.value) || 0;
-      if (!n) return true;
+    function newsInRange(e, n) {
+      const days = Number(n) || 0;
+      if (!days) return true;
       const raw = (e && (e.datetime || e.time || e.date)) || '';
       const diff = daysFromToday(String(raw).slice(0, 10));
       if (diff === null) return true;
-      return diff <= 0 && diff >= -(n - 1);
+      return diff <= 0 && diff >= -(days - 1);
     }
-    /** 选择框显示文案：'' = 不选（默认） */
-    const newsRangeLabel = computed(() => {
-      const n = Number(newsRangeDays.value) || 0;
-      return n ? ('近 ' + n + ' 日') : '不选（默认）';
-    });
-    function setNewsRangeDays(v) {
+    /** 选择框显示文案：n 为空 = 不选（默认） */
+    function rangeLabel(n) {
+      const days = Number(n) || 0;
+      return days ? ('近 ' + days + ' 日') : '不选（默认）';
+    }
+    const inflRangeLabel = computed(() => rangeLabel(inflRangeDays.value));
+    const futureRangeLabel = computed(() => rangeLabel(futureRangeDays.value));
+    /** 影响力事件：改自己的范围 → 只重算影响力列表（不影响右侧未来事件） */
+    function setInflRangeDays(v) {
       const n = Number(v);
-      newsRangeDays.value = (n > 0) ? n : null;
-      if (D) D.newsRangeDays = newsRangeDays.value;
-      // 两个面板共用同一口径：任一处改动都同步重算两侧列表
+      inflRangeDays.value = (n > 0) ? n : null;
+      if (D) D.inflRangeDays = inflRangeDays.value;
       loadInfluence();
+    }
+    /** 未来事件：改自己的范围 → 只重算未来事件列表（不影响左侧影响力事件） */
+    function setFutureRangeDays(v) {
+      const n = Number(v);
+      futureRangeDays.value = (n > 0) ? n : null;
+      if (D) D.futureRangeDays = futureRangeDays.value;
       loadFutureData();
     }
     const futureRegion = ref('breaking');   // 'breaking' 突发 | 'future' 未来 | 'people' 人物
@@ -10614,8 +10634,8 @@ const app = createApp({
       if (reg === 'breaking') {
         const remote = await fetchBreakingEvents(seq);
         const src0 = (remote && remote.length) ? remote : BREAKING_EVENTS_SEED;
-        // 20261110b：新闻范围筛选（选「近 N 日」时只保留该范围内的新闻）
-        const src = Number(newsRangeDays.value) ? src0.filter(newsInRange) : src0;
+        // 20261110c：新闻范围筛选（本面板自己的 futureRangeDays，不影响左侧影响力事件）
+        const src = Number(futureRangeDays.value) ? src0.filter(e => newsInRange(e, futureRangeDays.value)) : src0;
         // initial：首屏把这些 id 标记为已见，避免初始事件被误标红；非 initial：新 id 标红，加载后延迟标记为已见
         // 注意：一律标记「未筛选的全量」，这样放宽范围后重新出现的事件不会被误判为「新」
         if (initial) { src0.forEach(e => futureSeenIds.value.add(e.id)); persistFutureSeen(); }
@@ -10628,7 +10648,7 @@ const app = createApp({
       } else if (reg === 'people') {
         const remote = await fetchCelebrityNews(seq);
         const src0 = (remote && remote.length) ? remote : CELEBRITY_EVENTS_SEED;
-        const src = Number(newsRangeDays.value) ? src0.filter(newsInRange) : src0;
+        const src = Number(futureRangeDays.value) ? src0.filter(e => newsInRange(e, futureRangeDays.value)) : src0;
         list = src.map(resolveFutureImpact);
         list.forEach(e => { e.surge = computeSurge(e); e._new = false; });   // 人物为静态榜单，不标红
         list = sortFuture(list);
@@ -10738,10 +10758,10 @@ const app = createApp({
     }
     // ===== 20261109i：影响力事件只统计「距今 10 日内」（含今天）的事件 =====
     // 口径：事件日期距今天 0~9 天（共 10 个自然日）才展示并计入排行；更早的一律剔除。
-    // 20261110b：改为「默认 10 日，可选近 N 日」——选了新闻范围后窗口跟随选择（见 inflDays()）。
+    // 20261110c：默认 10 日；选了本面板自己的新闻范围后窗口跟随选择（见 inflDays()）。
     const INFL_WINDOW_DAYS = 10;
-    /** 影响力事件当前生效的窗口天数：选了「新闻范围」用它，未选则用默认 10 日 */
-    function inflDays() { return Number(newsRangeDays.value) || INFL_WINDOW_DAYS; }
+    /** 影响力事件当前生效的窗口天数：选了「近 N 日」用它，未选则用默认 10 日 */
+    function inflDays() { return Number(inflRangeDays.value) || INFL_WINDOW_DAYS; }
     /** 取「今天往前 daysAgo 天」的 YYYY-MM-DD（用正午时刻，规避时区/夏令时跨日） */
     function dateOffsetISO(daysAgo) {
       const d = new Date(); d.setHours(12, 0, 0, 0); d.setDate(d.getDate() - Number(daysAgo || 0));
@@ -13809,8 +13829,8 @@ const app = createApp({
       inflRegion, inflEvents, inflLoading, inflError, inflDate, inflSortBy, setInflRegion, setInflSort, sortLabel, refreshInfluence, regionLabel, fmtAffected,
       // 20261109i：影响力事件只统计距今 10 日内（含今天），窗口标签用于面板展示
       INFL_WINDOW_DAYS, inflWindowLabel, inflWindowDays,
-      // 20261110b：新闻范围（近 N 日）选择框 —— 影响力事件与未来事件两个面板共享
-      NEWS_RANGE_OPTIONS, newsRangeDays, newsRangeLabel, setNewsRangeDays,
+      // 20261110c：新闻范围（近 N 日）——两个面板各自独立，互不影响
+      NEWS_RANGE_OPTIONS, inflRangeDays, futureRangeDays, inflRangeLabel, futureRangeLabel, setInflRangeDays, setFutureRangeDays,
       // 20261108b：口径说明一键隐藏/显示
       inflInfoHidden, toggleInflInfo,
       // 20261108j：未来事件（突发 + 未来，独立于影响力事件）
