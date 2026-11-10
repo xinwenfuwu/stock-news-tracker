@@ -602,7 +602,7 @@
    */
   function siteCategoryStats(items) {
     const bySource = {};
-    SOURCE_ORDER.forEach(s => { bySource[s.key] = { rank: s.rank, key: s.key, name: s.name, color: s.color, byCat: {}, news: {}, total: 0 }; });
+    SOURCE_ORDER.forEach(s => { bySource[s.key] = { rank: s.rank, key: s.key, name: s.name, color: s.color, byCat: {}, news: {}, allNews: [], total: 0 }; });
     for (const it of (items || [])) {
       const st = bySource[it.sourceKey];
       if (!st) continue;
@@ -612,11 +612,12 @@
       // 请求S：dist 每项带上该站该分类的新闻，供点分类弹窗查看
       if (!st.news[cat]) st.news[cat] = [];
       st.news[cat].push(it);
+      st.allNews.push(it);
       st.total++;
     }
     return SOURCE_ORDER.map(s => {
       const st = bySource[s.key];
-      const dist = CATEGORIES.map(cat => ({ cat, name: cat, count: st.byCat[cat] || 0, news: st.news[cat] || [] }))
+      const dist = CATEGORIES.map(cat => ({ cat, name: cat, count: st.byCat[cat] || 0, news: st.news[cat] || [], sentiment: computeCategorySentiment(st.news[cat] || []) }))
         .filter(d => d.count > 0)
         .sort((a, b) => b.count - a.count);
       const max = dist.length ? dist[0].count : 1;
@@ -625,7 +626,7 @@
         d.width = Math.max(6, (d.count / max) * 100);
         d.news.sort((a, b) => String(b.date || '').localeCompare(String(a.date || '')) || String(b.time || '').localeCompare(String(a.time || '')));
       });
-      return { rank: st.rank, key: st.key, name: st.name, color: st.color, total: st.total, hitTotal: st.total, byCat: st.byCat, dist };
+      return { rank: st.rank, key: st.key, name: st.name, color: st.color, total: st.total, hitTotal: st.total, byCat: st.byCat, dist, sentiment: computeCategorySentiment(st.allNews) };
     });
   }
 
@@ -660,7 +661,7 @@
     return SOURCE_ORDER.map(s => {
       const st = bySource[s.key];
       const dist = Object.keys(st.counter)
-        .map(name => ({ name: name, cat: name, count: st.counter[name], news: st.bucket[name] || [] }))
+        .map(name => ({ name: name, cat: name, count: st.counter[name], news: st.bucket[name] || [], sentiment: computeCategorySentiment(st.bucket[name] || []) }))
         .sort((a, b) => b.count - a.count || a.name.localeCompare(b.name));
       const max = dist.length ? dist[0].count : 1;
       dist.forEach(d => {
@@ -822,6 +823,7 @@
       const counter = {};
       const samples = {};
       const bucket = {};
+      const allNews = [];
       let hitCount = 0;
       for (const it of list) {
         const hits = _hitTopics(it.text, dim.key);
@@ -834,9 +836,10 @@
           if (!bucket[name]) bucket[name] = [];
           bucket[name].push(it);
         }
+        allNews.push(it);
       }
       const topics = Object.keys(counter)
-        .map(name => ({ name, count: counter[name], samples: samples[name] || [], news: bucket[name] || [] }))
+        .map(name => ({ name, count: counter[name], samples: samples[name] || [], news: bucket[name] || [], sentiment: computeCategorySentiment(bucket[name] || []) }))
         .sort((a, b) => b.count - a.count || a.name.localeCompare(b.name));
       const max = topics.length ? topics[0].count : 1;
       topics.forEach(t => {
@@ -848,7 +851,7 @@
       });
       return {
         key: dim.key, name: dim.name, icon: dim.icon, color: dim.color,
-        total: hitCount, baseTotal: base, topics
+        total: hitCount, baseTotal: base, topics, sentiment: computeCategorySentiment(allNews)
       };
     });
   }
@@ -1053,6 +1056,12 @@
     if (bear / total > 0.5) return 'bear';
     if (bull / total > 0.5) return 'bull';
     return 'neutral';
+  }
+  /** 多空倾向 → 着色 class：利好(bull)→红 / 利空(bear)→绿 / 中性→空（沿用默认/维度色）。与「新闻追踪」页新闻数量数字同源逻辑。 */
+  function sentiClass(sentiment) {
+    if (sentiment === 'bull') return 'senti-bull';   // 利好 → 红（涨）
+    if (sentiment === 'bear') return 'senti-bear';   // 利空 → 绿（跌）
+    return '';                                        // 中性 → 不附加 class
   }
 
 
@@ -1473,6 +1482,8 @@
     BRIEF_CONCEPT_DIMS, BRIEF_CONCEPT_KEYWORDS,
     BRIEF_INDUSTRY_DIMS, BRIEF_INDUSTRY_KEYWORDS,
     BRIEF_MODES, BRIEF_OTHER_KEY,
+    // batch-senti：多空着色——利好(bull)→红 / 利空(bear)→绿（新闻数量数字同源逻辑）
+    computeCategorySentiment, newsSentiment, sentiClass,
     // batch31：各省项目（省市词表 / 项目特征词 / 组合命中规则 / 项目清单抽取）
     PROVINCES, PROJECT_WORDS, _hitRule, briefProjectList,
     // batch56：严格分类引擎（供单测直接断言打分/主体判定）

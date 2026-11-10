@@ -4,12 +4,12 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>股市信息分析系统</title>
-  <link rel="stylesheet" href="css/style.css?v=20261110f">
+  <link rel="stylesheet" href="css/style.css?v=20261110g">
   <!-- Vue 3 全局构建版（v3.4.21 · 自托管）
        原先走 unpkg.com CDN：国内网络对 unpkg 的连通性不稳定，一旦该请求长时间挂起，
        <head> 里的阻塞脚本会让整页停在白屏、后续 auth-boot.js 根本不会执行。
        改为同源托管后，启动链路不再依赖任何第三方 CDN。 -->
-  <script src="js/vue.global.prod.js?v=20261110f"></script>
+  <script src="js/vue.global.prod.js?v=20261110g"></script>
 </head>
 <body class="auth-locked">
   <!-- ===== 登录关卡：登录通过前业务脚本不会被加载 ===== -->
@@ -95,7 +95,7 @@
         <input class="auth-input" type="text" id="auth-renew-user" placeholder="用户名（你注册时用的）" maxlength="20" autocomplete="off">
         <div class="auth-renew-plans" id="auth-renew-plans"></div>
         <div class="auth-renew-qr" id="auth-renew-qr">
-          <div class="auth-renew-qrbox"><img id="auth-renew-wx" src="assets/wechat-pay-qr.jpg?v=20261110f" alt="微信支付收款码"><span>微信支付（扫码支付）</span></div>
+          <div class="auth-renew-qrbox"><img id="auth-renew-wx" src="assets/wechat-pay-qr.jpg?v=20261110g" alt="微信支付收款码"><span>微信支付（扫码支付）</span></div>
           <div class="muted small" style="margin-top:6px;color:#c2410c;font-weight:600">支付时请添加会员备注，付款成功截图保存</div>
         </div>
         <input class="auth-input" type="text" id="auth-renew-amount" inputmode="decimal" placeholder="支付金额（必填，如 1000）" autocomplete="off">
@@ -990,7 +990,7 @@
                   <div class="qr-row">
                     <div class="qr-box">
                       <div class="qr-cap">推荐使用微信支付</div>
-                      <img src="assets/wechat-pay-qr.jpg?v=20261110f" alt="微信支付收款码" class="qr-pay-img">
+                      <img src="assets/wechat-pay-qr.jpg?v=20261110g" alt="微信支付收款码" class="qr-pay-img">
                       <div class="qr-cap" style="margin-top:6px;color:#c2410c;font-weight:600">支付时请添加会员备注，付款成功截图保存</div>
                       <div class="qr-cap muted small">火柴盒网络服务</div>
                     </div>
@@ -1229,16 +1229,6 @@
                   <button :class="['ht-tab', { active: htTab === 'daily' }]" @click="htTab = 'daily'">每日话题</button>
                   <button :class="['ht-tab', { active: htTab === 'analysis' }]" @click="htTab = 'analysis'">统计分析</button>
                 </div>
-                <!-- 20261110f：复制「今天/昨天/前天」快捷窗口到左侧头部（与每日快讯右侧同一套状态/逻辑，原版不动） -->
-                <span class="sw-sep">｜</span>
-                <div class="ht-day-btns">
-                  <button class="sw-btn sw-btn-day" :class="{active: briefWinDay===0}" :disabled="briefLoading" @click="setBriefWinDay(0)"
-                          title="填充「今天」默认统计窗口（每天收盘后默认即今天；填充后可再手动改）">今天</button>
-                  <button class="sw-btn sw-btn-day" :class="{active: briefWinDay===1}" :disabled="briefLoading" @click="setBriefWinDay(1)"
-                          title="填充「昨天」默认统计窗口 = 上一个默认的新闻统计开始时间（前移 1 个交易日）">昨天</button>
-                  <button class="sw-btn sw-btn-day" :class="{active: briefWinDay===2}" :disabled="briefLoading" @click="setBriefWinDay(2)"
-                          title="填充「前天」默认统计窗口 = 上上一个默认的新闻统计开始时间（前移 2 个交易日）">前天</button>
-                </div>
               </div>
             </div>
 
@@ -1280,7 +1270,7 @@
                     <span class="src-name">{{ s.name }}</span>
                     <span class="src-status" v-if="s.loading">加载中…</span>
                     <span class="src-status" v-else-if="s.error" :title="s.error">暂未取到</span>
-                    <span class="src-status" v-else>{{ (htCatFilter ? s.filteredCount : s.items.length) }} 条</span>
+                    <span class="src-status" v-else><span :class="sentiClass(srcSenti(s))">{{ (htCatFilter ? s.filteredCount : s.items.length) }}</span> 条</span>
                   </div>
                   <ol class="source-items" v-if="(htCatFilter ? s.filteredItems : s.items).length">
                     <li v-for="(it, i) in ((htCatFilter ? s.filteredItems : s.items).slice(0, htDailyLimit))" :key="i">
@@ -1367,7 +1357,7 @@
                         <div class="theme-dim-head" @click="d._open = !d._open">
                           <span class="theme-dim-caret">{{ d._open ? '▾' : '▸' }}</span>
                           <span class="theme-dim-name" :style="{ color: d.color }">{{ d.icon }} {{ d.name }}</span>
-                          <span class="theme-dim-count muted small">{{ d.total }} 条命中</span>
+                          <span class="theme-dim-count muted small"><span :class="sentiClass(d.sentiment)">{{ d.total }}</span> 条命中</span>
                         </div>
                         <div class="theme-topics" v-if="d._open">
                           <template v-for="t in (d.showAll ? d.topics : d.topics.slice(0, 6))" :key="t.name">
@@ -1377,12 +1367,12 @@
                               <span class="tt-caret">{{ d.selTopic === t.name ? '▾' : '▸' }}</span>
                               <span class="tt-name">{{ t.name }}</span>
                               <span class="tt-track"><span class="tt-fill" :style="{ width: t.width + '%', background: d.color }"></span></span>
-                              <span class="tt-val">{{ t.count }}</span>
+                              <span class="tt-val"><span :class="sentiClass(t.sentiment)">{{ t.count }}</span></span>
                               <span class="tt-pct">{{ t.pct }}%</span>
                             </div>
                             <div class="tt-news" v-if="d.selTopic === t.name">
                               <div class="tt-news-head">
-                                <span class="tt-news-title" :style="{ color: d.color }">「{{ t.name }}」相关新闻 {{ t.news.length }} 条</span>
+                                <span class="tt-news-title" :style="{ color: d.color }">「{{ t.name }}」相关新闻 <span :class="sentiClass(t.sentiment)">{{ t.news.length }}</span> 条</span>
                                 <span class="muted small">点标题跳原文</span>
                               </div>
                               <div class="tt-news-item" v-for="(n, k) in t.news.slice(0, d.newsLimit || 30)" :key="k">
@@ -1423,7 +1413,7 @@
                     <div class="sc-head">
                       <span class="src-rank">{{ st.rank }}</span>
                       <span class="sc-name">{{ st.name }}</span>
-                      <span class="muted small">{{ st.total }} 条<span v-if="siteStatsDim !== 'cat7' && st.hitTotal != null"> · {{ st.hitTotal }} 条命中</span></span>
+                      <span class="muted small"><span :class="sentiClass(st.sentiment)">{{ st.total }}</span> 条<span v-if="siteStatsDim !== 'cat7' && st.hitTotal != null"> · <span :class="sentiClass(st.sentiment)">{{ st.hitTotal }}</span> 条命中</span></span>
                     </div>
                     <div class="sc-bars" v-if="st.dist.length">
                       <div class="sc-bar sc-bar-click" v-for="d in st.dist" :key="st.key + '-' + d.name"
@@ -1431,7 +1421,7 @@
                            :title="'点击查看「' + d.name + '」在' + st.name + '的 ' + d.count + ' 条新闻'">
                         <span class="sc-bar-label">{{ d.name }}</span>
                         <span class="sc-bar-track"><span class="sc-bar-fill" :style="{ width: d.width + '%', background: siteStatsDim === 'cat7' ? catColor(d.name) : scDimColor }"></span></span>
-                        <span class="sc-bar-val">{{ d.count }}</span>
+                        <span class="sc-bar-val"><span :class="sentiClass(d.sentiment)">{{ d.count }}</span></span>
                       </div>
                     </div>
                     <div class="muted small" v-else>该时段未识别到{{ scDimName }}类主题词</div>
@@ -1489,9 +1479,21 @@
                        placeholder="来源名称，如：今日头条" maxlength="12">
                 每日快讯
               </h3>
-              <span class="muted small" v-if="briefBase.length">
-                共 {{ briefBase.length }} 条<span v-if="briefSearching"> · 匹配 {{ briefFiltered.length }} 条</span>
-              </span>
+              <div class="brief-head-right">
+                <span class="muted small" v-if="briefBase.length">
+                  共 <span :class="sentiClass(briefSenti)">{{ briefBase.length }}</span> 条<span v-if="briefSearching"> · 匹配 {{ briefFiltered.length }} 条</span>
+                </span>
+                <span class="sw-sep">｜</span>
+                <!-- batch-senti：今天 / 昨天 / 前天 快捷窗口（与每日快讯工具栏、新闻追踪页同一套状态/逻辑） -->
+                <div class="ht-day-btns">
+                  <button class="sw-btn sw-btn-day" :class="{active: briefWinDay===0}" :disabled="briefLoading" @click="setBriefWinDay(0)"
+                          title="填充「今天」默认统计窗口（每天收盘后默认即今天；填充后可再手动改）">今天</button>
+                  <button class="sw-btn sw-btn-day" :class="{active: briefWinDay===1}" :disabled="briefLoading" @click="setBriefWinDay(1)"
+                          title="填充「昨天」默认统计窗口 = 上一个默认的新闻统计开始时间（前移 1 个交易日）">昨天</button>
+                  <button class="sw-btn sw-btn-day" :class="{active: briefWinDay===2}" :disabled="briefLoading" @click="setBriefWinDay(2)"
+                          title="填充「前天」默认统计窗口 = 上上一个默认的新闻统计开始时间（前移 2 个交易日）">前天</button>
+                </div>
+              </div>
             </div>
 
             <!-- 统计时间窗口（batch16：以每天 15:00 为换日节点，起止可改，本板块独立刷新） -->
@@ -1572,13 +1574,13 @@
                       <span class="bc-name" @click.stop="openBriefFilter(c, 'theme')" :title="'点击查看「'+c.name+'」成分股'">{{ c.name }}</span>
                       <button type="button" class="bc-stocks" v-if="currentPage === 'news'" @click.stop="openBriefFilter(c, 'theme')" title="在下方「股票明细」展示成分股">📊</button>
                       <span class="bc-track"><span class="bc-fill" :style="{ width: c.width + '%', background: c.color }"></span></span>
-                      <span class="bc-count">{{ c.count }}</span>
+                      <span class="bc-count" :class="c.sentiment === 'bull' ? 'sent-bull' : (c.sentiment === 'bear' ? 'sent-bear' : '')">{{ c.count }}</span>
                       <span class="bc-pct">{{ c.pct }}%</span>
                       <button type="button" class="bc-sort bc-cnt" v-if="currentPage === 'news'" @click.stop="sortByBriefField('cnt')" :title="'数 = 本期该子类新闻数 − 上期同子类新闻数（上次时间段；上期无该子类按 0 计，无上期数据显示 —）'">{{ c.cnt==null?'—':c.cnt }}<i class="bsort" v-if="briefCatSort.field==='cnt'">{{ briefCatSort.dir==='asc'?'↑':'↓' }}</i></button>
                     </div>
                     <div class="brief-news" v-if="briefUi.open['theme::' + c.key]">
                       <div class="brief-news-head">
-                        <span class="brief-news-title" :style="{ color: c.color }">{{ c.icon }} {{ c.name }} · {{ c.count }} 条</span>
+                        <span class="brief-news-title" :style="{ color: c.color }">{{ c.icon }} {{ c.name }} · <span :class="sentiClass(c.sentiment)">{{ c.count }}</span> 条</span>
                         <span class="muted small">点标题跳{{ briefSourceName }}原文</span>
                       </div>
                       <!-- batch31：各省项目 —— 展开时附带「各省市本年度重大项目」清单。
@@ -1642,13 +1644,13 @@
                       <span class="bc-name" @click.stop="openBriefFilter(c, 'concept')" :title="'点击查看「'+c.name+'」成分股'">{{ c.name }}</span>
                       <button type="button" class="bc-stocks" v-if="currentPage === 'news'" @click.stop="openBriefFilter(c, 'concept')" title="在下方「股票明细」展示成分股">📊</button>
                       <span class="bc-track"><span class="bc-fill" :style="{ width: c.width + '%', background: c.color }"></span></span>
-                      <span class="bc-count">{{ c.count }}</span>
+                      <span class="bc-count" :class="c.sentiment === 'bull' ? 'sent-bull' : (c.sentiment === 'bear' ? 'sent-bear' : '')">{{ c.count }}</span>
                       <span class="bc-pct">{{ c.pct }}%</span>
                       <button type="button" class="bc-sort bc-cnt" v-if="currentPage === 'news'" @click.stop="sortByBriefField('cnt')" :title="'数 = 本期该子类新闻数 − 上期同子类新闻数（上次时间段；上期无该子类按 0 计，无上期数据显示 —）'">{{ c.cnt==null?'—':c.cnt }}<i class="bsort" v-if="briefCatSort.field==='cnt'">{{ briefCatSort.dir==='asc'?'↑':'↓' }}</i></button>
                     </div>
                     <div class="brief-news" v-if="briefUi.open['concept::' + c.key]">
                       <div class="brief-news-head">
-                        <span class="brief-news-title" :style="{ color: c.color }">{{ c.icon }} {{ c.name }} · {{ c.count }} 条</span>
+                        <span class="brief-news-title" :style="{ color: c.color }">{{ c.icon }} {{ c.name }} · <span :class="sentiClass(c.sentiment)">{{ c.count }}</span> 条</span>
                         <span class="muted small">点标题跳{{ briefSourceName }}原文</span>
                       </div>
                       <div class="brief-item" v-for="(n, k) in c.news.slice(0, briefUi.limit['concept::' + c.key] || 30)" :key="n.id || k">
@@ -1684,13 +1686,13 @@
                       <span class="bc-name" @click.stop="openBriefFilter(c, 'industry')" :title="'点击查看「'+c.name+'」成分股'">{{ c.name }}</span>
                       <button type="button" class="bc-stocks" v-if="currentPage === 'news'" @click.stop="openBriefFilter(c, 'industry')" title="在下方「股票明细」展示成分股">📊</button>
                       <span class="bc-track"><span class="bc-fill" :style="{ width: c.width + '%', background: c.color }"></span></span>
-                      <span class="bc-count">{{ c.count }}</span>
+                      <span class="bc-count" :class="c.sentiment === 'bull' ? 'sent-bull' : (c.sentiment === 'bear' ? 'sent-bear' : '')">{{ c.count }}</span>
                       <span class="bc-pct">{{ c.pct }}%</span>
                       <button type="button" class="bc-sort bc-cnt" v-if="currentPage === 'news'" @click.stop="sortByBriefField('cnt')" :title="'数 = 本期该子类新闻数 − 上期同子类新闻数（上次时间段；上期无该子类按 0 计，无上期数据显示 —）'">{{ c.cnt==null?'—':c.cnt }}<i class="bsort" v-if="briefCatSort.field==='cnt'">{{ briefCatSort.dir==='asc'?'↑':'↓' }}</i></button>
                     </div>
                     <div class="brief-news" v-if="briefUi.open['industry::' + c.key]">
                       <div class="brief-news-head">
-                        <span class="brief-news-title" :style="{ color: c.color }">{{ c.icon }} {{ c.name }} · {{ c.count }} 条</span>
+                        <span class="brief-news-title" :style="{ color: c.color }">{{ c.icon }} {{ c.name }} · <span :class="sentiClass(c.sentiment)">{{ c.count }}</span> 条</span>
                         <span class="muted small">点标题跳{{ briefSourceName }}原文</span>
                       </div>
                       <div class="brief-item" v-for="(n, k) in c.news.slice(0, briefUi.limit['industry::' + c.key] || 30)" :key="n.id || k">
@@ -5229,14 +5231,14 @@
     </transition>
   </div>
 
-  <script src="js/auth.js?v=20261110f"></script>
-  <script src="js/auth-sync.js?v=20261110f"></script>
+  <script src="js/auth.js?v=20261110g"></script>
+  <script src="js/auth-sync.js?v=20261110g"></script>
   <!-- 边缘加速默认站点（batch37 治本：Cloudflare Worker 代理东财/腾讯，缓解 JSONP 限流误报）。
        若你所在地区 workers.dev 访问慢，可在「设置 → 行情加速地址」清空即恢复纯直连。 -->
   <script>window.__SNT_ACCEL__ = 'https://sichina.dpdns.org';</script>
   <!-- 扫码支付二维码渲染库（第三方 qrcodejs，本地托管避免外链失效）。renderQr 会先检测全局 QRCode 是否存在。 -->
-  <script src="assets/qrcode.min.js?v=20261110f"></script>
-  <script src="js/auth-boot.js?v=20261110f"></script>
+  <script src="assets/qrcode.min.js?v=20261110g"></script>
+  <script src="js/auth-boot.js?v=20261110g"></script>
   <!-- store / stock-api / hot-topics / app 由 auth-boot.js 在登录通过后动态装载，
        未登录时它们不会被下载，业务数据也不会进入内存 -->
 </body>

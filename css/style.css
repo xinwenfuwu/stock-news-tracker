@@ -2230,7 +2230,8 @@ body {
 .q-hist td.q-ops { white-space: nowrap; }
 .q-ops .btn { margin-right: 4px; }
 
-.brief-head { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; flex-wrap: wrap; }
+.brief-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap; }
+.brief-head-right { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
 /* 来源名下拉（batch15）：看起来像标题的一部分，点开换来源 */
 .brief-source {
   padding: 1px 4px; margin: 0 1px; font-size: inherit; font-weight: inherit; color: #b91c1c;
@@ -4233,6 +4234,9 @@ body.guest-mode #app { display: none; }
 .sw-btn.sw-btn-day.active:hover:not(:disabled) { background: var(--primary-hover); }
 .ht-head-right { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
 .ht-day-btns { display: inline-flex; gap: 6px; }
+/* batch-senti：新闻数量数字多空着色——利好(bull)→红（涨）/ 利空(bear)→绿（跌）/ 中性→沿用默认色 */
+.senti-bull { color: var(--up); font-weight: 600; }
+.senti-bear { color: var(--down); font-weight: 600; }
 
 /* ===== 20261110b：新闻范围选择框（影响力事件 / 未来事件，位于「刷新数据」左侧） ===== */
 .panel-title-row .news-range {

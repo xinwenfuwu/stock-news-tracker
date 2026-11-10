@@ -8289,6 +8289,22 @@ const app = createApp({
     }
     /** 当前展示的数据源：闭市周期窗口优先（跨天合并），否则为所选那天的全部快讯 */
     const briefBase = computed(() => (briefWindow.on ? briefWindowItems.value : briefItems.value));
+    /** batch-senti：每日快讯「共 N 条」总体的多空倾向（利好→红 / 利空→绿），与分类条数同源逻辑 */
+    const briefSenti = computed(() =>
+      (typeof HotTopics !== 'undefined' && HotTopics.computeCategorySentiment)
+        ? HotTopics.computeCategorySentiment(briefBase.value || []) : 'neutral');
+    /** 多空倾向 → 着色 class：利好(bull)→红 / 利空(bear)→绿 / 中性→空（沿用默认/维度色） */
+    function sentiClass(s) {
+      if (s === 'bull') return 'senti-bull';
+      if (s === 'bear') return 'senti-bear';
+      return '';
+    }
+    /** 火热话题某来源的条数多空倾向（受分类筛选影响时取筛选后的集合） */
+    function srcSenti(s) {
+      const arr = (s && (s.filteredItems || s.items)) || [];
+      return (typeof HotTopics !== 'undefined' && HotTopics.computeCategorySentiment)
+        ? HotTopics.computeCategorySentiment(arr) : 'neutral';
+    }
     /** 关键词命中判定（正文 / 关联股票 / 关联主题都参与匹配；空关键词视为全部命中）。
      *  本期统计与「上期」对比统计共用，保证搜索状态下两期口径一致。 */
     function briefKeywordHit(it, kw) {
@@ -13845,7 +13861,7 @@ const app = createApp({
       hotTopicsSources, hotTopicsMerged, hotTopicsLoading, hotTopicsUpdated, refreshHotTopics,
       dailyWinStart, dailyWinEnd, dailyWinText, refreshDailyTopics, resetDailyWin,
       briefDates, briefDate, briefItems, briefKeyword, briefLoading, briefError, briefUi, briefPaused,
-      briefFiltered, briefSearching, briefStatsList, briefBase,
+      briefFiltered, briefSearching, briefStatsList, briefBase, briefSenti, sentiClass, srcSenti,
       briefThemeStats, briefConceptStats, briefIndustryStats,
       briefSourceName, briefSourceInput, briefSourceCustom, briefSourcePresets,
       onBriefSourcePick, commitBriefSource,
