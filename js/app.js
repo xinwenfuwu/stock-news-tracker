@@ -10435,6 +10435,38 @@ const app = createApp({
         return (arr && arr.length) ? arr : null;
       } catch (e) { return null; }
     }
+    // ===== 20261110b：新闻范围（近 N 日）——两个面板共享的筛选口径 =====
+    // 位置：影响力事件 / 未来事件 两个面板标题行「🔄 刷新数据」左侧各有一个选择框，共用同一个值。
+    // 语义：'' / null = 不选（影响力事件仍按默认 10 日窗口，突发/人物不限范围）；
+    //       选了 N 日 = 只统计「事件/新闻时间距今天 0 ~ N-1 天」的条目。
+    // 作用范围：影响力事件（按事件日期）、突发/人物（按新闻 datetime）。
+    //       「未来」子版块的事件日期都在未来，无法用「近 N 日」限制，故不受影响（仍按日期排序）。
+    const NEWS_RANGE_OPTIONS = [3, 5, 7, 10, 15, 30];
+    const newsRangeDays = ref((D && Number(D.newsRangeDays)) ? Number(D.newsRangeDays) : null);
+    /** 事件/新闻时间是否落在「近 N 日」范围内；未选范围时恒为 true。
+     *  时间字段优先级：datetime（新闻精确时间）> time > date（事件日期）。
+     *  无任何时间信息的条目保留，避免整条被误剔除。 */
+    function newsInRange(e) {
+      const n = Number(newsRangeDays.value) || 0;
+      if (!n) return true;
+      const raw = (e && (e.datetime || e.time || e.date)) || '';
+      const diff = daysFromToday(String(raw).slice(0, 10));
+      if (diff === null) return true;
+      return diff <= 0 && diff >= -(n - 1);
+    }
+    /** 选择框显示文案：'' = 不选（默认） */
+    const newsRangeLabel = computed(() => {
+      const n = Number(newsRangeDays.value) || 0;
+      return n ? ('近 ' + n + ' 日') : '不选（默认）';
+    });
+    function setNewsRangeDays(v) {
+      const n = Number(v);
+      newsRangeDays.value = (n > 0) ? n : null;
+      if (D) D.newsRangeDays = newsRangeDays.value;
+      // 两个面板共用同一口径：任一处改动都同步重算两侧列表
+      loadInfluence();
+      loadFutureData();
+    }
     const futureRegion = ref('breaking');   // 'breaking' 突发 | 'future' 未来 | 'people' 人物
     const futureEvents = ref([]);
     const futureLoading = ref(false);
@@ -10581,18 +10613,22 @@ const app = createApp({
       let allUpcoming = null;
       if (reg === 'breaking') {
         const remote = await fetchBreakingEvents(seq);
-        const src = (remote && remote.length) ? remote : BREAKING_EVENTS_SEED;
+        const src0 = (remote && remote.length) ? remote : BREAKING_EVENTS_SEED;
+        // 20261110b：新闻范围筛选（选「近 N 日」时只保留该范围内的新闻）
+        const src = Number(newsRangeDays.value) ? src0.filter(newsInRange) : src0;
         // initial：首屏把这些 id 标记为已见，避免初始事件被误标红；非 initial：新 id 标红，加载后延迟标记为已见
-        if (initial) { src.forEach(e => futureSeenIds.value.add(e.id)); persistFutureSeen(); }
+        // 注意：一律标记「未筛选的全量」，这样放宽范围后重新出现的事件不会被误判为「新」
+        if (initial) { src0.forEach(e => futureSeenIds.value.add(e.id)); persistFutureSeen(); }
         list = src.map(resolveFutureImpact);
         list.forEach(e => { e.surge = computeSurge(e); e._new = !futureSeenIds.value.has(e.id); });
         list = sortFuture(list);
         if (!initial) {
-          setTimeout(() => { src.forEach(e => futureSeenIds.value.add(e.id)); persistFutureSeen(); }, 80);
+          setTimeout(() => { src0.forEach(e => futureSeenIds.value.add(e.id)); persistFutureSeen(); }, 80);
         }
       } else if (reg === 'people') {
         const remote = await fetchCelebrityNews(seq);
-        const src = (remote && remote.length) ? remote : CELEBRITY_EVENTS_SEED;
+        const src0 = (remote && remote.length) ? remote : CELEBRITY_EVENTS_SEED;
+        const src = Number(newsRangeDays.value) ? src0.filter(newsInRange) : src0;
         list = src.map(resolveFutureImpact);
         list.forEach(e => { e.surge = computeSurge(e); e._new = false; });   // 人物为静态榜单，不标红
         list = sortFuture(list);
@@ -10702,24 +10738,30 @@ const app = createApp({
     }
     // ===== 20261109i：影响力事件只统计「距今 10 日内」（含今天）的事件 =====
     // 口径：事件日期距今天 0~9 天（共 10 个自然日）才展示并计入排行；更早的一律剔除。
+    // 20261110b：改为「默认 10 日，可选近 N 日」——选了新闻范围后窗口跟随选择（见 inflDays()）。
     const INFL_WINDOW_DAYS = 10;
+    /** 影响力事件当前生效的窗口天数：选了「新闻范围」用它，未选则用默认 10 日 */
+    function inflDays() { return Number(newsRangeDays.value) || INFL_WINDOW_DAYS; }
     /** 取「今天往前 daysAgo 天」的 YYYY-MM-DD（用正午时刻，规避时区/夏令时跨日） */
     function dateOffsetISO(daysAgo) {
       const d = new Date(); d.setHours(12, 0, 0, 0); d.setDate(d.getDate() - Number(daysAgo || 0));
       return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
     }
-    /** 是否落在「近 10 日内」窗口（含今天）：daysFromToday 今天=0、过去为负、未来为正 */
+    /** 是否落在「近 N 日内」窗口（含今天）：daysFromToday 今天=0、过去为负、未来为正 */
     function inflInWindow(e) {
       const diff = daysFromToday(e && e.date);
-      return diff !== null && diff <= 0 && diff >= -(INFL_WINDOW_DAYS - 1);
+      return diff !== null && diff <= 0 && diff >= -(inflDays() - 1);
     }
-    const inflWindowLabel = computed(() => dateOffsetISO(INFL_WINDOW_DAYS - 1) + ' ~ ' + todayISO());
+    const inflWindowDays = computed(() => inflDays());
+    const inflWindowLabel = computed(() => dateOffsetISO(inflDays() - 1) + ' ~ ' + todayISO());
     // 样例数据的事件原始日期跨度数月（最早 2026-02），若直接按窗口过滤会只剩 1~2 条。
-    // 故加载时把「同一区域」的事件按原时间先后重锚到最近 10 个自然日内（每天约 2 条），
+    // 故加载时把「同一区域」的事件按原时间先后重锚到最近 N 个自然日内（每天约 2 条），
     // 让窗口口径下列表仍保持完整内容；将来接入真实事件源时真实日期本就在窗口内，重锚不会改动它们。
-    let _inflAnchoredSeed = null;
+    // 20261110b：重锚天数跟随当前窗口（按天数分别缓存），选「近 3 日」时 20 条会均匀落到 3 天内。
+    const _inflAnchorCache = {};
     function inflAnchoredSeed() {
-      if (_inflAnchoredSeed) return _inflAnchoredSeed;
+      const n = inflDays();
+      if (_inflAnchorCache[n]) return _inflAnchorCache[n];
       const byReg = {};
       INFLUENCE_EVENTS_SEED.forEach(e => { (byReg[e.region] = byReg[e.region] || []).push(e); });
       const out = [];
@@ -10727,12 +10769,12 @@ const app = createApp({
         // 按原始日期从新到旧，保证重锚后的事件先后顺序与原来一致
         const list = byReg[reg].slice().sort((a, b) => String(b.date).localeCompare(String(a.date)));
         list.forEach((e, i) => {
-          const daysAgo = Math.min(INFL_WINDOW_DAYS - 1,
-            Math.round(i * (INFL_WINDOW_DAYS - 1) / Math.max(1, list.length - 1)));
+          const daysAgo = Math.min(n - 1,
+            Math.round(i * (n - 1) / Math.max(1, list.length - 1)));
           out.push({ ...e, date: dateOffsetISO(daysAgo) });
         });
       });
-      _inflAnchoredSeed = out;
+      _inflAnchorCache[n] = out;
       return out;
     }
     function loadInfluence() {
@@ -10740,11 +10782,12 @@ const app = createApp({
       // 三个子版块互斥：中国/美国/全世界各自只展示本区域事件，点击哪个就展现哪个
       // 双指标同时存在：影响股民数 S（投资该概念股票的股民）+ 影响人数 A（生产生活全部相关人数，含 S）
       // 20261109i：只统计距今 10 日内（含今天）的事件，更早的旧事件不展示也不参与排行
+      // 20261110b：窗口天数可由「新闻范围」选择框调整（未选仍是默认 10 日）
       const filtered = inflAnchoredSeed()
         .filter(e => e.region === reg && inflInWindow(e))
         .map(resolveInfluence);
       inflEvents.value = sortInfluence(filtered);
-      inflDate.value = '实时整理 · 近 ' + INFL_WINDOW_DAYS + ' 日窗口';
+      inflDate.value = '实时整理 · 近 ' + inflDays() + ' 日窗口';
       inflError.value = '';
     }
     function setInflRegion(r) { inflRegion.value = r; if (D && D.inflRegion !== undefined) D.inflRegion = r; loadInfluence(); }
@@ -13765,7 +13808,9 @@ const app = createApp({
       emHotStocks, emHotLoading, refreshEmHotOnly,
       inflRegion, inflEvents, inflLoading, inflError, inflDate, inflSortBy, setInflRegion, setInflSort, sortLabel, refreshInfluence, regionLabel, fmtAffected,
       // 20261109i：影响力事件只统计距今 10 日内（含今天），窗口标签用于面板展示
-      INFL_WINDOW_DAYS, inflWindowLabel,
+      INFL_WINDOW_DAYS, inflWindowLabel, inflWindowDays,
+      // 20261110b：新闻范围（近 N 日）选择框 —— 影响力事件与未来事件两个面板共享
+      NEWS_RANGE_OPTIONS, newsRangeDays, newsRangeLabel, setNewsRangeDays,
       // 20261108b：口径说明一键隐藏/显示
       inflInfoHidden, toggleInflInfo,
       // 20261108j：未来事件（突发 + 未来，独立于影响力事件）

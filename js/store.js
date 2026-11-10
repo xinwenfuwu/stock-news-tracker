@@ -51,6 +51,9 @@ const Store = {
       inflRegion: 'world',    // 影响力事件：当前选中的区域子版块（'cn'中国 | 'us'美国 | 'world'全世界）
       inflSortBy: 'investors',// 影响力事件：排序口径（'investors'按影响股民数 | 'people'按影响人数）
       inflInfoHidden: false,  // 影响力事件：口径说明是否已隐藏（20261108b，按钮在说明文字左侧）
+      // 20261110b：新闻范围（近 N 日）。null = 不选（影响力事件用默认 10 日、突发/人物不限）；
+      // 选值后同时作用于「影响力事件」与「未来事件（突发/人物）」两个面板，两处选择框共享同一值。
+      newsRangeDays: null,
       futureRegion: 'breaking', // 未来事件：当前选中的子版块（'breaking'突发 | 'future'未来）（20261108j）
       futureSortBy: 'investors', // 未来事件：排序口径（'investors'按影响股民数 | 'people'按影响人数 | 'date'按日期，20261109a）
       futureAutoRefresh: true,   // 未来事件·突发：是否开启自动刷新（20261109a）

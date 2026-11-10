@@ -4223,3 +4223,24 @@ body.guest-mode #app { display: none; }
 .stat-win .sw-btn.sw-btn-day { padding: 3px 10px; font-size: 12px; line-height: 1; }
 .stat-win .sw-btn.sw-btn-day.active { background: var(--primary); color: #fff; border-color: var(--primary); }
 .stat-win .sw-btn.sw-btn-day.active:hover:not(:disabled) { background: var(--primary-hover); }
+
+/* ===== 20261110b：新闻范围选择框（影响力事件 / 未来事件，位于「刷新数据」左侧） ===== */
+.panel-title-row .news-range {
+  display: inline-flex; align-items: center; gap: 4px;
+  margin-left: auto;   /* 标题靠左、选择框与刷新按钮一起靠右 */
+  font-size: 12px; color: var(--text-secondary); white-space: nowrap;
+}
+.news-range-lbl { font-size: 12px; color: var(--text-secondary); }
+.news-range-sel {
+  height: 26px; padding: 0 4px; font-size: 12px; line-height: 1;
+  border: 1px solid var(--border); border-radius: 6px;
+  background: var(--surface); color: var(--text-primary); cursor: pointer;
+}
+.news-range-sel:hover { border-color: var(--primary); }
+.news-range-sel:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 2px rgba(37,99,235,.15); }
+
+@media (max-width: 768px) {
+  .panel-title-row .news-range { margin-left: 0; }
+  .news-range-sel { height: 24px; font-size: 11px; }
+  .news-range-lbl { font-size: 11px; }
+}
