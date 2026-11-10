@@ -4194,6 +4194,10 @@ body.guest-mode #app { display: none; }
 .senti-mood-legend { display: flex; justify-content: space-between; gap: 10px; font-size: 12px; margin-top: 6px; }
 .senti-mood-legend .bull { color: var(--up); }
 .senti-mood-legend .bear { color: var(--down); }
+.senti-caliber {
+  margin: 8px 0 4px; padding: 8px 10px; font-size: 12.5px; line-height: 1.7;
+  background: var(--surface-alt); border: 1px dashed var(--border); border-radius: var(--radius);
+}
 .senti-error {
   margin-top: 8px; padding: 8px 10px; font-size: 13px;
   color: var(--danger); background: #fef2f2; border: 1px solid #fecaca; border-radius: var(--radius);

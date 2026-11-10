@@ -7516,7 +7516,8 @@ const app = createApp({
     async function runSentimentInsight() {
       const news = sentiNewsOfDay.value;
       if (!news.length) {
-        sentiError.value = '当日（' + hotDate.value + '）暂无新闻数据：请先到「新闻追踪」页导入或粘贴该日新闻，再生成舆情洞察。';
+        // 20261110d：不再用"暂无新闻数据"报错占位——口径说明已在面板内常驻展示，
+        // 无数据时顶部"共 0 条新闻"+空状态提示已能说明，直接返回避免误导用户。
         return;
       }
       if (!aiConfigured.value) {
