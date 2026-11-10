@@ -1,20 +1,50 @@
 {
-  "generatedAt": "2026-11-10 22:45",
+  "generatedAt": "2026-11-11 05:46",
   "generatedBy": "GitHub Actions · 多源实时聚合",
   "sourceCount": 5,
   "autoCount": 18,
   "events": [
     {
-      "id": "ab1nup2in",
-      "title": "美国10月核心CPI环比上涨0.3%超预期，12月加息50基点预期骤然升温。 沃勒释放美联储“最鹰信号”：若通胀居高不下，12月应加息50基点，需收回此前“三次预防性降息”。 冲…",
+      "id": "ab5qnxkp",
+      "title": "美国商品期货交易委员会（CFTC）警告预测平台公司Kalshi，这家衍生品监管部门可能立即对其提起诉讼。 CFTC调查该公司提供的特定押注合约。（Politico）",
+      "tag": "宏观/综合",
+      "region": "美国",
+      "concept": "usMacro",
+      "time": "2026-11-11 05:38",
+      "datetime": "2026-11-11 05:38",
+      "source": "华尔街见闻",
+      "url": "https://wallstreetcn.com/livenews/3197935",
+      "summary": "美国商品期货交易委员会（CFTC）警告预测平台公司Kalshi，这家衍生品监管部门可能立即对其提起诉讼。 CFTC调查该公司提供的特定押注合约。（Politico）",
+      "relatedStocks": [
+        "宽基指数"
+      ],
+      "bullConcepts": [
+        "防御板块"
+      ],
+      "bearConcepts": [
+        "周期股"
+      ],
+      "bullIndustries": [
+        "公用事业"
+      ],
+      "bearIndustries": [
+        "顺周期"
+      ],
+      "heat": 78,
+      "momentum": 71,
+      "_auto": true
+    },
+    {
+      "id": "abqbyj1q",
+      "title": "Point72 Asset Management旗下量化交易部门指控一名前研究分析师利用Anthropic PBC的Claude和OpenAI的Codex窃取专有源代码，目的是加…",
       "tag": "科技/AI",
       "region": "美国",
       "concept": "aiCapex",
-      "time": "2026-11-10 21:48",
-      "datetime": "2026-11-10 21:48",
+      "time": "2026-11-11 05:26",
+      "datetime": "2026-11-11 05:26",
       "source": "华尔街见闻",
-      "url": "https://wallstreetcn.com/livenews/3197738",
-      "summary": "美国10月核心CPI环比上涨0.3%超预期，12月加息50基点预期骤然升温。 沃勒释放美联储“最鹰信号”：若通胀居高不下，12月应加息50基点，需收回此前“三次预防性降息”。 冲击美国科技IPO融资纪录！Anthropic最高募资904亿美元、完全稀释估值1.4万亿美元。 据央视，新一轮俄美乌三方首日会谈结束，将于明日继续进行。 阿里巴巴：建议分拆平头哥于香港联交所主板独立上…",
+      "url": "https://wallstreetcn.com/livenews/3197932",
+      "summary": "Point72 Asset Management旗下量化交易部门指控一名前研究分析师利用Anthropic PBC的Claude和OpenAI的Codex窃取专有源代码，目的是加入一家竞争对手。 Cubist Systematic Strategies周一在美国康涅狄格州斯坦福德的州法院起诉Xin Jin。Cubist在诉状中称，公司经过调查认定，Jin“曾试图窃取（而且很可…",
       "relatedStocks": [
         "英伟达",
         "微软",
@@ -37,54 +67,20 @@
         "传统IT服务"
       ],
       "heat": 87,
-      "momentum": 86,
+      "momentum": 61,
       "_auto": true
     },
     {
-      "id": "ab1rnkd51",
-      "title": "当地时间10日，也门胡塞武装称再次袭击沙特哈立德国王国际机场、金融中心、石油设施、军事集结点等目标。",
-      "tag": "地缘/政治",
-      "region": "欧洲",
-      "concept": "macro",
-      "time": "2026-11-10 22:39",
-      "datetime": "2026-11-10 22:39",
-      "source": "华尔街见闻",
-      "url": "https://wallstreetcn.com/livenews/3197768",
-      "summary": "当地时间10日，也门胡塞武装称再次袭击沙特哈立德国王国际机场、金融中心、石油设施、军事集结点等目标。",
-      "relatedStocks": [
-        "军工",
-        "黄金"
-      ],
-      "bullConcepts": [
-        "军工",
-        "避险资产"
-      ],
-      "bearConcepts": [
-        "风险资产"
-      ],
-      "bullIndustries": [
-        "军工",
-        "黄金"
-      ],
-      "bearIndustries": [
-        "航空",
-        "旅游"
-      ],
-      "heat": 47,
-      "momentum": 51,
-      "_auto": true
-    },
-    {
-      "id": "abtlbisb",
-      "title": "挪威主权财富基金首席执行官Nicolai Tangen表示，黄仁勋在打造英伟达以及领导该公司方面“做得非常出色”。 对于英伟达“近期事件”，Tangen表示不予置评。 当被问及英…",
+      "id": "ab1ujpi03",
+      "title": "Tuttle、Defiance计划针对AI发行人推出信用风险相关的ETF。 这类基于信用违约掉期（CDS）的ETF提及Meta、甲骨文、CoreWeave。",
       "tag": "科技/AI",
       "region": "全球",
       "concept": "ai",
-      "time": "2026-11-10 22:37",
-      "datetime": "2026-11-10 22:37",
+      "time": "2026-11-11 05:01",
+      "datetime": "2026-11-11 05:01",
       "source": "华尔街见闻",
-      "url": "https://wallstreetcn.com/livenews/3197766",
-      "summary": "挪威主权财富基金首席执行官Nicolai Tangen表示，黄仁勋在打造英伟达以及领导该公司方面“做得非常出色”。 对于英伟达“近期事件”，Tangen表示不予置评。 当被问及英伟达是否仍像上周那样是一项好的投资时，他表示，“这是个很难回答的问题”。 “他们的技术在全球所处的地位无可匹敌，创新能力也无可匹敌。这是一家非常、非常令人印象深刻的公司。” “我们喜欢英伟达。正如你一…",
+      "url": "https://wallstreetcn.com/livenews/3197918",
+      "summary": "Tuttle、Defiance计划针对AI发行人推出信用风险相关的ETF。 这类基于信用违约掉期（CDS）的ETF提及Meta、甲骨文、CoreWeave。",
       "relatedStocks": [
         "英伟达",
         "微软",
@@ -106,21 +102,180 @@
       "bearIndustries": [
         "传统IT服务"
       ],
-      "heat": 38,
-      "momentum": 46,
+      "heat": 33,
+      "momentum": 36,
       "_auto": true
     },
     {
-      "id": "ab17a6p2e",
-      "title": "也门胡塞武装称，他们袭击了沙特阿拉伯东西输油管道的石油泵站。",
-      "tag": "地缘/政治",
+      "id": "abtlvejb",
+      "title": "Fireworks披露了一起黑客攻击事件，导致客户模型权重泄露。一周前，该公司刚聘请前Meta战略主管Dave Wehner担任首席财务官。",
+      "tag": "宏观/综合",
       "region": "全球",
       "concept": "macro",
-      "time": "2026-11-10 22:15",
-      "datetime": "2026-11-10 22:15",
-      "source": "财联社",
-      "url": "https://www.cls.cn/detail/2530723",
-      "summary": "也门胡塞武装称，他们袭击了沙特阿拉伯东西输油管道的石油泵站。",
+      "time": "2026-11-11 05:01",
+      "datetime": "2026-11-11 05:01",
+      "source": "新浪7×24",
+      "url": "https://finance.sina.cn/7x24/2026-11-11/detail-iniyiauk2215949.d.html",
+      "summary": "Fireworks披露了一起黑客攻击事件，导致客户模型权重泄露。一周前，该公司刚聘请前Meta战略主管Dave Wehner担任首席财务官。",
+      "relatedStocks": [
+        "宽基指数"
+      ],
+      "bullConcepts": [
+        "防御板块"
+      ],
+      "bearConcepts": [
+        "周期股"
+      ],
+      "bullIndustries": [
+        "公用事业"
+      ],
+      "bearIndustries": [
+        "顺周期"
+      ],
+      "heat": 29,
+      "momentum": 26,
+      "_auto": true
+    },
+    {
+      "id": "abayx2p7",
+      "title": "原油：油价延续跌势 市场押注伊朗局势进一步降温",
+      "tag": "金融/宏观",
+      "region": "美国",
+      "concept": "usFinance",
+      "time": "2026-11-11 05:10",
+      "datetime": "2026-11-11 05:10",
+      "source": "环球市场播报",
+      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-11/doc-iniyiauh5441967.shtml",
+      "summary": "布伦特原油下跌，一度跌破每桶90美元，技术因素加剧了由市场预期伊朗战争将进一步降温所推动的抛售。 布伦特一度下跌3.7%，收于每桶92美元下方。",
+      "relatedStocks": [
+        "美股科技",
+        "黄金"
+      ],
+      "bullConcepts": [
+        "黄金",
+        "防御板块"
+      ],
+      "bearConcepts": [
+        "高估值成长股"
+      ],
+      "bullIndustries": [
+        "银行",
+        "黄金"
+      ],
+      "bearIndustries": [
+        "高杠杆地产"
+      ],
+      "heat": 24,
+      "momentum": 26,
+      "_auto": true
+    },
+    {
+      "id": "ab1c4vlbx",
+      "title": "11月10日，英国反恐警察表示，一名41岁的美国陆军士兵因涉嫌从事与俄罗斯有关的间谍活动，在英格兰格洛斯特附近被捕。该男子涉嫌协助外国情报机构、获取或泄露受保护信息，目前被拘押在…",
+      "tag": "宏观/综合",
+      "region": "美国",
+      "concept": "usMacro",
+      "time": "2026-11-11 04:23",
+      "datetime": "2026-11-11 04:23",
+      "source": "华尔街见闻",
+      "url": "https://wallstreetcn.com/livenews/3197906",
+      "summary": "11月10日，英国反恐警察表示，一名41岁的美国陆军士兵因涉嫌从事与俄罗斯有关的间谍活动，在英格兰格洛斯特附近被捕。该男子涉嫌协助外国情报机构、获取或泄露受保护信息，目前被拘押在伦敦一处警察局。（央视）",
+      "relatedStocks": [
+        "宽基指数"
+      ],
+      "bullConcepts": [
+        "防御板块"
+      ],
+      "bearConcepts": [
+        "周期股"
+      ],
+      "bullIndustries": [
+        "公用事业"
+      ],
+      "bearIndustries": [
+        "顺周期"
+      ],
+      "heat": 29,
+      "momentum": 26,
+      "_auto": true
+    },
+    {
+      "id": "ab12jqs5d",
+      "title": "英伟达已聘请Wachtell Lipton律师事务所，调查首席执行官黄仁勋承认的婚外情一事。此次调查将由其合伙人Joon H. Kim牵头，他曾任美国代理检察官，曾参与调查前纽约…",
+      "tag": "科技/AI",
+      "region": "美国",
+      "concept": "aiCapex",
+      "time": "2026-11-11 03:08",
+      "datetime": "2026-11-11 03:08",
+      "source": "华尔街见闻",
+      "url": "https://wallstreetcn.com/livenews/3197882",
+      "summary": "英伟达已聘请Wachtell Lipton律师事务所，调查首席执行官黄仁勋承认的婚外情一事。此次调查将由其合伙人Joon H. Kim牵头，他曾任美国代理检察官，曾参与调查前纽约州州长安德鲁·科莫。英伟达董事会表示，目前没有理由认为公司机密或国家安全受到损害，但将审查所有可获得的证据。黄仁勋已承诺全面配合。此次调查使英伟达联合创始人兼首席执行官面临董事会前所未有的审查。（纽约…",
+      "relatedStocks": [
+        "英伟达",
+        "微软",
+        "台积电"
+      ],
+      "bullConcepts": [
+        "AI算力",
+        "半导体",
+        "国产替代"
+      ],
+      "bearConcepts": [
+        "传统软件"
+      ],
+      "bullIndustries": [
+        "半导体",
+        "AI应用",
+        "算力基础设施"
+      ],
+      "bearIndustries": [
+        "传统IT服务"
+      ],
+      "heat": 24,
+      "momentum": 18,
+      "_auto": true
+    },
+    {
+      "id": "ablh7ik3",
+      "title": "伊朗南帕尔斯气田一平台发生火灾，目前局势已得到控制。",
+      "tag": "宏观/综合",
+      "region": "全球",
+      "concept": "macro",
+      "time": "2026-11-11 03:31",
+      "datetime": "2026-11-11 03:31",
+      "source": "华尔街见闻",
+      "url": "https://wallstreetcn.com/livenews/3197891",
+      "summary": "伊朗南帕尔斯气田一平台发生火灾，目前局势已得到控制。",
+      "relatedStocks": [
+        "宽基指数"
+      ],
+      "bullConcepts": [
+        "防御板块"
+      ],
+      "bearConcepts": [
+        "周期股"
+      ],
+      "bullIndustries": [
+        "公用事业"
+      ],
+      "bearIndustries": [
+        "顺周期"
+      ],
+      "heat": 29,
+      "momentum": 18,
+      "_auto": true
+    },
+    {
+      "id": "ab1oycobo",
+      "title": "美国国防部赫格塞思抨击弹劾提案，为伊朗战事处置辩护",
+      "tag": "地缘/政治",
+      "region": "美国",
+      "concept": "defense",
+      "time": "2026-11-10 21:42",
+      "datetime": "2026-11-10 21:42",
+      "source": "环球市场播报",
+      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-10/doc-iniyhfqw9216918.shtml",
+      "summary": "美国国防部长皮特・赫格塞思周二痛斥提出弹劾他的共和党众议员，并积极为自己在伊朗战争以及其他军事行动中的指挥决策辩护。",
       "relatedStocks": [
         "军工",
         "黄金"
@@ -140,8 +295,110 @@
         "航空",
         "旅游"
       ],
-      "heat": 33,
-      "momentum": 46,
+      "heat": 29,
+      "momentum": 18,
+      "_auto": true
+    },
+    {
+      "id": "abnhdewe",
+      "title": "厄瓜多尔新一轮宵禁结束 逮捕逾2600人 查获约2.5吨毒品",
+      "tag": "宏观/综合",
+      "region": "全球",
+      "concept": "macro",
+      "time": "2026-11-11 03:34",
+      "datetime": "2026-11-11 03:34",
+      "source": "财联社",
+      "url": "https://www.cls.cn/detail/2530827",
+      "summary": "【厄瓜多尔新一轮宵禁结束 逮捕逾2600人 查获约2.5吨毒品】当地时间11月10日凌晨5时，厄瓜多尔在瓜亚斯省、马纳维省、洛斯里奥斯省、埃尔奥罗省和埃斯梅拉达斯省实施的为期10天的宵禁正式结束。厄瓜多尔总统诺沃亚当天公布行动成果称，宵禁期间，警方和军方共逮捕2627人，查获毒品约2.5吨。根据厄瓜多尔安全部门公布的数据，11月1日至10日，警方和军方在上述5省共开展2941…",
+      "relatedStocks": [
+        "宽基指数"
+      ],
+      "bullConcepts": [
+        "防御板块"
+      ],
+      "bearConcepts": [
+        "周期股"
+      ],
+      "bullIndustries": [
+        "公用事业"
+      ],
+      "bearIndustries": [
+        "顺周期"
+      ],
+      "heat": 24,
+      "momentum": 18,
+      "_auto": true
+    },
+    {
+      "id": "ab12lnsmr",
+      "title": "“利空出尽是底”应验，英伟达丑闻缠身之际芯片股集体反弹",
+      "tag": "科技/AI",
+      "region": "全球",
+      "concept": "ai",
+      "time": "2026-11-10 23:31",
+      "datetime": "2026-11-10 23:31",
+      "source": "环球市场播报",
+      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-10/doc-iniyhmws2553904.shtml",
+      "summary": "周一科技股大涨，或许是牛市反攻的开端，但仍有待验证。美职棒只有约 7% 的投球落在好球带正中，投资者可以从中获得启发。",
+      "relatedStocks": [
+        "英伟达",
+        "微软",
+        "台积电"
+      ],
+      "bullConcepts": [
+        "AI算力",
+        "半导体",
+        "国产替代"
+      ],
+      "bearConcepts": [
+        "传统软件"
+      ],
+      "bullIndustries": [
+        "半导体",
+        "AI应用",
+        "算力基础设施"
+      ],
+      "bearIndustries": [
+        "传统IT服务"
+      ],
+      "heat": 24,
+      "momentum": 18,
+      "_auto": true
+    },
+    {
+      "id": "ab14j60d8",
+      "title": "挪威主权财富基金CEO称黄仁勋执掌英伟达“表现出色”",
+      "tag": "科技/AI",
+      "region": "全球",
+      "concept": "ai",
+      "time": "2026-11-10 22:37",
+      "datetime": "2026-11-10 22:37",
+      "source": "环球市场播报",
+      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-10/doc-iniyhmws2535348.shtml",
+      "summary": "挪威主权财富基金首席执行官Nicolai Tangen接受采访时表示，黄仁勋在打造英伟达以及领导该公司方面“做得非常出色”。 对于英伟达“近期事件”，Tangen表示不予置评。",
+      "relatedStocks": [
+        "英伟达",
+        "微软",
+        "台积电"
+      ],
+      "bullConcepts": [
+        "AI算力",
+        "半导体",
+        "国产替代"
+      ],
+      "bearConcepts": [
+        "传统软件"
+      ],
+      "bullIndustries": [
+        "半导体",
+        "AI应用",
+        "算力基础设施"
+      ],
+      "bearIndustries": [
+        "传统IT服务"
+      ],
+      "heat": 29,
+      "momentum": 18,
       "_auto": true
     },
     {
@@ -175,202 +432,7 @@
         "旅游"
       ],
       "heat": 29,
-      "momentum": 36,
-      "_auto": true
-    },
-    {
-      "id": "ab1hxo0dl",
-      "title": "胡塞武装称，袭击了沙特阿美位于阿布盖格的设施及利雅得的金融中心。",
-      "tag": "地缘/政治",
-      "region": "全球",
-      "concept": "macro",
-      "time": "2026-11-10 22:15",
-      "datetime": "2026-11-10 22:15",
-      "source": "财联社",
-      "url": "https://www.cls.cn/detail/2530724",
-      "summary": "胡塞武装称，袭击了沙特阿美位于阿布盖格的设施及利雅得的金融中心。",
-      "relatedStocks": [
-        "军工",
-        "黄金"
-      ],
-      "bullConcepts": [
-        "军工",
-        "避险资产"
-      ],
-      "bearConcepts": [
-        "风险资产"
-      ],
-      "bullIndustries": [
-        "军工",
-        "黄金"
-      ],
-      "bearIndustries": [
-        "航空",
-        "旅游"
-      ],
-      "heat": 24,
-      "momentum": 36,
-      "_auto": true
-    },
-    {
-      "id": "ab1ezhu4t",
-      "title": "日本烟草公司旗下7家企业在俄罗斯的资产被俄方临时接管后，该公司股价连续两天暴跌。据估算，如果日本烟草公司失去在俄经营管理权，将面临最多1.3万亿日元（1美元约合158日元）损失。…",
-      "tag": "金融/宏观",
-      "region": "美国",
-      "concept": "usFinance",
-      "time": "2026-11-10 21:15",
-      "datetime": "2026-11-10 21:15",
-      "source": "华尔街见闻",
-      "url": "https://wallstreetcn.com/livenews/3197726",
-      "summary": "日本烟草公司旗下7家企业在俄罗斯的资产被俄方临时接管后，该公司股价连续两天暴跌。据估算，如果日本烟草公司失去在俄经营管理权，将面临最多1.3万亿日元（1美元约合158日元）损失。俄罗斯总统普京5日和6日分别签署总统令，宣布由俄方临时接管日本烟草公司旗下7家企业在俄资产。事发后，该公司股价大跌，连续两个交易日跌停。据日本媒体10日报道，受此影响，日本烟草公司宣布取消原定26日举…",
-      "relatedStocks": [
-        "美股科技",
-        "黄金"
-      ],
-      "bullConcepts": [
-        "黄金",
-        "防御板块"
-      ],
-      "bearConcepts": [
-        "高估值成长股"
-      ],
-      "bullIndustries": [
-        "银行",
-        "黄金"
-      ],
-      "bearIndustries": [
-        "高杠杆地产"
-      ],
-      "heat": 29,
-      "momentum": 26,
-      "_auto": true
-    },
-    {
-      "id": "aby5g7xj",
-      "title": "美国国防部长赫格塞思：弹劾行动是一场闹剧。 弹劾行动向伊朗表明，美国会惩罚自己人。 决议等同于破坏，这不是爱国。 我们控制着霍尔木兹海峡。 超过80%的伊朗核工业基础已不复存在。…",
-      "tag": "宏观/综合",
-      "region": "美国",
-      "concept": "usMacro",
-      "time": "2026-11-10 21:05",
-      "datetime": "2026-11-10 21:05",
-      "source": "华尔街见闻",
-      "url": "https://wallstreetcn.com/livenews/3197720",
-      "summary": "美国国防部长赫格塞思：弹劾行动是一场闹剧。 弹劾行动向伊朗表明，美国会惩罚自己人。 决议等同于破坏，这不是爱国。 我们控制着霍尔木兹海峡。 超过80%的伊朗核工业基础已不复存在。 如果伊朗采取错误行动，我们已做好了行动的充分准备。 可以看到伊朗核设施，必要时可以采取行动。 感谢特朗普总统的支持。 非常尊重副总统，万斯一直是团队的关键成员。 我同意特朗普的说法，若重来一次，我还…",
-      "relatedStocks": [
-        "宽基指数"
-      ],
-      "bullConcepts": [
-        "防御板块"
-      ],
-      "bearConcepts": [
-        "周期股"
-      ],
-      "bullIndustries": [
-        "公用事业"
-      ],
-      "bearIndustries": [
-        "顺周期"
-      ],
-      "heat": 24,
-      "momentum": 26,
-      "_auto": true
-    },
-    {
-      "id": "ab1rzxk6u",
-      "title": "美国战争部长海格塞斯表示，如果伊朗采取错误行动，美国已做好了行动的充分准备。",
-      "tag": "地缘/政治",
-      "region": "美国",
-      "concept": "defense",
-      "time": "2026-11-10 21:19",
-      "datetime": "2026-11-10 21:19",
-      "source": "财联社",
-      "url": "https://www.cls.cn/detail/2530677",
-      "summary": "美国战争部长海格塞斯表示，如果伊朗采取错误行动，美国已做好了行动的充分准备。",
-      "relatedStocks": [
-        "军工",
-        "黄金"
-      ],
-      "bullConcepts": [
-        "军工",
-        "避险资产"
-      ],
-      "bearConcepts": [
-        "风险资产"
-      ],
-      "bullIndustries": [
-        "军工",
-        "黄金"
-      ],
-      "bearIndustries": [
-        "航空",
-        "旅游"
-      ],
-      "heat": 24,
-      "momentum": 26,
-      "_auto": true
-    },
-    {
-      "id": "ab10390hs",
-      "title": "伊朗否认参与针对法国的网络攻击。伊朗外交部称法国的指控“毫无根据”。",
-      "tag": "宏观/综合",
-      "region": "欧洲",
-      "concept": "macro",
-      "time": "2026-11-10 21:03",
-      "datetime": "2026-11-10 21:03",
-      "source": "华尔街见闻",
-      "url": "https://wallstreetcn.com/livenews/3197719",
-      "summary": "伊朗否认参与针对法国的网络攻击。伊朗外交部称法国的指控“毫无根据”。",
-      "relatedStocks": [
-        "宽基指数"
-      ],
-      "bullConcepts": [
-        "防御板块"
-      ],
-      "bearConcepts": [
-        "周期股"
-      ],
-      "bullIndustries": [
-        "公用事业"
-      ],
-      "bearIndustries": [
-        "顺周期"
-      ],
-      "heat": 24,
-      "momentum": 26,
-      "_auto": true
-    },
-    {
-      "id": "ab1oycobo",
-      "title": "美国国防部赫格塞思抨击弹劾提案，为伊朗战事处置辩护",
-      "tag": "地缘/政治",
-      "region": "美国",
-      "concept": "defense",
-      "time": "2026-11-10 21:42",
-      "datetime": "2026-11-10 21:42",
-      "source": "环球市场播报",
-      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-10/doc-iniyhfqw9216918.shtml",
-      "summary": "美国国防部长皮特・赫格塞思周二痛斥提出弹劾他的共和党众议员，并积极为自己在伊朗战争以及其他军事行动中的指挥决策辩护。",
-      "relatedStocks": [
-        "军工",
-        "黄金"
-      ],
-      "bullConcepts": [
-        "军工",
-        "避险资产"
-      ],
-      "bearConcepts": [
-        "风险资产"
-      ],
-      "bullIndustries": [
-        "军工",
-        "黄金"
-      ],
-      "bearIndustries": [
-        "航空",
-        "旅游"
-      ],
-      "heat": 24,
-      "momentum": 26,
+      "momentum": 18,
       "_auto": true
     },
     {
@@ -403,38 +465,111 @@
         "航空",
         "旅游"
       ],
-      "heat": 24,
+      "heat": 46,
       "momentum": 18,
       "_auto": true
     },
     {
-      "id": "ab124rql4",
-      "title": "国际油价单日暴跌近6%，亚洲航空股集体大涨，韩国真航空涨近30%",
-      "tag": "金融/宏观",
-      "region": "美国",
-      "concept": "usFinance",
-      "time": "2026-11-10 14:28",
-      "datetime": "2026-11-10 14:28",
+      "id": "aba76jx3",
+      "title": "英伟达独立董事聘请外部律所 对黄仁勋事件展开调查",
+      "tag": "科技/AI",
+      "region": "全球",
+      "concept": "ai",
+      "time": "2026-11-11 04:15",
+      "datetime": "2026-11-11 04:15",
       "source": "环球市场播报",
-      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-10/doc-iniyfqte9365762.shtml",
-      "summary": "11月10日，亚洲航空股普遍大涨，国际油价大幅下跌缓解了市场对航空公司燃油成本的担忧。此前，随着美伊冲突缓和预期升温，布伦特原油期货周一收跌5.85%至每桶92.57美元...",
+      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-11/doc-iniyhwnp2253278.shtml",
+      "summary": "英伟达独立董事聘请了律师事务所Wachtell， Lipton， Rosen & Katz来协助调查首席执行官黄仁勋。 根据周二发布的简短声明，董事们已聘请Wachtell Lipton的Joon H．...",
       "relatedStocks": [
-        "美股科技",
+        "英伟达",
+        "微软",
+        "台积电"
+      ],
+      "bullConcepts": [
+        "AI算力",
+        "半导体",
+        "国产替代"
+      ],
+      "bearConcepts": [
+        "传统软件"
+      ],
+      "bullIndustries": [
+        "半导体",
+        "AI应用",
+        "算力基础设施"
+      ],
+      "bearIndustries": [
+        "传统IT服务"
+      ],
+      "heat": 24,
+      "momentum": 26,
+      "_auto": true
+    },
+    {
+      "id": "ab1kai4n6",
+      "title": "报道：美国众议院共和党人考虑向黄仁勋发出传票",
+      "tag": "科技/AI",
+      "region": "美国",
+      "concept": "aiCapex",
+      "time": "2026-11-11 04:14",
+      "datetime": "2026-11-11 04:14",
+      "source": "环球市场播报",
+      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-11/doc-iniyhwnk5566408.shtml",
+      "summary": "美国众议院外交事务委员会主席Brian Mast告诉美国广播公司（ABC），如果英伟达首席执行官黄仁勋不回应参加闭门简报的要求，他准备向黄仁勋发出传票。",
+      "relatedStocks": [
+        "英伟达",
+        "微软",
+        "台积电"
+      ],
+      "bullConcepts": [
+        "AI算力",
+        "半导体",
+        "国产替代"
+      ],
+      "bearConcepts": [
+        "传统软件"
+      ],
+      "bullIndustries": [
+        "半导体",
+        "AI应用",
+        "算力基础设施"
+      ],
+      "bearIndustries": [
+        "传统IT服务"
+      ],
+      "heat": 24,
+      "momentum": 26,
+      "_auto": true
+    },
+    {
+      "id": "ab1fvmnza",
+      "title": "厄瓜多尔发生武装袭击事件 已致3人死亡",
+      "tag": "地缘/政治",
+      "region": "全球",
+      "concept": "macro",
+      "time": "2026-11-11 01:50",
+      "datetime": "2026-11-11 01:50",
+      "source": "财联社",
+      "url": "https://www.cls.cn/detail/2530811",
+      "summary": "财联社11月11日电，厄瓜多尔警方通报，该国埃尔奥罗省瓦基利亚斯市9日深夜发生一起武装袭击事件，造成3人死亡，其中包括2名地方选举候选人。据通报，多名枪手分乘摩托车抵达现场后向人群开火。死者分别包括市长候选人罗纳德·法尔凡和市议员候选人克里斯蒂安·鲁赫尔。袭击发生在厄瓜多尔地方选举竞选活动启动前夕。警方初步判断这是一次目标明确的“选择性谋杀”，目前案件仍在进一步调查中，尚无嫌…",
+      "relatedStocks": [
+        "军工",
         "黄金"
       ],
       "bullConcepts": [
-        "黄金",
-        "防御板块"
+        "军工",
+        "避险资产"
       ],
       "bearConcepts": [
-        "高估值成长股"
+        "风险资产"
       ],
       "bullIndustries": [
-        "银行",
+        "军工",
         "黄金"
       ],
       "bearIndustries": [
-        "高杠杆地产"
+        "航空",
+        "旅游"
       ],
       "heat": 24,
       "momentum": 18,
@@ -469,139 +604,6 @@
       "bearIndustries": [
         "航空",
         "旅游"
-      ],
-      "heat": 24,
-      "momentum": 18,
-      "_auto": true
-    },
-    {
-      "id": "abb5pnsj",
-      "title": "Fireworks遭遇新黑客攻击，十亿美元业务面临风险",
-      "tag": "科技/AI",
-      "region": "美国",
-      "concept": "aiCapex",
-      "time": "2026-11-10 18:00",
-      "datetime": "2026-11-10 18:00",
-      "source": "环球市场播报",
-      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-10/doc-iniyfzhx2605532.shtml",
-      "summary": "据两名知悉此次数据泄露事件的人士透露，面向开发者提供开源大模型推理与训练服务的初创公司 Fireworks，在上周向包括 Harvey 在内的部分大客户通报了一起性质更为严重的系...",
-      "relatedStocks": [
-        "英伟达",
-        "微软",
-        "台积电"
-      ],
-      "bullConcepts": [
-        "AI算力",
-        "半导体",
-        "国产替代"
-      ],
-      "bearConcepts": [
-        "传统软件"
-      ],
-      "bullIndustries": [
-        "半导体",
-        "AI应用",
-        "算力基础设施"
-      ],
-      "bearIndustries": [
-        "传统IT服务"
-      ],
-      "heat": 24,
-      "momentum": 18,
-      "_auto": true
-    },
-    {
-      "id": "ab1nmrnbt",
-      "title": "新加坡央行推出黄金托管服务，力争打造亚洲黄金交易中心",
-      "tag": "金融/宏观",
-      "region": "中国",
-      "concept": "bank",
-      "time": "2026-11-10 16:11",
-      "datetime": "2026-11-10 16:11",
-      "source": "环球市场播报",
-      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-10/doc-iniyfuyy2717287.shtml",
-      "summary": "新加坡金融管理局预计，场外黄金清算系统将于2027年第一季度正式投入市场运营。 新加坡央行正在推出黄金托管服务，以推动新加坡成为亚洲首屈一指的黄金交易中心。",
-      "relatedStocks": [
-        "美股科技",
-        "黄金"
-      ],
-      "bullConcepts": [
-        "黄金",
-        "防御板块"
-      ],
-      "bearConcepts": [
-        "高估值成长股"
-      ],
-      "bullIndustries": [
-        "银行",
-        "黄金"
-      ],
-      "bearIndustries": [
-        "高杠杆地产"
-      ],
-      "heat": 24,
-      "momentum": 18,
-      "_auto": true
-    },
-    {
-      "id": "ab15vb298",
-      "title": "马来西亚交通部长宣布其辞职决定立即生效",
-      "tag": "宏观/综合",
-      "region": "全球",
-      "concept": "macro",
-      "time": "2026-11-10 21:39",
-      "datetime": "2026-11-10 21:39",
-      "source": "财联社",
-      "url": "https://www.cls.cn/detail/2530695",
-      "summary": "财联社11月10日电，马来西亚交通部长陆兆福10日发表声明，宣布其此前的辞职决定立即生效。",
-      "relatedStocks": [
-        "宽基指数"
-      ],
-      "bullConcepts": [
-        "防御板块"
-      ],
-      "bearConcepts": [
-        "周期股"
-      ],
-      "bullIndustries": [
-        "公用事业"
-      ],
-      "bearIndustries": [
-        "顺周期"
-      ],
-      "heat": 24,
-      "momentum": 26,
-      "_auto": true
-    },
-    {
-      "id": "ab1aivude",
-      "title": "马克龙与海湾国家讨论霍尔木兹海峡航运保险安排",
-      "tag": "贸易/供应链",
-      "region": "美国",
-      "concept": "antitrust",
-      "time": "2026-11-10 20:16",
-      "datetime": "2026-11-10 20:16",
-      "source": "环球市场播报",
-      "url": "https://finance.sina.com.cn/world/2026-11-10/doc-iniyhfqu2602118.shtml",
-      "summary": "法国总统马克龙正与海湾国家磋商，寻求降低船舶通过霍尔木兹海峡的保险成本。自美国和以色列2月开始对伊朗发动袭击以来，该海峡航运一直受到干扰。",
-      "relatedStocks": [
-        "跨境电商",
-        "航运"
-      ],
-      "bullConcepts": [
-        "内需",
-        "国产替代"
-      ],
-      "bearConcepts": [
-        "出口链"
-      ],
-      "bullIndustries": [
-        "跨境电商",
-        "内需消费"
-      ],
-      "bearIndustries": [
-        "出口制造",
-        "航运"
       ],
       "heat": 24,
       "momentum": 18,
@@ -809,41 +811,6 @@
       ],
       "heat": 55,
       "momentum": 30
-    },
-    {
-      "id": "b7",
-      "title": "黄仁勋承认婚外情，英伟达董事会启动独立调查",
-      "tag": "公司治理/科技巨头",
-      "region": "美国",
-      "concept": "aiCapex",
-      "time": "2026-11-08",
-      "datetime": "2026-11-08 21:00",
-      "source": "央视/彭博/环球网/新浪财经",
-      "summary": "英伟达CEO黄仁勋11月8日发布致全员公开信，承认对妻子不忠，并向家人、员工、董事会及股东致歉。英伟达董事会随即宣布启动由独立董事委员会监督、外部律师协助的独立调查，核查其是否成为外国情报行动目标；美国众议院三委员会要求黄仁勋11月18日出席闭门简报。英伟达盘后跌超3%，公司确认黄仁勋继续担任CEO。",
-      "relatedStocks": [
-        "英伟达",
-        "AI芯片",
-        "美股AI"
-      ],
-      "bullConcepts": [
-        "竞品AI芯片",
-        "AMD",
-        "华为昇腾"
-      ],
-      "bearConcepts": [
-        "英伟达",
-        "AI算力"
-      ],
-      "bullIndustries": [
-        "半导体(竞品)",
-        "芯片设计"
-      ],
-      "bearIndustries": [
-        "AI芯片",
-        "英伟达产业链"
-      ],
-      "heat": 95,
-      "momentum": 92
     },
     {
       "id": "b8",
