@@ -4227,6 +4227,12 @@ body.guest-mode #app { display: none; }
 .stat-win .sw-btn.sw-btn-day { padding: 3px 10px; font-size: 12px; line-height: 1; }
 .stat-win .sw-btn.sw-btn-day.active { background: var(--primary); color: #fff; border-color: var(--primary); }
 .stat-win .sw-btn.sw-btn-day.active:hover:not(:disabled) { background: var(--primary-hover); }
+/* 20261110f：头部副本（火热话题面板标题右侧）同样需要选中高亮与紧凑间距，且不依赖 .stat-win 父级 */
+.sw-btn.sw-btn-day { padding: 3px 10px; font-size: 12px; line-height: 1; }
+.sw-btn.sw-btn-day.active { background: var(--primary); color: #fff; border-color: var(--primary); }
+.sw-btn.sw-btn-day.active:hover:not(:disabled) { background: var(--primary-hover); }
+.ht-head-right { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.ht-day-btns { display: inline-flex; gap: 6px; }
 
 /* ===== 20261110b：新闻范围选择框（影响力事件 / 未来事件，位于「刷新数据」左侧） ===== */
 .panel-title-row .news-range {
