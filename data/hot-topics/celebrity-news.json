@@ -1,158 +1,20 @@
 {
-  "generatedAt": "2026-11-11 05:46",
+  "generatedAt": "2026-11-11 09:50",
   "generatedBy": "GitHub Actions · 多源实时聚合",
-  "sourceCount": 5,
-  "autoCount": 11,
+  "sourceCount": 4,
+  "autoCount": 7,
   "events": [
     {
-      "id": "ap12gi8q6",
-      "title": "据报道，OpenAI周二向投资者通报称，公司第三季度营收跃升至100亿美元。",
-      "tag": "人物/奥尔特曼",
-      "region": "美国",
-      "concept": "aiCapex",
-      "time": "2026-11-11 05:11",
-      "datetime": "2026-11-11 05:11",
-      "source": "财联社",
-      "url": "https://www.cls.cn/detail/2530845",
-      "summary": "据报道，OpenAI周二向投资者通报称，公司第三季度营收跃升至100亿美元。",
-      "relatedStocks": [
-        "英伟达",
-        "微软",
-        "台积电"
-      ],
-      "bullConcepts": [
-        "AI算力",
-        "半导体",
-        "国产替代"
-      ],
-      "bearConcepts": [
-        "传统软件"
-      ],
-      "bullIndustries": [
-        "半导体",
-        "AI应用",
-        "算力基础设施"
-      ],
-      "bearIndustries": [
-        "传统IT服务"
-      ],
-      "heat": 87,
-      "momentum": 86,
-      "_auto": true
-    },
-    {
-      "id": "ap1piobae",
-      "title": "Odessia创始人弗朗西斯·戴维森宣布，OpenAI已收购AI旅行规划平台Odessia。戴维森称，他将加入OpenAI，专注于“旅行的未来”。戴维森于今年早些时候创立Odes…",
-      "tag": "人物/奥尔特曼",
-      "region": "美国",
-      "concept": "aiCapex",
-      "time": "2026-11-11 03:08",
-      "datetime": "2026-11-11 03:08",
-      "source": "华尔街见闻",
-      "url": "https://wallstreetcn.com/livenews/3197883",
-      "summary": "Odessia创始人弗朗西斯·戴维森宣布，OpenAI已收购AI旅行规划平台Odessia。戴维森称，他将加入OpenAI，专注于“旅行的未来”。戴维森于今年早些时候创立Odessia。该平台利用AI帮助用户规划和预订行程。今年6月，Odessia从红杉资本等投资者处完成600万美元种子轮融资。10月，该平台推出了“全天候旅行礼宾服务”。OpenAI与Odessia均未披露此…",
-      "relatedStocks": [
-        "英伟达",
-        "微软",
-        "台积电"
-      ],
-      "bullConcepts": [
-        "AI算力",
-        "半导体",
-        "国产替代"
-      ],
-      "bearConcepts": [
-        "传统软件"
-      ],
-      "bullIndustries": [
-        "半导体",
-        "AI应用",
-        "算力基础设施"
-      ],
-      "bearIndustries": [
-        "传统IT服务"
-      ],
-      "heat": 51,
-      "momentum": 18,
-      "_auto": true
-    },
-    {
-      "id": "ap1twl81h",
-      "title": "乌克兰总统泽连斯基：我们准备好坐下来谈领土问题，我准备好与俄罗斯总统普京会面。 我们将要求举行领导人会议，但不确定俄罗斯是否准备好。",
-      "tag": "人物/普京",
-      "region": "全球",
-      "concept": "macro",
-      "time": "2026-11-11 04:28",
-      "datetime": "2026-11-11 04:28",
-      "source": "华尔街见闻",
-      "url": "https://wallstreetcn.com/livenews/3197908",
-      "summary": "乌克兰总统泽连斯基：我们准备好坐下来谈领土问题，我准备好与俄罗斯总统普京会面。 我们将要求举行领导人会议，但不确定俄罗斯是否准备好。",
-      "relatedStocks": [
-        "宽基指数"
-      ],
-      "bullConcepts": [
-        "防御板块"
-      ],
-      "bearConcepts": [
-        "周期股"
-      ],
-      "bullIndustries": [
-        "公用事业"
-      ],
-      "bearIndustries": [
-        "顺周期"
-      ],
-      "heat": 24,
-      "momentum": 26,
-      "_auto": true
-    },
-    {
-      "id": "ap12jqs5d",
-      "title": "英伟达已聘请Wachtell Lipton律师事务所，调查首席执行官黄仁勋承认的婚外情一事。此次调查将由其合伙人Joon H. Kim牵头，他曾任美国代理检察官，曾参与调查前纽约…",
-      "tag": "人物/黄仁勋",
-      "region": "美国",
-      "concept": "aiCapex",
-      "time": "2026-11-11 03:08",
-      "datetime": "2026-11-11 03:08",
-      "source": "华尔街见闻",
-      "url": "https://wallstreetcn.com/livenews/3197882",
-      "summary": "英伟达已聘请Wachtell Lipton律师事务所，调查首席执行官黄仁勋承认的婚外情一事。此次调查将由其合伙人Joon H. Kim牵头，他曾任美国代理检察官，曾参与调查前纽约州州长安德鲁·科莫。英伟达董事会表示，目前没有理由认为公司机密或国家安全受到损害，但将审查所有可获得的证据。黄仁勋已承诺全面配合。此次调查使英伟达联合创始人兼首席执行官面临董事会前所未有的审查。（纽约…",
-      "relatedStocks": [
-        "英伟达",
-        "微软",
-        "台积电"
-      ],
-      "bullConcepts": [
-        "AI算力",
-        "半导体",
-        "国产替代"
-      ],
-      "bearConcepts": [
-        "传统软件"
-      ],
-      "bullIndustries": [
-        "半导体",
-        "AI应用",
-        "算力基础设施"
-      ],
-      "bearIndustries": [
-        "传统IT服务"
-      ],
-      "heat": 24,
-      "momentum": 18,
-      "_auto": true
-    },
-    {
-      "id": "apvyl7rx",
-      "title": "美国总统特朗普倾向于任命一名男性担任下一任白宫新闻秘书，这可能终结该职位连续七任由女性担任的惯例。",
+      "id": "ap1hz23mt",
+      "title": "美国总统特朗普10日在社交媒体上发文，称民主党针对美国国防部长赫格塞思的弹劾“惨败”，同时指责民主党将弹劾作为政治武器。特朗普称，除共和党籍众议员托马斯·梅西外，其他共和党人都投…",
       "tag": "人物/特朗普",
       "region": "美国",
       "concept": "usMacro",
-      "time": "2026-11-11 03:58",
-      "datetime": "2026-11-11 03:58",
+      "time": "2026-11-11 09:05",
+      "datetime": "2026-11-11 09:05",
       "source": "华尔街见闻",
-      "url": "https://wallstreetcn.com/livenews/3197898",
-      "summary": "美国总统特朗普倾向于任命一名男性担任下一任白宫新闻秘书，这可能终结该职位连续七任由女性担任的惯例。",
+      "url": "https://wallstreetcn.com/livenews/3198015",
+      "summary": "美国总统特朗普10日在社交媒体上发文，称民主党针对美国国防部长赫格塞思的弹劾“惨败”，同时指责民主党将弹劾作为政治武器。特朗普称，除共和党籍众议员托马斯·梅西外，其他共和党人都投票支持赫格塞思。他还指责民主党继续将美国“武器化”并加以滥用。",
       "relatedStocks": [
         "宽基指数"
       ],
@@ -173,46 +35,160 @@
       "_auto": true
     },
     {
-      "id": "ap6bc0sh",
-      "title": "SpaceX：Singulus合同将支持能耗超过100 GW的设备。",
-      "tag": "人物/马斯克",
-      "region": "全球",
-      "concept": "macro",
-      "time": "2026-11-11 03:06",
-      "datetime": "2026-11-11 03:06",
+      "id": "aplt50cv",
+      "title": "软银：37亿美元的数据中心资产减记与俄亥俄州项目无关。",
+      "tag": "人物/孙正义",
+      "region": "美国",
+      "concept": "aiCapex",
+      "time": "2026-11-11 09:42",
+      "datetime": "2026-11-11 09:42",
       "source": "华尔街见闻",
-      "url": "https://wallstreetcn.com/livenews/3197881",
-      "summary": "SpaceX：Singulus合同将支持能耗超过100 GW的设备。",
+      "url": "https://wallstreetcn.com/livenews/3198040",
+      "summary": "软银：37亿美元的数据中心资产减记与俄亥俄州项目无关。",
       "relatedStocks": [
-        "宽基指数"
+        "英伟达",
+        "微软",
+        "台积电"
       ],
       "bullConcepts": [
-        "防御板块"
+        "AI算力",
+        "半导体",
+        "国产替代"
       ],
       "bearConcepts": [
-        "周期股"
+        "传统软件"
       ],
       "bullIndustries": [
-        "公用事业"
+        "半导体",
+        "AI应用",
+        "算力基础设施"
       ],
       "bearIndustries": [
-        "顺周期"
+        "传统IT服务"
+      ],
+      "heat": 29,
+      "momentum": 41,
+      "_auto": true
+    },
+    {
+      "id": "ap4id2gk",
+      "title": "从第二季度到第三季度，OpenAI的营收增长了约50%至100亿美元，但该公司仍报告了巨额运营亏损。据文件显示，OpenAI向投资者表示，从第二季度到第三季度，其调整后运营利润率…",
+      "tag": "人物/奥尔特曼",
+      "region": "美国",
+      "concept": "aiCapex",
+      "time": "2026-11-11 07:30",
+      "datetime": "2026-11-11 07:30",
+      "source": "华尔街见闻",
+      "url": "https://wallstreetcn.com/livenews/3197975",
+      "summary": "从第二季度到第三季度，OpenAI的营收增长了约50%至100亿美元，但该公司仍报告了巨额运营亏损。据文件显示，OpenAI向投资者表示，从第二季度到第三季度，其调整后运营利润率从-150%改善至-109%。尽管如此，根据这些数据，该公司的运营亏损仍从101亿美元小幅上升至109亿美元。（华尔街日报）",
+      "relatedStocks": [
+        "英伟达",
+        "微软",
+        "台积电"
+      ],
+      "bullConcepts": [
+        "AI算力",
+        "半导体",
+        "国产替代"
+      ],
+      "bearConcepts": [
+        "传统软件"
+      ],
+      "bullIndustries": [
+        "半导体",
+        "AI应用",
+        "算力基础设施"
+      ],
+      "bearIndustries": [
+        "传统IT服务"
+      ],
+      "heat": 56,
+      "momentum": 18,
+      "_auto": true
+    },
+    {
+      "id": "ap1r2gpyk",
+      "title": "知名科技分析师艾夫斯：若黄仁勋离职，英伟达市值将暴跌三分之一",
+      "tag": "人物/黄仁勋",
+      "region": "全球",
+      "concept": "ai",
+      "time": "2026-11-11 07:21",
+      "datetime": "2026-11-11 07:21",
+      "source": "环球市场播报",
+      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-11/doc-iniyiiak8676604.shtml",
+      "summary": "知名科技股多头丹·艾夫斯（Dan Ives）认为，黄仁勋的价值大约相当于英伟达总市值的30%。 这位前韦德布什证券公司分析师周二表示，如果这位 AI 芯片巨头的掌舵人离开...",
+      "relatedStocks": [
+        "英伟达",
+        "微软",
+        "台积电"
+      ],
+      "bullConcepts": [
+        "AI算力",
+        "半导体",
+        "国产替代"
+      ],
+      "bearConcepts": [
+        "传统软件"
+      ],
+      "bullIndustries": [
+        "半导体",
+        "AI应用",
+        "算力基础设施"
+      ],
+      "bearIndustries": [
+        "传统IT服务"
+      ],
+      "heat": 24,
+      "momentum": 18,
+      "_auto": true
+    },
+    {
+      "id": "ap1kai4n6",
+      "title": "报道：美国众议院共和党人考虑向黄仁勋发出传票",
+      "tag": "人物/黄仁勋",
+      "region": "美国",
+      "concept": "aiCapex",
+      "time": "2026-11-11 04:14",
+      "datetime": "2026-11-11 04:14",
+      "source": "环球市场播报",
+      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-11/doc-iniyhwnk5566408.shtml",
+      "summary": "美国众议院外交事务委员会主席Brian Mast告诉美国广播公司（ABC），如果英伟达首席执行官黄仁勋不回应参加闭门简报的要求，他准备向黄仁勋发出传票。",
+      "relatedStocks": [
+        "英伟达",
+        "微软",
+        "台积电"
+      ],
+      "bullConcepts": [
+        "AI算力",
+        "半导体",
+        "国产替代"
+      ],
+      "bearConcepts": [
+        "传统软件"
+      ],
+      "bullIndustries": [
+        "半导体",
+        "AI应用",
+        "算力基础设施"
+      ],
+      "bearIndustries": [
+        "传统IT服务"
       ],
       "heat": 29,
       "momentum": 18,
       "_auto": true
     },
     {
-      "id": "ap13jqbnj",
-      "title": "泽连斯基：乌美俄三方首日会谈具有建设性",
+      "id": "apamorzn",
+      "title": "泽连斯基：三方会谈具有建设性且富有实质内容",
       "tag": "人物/泽连斯基",
-      "region": "美国",
-      "concept": "defense",
-      "time": "2026-11-11 02:18",
-      "datetime": "2026-11-11 02:18",
-      "source": "财联社",
-      "url": "https://www.cls.cn/detail/2530815",
-      "summary": "财联社11月11日电，乌克兰总统泽连斯基在社交媒体发文称，乌克兰、美国和俄罗斯代表团在阿联酋阿布扎比举行的首日三方会谈富有建设性，磋商内容充实。各方重点讨论战俘释放、人道主义举措、乌克兰长期安全保障机制以及缓和局势等议题。泽连斯基已向乌谈判团队下达后续任务，要求继续推进三方会谈以及同欧美代表的外交磋商。泽连斯基在听取代表团汇报后介绍，本次谈判分为两个阶段：乌方先同欧美伙伴开展…",
+      "region": "全球",
+      "concept": "macro",
+      "time": "2026-11-11 00:23",
+      "datetime": "2026-11-11 00:23",
+      "source": "环球市场播报",
+      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-11/doc-iniyhseq2438881.shtml",
+      "summary": "乌克兰总统泽连斯基表示，三方和平谈判的形式“具有建设性且富有实质内容”。 新一轮谈判仍将在阿布扎比举行，泽连斯基就周三的会谈发出新指示。",
       "relatedStocks": [
         "军工",
         "黄金"
@@ -232,135 +208,39 @@
         "航空",
         "旅游"
       ],
-      "heat": 29,
-      "momentum": 18,
-      "_auto": true
-    },
-    {
-      "id": "ap14j60d8",
-      "title": "挪威主权财富基金CEO称黄仁勋执掌英伟达“表现出色”",
-      "tag": "人物/黄仁勋",
-      "region": "全球",
-      "concept": "ai",
-      "time": "2026-11-10 22:37",
-      "datetime": "2026-11-10 22:37",
-      "source": "环球市场播报",
-      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-10/doc-iniyhmws2535348.shtml",
-      "summary": "挪威主权财富基金首席执行官Nicolai Tangen接受采访时表示，黄仁勋在打造英伟达以及领导该公司方面“做得非常出色”。 对于英伟达“近期事件”，Tangen表示不予置评。",
-      "relatedStocks": [
-        "英伟达",
-        "微软",
-        "台积电"
-      ],
-      "bullConcepts": [
-        "AI算力",
-        "半导体",
-        "国产替代"
-      ],
-      "bearConcepts": [
-        "传统软件"
-      ],
-      "bullIndustries": [
-        "半导体",
-        "AI应用",
-        "算力基础设施"
-      ],
-      "bearIndustries": [
-        "传统IT服务"
-      ],
-      "heat": 29,
-      "momentum": 18,
-      "_auto": true
-    },
-    {
-      "id": "aposaksy",
-      "title": "美国两名民主党参议员要求特朗普禁止白宫员工参与预测市场交易，质疑内幕交易监管不足",
-      "tag": "人物/特朗普",
-      "region": "美国",
-      "concept": "usMacro",
-      "time": "2026-11-10 20:06",
-      "datetime": "2026-11-10 20:06",
-      "source": "环球市场播报",
-      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-10/doc-iniyhfqs5821306.shtml",
-      "summary": "11月10日，美国民主党参议员伊丽莎白·沃伦（Elizabeth Warren）和杰夫·默克利（Jeff Merkley）致信白宫法律顾问威尔·沙夫（Will Scharf）...",
-      "relatedStocks": [
-        "宽基指数"
-      ],
-      "bullConcepts": [
-        "防御板块"
-      ],
-      "bearConcepts": [
-        "周期股"
-      ],
-      "bullIndustries": [
-        "公用事业"
-      ],
-      "bearIndustries": [
-        "顺周期"
-      ],
       "heat": 24,
       "momentum": 18,
       "_auto": true
     },
     {
-      "id": "ap1aivude",
-      "title": "马克龙与海湾国家讨论霍尔木兹海峡航运保险安排",
-      "tag": "人物/马克龙",
+      "id": "apalncm3",
+      "title": "泽连斯基称对美方推动结束俄乌战争的信息“非常高兴”",
+      "tag": "人物/泽连斯基",
       "region": "美国",
-      "concept": "antitrust",
-      "time": "2026-11-10 20:16",
-      "datetime": "2026-11-10 20:16",
+      "concept": "defense",
+      "time": "2026-11-11 07:13",
+      "datetime": "2026-11-11 07:13",
       "source": "环球市场播报",
-      "url": "https://finance.sina.com.cn/world/2026-11-10/doc-iniyhfqu2602118.shtml",
-      "summary": "法国总统马克龙正与海湾国家磋商，寻求降低船舶通过霍尔木兹海峡的保险成本。自美国和以色列2月开始对伊朗发动袭击以来，该海峡航运一直受到干扰。",
+      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-11/doc-iniyiiah2127140.shtml",
+      "summary": "乌克兰总统泽连斯基周二表示，对于他从美国方面收到的有关推动解决持续四年半以上的俄乌战争的信息，他感到非常高兴。 泽连斯基在丹麦与北欧国家领导人进行了一整天的会谈...",
       "relatedStocks": [
-        "跨境电商",
-        "航运"
+        "军工",
+        "黄金"
       ],
       "bullConcepts": [
-        "内需",
-        "国产替代"
+        "军工",
+        "避险资产"
       ],
       "bearConcepts": [
-        "出口链"
+        "风险资产"
       ],
       "bullIndustries": [
-        "跨境电商",
-        "内需消费"
+        "军工",
+        "黄金"
       ],
       "bearIndustries": [
-        "出口制造",
-        "航运"
-      ],
-      "heat": 24,
-      "momentum": 18,
-      "_auto": true
-    },
-    {
-      "id": "apdk4m45",
-      "title": "拜登公布病情",
-      "tag": "人物/拜登",
-      "region": "美国",
-      "concept": "usMacro",
-      "time": "2026-11-10 16:57",
-      "datetime": "2026-11-10 16:57",
-      "source": "环球市场播报",
-      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-10/doc-iniyfuza9346671.shtml",
-      "summary": "美国前总统乔・拜登周日表示，由于正与前列腺癌抗争，他没办法按计划为即将发行的总统回忆录开展大量推介访谈。 他在社交媒体上写道：“我的身体状态时好时坏。",
-      "relatedStocks": [
-        "宽基指数"
-      ],
-      "bullConcepts": [
-        "防御板块"
-      ],
-      "bearConcepts": [
-        "周期股"
-      ],
-      "bullIndustries": [
-        "公用事业"
-      ],
-      "bearIndustries": [
-        "顺周期"
+        "航空",
+        "旅游"
       ],
       "heat": 24,
       "momentum": 18,

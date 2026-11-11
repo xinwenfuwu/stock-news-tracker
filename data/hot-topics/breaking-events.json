@@ -1,20 +1,53 @@
 {
-  "generatedAt": "2026-11-11 05:46",
+  "generatedAt": "2026-11-11 09:50",
   "generatedBy": "GitHub Actions · 多源实时聚合",
-  "sourceCount": 5,
+  "sourceCount": 4,
   "autoCount": 18,
   "events": [
     {
-      "id": "ab5qnxkp",
-      "title": "美国商品期货交易委员会（CFTC）警告预测平台公司Kalshi，这家衍生品监管部门可能立即对其提起诉讼。 CFTC调查该公司提供的特定押注合约。（Politico）",
+      "id": "ab1wopnuc",
+      "title": "CPI砸崩美债！华尔街将美联储“暴力加息”纳入定价",
+      "tag": "金融/宏观",
+      "region": "美国",
+      "concept": "usFinance",
+      "time": "2026-11-11 08:56",
+      "datetime": "2026-11-11 08:56",
+      "source": "市场资讯",
+      "url": "https://finance.sina.com.cn/money/forex/whxwsd/2026-11-11/doc-iniyiiak8717751.shtml",
+      "summary": "文章来源：财联社 对于前段时间因科技股暴跌而涌入美债避险的投资者而言，本周二的行情无异于一场晴天霹雳——由于美国10月CPI涨幅超出预期...",
+      "relatedStocks": [
+        "美股科技",
+        "黄金"
+      ],
+      "bullConcepts": [
+        "黄金",
+        "防御板块"
+      ],
+      "bearConcepts": [
+        "高估值成长股"
+      ],
+      "bullIndustries": [
+        "银行",
+        "黄金"
+      ],
+      "bearIndustries": [
+        "高杠杆地产"
+      ],
+      "heat": 83,
+      "momentum": 31,
+      "_auto": true
+    },
+    {
+      "id": "ab1hz23mt",
+      "title": "美国总统特朗普10日在社交媒体上发文，称民主党针对美国国防部长赫格塞思的弹劾“惨败”，同时指责民主党将弹劾作为政治武器。特朗普称，除共和党籍众议员托马斯·梅西外，其他共和党人都投…",
       "tag": "宏观/综合",
       "region": "美国",
       "concept": "usMacro",
-      "time": "2026-11-11 05:38",
-      "datetime": "2026-11-11 05:38",
+      "time": "2026-11-11 09:05",
+      "datetime": "2026-11-11 09:05",
       "source": "华尔街见闻",
-      "url": "https://wallstreetcn.com/livenews/3197935",
-      "summary": "美国商品期货交易委员会（CFTC）警告预测平台公司Kalshi，这家衍生品监管部门可能立即对其提起诉讼。 CFTC调查该公司提供的特定押注合约。（Politico）",
+      "url": "https://wallstreetcn.com/livenews/3198015",
+      "summary": "美国总统特朗普10日在社交媒体上发文，称民主党针对美国国防部长赫格塞思的弹劾“惨败”，同时指责民主党将弹劾作为政治武器。特朗普称，除共和党籍众议员托马斯·梅西外，其他共和党人都投票支持赫格塞思。他还指责民主党继续将美国“武器化”并加以滥用。",
       "relatedStocks": [
         "宽基指数"
       ],
@@ -30,21 +63,54 @@
       "bearIndustries": [
         "顺周期"
       ],
-      "heat": 78,
-      "momentum": 71,
+      "heat": 24,
+      "momentum": 26,
       "_auto": true
     },
     {
-      "id": "abqbyj1q",
-      "title": "Point72 Asset Management旗下量化交易部门指控一名前研究分析师利用Anthropic PBC的Claude和OpenAI的Codex窃取专有源代码，目的是加…",
-      "tag": "科技/AI",
+      "id": "ab3movna",
+      "title": "快讯：恒指低开0.83% 恒科指跌0.96% 科网股普跌 新荷花上市首日高开逾27%",
+      "tag": "金融/宏观",
       "region": "美国",
-      "concept": "aiCapex",
-      "time": "2026-11-11 05:26",
-      "datetime": "2026-11-11 05:26",
+      "concept": "usFinance",
+      "time": "2026-11-11 09:20",
+      "datetime": "2026-11-11 09:20",
+      "source": "新浪港股",
+      "url": "https://finance.sina.com.cn/stock/hkstock/marketalerts/2026-11-11/doc-iniyipkh8598650.shtml",
+      "summary": "美股周二走势回落，美国最新通胀数据高于预期，市场对加息预期进一步升温，不利大市表现，三大指数均录得跌幅收市。美元走势向好，美国十年期债息重上5厘水平...",
+      "relatedStocks": [
+        "美股科技",
+        "黄金"
+      ],
+      "bullConcepts": [
+        "黄金",
+        "防御板块"
+      ],
+      "bearConcepts": [
+        "高估值成长股"
+      ],
+      "bullIndustries": [
+        "银行",
+        "黄金"
+      ],
+      "bearIndustries": [
+        "高杠杆地产"
+      ],
+      "heat": 29,
+      "momentum": 31,
+      "_auto": true
+    },
+    {
+      "id": "ab1ari3jo",
+      "title": "一、AI云基础设施提供商CoreWeave高管（CEO Mike Intrator和CFO Nitin Agrawal）重点讨论公司强劲的运营表现、快速的营收增长、旺盛的需求、定…",
+      "tag": "科技/AI",
+      "region": "全球",
+      "concept": "ai",
+      "time": "2026-11-11 07:06",
+      "datetime": "2026-11-11 07:06",
       "source": "华尔街见闻",
-      "url": "https://wallstreetcn.com/livenews/3197932",
-      "summary": "Point72 Asset Management旗下量化交易部门指控一名前研究分析师利用Anthropic PBC的Claude和OpenAI的Codex窃取专有源代码，目的是加入一家竞争对手。 Cubist Systematic Strategies周一在美国康涅狄格州斯坦福德的州法院起诉Xin Jin。Cubist在诉状中称，公司经过调查认定，Jin“曾试图窃取（而且很可…",
+      "url": "https://wallstreetcn.com/livenews/3197998",
+      "summary": "一、AI云基础设施提供商CoreWeave高管（CEO Mike Intrator和CFO Nitin Agrawal）重点讨论公司强劲的运营表现、快速的营收增长、旺盛的需求、定价权，以及他们的结构化融资方法（依赖客户合同、资产支持的延迟提款定期贷款和预付款，而不是母公司层面的无担保债务），并未谈及英伟达CEO黄仁勋在10月中旬的公开表态。当时，黄仁勋说，CoreWeave …",
       "relatedStocks": [
         "英伟达",
         "微软",
@@ -66,21 +132,153 @@
       "bearIndustries": [
         "传统IT服务"
       ],
-      "heat": 87,
-      "momentum": 61,
+      "heat": 56,
+      "momentum": 18,
       "_auto": true
     },
     {
-      "id": "ab1ujpi03",
-      "title": "Tuttle、Defiance计划针对AI发行人推出信用风险相关的ETF。 这类基于信用违约掉期（CDS）的ETF提及Meta、甲骨文、CoreWeave。",
-      "tag": "科技/AI",
-      "region": "全球",
-      "concept": "ai",
-      "time": "2026-11-11 05:01",
-      "datetime": "2026-11-11 05:01",
+      "id": "ab17wm6ov",
+      "title": "大宗商品综述：布伦特一度跌破90美元 金铜均跌 美联储加息押注升温",
+      "tag": "金融/宏观",
+      "region": "美国",
+      "concept": "usFinance",
+      "time": "2026-11-11 06:12",
+      "datetime": "2026-11-11 06:12",
+      "source": "环球市场播报",
+      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-11/doc-iniyiaun8786952.shtml",
+      "summary": "布伦特原油下跌，一度跌破每桶90美元，技术因素加剧了由市场预期伊朗战争将进一步降温所推动的抛售。美国通胀数据高于预期，而且美联储决策者的言论强化了市场对下月加息的...",
+      "relatedStocks": [
+        "美股科技",
+        "黄金"
+      ],
+      "bullConcepts": [
+        "黄金",
+        "防御板块"
+      ],
+      "bearConcepts": [
+        "高估值成长股"
+      ],
+      "bullIndustries": [
+        "银行",
+        "黄金"
+      ],
+      "bearIndustries": [
+        "高杠杆地产"
+      ],
+      "heat": 78,
+      "momentum": 23,
+      "_auto": true
+    },
+    {
+      "id": "ab1dstpty",
+      "title": "英国智库国家经济社会研究院(NIESR)预测，受伊朗战争引发的工资第二轮效应影响，英国央行在2030年前无法将通胀率降至目标水平。该智库同时还小幅上调了对英国的经济增长预期。",
+      "tag": "金融/宏观",
+      "region": "中国",
+      "concept": "bank",
+      "time": "2026-11-11 08:42",
+      "datetime": "2026-11-11 08:42",
       "source": "华尔街见闻",
-      "url": "https://wallstreetcn.com/livenews/3197918",
-      "summary": "Tuttle、Defiance计划针对AI发行人推出信用风险相关的ETF。 这类基于信用违约掉期（CDS）的ETF提及Meta、甲骨文、CoreWeave。",
+      "url": "https://wallstreetcn.com/livenews/3198007",
+      "summary": "英国智库国家经济社会研究院(NIESR)预测，受伊朗战争引发的工资第二轮效应影响，英国央行在2030年前无法将通胀率降至目标水平。该智库同时还小幅上调了对英国的经济增长预期。",
+      "relatedStocks": [
+        "美股科技",
+        "黄金"
+      ],
+      "bullConcepts": [
+        "黄金",
+        "防御板块"
+      ],
+      "bearConcepts": [
+        "高估值成长股"
+      ],
+      "bullIndustries": [
+        "银行",
+        "黄金"
+      ],
+      "bearIndustries": [
+        "高杠杆地产"
+      ],
+      "heat": 29,
+      "momentum": 26,
+      "_auto": true
+    },
+    {
+      "id": "absh430n",
+      "title": "突发！胡塞武装袭击沙特金融中心、石油设施等目标！三艘油轮在霍尔木兹海峡爆炸！刚刚，金银价格大跌",
+      "tag": "金融/宏观",
+      "region": "美国",
+      "concept": "usFinance",
+      "time": "2026-11-11 07:32",
+      "datetime": "2026-11-11 07:32",
+      "source": "市场资讯",
+      "url": "https://finance.sina.com.cn/money/future/fmnews/2026-11-11/doc-iniyiiak8680688.shtml",
+      "summary": "来源：期货日报 早上好，先来关注下国际市场。 10日晚，美国劳工统计局公布的数据显示，10月消费者价格指数（CPI）环比上涨0.4%，市场预估为0.3%，前值为0...",
+      "relatedStocks": [
+        "美股科技",
+        "黄金"
+      ],
+      "bullConcepts": [
+        "黄金",
+        "防御板块"
+      ],
+      "bearConcepts": [
+        "高估值成长股"
+      ],
+      "bullIndustries": [
+        "银行",
+        "黄金"
+      ],
+      "bearIndustries": [
+        "高杠杆地产"
+      ],
+      "heat": 29,
+      "momentum": 18,
+      "_auto": true
+    },
+    {
+      "id": "abjnluyn",
+      "title": "美国债市大逆转 加息预期和CPI刺激收益率创出关税危机以来最大涨幅",
+      "tag": "金融/宏观",
+      "region": "美国",
+      "concept": "usFinance",
+      "time": "2026-11-11 06:37",
+      "datetime": "2026-11-11 06:37",
+      "source": "环球市场播报",
+      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-11/doc-iniyiauh5465964.shtml",
+      "summary": "美国债券市场暴跌，短期收益率创出19个月以来最大升幅，一方面该国的消费者价格上涨速度超出预期，另一方面美联储有官员放话说可能需要更大胆地上调利率。",
+      "relatedStocks": [
+        "美股科技",
+        "黄金"
+      ],
+      "bullConcepts": [
+        "黄金",
+        "防御板块"
+      ],
+      "bearConcepts": [
+        "高估值成长股"
+      ],
+      "bullIndustries": [
+        "银行",
+        "黄金"
+      ],
+      "bearIndustries": [
+        "高杠杆地产"
+      ],
+      "heat": 83,
+      "momentum": 18,
+      "_auto": true
+    },
+    {
+      "id": "abphavy9",
+      "title": "美国商务部此前曾就英伟达CEO婚外情一事收到警示。（Axios）",
+      "tag": "科技/AI",
+      "region": "美国",
+      "concept": "aiCapex",
+      "time": "2026-11-11 07:53",
+      "datetime": "2026-11-11 07:53",
+      "source": "华尔街见闻",
+      "url": "https://wallstreetcn.com/livenews/3197988",
+      "summary": "美国商务部此前曾就英伟达CEO婚外情一事收到警示。（Axios）",
       "relatedStocks": [
         "英伟达",
         "微软",
@@ -103,20 +301,50 @@
         "传统IT服务"
       ],
       "heat": 33,
-      "momentum": 36,
+      "momentum": 26,
       "_auto": true
     },
     {
-      "id": "abtlvejb",
-      "title": "Fireworks披露了一起黑客攻击事件，导致客户模型权重泄露。一周前，该公司刚聘请前Meta战略主管Dave Wehner担任首席财务官。",
+      "id": "ab17lw6fj",
+      "title": "美国众议院投票阻止弹劾海格塞斯 民主党明年掌控国会前或无能为力",
       "tag": "宏观/综合",
-      "region": "全球",
-      "concept": "macro",
-      "time": "2026-11-11 05:01",
-      "datetime": "2026-11-11 05:01",
-      "source": "新浪7×24",
-      "url": "https://finance.sina.cn/7x24/2026-11-11/detail-iniyiauk2215949.d.html",
-      "summary": "Fireworks披露了一起黑客攻击事件，导致客户模型权重泄露。一周前，该公司刚聘请前Meta战略主管Dave Wehner担任首席财务官。",
+      "region": "美国",
+      "concept": "usMacro",
+      "time": "2026-11-11 07:23",
+      "datetime": "2026-11-11 07:23",
+      "source": "环球市场播报",
+      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-11/doc-iniyiiak8677378.shtml",
+      "summary": "美国众议院共和党人阻止了对国防部长皮特·海格塞斯的弹劾，这等于是说，在民主党明年1月掌控国会之前，弹劾行动不会取得进展。",
+      "relatedStocks": [
+        "宽基指数"
+      ],
+      "bullConcepts": [
+        "防御板块"
+      ],
+      "bearConcepts": [
+        "周期股"
+      ],
+      "bullIndustries": [
+        "公用事业"
+      ],
+      "bearIndustries": [
+        "顺周期"
+      ],
+      "heat": 24,
+      "momentum": 18,
+      "_auto": true
+    },
+    {
+      "id": "ab2wkmb8",
+      "title": "美国商品期货交易委员会据悉即将起诉预测市场平台Kalshi",
+      "tag": "宏观/综合",
+      "region": "美国",
+      "concept": "usMacro",
+      "time": "2026-11-11 07:53",
+      "datetime": "2026-11-11 07:53",
+      "source": "环球市场播报",
+      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-11/doc-iniyiiae5369857.shtml",
+      "summary": "据知情人士透露，美国商品期货交易委员会（CFTC）已向预测市场初创公司Kalshi发出警告，称即将对其提起指控。此前，该监管机构一直在调查Kalshi在推出数十款新产品时...",
       "relatedStocks": [
         "宽基指数"
       ],
@@ -137,16 +365,16 @@
       "_auto": true
     },
     {
-      "id": "abayx2p7",
-      "title": "原油：油价延续跌势 市场押注伊朗局势进一步降温",
+      "id": "ab1r6425a",
+      "title": "黄金交易提醒：美国通胀超预期+美联储官员放鹰，金价暴跌近3%，4000关口告急？",
       "tag": "金融/宏观",
       "region": "美国",
       "concept": "usFinance",
-      "time": "2026-11-11 05:10",
-      "datetime": "2026-11-11 05:10",
-      "source": "环球市场播报",
-      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-11/doc-iniyiauh5441967.shtml",
-      "summary": "布伦特原油下跌，一度跌破每桶90美元，技术因素加剧了由市场预期伊朗战争将进一步降温所推动的抛售。 布伦特一度下跌3.7%，收于每桶92美元下方。",
+      "time": "2026-11-11 07:45",
+      "datetime": "2026-11-11 07:45",
+      "source": "市场资讯",
+      "url": "https://finance.sina.com.cn/money/nmetal/hjzx/2026-11-11/doc-iniyiiae5367383.shtml",
+      "summary": "文章来源：汇通财经 周二全球金市遭遇显著抛压，现货黄金单日重挫近3%，跌破4100关键心理关口附近的支撑，盘中最低触及4013.53美元/盎司，为近一周新低，收报每盎司4032...",
       "relatedStocks": [
         "美股科技",
         "黄金"
@@ -166,180 +394,20 @@
         "高杠杆地产"
       ],
       "heat": 24,
-      "momentum": 26,
-      "_auto": true
-    },
-    {
-      "id": "ab1c4vlbx",
-      "title": "11月10日，英国反恐警察表示，一名41岁的美国陆军士兵因涉嫌从事与俄罗斯有关的间谍活动，在英格兰格洛斯特附近被捕。该男子涉嫌协助外国情报机构、获取或泄露受保护信息，目前被拘押在…",
-      "tag": "宏观/综合",
-      "region": "美国",
-      "concept": "usMacro",
-      "time": "2026-11-11 04:23",
-      "datetime": "2026-11-11 04:23",
-      "source": "华尔街见闻",
-      "url": "https://wallstreetcn.com/livenews/3197906",
-      "summary": "11月10日，英国反恐警察表示，一名41岁的美国陆军士兵因涉嫌从事与俄罗斯有关的间谍活动，在英格兰格洛斯特附近被捕。该男子涉嫌协助外国情报机构、获取或泄露受保护信息，目前被拘押在伦敦一处警察局。（央视）",
-      "relatedStocks": [
-        "宽基指数"
-      ],
-      "bullConcepts": [
-        "防御板块"
-      ],
-      "bearConcepts": [
-        "周期股"
-      ],
-      "bullIndustries": [
-        "公用事业"
-      ],
-      "bearIndustries": [
-        "顺周期"
-      ],
-      "heat": 29,
-      "momentum": 26,
-      "_auto": true
-    },
-    {
-      "id": "ab12jqs5d",
-      "title": "英伟达已聘请Wachtell Lipton律师事务所，调查首席执行官黄仁勋承认的婚外情一事。此次调查将由其合伙人Joon H. Kim牵头，他曾任美国代理检察官，曾参与调查前纽约…",
-      "tag": "科技/AI",
-      "region": "美国",
-      "concept": "aiCapex",
-      "time": "2026-11-11 03:08",
-      "datetime": "2026-11-11 03:08",
-      "source": "华尔街见闻",
-      "url": "https://wallstreetcn.com/livenews/3197882",
-      "summary": "英伟达已聘请Wachtell Lipton律师事务所，调查首席执行官黄仁勋承认的婚外情一事。此次调查将由其合伙人Joon H. Kim牵头，他曾任美国代理检察官，曾参与调查前纽约州州长安德鲁·科莫。英伟达董事会表示，目前没有理由认为公司机密或国家安全受到损害，但将审查所有可获得的证据。黄仁勋已承诺全面配合。此次调查使英伟达联合创始人兼首席执行官面临董事会前所未有的审查。（纽约…",
-      "relatedStocks": [
-        "英伟达",
-        "微软",
-        "台积电"
-      ],
-      "bullConcepts": [
-        "AI算力",
-        "半导体",
-        "国产替代"
-      ],
-      "bearConcepts": [
-        "传统软件"
-      ],
-      "bullIndustries": [
-        "半导体",
-        "AI应用",
-        "算力基础设施"
-      ],
-      "bearIndustries": [
-        "传统IT服务"
-      ],
-      "heat": 24,
       "momentum": 18,
       "_auto": true
     },
     {
-      "id": "ablh7ik3",
-      "title": "伊朗南帕尔斯气田一平台发生火灾，目前局势已得到控制。",
-      "tag": "宏观/综合",
-      "region": "全球",
-      "concept": "macro",
-      "time": "2026-11-11 03:31",
-      "datetime": "2026-11-11 03:31",
-      "source": "华尔街见闻",
-      "url": "https://wallstreetcn.com/livenews/3197891",
-      "summary": "伊朗南帕尔斯气田一平台发生火灾，目前局势已得到控制。",
-      "relatedStocks": [
-        "宽基指数"
-      ],
-      "bullConcepts": [
-        "防御板块"
-      ],
-      "bearConcepts": [
-        "周期股"
-      ],
-      "bullIndustries": [
-        "公用事业"
-      ],
-      "bearIndustries": [
-        "顺周期"
-      ],
-      "heat": 29,
-      "momentum": 18,
-      "_auto": true
-    },
-    {
-      "id": "ab1oycobo",
-      "title": "美国国防部赫格塞思抨击弹劾提案，为伊朗战事处置辩护",
-      "tag": "地缘/政治",
-      "region": "美国",
-      "concept": "defense",
-      "time": "2026-11-10 21:42",
-      "datetime": "2026-11-10 21:42",
-      "source": "环球市场播报",
-      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-10/doc-iniyhfqw9216918.shtml",
-      "summary": "美国国防部长皮特・赫格塞思周二痛斥提出弹劾他的共和党众议员，并积极为自己在伊朗战争以及其他军事行动中的指挥决策辩护。",
-      "relatedStocks": [
-        "军工",
-        "黄金"
-      ],
-      "bullConcepts": [
-        "军工",
-        "避险资产"
-      ],
-      "bearConcepts": [
-        "风险资产"
-      ],
-      "bullIndustries": [
-        "军工",
-        "黄金"
-      ],
-      "bearIndustries": [
-        "航空",
-        "旅游"
-      ],
-      "heat": 29,
-      "momentum": 18,
-      "_auto": true
-    },
-    {
-      "id": "abnhdewe",
-      "title": "厄瓜多尔新一轮宵禁结束 逮捕逾2600人 查获约2.5吨毒品",
-      "tag": "宏观/综合",
-      "region": "全球",
-      "concept": "macro",
-      "time": "2026-11-11 03:34",
-      "datetime": "2026-11-11 03:34",
-      "source": "财联社",
-      "url": "https://www.cls.cn/detail/2530827",
-      "summary": "【厄瓜多尔新一轮宵禁结束 逮捕逾2600人 查获约2.5吨毒品】当地时间11月10日凌晨5时，厄瓜多尔在瓜亚斯省、马纳维省、洛斯里奥斯省、埃尔奥罗省和埃斯梅拉达斯省实施的为期10天的宵禁正式结束。厄瓜多尔总统诺沃亚当天公布行动成果称，宵禁期间，警方和军方共逮捕2627人，查获毒品约2.5吨。根据厄瓜多尔安全部门公布的数据，11月1日至10日，警方和军方在上述5省共开展2941…",
-      "relatedStocks": [
-        "宽基指数"
-      ],
-      "bullConcepts": [
-        "防御板块"
-      ],
-      "bearConcepts": [
-        "周期股"
-      ],
-      "bullIndustries": [
-        "公用事业"
-      ],
-      "bearIndustries": [
-        "顺周期"
-      ],
-      "heat": 24,
-      "momentum": 18,
-      "_auto": true
-    },
-    {
-      "id": "ab12lnsmr",
-      "title": "“利空出尽是底”应验，英伟达丑闻缠身之际芯片股集体反弹",
+      "id": "ab1r2gpyk",
+      "title": "知名科技分析师艾夫斯：若黄仁勋离职，英伟达市值将暴跌三分之一",
       "tag": "科技/AI",
       "region": "全球",
       "concept": "ai",
-      "time": "2026-11-10 23:31",
-      "datetime": "2026-11-10 23:31",
+      "time": "2026-11-11 07:21",
+      "datetime": "2026-11-11 07:21",
       "source": "环球市场播报",
-      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-10/doc-iniyhmws2553904.shtml",
-      "summary": "周一科技股大涨，或许是牛市反攻的开端，但仍有待验证。美职棒只有约 7% 的投球落在好球带正中，投资者可以从中获得启发。",
+      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-11/doc-iniyiiak8676604.shtml",
+      "summary": "知名科技股多头丹·艾夫斯（Dan Ives）认为，黄仁勋的价值大约相当于英伟达总市值的30%。 这位前韦德布什证券公司分析师周二表示，如果这位 AI 芯片巨头的掌舵人离开...",
       "relatedStocks": [
         "英伟达",
         "微软",
@@ -366,120 +434,49 @@
       "_auto": true
     },
     {
-      "id": "ab14j60d8",
-      "title": "挪威主权财富基金CEO称黄仁勋执掌英伟达“表现出色”",
+      "id": "ab10ky2lc",
+      "title": "美债多头押注遭重创 转向美债避险的交易员措手不及",
+      "tag": "金融/宏观",
+      "region": "美国",
+      "concept": "usFinance",
+      "time": "2026-11-11 07:19",
+      "datetime": "2026-11-11 07:19",
+      "source": "环球市场播报",
+      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-11/doc-iniyiiah2130550.shtml",
+      "summary": "美国债市近期涌入的多头刚刚遭遇重创，两位美联储官员的言论以及显示通胀顽固的最新迹象提升了加息的可能性，导致美国国债大幅下挫。",
+      "relatedStocks": [
+        "美股科技",
+        "黄金"
+      ],
+      "bullConcepts": [
+        "黄金",
+        "防御板块"
+      ],
+      "bearConcepts": [
+        "高估值成长股"
+      ],
+      "bullIndustries": [
+        "银行",
+        "黄金"
+      ],
+      "bearIndustries": [
+        "高杠杆地产"
+      ],
+      "heat": 24,
+      "momentum": 18,
+      "_auto": true
+    },
+    {
+      "id": "ab14yb0fk",
+      "title": "Point72起诉被解雇的量化分析师 指控其利用AI窃取代码",
       "tag": "科技/AI",
       "region": "全球",
       "concept": "ai",
-      "time": "2026-11-10 22:37",
-      "datetime": "2026-11-10 22:37",
+      "time": "2026-11-11 05:43",
+      "datetime": "2026-11-11 05:43",
       "source": "环球市场播报",
-      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-10/doc-iniyhmws2535348.shtml",
-      "summary": "挪威主权财富基金首席执行官Nicolai Tangen接受采访时表示，黄仁勋在打造英伟达以及领导该公司方面“做得非常出色”。 对于英伟达“近期事件”，Tangen表示不予置评。",
-      "relatedStocks": [
-        "英伟达",
-        "微软",
-        "台积电"
-      ],
-      "bullConcepts": [
-        "AI算力",
-        "半导体",
-        "国产替代"
-      ],
-      "bearConcepts": [
-        "传统软件"
-      ],
-      "bullIndustries": [
-        "半导体",
-        "AI应用",
-        "算力基础设施"
-      ],
-      "bearIndustries": [
-        "传统IT服务"
-      ],
-      "heat": 29,
-      "momentum": 18,
-      "_auto": true
-    },
-    {
-      "id": "ab12zlah3",
-      "title": "美国牵头斡旋的俄乌和平谈判结束首日磋商 周三继续",
-      "tag": "地缘/政治",
-      "region": "美国",
-      "concept": "defense",
-      "time": "2026-11-10 22:15",
-      "datetime": "2026-11-10 22:15",
-      "source": "环球市场播报",
-      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-10/doc-iniyhmwt2450697.shtml",
-      "summary": "乌克兰和俄罗斯结束了由美国牵头的新一轮和平谈判首日磋商。与此同时，华盛顿和基辅的欧洲盟友强调，任何旨在结束战争的协议都必须包含可信的安全保障。",
-      "relatedStocks": [
-        "军工",
-        "黄金"
-      ],
-      "bullConcepts": [
-        "军工",
-        "避险资产"
-      ],
-      "bearConcepts": [
-        "风险资产"
-      ],
-      "bullIndustries": [
-        "军工",
-        "黄金"
-      ],
-      "bearIndustries": [
-        "航空",
-        "旅游"
-      ],
-      "heat": 29,
-      "momentum": 18,
-      "_auto": true
-    },
-    {
-      "id": "abzodteu",
-      "title": "特朗普称伊朗战争“很快就会结束”，淡化新一轮军事打击可能性",
-      "tag": "地缘/政治",
-      "region": "美国",
-      "concept": "defense",
-      "time": "2026-11-10 16:54",
-      "datetime": "2026-11-10 16:54",
-      "source": "环球市场播报",
-      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-10/doc-iniyfuyz2696792.shtml",
-      "summary": "核心要点特朗普表示，伊朗战事可能 “很快结束”，并称伊朗 “军事层面实际上已经溃败”。美国中期选举结果惨淡，共和党痛失国会参众两院控制权...",
-      "relatedStocks": [
-        "军工",
-        "黄金"
-      ],
-      "bullConcepts": [
-        "军工",
-        "避险资产"
-      ],
-      "bearConcepts": [
-        "风险资产"
-      ],
-      "bullIndustries": [
-        "军工",
-        "黄金"
-      ],
-      "bearIndustries": [
-        "航空",
-        "旅游"
-      ],
-      "heat": 46,
-      "momentum": 18,
-      "_auto": true
-    },
-    {
-      "id": "aba76jx3",
-      "title": "英伟达独立董事聘请外部律所 对黄仁勋事件展开调查",
-      "tag": "科技/AI",
-      "region": "全球",
-      "concept": "ai",
-      "time": "2026-11-11 04:15",
-      "datetime": "2026-11-11 04:15",
-      "source": "环球市场播报",
-      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-11/doc-iniyhwnp2253278.shtml",
-      "summary": "英伟达独立董事聘请了律师事务所Wachtell， Lipton， Rosen & Katz来协助调查首席执行官黄仁勋。 根据周二发布的简短声明，董事们已聘请Wachtell Lipton的Joon H．...",
+      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-11/doc-iniyiauh5447497.shtml",
+      "summary": "Point72 Asset Management旗下量化交易部门指控一名前研究分析师利用Anthropic PBC的Claude和OpenAI的Codex窃取专有源代码，目的是加入一家竞争对手。",
       "relatedStocks": [
         "英伟达",
         "微软",
@@ -502,7 +499,7 @@
         "传统IT服务"
       ],
       "heat": 24,
-      "momentum": 26,
+      "momentum": 18,
       "_auto": true
     },
     {
@@ -537,73 +534,65 @@
       "bearIndustries": [
         "传统IT服务"
       ],
-      "heat": 24,
-      "momentum": 26,
+      "heat": 29,
+      "momentum": 18,
       "_auto": true
     },
     {
-      "id": "ab1fvmnza",
-      "title": "厄瓜多尔发生武装袭击事件 已致3人死亡",
-      "tag": "地缘/政治",
-      "region": "全球",
-      "concept": "macro",
-      "time": "2026-11-11 01:50",
-      "datetime": "2026-11-11 01:50",
-      "source": "财联社",
-      "url": "https://www.cls.cn/detail/2530811",
-      "summary": "财联社11月11日电，厄瓜多尔警方通报，该国埃尔奥罗省瓦基利亚斯市9日深夜发生一起武装袭击事件，造成3人死亡，其中包括2名地方选举候选人。据通报，多名枪手分乘摩托车抵达现场后向人群开火。死者分别包括市长候选人罗纳德·法尔凡和市议员候选人克里斯蒂安·鲁赫尔。袭击发生在厄瓜多尔地方选举竞选活动启动前夕。警方初步判断这是一次目标明确的“选择性谋杀”，目前案件仍在进一步调查中，尚无嫌…",
+      "id": "ab3gjvj",
+      "title": "英国逮捕一名美军士兵 因涉嫌参与俄罗斯间谍活动",
+      "tag": "宏观/综合",
+      "region": "美国",
+      "concept": "usMacro",
+      "time": "2026-11-11 07:25",
+      "datetime": "2026-11-11 07:25",
+      "source": "环球市场播报",
+      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-11/doc-iniyiiae5358111.shtml",
+      "summary": "英国警方逮捕一名美国陆军士兵，此人涉嫌参与俄罗斯间谍活动，此案由英美两国当局共同参与调查。 伦敦警察局在声明中表示，这名41岁的男子周二在格洛斯特附近被捕...",
       "relatedStocks": [
-        "军工",
-        "黄金"
+        "宽基指数"
       ],
       "bullConcepts": [
-        "军工",
-        "避险资产"
+        "防御板块"
       ],
       "bearConcepts": [
-        "风险资产"
+        "周期股"
       ],
       "bullIndustries": [
-        "军工",
-        "黄金"
+        "公用事业"
       ],
       "bearIndustries": [
-        "航空",
-        "旅游"
+        "顺周期"
       ],
       "heat": 24,
       "momentum": 18,
       "_auto": true
     },
     {
-      "id": "ab14swo54",
-      "title": "法国指责伊朗发动超市冰箱网络攻击，考虑实施制裁",
-      "tag": "地缘/政治",
-      "region": "欧洲",
+      "id": "abl3npz7",
+      "title": "Jericho旗舰对冲基金10月暴跌17% 年内回报转负",
+      "tag": "宏观/综合",
+      "region": "全球",
       "concept": "macro",
-      "time": "2026-11-10 18:19",
-      "datetime": "2026-11-10 18:19",
+      "time": "2026-11-11 06:38",
+      "datetime": "2026-11-11 06:38",
       "source": "环球市场播报",
-      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-10/doc-iniyfzhy9262778.shtml",
-      "summary": "法国外交部长让-诺埃尔·巴罗（Jean-Noël Barrot）周二表示，对于10月针对法国超市冰箱发动的大规模网络攻击，法国政府“不会排除任何应对措施”。",
+      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-11/doc-iniyiauk2242321.shtml",
+      "summary": "Jericho Capital Asset Management的旗舰对冲基金10月暴跌17%，令这家专注投资科技和媒体股的基金跻身业内表现最差者之列。",
       "relatedStocks": [
-        "军工",
-        "黄金"
+        "宽基指数"
       ],
       "bullConcepts": [
-        "军工",
-        "避险资产"
+        "防御板块"
       ],
       "bearConcepts": [
-        "风险资产"
+        "周期股"
       ],
       "bullIndustries": [
-        "军工",
-        "黄金"
+        "公用事业"
       ],
       "bearIndustries": [
-        "航空",
-        "旅游"
+        "顺周期"
       ],
       "heat": 24,
       "momentum": 18,
@@ -813,42 +802,39 @@
       "momentum": 30
     },
     {
-      "id": "b8",
-      "title": "霍尔木兹海峡三艘油轮爆炸起火，伊朗多地遭袭",
-      "tag": "地缘/能源",
-      "region": "全球",
-      "concept": "energy",
+      "id": "b7",
+      "title": "黄仁勋承认婚外情，英伟达董事会启动独立调查",
+      "tag": "公司治理/科技巨头",
+      "region": "美国",
+      "concept": "aiCapex",
       "time": "2026-11-08",
-      "datetime": "2026-11-08 11:20",
-      "source": "央视/塔斯尼姆通讯社",
-      "summary": "伊朗革命卫队称11月8日当天已有三艘违规油轮在霍尔木兹海峡东部禁航区触雷爆炸起火；同日格什姆岛等地传出爆炸声，伊朗称遭美军袭击。特朗普宣布针对伊朗的\"铁门\"特遣行动全面展开。海峡通航风险推升原油与航运溢价。",
+      "datetime": "2026-11-08 21:00",
+      "source": "央视/彭博/环球网/新浪财经",
+      "summary": "英伟达CEO黄仁勋11月8日发布致全员公开信，承认对妻子不忠，并向家人、员工、董事会及股东致歉。英伟达董事会随即宣布启动由独立董事委员会监督、外部律师协助的独立调查，核查其是否成为外国情报行动目标；美国众议院三委员会要求黄仁勋11月18日出席闭门简报。英伟达盘后跌超3%，公司确认黄仁勋继续担任CEO。",
       "relatedStocks": [
-        "中国海油",
-        "山东黄金",
-        "航运"
+        "英伟达",
+        "AI芯片",
+        "美股AI"
       ],
       "bullConcepts": [
-        "石油",
-        "黄金",
-        "油运",
-        "军工"
+        "竞品AI芯片",
+        "AMD",
+        "华为昇腾"
       ],
       "bearConcepts": [
-        "航空",
-        "化工(成本端)"
+        "英伟达",
+        "AI算力"
       ],
       "bullIndustries": [
-        "石油开采",
-        "航运",
-        "黄金",
-        "军工"
+        "半导体(竞品)",
+        "芯片设计"
       ],
       "bearIndustries": [
-        "航空运输",
-        "化工"
+        "AI芯片",
+        "英伟达产业链"
       ],
-      "heat": 90,
-      "momentum": 88
+      "heat": 95,
+      "momentum": 92
     },
     {
       "id": "b9",
