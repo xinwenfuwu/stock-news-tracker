@@ -4,12 +4,12 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>股市信息分析系统</title>
-  <link rel="stylesheet" href="css/style.css?v=20261111e">
+  <link rel="stylesheet" href="css/style.css?v=20261111f">
   <!-- Vue 3 全局构建版（v3.4.21 · 自托管）
        原先走 unpkg.com CDN：国内网络对 unpkg 的连通性不稳定，一旦该请求长时间挂起，
        <head> 里的阻塞脚本会让整页停在白屏、后续 auth-boot.js 根本不会执行。
        改为同源托管后，启动链路不再依赖任何第三方 CDN。 -->
-  <script src="js/vue.global.prod.js?v=20261111e"></script>
+  <script src="js/vue.global.prod.js?v=20261111f"></script>
 </head>
 <body class="auth-locked">
   <!-- ===== 登录关卡：登录通过前业务脚本不会被加载 ===== -->
@@ -95,7 +95,7 @@
         <input class="auth-input" type="text" id="auth-renew-user" placeholder="用户名（你注册时用的）" maxlength="20" autocomplete="off">
         <div class="auth-renew-plans" id="auth-renew-plans"></div>
         <div class="auth-renew-qr" id="auth-renew-qr">
-          <div class="auth-renew-qrbox"><img id="auth-renew-wx" src="assets/wechat-pay-qr.jpg?v=20261111e" alt="微信支付收款码"><span>微信支付（扫码支付）</span></div>
+          <div class="auth-renew-qrbox"><img id="auth-renew-wx" src="assets/wechat-pay-qr.jpg?v=20261111f" alt="微信支付收款码"><span>微信支付（扫码支付）</span></div>
           <div class="muted small" style="margin-top:6px;color:#c2410c;font-weight:600">支付时请添加会员备注，付款成功截图保存</div>
         </div>
         <input class="auth-input" type="text" id="auth-renew-amount" inputmode="decimal" placeholder="支付金额（必填，如 1000）" autocomplete="off">
@@ -990,7 +990,7 @@
                   <div class="qr-row">
                     <div class="qr-box">
                       <div class="qr-cap">推荐使用微信支付</div>
-                      <img src="assets/wechat-pay-qr.jpg?v=20261111e" alt="微信支付收款码" class="qr-pay-img">
+                      <img src="assets/wechat-pay-qr.jpg?v=20261111f" alt="微信支付收款码" class="qr-pay-img">
                       <div class="qr-cap" style="margin-top:6px;color:#c2410c;font-weight:600">支付时请添加会员备注，付款成功截图保存</div>
                       <div class="qr-cap muted small">火柴盒网络服务</div>
                     </div>
@@ -4504,7 +4504,11 @@
           <div class="form-row-3">
             <div><label>API Key</label><input type="password" v-model="aiKey" placeholder="sk-...（仅存本地；用代理且 Worker 已存 Secret 时可留空）" autocomplete="new-password"></div>
             <div><label>模型名</label><input v-model="aiModel" placeholder="如 glm-4-flash"></div>
-            <div><label>状态</label><span :class="['ai-state', aiConfigured ? 'ok' : 'warn']">{{ aiConfigured ? '✅ 已配置' : '⚠️ 未配置' }}</span></div>
+            <div><label>状态 / 保存</label>
+              <span :class="['ai-state', aiConfigured ? 'ok' : 'warn']">{{ aiConfigured ? '✅ 已配置' : '⚠️ 未配置' }}</span>
+              <span v-if="prefsDirty" class="prefs-save-flag is-dirty" title="有改动还没写入本机，请点右下角「保存设置」">● 未保存</span>
+              <span v-else class="prefs-save-flag is-saved" title="已写入本机，刷新页面或重开浏览器都不会丢失">✓ 已保存</span>
+            </div>
           </div>
           <div class="form-row">
             <label>AI 代理地址（Cloudflare Worker，<b>强烈推荐 · 解决浏览器 CORS 并隐藏 Key</b>）这些 OpenAI 兼容接口默认不允许网页直接调用，浏览器会报跨域。填此地址后，所有 AI 调用改走你的 Worker，由它服务端转发并注入 Key。部署方法见仓库 <code>worker/ai-proxy.js</code> 顶部注释。格式如 <code>https://ai-proxy.你的子域.workers.dev</code>。留空则浏览器直连（基本都会因 CORS 失败）。</label>
@@ -4520,6 +4524,7 @@
             </div>
           </div>
           <div class="info-box small">
+            <p><b>保存后不会丢失：</b>填完 API 地址 / 模型名 / 密钥后，点右下角<b>「保存设置」</b>即立即写入本机（localStorage），刷新页面、关掉重开浏览器都会自动回填；旁边会显示「✓ 已保存」，有未保存改动时显示「● 未保存」。另存有一份按账号隔离的独立备份，即使清了本地业务数据或导入了旧备份，AI 配置也不会凭空消失（只有在「本地数据 → 系统设置」里显式删除才会清除）。</p>
             <p><b>密钥安全：</b>Key 仅保存在你本机浏览器的 localStorage，不会上传到本站服务器（本站是纯静态 GitHub Pages，无后端）。多设备需各自配置。若填了「AI 代理地址」且 Worker 里已用 Secret 存了 Key，则本机可把 Key 留空，真正做到服务端隐藏。</p>
             <p><b>遇到「连不上 / Failed to fetch / CORS 拦截」怎么办：</b>先用上面的「🧪 测试连接」看清是哪一步不通。绝大多数情况下根因是<strong>浏览器跨域</strong>——这些 LLM 官方接口（含智谱 / DeepSeek / 硅基流动 / 阿里百炼 / Kimi）都不返回 CORS 头，网页无法直连。解决办法就是部署 <code>worker/ai-proxy.js</code>（Cloudflare Worker，免费），把地址填到「AI 代理地址」一栏。只有 <code>api.openai.com</code>、Gemini 的 <code>googleapis.com</code> 这类<strong>境外</strong>地址才是被墙（需 VPN/代理），国内厂商只是被 CORS 拦、与网络无关。</p>
           </div>
@@ -5240,14 +5245,14 @@
     </transition>
   </div>
 
-  <script src="js/auth.js?v=20261111e"></script>
-  <script src="js/auth-sync.js?v=20261111e"></script>
+  <script src="js/auth.js?v=20261111f"></script>
+  <script src="js/auth-sync.js?v=20261111f"></script>
   <!-- 边缘加速默认站点（batch37 治本：Cloudflare Worker 代理东财/腾讯，缓解 JSONP 限流误报）。
        若你所在地区 workers.dev 访问慢，可在「设置 → 行情加速地址」清空即恢复纯直连。 -->
   <script>window.__SNT_ACCEL__ = 'https://sichina.dpdns.org';</script>
   <!-- 扫码支付二维码渲染库（第三方 qrcodejs，本地托管避免外链失效）。renderQr 会先检测全局 QRCode 是否存在。 -->
-  <script src="assets/qrcode.min.js?v=20261111e"></script>
-  <script src="js/auth-boot.js?v=20261111e"></script>
+  <script src="assets/qrcode.min.js?v=20261111f"></script>
+  <script src="js/auth-boot.js?v=20261111f"></script>
   <!-- store / stock-api / hot-topics / app 由 auth-boot.js 在登录通过后动态装载，
        未登录时它们不会被下载，业务数据也不会进入内存 -->
 </body>

@@ -13,6 +13,51 @@ const app = createApp({
       : null);
     const D = Store.data;
 
+    /* ------------------------------------------------------------
+     * 20261111f：偏好设置的「独立备份」
+     * D.settings 存在账号专属的 Store.STORAGE_KEY 里，会被「清空全部数据 /
+     * 导入备份 / 本地数据面板删除系统设置」整体替换。为了让用户点过
+     * 「保存设置」后填的 API 地址 / 模型名 / 密钥 / 代理地址不会凭空消失，
+     * 另存一份到独立键：启动时若 D.settings 的 AI 配置整体为空而备份里有，
+     * 就恢复回来。键按账号隔离，不会把管理员的 Key 泄露给同机的普通账号。
+     * 用户显式删除「系统设置」时会同步清掉备份，避免复活。
+     * ------------------------------------------------------------ */
+    const PREFS_MIRROR_KEY = 'snt-prefs-mirror-v1::' + String(Store.account || '').trim().toLowerCase();
+    const PREFS_MIRROR_AI = ['aiEndpoint', 'aiKey', 'aiModel', 'aiProxy'];
+    function writePrefsMirror() {
+      try {
+        const o = { ts: Date.now() };
+        PREFS_MIRROR_AI.forEach(k => { o[k] = D.settings[k] || ''; });
+        o.proxyUrl = D.settings.proxyUrl || '';
+        o.categories = (D.settings.categories || []).slice();
+        localStorage.setItem(PREFS_MIRROR_KEY, JSON.stringify(o));
+      } catch (e) { /* 隐私模式/配额满：不影响主流程 */ }
+    }
+    function readPrefsMirror() {
+      try {
+        const raw = localStorage.getItem(PREFS_MIRROR_KEY);
+        return raw ? JSON.parse(raw) : null;
+      } catch (e) { return null; }
+    }
+    function clearPrefsMirror() {
+      try { localStorage.removeItem(PREFS_MIRROR_KEY); } catch (e) { /* ignore */ }
+    }
+    function restorePrefsMirror() {
+      const m = readPrefsMirror();
+      if (!m || typeof m !== 'object') return false;
+      const hasSaved = PREFS_MIRROR_AI.some(k => typeof m[k] === 'string' && m[k].trim());
+      const isEmpty = PREFS_MIRROR_AI.every(k => !String(D.settings[k] || '').trim());
+      if (!hasSaved || !isEmpty) return false;
+      PREFS_MIRROR_AI.forEach(k => { if (typeof m[k] === 'string') D.settings[k] = m[k]; });
+      if (typeof m.proxyUrl === 'string' && !String(D.settings.proxyUrl || '').trim()) D.settings.proxyUrl = m.proxyUrl;
+      if (Array.isArray(m.categories) && m.categories.length && !(D.settings.categories || []).length) {
+        D.settings.categories = m.categories.slice();
+      }
+      try { Store.saveNow(); } catch (e) { /* ignore */ }
+      return true;
+    }
+    restorePrefsMirror();
+
     // 20261012e：会员后端基地址跟随用户在设置里填的代理/加速地址，
     // 供登录门禁的「云端会员兜底」查询使用（js_auth-sync.js 的 queryMembershipRemote）。
     // 不填则用 index.html 里注入的 __SNT_ACCEL__（默认国内可达的 sichina.dpdns.org）。
@@ -3677,7 +3722,8 @@ const app = createApp({
           count: v => Object.keys(v || {}).length,
           desc: '新闻代理地址、AI 解读接口与密钥、主题分类等（删除后恢复出厂默认）',
           danger: true, raw: () => D.settings || {},
-          clear: () => { D.settings = Store._default().settings; } },
+          // 20261111f：用户显式删除「系统设置」时同步清掉独立备份，避免下次启动又把旧 Key 复活
+          clear: () => { D.settings = Store._default().settings; clearPrefsMirror(); } },
         { id: 'authUsers', name: '本机账号表', icon: '👥', unit: '个',
           count: v => (v || []).length,
           desc: '存放在这台设备上的账号（密码只存哈希，不存明文）',
@@ -12947,25 +12993,40 @@ const app = createApp({
       }
     }
 
-    watch(showSettings, v => {
-      if (v) {
-        settingsText.value = (D.settings.categories || []).join('\n');
-        proxyUrl.value = D.settings.proxyUrl || '';
-        accelBase.value = (typeof StockAPI !== 'undefined' && StockAPI && StockAPI.getAccelBase)
-          ? StockAPI.getAccelBase() : '';
-        aiEndpoint.value = D.settings.aiEndpoint || '';
-        aiKey.value = D.settings.aiKey || '';
-        aiModel.value = D.settings.aiModel || '';
-        aiProxy.value = D.settings.aiProxy || '';
-        aiTesting.value = false;
-        try {
-          authAdminToken.value = (localStorage.getItem('snt-auth-admin-token') || '').trim();
-          adminResetKey.value = (localStorage.getItem('snt-admin-reset-key') || '').trim();
-        } catch (e) { /* ignore */ }
-        aiTestResult.state = '';
-        aiTestResult.text = '';
-      }
-    });
+    /* 20261111f：把已保存的设置回填到表单。
+     * 原来只 watch(showSettings)，但「API 地址 / 模型名 / API Key / 代理地址」
+     * 这些字段全在 showPrefs（偏好设置）弹窗里 —— 打开它时表单 ref 仍是初始空串，
+     * 于是刷新后看起来「设置消失了」，而且此时点保存还会用空串把已存的值覆盖掉。
+     * 现在两个弹窗打开时都回填，并在 setup 阶段先回填一次兜底。 */
+    function hydrateSettingsForm() {
+      settingsText.value = (D.settings.categories || []).join('\n');
+      proxyUrl.value = D.settings.proxyUrl || '';
+      accelBase.value = (typeof StockAPI !== 'undefined' && StockAPI && StockAPI.getAccelBase)
+        ? StockAPI.getAccelBase() : '';
+      aiEndpoint.value = D.settings.aiEndpoint || '';
+      aiKey.value = D.settings.aiKey || '';
+      aiModel.value = D.settings.aiModel || '';
+      aiProxy.value = D.settings.aiProxy || '';
+      aiTesting.value = false;
+      try {
+        authAdminToken.value = (localStorage.getItem('snt-auth-admin-token') || '').trim();
+        adminResetKey.value = (localStorage.getItem('snt-admin-reset-key') || '').trim();
+      } catch (e) { /* ignore */ }
+      aiTestResult.state = '';
+      aiTestResult.text = '';
+    }
+    hydrateSettingsForm();
+    watch(showSettings, v => { if (v) hydrateSettingsForm(); });
+    watch(showPrefs, v => { if (v) hydrateSettingsForm(); });
+
+    /** 表单里是否有尚未点「保存设置」的改动（给用户一个明确的未保存提示） */
+    const prefsDirty = computed(() =>
+      aiEndpoint.value !== (D.settings.aiEndpoint || '') ||
+      aiKey.value !== (D.settings.aiKey || '') ||
+      aiModel.value !== (D.settings.aiModel || '') ||
+      aiProxy.value !== (D.settings.aiProxy || '') ||
+      proxyUrl.value !== (D.settings.proxyUrl || '') ||
+      settingsText.value !== (D.settings.categories || []).join('\n'));
     const dataStats = computed(() => ({
       news: D.news.length,
       pools: D.stockPools.length
@@ -12995,8 +13056,15 @@ const app = createApp({
         localStorage.setItem('snt-auth-admin-token', (authAdminToken.value || '').trim());
         localStorage.setItem('snt-admin-reset-key', (adminResetKey.value || '').trim());
       } catch (e) { /* ignore */ }
-      showToast('设置已保存', 'success');
+      // 20261111f：立刻落盘（原先只靠 Store 的 300ms 防抖 + beforeunload，
+      // 保存后马上刷新/浏览器异常退出都有丢数据的窗口），并写一份独立备份。
+      try { Store.saveNow(); } catch (e) { /* ignore */ }
+      writePrefsMirror();
+      showToast('设置已保存：API 地址 / 模型名 / 密钥已写入本机，刷新页面不会丢失', 'success');
+      // 两个弹窗共用 saveSettings，必须都关掉（原来只关 showSettings，
+      // 在「偏好设置」里点保存后弹窗一直不关，容易被误以为没保存成功）
       showSettings.value = false;
+      showPrefs.value = false;
     }
     function clearAllData() {
       if (!confirm('确认清空全部数据？此操作不可恢复！建议先导出备份。')) return;
@@ -13979,7 +14047,7 @@ const app = createApp({
       dataPaused, autoRefreshPaused, toggleDataPause,
       allCategories, fmt, fmtPct, fmtSigned, fmtDateCN, numClass, pctClass, parseStocks, stocksText, pureCode,
       fmtYi, sRatio,
-      showSettings, showPrefs, settingsText, proxyUrl, accelBase, saveSettings, clearAllData, dataStats,
+      showSettings, showPrefs, settingsText, proxyUrl, accelBase, prefsDirty, saveSettings, clearAllData, dataStats,
       aiEndpoint, aiKey, aiModel, aiProxy, aiConfigured, aiGenerating, callOpenAICompat, generateNewsInterpretation,
       AI_PRESETS, applyAiPreset, aiTesting, aiTestResult, aiTestConnection,
       exportData, importData,

@@ -3664,6 +3664,10 @@ body.guest-mode #app { display: none; }
 .ai-state { font-size: 13px; font-weight: 600; align-self: center; }
 .ai-state.ok { color: #16a34a; }
 .ai-state.warn { color: #d97706; }
+/* 20261111f：偏好设置「已保存 / 未保存」提示 */
+.prefs-save-flag { display: inline-block; margin-left: 8px; font-size: 12px; font-weight: 600; white-space: nowrap; }
+.prefs-save-flag.is-saved { color: #16a34a; }
+.prefs-save-flag.is-dirty { color: #d97706; }
 
 /* ===== AI 厂商预设（设置 → AI 解读）===== */
 .ai-presets { display: flex; flex-wrap: wrap; gap: 8px; margin: 8px 0 2px; }
