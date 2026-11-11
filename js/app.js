@@ -13020,13 +13020,27 @@ const app = createApp({
     watch(showPrefs, v => { if (v) hydrateSettingsForm(); });
 
     /** 表单里是否有尚未点「保存设置」的改动（给用户一个明确的未保存提示） */
-    const prefsDirty = computed(() =>
-      aiEndpoint.value !== (D.settings.aiEndpoint || '') ||
-      aiKey.value !== (D.settings.aiKey || '') ||
-      aiModel.value !== (D.settings.aiModel || '') ||
-      aiProxy.value !== (D.settings.aiProxy || '') ||
-      proxyUrl.value !== (D.settings.proxyUrl || '') ||
-      settingsText.value !== (D.settings.categories || []).join('\n'));
+    const prefsDirty = computed(() => {
+      let accelSaved = '';
+      try {
+        accelSaved = (typeof StockAPI !== 'undefined' && StockAPI && StockAPI.getAccelBase)
+          ? StockAPI.getAccelBase() : '';
+      } catch (e) { /* ignore */ }
+      let tokSaved = '', resetSaved = '';
+      try {
+        tokSaved = localStorage.getItem('snt-auth-admin-token') || '';
+        resetSaved = localStorage.getItem('snt-admin-reset-key') || '';
+      } catch (e) { /* ignore */ }
+      return aiEndpoint.value !== (D.settings.aiEndpoint || '') ||
+        aiKey.value !== (D.settings.aiKey || '') ||
+        aiModel.value !== (D.settings.aiModel || '') ||
+        aiProxy.value !== (D.settings.aiProxy || '') ||
+        proxyUrl.value !== (D.settings.proxyUrl || '') ||
+        settingsText.value !== (D.settings.categories || []).join('\n') ||
+        (accelBase.value || '').replace(/\/+$/, '') !== accelSaved ||
+        (authAdminToken.value || '').trim() !== tokSaved ||
+        (adminResetKey.value || '').trim() !== resetSaved;
+    });
     const dataStats = computed(() => ({
       news: D.news.length,
       pools: D.stockPools.length
