@@ -1,92 +1,20 @@
 {
-  "generatedAt": "2026-11-11 17:12",
+  "generatedAt": "2026-11-12 01:51",
   "generatedBy": "GitHub Actions · 多源实时聚合",
   "sourceCount": 5,
-  "autoCount": 7,
+  "autoCount": 11,
   "events": [
     {
-      "id": "apcn8l6c",
-      "title": "半导体研究机构SemiAnalysis称，SpaceX正在开发代号为Kessel的定制版英伟达Vera Rubin NVL72机架，以被动PCB中板取代内部NVLink线缆组件。…",
-      "tag": "人物/马斯克",
-      "region": "全球",
-      "concept": "ai",
-      "time": "2026-11-11 16:29",
-      "datetime": "2026-11-11 16:29",
-      "source": "华尔街见闻",
-      "url": "https://wallstreetcn.com/livenews/3198279",
-      "summary": "半导体研究机构SemiAnalysis称，SpaceX正在开发代号为Kessel的定制版英伟达Vera Rubin NVL72机架，以被动PCB中板取代内部NVLink线缆组件。该设计保留72个GPU封装、18个计算托盘和9个交换托盘，并将组件背靠背布置在中板两侧，计划用于地面和太空场景。",
-      "relatedStocks": [
-        "英伟达",
-        "微软",
-        "台积电"
-      ],
-      "bullConcepts": [
-        "AI算力",
-        "半导体",
-        "国产替代"
-      ],
-      "bearConcepts": [
-        "传统软件"
-      ],
-      "bullIndustries": [
-        "半导体",
-        "AI应用",
-        "算力基础设施"
-      ],
-      "bearIndustries": [
-        "传统IT服务"
-      ],
-      "heat": 33,
-      "momentum": 36,
-      "_auto": true
-    },
-    {
-      "id": "aplkwoot",
-      "title": "SpaceX据悉尝试机架层“去英伟达化”：只买芯片 研发Kessel机柜绕过L6计算板",
-      "tag": "人物/马斯克",
-      "region": "全球",
-      "concept": "ai",
-      "time": "2026-11-11 16:15",
-      "datetime": "2026-11-11 16:15",
-      "source": "财联社",
-      "url": "https://www.cls.cn/detail/2531515",
-      "summary": "【SpaceX据悉尝试机架层“去英伟达化”：只买芯片 研发Kessel机柜绕过L6计算板】财联社11月11日电，半导体研究机构SemiAnalysis在X上披露，SpaceX正在做一件此前只有超大规模云厂商尝试过的事：保留英伟达的芯片，但把芯片周围的机架自己重做一遍。这个自研机架的内部代号是Kessel。 SemiAnalysis称，SpaceX计划直接向英伟达采购芯片封装，…",
-      "relatedStocks": [
-        "英伟达",
-        "微软",
-        "台积电"
-      ],
-      "bullConcepts": [
-        "AI算力",
-        "半导体",
-        "国产替代"
-      ],
-      "bearConcepts": [
-        "传统软件"
-      ],
-      "bullIndustries": [
-        "半导体",
-        "AI应用",
-        "算力基础设施"
-      ],
-      "bearIndustries": [
-        "传统IT服务"
-      ],
-      "heat": 33,
-      "momentum": 36,
-      "_auto": true
-    },
-    {
-      "id": "ap8ulk8m",
-      "title": "泽连斯基说俄乌谈判欧洲人应上桌",
-      "tag": "人物/泽连斯基",
+      "id": "aptga20q",
+      "title": "美国总统特朗普：美国没有对伊朗发动战争。 伊朗永远不会拥有核武器。 一个没有英雄的国家，就像没有星辰的天空，或没有天使的天堂。 伊朗需要25年才能重建失去的一切。 自1979年以…",
+      "tag": "人物/特朗普",
       "region": "美国",
       "concept": "defense",
-      "time": "2026-11-11 16:13",
-      "datetime": "2026-11-11 16:13",
-      "source": "财联社",
-      "url": "https://www.cls.cn/detail/2531510",
-      "summary": "财联社11月11日电，乌克兰总统泽连斯基当地时间11月10日在丹麦对媒体表示，自己的工作不是让美国总统特朗普高兴，而是尽一切努力，促使美国人和欧洲人都参与到俄乌冲突的谈判中来。他指出，谈判需要取得成果，哪怕只达成交换1000名或100名被俘人员的结果，那也算是一种成果，否则，谈判就只是一场游戏。",
+      "time": "2026-11-12 01:11",
+      "datetime": "2026-11-12 01:11",
+      "source": "华尔街见闻",
+      "url": "https://wallstreetcn.com/livenews/3198563",
+      "summary": "美国总统特朗普：美国没有对伊朗发动战争。 伊朗永远不会拥有核武器。 一个没有英雄的国家，就像没有星辰的天空，或没有天使的天堂。 伊朗需要25年才能重建失去的一切。 自1979年以来，伊朗一直在对美国发动战争。这个问题早就应该解决了。 我们（在伊朗战争上）赢了。我们要确保取得彻底胜利，而不是93%的胜利。",
       "relatedStocks": [
         "军工",
         "黄金"
@@ -106,8 +34,198 @@
         "航空",
         "旅游"
       ],
-      "heat": 24,
+      "heat": 87,
+      "momentum": 86,
+      "_auto": true
+    },
+    {
+      "id": "ap15gmlht",
+      "title": "马斯克：顺便说一句，从利润最大化的角度看，这（延长Cybertruck生产周期）并非最明智的举动，但这个世界总得给情感留点空间，否则还有什么意义？",
+      "tag": "人物/马斯克",
+      "region": "全球",
+      "concept": "macro",
+      "time": "2026-11-12 01:34",
+      "datetime": "2026-11-12 01:34",
+      "source": "新浪7×24",
+      "url": "https://finance.sina.cn/7x24/2026-11-12/detail-iniykzmv4178897.d.html",
+      "summary": "马斯克：顺便说一句，从利润最大化的角度看，这（延长Cybertruck生产周期）并非最明智的举动，但这个世界总得给情感留点空间，否则还有什么意义？",
+      "relatedStocks": [
+        "宽基指数"
+      ],
+      "bullConcepts": [
+        "防御板块"
+      ],
+      "bearConcepts": [
+        "周期股"
+      ],
+      "bullIndustries": [
+        "公用事业"
+      ],
+      "bearIndustries": [
+        "顺周期"
+      ],
+      "heat": 65,
+      "momentum": 81,
+      "_auto": true
+    },
+    {
+      "id": "ap1kvngd6",
+      "title": "美国总统特朗普谈美国副总统万斯：副总统做得非常出色，我们对此非常感激。 国防部长赫格塞思做得非常出色。",
+      "tag": "人物/特朗普",
+      "region": "美国",
+      "concept": "usMacro",
+      "time": "2026-11-12 00:55",
+      "datetime": "2026-11-12 00:55",
+      "source": "华尔街见闻",
+      "url": "https://wallstreetcn.com/livenews/3198553",
+      "summary": "美国总统特朗普谈美国副总统万斯：副总统做得非常出色，我们对此非常感激。 国防部长赫格塞思做得非常出色。",
+      "relatedStocks": [
+        "宽基指数"
+      ],
+      "bullConcepts": [
+        "防御板块"
+      ],
+      "bearConcepts": [
+        "周期股"
+      ],
+      "bullIndustries": [
+        "公用事业"
+      ],
+      "bearIndustries": [
+        "顺周期"
+      ],
+      "heat": 74,
+      "momentum": 76,
+      "_auto": true
+    },
+    {
+      "id": "ap2blidb",
+      "title": "乌克兰总统泽连斯基抵达爱尔兰，计划会见美国特使Witkoff与库什纳。",
+      "tag": "人物/泽连斯基",
+      "region": "美国",
+      "concept": "usMacro",
+      "time": "2026-11-12 01:30",
+      "datetime": "2026-11-12 01:30",
+      "source": "华尔街见闻",
+      "url": "https://wallstreetcn.com/livenews/3198568",
+      "summary": "乌克兰总统泽连斯基抵达爱尔兰，计划会见美国特使Witkoff与库什纳。",
+      "relatedStocks": [
+        "宽基指数"
+      ],
+      "bullConcepts": [
+        "防御板块"
+      ],
+      "bearConcepts": [
+        "周期股"
+      ],
+      "bullIndustries": [
+        "公用事业"
+      ],
+      "bearIndustries": [
+        "顺周期"
+      ],
+      "heat": 33,
+      "momentum": 46,
+      "_auto": true
+    },
+    {
+      "id": "ap1hw6di",
+      "title": "伊朗议长兼谈判代表团团长卡利巴夫：美国人曾访问莫斯科，要求普京与伊朗进行对话，以便促成我们之间的直接谈判。",
+      "tag": "人物/普京",
+      "region": "美国",
+      "concept": "defense",
+      "time": "2026-11-12 00:27",
+      "datetime": "2026-11-12 00:27",
+      "source": "新浪7×24",
+      "url": "https://finance.sina.cn/7x24/2026-11-12/detail-iniykvcw8966951.d.html",
+      "summary": "伊朗议长兼谈判代表团团长卡利巴夫：美国人曾访问莫斯科，要求普京与伊朗进行对话，以便促成我们之间的直接谈判。",
+      "relatedStocks": [
+        "军工",
+        "黄金"
+      ],
+      "bullConcepts": [
+        "军工",
+        "避险资产"
+      ],
+      "bearConcepts": [
+        "风险资产"
+      ],
+      "bullIndustries": [
+        "军工",
+        "黄金"
+      ],
+      "bearIndustries": [
+        "航空",
+        "旅游"
+      ],
+      "heat": 87,
       "momentum": 26,
+      "_auto": true
+    },
+    {
+      "id": "apozrk50",
+      "title": "马斯克：生产将延长至2027年夏末。",
+      "tag": "人物/马斯克",
+      "region": "全球",
+      "concept": "macro",
+      "time": "2026-11-12 01:13",
+      "datetime": "2026-11-12 01:13",
+      "source": "新浪7×24",
+      "url": "https://finance.sina.cn/7x24/2026-11-12/detail-iniykzmt2073075.d.html",
+      "summary": "马斯克：生产将延长至2027年夏末。",
+      "relatedStocks": [
+        "宽基指数"
+      ],
+      "bullConcepts": [
+        "防御板块"
+      ],
+      "bearConcepts": [
+        "周期股"
+      ],
+      "bullIndustries": [
+        "公用事业"
+      ],
+      "bearIndustries": [
+        "顺周期"
+      ],
+      "heat": 55,
+      "momentum": 36,
+      "_auto": true
+    },
+    {
+      "id": "ap1m9kezl",
+      "title": "前美国总统拜登的国家经济委员会主任布雷纳德（Lael Brainard）向民主党人推介一项低首付方案，旨在将数百万新购房者带入市场；与此同时，即将上任的国会领导人也在评估可能帮助…",
+      "tag": "人物/拜登",
+      "region": "美国",
+      "concept": "aiCapex",
+      "time": "2026-11-11 23:33",
+      "datetime": "2026-11-11 23:33",
+      "source": "华尔街见闻",
+      "url": "https://wallstreetcn.com/livenews/3198525",
+      "summary": "前美国总统拜登的国家经济委员会主任布雷纳德（Lael Brainard）向民主党人推介一项低首付方案，旨在将数百万新购房者带入市场；与此同时，即将上任的国会领导人也在评估可能帮助他们取得早期立法成果的住房可负担性措施。 一份提案文本显示，由布雷纳德（曾担任美联储副主席、并在前总统奥巴马任内担任负责国际事务的财政部副部长）领导的一个新政策小组正推动设立一项联邦住房管理局（FHA…",
+      "relatedStocks": [
+        "英伟达",
+        "微软",
+        "台积电"
+      ],
+      "bullConcepts": [
+        "AI算力",
+        "半导体",
+        "国产替代"
+      ],
+      "bearConcepts": [
+        "传统软件"
+      ],
+      "bullIndustries": [
+        "半导体",
+        "AI应用",
+        "算力基础设施"
+      ],
+      "bearIndustries": [
+        "传统IT服务"
+      ],
+      "heat": 24,
+      "momentum": 18,
       "_auto": true
     },
     {
@@ -143,110 +261,100 @@
         "传统IT服务"
       ],
       "heat": 29,
+      "momentum": 18,
+      "_auto": true
+    },
+    {
+      "id": "apuog6y0",
+      "title": "华尔街对黄仁勋执掌的英伟达热情降温，但历史经验表明尚不该放弃这只股票",
+      "tag": "人物/黄仁勋",
+      "region": "美国",
+      "concept": "aiCapex",
+      "time": "2026-11-12 00:34",
+      "datetime": "2026-11-12 00:34",
+      "source": "环球市场播报",
+      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-12/doc-iniykvcw8968811.shtml",
+      "summary": "和英伟达 “分手” 并非易事。该股下跌 25% 之后，华尔街两家头部大银行将其从首选股票名单中剔除，但两家机构尚且都没有下决心给出 “卖出” 评级。",
+      "relatedStocks": [
+        "英伟达",
+        "微软",
+        "台积电"
+      ],
+      "bullConcepts": [
+        "AI算力",
+        "半导体",
+        "国产替代"
+      ],
+      "bearConcepts": [
+        "传统软件"
+      ],
+      "bullIndustries": [
+        "半导体",
+        "AI应用",
+        "算力基础设施"
+      ],
+      "bearIndustries": [
+        "传统IT服务"
+      ],
+      "heat": 24,
       "momentum": 26,
       "_auto": true
     },
     {
-      "id": "ap6f56ql",
-      "title": "达利欧称美国中期选举带来新的财政挑战，或将引发市场动荡",
-      "tag": "人物/达利欧",
-      "region": "美国",
-      "concept": "defense",
-      "time": "2026-11-11 14:32",
-      "datetime": "2026-11-11 14:32",
-      "source": "环球市场播报",
-      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-11/doc-iniyixxy2018041.shtml",
-      "summary": "全球最大对冲基金桥水创始人瑞·达利欧表示，他并不看好2026年中期选举能为美国经济带来所需的变革。 这位亿万富翁一直发出警告，称美国正面临一场迫在眉睫的债务危机；如果...",
-      "relatedStocks": [
-        "军工",
-        "黄金"
-      ],
-      "bullConcepts": [
-        "军工",
-        "避险资产"
-      ],
-      "bearConcepts": [
-        "风险资产"
-      ],
-      "bullIndustries": [
-        "军工",
-        "黄金"
-      ],
-      "bearIndustries": [
-        "航空",
-        "旅游"
-      ],
-      "heat": 24,
-      "momentum": 18,
-      "_auto": true
-    },
-    {
-      "id": "ap7r7qq2",
-      "title": "Cohere首席执行官：若黄仁勋被迫辞职将是巨大打击",
-      "tag": "人物/黄仁勋",
+      "id": "ap1yiynrg",
+      "title": "报道：普京定期听取在阿布扎比的俄乌三方会谈进展汇报",
+      "tag": "人物/普京",
       "region": "全球",
-      "concept": "ai",
-      "time": "2026-11-11 11:45",
-      "datetime": "2026-11-11 11:45",
+      "concept": "macro",
+      "time": "2026-11-11 17:54",
+      "datetime": "2026-11-11 17:54",
       "source": "环球市场播报",
-      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-11/doc-iniyitsc1903143.shtml",
-      "summary": "Cohere首席执行官Aidan Gomez反驳对人工智能（AI）算力建设过度的担忧，称其初创公司每天都要面对获取足够算力以维持运营的难题。",
+      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-11/doc-iniykehc2383572.shtml",
+      "summary": "据报道，克里姆林宫发言人德米特里·佩斯科夫表示，俄罗斯代表团正定期向总统弗拉基米尔·普京汇报在阿布扎比举行的乌克兰问题三方会谈进展。",
       "relatedStocks": [
-        "英伟达",
-        "微软",
-        "台积电"
+        "宽基指数"
       ],
       "bullConcepts": [
-        "AI算力",
-        "半导体",
-        "国产替代"
+        "防御板块"
       ],
       "bearConcepts": [
-        "传统软件"
+        "周期股"
       ],
       "bullIndustries": [
-        "半导体",
-        "AI应用",
-        "算力基础设施"
+        "公用事业"
       ],
       "bearIndustries": [
-        "传统IT服务"
+        "顺周期"
       ],
-      "heat": 24,
+      "heat": 29,
       "momentum": 18,
       "_auto": true
     },
     {
-      "id": "apqsq0k",
-      "title": "软银称37亿美元减记与俄亥俄州数据中心项目无关",
-      "tag": "人物/孙正义",
-      "region": "美国",
-      "concept": "aiCapex",
-      "time": "2026-11-11 11:24",
-      "datetime": "2026-11-11 11:24",
+      "id": "ap1vv5kua",
+      "title": "CFRA：伯克希尔的“巴菲特溢价”或将继续消退",
+      "tag": "人物/巴菲特",
+      "region": "全球",
+      "concept": "macro",
+      "time": "2026-11-11 23:40",
+      "datetime": "2026-11-11 23:40",
       "source": "环球市场播报",
-      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-11/doc-iniyipkh8667903.shtml",
-      "summary": "软银集团更新其财报演示资料，澄清在9月季度中计提的37亿美元费用与俄亥俄州Ports-Pike数据中心和发电项目无关。 演示资料显示，软银就已不再纳入公司修订计划的发电相关设...",
+      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-11/doc-iniykvcw8950387.shtml",
+      "summary": "评级机构 CFRA 表示，伯克希尔‑哈撒韦 B 类股（BRK.B）的 “巴菲特溢价” 正在不断消退，原因在于公司基本面持续走弱，同时重大管理层交接存在不确定性。",
       "relatedStocks": [
-        "英伟达",
-        "微软",
-        "台积电"
+        "宽基指数"
       ],
       "bullConcepts": [
-        "AI算力",
-        "半导体",
-        "国产替代"
+        "防御板块"
       ],
       "bearConcepts": [
-        "传统软件"
+        "周期股"
       ],
       "bullIndustries": [
-        "半导体",
-        "AI应用",
-        "算力基础设施"
+        "公用事业"
       ],
       "bearIndustries": [
-        "传统IT服务"
+        "顺周期"
       ],
       "heat": 24,
       "momentum": 18,

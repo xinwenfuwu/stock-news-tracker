@@ -1,208 +1,20 @@
 {
-  "generatedAt": "2026-11-11 17:12",
+  "generatedAt": "2026-11-12 01:51",
   "generatedBy": "GitHub Actions · 多源实时聚合",
   "sourceCount": 5,
   "autoCount": 18,
   "events": [
     {
-      "id": "ab1we5dd2",
-      "title": "当地时间11日，伊朗情报部宣布在克尔曼沙阿省捣毁一个恐怖组织小组，5名恐怖分子被捕。该小组在与美以有关联的人员指挥下活动，并试图在德黑兰省、厄尔布尔士省和克尔曼沙阿省实施恐怖行动…",
-      "tag": "宏观/综合",
-      "region": "全球",
-      "concept": "macro",
-      "time": "2026-11-11 17:03",
-      "datetime": "2026-11-11 17:03",
-      "source": "华尔街见闻",
-      "url": "https://wallstreetcn.com/livenews/3198300",
-      "summary": "当地时间11日，伊朗情报部宣布在克尔曼沙阿省捣毁一个恐怖组织小组，5名恐怖分子被捕。该小组在与美以有关联的人员指挥下活动，并试图在德黑兰省、厄尔布尔士省和克尔曼沙阿省实施恐怖行动。此外，一个走私军用级武器弹药的团伙被查获，3名犯罪分子在伊朗库尔德斯坦省被捕，相关部门查获50支手枪和100个弹匣。（央视新闻）",
-      "relatedStocks": [
-        "宽基指数"
-      ],
-      "bullConcepts": [
-        "防御板块"
-      ],
-      "bearConcepts": [
-        "周期股"
-      ],
-      "bullIndustries": [
-        "公用事业"
-      ],
-      "bearIndustries": [
-        "顺周期"
-      ],
-      "heat": 29,
-      "momentum": 36,
-      "_auto": true
-    },
-    {
-      "id": "ab1mqkmhz",
-      "title": "ST万邦索赔持续推进 又一批股民提交起诉",
-      "tag": "医药/医疗",
-      "region": "全球",
-      "concept": "pharma",
-      "time": "2026-11-11 16:26",
-      "datetime": "2026-11-11 16:26",
-      "source": "市场资讯",
-      "url": "https://finance.sina.com.cn/stock/gmwq/rightscase/2026-11-11/doc-iniykefx1806995.shtml",
-      "summary": "近日，投资者诉万邦德医药控股集团股份有限公司（简称：万邦德、ST万邦，代码：002082）证券虚假陈述案持续推进。 曾代理投资者告赢150余家上市公司并获赔的浙江裕丰律师事...",
-      "relatedStocks": [
-        "创新药",
-        "医药"
-      ],
-      "bullConcepts": [
-        "创新药"
-      ],
-      "bearConcepts": [
-        "仿制药"
-      ],
-      "bullIndustries": [
-        "创新药",
-        "医疗器械"
-      ],
-      "bearIndustries": [
-        "仿制药"
-      ],
-      "heat": 38,
-      "momentum": 41,
-      "_auto": true
-    },
-    {
-      "id": "abrmtt96",
-      "title": "恒润股份索赔时效将届满 受损股民仍可索赔",
-      "tag": "宏观/综合",
-      "region": "全球",
-      "concept": "macro",
-      "time": "2026-11-11 16:26",
-      "datetime": "2026-11-11 16:26",
-      "source": "市场资讯",
-      "url": "https://finance.sina.com.cn/stock/gmwq/rightscase/2026-11-11/doc-iniykefx1806807.shtml",
-      "summary": "近日，曾代理股民告赢150余家上市公司并获赔的浙江裕丰律师事务所厉健律师表示，我们已代理多批恒润股份（代码：603985）受损股民起诉...",
-      "relatedStocks": [
-        "宽基指数"
-      ],
-      "bullConcepts": [
-        "防御板块"
-      ],
-      "bearConcepts": [
-        "周期股"
-      ],
-      "bullIndustries": [
-        "公用事业"
-      ],
-      "bearIndustries": [
-        "顺周期"
-      ],
-      "heat": 38,
-      "momentum": 41,
-      "_auto": true
-    },
-    {
-      "id": "abakhlqb",
-      "title": "从业人士：大厂集体“拆芯”上市意味着芯片业务的价值评判标准正在改变",
-      "tag": "科技/AI",
-      "region": "中国",
-      "concept": "llm",
-      "time": "2026-11-11 17:02",
-      "datetime": "2026-11-11 17:02",
-      "source": "新浪7×24",
-      "url": "https://finance.sina.cn/7x24/2026-11-11/detail-iniykehe9121759.d.html",
-      "summary": "【从业人士：大厂集体“拆芯”上市意味着芯片业务的价值评判标准正在改变】11月10日晚间，阿里巴巴发布公告，宣布拟分拆旗下芯片公司平头哥，在香港联交所主板独立上市。平头哥已于今年9月11日以保密形式递交上市申请。在此之前，百度旗下昆仑芯已于今年1月以保密形式向港交所递表，并于5月启动了科创板上市辅导。不久前，百度刚刚否认了近期市场传出的昆仑芯上市推迟传闻。两大巨头相继将自研芯片…",
-      "relatedStocks": [
-        "英伟达",
-        "微软",
-        "台积电"
-      ],
-      "bullConcepts": [
-        "AI算力",
-        "半导体",
-        "国产替代"
-      ],
-      "bearConcepts": [
-        "传统软件"
-      ],
-      "bullIndustries": [
-        "半导体",
-        "AI应用",
-        "算力基础设施"
-      ],
-      "bearIndustries": [
-        "传统IT服务"
-      ],
-      "heat": 29,
-      "momentum": 36,
-      "_auto": true
-    },
-    {
-      "id": "ab3slnxj",
-      "title": "向日葵股民索赔一审胜诉 后续股民仍可起诉",
-      "tag": "宏观/综合",
-      "region": "全球",
-      "concept": "macro",
-      "time": "2026-11-11 16:25",
-      "datetime": "2026-11-11 16:25",
-      "source": "市场资讯",
-      "url": "https://finance.sina.com.cn/stock/gmwq/rightscase/2026-11-11/doc-iniykehe9095710.shtml",
-      "summary": "近日，备受关注的股民诉浙江向日葵大健康科技股份有限公司（简称向日葵，代码：300111）证券虚假陈述案取得重大进展。公开信息显示...",
-      "relatedStocks": [
-        "宽基指数"
-      ],
-      "bullConcepts": [
-        "防御板块"
-      ],
-      "bearConcepts": [
-        "周期股"
-      ],
-      "bullIndustries": [
-        "公用事业"
-      ],
-      "bearIndustries": [
-        "顺周期"
-      ],
-      "heat": 29,
-      "momentum": 31,
-      "_auto": true
-    },
-    {
-      "id": "ab8jloyk",
-      "title": "美防长强势回应弹劾动议：这只是一场政治闹剧",
-      "tag": "宏观/综合",
-      "region": "美国",
-      "concept": "usMacro",
-      "time": "2026-11-11 17:06",
-      "datetime": "2026-11-11 17:06",
-      "source": "环球市场播报",
-      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-11/doc-iniykehc2348502.shtml",
-      "summary": "美国众议院当地时间周二投票，以211票赞成、204票反对，将共和党众议员托马斯·梅西提出的弹劾国防部长皮特·赫格塞思决议移交众议院司法委员会。",
-      "relatedStocks": [
-        "宽基指数"
-      ],
-      "bullConcepts": [
-        "防御板块"
-      ],
-      "bearConcepts": [
-        "周期股"
-      ],
-      "bullIndustries": [
-        "公用事业"
-      ],
-      "bearIndustries": [
-        "顺周期"
-      ],
-      "heat": 24,
-      "momentum": 36,
-      "_auto": true
-    },
-    {
-      "id": "ab18ut9jl",
-      "title": "美国指控“伊朗特工”狱中策划袭击英国空军基地",
+      "id": "abtga20q",
+      "title": "美国总统特朗普：美国没有对伊朗发动战争。 伊朗永远不会拥有核武器。 一个没有英雄的国家，就像没有星辰的天空，或没有天使的天堂。 伊朗需要25年才能重建失去的一切。 自1979年以…",
       "tag": "地缘/政治",
       "region": "美国",
       "concept": "defense",
-      "time": "2026-11-11 16:47",
-      "datetime": "2026-11-11 16:47",
-      "source": "财联社",
-      "url": "https://www.cls.cn/detail/2531566",
-      "summary": "【美国指控“伊朗特工”狱中策划袭击英国空军基地】财联社11月11日电，美国司法部10日公布起诉书，指控一名“伊朗特工”在纽约监狱中用“暗语”向外传递消息，策划针对美军所用英国费尔福德空军基地的未遂袭击。伊朗政府多次否认英方相关指控。",
+      "time": "2026-11-12 01:11",
+      "datetime": "2026-11-12 01:11",
+      "source": "华尔街见闻",
+      "url": "https://wallstreetcn.com/livenews/3198563",
+      "summary": "美国总统特朗普：美国没有对伊朗发动战争。 伊朗永远不会拥有核武器。 一个没有英雄的国家，就像没有星辰的天空，或没有天使的天堂。 伊朗需要25年才能重建失去的一切。 自1979年以来，伊朗一直在对美国发动战争。这个问题早就应该解决了。 我们（在伊朗战争上）赢了。我们要确保取得彻底胜利，而不是93%的胜利。",
       "relatedStocks": [
         "军工",
         "黄金"
@@ -221,6 +33,376 @@
       "bearIndustries": [
         "航空",
         "旅游"
+      ],
+      "heat": 87,
+      "momentum": 86,
+      "_auto": true
+    },
+    {
+      "id": "abuhn1qm",
+      "title": "美国总统特朗普谈伊朗战争：我们赢了。我们要确保取得彻底胜利，而不是93%的胜利。",
+      "tag": "地缘/政治",
+      "region": "美国",
+      "concept": "defense",
+      "time": "2026-11-12 01:15",
+      "datetime": "2026-11-12 01:15",
+      "source": "新浪7×24",
+      "url": "https://finance.sina.cn/7x24/2026-11-12/detail-iniykzmu8849436.d.html",
+      "summary": "美国总统特朗普谈伊朗战争：我们赢了。我们要确保取得彻底胜利，而不是93%的胜利。",
+      "relatedStocks": [
+        "军工",
+        "黄金"
+      ],
+      "bullConcepts": [
+        "军工",
+        "避险资产"
+      ],
+      "bearConcepts": [
+        "风险资产"
+      ],
+      "bullIndustries": [
+        "军工",
+        "黄金"
+      ],
+      "bearIndustries": [
+        "航空",
+        "旅游"
+      ],
+      "heat": 69,
+      "momentum": 71,
+      "_auto": true
+    },
+    {
+      "id": "ab12o5b1b",
+      "title": "欧盟外交与安全政策高级代表卡拉斯就中东问题表示：这些战争结束后，中东新的安全架构也需要纳入欧洲，因为中东是我们的近邻。",
+      "tag": "地缘/政治",
+      "region": "欧洲",
+      "concept": "macro",
+      "time": "2026-11-12 00:55",
+      "datetime": "2026-11-12 00:55",
+      "source": "新浪7×24",
+      "url": "https://finance.sina.cn/7x24/2026-11-12/detail-iniykvcv2198649.d.html",
+      "summary": "欧盟外交与安全政策高级代表卡拉斯就中东问题表示：这些战争结束后，中东新的安全架构也需要纳入欧洲，因为中东是我们的近邻。",
+      "relatedStocks": [
+        "军工",
+        "黄金"
+      ],
+      "bullConcepts": [
+        "军工",
+        "避险资产"
+      ],
+      "bearConcepts": [
+        "风险资产"
+      ],
+      "bullIndustries": [
+        "军工",
+        "黄金"
+      ],
+      "bearIndustries": [
+        "航空",
+        "旅游"
+      ],
+      "heat": 33,
+      "momentum": 26,
+      "_auto": true
+    },
+    {
+      "id": "abtxeqxq",
+      "title": "伊朗议长兼谈判代表团团长卡利巴夫：我们就霍尔木兹海峡的航道及交通分隔系统与阿曼达成共识。 我们准备协助沙特阿拉伯和胡塞武装组织，在双方提出请求时帮助化解彼此间的分歧。 在谈判或战…",
+      "tag": "地缘/政治",
+      "region": "美国",
+      "concept": "defense",
+      "time": "2026-11-12 00:43",
+      "datetime": "2026-11-12 00:43",
+      "source": "华尔街见闻",
+      "url": "https://wallstreetcn.com/livenews/3198547",
+      "summary": "伊朗议长兼谈判代表团团长卡利巴夫：我们就霍尔木兹海峡的航道及交通分隔系统与阿曼达成共识。 我们准备协助沙特阿拉伯和胡塞武装组织，在双方提出请求时帮助化解彼此间的分歧。 在谈判或战争中，我们不区分以色列和华盛顿，它们是一伙的，而我们与抵抗力量是一伙的。",
+      "relatedStocks": [
+        "军工",
+        "黄金"
+      ],
+      "bullConcepts": [
+        "军工",
+        "避险资产"
+      ],
+      "bearConcepts": [
+        "风险资产"
+      ],
+      "bullIndustries": [
+        "军工",
+        "黄金"
+      ],
+      "bearIndustries": [
+        "航空",
+        "旅游"
+      ],
+      "heat": 87,
+      "momentum": 26,
+      "_auto": true
+    },
+    {
+      "id": "abq834vi",
+      "title": "伊朗媒体：尽管平台发生火灾，伊朗南部天然气产量仍保持稳定。",
+      "tag": "能源/资源",
+      "region": "全球",
+      "concept": "energy",
+      "time": "2026-11-12 00:59",
+      "datetime": "2026-11-12 00:59",
+      "source": "新浪7×24",
+      "url": "https://finance.sina.cn/7x24/2026-11-12/detail-iniykvcw8976130.d.html",
+      "summary": "伊朗媒体：尽管平台发生火灾，伊朗南部天然气产量仍保持稳定。",
+      "relatedStocks": [
+        "中国石油",
+        "紫金矿业"
+      ],
+      "bullConcepts": [
+        "油气",
+        "贵金属"
+      ],
+      "bearConcepts": [
+        "高耗能制造"
+      ],
+      "bullIndustries": [
+        "石油开采",
+        "贵金属"
+      ],
+      "bearIndustries": [
+        "航空运输",
+        "化工"
+      ],
+      "heat": 24,
+      "momentum": 26,
+      "_auto": true
+    },
+    {
+      "id": "abhhujm2",
+      "title": "伊朗议长兼谈判代表团团长卡利巴夫：在谈判或战争中，我们不区分以色列和华盛顿，它们是一伙的，而我们与抵抗力量是一伙的。",
+      "tag": "地缘/政治",
+      "region": "美国",
+      "concept": "defense",
+      "time": "2026-11-12 00:40",
+      "datetime": "2026-11-12 00:40",
+      "source": "新浪7×24",
+      "url": "https://finance.sina.cn/7x24/2026-11-12/detail-iniykvcw8970806.d.html",
+      "summary": "伊朗议长兼谈判代表团团长卡利巴夫：在谈判或战争中，我们不区分以色列和华盛顿，它们是一伙的，而我们与抵抗力量是一伙的。",
+      "relatedStocks": [
+        "军工",
+        "黄金"
+      ],
+      "bullConcepts": [
+        "军工",
+        "避险资产"
+      ],
+      "bearConcepts": [
+        "风险资产"
+      ],
+      "bullIndustries": [
+        "军工",
+        "黄金"
+      ],
+      "bearIndustries": [
+        "航空",
+        "旅游"
+      ],
+      "heat": 87,
+      "momentum": 26,
+      "_auto": true
+    },
+    {
+      "id": "ab1oc5orz",
+      "title": "伊朗议长兼谈判代表团团长卡利巴夫：如果对方接受我们的条件，我们的首要任务是实现和平；我们不希望战争继续。",
+      "tag": "地缘/政治",
+      "region": "全球",
+      "concept": "macro",
+      "time": "2026-11-12 00:33",
+      "datetime": "2026-11-12 00:33",
+      "source": "新浪7×24",
+      "url": "https://finance.sina.com.cn/7x24/",
+      "summary": "伊朗议长兼谈判代表团团长卡利巴夫：如果对方接受我们的条件，我们的首要任务是实现和平；我们不希望战争继续。",
+      "relatedStocks": [
+        "军工",
+        "黄金"
+      ],
+      "bullConcepts": [
+        "军工",
+        "避险资产"
+      ],
+      "bearConcepts": [
+        "风险资产"
+      ],
+      "bullIndustries": [
+        "军工",
+        "黄金"
+      ],
+      "bearIndustries": [
+        "航空",
+        "旅游"
+      ],
+      "heat": 87,
+      "momentum": 26,
+      "_auto": true
+    },
+    {
+      "id": "abfaop8c",
+      "title": "伊朗议长兼谈判代表团团长卡利巴夫：我们决心打破这种既非战争也非和平的状态，而且不一定非要通过谈判，而是依靠可持续的威慑。",
+      "tag": "地缘/政治",
+      "region": "全球",
+      "concept": "macro",
+      "time": "2026-11-12 00:28",
+      "datetime": "2026-11-12 00:28",
+      "source": "新浪7×24",
+      "url": "https://finance.sina.cn/7x24/2026-11-12/detail-iniykvcv2191197.d.html",
+      "summary": "伊朗议长兼谈判代表团团长卡利巴夫：我们决心打破这种既非战争也非和平的状态，而且不一定非要通过谈判，而是依靠可持续的威慑。",
+      "relatedStocks": [
+        "军工",
+        "黄金"
+      ],
+      "bullConcepts": [
+        "军工",
+        "避险资产"
+      ],
+      "bearConcepts": [
+        "风险资产"
+      ],
+      "bullIndustries": [
+        "军工",
+        "黄金"
+      ],
+      "bearIndustries": [
+        "航空",
+        "旅游"
+      ],
+      "heat": 87,
+      "momentum": 26,
+      "_auto": true
+    },
+    {
+      "id": "abi2vqh3",
+      "title": "伊朗议长兼谈判代表团团长卡利巴夫：我们已向美国提交了一份明确且透明的答复，其中列出了我们的各项诉求。 现在球在美国人脚下，他们必须作出决定并予以公布。 截至目前，华盛顿尚未就我们…",
+      "tag": "地缘/政治",
+      "region": "美国",
+      "concept": "defense",
+      "time": "2026-11-12 00:23",
+      "datetime": "2026-11-12 00:23",
+      "source": "华尔街见闻",
+      "url": "https://wallstreetcn.com/livenews/3198540",
+      "summary": "伊朗议长兼谈判代表团团长卡利巴夫：我们已向美国提交了一份明确且透明的答复，其中列出了我们的各项诉求。 现在球在美国人脚下，他们必须作出决定并予以公布。 截至目前，华盛顿尚未就我们的函件作出正式且具体的回复。 华盛顿必须落实我方关于开放霍尔木兹海峡并恢复谈判的七项条件。 谈判团队未作任何变动，我仍负责谈判工作。 如果对方接受我们的条件，我们的首要任务是实现和平；我们不希望战争继…",
+      "relatedStocks": [
+        "军工",
+        "黄金"
+      ],
+      "bullConcepts": [
+        "军工",
+        "避险资产"
+      ],
+      "bearConcepts": [
+        "风险资产"
+      ],
+      "bullIndustries": [
+        "军工",
+        "黄金"
+      ],
+      "bearIndustries": [
+        "航空",
+        "旅游"
+      ],
+      "heat": 87,
+      "momentum": 26,
+      "_auto": true
+    },
+    {
+      "id": "ab1cxkzh3",
+      "title": "扎波罗热核电站通报：一名员工在家中遭乌军袭击身亡。",
+      "tag": "能源/资源",
+      "region": "全球",
+      "concept": "energy",
+      "time": "2026-11-12 01:05",
+      "datetime": "2026-11-12 01:05",
+      "source": "新浪7×24",
+      "url": "https://finance.sina.cn/7x24/2026-11-12/detail-iniykzmt2071255.d.html",
+      "summary": "扎波罗热核电站通报：一名员工在家中遭乌军袭击身亡。",
+      "relatedStocks": [
+        "中国石油",
+        "紫金矿业"
+      ],
+      "bullConcepts": [
+        "油气",
+        "贵金属"
+      ],
+      "bearConcepts": [
+        "高耗能制造"
+      ],
+      "bullIndustries": [
+        "石油开采",
+        "贵金属"
+      ],
+      "bearIndustries": [
+        "航空运输",
+        "化工"
+      ],
+      "heat": 24,
+      "momentum": 26,
+      "_auto": true
+    },
+    {
+      "id": "ab1my8wot",
+      "title": "国际海事组织呼吁各国加强执行霍尔木兹海峡航行安全规则",
+      "tag": "贸易/供应链",
+      "region": "全球",
+      "concept": "trade",
+      "time": "2026-11-12 00:57",
+      "datetime": "2026-11-12 00:57",
+      "source": "财联社",
+      "url": "https://www.cls.cn/detail/2532019",
+      "summary": "【国际海事组织呼吁各国加强执行霍尔木兹海峡航行安全规则】财联社11月12日电，国际海事组织（IMO）秘书长阿塞尼奥·多明格斯发表声明，呼吁各成员国采取更加有力的措施，确保霍尔木兹海峡及周边海域的海上安全与安保规则得到有效执行。国际海事组织表示，自2月28日以来，已核实霍尔木兹海峡发生130多起针对国际贸易商船的袭击事件，造成至少25名海员死亡，另有人员失踪或受伤。多明格斯指出…",
+      "relatedStocks": [
+        "跨境电商",
+        "航运"
+      ],
+      "bullConcepts": [
+        "内需",
+        "国产替代"
+      ],
+      "bearConcepts": [
+        "出口链"
+      ],
+      "bullIndustries": [
+        "跨境电商",
+        "内需消费"
+      ],
+      "bearIndustries": [
+        "出口制造",
+        "航运"
+      ],
+      "heat": 29,
+      "momentum": 31,
+      "_auto": true
+    },
+    {
+      "id": "ab1mavy3",
+      "title": "以色列战机对黎巴嫩南部的曼苏里和哈达塔两镇发动两次空袭。",
+      "tag": "宏观/综合",
+      "region": "全球",
+      "concept": "macro",
+      "time": "2026-11-12 01:31",
+      "datetime": "2026-11-12 01:31",
+      "source": "新浪7×24",
+      "url": "https://finance.sina.cn/7x24/2026-11-12/detail-iniykzmp1517807.d.html",
+      "summary": "以色列战机对黎巴嫩南部的曼苏里和哈达塔两镇发动两次空袭。",
+      "relatedStocks": [
+        "宽基指数"
+      ],
+      "bullConcepts": [
+        "防御板块"
+      ],
+      "bearConcepts": [
+        "周期股"
+      ],
+      "bullIndustries": [
+        "公用事业"
+      ],
+      "bearIndustries": [
+        "顺周期"
       ],
       "heat": 24,
       "momentum": 36,
@@ -258,21 +440,21 @@
       "bearIndustries": [
         "传统IT服务"
       ],
-      "heat": 74,
-      "momentum": 26,
+      "heat": 87,
+      "momentum": 18,
       "_auto": true
     },
     {
-      "id": "abrfjpeh",
-      "title": "2026年11月8日至9日，中国人民银行副行长宣昌能出席国际清算银行（BIS）在瑞士巴塞尔举行的行长例会。与会央行行长就全球经济金融形势、外汇市场运行、央行资产负债表、人工智能等…",
+      "id": "ab2gcptj",
+      "title": "费城半导体指数开盘大涨4.5% 收复11月5日暴跌的12%的全部跌幅",
       "tag": "科技/AI",
-      "region": "中国",
-      "concept": "llm",
-      "time": "2026-11-11 16:00",
-      "datetime": "2026-11-11 16:00",
-      "source": "华尔街见闻",
-      "url": "https://wallstreetcn.com/livenews/3198259",
-      "summary": "2026年11月8日至9日，中国人民银行副行长宣昌能出席国际清算银行（BIS）在瑞士巴塞尔举行的行长例会。与会央行行长就全球经济金融形势、外汇市场运行、央行资产负债表、人工智能等议题开展了深入交流。会议期间，宣昌能副行长还会见了部分与会央行代表，就共同关心的问题和双边金融合作交换了意见。",
+      "region": "全球",
+      "concept": "ai",
+      "time": "2026-11-11 22:31",
+      "datetime": "2026-11-11 22:31",
+      "source": "财联社",
+      "url": "https://www.cls.cn/detail/2531959",
+      "summary": "费城半导体指数开盘大涨4.5%。",
       "relatedStocks": [
         "英伟达",
         "微软",
@@ -294,54 +476,21 @@
       "bearIndustries": [
         "传统IT服务"
       ],
-      "heat": 29,
-      "momentum": 26,
-      "_auto": true
-    },
-    {
-      "id": "ab1wopnuc",
-      "title": "CPI砸崩美债！华尔街将美联储“暴力加息”纳入定价",
-      "tag": "金融/宏观",
-      "region": "美国",
-      "concept": "usFinance",
-      "time": "2026-11-11 08:56",
-      "datetime": "2026-11-11 08:56",
-      "source": "市场资讯",
-      "url": "https://finance.sina.com.cn/money/forex/whxwsd/2026-11-11/doc-iniyiiak8717751.shtml",
-      "summary": "文章来源：财联社 对于前段时间因科技股暴跌而涌入美债避险的投资者而言，本周二的行情无异于一场晴天霹雳——由于美国10月CPI涨幅超出预期...",
-      "relatedStocks": [
-        "美股科技",
-        "黄金"
-      ],
-      "bullConcepts": [
-        "黄金",
-        "防御板块"
-      ],
-      "bearConcepts": [
-        "高估值成长股"
-      ],
-      "bullIndustries": [
-        "银行",
-        "黄金"
-      ],
-      "bearIndustries": [
-        "高杠杆地产"
-      ],
-      "heat": 47,
+      "heat": 42,
       "momentum": 18,
       "_auto": true
     },
     {
-      "id": "ab1i37x0j",
-      "title": "最高人民检察院、公安部联合发布依法惩治洗钱犯罪典型案例，这批典型案例共5件，涉及金融情报运用、单独起诉洗钱犯罪、惩治单位洗钱犯罪、打击地下钱庄、打击治理利用空壳公司洗钱犯罪等多个…",
+      "id": "abrmtt96",
+      "title": "恒润股份索赔时效将届满 受损股民仍可索赔",
       "tag": "宏观/综合",
       "region": "全球",
       "concept": "macro",
-      "time": "2026-11-11 15:13",
-      "datetime": "2026-11-11 15:13",
-      "source": "华尔街见闻",
-      "url": "https://wallstreetcn.com/livenews/3198222",
-      "summary": "最高人民检察院、公安部联合发布依法惩治洗钱犯罪典型案例，这批典型案例共5件，涉及金融情报运用、单独起诉洗钱犯罪、惩治单位洗钱犯罪、打击地下钱庄、打击治理利用空壳公司洗钱犯罪等多个领域洗钱犯罪行为，涉及非法吸收公众存款罪、贪污贿赂罪、集资诈骗罪等上游犯罪，整体呈现出洗钱手段多样、犯罪情形复杂、涉案金额巨大等犯罪特征。",
+      "time": "2026-11-11 16:26",
+      "datetime": "2026-11-11 16:26",
+      "source": "市场资讯",
+      "url": "https://finance.sina.com.cn/stock/gmwq/rightscase/2026-11-11/doc-iniykefx1806807.shtml",
+      "summary": "近日，曾代理股民告赢150余家上市公司并获赔的浙江裕丰律师事务所厉健律师表示，我们已代理多批恒润股份（代码：603985）受损股民起诉...",
       "relatedStocks": [
         "宽基指数"
       ],
@@ -357,8 +506,8 @@
       "bearIndustries": [
         "顺周期"
       ],
-      "heat": 24,
-      "momentum": 26,
+      "heat": 38,
+      "momentum": 18,
       "_auto": true
     },
     {
@@ -394,87 +543,20 @@
         "传统IT服务"
       ],
       "heat": 29,
-      "momentum": 26,
-      "_auto": true
-    },
-    {
-      "id": "ab1ausm47",
-      "title": "许正宇：香港黄金中央结算系统2027年首季正式启用 金管局积极落实外汇基金增持黄金",
-      "tag": "能源/资源",
-      "region": "中国",
-      "concept": "elec",
-      "time": "2026-11-11 13:57",
-      "datetime": "2026-11-11 13:57",
-      "source": "智通财经APP",
-      "url": "https://finance.sina.com.cn/stock/hkstock/ggscyd/2026-11-11/doc-iniyixxy1999724.shtml",
-      "summary": "11月11日，香港财经事务及库务局局长许正宇在立法会会议上书面答覆议员李惟宏提问时表示，香港黄金中央清算及结算系统（结算系统）今年七月在香港贵金属中央结算系统有限公...",
-      "relatedStocks": [
-        "中国石油",
-        "紫金矿业"
-      ],
-      "bullConcepts": [
-        "油气",
-        "贵金属"
-      ],
-      "bearConcepts": [
-        "高耗能制造"
-      ],
-      "bullIndustries": [
-        "石油开采",
-        "贵金属"
-      ],
-      "bearIndustries": [
-        "航空运输",
-        "化工"
-      ],
-      "heat": 24,
       "momentum": 18,
       "_auto": true
     },
     {
-      "id": "ab3movna",
-      "title": "快讯：恒指低开0.83% 恒科指跌0.96% 科网股普跌 新荷花上市首日高开逾27%",
-      "tag": "金融/宏观",
-      "region": "美国",
-      "concept": "usFinance",
-      "time": "2026-11-11 09:20",
-      "datetime": "2026-11-11 09:20",
-      "source": "新浪港股",
-      "url": "https://finance.sina.com.cn/stock/hkstock/marketalerts/2026-11-11/doc-iniyipkh8598650.shtml",
-      "summary": "美股周二走势回落，美国最新通胀数据高于预期，市场对加息预期进一步升温，不利大市表现，三大指数均录得跌幅收市。美元走势向好，美国十年期债息重上5厘水平...",
-      "relatedStocks": [
-        "美股科技",
-        "黄金"
-      ],
-      "bullConcepts": [
-        "黄金",
-        "防御板块"
-      ],
-      "bearConcepts": [
-        "高估值成长股"
-      ],
-      "bullIndustries": [
-        "银行",
-        "黄金"
-      ],
-      "bearIndustries": [
-        "高杠杆地产"
-      ],
-      "heat": 29,
-      "momentum": 18,
-      "_auto": true
-    },
-    {
-      "id": "absaxmmy",
-      "title": "美官员呼吁收紧对中国获取先进AI芯片的限制，外交部回应",
+      "id": "abuog6y0",
+      "title": "华尔街对黄仁勋执掌的英伟达热情降温，但历史经验表明尚不该放弃这只股票",
       "tag": "科技/AI",
       "region": "美国",
       "concept": "aiCapex",
-      "time": "2026-11-11 15:19",
-      "datetime": "2026-11-11 15:19",
-      "source": "北京日报客户端",
-      "url": "https://finance.sina.com.cn/jjxw/2026-11-11/doc-iniyixxw5283990.shtml",
-      "summary": "11月11日，外交部发言人郭嘉昆主持例行记者会。 路透社记者提问，在涉及英伟达首席执行官黄仁勋的相关指控出现后，美国国会议员周二再次呼吁收紧对中国获取先进人工智能（A...",
+      "time": "2026-11-12 00:34",
+      "datetime": "2026-11-12 00:34",
+      "source": "环球市场播报",
+      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-12/doc-iniykvcw8968811.shtml",
+      "summary": "和英伟达 “分手” 并非易事。该股下跌 25% 之后，华尔街两家头部大银行将其从首选股票名单中剔除，但两家机构尚且都没有下决心给出 “卖出” 评级。",
       "relatedStocks": [
         "英伟达",
         "微软",
@@ -496,100 +578,41 @@
       "bearIndustries": [
         "传统IT服务"
       ],
-      "heat": 33,
+      "heat": 24,
       "momentum": 26,
       "_auto": true
     },
     {
-      "id": "ab33rzan",
-      "title": "今日原油：从两个月低位反弹，霍尔木兹海峡及胡塞武装袭击风险提供支撑",
-      "tag": "金融/宏观",
-      "region": "美国",
-      "concept": "usFinance",
-      "time": "2026-11-11 14:27",
-      "datetime": "2026-11-11 14:27",
-      "source": "环球市场播报",
-      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-11/doc-iniyixxz1849087.shtml",
-      "summary": "11月11日，国际油价从两个月低位反弹，中东地区持续存在的供应中断风险为油价提供支撑，但美国通胀超预期引发的加息预期限制了涨幅。",
-      "relatedStocks": [
-        "美股科技",
-        "黄金"
-      ],
-      "bullConcepts": [
-        "黄金",
-        "防御板块"
-      ],
-      "bearConcepts": [
-        "高估值成长股"
-      ],
-      "bullIndustries": [
-        "银行",
-        "黄金"
-      ],
-      "bearIndustries": [
-        "高杠杆地产"
-      ],
-      "heat": 24,
-      "momentum": 18,
-      "_auto": true
-    },
-    {
-      "id": "ab1okgbz5",
-      "title": "三菱日联金融集团：供应商遭网络攻击可能已导致数据泄露。",
-      "tag": "宏观/综合",
+      "id": "ab1x8iz3z",
+      "title": "沙特向OPEC报告其原油产量激增26% 创战争爆发前以来新高",
+      "tag": "能源/资源",
       "region": "全球",
-      "concept": "macro",
-      "time": "2026-11-11 15:10",
-      "datetime": "2026-11-11 15:10",
-      "source": "华尔街见闻",
-      "url": "https://wallstreetcn.com/livenews/3198219",
-      "summary": "三菱日联金融集团：供应商遭网络攻击可能已导致数据泄露。",
+      "concept": "energy",
+      "time": "2026-11-11 21:33",
+      "datetime": "2026-11-11 21:33",
+      "source": "环球市场播报",
+      "url": "https://finance.sina.com.cn/world/2026-11-11/doc-iniykqvx2248580.shtml",
+      "summary": "沙特阿拉伯向OPEC报告称，该国上月原油产量增长26%，升至战争爆发前以来的最高水平。沙特引领地区原油产量复苏，而供应回升正推动油价走低。",
       "relatedStocks": [
-        "宽基指数"
+        "中国石油",
+        "紫金矿业"
       ],
       "bullConcepts": [
-        "防御板块"
+        "油气",
+        "贵金属"
       ],
       "bearConcepts": [
-        "周期股"
+        "高耗能制造"
       ],
       "bullIndustries": [
-        "公用事业"
+        "石油开采",
+        "贵金属"
       ],
       "bearIndustries": [
-        "顺周期"
+        "航空运输",
+        "化工"
       ],
       "heat": 24,
-      "momentum": 18,
-      "_auto": true
-    },
-    {
-      "id": "ab1x69dut",
-      "title": "威创股份索赔持续推进，诉讼时效所剩不多",
-      "tag": "宏观/综合",
-      "region": "中国",
-      "concept": "broker",
-      "time": "2026-11-11 14:40",
-      "datetime": "2026-11-11 14:40",
-      "source": "市场资讯",
-      "url": "https://finance.sina.com.cn/stock/gmwq/rightscase/2026-11-11/doc-iniyixya8510495.shtml",
-      "summary": "已退市的威创股份，其证券虚假陈述索赔案件仍在持续推进：2026年2月3日公司发布重大诉讼公告，广州市中级人民法院一审判决公司赔偿投资者损失...",
-      "relatedStocks": [
-        "宽基指数"
-      ],
-      "bullConcepts": [
-        "防御板块"
-      ],
-      "bearConcepts": [
-        "周期股"
-      ],
-      "bullIndustries": [
-        "公用事业"
-      ],
-      "bearIndustries": [
-        "顺周期"
-      ],
-      "heat": 29,
       "momentum": 18,
       "_auto": true
     },
@@ -628,42 +651,6 @@
       ],
       "heat": 80,
       "momentum": 50
-    },
-    {
-      "id": "b2",
-      "title": "美股11月5日暴跌，AI板块领跌",
-      "tag": "金融市场",
-      "region": "美国",
-      "concept": "aiCapex",
-      "time": "2026-11-05",
-      "datetime": "2026-11-05 16:00",
-      "source": "美联社/商业内幕",
-      "summary": "美国三大股指创2025年4月以来最大单日跌幅，冲击集中在AI相关领域；分析指与民主党中期选举大胜、市场预期AI监管趋严有关，科技股市值大幅缩水，英伟达单日重挫约9%。",
-      "relatedStocks": [
-        "英伟达",
-        "微软",
-        "Meta",
-        "特斯拉"
-      ],
-      "bullConcepts": [
-        "黄金",
-        "防御板块"
-      ],
-      "bearConcepts": [
-        "AI算力",
-        "半导体",
-        "云计算"
-      ],
-      "bullIndustries": [
-        "黄金",
-        "公用事业"
-      ],
-      "bearIndustries": [
-        "半导体",
-        "消费电子"
-      ],
-      "heat": 85,
-      "momentum": 70
     },
     {
       "id": "b3",
