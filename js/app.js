@@ -9483,21 +9483,35 @@ const app = createApp({
     // 数据由本地整理样例提供，并预留后端接口：refreshInfluence() 内可改为 fetch 真实事件源后合并。
     // region: 'cn'(中国) | 'us'(美国) | 'world'(全世界)
     //
-    // ===== 双指标计算模型（20261108a 新增「影响人数」，与「影响股民数」同时存在）=====
+    // ===== 双指标计算模型（20261108a 新增「影响人数」；20261112a 与区域分类彻底解耦）=====
     //  · 影响股民数 S：投资该事件所涉「概念板块」相关股票的股民人数（财务直接暴露人群，沿用 20261107b 口径）。
-    //  · 影响人数   A：该事件影响到「生产 + 生活」的全部相关人数，且包含股民数（S ⊆ A）：
-    //                  该概念的从业者 / 上下游、使用该产品服务的消费者与用户、泛受影响公众，再加上持股股民。
-    //  公式：A = 影响股民数 S + 非投资人群 N，其中 N = P × r − S；
-    //        P = 区域人口基数，r = 该概念对应「生产生活场景」在区域人口中的触达率(0~1)；
-    //        等价写法 A = max(P × r, S)（max 保证 S ⊆ A，不会出现股民数大于影响人数）。
-    //        股民占比 = S / A；非投资人群 N = A − S。
-    //  · P（2026 估算）：全世界 82 亿 / 中国 14.1 亿 / 美国 3.4 亿。三个子版块用同一公式，仅 P 与 r 不同。
-    //  · r 按概念性质取：生活消费 / 通用型概念（短剧、AI 应用、能源、利率、房地产）触达率高，
-    //    专业投资型概念（券商、中概股、半导体）触达率低。
-    //  · 例：中国「AI 短剧审核监管」→ 大量中国人看短剧，r=0.70 → A = max(14.1亿×0.70, 3500万) = 9.87 亿人；
-    //    但投资「AI 短剧 / 微短剧」概念股的股民仅 S=3500 万（占 3.5%）——两指标的差距正是本模型要表达的。
-    const REGION_POP = { world: 8200000000, cn: 1410000000, us: 340000000 };
-    // CONCEPT_SCOPE[区域][概念] = { name 概念名, n 影响股民数 S, r 生产生活触达率 }
+    //  · 影响人数   A：该事件影响到「生产 + 生活」的全部相关人数，且包含股民数（S ⊆ A）。
+    //
+    //  ⚠️ 20261112a 修复的逻辑错误：旧公式 A = max(REGION_POP[e.region] × r, S)，
+    //     直接拿「事件被归到哪个页签」的人口当影响人群基数 →
+    //     「美国通胀反弹，降息预期落空」被算成 3.4亿 × 0.80 = 2.72亿人，
+    //     等于把美国通胀/降息预期这种全球定价锚的影响人群锁死在美国人口内。
+    //     用户明确指出：cn 中国 / us 美国 / world 全世界 **只是分类**，只用于页签筛选、配色和文案，
+    //     **不得参与影响人数的计算逻辑**。
+    //
+    //  新公式：A = max(round(SCOPE_POP[c.scope] × c.r), S)
+    //     · c.scope = 该「概念性质」决定的影响范围（global 全球传导 / cn 中国境内民生 / us 美国境内民生），
+    //       是概念自身的属性（写在 CONCEPT_SCOPE 里），不读 e.region；
+    //     · c.r = 该范围内的生产生活触达率；SCOPE_POP 只是三档人群基数常量；
+    //     · max 保证 S ⊆ A 不会出现股民数大于影响人数；股民占比 = S / A。
+    //  · 全球传导型概念（美债/利率/通胀/芯片出口/原油/跨境贸易…）按全球人口估算，
+    //    境内民生型概念（医保/房贷/短剧/本地零售…）按该概念真实覆盖的境内人群估算；
+    //    同一条事件无论放在 cn / us / world 哪个页签，A 都完全相同。
+    //  · 例：美股宏观/利率「美国通胀反弹」→ 全球传导，r=0.44 → A = max(82亿×0.44, 8000万) = 36.08 亿人；
+    //    中国「AI 短剧审核监管」→ 境内民生，r=0.70 → A = max(14.1亿×0.70, 3500万) = 9.87 亿人。
+    const SCOPE_POP = {
+      global: 8200000000,   // 全球人口：跨境传导型概念
+      cn:     1410000000,   // 中国境内民生覆盖人群（由概念语义限定，与事件页签无关）
+      us:      340000000    // 美国境内民生覆盖人群（同上）
+    };
+    // CONCEPT_SCOPE[词表][概念] = { name 概念名, n 影响股民数 S, r 触达率, scope? 影响范围 }
+    // scope 省略时按概念性质取默认：world 词表=global（全球）、cn 词表=cn（中国境内）、us 词表=us（美国境内）。
+    // 显式写 scope:'global' 的概念 = 该事件影响跨境传导，不受所属页签人口限制，r 用全球口径重标。
     const CONCEPT_SCOPE = {
       world: {
         ai:      { name: 'AI / 算力',         n: 360000000, r: 0.58 },
@@ -9526,62 +9540,82 @@ const app = createApp({
         broker:     { name: '券商 / 资本市场',  n: 190000000, r: 0.32 },
         bank:       { name: '银行 / 流动性',    n: 170000000, r: 0.45 },
         property:   { name: '房地产链',         n: 110000000, r: 0.58 },
-        nev:        { name: '新能源车 / 电池',  n:  80000000, r: 0.28 },
+        // 20261112a：跨境/全球产业链型概念按全球口径估算；其余仍是境内民生型（中国境内覆盖人群）
+        nev:        { name: '新能源车 / 电池',  n:  80000000, r: 0.12, scope: 'global' },
         core:       { name: '外资核心资产',     n:  60000000, r: 0.22 },
         shortDrama: { name: 'AI 短剧 / 微短剧', n:  35000000, r: 0.70 }, // 生活消费型：看短剧的人极多、持股者很少
-        // 20261108c：中国补足 20 条（r 均 <0.70，保证 AI 短剧仍是「按影响人数」#1）
-        llm:        { name: '国产大模型 / AI',  n:  30000000, r: 0.45 },
-        semiEq:     { name: '半导体设备 / 国产', n:  27000000, r: 0.25 },
+        // 20261108c：中国补足 20 条（20261112a 起跨境概念按全球口径，境内民生概念不变）
+        llm:        { name: '国产大模型 / AI',  n:  30000000, r: 0.14, scope: 'global' },
+        semiEq:     { name: '半导体设备 / 国产', n:  27000000, r: 0.12, scope: 'global' },
         vbp:        { name: '医保集采 / 医药',  n:  24000000, r: 0.60 },
         consume:    { name: '首发经济 / 消费',  n:  21000000, r: 0.55 },
         lowAlt:     { name: '低空经济 / 通航',  n:  18000000, r: 0.22 },
         elec:       { name: '电力市场 / 公用',  n:  15000000, r: 0.48 },
         dataEl:     { name: '数据要素 / 确权',  n:  13000000, r: 0.30 },
-        crossEcom:  { name: '跨境电商 / 出海',  n:  11000000, r: 0.35 },
+        crossEcom:  { name: '跨境电商 / 出海',  n:  11000000, r: 0.18, scope: 'global' },
         robot:      { name: '人形机器人',       n:   9000000, r: 0.20 },
         silver:     { name: '银发经济 / 养老',  n:   7500000, r: 0.58 },
         seed:       { name: '种业 / 农业',      n:   6000000, r: 0.40 },
         compute:    { name: '算力券 / 智算',    n:   4500000, r: 0.18 },
         metro:      { name: '城轨 / 基建',      n:   3200000, r: 0.50 },
-        dramaOut:   { name: '短剧出海 / 传媒',  n:   2000000, r: 0.42 }
+        dramaOut:   { name: '短剧出海 / 传媒',  n:   2000000, r: 0.11, scope: 'global' }
       },
       us: {
-        usFinance: { name: '美债 / 金融',      n: 90000000, r: 0.78 },
-        usMacro:   { name: '美股宏观 / 利率',  n: 80000000, r: 0.80 },
+        // 20261112a：以下概念是「全球传导型」——美债/通胀/降息、芯片出口、原油、跨境上市与支付等，
+        // 影响人群由概念性质决定，按全球人口估算（scope:'global'），不再被 us 页签的 3.4 亿人口锁死。
+        // r 已按全球口径重标（远低于原「美国人口内触达率」），避免把全球 82 亿人一律算进去。
+        usFinance: { name: '美债 / 金融',      n: 90000000, r: 0.42, scope: 'global' },
+        usMacro:   { name: '美股宏观 / 利率',  n: 80000000, r: 0.44, scope: 'global' },
         usBank:    { name: '银行股',           n: 70000000, r: 0.62 },
-        adr:       { name: '中概股',           n: 50000000, r: 0.24 },
-        chip:      { name: '半导体',           n: 45000000, r: 0.28 },
-        // 20261108c：美国补足 20 条（r 均 ≤0.70，保证「按影响人数」#1 仍为美股宏观事件）
-        aiCapex:   { name: '美股AI资本开支',   n: 40000000, r: 0.55 },
+        adr:       { name: '中概股',           n: 50000000, r: 0.15, scope: 'global' },
+        chip:      { name: '半导体',           n: 45000000, r: 0.20, scope: 'global' },
+        // 20261108c：美国补足 20 条（20261112a 起，按影响人数排序由全球传导型概念居前）
+        aiCapex:   { name: '美股AI资本开支',   n: 40000000, r: 0.22, scope: 'global' },
         medicare:  { name: '美国医保 / 医疗',  n: 36000000, r: 0.68 },
-        shale:     { name: '页岩油 / 能源',    n: 32000000, r: 0.42 },
+        shale:     { name: '页岩油 / 能源',    n: 32000000, r: 0.24, scope: 'global' },
         retail:    { name: '美国零售 / 消费',  n: 28000000, r: 0.70 },
         mortgage:  { name: '美国房贷 / 地产',  n: 25000000, r: 0.60 },
         evTax:     { name: '美国电动车 / 补贴', n: 22000000, r: 0.35 },
         defense:   { name: '美国军工 / 国防',  n: 19000000, r: 0.30 },
-        antitrust: { name: '美国反垄断 / 科技', n: 16000000, r: 0.45 },
-        stable:    { name: '美国稳定币 / 支付', n: 14000000, r: 0.28 },
+        antitrust: { name: '美国反垄断 / 科技', n: 16000000, r: 0.28, scope: 'global' },
+        stable:    { name: '美国稳定币 / 支付', n: 14000000, r: 0.11, scope: 'global' },
         power:     { name: '美国电力 / 公用',  n: 12000000, r: 0.38 },
-        agri:      { name: '美国农业 / 出口',  n: 10000000, r: 0.32 },
-        stream:    { name: '美国流媒体 / 传媒', n:  8500000, r: 0.66 },
+        agri:      { name: '美国农业 / 出口',  n: 10000000, r: 0.14, scope: 'global' },
+        stream:    { name: '美国流媒体 / 传媒', n:  8500000, r: 0.16, scope: 'global' },
         airline:   { name: '美国航空 / 出行',  n:  7000000, r: 0.48 },
         endow:     { name: '美国高校基金 / 税', n:  5000000, r: 0.22 },
         space:     { name: '美国商业航天',     n:  3500000, r: 0.18 }
       }
     };
-    function conceptOf(e) { return (CONCEPT_SCOPE[e.region] || {})[e.concept] || null; }
+    /* 20261112a：概念索引扁平化——60 个概念键全局唯一，按「概念」查，不再按「事件所属页签」查。
+     * 这样 e.region 从影响人数的计算链路上被彻底移除：它只用于页签筛选 / 配色 / 文案。
+     * scope 默认由概念本身所在的词表决定（world=全球传导，cn/us=境内民生），
+     * 显式写 scope:'global' 的概念表示跨境传导，按全球人口基数估算。 */
+    const CONCEPT_INDEX = (() => {
+      const idx = Object.create(null);
+      for (const group of Object.keys(CONCEPT_SCOPE)) {
+        const defScope = group === 'world' ? 'global' : group;
+        for (const key of Object.keys(CONCEPT_SCOPE[group])) {
+          idx[key] = { ...CONCEPT_SCOPE[group][key], scope: CONCEPT_SCOPE[group][key].scope || defScope };
+        }
+      }
+      return idx;
+    })();
+    function conceptOf(e) { return CONCEPT_INDEX[e.concept] || null; }
     // 归一双指标：affected=影响股民数 S，affectedPeople=影响人数 A(含 S)，investorShare=股民占比(%)
+    // ⚠️ 本函数不得读取 e.region：cn/us/world 只是分类，不是影响人数的计算依据。
     function resolveInfluence(e) {
       const c = conceptOf(e);
       const S = c ? c.n : 0;
-      const P = REGION_POP[e.region] || 0;
-      const A = Math.max(S, Math.round(P * (c ? c.r : 0)));   // A = max(P×r, S)，保证 S ⊆ A
+      const base = c ? (SCOPE_POP[c.scope] || 0) : 0;
+      const A = Math.max(S, Math.round(base * (c ? c.r : 0)));   // A = max(概念影响范围人口 × r, S)，保证 S ⊆ A
       return {
         ...e,
         affected: S,                                                  // 影响股民数（默认排序口径）
         affectedPeople: A,                                           // 影响人数（生产生活全部相关人数，含股民）
         investorShare: A > 0 ? Math.round(S / A * 1000) / 10 : 0,   // 股民占影响人数的比例
-        conceptName: c ? c.name : '综合'
+        conceptName: c ? c.name : '综合',
+        impactScope: c ? c.scope : 'global'                           // 便于界面/排查说明口径
       };
     }
     const INFLUENCE_EVENTS_SEED = [
@@ -9717,8 +9751,9 @@ const app = createApp({
     //  · 突发：全球当前正在发生的大事件（运行时从 data/breaking-events.json 实时拉取，含黄仁勋等真实事件；下方 SEED 为拉取失败兜底）
     //  · 未来：未来三个月内全球将要发生的大事件，显示「日期」与「距今天数」倒计时
     // 与左侧「影响力事件」完全解耦：拥有独立的 futureRegion 与 futureEvents，不共享任何状态。
-    // 双指标（影响人数 / 影响股民数）复用「影响力事件」同一套计算逻辑（resolveInfluence）：A = max(P×r, S)。
-    // 事件 display region（欧洲/美国/全球/…）→ 影响区域口径（cn/us/world），再取对应 CONCEPT_SCOPE 的 n(S) 与 r。
+    // 双指标（影响人数 / 影响股民数）复用「影响力事件」同一套计算逻辑（resolveInfluence）：
+    // 20261112a 起 A = max(SCOPE_POP[概念.scope] × r, S)，只认概念不认区域分类。
+    // 事件 display region（欧洲/美国/全球/…）仅用于配色 class；CONCEPT_INDEX 按概念键查 n(S)/r/scope。
     const FUTURE_REGION_MAP = {
       '欧洲': 'world', '美国': 'us', '全球': 'world', '中国': 'cn',
       '华盛顿': 'us', '纽约': 'us', '迈阿密': 'us', '拉斯维加斯': 'us',
@@ -10927,7 +10962,8 @@ const app = createApp({
       if (isNaN(d.getTime())) return null;
       return Math.round((d - now) / 86400000);
     }
-    // 复用「影响力事件」同一套双指标计算（A = max(P×r, S)、股民占比 S/A）：display region → 影响区域口径
+    // 复用「影响力事件」同一套双指标计算（A = max(概念影响范围人口 × r, S)、股民占比 S/A）；
+    // 20261112a：影响人数与区域分类无关，display region 只保留给配色 class。
     function resolveFutureImpact(e) {
       const ir = FUTURE_REGION_MAP[e.region] || 'world';
       const r = resolveInfluence({ ...e, region: ir, concept: e.concept });
@@ -11224,6 +11260,10 @@ const app = createApp({
         inflError.value = (e && e.message) || '影响力事件获取失败';
         showToast('影响力事件获取失败：' + (e && e.message || e), 'error');
       } finally { inflLoading.value = false; }
+    }
+    // 20261112a：影响范围（由概念性质决定，不是事件所属页签）
+    function impactScopeLabel(s) {
+      return s === 'cn' ? '中国境内' : s === 'us' ? '美国境内' : '全球传导';
     }
     // 格式化人数（影响人数 / 影响股民数通用）：≥1亿→x.xx 亿；≥1万→x.x 万；否则原值
     function fmtAffected(n) {
@@ -14259,7 +14299,7 @@ const app = createApp({
       // 20261006h：三平台热度股票排行榜（同花顺 / 东方财富 / 豆包搜索）
       thsHotStocks, thsHotLoading, refreshThsHotOnly,
       emHotStocks, emHotLoading, refreshEmHotOnly,
-      inflRegion, inflEvents, inflLoading, inflError, inflDate, inflSortBy, setInflRegion, setInflSort, sortLabel, refreshInfluence, regionLabel, fmtAffected,
+      inflRegion, inflEvents, inflLoading, inflError, inflDate, inflSortBy, setInflRegion, setInflSort, sortLabel, refreshInfluence, regionLabel, fmtAffected, impactScopeLabel,
       // 20261109i：影响力事件只统计距今 10 日内（含今天），窗口标签用于面板展示
       INFL_WINDOW_DAYS, inflWindowLabel, inflWindowDays,
       // 20261110c：新闻范围（近 N 日）——两个面板各自独立，互不影响

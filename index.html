@@ -4,12 +4,12 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>股市信息分析系统</title>
-  <link rel="stylesheet" href="css/style.css?v=20261111i">
+  <link rel="stylesheet" href="css/style.css?v=20261112a">
   <!-- Vue 3 全局构建版（v3.4.21 · 自托管）
        原先走 unpkg.com CDN：国内网络对 unpkg 的连通性不稳定，一旦该请求长时间挂起，
        <head> 里的阻塞脚本会让整页停在白屏、后续 auth-boot.js 根本不会执行。
        改为同源托管后，启动链路不再依赖任何第三方 CDN。 -->
-  <script src="js/vue.global.prod.js?v=20261111i"></script>
+  <script src="js/vue.global.prod.js?v=20261112a"></script>
 </head>
 <body class="auth-locked">
   <!-- ===== 登录关卡：登录通过前业务脚本不会被加载 ===== -->
@@ -95,7 +95,7 @@
         <input class="auth-input" type="text" id="auth-renew-user" placeholder="用户名（你注册时用的）" maxlength="20" autocomplete="off">
         <div class="auth-renew-plans" id="auth-renew-plans"></div>
         <div class="auth-renew-qr" id="auth-renew-qr">
-          <div class="auth-renew-qrbox"><img id="auth-renew-wx" src="assets/wechat-pay-qr.jpg?v=20261111i" alt="微信支付收款码"><span>微信支付（扫码支付）</span></div>
+          <div class="auth-renew-qrbox"><img id="auth-renew-wx" src="assets/wechat-pay-qr.jpg?v=20261112a" alt="微信支付收款码"><span>微信支付（扫码支付）</span></div>
           <div class="muted small" style="margin-top:6px;color:#c2410c;font-weight:600">支付时请添加会员备注，付款成功截图保存</div>
         </div>
         <input class="auth-input" type="text" id="auth-renew-amount" inputmode="decimal" placeholder="支付金额（必填，如 1000）" autocomplete="off">
@@ -990,7 +990,7 @@
                   <div class="qr-row">
                     <div class="qr-box">
                       <div class="qr-cap">推荐使用微信支付</div>
-                      <img src="assets/wechat-pay-qr.jpg?v=20261111i" alt="微信支付收款码" class="qr-pay-img">
+                      <img src="assets/wechat-pay-qr.jpg?v=20261112a" alt="微信支付收款码" class="qr-pay-img">
                       <div class="qr-cap" style="margin-top:6px;color:#c2410c;font-weight:600">支付时请添加会员备注，付款成功截图保存</div>
                       <div class="qr-cap muted small">火柴盒网络服务</div>
                     </div>
@@ -2676,8 +2676,9 @@
                     📅 数据整理时间：<b>{{ inflDate || '—' }}</b>　·　统计窗口 <b>近 {{ inflWindowDays }} 交易日（收盘窗口：{{ inflWindowLabel }}）</b>　·　当前区域 <b>{{ regionLabel(inflRegion) }}</b> 共 <b>{{ inflEvents.length }}</b> 条事件<br/>
                     🔎 <b>新闻范围：</b>{{ inflRangeLabel }}<template v-if="inflRangeDays">（本面板只统计最近 {{ inflRangeDays }} 个交易日（15:00 收盘窗口）内的新闻/事件；右侧「未来事件」的选择框独立设置）</template><template v-else>（未选择 = 按上方默认窗口统计；可在面板右上角「刷新数据」左侧选择「近 N 交易日」）</template><br/>
                     <b>双指标（同时存在）：</b>「<b>影响人数</b>」= 该事件影响到<b>生产 + 生活</b>的全部相关人数（从业者 / 上下游、使用该产品服务的消费者与用户、泛受影响公众，<b>并包含股民</b>）；「<b>影响股民数</b>」= 其中<b>投资该事件所涉概念相关股票</b>的股民人数，是影响人数的子集。<br/>
-                    <b>计算公式：</b>影响人数 A = 影响股民数 S + 非投资人群 N，其中 N = P × r − S；等价写作 <b>A = max(P × r, S)</b>（max 保证 S ⊆ A）。P = 区域人口基数（🌍 全世界 82 亿 / 🇨🇳 中国 14.1 亿 / 🇺🇸 美国 3.4 亿）；r = 该概念「生产生活场景」在区域人口中的触达率（生活消费 / 通用型概念高、专业投资型概念低）；股民占比 = S / A。<br/>
-                    <b>例：</b>🇨🇳 中国「AI 短剧审核监管」→ 大量中国人看短剧，r = 0.70 → <b>影响人数 9.87 亿</b>，但投资短剧 / 影视传媒概念股的<b>股民仅 3500 万</b>（占 3.5%）。三个子版块用<b>同一公式</b>，仅 P 与 r 不同。数值为本地整理估算样例，可在数据源处调整。
+                    <b>计算公式（20261112a 修正）：</b><b>A = max(该概念「影响范围」人群基数 × 触达率 r, 影响股民数 S)</b>，max 保证 S ⊆ A；股民占比 = S / A。<b>🇨🇳 中国 / 🇺🇸 美国 / 🌍 全世界只是分类</b>，只决定事件归到哪个页签、配色与文案，<b>不参与影响人数计算</b>——同一条事件放到哪个页签，影响人数完全相同。<br/>
+                    <b>影响范围由「概念性质」决定：</b>全球传导型（美债 / 通胀 / 降息预期 / 芯片出口 / 原油 / 中概股 / 跨境电商 / 短剧出海等）按<b>全球 82 亿</b>人口基数估算；境内民生型（医保 / 房贷 / 零售 / 短剧监管 / 电力等）按该概念真实覆盖的<b>境内人群</b>估算。r 为该范围内的生产生活触达率，已分别按全球 / 境内口径标定。<br/>
+                    <b>例：</b>「美国通胀反弹，降息预期落空」属全球传导型 → r = 0.44 → <b>影响人数 36.08 亿</b>（不再是旧版按美国人口算出的 2.72 亿），投资利率敏感股的股民 <b>8000 万</b>（占 2.2%）；🇨🇳「AI 短剧审核监管」属境内民生型 → r = 0.70 → <b>影响人数 9.87 亿</b>，股民仅 3500 万（占 3.5%）。数值为本地整理估算样例，可在数据源处调整。
                   </p>
                 </div>
               </div>
@@ -2692,6 +2693,10 @@
                     <div class="infl-meta muted small">
                       <span class="infl-region" :class="'r-' + e.region">{{ regionLabel(e.region) }}</span>
                       <span class="infl-concept" v-if="e.conceptName">涉及概念：{{ e.conceptName }}</span>
+                      <span class="infl-scope" :class="'s-' + e.impactScope"
+                            :title="'影响人数按「' + impactScopeLabel(e.impactScope) + '」口径估算（由概念性质决定）；CN 中国 / US 美国 / 全世界 只是分类，不参与计算'">
+                        影响范围：{{ impactScopeLabel(e.impactScope) }}
+                      </span>
                       <span class="infl-affected infl-people">影响人数 <b>{{ fmtAffected(e.affectedPeople) }}</b>人</span>
                       <span class="infl-affected">影响股民数 <b>{{ fmtAffected(e.affected) }}</b>人<span class="infl-share" v-if="e.investorShare">（占 {{ e.investorShare }}%）</span></span>
                       <span v-if="e.date">· {{ e.date }}</span>
@@ -2804,6 +2809,10 @@
                       <span class="infl-region" :class="'r-' + (e._ir || 'world')">{{ e.region }}</span>
                       <span class="infl-concept" v-if="e.tag">🏷 {{ e.tag }}</span>
                       <span class="infl-concept" v-if="e.conceptName">涉及概念：{{ e.conceptName }}</span>
+                      <span class="infl-scope" :class="'s-' + e.impactScope"
+                            :title="'影响人数按「' + impactScopeLabel(e.impactScope) + '」口径估算（由概念性质决定）；CN 中国 / US 美国 / 全世界 只是分类，不参与计算'">
+                        影响范围：{{ impactScopeLabel(e.impactScope) }}
+                      </span>
                       <span class="infl-affected infl-people">影响人数 <b>{{ fmtAffected(e.affectedPeople) }}</b>人</span>
                       <span class="infl-affected">影响股民数 <b>{{ fmtAffected(e.affected) }}</b>人<span class="infl-share" v-if="e.investorShare">（占 {{ e.investorShare }}%）</span></span>
                       <span v-if="e.surge != null && futureRegion!=='future'" class="infl-surge" :class="surgeClass(e.surge)">🔥飙升度 {{ e.surge }}</span>
@@ -5264,14 +5273,14 @@
     </transition>
   </div>
 
-  <script src="js/auth.js?v=20261111i"></script>
-  <script src="js/auth-sync.js?v=20261111i"></script>
+  <script src="js/auth.js?v=20261112a"></script>
+  <script src="js/auth-sync.js?v=20261112a"></script>
   <!-- 边缘加速默认站点（batch37 治本：Cloudflare Worker 代理东财/腾讯，缓解 JSONP 限流误报）。
        若你所在地区 workers.dev 访问慢，可在「设置 → 行情加速地址」清空即恢复纯直连。 -->
   <script>window.__SNT_ACCEL__ = 'https://sichina.dpdns.org';</script>
   <!-- 扫码支付二维码渲染库（第三方 qrcodejs，本地托管避免外链失效）。renderQr 会先检测全局 QRCode 是否存在。 -->
-  <script src="assets/qrcode.min.js?v=20261111i"></script>
-  <script src="js/auth-boot.js?v=20261111i"></script>
+  <script src="assets/qrcode.min.js?v=20261112a"></script>
+  <script src="js/auth-boot.js?v=20261112a"></script>
   <!-- store / stock-api / hot-topics / app 由 auth-boot.js 在登录通过后动态装载，
        未登录时它们不会被下载，业务数据也不会进入内存 -->
 </body>
