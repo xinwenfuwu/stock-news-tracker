@@ -8287,12 +8287,22 @@ const app = createApp({
       try { return safe.replace(new RegExp(esc, 'gi'), m => `<mark>${m}</mark>`); }
       catch (e) { return safe; }
     }
+    /* 20261111e：AI 情绪标签版本号。AI 批次异步写入 HotTopics 全局缓存后 bump，
+     * 让所有依赖 sentiment 的 computed / 模板重新求值（缓存本身不是 Vue 响应式对象）。 */
+    const aiSentiVersion = ref(0);
+    const aiSentiBusy = ref(false);
+    const aiSentiDone = ref(0);
+    const aiSentiTotal = ref(0);
+    const aiSentiError = ref('');
+
     /** 当前展示的数据源：闭市周期窗口优先（跨天合并），否则为所选那天的全部快讯 */
     const briefBase = computed(() => (briefWindow.on ? briefWindowItems.value : briefItems.value));
     /** batch-senti：每日快讯「共 N 条」总体的多空倾向（利好→红 / 利空→绿），与分类条数同源逻辑 */
-    const briefSenti = computed(() =>
-      (typeof HotTopics !== 'undefined' && HotTopics.computeCategorySentiment)
-        ? HotTopics.computeCategorySentiment(briefBase.value || []) : 'neutral');
+    const briefSenti = computed(() => {
+      void aiSentiVersion.value;   // AI 标签就绪后重算
+      return (typeof HotTopics !== 'undefined' && HotTopics.computeCategorySentiment)
+        ? HotTopics.computeCategorySentiment(briefBase.value || []) : 'neutral';
+    });
     /** 多空倾向 → 着色 class：利好(bull)→红 / 利空(bear)→绿 / 中性→空（沿用默认/维度色） */
     function sentiClass(s) {
       if (s === 'bull') return 'senti-bull';
@@ -8301,6 +8311,7 @@ const app = createApp({
     }
     /** 火热话题某来源的条数多空倾向（受分类筛选影响时取筛选后的集合） */
     function srcSenti(s) {
+      void aiSentiVersion.value;   // 模板渲染期读取 → AI 标签就绪后自动重染
       const arr = (s && (s.filteredItems || s.items)) || [];
       return (typeof HotTopics !== 'undefined' && HotTopics.computeCategorySentiment)
         ? HotTopics.computeCategorySentiment(arr) : 'neutral';
@@ -8321,6 +8332,180 @@ const app = createApp({
       return briefBase.value.filter(it => briefKeywordHit(it, kw));
     });
     const briefSearching = computed(() => !!briefKeyword.value.trim());
+
+    /* ============================================================
+     * 20261111e：AI 情绪判断 —— 子类红绿着色的判据来源
+     *  ① 取「当前时间段内」的全部快讯（与子类统计同口径，关键词过滤后），正文去重；
+     *  ② 按 25 条一批交给已配置的 OpenAI 兼容接口，逐条判 bull / bear / neutral；
+     *  ③ 标签写入 HotTopics 全局缓存，所有子类 / 三维度 / 统计分析 / 新闻追踪共用；
+     *  ④ 每批完成即 bump aiSentiVersion + 重算统计分析，界面渐进变红/绿；
+     *  ⑤ 未配置 AI 时不发起任何请求，完全沿用原关键词着色（功能不回退）。
+     *  缓存只存正文哈希与标签（不含正文），持久化在 localStorage，换时间段不重复计费。
+     * ============================================================ */
+    const AI_SENTI_CACHE_KEY = 'stock-news-tracker-ai-senti-v1';
+    const AI_SENTI_BATCH = 25;
+    let _aiSentiTimer = null;
+    let _aiSentiGen = 0;            // 代次：时间段变化时作废旧批次写入
+    let _aiSentiInFlight = false;
+
+    function loadAiSentiCache() {
+      const HT = ht_();
+      if (!HT || !HT.importAiSenti) return;
+      try {
+        const raw = localStorage.getItem(AI_SENTI_CACHE_KEY);
+        if (!raw) return;
+        const pairs = JSON.parse(raw);
+        if (Array.isArray(pairs)) HT.importAiSenti(pairs);
+      } catch (e) { /* 缓存损坏则忽略 */ }
+    }
+    function saveAiSentiCache() {
+      const HT = ht_();
+      if (!HT || !HT.exportAiSenti) return;
+      try {
+        const pairs = HT.exportAiSenti();
+        localStorage.setItem(AI_SENTI_CACHE_KEY, JSON.stringify(pairs.slice(-8000))); // 限制体积
+      } catch (e) { /* 配额不足则忽略 */ }
+    }
+    function clearAiSentimentCache() {
+      const HT = ht_();
+      if (HT && HT.clearAiSenti) HT.clearAiSenti();
+      try { localStorage.removeItem(AI_SENTI_CACHE_KEY); } catch (e) {}
+      aiSentiDone.value = 0; aiSentiTotal.value = 0; aiSentiError.value = '';
+      aiSentiVersion.value++;
+      refreshAnalysisSentiment();
+    }
+
+    function buildAiSentiMessages(batch) {
+      const lines = batch.map((it, i) =>
+        (i + 1) + '. ' + String(it.text || '').replace(/\s+/g, ' ').slice(0, 180)).join('\n');
+      return [
+        { role: 'system', content: '你是资深 A 股财经分析师，只输出结构化标签，不解释、不寒暄。' },
+        { role: 'user', content:
+          '下面是 ' + batch.length + ' 条财经快讯。请逐条判断它对所涉及的 A 股板块 / 公司 / 概念的短期情绪方向：\n' +
+          'bull = 偏利好（业绩增长、中标、提价、扩产、政策扶持、需求旺盛、技术突破、回购增持等）\n' +
+          'bear = 偏利空（业绩下滑、亏损、减持、被查、事故、制裁、需求走弱、价格下跌、延期等）\n' +
+          'neutral = 中性（纯事实陈述、日程、人事任免、无明显方向的数据披露）\n\n' +
+          '严格逐行输出，行号与输入一一对应，格式为「行号:标签」，不要输出任何其它内容：\n' +
+          '1:bull\n2:bear\n3:neutral\n...\n\n快讯：\n' + lines }
+      ];
+    }
+    /** 容错解析：接受 "1:bull" / "1：bear" / "1 = neutral" / 逗号分隔等多种返回形态 */
+    function parseAiSentiLabels(content, n) {
+      const out = new Array(n).fill('');
+      const re = /(\d+)\s*[:：=]\s*(bull|bear|neutral)/gi;
+      let m;
+      while ((m = re.exec(String(content || '')))) {
+        const i = parseInt(m[1], 10) - 1;
+        if (i >= 0 && i < n) out[i] = m[2].toLowerCase();
+      }
+      return out;
+    }
+
+    /** 统计分析面板是「一次性赋值」而非 computed，AI 标签就绪后需显式重算 sentiment */
+    function refreshAnalysisSentiment() {
+      const HT = ht_();
+      if (!HT || !analysisResult.value || !_analysisFlat.length) return;
+      try {
+        analysisResult.value.siteStats = (siteStatsDim.value === 'cat7')
+          ? HT.siteCategoryStats(_analysisFlat)
+          : HT.siteThemeStats(_analysisFlat, siteStatsDim.value);
+        const fresh = HT.themeStats(_analysisFlat);
+        const fmap = Object.create(null);
+        for (const d of fresh) fmap[d.key] = d;
+        analysisResult.value.themeStats = analysisResult.value.themeStats.map(d => {
+          const f = fmap[d.key];
+          if (!f) return d;
+          const tmap = Object.create(null);
+          for (const t of (f.topics || [])) tmap[t.name] = t;
+          return Object.assign({}, d, {
+            sentiment: f.sentiment,
+            topics: (d.topics || []).map(t => {
+              const ft = tmap[t.name];
+              return ft ? Object.assign({}, t, { sentiment: ft.sentiment }) : t;
+            })
+          });
+        });
+      } catch (e) { /* 重算失败不影响主流程 */ }
+    }
+
+    /** 主入口：把当前时间段内尚未判断的新闻批量送 AI；返回本次新增标签数 */
+    async function runAiSentimentBatch() {
+      const HT = ht_();
+      if (!HT || !HT.getAiSenti || !aiConfigured.value) return 0;
+      const gen = ++_aiSentiGen;      // 每次调用都推进代次，旧批次写入立即作废
+      if (_aiSentiInFlight) return 0; // 旧任务退出后由 finally 用最新代次重跑
+      const all = (briefFiltered.value || []).filter(it => it && it.text);
+      const pending = [];
+      const seen = Object.create(null);
+      for (const it of all) {
+        if (HT.getAiSenti(it.text)) continue;
+        const k = HT.aiSentiKey(it.text);
+        if (seen[k]) continue;
+        seen[k] = 1;
+        pending.push(it);
+      }
+      if (!pending.length) {
+        aiSentiDone.value = all.length; aiSentiTotal.value = all.length;
+        return 0;
+      }
+      const batches = [];
+      for (let i = 0; i < pending.length; i += AI_SENTI_BATCH) batches.push(pending.slice(i, i + AI_SENTI_BATCH));
+      aiSentiBusy.value = true;
+      aiSentiError.value = '';
+      aiSentiTotal.value = pending.length;
+      aiSentiDone.value = 0;
+      _aiSentiInFlight = true;
+      let cursor = 0, wrote = 0, lastErr = '';
+      const worker = async () => {
+        while (cursor < batches.length && gen === _aiSentiGen) {
+          const batch = batches[cursor++];
+          try {
+            const res = await callOpenAICompat(buildAiSentiMessages(batch), { timeoutMs: 45000, maxTokens: 900 });
+            if (!res.ok) { lastErr = res.error || 'AI 请求失败'; continue; }
+            const labels = parseAiSentiLabels(res.content, batch.length);
+            const entries = [];
+            for (let i = 0; i < batch.length; i++) {
+              if (labels[i]) entries.push({ text: batch[i].text, sentiment: labels[i] });
+            }
+            if (entries.length && gen === _aiSentiGen) {
+              wrote += HT.setAiSentiBatch(entries);
+              aiSentiDone.value = Math.min(pending.length, aiSentiDone.value + entries.length);
+              saveAiSentiCache();
+              aiSentiVersion.value++;       // 触发所有依赖 sentiment 的 computed / 模板重染
+              refreshAnalysisSentiment();   // 统计分析面板显式重算
+            }
+          } catch (e) { lastErr = (e && e.message) ? e.message : String(e); }
+        }
+      };
+      try {
+        await Promise.all([worker(), worker(), worker()]);
+      } finally {
+        _aiSentiInFlight = false;
+        if (gen === _aiSentiGen) {
+          aiSentiBusy.value = false;
+          aiSentiError.value = wrote ? '' : (lastErr || 'AI 未返回可解析的标签');
+        } else {
+          // 期间时间段/配置变了 → 用最新数据再跑一轮
+          clearTimeout(_aiSentiTimer);
+          _aiSentiTimer = setTimeout(() => { runAiSentimentBatch().catch(() => {}); }, 100);
+        }
+      }
+      return wrote;
+    }
+
+    /** 界面「重判」按钮：清缓存后重新用 AI 判断当前时间段 */
+    async function rerunAiSentiment() {
+      clearAiSentimentCache();
+      await runAiSentimentBatch();
+    }
+
+    // 启动时恢复缓存；数据加载 / 时间窗口 / AI 配置变化时防抖触发批量判断
+    loadAiSentiCache();
+    if (typeof HotTopics !== 'undefined' && HotTopics.aiSentiCount && HotTopics.aiSentiCount()) aiSentiVersion.value++;
+    watch([briefFiltered, aiConfigured], () => {
+      clearTimeout(_aiSentiTimer);
+      _aiSentiTimer = setTimeout(() => { runAiSentimentBatch().catch(() => {}); }, 600);
+    }, { flush: 'post' });
 
     /* ===================== batch55：每日快讯子类 → 成分股 + 序/增/数 =====================
      * ① 上一个默认时间段（用于「增/数」的排名变化计算）：取与当前窗口等长的「紧邻上一个窗口」。
@@ -8658,6 +8843,7 @@ const app = createApp({
      *            上次 = 10/11 15:00→10/12 15:00）。上期无该子类（本期新出现）按 0 计；无上期数据则 null（显示「—」）。
      */
     function buildBriefStats(items, mode) {
+      void aiSentiVersion.value;   // 20261111e：AI 标签就绪后重算子类的红/绿主导
       const base = (typeof HotTopics !== 'undefined' && HotTopics.briefStats) ? HotTopics.briefStats(items, mode) : [];
       const pv = prevStats.value;
       const ls = lastStats.value;
@@ -13916,6 +14102,9 @@ const app = createApp({
       briefDates, briefDate, briefItems, briefKeyword, briefLoading, briefError, briefUi, briefPaused,
       briefFiltered, briefSearching, briefStatsList, briefBase, briefSenti, sentiClass, srcSenti,
       briefThemeStats, briefConceptStats, briefIndustryStats,
+      // 20261111e：AI 情绪判断（批量 + 缓存 + 多数主导红绿）
+      aiSentiVersion, aiSentiBusy, aiSentiDone, aiSentiTotal, aiSentiError,
+      aiSentiConfigured: aiConfigured, runAiSentimentBatch, rerunAiSentiment, clearAiSentimentCache,
       briefSourceName, briefSourceInput, briefSourceCustom, briefSourcePresets,
       onBriefSourcePick, commitBriefSource,
       briefDimMode, briefDimModes, setBriefDim, briefDimLabel, briefDimCount,

@@ -1066,13 +1066,70 @@
   }
 
   /* ============================================================
+   * 20261111e：AI 情绪标签缓存（AI 逐条判断利好/利空 → 子类内多数主导着色）
+   * 由 app.js 在「当前时间段内的全部快讯」上批量调用大模型，结果按正文哈希写入此缓存。
+   * 所有着色入口（briefStats / themeStats / siteCategoryStats / siteThemeStats / 新闻追踪）
+   * 共用同一份标签，保证同一条新闻在任何子类里的判定一致，不会出现同名概念三色矛盾。
+   * 未配置 AI、或标签尚未就绪时，newsSentiment 自动回退到原关键词词典逻辑（功能不回退）。
+   * 缓存键只存哈希（不存正文），可安全持久化到 localStorage。
+   * ============================================================ */
+  const AI_SENTI = Object.create(null);   // hash(text) -> 'bull' | 'bear' | 'neutral'
+  let AI_SENTI_N = 0;
+  function aiSentiKey(text) {
+    const t = String(text || '');
+    // djb2 + 长度：对快讯量级足够稳定；无需保存整段正文
+    let h = 5381;
+    for (let i = 0; i < t.length; i++) h = ((h << 5) + h + t.charCodeAt(i)) | 0;
+    return (h >>> 0).toString(36) + '-' + t.length;
+  }
+  function getAiSenti(text) {
+    const v = AI_SENTI[aiSentiKey(text)];
+    return (v === 'bull' || v === 'bear' || v === 'neutral') ? v : null;
+  }
+  /** 批量写入 AI 标签：entries = [{ text, sentiment }]；返回新增条数 */
+  function setAiSentiBatch(entries) {
+    let n = 0;
+    for (const e of (entries || [])) {
+      if (!e || e.text == null) continue;
+      const s = e.sentiment;
+      if (s !== 'bull' && s !== 'bear' && s !== 'neutral') continue;
+      const k = aiSentiKey(e.text);
+      if (!(k in AI_SENTI)) { AI_SENTI_N++; n++; }
+      AI_SENTI[k] = s;
+    }
+    return n;
+  }
+  function clearAiSenti() { for (const k in AI_SENTI) delete AI_SENTI[k]; AI_SENTI_N = 0; }
+  function aiSentiCount() { return AI_SENTI_N; }
+  /** 导出/导入用于本地持久化（只含哈希与标签，不含新闻正文） */
+  function exportAiSenti() {
+    const out = [];
+    for (const k in AI_SENTI) out.push([k, AI_SENTI[k]]);
+    return out;
+  }
+  function importAiSenti(pairs) {
+    let n = 0;
+    for (const p of (pairs || [])) {
+      if (!Array.isArray(p)) continue;
+      const k = p[0], v = p[1];
+      if (!k || (v !== 'bull' && v !== 'bear' && v !== 'neutral')) continue;
+      if (!(k in AI_SENTI)) { AI_SENTI_N++; n++; }
+      AI_SENTI[k] = v;
+    }
+    return n;
+  }
+
+  /* ============================================================
    * 新闻情绪判定（batch-sentiment）：用于「概念/行业归类」新闻数的红绿着色。
    * 利好(bull)→红、利空(bear)→绿（A 股习惯）。按关键词命中计数，多数决。
+   * 20261111e：优先采用 AI 标签（若该正文已被 AI 判断过），否则回退关键词词典。
    * ============================================================ */
   const SENT_BULL = ['大涨','上涨','飙升','新高','历史新高','利好','盈利','扭亏','超预期','上调','回购','中标','突破','扩张','改善','复苏','回暖','订单饱满','受益','提价','签大单','放量','涨停','积极','看好','净利增','营收增','增长','大增','分红','派息','扩产','供不应求','量价齐升','业绩超预期','盈利预喜','机构看好','买入评级','上调目标价'];
   const SENT_BEAR = ['大跌','下跌','下滑','下降','亏损','大降','暴跌','新低','利空','低于预期','下调','减持','风险','制裁','暂停','裁员','诉讼','暴雷','违约','看空','承压','走弱','环比降','同比降','净利降','营收降','跌停','低迷','萎缩','负增长','退坡','收紧','停产','停工','被调查','立案','警示','商誉减值','资产减值','业绩变脸','亏损扩大','评级下调','目标价下调'];
   function newsSentiment(text) {
     const t = String(text || '');
+    const ai = getAiSenti(t);
+    if (ai) return ai;                 // AI 已判断 → 直接采用，不再跑关键词
     let bull = 0, bear = 0;
     for (let i = 0; i < SENT_BULL.length; i++) if (t.indexOf(SENT_BULL[i]) >= 0) bull++;
     for (let i = 0; i < SENT_BEAR.length; i++) if (t.indexOf(SENT_BEAR[i]) >= 0) bear++;
@@ -1081,12 +1138,28 @@
     if (bull > bear) return 'bull';
     return 'neutral';
   }
+  /**
+   * 子类整体情绪：对「该子类时间段内的全部新闻」做多数主导裁决。
+   *   利空(bear) 占比 > 50% → bear（绿色）；利好(bull) 占比 > 50% → bull（红色）；否则中性。
+   * 20261111e：只要这批新闻里有任意一条已被 AI 判断，就**只用 AI 标签**裁决，
+   *   避免 AI 与关键词两套口径混算（AI 逐批就绪期间口径依然纯正）；
+   *   全部未判断时完全回退原关键词口径（未配置 AI 的用户零变化）。
+   */
   function computeCategorySentiment(newsArr) {
-    let bull = 0, bear = 0;
+    let aiBull = 0, aiBear = 0, aiN = 0;
+    let kwBull = 0, kwBear = 0;
     for (const it of (newsArr || [])) {
-      const s = newsSentiment((it && it.text) || '');
-      if (s === 'bull') bull++; else if (s === 'bear') bear++;
+      const t = (it && it.text) || '';
+      const s = newsSentiment(t);
+      if (getAiSenti(t)) {
+        aiN++;
+        if (s === 'bull') aiBull++; else if (s === 'bear') aiBear++;
+      } else {
+        if (s === 'bull') kwBull++; else if (s === 'bear') kwBear++;
+      }
     }
+    const bull = aiN > 0 ? aiBull : kwBull;
+    const bear = aiN > 0 ? aiBear : kwBear;
     const total = bull + bear;
     if (total === 0) return 'neutral';
     if (bear / total > 0.5) return 'bear';
@@ -1119,8 +1192,27 @@
   const RATE_HIKE_BULL = ['加息','暴力加息','大幅加息','美债收益率上行','美债收益率攀升','美债收益率走高','国债收益率上行','收益率上行','利率上行','美联储加息','鹰派','紧缩','点阵图上移','加息预期','加息预期升温','加息概率上升','鲍威尔鹰派','缩表','缩减购债','联邦基金利率上调'];
   const RATE_HIKE_BEAR = ['降息','大幅降息','美债收益率下行','美债收益率回落','国债收益率下行','收益率下行','利率下行','美联储降息','鸽派','宽松','暂停加息','降息预期','降息预期升温','鲍威尔鸽派','边际转鸽','停止加息','加息周期结束'];
   function isRateHikeTheme(name) { return /美债/.test(name || ''); }
+
+  /**
+   * 20261111e：「军事战争 / 美债加息」两类有用户明确定义的特殊着色语义
+   *   （红=战争升级 / 红=市场偏向加息），通用 AI 的「利好/利空」无法表达这种反直觉定义，
+   *   故默认仍走各自的专用词典视角，避免把已确认的功能改坏。
+   * 若希望「所有子类」一律以 AI 判断为准，调用 setAiSentiOverrideSpecial(true) 即可切换；
+   * 未配置 AI（无标签）时无论开关如何都自动回退到原视角，功能不回退。
+   */
+  let aiSentiOverrideSpecial = false;
+  function setAiSentiOverrideSpecial(v) { aiSentiOverrideSpecial = !!v; }
+  function getAiSentiOverrideSpecial() { return aiSentiOverrideSpecial; }
+  function aiSentiCovered(newsArr) {
+    let n = 0;
+    for (const it of (newsArr || [])) if (getAiSenti((it && it.text) || '')) n++;
+    return n;
+  }
+
   function conceptSentiment(name, newsArr) {
     const nm = name || '';
+    // AI 全覆盖开关：所有子类统一走 AI 多数主导（军事战争 / 美债加息 也不例外）
+    if (aiSentiOverrideSpecial && aiSentiCovered(newsArr) > 0) return computeCategorySentiment(newsArr);
     if (isWarTheme(nm)) {
       // 战争视角：升级(红) / 缓和(绿)
       let bull = 0, bear = 0;
@@ -1574,6 +1666,10 @@
     BRIEF_MODES, BRIEF_OTHER_KEY,
     // batch-senti：多空着色——利好(bull)→红 / 利空(bear)→绿（新闻数量数字同源逻辑）
     computeCategorySentiment, newsSentiment, sentiClass, conceptSentiment,
+    // 20261111e：AI 情绪标签缓存（批量 AI 判断 → 所有子类多数主导着色）
+    getAiSenti, setAiSentiBatch, clearAiSenti, aiSentiCount,
+    exportAiSenti, importAiSenti, aiSentiKey, aiSentiCovered,
+    setAiSentiOverrideSpecial, getAiSentiOverrideSpecial,
     // batch31：各省项目（省市词表 / 项目特征词 / 组合命中规则 / 项目清单抽取）
     PROVINCES, PROJECT_WORDS, _hitRule, briefProjectList,
     // batch56：严格分类引擎（供单测直接断言打分/主体判定）

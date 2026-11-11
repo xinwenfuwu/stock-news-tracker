@@ -2232,6 +2232,18 @@ body {
 
 .brief-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap; }
 .brief-head-right { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+/* 20261111e：AI 情绪判断状态胶囊（全球信息面板头部） */
+.ai-senti-chip {
+  display: inline-flex; align-items: center; gap: 5px; padding: 2px 7px;
+  font-size: 11.5px; line-height: 1.5; color: #475569;
+  background: #f1f5f9; border: 1px solid #e2e8f0; border-radius: 999px;
+}
+.ai-senti-rebtn {
+  padding: 0 5px; font-size: 11px; line-height: 17px; color: #334155;
+  background: #fff; border: 1px solid #cbd5e1; border-radius: 5px; cursor: pointer;
+}
+.ai-senti-rebtn:hover:not(:disabled) { background: #e2e8f0; }
+.ai-senti-rebtn:disabled { opacity: .5; cursor: not-allowed; }
 /* 来源名下拉（batch15）：看起来像标题的一部分，点开换来源 */
 .brief-source {
   padding: 1px 4px; margin: 0 1px; font-size: inherit; font-weight: inherit; color: #b91c1c;
