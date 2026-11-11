@@ -7225,7 +7225,12 @@ const app = createApp({
     // 「昨天」= 上一个默认的新闻统计开始时间（默认窗口整体前移 1 个交易日）；
     // 「前天」= 上上一个默认的新闻统计开始时间（前移 2 个交易日，跳过周末）。
     // 点击后把起止时间框（及「上次」对比周期）自动填充为对应默认值，仍可在框内手动改。
-    const briefWinDay = ref(0);        // 当前快捷口径：0=今天 1=昨天 2=前天；手动改框后变 -1（无高亮）
+    const briefWinDay = ref(0);        // 每日快讯面板的快捷口径：0=今天 1=昨天 2=前天；手动改框后变 -1（无高亮）
+    /* 20261111i：红框（火热话题标题栏）里的「今天/昨天/前天」独立记录自己的高亮状态，
+     * 不再借用每日快讯面板的 briefWinDay；同时把红框内时间框作为该组按钮的直接作用目标。 */
+    const htWinDay = ref(0);
+    const dayPresetFlash = ref(false);   // 点击后红框内时间框短暂高亮，直观看到「已应用到本栏时间框」
+    let _dayPresetFlashTimer = null;
     function briefShiftedDefaults(k) {
       const HT = ht_();
       if (!HT || !HT.defaultWindowStart || !HT.defaultWindowEnd || !HT.shiftTradingDay) return null;
@@ -7243,34 +7248,61 @@ const app = createApp({
         prevEnd: atClose(dayShift(start0, -k))
       };
     }
-    function setBriefWinDay(k) {
+    /* 20261111i：把「今天/昨天/前天」的窗口计算、写入、刷新拆开，
+     * 红框（火热话题标题栏）按钮与每日快讯面板按钮各自有入口，但共用同一套窗口口径。
+     *   · 红框按钮 → 首要目标是红框内「新闻统计开始时间」两个时间框
+     *     （每日话题 dailyWin / 统计分析 analysisWin），由 setHtWinDay 直接进入；
+     *   · 每日快讯 / 新闻追踪页顶部按钮 → briefWin，由 setBriefWinDay 进入；
+     *   · 20261111h 的全局同步语义保留：三套窗口仍写同一个值、各自刷新，
+     *     这样无论点哪一组按钮，左右两侧显示的都是同一时间段，不会出现「选了昨天、下方还是今天」。
+     * 两处高亮分开记录，手动改任一时间框则两组一起取消高亮（当前为自定义窗口）。 */
+    function applyDayPresetValues(k) {
       const HT = ht_();
       const w = briefShiftedDefaults(k);
-      if (!w || !HT || !HT.toLocalInputValue) return;
+      if (!w || !HT || !HT.toLocalInputValue) return false;
       const sVal = HT.toLocalInputValue(w.start);
       const eVal = HT.toLocalInputValue(w.end);
-      briefWinStart.value = sVal;
-      briefWinEnd.value = eVal;
-      briefPrevWinStart.value = HT.toLocalInputValue(w.prevStart);
-      briefPrevWinEnd.value = HT.toLocalInputValue(w.prevEnd);
-      /* 20261111h：快捷窗口同步应用到「火热话题」下方的两个统计窗口。
-       * 以前这三个窗口各用一套 ref（briefWin / dailyWin / analysisWin），快捷按钮只改
-       * briefWin，导致选中「昨天/前天」后左侧仍停留在今天的默认时间段（用户截图反馈）。
-       * 现在三者共用同一窗口值；各模块独立刷新，保证显示与数据一致。
-       * 手动修改任一输入框仍可单独自定义（并会取消快捷高亮）。 */
+      // ① 红框内的时间框（本轮用户明确指定的作用目标）
       dailyWinStart.value = sVal;
       dailyWinEnd.value = eVal;
       analysisWinStart.value = sVal;
       analysisWinEnd.value = eVal;
+      // ② 每日快讯窗口 + 「上次」对比周期，保持左右同口径
+      briefWinStart.value = sVal;
+      briefWinEnd.value = eVal;
+      briefPrevWinStart.value = HT.toLocalInputValue(w.prevStart);
+      briefPrevWinEnd.value = HT.toLocalInputValue(w.prevEnd);
       briefWinDay.value = k;
+      htWinDay.value = k;
+      return true;
+    }
+    function flashHtWinBoxes() {
+      dayPresetFlash.value = false;
+      if (_dayPresetFlashTimer) clearTimeout(_dayPresetFlashTimer);
+      nextTick(() => {
+        dayPresetFlash.value = true;
+        _dayPresetFlashTimer = setTimeout(() => { dayPresetFlash.value = false; }, 1200);
+      });
+    }
+    function applyDayPreset(k, from) {
+      if (!applyDayPresetValues(k)) return;
+      flashHtWinBoxes();
       // 填充后自动按新窗口刷新一次，用户马上能看到该时间段的数据；仍可手动改框再点各自「刷新」
       if (!briefLoading.value) refreshBriefCloseWindow().catch(() => {});
       if (!hotTopicsLoading.value) refreshDailyTopics().catch(() => {});
       if (!analysisLoading.value) runAnalysis().catch(() => {});
-      showToast('已切换「' + (['今天', '昨天', '前天'][k] || '自定义') + '」：每日快讯与火热话题下方时间区间已同步', 'success');
+      const label = ['今天', '昨天', '前天'][k] || '自定义';
+      showToast(from === 'hot'
+        ? '已切换「' + label + '」：火热话题本栏时间框已更新（每日快讯同步同口径）'
+        : '已切换「' + label + '」：每日快讯时间框已更新（火热话题本栏同步同口径）', 'success');
     }
+    /** 红框（火热话题标题栏）里的「今天 / 昨天 / 前天」→ 驱动红框内时间框 */
+    function setHtWinDay(k) { applyDayPreset(k, 'hot'); }
+    /** 每日快讯面板 / 新闻追踪页顶部的「今天 / 昨天 / 前天」 */
+    function setBriefWinDay(k) { applyDayPreset(k, 'brief'); }
     /** 手动修改时间框：取消快捷按钮高亮（说明当前是自定义窗口） */
-    function onBriefWinManualEdit() { briefWinDay.value = -1; }
+    function onBriefWinManualEdit() { briefWinDay.value = -1; htWinDay.value = -1; }
+    function onHtWinManualEdit() { htWinDay.value = -1; briefWinDay.value = -1; }
     /** 时间栏文案：'2026年9月16日 15:00 - 2026年9月17日 15:00' */
     const briefWinText = computed(() => {
       const HT = ht_();
@@ -14258,7 +14290,9 @@ const app = createApp({
       // batch16：可编辑统计时间窗口（15:00 换日，三板块统一）
       briefWinStart, briefWinEnd, briefWinText, resetBriefWin,
       // 20261110a：今天 / 昨天 / 前天 快捷窗口
+      // 20261111i：红框（火热话题）独立入口 + 高亮 + 时间框反馈动画
       briefWinDay, setBriefWinDay, onBriefWinManualEdit,
+      htWinDay, setHtWinDay, onHtWinManualEdit, dayPresetFlash,
       // batch73：「上次」对比周期（「昨」排名窗口）状态
       briefPrevWinStart, briefPrevWinEnd, lastBriefLoading, loadLastBriefStats,
       onBriefDateChange, toggleBriefCat, moreBriefNews, hlBrief, autoLoadBriefs, loadBriefsNow,
