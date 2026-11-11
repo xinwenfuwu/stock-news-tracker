@@ -4,12 +4,12 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>股市信息分析系统</title>
-  <link rel="stylesheet" href="css/style.css?v=20261111g">
+  <link rel="stylesheet" href="css/style.css?v=20261111h">
   <!-- Vue 3 全局构建版（v3.4.21 · 自托管）
        原先走 unpkg.com CDN：国内网络对 unpkg 的连通性不稳定，一旦该请求长时间挂起，
        <head> 里的阻塞脚本会让整页停在白屏、后续 auth-boot.js 根本不会执行。
        改为同源托管后，启动链路不再依赖任何第三方 CDN。 -->
-  <script src="js/vue.global.prod.js?v=20261111g"></script>
+  <script src="js/vue.global.prod.js?v=20261111h"></script>
 </head>
 <body class="auth-locked">
   <!-- ===== 登录关卡：登录通过前业务脚本不会被加载 ===== -->
@@ -95,7 +95,7 @@
         <input class="auth-input" type="text" id="auth-renew-user" placeholder="用户名（你注册时用的）" maxlength="20" autocomplete="off">
         <div class="auth-renew-plans" id="auth-renew-plans"></div>
         <div class="auth-renew-qr" id="auth-renew-qr">
-          <div class="auth-renew-qrbox"><img id="auth-renew-wx" src="assets/wechat-pay-qr.jpg?v=20261111g" alt="微信支付收款码"><span>微信支付（扫码支付）</span></div>
+          <div class="auth-renew-qrbox"><img id="auth-renew-wx" src="assets/wechat-pay-qr.jpg?v=20261111h" alt="微信支付收款码"><span>微信支付（扫码支付）</span></div>
           <div class="muted small" style="margin-top:6px;color:#c2410c;font-weight:600">支付时请添加会员备注，付款成功截图保存</div>
         </div>
         <input class="auth-input" type="text" id="auth-renew-amount" inputmode="decimal" placeholder="支付金额（必填，如 1000）" autocomplete="off">
@@ -345,11 +345,11 @@
             <!-- 20261110a：今天 / 昨天 / 前天 快捷窗口：自动填充对应默认时间段（可再手动改），填充后自动刷新 -->
             <span class="sw-sep">｜</span>
             <button class="sw-btn sw-btn-day" :class="{active: briefWinDay===0}" :disabled="briefLoading" @click="setBriefWinDay(0)"
-                    title="填充「今天」默认统计窗口（每天收盘后默认即今天；填充后可再手动改）">今天</button>
+                    title="填充「今天」默认统计窗口（每天收盘后默认即今天）；同步应用到火热话题下方「每日话题 / 统计分析」时间区间，填充后可再手动改">今天</button>
             <button class="sw-btn sw-btn-day" :class="{active: briefWinDay===1}" :disabled="briefLoading" @click="setBriefWinDay(1)"
-                    title="填充「昨天」默认统计窗口 = 上一个默认的新闻统计开始时间（前移 1 个交易日）">昨天</button>
+                    title="填充「昨天」默认统计窗口 = 上一个默认的新闻统计开始时间（前移 1 个交易日）；同步应用到火热话题下方「每日话题 / 统计分析」时间区间">昨天</button>
             <button class="sw-btn sw-btn-day" :class="{active: briefWinDay===2}" :disabled="briefLoading" @click="setBriefWinDay(2)"
-                    title="填充「前天」默认统计窗口 = 上上一个默认的新闻统计开始时间（前移 2 个交易日）">前天</button>
+                    title="填充「前天」默认统计窗口 = 上上一个默认的新闻统计开始时间（前移 2 个交易日）；同步应用到火热话题下方「每日话题 / 统计分析」时间区间">前天</button>
             <span class="sw-text" v-if="briefWinText">{{ briefWinText }}</span>
           </div>
 
@@ -990,7 +990,7 @@
                   <div class="qr-row">
                     <div class="qr-box">
                       <div class="qr-cap">推荐使用微信支付</div>
-                      <img src="assets/wechat-pay-qr.jpg?v=20261111g" alt="微信支付收款码" class="qr-pay-img">
+                      <img src="assets/wechat-pay-qr.jpg?v=20261111h" alt="微信支付收款码" class="qr-pay-img">
                       <div class="qr-cap" style="margin-top:6px;color:#c2410c;font-weight:600">支付时请添加会员备注，付款成功截图保存</div>
                       <div class="qr-cap muted small">火柴盒网络服务</div>
                     </div>
@@ -1242,11 +1242,11 @@
                 <!-- 今天 / 昨天 / 前天 快捷窗口：从每日快讯标题栏右侧剪切至「每日话题」标签左侧（20261110i） -->
                 <div class="ht-day-btns">
                   <button class="sw-btn sw-btn-day" :class="{active: briefWinDay===0}" :disabled="briefLoading" @click="setBriefWinDay(0)"
-                          title="填充「今天」默认统计窗口（每天收盘后默认即今天；填充后可再手动改）">今天</button>
+                          title="填充「今天」默认统计窗口（每天收盘后默认即今天）；同步应用到火热话题下方「每日话题 / 统计分析」时间区间，填充后可再手动改">今天</button>
                   <button class="sw-btn sw-btn-day" :class="{active: briefWinDay===1}" :disabled="briefLoading" @click="setBriefWinDay(1)"
-                          title="填充「昨天」默认统计窗口 = 上一个默认的新闻统计开始时间（前移 1 个交易日）">昨天</button>
+                          title="填充「昨天」默认统计窗口 = 上一个默认的新闻统计开始时间（前移 1 个交易日）；同步应用到火热话题下方「每日话题 / 统计分析」时间区间">昨天</button>
                   <button class="sw-btn sw-btn-day" :class="{active: briefWinDay===2}" :disabled="briefLoading" @click="setBriefWinDay(2)"
-                          title="填充「前天」默认统计窗口 = 上上一个默认的新闻统计开始时间（前移 2 个交易日）">前天</button>
+                          title="填充「前天」默认统计窗口 = 上上一个默认的新闻统计开始时间（前移 2 个交易日）；同步应用到火热话题下方「每日话题 / 统计分析」时间区间">前天</button>
                 </div>
                 <div class="ht-tabs">
                   <button :class="['ht-tab', { active: htTab === 'daily' }]" @click="htTab = 'daily'">每日话题</button>
@@ -1261,9 +1261,9 @@
               <div class="ht-controls">
                 <div class="stat-win" id="daily-stat-win">
                   <span class="sw-label">新闻统计开始时间</span>
-                  <input type="datetime-local" class="sw-input" v-model="dailyWinStart" :disabled="hotTopicsLoading" title="统计开始时间（默认昨天 15:00，可修改）">
+                  <input type="datetime-local" class="sw-input" v-model="dailyWinStart" :disabled="hotTopicsLoading" @input="onBriefWinManualEdit" title="统计开始时间（与上方「今天/昨天/前天」联动，可手动改）">
                   <span class="sw-sep">-</span>
-                  <input type="datetime-local" class="sw-input" v-model="dailyWinEnd" :disabled="hotTopicsLoading" title="统计结束时间（默认现在，可修改）">
+                  <input type="datetime-local" class="sw-input" v-model="dailyWinEnd" :disabled="hotTopicsLoading" @input="onBriefWinManualEdit" title="统计结束时间（与上方「今天/昨天/前天」联动，可手动改）">
                   <button class="sw-btn" :disabled="hotTopicsLoading" @click="refreshDailyTopics" title="按上面这段时间重新统计每日话题（该时间段内的新闻）">🔄 {{ hotTopicsLoading ? '刷新中…' : '刷新' }}</button>
                   <button class="sw-btn sw-btn-ghost" :disabled="hotTopicsLoading" @click="resetDailyWin" title="恢复默认：昨天 15:00 → 现在">重置</button>
                   <span class="sw-text" v-if="dailyWinText">{{ dailyWinText }}</span>
@@ -1315,10 +1315,10 @@
               <div class="stat-win" id="analysis-stat-win">
                 <span class="sw-label">新闻统计开始时间</span>
                 <input type="datetime-local" class="sw-input" v-model="analysisWinStart" :disabled="analysisLoading"
-                       title="统计开始时间（默认昨天 15:00，可修改）">
+                       @input="onBriefWinManualEdit" title="统计开始时间（与上方「今天/昨天/前天」联动，可手动改）">
                 <span class="sw-sep">-</span>
                 <input type="datetime-local" class="sw-input" v-model="analysisWinEnd" :disabled="analysisLoading"
-                       title="统计结束时间（默认现在，可修改）">
+                       @input="onBriefWinManualEdit" title="统计结束时间（与上方「今天/昨天/前天」联动，可手动改）">
                 <button class="sw-btn" :disabled="analysisLoading" @click="runAnalysis"
                         title="按上面这段时间重新统计两个板块">
                   🔄 {{ analysisLoading ? '刷新中…' : '刷新' }}
@@ -1540,11 +1540,11 @@
               <!-- 20261110a：今天 / 昨天 / 前天 快捷窗口（与新闻追踪页同一套状态） -->
               <span class="sw-sep">｜</span>
               <button class="sw-btn sw-btn-day" :class="{active: briefWinDay===0}" :disabled="briefLoading" @click="setBriefWinDay(0)"
-                      title="填充「今天」默认统计窗口（每天收盘后默认即今天；填充后可再手动改）">今天</button>
+                      title="填充「今天」默认统计窗口（每天收盘后默认即今天）；同步应用到火热话题下方「每日话题 / 统计分析」时间区间，填充后可再手动改">今天</button>
               <button class="sw-btn sw-btn-day" :class="{active: briefWinDay===1}" :disabled="briefLoading" @click="setBriefWinDay(1)"
-                      title="填充「昨天」默认统计窗口 = 上一个默认的新闻统计开始时间（前移 1 个交易日）">昨天</button>
+                      title="填充「昨天」默认统计窗口 = 上一个默认的新闻统计开始时间（前移 1 个交易日）；同步应用到火热话题下方「每日话题 / 统计分析」时间区间">昨天</button>
               <button class="sw-btn sw-btn-day" :class="{active: briefWinDay===2}" :disabled="briefLoading" @click="setBriefWinDay(2)"
-                      title="填充「前天」默认统计窗口 = 上上一个默认的新闻统计开始时间（前移 2 个交易日）">前天</button>
+                      title="填充「前天」默认统计窗口 = 上上一个默认的新闻统计开始时间（前移 2 个交易日）；同步应用到火热话题下方「每日话题 / 统计分析」时间区间">前天</button>
               <span class="sw-text" v-if="briefWinText">{{ briefWinText }}</span>
             </div>
 
@@ -5263,14 +5263,14 @@
     </transition>
   </div>
 
-  <script src="js/auth.js?v=20261111g"></script>
-  <script src="js/auth-sync.js?v=20261111g"></script>
+  <script src="js/auth.js?v=20261111h"></script>
+  <script src="js/auth-sync.js?v=20261111h"></script>
   <!-- 边缘加速默认站点（batch37 治本：Cloudflare Worker 代理东财/腾讯，缓解 JSONP 限流误报）。
        若你所在地区 workers.dev 访问慢，可在「设置 → 行情加速地址」清空即恢复纯直连。 -->
   <script>window.__SNT_ACCEL__ = 'https://sichina.dpdns.org';</script>
   <!-- 扫码支付二维码渲染库（第三方 qrcodejs，本地托管避免外链失效）。renderQr 会先检测全局 QRCode 是否存在。 -->
-  <script src="assets/qrcode.min.js?v=20261111g"></script>
-  <script src="js/auth-boot.js?v=20261111g"></script>
+  <script src="assets/qrcode.min.js?v=20261111h"></script>
+  <script src="js/auth-boot.js?v=20261111h"></script>
   <!-- store / stock-api / hot-topics / app 由 auth-boot.js 在登录通过后动态装载，
        未登录时它们不会被下载，业务数据也不会进入内存 -->
 </body>

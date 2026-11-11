@@ -7247,13 +7247,27 @@ const app = createApp({
       const HT = ht_();
       const w = briefShiftedDefaults(k);
       if (!w || !HT || !HT.toLocalInputValue) return;
-      briefWinStart.value = HT.toLocalInputValue(w.start);
-      briefWinEnd.value = HT.toLocalInputValue(w.end);
+      const sVal = HT.toLocalInputValue(w.start);
+      const eVal = HT.toLocalInputValue(w.end);
+      briefWinStart.value = sVal;
+      briefWinEnd.value = eVal;
       briefPrevWinStart.value = HT.toLocalInputValue(w.prevStart);
       briefPrevWinEnd.value = HT.toLocalInputValue(w.prevEnd);
+      /* 20261111h：快捷窗口同步应用到「火热话题」下方的两个统计窗口。
+       * 以前这三个窗口各用一套 ref（briefWin / dailyWin / analysisWin），快捷按钮只改
+       * briefWin，导致选中「昨天/前天」后左侧仍停留在今天的默认时间段（用户截图反馈）。
+       * 现在三者共用同一窗口值；各模块独立刷新，保证显示与数据一致。
+       * 手动修改任一输入框仍可单独自定义（并会取消快捷高亮）。 */
+      dailyWinStart.value = sVal;
+      dailyWinEnd.value = eVal;
+      analysisWinStart.value = sVal;
+      analysisWinEnd.value = eVal;
       briefWinDay.value = k;
-      // 填充后自动按新窗口刷新一次，用户马上能看到该时间段的快讯与排名；仍可手动改框再点「刷新」
+      // 填充后自动按新窗口刷新一次，用户马上能看到该时间段的数据；仍可手动改框再点各自「刷新」
       if (!briefLoading.value) refreshBriefCloseWindow().catch(() => {});
+      if (!hotTopicsLoading.value) refreshDailyTopics().catch(() => {});
+      if (!analysisLoading.value) runAnalysis().catch(() => {});
+      showToast('已切换「' + (['今天', '昨天', '前天'][k] || '自定义') + '」：每日快讯与火热话题下方时间区间已同步', 'success');
     }
     /** 手动修改时间框：取消快捷按钮高亮（说明当前是自定义窗口） */
     function onBriefWinManualEdit() { briefWinDay.value = -1; }
