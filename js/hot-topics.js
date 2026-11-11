@@ -1075,6 +1075,24 @@
    * ============================================================ */
   const AI_SENTI = Object.create(null);   // hash(text) -> 'bull' | 'bear' | 'neutral'
   let AI_SENTI_N = 0;
+
+  /* ------------------------------------------------------------
+   * 20261111g：着色判据模式（用户在「全球信息」工具栏切换、设置持久化）
+   *   'local' 纯本地 —— 完全忽略 AI 标签，走 SENT_BULL/SENT_BEAR 关键词词典
+   *                     + 战争视角 / 美债加息视角 两套硬编码特例；
+   *   'ai'    大模型 —— AI 逐条判断当前时间段内新闻，子类按多数主导染红/绿
+   *                     （无 AI 标签的新闻自动回退关键词口径，功能不回退）。
+   * 模块默认 'ai'（与 20261111e 上线后的行为一致）；app.js 启动时会按用户
+   * 保存的设置调用 setSentimentMode 覆盖。Node 侧工具直接 require 本文件时
+   * 保持旧行为，历史测试不受影响。
+   * ------------------------------------------------------------ */
+  let SENTIMENT_MODE = 'ai';
+  function setSentimentMode(m) { SENTIMENT_MODE = (m === 'local') ? 'local' : 'ai'; }
+  function getSentimentMode() { return SENTIMENT_MODE; }
+  /** 判据读取口：local 模式下让所有情绪函数「看不到」AI 标签（缓存仍保留，切回即复用） */
+  function getEffectiveAiSenti(text) {
+    return SENTIMENT_MODE === 'ai' ? getAiSenti(text) : null;
+  }
   function aiSentiKey(text) {
     const t = String(text || '');
     // djb2 + 长度：对快讯量级足够稳定；无需保存整段正文
@@ -1128,8 +1146,8 @@
   const SENT_BEAR = ['大跌','下跌','下滑','下降','亏损','大降','暴跌','新低','利空','低于预期','下调','减持','风险','制裁','暂停','裁员','诉讼','暴雷','违约','看空','承压','走弱','环比降','同比降','净利降','营收降','跌停','低迷','萎缩','负增长','退坡','收紧','停产','停工','被调查','立案','警示','商誉减值','资产减值','业绩变脸','亏损扩大','评级下调','目标价下调'];
   function newsSentiment(text) {
     const t = String(text || '');
-    const ai = getAiSenti(t);
-    if (ai) return ai;                 // AI 已判断 → 直接采用，不再跑关键词
+    const ai = getEffectiveAiSenti(t);
+    if (ai) return ai;                 // 大模型模式且 AI 已判断 → 直接采用，不再跑关键词
     let bull = 0, bear = 0;
     for (let i = 0; i < SENT_BULL.length; i++) if (t.indexOf(SENT_BULL[i]) >= 0) bull++;
     for (let i = 0; i < SENT_BEAR.length; i++) if (t.indexOf(SENT_BEAR[i]) >= 0) bear++;
@@ -1151,7 +1169,7 @@
     for (const it of (newsArr || [])) {
       const t = (it && it.text) || '';
       const s = newsSentiment(t);
-      if (getAiSenti(t)) {
+      if (getEffectiveAiSenti(t)) {
         aiN++;
         if (s === 'bull') aiBull++; else if (s === 'bear') aiBear++;
       } else {
@@ -1205,7 +1223,7 @@
   function getAiSentiOverrideSpecial() { return aiSentiOverrideSpecial; }
   function aiSentiCovered(newsArr) {
     let n = 0;
-    for (const it of (newsArr || [])) if (getAiSenti((it && it.text) || '')) n++;
+    for (const it of (newsArr || [])) if (getEffectiveAiSenti((it && it.text) || '')) n++;
     return n;
   }
 
@@ -1670,6 +1688,8 @@
     getAiSenti, setAiSentiBatch, clearAiSenti, aiSentiCount,
     exportAiSenti, importAiSenti, aiSentiKey, aiSentiCovered,
     setAiSentiOverrideSpecial, getAiSentiOverrideSpecial,
+    // 20261111g：着色判据模式（纯本地 / 大模型），所有情绪入口共用
+    setSentimentMode, getSentimentMode,
     // batch31：各省项目（省市词表 / 项目特征词 / 组合命中规则 / 项目清单抽取）
     PROVINCES, PROJECT_WORDS, _hitRule, briefProjectList,
     // batch56：严格分类引擎（供单测直接断言打分/主体判定）

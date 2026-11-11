@@ -147,6 +147,27 @@ body {
   flex-wrap: wrap;
 }
 .page-title { font-size: 18px; font-weight: 600; }
+/* 20261111g：着色判据切换（全球信息工具栏，固定位于「刷新热门话题」左侧） */
+.sent-mode-switch { display: inline-flex; align-items: center; flex-wrap: wrap; gap: 0; }
+.sent-mode-label { font-size: 12px; color: var(--text-secondary); margin-right: 7px; white-space: nowrap; }
+.sent-mode-btn {
+  padding: 6px 11px; font-size: 12.5px; line-height: 1.2; white-space: nowrap;
+  border: 1px solid var(--border); background: var(--surface); color: var(--text-secondary);
+  cursor: pointer; transition: background .15s, color .15s, border-color .15s;
+}
+.sent-mode-btn:nth-of-type(1) { border-radius: 6px 0 0 6px; }
+.sent-mode-btn:nth-of-type(2) { border-radius: 0 6px 6px 0; margin-left: -1px; }
+.sent-mode-btn:hover { color: var(--primary); border-color: var(--primary); }
+.sent-mode-btn.is-active {
+  position: relative; z-index: 1; font-weight: 600;
+  background: var(--primary); border-color: var(--primary); color: #fff;
+}
+.sent-mode-hint { font-size: 11.5px; color: #d97706; margin-left: 8px; white-space: nowrap; }
+.sent-local-chip { color: #2563eb !important; }
+@media (max-width: 720px) {
+  .sent-mode-switch { width: 100%; }
+  .sent-mode-label { width: 100%; margin: 0 0 4px; }
+}
 .date-picker { display: flex; align-items: center; gap: 6px; }
 .date-picker label { color: var(--text-secondary); font-size: 13px; white-space: nowrap; }
 .search-input, .select {

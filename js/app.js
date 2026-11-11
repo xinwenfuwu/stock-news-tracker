@@ -58,6 +58,24 @@ const app = createApp({
     }
     restorePrefsMirror();
 
+    /* ------------------------------------------------------------
+     * 20261111g：子类红绿「着色判据」模式（纯本地 / 大模型）
+     * 存在 D.settings.sentimentMode（随账号数据持久化），启动时立刻同步给
+     * HotTopics 的全局模式，让所有情绪入口（briefStats / themeStats /
+     * siteCategoryStats / 新闻追踪）在首帧就用对口径。
+     * ------------------------------------------------------------ */
+    function normalizeSentimentMode(v) { return v === 'local' ? 'local' : 'ai'; }
+    const sentimentMode = ref(normalizeSentimentMode(D.settings.sentimentMode));
+    function applySentimentMode(m) {
+      const mode = normalizeSentimentMode(m);
+      sentimentMode.value = mode;
+      D.settings.sentimentMode = mode;
+      try {
+        if (typeof HotTopics !== 'undefined' && HotTopics.setSentimentMode) HotTopics.setSentimentMode(mode);
+      } catch (e) { /* ignore */ }
+    }
+    applySentimentMode(sentimentMode.value);
+
     // 20261012e：会员后端基地址跟随用户在设置里填的代理/加速地址，
     // 供登录门禁的「云端会员兜底」查询使用（js_auth-sync.js 的 queryMembershipRemote）。
     // 不填则用 index.html 里注入的 __SNT_ACCEL__（默认国内可达的 sichina.dpdns.org）。
@@ -8477,7 +8495,8 @@ const app = createApp({
     /** 主入口：把当前时间段内尚未判断的新闻批量送 AI；返回本次新增标签数 */
     async function runAiSentimentBatch() {
       const HT = ht_();
-      if (!HT || !HT.getAiSenti || !aiConfigured.value) return 0;
+      // 20261111g：纯本地模式下零 AI 请求（不发任何大模型调用、也不产生费用）
+      if (!HT || !HT.getAiSenti || !aiConfigured.value || sentimentMode.value !== 'ai') return 0;
       const gen = ++_aiSentiGen;      // 每次调用都推进代次，旧批次写入立即作废
       if (_aiSentiInFlight) return 0; // 旧任务退出后由 finally 用最新代次重跑
       const all = (briefFiltered.value || []).filter(it => it && it.text);
@@ -8541,14 +8560,44 @@ const app = createApp({
 
     /** 界面「重判」按钮：清缓存后重新用 AI 判断当前时间段 */
     async function rerunAiSentiment() {
+      if (sentimentMode.value !== 'ai') {
+        showToast('当前是「纯本地」着色模式，请先点工具栏的「🤖 大模型」再重判', 'info');
+        return;
+      }
       clearAiSentimentCache();
       await runAiSentimentBatch();
     }
 
-    // 启动时恢复缓存；数据加载 / 时间窗口 / AI 配置变化时防抖触发批量判断
+    /* ------------------------------------------------------------
+     * 20261111g：工具栏「🧮 纯本地 / 🤖 大模型」切换
+     *  - 纯本地：HotTopics 看不到 AI 标签 → 一律走关键词词典 + 战争/美债加息特例；
+     *    同时作废旧批次、不再发起任何大模型请求（缓存保留，切回可复用、不重复计费）。
+     *  - 大模型：恢复 AI 标签口径；若已配置 AI 立即批量判断当前时间段新闻。
+     *  两种模式都 bump aiSentiVersion + 显式重算统计分析面板，确保首帧立即重染。
+     * ------------------------------------------------------------ */
+    function setSentimentMode(m) {
+      const mode = normalizeSentimentMode(m);
+      if (mode === sentimentMode.value) return;
+      applySentimentMode(mode);
+      try { Store.saveNow(); } catch (e) { /* ignore */ }
+      ++_aiSentiGen;                 // 让正在飞行的旧批次写入失效
+      aiSentiBusy.value = false;
+      aiSentiError.value = '';
+      clearTimeout(_aiSentiTimer);
+      aiSentiVersion.value++;        // 触发所有依赖 sentiment 的 computed / 模板重染
+      refreshAnalysisSentiment();
+      if (mode === 'ai') {
+        // 下方的 watch(sentimentMode) 会在 600ms 防抖后自动发起批量判断
+        showToast('已切换到「🤖 大模型」：AI 逐条判断时间段内新闻，子类按多数主导染红/绿', 'success');
+      } else {
+        showToast('已切换到「🧮 纯本地」：关键词词典 + 战争/美债加息特例，不再调用大模型', 'success');
+      }
+    }
+
+    // 启动时恢复缓存；数据加载 / 时间窗口 / AI 配置 / 着色模式变化时防抖触发批量判断
     loadAiSentiCache();
     if (typeof HotTopics !== 'undefined' && HotTopics.aiSentiCount && HotTopics.aiSentiCount()) aiSentiVersion.value++;
-    watch([briefFiltered, aiConfigured], () => {
+    watch([briefFiltered, aiConfigured, sentimentMode], () => {
       clearTimeout(_aiSentiTimer);
       _aiSentiTimer = setTimeout(() => { runAiSentimentBatch().catch(() => {}); }, 600);
     }, { flush: 'post' });
@@ -14187,6 +14236,7 @@ const app = createApp({
       // 20261111e：AI 情绪判断（批量 + 缓存 + 多数主导红绿）
       aiSentiVersion, aiSentiBusy, aiSentiDone, aiSentiTotal, aiSentiError,
       aiSentiConfigured: aiConfigured, runAiSentimentBatch, rerunAiSentiment, clearAiSentimentCache,
+      sentimentMode, setSentimentMode,
       briefSourceName, briefSourceInput, briefSourceCustom, briefSourcePresets,
       onBriefSourcePick, commitBriefSource,
       briefDimMode, briefDimModes, setBriefDim, briefDimLabel, briefDimCount,

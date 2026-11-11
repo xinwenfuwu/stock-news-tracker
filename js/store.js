@@ -76,6 +76,7 @@ const Store = {
         aiKey: '',               // 用户自己的 LLM API Key（仅存本地 localStorage；用代理且 Worker 已存 Secret 时可留空）
         aiModel: '',             // 模型名，如 glm-4-flash
         aiProxy: '',             // 可选：AI 代理 Worker 地址（Cloudflare），填后所有 AI 调用走它，解决 CORS 并隐藏 Key
+        sentimentMode: 'ai',     // 20261111g：子类红绿着色判据 'ai'(大模型多数主导) | 'local'(关键词词典+战争/美债加息特例)
         doubaoKey: ''            // 用户自己的火山引擎「联网搜索」API Key（仅存本地 localStorage，不传服务器；填入后豆包榜走各自账户 500 次/月免费额度）
       }
     };
@@ -198,6 +199,8 @@ const Store = {
     if (typeof this.data.settings.doubaoKey !== 'string') this.data.settings.doubaoKey = '';
     if (typeof this.data.settings.aiModel !== 'string') this.data.settings.aiModel = '';
     if (typeof this.data.settings.aiProxy !== 'string') this.data.settings.aiProxy = '';
+    // 20261111g：着色判据模式，缺省/非法值一律回落到大模型（与 20261111e 上线行为一致）
+    if (['local', 'ai'].indexOf(this.data.settings.sentimentMode) < 0) this.data.settings.sentimentMode = 'ai';
     // 快讯来源名（可在「全球信息」页右栏标题上改）与分类维度（题材/概念/行业）
     if (typeof this.data.settings.briefSource !== 'string' || !this.data.settings.briefSource.trim()) {
       this.data.settings.briefSource = '格隆汇';
