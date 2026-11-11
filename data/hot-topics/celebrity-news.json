@@ -1,50 +1,126 @@
 {
-  "generatedAt": "2026-11-11 09:50",
+  "generatedAt": "2026-11-11 17:12",
   "generatedBy": "GitHub Actions · 多源实时聚合",
-  "sourceCount": 4,
+  "sourceCount": 5,
   "autoCount": 7,
   "events": [
     {
-      "id": "ap1hz23mt",
-      "title": "美国总统特朗普10日在社交媒体上发文，称民主党针对美国国防部长赫格塞思的弹劾“惨败”，同时指责民主党将弹劾作为政治武器。特朗普称，除共和党籍众议员托马斯·梅西外，其他共和党人都投…",
-      "tag": "人物/特朗普",
-      "region": "美国",
-      "concept": "usMacro",
-      "time": "2026-11-11 09:05",
-      "datetime": "2026-11-11 09:05",
+      "id": "apcn8l6c",
+      "title": "半导体研究机构SemiAnalysis称，SpaceX正在开发代号为Kessel的定制版英伟达Vera Rubin NVL72机架，以被动PCB中板取代内部NVLink线缆组件。…",
+      "tag": "人物/马斯克",
+      "region": "全球",
+      "concept": "ai",
+      "time": "2026-11-11 16:29",
+      "datetime": "2026-11-11 16:29",
       "source": "华尔街见闻",
-      "url": "https://wallstreetcn.com/livenews/3198015",
-      "summary": "美国总统特朗普10日在社交媒体上发文，称民主党针对美国国防部长赫格塞思的弹劾“惨败”，同时指责民主党将弹劾作为政治武器。特朗普称，除共和党籍众议员托马斯·梅西外，其他共和党人都投票支持赫格塞思。他还指责民主党继续将美国“武器化”并加以滥用。",
+      "url": "https://wallstreetcn.com/livenews/3198279",
+      "summary": "半导体研究机构SemiAnalysis称，SpaceX正在开发代号为Kessel的定制版英伟达Vera Rubin NVL72机架，以被动PCB中板取代内部NVLink线缆组件。该设计保留72个GPU封装、18个计算托盘和9个交换托盘，并将组件背靠背布置在中板两侧，计划用于地面和太空场景。",
       "relatedStocks": [
-        "宽基指数"
+        "英伟达",
+        "微软",
+        "台积电"
       ],
       "bullConcepts": [
-        "防御板块"
+        "AI算力",
+        "半导体",
+        "国产替代"
       ],
       "bearConcepts": [
-        "周期股"
+        "传统软件"
       ],
       "bullIndustries": [
-        "公用事业"
+        "半导体",
+        "AI应用",
+        "算力基础设施"
       ],
       "bearIndustries": [
-        "顺周期"
+        "传统IT服务"
+      ],
+      "heat": 33,
+      "momentum": 36,
+      "_auto": true
+    },
+    {
+      "id": "aplkwoot",
+      "title": "SpaceX据悉尝试机架层“去英伟达化”：只买芯片 研发Kessel机柜绕过L6计算板",
+      "tag": "人物/马斯克",
+      "region": "全球",
+      "concept": "ai",
+      "time": "2026-11-11 16:15",
+      "datetime": "2026-11-11 16:15",
+      "source": "财联社",
+      "url": "https://www.cls.cn/detail/2531515",
+      "summary": "【SpaceX据悉尝试机架层“去英伟达化”：只买芯片 研发Kessel机柜绕过L6计算板】财联社11月11日电，半导体研究机构SemiAnalysis在X上披露，SpaceX正在做一件此前只有超大规模云厂商尝试过的事：保留英伟达的芯片，但把芯片周围的机架自己重做一遍。这个自研机架的内部代号是Kessel。 SemiAnalysis称，SpaceX计划直接向英伟达采购芯片封装，…",
+      "relatedStocks": [
+        "英伟达",
+        "微软",
+        "台积电"
+      ],
+      "bullConcepts": [
+        "AI算力",
+        "半导体",
+        "国产替代"
+      ],
+      "bearConcepts": [
+        "传统软件"
+      ],
+      "bullIndustries": [
+        "半导体",
+        "AI应用",
+        "算力基础设施"
+      ],
+      "bearIndustries": [
+        "传统IT服务"
+      ],
+      "heat": 33,
+      "momentum": 36,
+      "_auto": true
+    },
+    {
+      "id": "ap8ulk8m",
+      "title": "泽连斯基说俄乌谈判欧洲人应上桌",
+      "tag": "人物/泽连斯基",
+      "region": "美国",
+      "concept": "defense",
+      "time": "2026-11-11 16:13",
+      "datetime": "2026-11-11 16:13",
+      "source": "财联社",
+      "url": "https://www.cls.cn/detail/2531510",
+      "summary": "财联社11月11日电，乌克兰总统泽连斯基当地时间11月10日在丹麦对媒体表示，自己的工作不是让美国总统特朗普高兴，而是尽一切努力，促使美国人和欧洲人都参与到俄乌冲突的谈判中来。他指出，谈判需要取得成果，哪怕只达成交换1000名或100名被俘人员的结果，那也算是一种成果，否则，谈判就只是一场游戏。",
+      "relatedStocks": [
+        "军工",
+        "黄金"
+      ],
+      "bullConcepts": [
+        "军工",
+        "避险资产"
+      ],
+      "bearConcepts": [
+        "风险资产"
+      ],
+      "bullIndustries": [
+        "军工",
+        "黄金"
+      ],
+      "bearIndustries": [
+        "航空",
+        "旅游"
       ],
       "heat": 24,
       "momentum": 26,
       "_auto": true
     },
     {
-      "id": "aplt50cv",
-      "title": "软银：37亿美元的数据中心资产减记与俄亥俄州项目无关。",
-      "tag": "人物/孙正义",
+      "id": "apntpb8o",
+      "title": "美议员在涉黄仁勋事件后再次呼吁收紧美国输华芯片，外交部：中方立场是一贯的",
+      "tag": "人物/黄仁勋",
       "region": "美国",
       "concept": "aiCapex",
-      "time": "2026-11-11 09:42",
-      "datetime": "2026-11-11 09:42",
-      "source": "华尔街见闻",
-      "url": "https://wallstreetcn.com/livenews/3198040",
-      "summary": "软银：37亿美元的数据中心资产减记与俄亥俄州项目无关。",
+      "time": "2026-11-11 15:21",
+      "datetime": "2026-11-11 15:21",
+      "source": "澎湃新闻",
+      "url": "https://finance.sina.com.cn/jjxw/2026-11-11/doc-iniyixxy2060843.shtml",
+      "summary": "11月11日，外交部发言人郭嘉昆主持例行记者会。 路透社记者提问，在涉及英伟达首席执行官黄仁勋的相关指控出现后，美国国会议员周二再次呼吁收紧对中国获取先进人工智能芯...",
       "relatedStocks": [
         "英伟达",
         "微软",
@@ -67,56 +143,54 @@
         "传统IT服务"
       ],
       "heat": 29,
-      "momentum": 41,
+      "momentum": 26,
       "_auto": true
     },
     {
-      "id": "ap4id2gk",
-      "title": "从第二季度到第三季度，OpenAI的营收增长了约50%至100亿美元，但该公司仍报告了巨额运营亏损。据文件显示，OpenAI向投资者表示，从第二季度到第三季度，其调整后运营利润率…",
-      "tag": "人物/奥尔特曼",
+      "id": "ap6f56ql",
+      "title": "达利欧称美国中期选举带来新的财政挑战，或将引发市场动荡",
+      "tag": "人物/达利欧",
       "region": "美国",
-      "concept": "aiCapex",
-      "time": "2026-11-11 07:30",
-      "datetime": "2026-11-11 07:30",
-      "source": "华尔街见闻",
-      "url": "https://wallstreetcn.com/livenews/3197975",
-      "summary": "从第二季度到第三季度，OpenAI的营收增长了约50%至100亿美元，但该公司仍报告了巨额运营亏损。据文件显示，OpenAI向投资者表示，从第二季度到第三季度，其调整后运营利润率从-150%改善至-109%。尽管如此，根据这些数据，该公司的运营亏损仍从101亿美元小幅上升至109亿美元。（华尔街日报）",
+      "concept": "defense",
+      "time": "2026-11-11 14:32",
+      "datetime": "2026-11-11 14:32",
+      "source": "环球市场播报",
+      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-11/doc-iniyixxy2018041.shtml",
+      "summary": "全球最大对冲基金桥水创始人瑞·达利欧表示，他并不看好2026年中期选举能为美国经济带来所需的变革。 这位亿万富翁一直发出警告，称美国正面临一场迫在眉睫的债务危机；如果...",
       "relatedStocks": [
-        "英伟达",
-        "微软",
-        "台积电"
+        "军工",
+        "黄金"
       ],
       "bullConcepts": [
-        "AI算力",
-        "半导体",
-        "国产替代"
+        "军工",
+        "避险资产"
       ],
       "bearConcepts": [
-        "传统软件"
+        "风险资产"
       ],
       "bullIndustries": [
-        "半导体",
-        "AI应用",
-        "算力基础设施"
+        "军工",
+        "黄金"
       ],
       "bearIndustries": [
-        "传统IT服务"
+        "航空",
+        "旅游"
       ],
-      "heat": 56,
+      "heat": 24,
       "momentum": 18,
       "_auto": true
     },
     {
-      "id": "ap1r2gpyk",
-      "title": "知名科技分析师艾夫斯：若黄仁勋离职，英伟达市值将暴跌三分之一",
+      "id": "ap7r7qq2",
+      "title": "Cohere首席执行官：若黄仁勋被迫辞职将是巨大打击",
       "tag": "人物/黄仁勋",
       "region": "全球",
       "concept": "ai",
-      "time": "2026-11-11 07:21",
-      "datetime": "2026-11-11 07:21",
+      "time": "2026-11-11 11:45",
+      "datetime": "2026-11-11 11:45",
       "source": "环球市场播报",
-      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-11/doc-iniyiiak8676604.shtml",
-      "summary": "知名科技股多头丹·艾夫斯（Dan Ives）认为，黄仁勋的价值大约相当于英伟达总市值的30%。 这位前韦德布什证券公司分析师周二表示，如果这位 AI 芯片巨头的掌舵人离开...",
+      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-11/doc-iniyitsc1903143.shtml",
+      "summary": "Cohere首席执行官Aidan Gomez反驳对人工智能（AI）算力建设过度的担忧，称其初创公司每天都要面对获取足够算力以维持运营的难题。",
       "relatedStocks": [
         "英伟达",
         "微软",
@@ -143,16 +217,16 @@
       "_auto": true
     },
     {
-      "id": "ap1kai4n6",
-      "title": "报道：美国众议院共和党人考虑向黄仁勋发出传票",
-      "tag": "人物/黄仁勋",
+      "id": "apqsq0k",
+      "title": "软银称37亿美元减记与俄亥俄州数据中心项目无关",
+      "tag": "人物/孙正义",
       "region": "美国",
       "concept": "aiCapex",
-      "time": "2026-11-11 04:14",
-      "datetime": "2026-11-11 04:14",
+      "time": "2026-11-11 11:24",
+      "datetime": "2026-11-11 11:24",
       "source": "环球市场播报",
-      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-11/doc-iniyhwnk5566408.shtml",
-      "summary": "美国众议院外交事务委员会主席Brian Mast告诉美国广播公司（ABC），如果英伟达首席执行官黄仁勋不回应参加闭门简报的要求，他准备向黄仁勋发出传票。",
+      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-11/doc-iniyipkh8667903.shtml",
+      "summary": "软银集团更新其财报演示资料，澄清在9月季度中计提的37亿美元费用与俄亥俄州Ports-Pike数据中心和发电项目无关。 演示资料显示，软银就已不再纳入公司修订计划的发电相关设...",
       "relatedStocks": [
         "英伟达",
         "微软",
@@ -173,74 +247,6 @@
       ],
       "bearIndustries": [
         "传统IT服务"
-      ],
-      "heat": 29,
-      "momentum": 18,
-      "_auto": true
-    },
-    {
-      "id": "apamorzn",
-      "title": "泽连斯基：三方会谈具有建设性且富有实质内容",
-      "tag": "人物/泽连斯基",
-      "region": "全球",
-      "concept": "macro",
-      "time": "2026-11-11 00:23",
-      "datetime": "2026-11-11 00:23",
-      "source": "环球市场播报",
-      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-11/doc-iniyhseq2438881.shtml",
-      "summary": "乌克兰总统泽连斯基表示，三方和平谈判的形式“具有建设性且富有实质内容”。 新一轮谈判仍将在阿布扎比举行，泽连斯基就周三的会谈发出新指示。",
-      "relatedStocks": [
-        "军工",
-        "黄金"
-      ],
-      "bullConcepts": [
-        "军工",
-        "避险资产"
-      ],
-      "bearConcepts": [
-        "风险资产"
-      ],
-      "bullIndustries": [
-        "军工",
-        "黄金"
-      ],
-      "bearIndustries": [
-        "航空",
-        "旅游"
-      ],
-      "heat": 24,
-      "momentum": 18,
-      "_auto": true
-    },
-    {
-      "id": "apalncm3",
-      "title": "泽连斯基称对美方推动结束俄乌战争的信息“非常高兴”",
-      "tag": "人物/泽连斯基",
-      "region": "美国",
-      "concept": "defense",
-      "time": "2026-11-11 07:13",
-      "datetime": "2026-11-11 07:13",
-      "source": "环球市场播报",
-      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-11/doc-iniyiiah2127140.shtml",
-      "summary": "乌克兰总统泽连斯基周二表示，对于他从美国方面收到的有关推动解决持续四年半以上的俄乌战争的信息，他感到非常高兴。 泽连斯基在丹麦与北欧国家领导人进行了一整天的会谈...",
-      "relatedStocks": [
-        "军工",
-        "黄金"
-      ],
-      "bullConcepts": [
-        "军工",
-        "避险资产"
-      ],
-      "bearConcepts": [
-        "风险资产"
-      ],
-      "bullIndustries": [
-        "军工",
-        "黄金"
-      ],
-      "bearIndustries": [
-        "航空",
-        "旅游"
       ],
       "heat": 24,
       "momentum": 18,
