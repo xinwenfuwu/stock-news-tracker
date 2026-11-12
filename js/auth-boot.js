@@ -27,7 +27,7 @@
   'use strict';
 
   // 与 index.html 中静态资源版本号保持一致，避免升级后命中旧缓存
-  var ASSET_V = '20261112b';
+  var ASSET_V = '20261112c';
 
   // 管理员点开「注册申请导入链接」后，申请码暂存在这里，等业务层（app.js）就绪后取走
   var IMPORT_KEY = 'snt-pending-import-v1';
@@ -1239,6 +1239,35 @@
     if (Auth.switchAccount(username)) location.reload();
   }
 
+  /* ------------------------------------------------------------------
+   * 20261112c：运行时版本自检（专治华为浏览器强缓存入口 HTML）
+   * 现象：线上已部署新版，浏览器却仍加载旧 index.html → 旧 auth-boot.js → 旧 app.js，
+   *       于是「代码已修、页面还是旧逻辑」（例如跨站重合榜混入时间段外的新闻）。
+   * 做法：以 no-store 重新取一份 auth-boot.js，解析服务端的 ASSET_V；
+   *       与本页加载时的版本不一致，就带新版本 query 自动重载一次。
+   *       sessionStorage 保证同一版本在本会话只重载一次，不会死循环。
+   * 注意：只有包含本逻辑的版本才具备自检能力；从本版起后续升级不再需要手动强刷。
+   * ------------------------------------------------------------------ */
+  function checkAssetVersion() {
+    try {
+      if (!global.fetch || !global.sessionStorage || !global.location) return;
+      fetch('js/auth-boot.js?_vc=' + Date.now(), { cache: 'no-store' })
+        .then(function (r) { return r && r.ok ? r.text() : null; })
+        .then(function (txt) {
+          if (!txt) return;
+          var m = /var\s+ASSET_V\s*=\s*'([^']+)'/.exec(txt);
+          var latest = m && m[1];
+          if (!latest || latest === ASSET_V) return;
+          var key = 'snt-asset-reload-' + latest;
+          if (sessionStorage.getItem(key)) return;
+          sessionStorage.setItem(key, '1');
+          var loc = global.location;
+          loc.replace(loc.pathname + '?v=' + encodeURIComponent(latest) + (loc.hash || ''));
+        })
+        .catch(function () { /* 离线或请求失败：保持当前页面可用 */ });
+    } catch (e) { /* 隐私模式禁用存储：跳过自检 */ }
+  }
+
   global.AuthUI = {
     start: start,
     logout: logout,
@@ -1257,8 +1286,9 @@
   };
 
   if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', start);
+    document.addEventListener('DOMContentLoaded', function () { start(); checkAssetVersion(); });
   } else {
     start();
+    checkAssetVersion();
   }
 })(typeof window !== 'undefined' ? window : globalThis);

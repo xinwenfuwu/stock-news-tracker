@@ -597,8 +597,9 @@
    * @returns {Array<{repTitle:string, count:number, siteRanks:number[], siteNames:string[], ratio:string, items:Array}>}
    *          按出现站点数降序。
    */
-  function clusterItems(items) {
-    const list = (items || []).filter(it => it && it.text);
+  function clusterItems(items, win) {
+    // 20261112c：最终保险——跨站重合榜的展开明细同样只接纳「可证明落在窗口内」的新闻
+    const list = (items || []).filter(it => it && it.text && itemInWin(it, win));
     const clusters = [];
     for (const it of list) {
       let placed = false;
@@ -635,10 +636,12 @@
    * 各站分类统计：给定多日快照的扁平 items，按 sourceKey 统计每类数量。
    * @returns {Array<{rank,key,name,color,total,byCat:Object,dist:Array<{cat,count,pct}>}>}
    */
-  function siteCategoryStats(items) {
+  function siteCategoryStats(items, win) {
     const bySource = {};
     SOURCE_ORDER.forEach(s => { bySource[s.key] = { rank: s.rank, key: s.key, name: s.name, color: s.color, byCat: {}, news: {}, allNews: [], total: 0 }; });
-    for (const it of (items || [])) {
+    // 20261112c：窗口硬约束（7 大类分站统计及其新闻弹窗）
+    const _src = (items || []).filter(it => itemInWin(it, win));
+    for (const it of _src) {
       const st = bySource[it.sourceKey];
       if (!st) continue;
       // batch32：历史快照里的旧分类名先归一化，否则改名后这些条目会从分布统计里消失
@@ -673,13 +676,15 @@
    * @param {string} dimKey THEME_KEYWORDS 的维度键
    * @returns 与 siteCategoryStats 同构：dist[].news 为该站该主题命中的全部新闻，供点开弹窗
    */
-  function siteThemeStats(items, dimKey) {
+  function siteThemeStats(items, dimKey, win) {
     const dict = THEME_KEYWORDS[dimKey];
     const bySource = {};
     SOURCE_ORDER.forEach(s => {
       bySource[s.key] = { rank: s.rank, key: s.key, name: s.name, color: s.color, counter: {}, bucket: {}, total: 0, hitTotal: 0 };
     });
-    for (const it of (items || [])) {
+    // 20261112c：窗口硬约束（概念/行业/产品/产业/科技 分站统计及其新闻弹窗）
+    const _src = (items || []).filter(it => itemInWin(it, win));
+    for (const it of _src) {
       const st = bySource[it.sourceKey];
       if (!st) continue;
       st.total++;
@@ -851,9 +856,10 @@
    * @returns {Array<{key,name,icon,color,total,baseTotal,topics:Array<{name,count,pct,width,samples,news}>}>}
    *          topics[].news 为该主题命中的全部新闻（引用原对象，按日期降序、站点序号升序），供点击主题就地展开
    */
-  function themeStats(items, sampleMax) {
+  function themeStats(items, sampleMax, win) {
     sampleMax = sampleMax == null ? 3 : sampleMax;
-    const list = (items || []).filter(it => it && it.text);
+    // 20261112c：窗口硬约束（主题分类统计展开的新闻明细）
+    const list = (items || []).filter(it => it && it.text && itemInWin(it, win));
     const base = list.length;
     return THEME_DIMENSIONS.map(dim => {
       const counter = {};

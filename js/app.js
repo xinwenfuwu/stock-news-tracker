@@ -7444,6 +7444,7 @@ const app = createApp({
       show: false, siteName: '', siteRank: 0, topic: '', dimName: '', color: '#e63525', items: []
     });
     let _analysisFlat = [];   // 最近一次统计的扁平数据（不进响应式，避免大数组的代理开销）
+    let _analysisWin = null;  // 20261112c：最近一次统计的时间窗口，切换维度/点开弹窗时仍按同一窗口复核
     /* batch16：统计分析（跨站重合榜 / 主题分类统计）的统计时间窗口。
      * 与快讯板块同口径：以每天 15:00 换日，默认「昨天 15:00 → 现在」，可改。 */
     const analysisWinStart = ref('');
@@ -8007,6 +8008,16 @@ const app = createApp({
           }
         }
         const list = [...bySource.values()].sort((a, b) => a.rank - b.rank);
+        /* 20261112c 最终保险：与统计分析同一条规则——每日话题列表里每一条新闻
+         * 都必须能用逐条 time 证明落在设定窗口内，无时间/解析失败/窗口外一律不展示。 */
+        if (HT.itemInWin) {
+          const _w = { startMs: wStartMs, endMs: wEndMs };
+          for (const s of list) {
+            const before = s.items.length;
+            s.items = s.items.filter(it => HT.itemInWin(it, _w));
+            skippedOut += before - s.items.length;
+          }
+        }
         list.forEach(s => {
           s.items.sort((a, b) => (b.time || '').localeCompare(a.time || ''));
           s.loading = false;
@@ -9392,22 +9403,31 @@ const app = createApp({
             } catch (e) { /* 尝试下一个代理 */ }
           }
         }
-        const clusters = (typeof HotTopics !== 'undefined' ? HotTopics.clusterItems(flat) : []).map(c => ({ ...c, _open: false }));
-        _analysisFlat = flat;
+        /* 20261112c 最终保险（用户规则：设定时间范围后，刷新出来的每一条新闻都必须在范围内）。
+         * 上游数据可能来自仓库快照、本地离线缓存或实时叠加；无论从哪里来，
+         * 只要没有可解析的逐条 time、或 time 落在 [窗口起点, 窗口终点) 之外，一律剔除。
+         * 这样跨站重合榜（含展开明细）、主题分类统计、分站统计、点开的新闻弹窗
+         * 都只可能出现窗口内的新闻。HotTopics 的四个统计函数同时接收同一个 win 作为第二道保险。 */
+        const _win = (winStartMs != null && winEndMs != null) ? { startMs: winStartMs, endMs: winEndMs } : null;
+        _analysisWin = _win;
+        const finalFlat = (_win && HT.itemInWin) ? flat.filter(it => HT.itemInWin(it, _win)) : flat.slice();
+        skippedOut += flat.length - finalFlat.length;
+        const clusters = (typeof HotTopics !== 'undefined' ? HotTopics.clusterItems(finalFlat, _win) : []).map(c => ({ ...c, _open: false }));
+        _analysisFlat = finalFlat;
         // 请求S：默认按「概念」维度分站统计；切到「7大类」时走原来的互斥分类
         const siteStats = (typeof HotTopics !== 'undefined')
           ? (siteStatsDim.value === 'cat7'
-            ? HotTopics.siteCategoryStats(flat)
-            : HotTopics.siteThemeStats(flat, siteStatsDim.value))
+            ? HotTopics.siteCategoryStats(finalFlat, _win)
+            : HotTopics.siteThemeStats(finalFlat, siteStatsDim.value, _win))
           : [];
         // 主题维度统计（行业/概念/产品/产业/科技），多标签命中，与跨站重合榜并排展示
-        const themeStats = (typeof HotTopics !== 'undefined' && HotTopics.themeStats ? HotTopics.themeStats(flat) : [])
+        const themeStats = (typeof HotTopics !== 'undefined' && HotTopics.themeStats ? HotTopics.themeStats(finalFlat, undefined, _win) : [])
           .map(d => ({ ...d, _open: true, showAll: false, selTopic: null, newsLimit: 30 }));
         // 请求U：主题分类统计的「总条数」= 十个新闻平台在该时间段内的全部新闻条数（与 themeStats 的分母一致，排除无文本条目）
         const themeBaseTotal = (typeof HotTopics !== 'undefined' && HotTopics.themeStats)
-          ? flat.filter(it => it && it.text).length
-          : flat.length;
-        analysisResult.value = { clusters, siteStats, themeStats, dayCount, totalItems: flat.length, themeBaseTotal };
+          ? finalFlat.filter(it => it && it.text).length
+          : finalFlat.length;
+        analysisResult.value = { clusters, siteStats, themeStats, dayCount, totalItems: finalFlat.length, themeBaseTotal, skippedOut, liveAdded };
         const _rangeLabel = winMode
           ? (HT.fmtWindowCN(winStartMs) + ' → ' + HT.fmtWindowCN(winEndMs))
           : (opt && opt.label || '近 N 天');
@@ -9426,8 +9446,8 @@ const app = createApp({
       const HT = (typeof HotTopics !== 'undefined') ? HotTopics : null;
       if (!HT) return;
       analysisResult.value.siteStats = (siteStatsDim.value === 'cat7')
-        ? HT.siteCategoryStats(_analysisFlat)
-        : HT.siteThemeStats(_analysisFlat, siteStatsDim.value);
+        ? HT.siteCategoryStats(_analysisFlat, _analysisWin)
+        : HT.siteThemeStats(_analysisFlat, siteStatsDim.value, _analysisWin);
     }
     watch(siteStatsDim, recomputeSiteStats);
 
