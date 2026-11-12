@@ -1,10 +1,10 @@
 {
-  "generatedAt": "2026-11-12 17:40",
+  "generatedAt": "2026-11-13 02:07",
   "generatedBy": "GitHub Actions · 财经日历 + 多源新闻 + 精选底库",
   "sourceCount": 5,
-  "calendarCount": 46,
-  "seedCount": 43,
-  "autoCount": 10,
+  "calendarCount": 32,
+  "seedCount": 37,
+  "autoCount": 6,
   "events": [
     {
       "id": "uc2",
@@ -27,45 +27,6 @@
       ]
     },
     {
-      "id": "uc9",
-      "title": "Web Summit 2026",
-      "tag": "会议/科技",
-      "date": "2026-11-09",
-      "endDate": "2026-11-12",
-      "region": "欧洲",
-      "scope": "world",
-      "location": "里斯本",
-      "concept": "aiApp",
-      "source": "全球科技活动日历",
-      "importance": 84,
-      "summary": "全球最大科技创业峰会之一，AI、互联网与创投议题集中，欧洲AI监管与融资环境为关注点。",
-      "relatedStocks": [
-        "AI应用",
-        "创投",
-        "云计算"
-      ]
-    },
-    {
-      "id": "uc10",
-      "title": "KubeCon + CloudNativeCon 北美大会",
-      "tag": "会议/云",
-      "date": "2026-11-09",
-      "endDate": "2026-11-12",
-      "region": "美国",
-      "scope": "us",
-      "location": "盐湖城",
-      "concept": "aiCapex",
-      "source": "全球科技活动日历",
-      "importance": 70,
-      "summary": "云原生与AI基础设施年度会议，通常伴随头部云厂商发布新算力/推理平台。",
-      "relatedStocks": [
-        "云计算",
-        "AI算力",
-        "微软",
-        "谷歌"
-      ]
-    },
-    {
       "id": "uc12",
       "title": "electronica 2026 与 SEMICON Europa 2026",
       "tag": "展会/半导体",
@@ -82,163 +43,6 @@
         "半导体设备",
         "功率半导体",
         "汽车电子"
-      ]
-    },
-    {
-      "id": "uc8",
-      "title": "第108届中国电子展（CEF）",
-      "tag": "展会/电子",
-      "date": "2026-11-10",
-      "endDate": "2026-11-12",
-      "region": "中国",
-      "scope": "cn",
-      "location": "上海",
-      "concept": "semiEq",
-      "source": "上海证券报财经日历",
-      "importance": 72,
-      "summary": "国内电子元器件与半导体产业链年度展会，新型储能、功率半导体与国产设备为焦点。",
-      "relatedStocks": [
-        "半导体设备",
-        "元器件",
-        "储能"
-      ]
-    },
-    {
-      "id": "uc11",
-      "title": "COP31 世界领导人峰会",
-      "tag": "峰会/气候",
-      "date": "2026-11-11",
-      "endDate": "2026-11-12",
-      "region": "全球",
-      "scope": "world",
-      "location": "土耳其安塔利亚",
-      "concept": "climate",
-      "source": "UNFCCC",
-      "importance": 88,
-      "summary": "COP31框架下的国家与政府首脑峰会，气候融资与能源转型承诺为市场关注焦点。",
-      "relatedStocks": [
-        "绿电",
-        "碳交易",
-        "新能源"
-      ]
-    },
-    {
-      "id": "uc13",
-      "title": "百度世界2026",
-      "tag": "发布会/AI",
-      "date": "2026-11-12",
-      "region": "中国",
-      "scope": "cn",
-      "location": "北京",
-      "concept": "llm",
-      "source": "每日经济新闻财经日历",
-      "importance": 82,
-      "summary": "百度年度技术大会，通常发布文心大模型、智能云与自动驾驶/智能体最新进展。",
-      "relatedStocks": [
-        "百度",
-        "国产大模型",
-        "智能驾驶"
-      ]
-    },
-    {
-      "id": "au1v8ngwg",
-      "title": "2026年大湾区（广州）航运大会",
-      "tag": "贸易/供应链/日程",
-      "date": "2026-11-12",
-      "region": "中国",
-      "scope": "cn",
-      "concept": "crossEcom",
-      "source": "每日经济新闻·财经日历",
-      "summary": "计划于 2026-11-12 举行或公布，来源：每日经济新闻·财经日历。",
-      "relatedStocks": [
-        "跨境电商",
-        "航运"
-      ],
-      "importance": 72,
-      "_auto": true
-    },
-    {
-      "id": "au1kupkyf",
-      "title": "2026工业操作系统大会",
-      "tag": "宏观/综合/日程",
-      "date": "2026-11-12",
-      "region": "中国",
-      "scope": "cn",
-      "concept": "broker",
-      "source": "每日经济新闻·财经日历",
-      "summary": "计划于 2026-11-12 举行或公布，来源：每日经济新闻·财经日历。",
-      "relatedStocks": [
-        "宽基指数"
-      ],
-      "importance": 72,
-      "_auto": true
-    },
-    {
-      "id": "au16ub2v6",
-      "title": "第二十三届中国国际半导体博览会开幕式暨第八届IC企业家大会",
-      "tag": "科技/AI/日程",
-      "date": "2026-11-12",
-      "region": "中国",
-      "scope": "cn",
-      "concept": "llm",
-      "source": "每日经济新闻·财经日历",
-      "summary": "计划于 2026-11-12 举行或公布，来源：每日经济新闻·财经日历。",
-      "relatedStocks": [
-        "英伟达",
-        "微软",
-        "台积电"
-      ],
-      "importance": 72,
-      "_auto": true
-    },
-    {
-      "id": "aunwxhto",
-      "title": "联影集团董事长薛敏：创造不同",
-      "tag": "宏观/综合/日程",
-      "date": "2026-11-12",
-      "region": "中国",
-      "scope": "cn",
-      "concept": "broker",
-      "source": "长三角资本局",
-      "summary": "今日，2026年上海证券交易所国际投资者大会在上海举行。 本届大会以“交互融通 互利共赢——全球投资者共话中国资产安全、韧性、创新价值”为主题...",
-      "relatedStocks": [
-        "宽基指数"
-      ],
-      "importance": 72,
-      "_auto": true
-    },
-    {
-      "id": "au1ddmd6y",
-      "title": "第六届国际新材料产业大会",
-      "tag": "宏观/综合/日程",
-      "date": "2026-11-12",
-      "region": "全球",
-      "scope": "world",
-      "concept": "macro",
-      "source": "每日经济新闻·财经日历",
-      "summary": "计划于 2026-11-12 举行或公布，来源：每日经济新闻·财经日历。",
-      "relatedStocks": [
-        "宽基指数"
-      ],
-      "importance": 69,
-      "_auto": true
-    },
-    {
-      "id": "uc14",
-      "title": "国内成品油调价窗口",
-      "tag": "政策/能源",
-      "date": "2026-11-12",
-      "region": "中国",
-      "scope": "cn",
-      "location": "北京",
-      "concept": "elec",
-      "source": "上海证券报财经日历",
-      "importance": 66,
-      "summary": "新一轮成品油价格调整窗口开启，影响炼化、物流与交运成本端。",
-      "relatedStocks": [
-        "中国石油",
-        "炼化",
-        "物流"
       ]
     },
     {
@@ -271,6 +75,24 @@
       "summary": "计划于 2026-11-13 举行或公布，来源：每日经济新闻·财经日历。",
       "relatedStocks": [
         "宽基指数"
+      ],
+      "importance": 59,
+      "_auto": true
+    },
+    {
+      "id": "au16hokl3",
+      "title": "网传印度裔高管接替黄仁勋出任英伟达CEO？假的",
+      "tag": "科技/AI/日程",
+      "date": "2026-11-13",
+      "region": "全球",
+      "scope": "world",
+      "concept": "ai",
+      "source": "新浪科技",
+      "summary": "今日，网传消息称英伟达董事会已于当地时间周三早些时候召开特别会议，正式批准公司联合创始人黄仁勋辞去首席执行官职务的申请，并一致投票决定...",
+      "relatedStocks": [
+        "英伟达",
+        "微软",
+        "台积电"
       ],
       "importance": 59,
       "_auto": true

@@ -1,20 +1,53 @@
 {
-  "generatedAt": "2026-11-12 17:40",
+  "generatedAt": "2026-11-13 02:07",
   "generatedBy": "GitHub Actions · 多源实时聚合",
   "sourceCount": 5,
-  "autoCount": 15,
+  "autoCount": 13,
   "events": [
     {
-      "id": "ap1apay8j",
-      "title": "美股盘前，英伟达跌约7%，黄仁勋再曝新婚外情，董事会正筹划将其解职。 CoreWeave跌约7%，报道称该公司准备出售投资级贷款来募集至少40亿美元。 存储芯片股普跌，SK海力士…",
-      "tag": "人物/黄仁勋",
+      "id": "apr2nl6p",
+      "title": "周四（11月12日）欧市尾盘，德国10年期国债收益率涨3.2个基点，刷新日高至3.348%，美国总统特朗普称“我们不需要与伊朗达成协议”之际，北京时间21:08出现一波短线拉升行…",
+      "tag": "人物/特朗普",
       "region": "美国",
-      "concept": "aiCapex",
-      "time": "2026-11-12 17:00",
-      "datetime": "2026-11-12 17:00",
+      "concept": "usFinance",
+      "time": "2026-11-13 02:01",
+      "datetime": "2026-11-13 02:01",
       "source": "华尔街见闻",
-      "url": "https://wallstreetcn.com/livenews/3199016",
-      "summary": "美股盘前，英伟达跌约7%，黄仁勋再曝新婚外情，董事会正筹划将其解职。 CoreWeave跌约7%，报道称该公司准备出售投资级贷款来募集至少40亿美元。 存储芯片股普跌，SK海力士跌约4%，闪迪跌约4%，美光科技跌约4%，希捷科技跌约3%。 光通信股普跌，Coherent跌约4%，Credo跌约4%，Lumentum跌约4%，迈威尔科技跌约4%，康宁跌约3%。",
+      "url": "https://wallstreetcn.com/livenews/3199281",
+      "summary": "周四（11月12日）欧市尾盘，德国10年期国债收益率涨3.2个基点，刷新日高至3.348%，美国总统特朗普称“我们不需要与伊朗达成协议”之际，北京时间21:08出现一波短线拉升行情——打乱日内稍早持续的下跌状态，之后呈现出W形反转行情。 两年期德债收益率涨2.3个基点，刷新日高至3.144%，18:17也跌至3.085%刷新日低；30年期德债收益率涨3.3个基点，刷新日高至3…",
+      "relatedStocks": [
+        "美股科技",
+        "黄金"
+      ],
+      "bullConcepts": [
+        "黄金",
+        "防御板块"
+      ],
+      "bearConcepts": [
+        "高估值成长股"
+      ],
+      "bullIndustries": [
+        "银行",
+        "黄金"
+      ],
+      "bearIndustries": [
+        "高杠杆地产"
+      ],
+      "heat": 65,
+      "momentum": 56,
+      "_auto": true
+    },
+    {
+      "id": "ap4c40dz",
+      "title": "黄仁勋离职后，英伟达新任临时首席执行官科莱特·克雷斯和董事会主席哈维·琼斯于周四向员工发送电子邮件，以下是信件的全文内容： 亲爱的NVIDIA同事们： 我深信这家公司及其未来。最…",
+      "tag": "人物/黄仁勋",
+      "region": "全球",
+      "concept": "ai",
+      "time": "2026-11-13 01:27",
+      "datetime": "2026-11-13 01:27",
+      "source": "华尔街见闻",
+      "url": "https://wallstreetcn.com/livenews/3199271",
+      "summary": "黄仁勋离职后，英伟达新任临时首席执行官科莱特·克雷斯和董事会主席哈维·琼斯于周四向员工发送电子邮件，以下是信件的全文内容： 亲爱的NVIDIA同事们： 我深信这家公司及其未来。最重要的是，我深信你们每一个人，深信我们的客户和合作伙伴，深信我们每天在全球经济中发挥的重要作用。 董事会、高管团队和我都认识到，这是一段极其艰难的时期，我想让你们知道，我们对你们的韧性、专业精神和持续…",
       "relatedStocks": [
         "英伟达",
         "微软",
@@ -36,51 +69,161 @@
       "bearIndustries": [
         "传统IT服务"
       ],
-      "heat": 69,
+      "heat": 56,
       "momentum": 46,
       "_auto": true
     },
     {
-      "id": "ap1dd6wan",
-      "title": "乌克兰总统泽连斯基12日表示，过去几天乌军发现美国“星链”系统在乌克兰境内出现严重运行异常，系统受每小时161公里（100英里）速度限制，涉及整个前线。乌军核查后认为并非偶发故障…",
-      "tag": "人物/马斯克",
+      "id": "ap1e07rw0",
+      "title": "Hugging Face首席执行官就黄仁勋离职事件置评：令人难过的一天",
+      "tag": "人物/黄仁勋",
       "region": "美国",
-      "concept": "usMacro",
-      "time": "2026-11-12 17:26",
-      "datetime": "2026-11-12 17:26",
-      "source": "华尔街见闻",
-      "url": "https://wallstreetcn.com/livenews/3199029",
-      "summary": "乌克兰总统泽连斯基12日表示，过去几天乌军发现美国“星链”系统在乌克兰境内出现严重运行异常，系统受每小时161公里（100英里）速度限制，涉及整个前线。乌军核查后认为并非偶发故障，而是系统性速度限制，大幅增加拦截俄喷气式无人机的难度，乌方正与美国沟通查明情况。据美方10月22日消息，特朗普已致电马斯克要求解除相关限制。10月24日泽连斯基称，“星链”和“星盾”系统运行已恢复至…",
+      "concept": "aiCapex",
+      "time": "2026-11-13 01:40",
+      "datetime": "2026-11-13 01:40",
+      "source": "新浪7×24",
+      "url": "https://finance.sina.cn/7x24/2026-11-13/detail-iniypekt1574688.d.html",
+      "summary": "【Hugging Face首席执行官就黄仁勋离职事件置评：令人难过的一天】Hugging Face首席执行官克莱芒·德朗格周四对英伟达首席执行官黄仁勋的离职简短置评，称这是“非常令人难过的一天”。英伟达曾于9月宣布计划以129亿美元收购这家开源人工智能模型平台，这将成为该公司历史上第二大收购，仅次于2025年12月以200亿美元收购芯片制造商Groq的资产。德朗格写道：“整件…",
       "relatedStocks": [
-        "宽基指数"
+        "英伟达",
+        "微软",
+        "台积电"
       ],
       "bullConcepts": [
-        "防御板块"
+        "AI算力",
+        "半导体",
+        "国产替代"
       ],
       "bearConcepts": [
-        "周期股"
+        "传统软件"
       ],
       "bullIndustries": [
-        "公用事业"
+        "半导体",
+        "AI应用",
+        "算力基础设施"
       ],
       "bearIndustries": [
-        "顺周期"
+        "传统IT服务"
       ],
-      "heat": 29,
-      "momentum": 41,
+      "heat": 42,
+      "momentum": 36,
       "_auto": true
     },
     {
-      "id": "aphkm5zq",
-      "title": "据报道，以色列总理内塔尼亚胡的军事秘书将前往向反对派领导人艾森科特通报安全事务。",
-      "tag": "人物/内塔尼亚胡",
-      "region": "全球",
-      "concept": "macro",
-      "time": "2026-11-12 17:25",
-      "datetime": "2026-11-12 17:25",
+      "id": "aprdjhuq",
+      "title": "乌克兰总统泽连斯基：与欧洲理事会主席科斯塔和欧盟委员会主席冯德莱恩讨论了与欧盟达成的额外支持协议，以度过冬季。我们预计不久将收到能源和人道主义援助方案，以及住房援助。我们还就启动…",
+      "tag": "人物/泽连斯基",
+      "region": "欧洲",
+      "concept": "energy",
+      "time": "2026-11-13 02:03",
+      "datetime": "2026-11-13 02:03",
       "source": "新浪7×24",
-      "url": "https://finance.sina.cn/7x24/2026-11-12/detail-iniynppc3808575.d.html",
-      "summary": "据报道，以色列总理内塔尼亚胡的军事秘书将前往向反对派领导人艾森科特通报安全事务。",
+      "url": "https://finance.sina.cn/7x24/2026-11-13/detail-iniypekp1139417.d.html",
+      "summary": "乌克兰总统泽连斯基：与欧洲理事会主席科斯塔和欧盟委员会主席冯德莱恩讨论了与欧盟达成的额外支持协议，以度过冬季。我们预计不久将收到能源和人道主义援助方案，以及住房援助。我们还就启动最后两个谈判集群以及乌克兰加入欧盟的后续步骤协调了立场。",
+      "relatedStocks": [
+        "中国石油",
+        "紫金矿业"
+      ],
+      "bullConcepts": [
+        "油气",
+        "贵金属"
+      ],
+      "bearConcepts": [
+        "高耗能制造"
+      ],
+      "bullIndustries": [
+        "石油开采",
+        "贵金属"
+      ],
+      "bearIndustries": [
+        "航空运输",
+        "化工"
+      ],
+      "heat": 24,
+      "momentum": 36,
+      "_auto": true
+    },
+    {
+      "id": "apmmwwk2",
+      "title": "美国财长贝森特：长期以来，华盛顿将美国工业衰退视为不可避免。 总统特朗普认识到，这是政策选择的结果，因此可以逆转。 在特朗普的贸易政策重置及其历史性减税法案实施后，该行业重获增长…",
+      "tag": "人物/特朗普",
+      "region": "美国",
+      "concept": "antitrust",
+      "time": "2026-11-13 01:19",
+      "datetime": "2026-11-13 01:19",
+      "source": "华尔街见闻",
+      "url": "https://wallstreetcn.com/livenews/3199268",
+      "summary": "美国财长贝森特：长期以来，华盛顿将美国工业衰退视为不可避免。 总统特朗普认识到，这是政策选择的结果，因此可以逆转。 在特朗普的贸易政策重置及其历史性减税法案实施后，该行业重获增长势头，这表明正确的政策能够扭转数十年的工业衰退。 该行业已连续十个月扩张，今年迄今新增10.1万个就业岗位。9月产出再次上升，职位空缺攀升至58.4万个，为新冠疫情前时代有记录以来的最高水平。",
+      "relatedStocks": [
+        "跨境电商",
+        "航运"
+      ],
+      "bullConcepts": [
+        "内需",
+        "国产替代"
+      ],
+      "bearConcepts": [
+        "出口链"
+      ],
+      "bullIndustries": [
+        "跨境电商",
+        "内需消费"
+      ],
+      "bearIndustries": [
+        "出口制造",
+        "航运"
+      ],
+      "heat": 24,
+      "momentum": 26,
+      "_auto": true
+    },
+    {
+      "id": "ap1pmvuga",
+      "title": "迪拜富豪：仅凭投资OpenAI、SpaceX和Anthropic便可斩获数十亿美元",
+      "tag": "人物/马斯克",
+      "region": "美国",
+      "concept": "aiCapex",
+      "time": "2026-11-12 18:53",
+      "datetime": "2026-11-12 18:53",
+      "source": "环球市场播报",
+      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-12/doc-iniynppc3866632.shtml",
+      "summary": "迪拜富豪侯赛因·萨吉瓦尼预计，其对Anthropic等人工智能公司的投资将带来数十亿美元回报，凸显近年来一些投资者押注大型科技公司所获得的可观收益。",
+      "relatedStocks": [
+        "英伟达",
+        "微软",
+        "台积电"
+      ],
+      "bullConcepts": [
+        "AI算力",
+        "半导体",
+        "国产替代"
+      ],
+      "bearConcepts": [
+        "传统软件"
+      ],
+      "bullIndustries": [
+        "半导体",
+        "AI应用",
+        "算力基础设施"
+      ],
+      "bearIndustries": [
+        "传统IT服务"
+      ],
+      "heat": 83,
+      "momentum": 18,
+      "_auto": true
+    },
+    {
+      "id": "ap1rcw5w7",
+      "title": "当地时间12日，俄罗斯总统助理乌沙科夫表示，俄方愿立即与美国共同就欧洲安全问题的相关提议展开讨论。乌沙科夫还说，美方谈判代表积极支持普京提出的在康斯坦丁诺夫卡开展人道主义行动的建…",
+      "tag": "人物/普京",
+      "region": "美国",
+      "concept": "defense",
+      "time": "2026-11-13 01:05",
+      "datetime": "2026-11-13 01:05",
+      "source": "华尔街见闻",
+      "url": "https://wallstreetcn.com/livenews/3199260",
+      "summary": "当地时间12日，俄罗斯总统助理乌沙科夫表示，俄方愿立即与美国共同就欧洲安全问题的相关提议展开讨论。乌沙科夫还说，美方谈判代表积极支持普京提出的在康斯坦丁诺夫卡开展人道主义行动的建议。 他表示，俄方已准备好立即启动排雷工作，以便在康斯坦丁诺夫卡开展人道主义行动。俄罗斯将邀请来自乌克兰、美国及其他国家的记者参与在康斯坦丁诺夫卡开展的人道主义行动。目前各方正在就迄今为止最大规模的战…",
       "relatedStocks": [
         "军工",
         "黄金"
@@ -100,123 +243,90 @@
         "航空",
         "旅游"
       ],
-      "heat": 38,
-      "momentum": 46,
+      "heat": 55,
+      "momentum": 26,
       "_auto": true
     },
     {
-      "id": "ap86w7fg",
-      "title": "爱尔兰总理马丁：希望乌克兰总统泽连斯基与美国中东问题特使威特科夫、特朗普女婿库什纳的会晤取得进展。",
-      "tag": "人物/特朗普",
+      "id": "ap1ppj7mk",
+      "title": "报道称，OpenAI以1.25万亿美元估值融资150亿美元。",
+      "tag": "人物/奥尔特曼",
       "region": "美国",
-      "concept": "usMacro",
-      "time": "2026-11-12 17:19",
-      "datetime": "2026-11-12 17:19",
-      "source": "新浪7×24",
-      "url": "https://finance.sina.cn/7x24/2026-11-12/detail-iniynppc3803672.d.html",
-      "summary": "爱尔兰总理马丁：希望乌克兰总统泽连斯基与美国中东问题特使威特科夫、特朗普女婿库什纳的会晤取得进展。",
+      "concept": "aiCapex",
+      "time": "2026-11-12 22:52",
+      "datetime": "2026-11-12 22:52",
+      "source": "财联社",
+      "url": "https://www.cls.cn/detail/2533152",
+      "summary": "报道称，OpenAI以1.25万亿美元估值融资150亿美元。",
       "relatedStocks": [
-        "宽基指数"
+        "英伟达",
+        "微软",
+        "台积电"
       ],
       "bullConcepts": [
+        "AI算力",
+        "半导体",
+        "国产替代"
+      ],
+      "bearConcepts": [
+        "传统软件"
+      ],
+      "bullIndustries": [
+        "半导体",
+        "AI应用",
+        "算力基础设施"
+      ],
+      "bearIndustries": [
+        "传统IT服务"
+      ],
+      "heat": 60,
+      "momentum": 18,
+      "_auto": true
+    },
+    {
+      "id": "apwbn9ea",
+      "title": "德国否认法国《Le Point》杂志的一篇报道。该报道称，德国总理弗里德里希·默茨和法国总统埃马纽埃尔·马克龙已同意，由Pablo Hernandez de Cos于明年接替克里…",
+      "tag": "人物/马克龙",
+      "region": "中国",
+      "concept": "bank",
+      "time": "2026-11-13 00:35",
+      "datetime": "2026-11-13 00:35",
+      "source": "华尔街见闻",
+      "url": "https://wallstreetcn.com/livenews/3199245",
+      "summary": "德国否认法国《Le Point》杂志的一篇报道。该报道称，德国总理弗里德里希·默茨和法国总统埃马纽埃尔·马克龙已同意，由Pablo Hernandez de Cos于明年接替克里斯蒂娜·拉加德出任欧洲央行行长。 德国政府一名发言人表示，这篇法国杂志的报道不实。 拉加德上月表示，她将提前结束行长任期，于明年2月离任，以便能够就政治事务公开发声。来自荷兰的Klaas Knot正与…",
+      "relatedStocks": [
+        "美股科技",
+        "黄金"
+      ],
+      "bullConcepts": [
+        "黄金",
         "防御板块"
       ],
       "bearConcepts": [
-        "周期股"
+        "高估值成长股"
       ],
       "bullIndustries": [
-        "公用事业"
+        "银行",
+        "黄金"
       ],
       "bearIndustries": [
-        "顺周期"
+        "高杠杆地产"
       ],
-      "heat": 24,
-      "momentum": 36,
+      "heat": 29,
+      "momentum": 26,
       "_auto": true
     },
     {
-      "id": "ap1xljz4h",
-      "title": "网传印度裔高管接替黄仁勋出任英伟达CEO？假的",
-      "tag": "人物/黄仁勋",
-      "region": "全球",
-      "concept": "ai",
-      "time": "2026-11-12 16:51",
-      "datetime": "2026-11-12 16:51",
-      "source": "新浪科技",
-      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-12/doc-iniynifc1822960.shtml",
-      "summary": "今日，网传消息称英伟达董事会已于当地时间周三早些时候召开特别会议，正式批准公司联合创始人黄仁勋辞去首席执行官职务的申请，并一致投票决定...",
-      "relatedStocks": [
-        "英伟达",
-        "微软",
-        "台积电"
-      ],
-      "bullConcepts": [
-        "AI算力",
-        "半导体",
-        "国产替代"
-      ],
-      "bearConcepts": [
-        "传统软件"
-      ],
-      "bullIndustries": [
-        "半导体",
-        "AI应用",
-        "算力基础设施"
-      ],
-      "bearIndustries": [
-        "传统IT服务"
-      ],
-      "heat": 33,
-      "momentum": 31,
-      "_auto": true
-    },
-    {
-      "id": "ap18g2e6a",
-      "title": "李彦宏对谈杨元庆：AI只是给一个基本的初稿，关键的判断决策最后还是在人",
-      "tag": "人物/李彦宏",
-      "region": "全球",
-      "concept": "ai",
-      "time": "2026-11-12 17:20",
-      "datetime": "2026-11-12 17:20",
-      "source": "新浪7×24",
-      "url": "https://finance.sina.cn/7x24/2026-11-12/detail-iniynpnz1711079.d.html",
-      "summary": "【李彦宏对谈杨元庆：AI只是给一个基本的初稿，关键的判断决策最后还是在人】11月12日，李彦宏在百度世界大会上对谈杨元庆。杨元庆表示，AI只是给一个基本的初稿，关键的判断决策最后还是在人。（澎湃）",
-      "relatedStocks": [
-        "英伟达",
-        "微软",
-        "台积电"
-      ],
-      "bullConcepts": [
-        "AI算力",
-        "半导体",
-        "国产替代"
-      ],
-      "bearConcepts": [
-        "传统软件"
-      ],
-      "bullIndustries": [
-        "半导体",
-        "AI应用",
-        "算力基础设施"
-      ],
-      "bearIndustries": [
-        "传统IT服务"
-      ],
-      "heat": 24,
-      "momentum": 36,
-      "_auto": true
-    },
-    {
-      "id": "ap1d7m1jj",
-      "title": "美国特使抵达莫斯科将与普京会谈 明日将前往都柏林与泽连斯基会晤",
+      "id": "ap1bkwe89",
+      "title": "美国特使威特科夫表示，在与普京会面后，双方已商定举行新一轮会谈。美国特使库什纳称，与普京的会谈“实质且详细”。",
       "tag": "人物/普京",
       "region": "美国",
       "concept": "usMacro",
-      "time": "2026-11-12 17:14",
-      "datetime": "2026-11-12 17:14",
-      "source": "环球市场播报",
-      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-12/doc-iniynpnv1139348.shtml",
-      "summary": "美国总统特使史蒂夫·威特科夫（Steve Witkoff）以及特朗普的女婿贾里德·库什纳（Jared Kushner）于周四上午抵达莫斯科，计划与俄罗斯总统普京举行会晤。",
+      "time": "2026-11-12 23:53",
+      "datetime": "2026-11-12 23:53",
+      "source": "财联社",
+      "url": "https://www.cls.cn/detail/2533175",
+      "summary": "美国特使威特科夫表示，在与普京会面后，双方已商定举行新一轮会谈。美国特使库什纳称，与普京的会谈“实质且详细”。",
       "relatedStocks": [
         "宽基指数"
       ],
@@ -233,7 +343,7 @@
         "顺周期"
       ],
       "heat": 24,
-      "momentum": 36,
+      "momentum": 18,
       "_auto": true
     },
     {
@@ -264,136 +374,6 @@
       ],
       "bearIndustries": [
         "高杠杆地产"
-      ],
-      "heat": 24,
-      "momentum": 36,
-      "_auto": true
-    },
-    {
-      "id": "ap16ul059",
-      "title": "泽连斯基称，乌克兰部队已记录到乌克兰境内出现严重的星盾系统中断，已持续数日。",
-      "tag": "人物/泽连斯基",
-      "region": "全球",
-      "concept": "macro",
-      "time": "2026-11-12 17:07",
-      "datetime": "2026-11-12 17:07",
-      "source": "财联社",
-      "url": "https://www.cls.cn/detail/2532816",
-      "summary": "泽连斯基称，乌克兰部队已记录到乌克兰境内出现严重的星盾系统中断，已持续数日。",
-      "relatedStocks": [
-        "宽基指数"
-      ],
-      "bullConcepts": [
-        "防御板块"
-      ],
-      "bearConcepts": [
-        "周期股"
-      ],
-      "bullIndustries": [
-        "公用事业"
-      ],
-      "bearIndustries": [
-        "顺周期"
-      ],
-      "heat": 24,
-      "momentum": 26,
-      "_auto": true
-    },
-    {
-      "id": "ap1sjbggh",
-      "title": "当地时间12日，据俄罗斯方面消息，俄总统普京预计将于莫斯科时间当日12时（北京时间12日17时）与美国总统特使威特科夫和美总统女婿库什纳会见。（央视新闻）",
-      "tag": "人物/普京",
-      "region": "美国",
-      "concept": "usMacro",
-      "time": "2026-11-12 16:16",
-      "datetime": "2026-11-12 16:16",
-      "source": "华尔街见闻",
-      "url": "https://wallstreetcn.com/livenews/3198983",
-      "summary": "当地时间12日，据俄罗斯方面消息，俄总统普京预计将于莫斯科时间当日12时（北京时间12日17时）与美国总统特使威特科夫和美总统女婿库什纳会见。（央视新闻）",
-      "relatedStocks": [
-        "宽基指数"
-      ],
-      "bullConcepts": [
-        "防御板块"
-      ],
-      "bearConcepts": [
-        "周期股"
-      ],
-      "bullIndustries": [
-        "公用事业"
-      ],
-      "bearIndustries": [
-        "顺周期"
-      ],
-      "heat": 29,
-      "momentum": 26,
-      "_auto": true
-    },
-    {
-      "id": "ap5gmrpb",
-      "title": "美国福克斯新闻频道11日转引以色列媒体消息报道称，美国总统特朗普与以色列看守政府总理内塔尼亚胡上周末通电话时，围绕是否重启对伊朗的军事行动爆发“地狱般的激烈争吵”。(新华社)",
-      "tag": "人物/特朗普",
-      "region": "美国",
-      "concept": "defense",
-      "time": "2026-11-12 16:19",
-      "datetime": "2026-11-12 16:19",
-      "source": "华尔街见闻",
-      "url": "https://wallstreetcn.com/livenews/3198986",
-      "summary": "美国福克斯新闻频道11日转引以色列媒体消息报道称，美国总统特朗普与以色列看守政府总理内塔尼亚胡上周末通电话时，围绕是否重启对伊朗的军事行动爆发“地狱般的激烈争吵”。(新华社)",
-      "relatedStocks": [
-        "军工",
-        "黄金"
-      ],
-      "bullConcepts": [
-        "军工",
-        "避险资产"
-      ],
-      "bearConcepts": [
-        "风险资产"
-      ],
-      "bullIndustries": [
-        "军工",
-        "黄金"
-      ],
-      "bearIndustries": [
-        "航空",
-        "旅游"
-      ],
-      "heat": 24,
-      "momentum": 26,
-      "_auto": true
-    },
-    {
-      "id": "ap14n8rog",
-      "title": "从多方知情人士处获悉，近期字节跳动创始人张一鸣再次在内部分享中谈到AI业务。据了解，张一鸣在近期一次面向AI团队的全员会议上表示，字节有能力与OpenAI和Anthropic展开…",
-      "tag": "人物/奥尔特曼",
-      "region": "全球",
-      "concept": "ai",
-      "time": "2026-11-12 15:17",
-      "datetime": "2026-11-12 15:17",
-      "source": "华尔街见闻",
-      "url": "https://wallstreetcn.com/livenews/3198945",
-      "summary": "从多方知情人士处获悉，近期字节跳动创始人张一鸣再次在内部分享中谈到AI业务。据了解，张一鸣在近期一次面向AI团队的全员会议上表示，字节有能力与OpenAI和Anthropic展开竞争，但真正追平前沿技术，“最早也要到2029年或2030年”。字节跳动的大模型要对标国际第一梯队。张一鸣坦言，与海外顶尖AI公司相比，字节Seed系列模型的预训练数据集规模仍然少了，这是字节AI当下…",
-      "relatedStocks": [
-        "英伟达",
-        "微软",
-        "台积电"
-      ],
-      "bullConcepts": [
-        "AI算力",
-        "半导体",
-        "国产替代"
-      ],
-      "bearConcepts": [
-        "传统软件"
-      ],
-      "bullIndustries": [
-        "半导体",
-        "AI应用",
-        "算力基础设施"
-      ],
-      "bearIndustries": [
-        "传统IT服务"
       ],
       "heat": 24,
       "momentum": 18,
@@ -436,52 +416,16 @@
       "_auto": true
     },
     {
-      "id": "apyto9kq",
-      "title": "知名科技分析师艾夫斯：马斯克需要向德克萨斯州民主党人“抛出橄榄枝”",
+      "id": "ap1modonf",
+      "title": "马斯克放出话有意聘用黄仁勋 预测市场借这起风波开展押注",
       "tag": "人物/马斯克",
       "region": "全球",
       "concept": "ai",
-      "time": "2026-11-12 14:06",
-      "datetime": "2026-11-12 14:06",
+      "time": "2026-11-13 00:00",
+      "datetime": "2026-11-13 00:00",
       "source": "环球市场播报",
-      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-12/doc-iniynaxi3844049.shtml",
-      "summary": "知名科技分析师丹·艾夫斯（Dan Ives）表示，在民主党赢得中期选举后，埃隆·马斯克必须寻求与德克萨斯州官员达成政治妥协，以维护SpaceX在人工智能数据中心方面的雄心。",
-      "relatedStocks": [
-        "英伟达",
-        "微软",
-        "台积电"
-      ],
-      "bullConcepts": [
-        "AI算力",
-        "半导体",
-        "国产替代"
-      ],
-      "bearConcepts": [
-        "传统软件"
-      ],
-      "bullIndustries": [
-        "半导体",
-        "AI应用",
-        "算力基础设施"
-      ],
-      "bearIndustries": [
-        "传统IT服务"
-      ],
-      "heat": 24,
-      "momentum": 18,
-      "_auto": true
-    },
-    {
-      "id": "apslg34k",
-      "title": "莫迪核心盟友：谷歌项目进展顺利 将新建数据中心",
-      "tag": "人物/莫迪",
-      "region": "美国",
-      "concept": "aiCapex",
-      "time": "2026-11-12 12:35",
-      "datetime": "2026-11-12 12:35",
-      "source": "环球市场播报",
-      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-12/doc-iniynaxf1737842.shtml",
-      "summary": "印度南部安得拉邦首席部长N． 钱德拉巴布·奈杜（N． Chandrababu Naidu）表示，Alphabet Inc．（谷歌母公司）在该邦投资150亿美元建设的人工智能（AI）枢纽项目正按计划推...",
+      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-13/doc-iniypekt1532217.shtml",
+      "summary": "周三，埃隆・马斯克在社交平台发帖表示，他很乐意聘用刚刚卸任的英伟达前首席执行官黄仁勋。此前已有报道披露，英伟达又曝出黄仁勋的另一段婚外情丑闻。",
       "relatedStocks": [
         "英伟达",
         "微软",
