@@ -1,7 +1,7 @@
 {
-  "generatedAt": "2026-11-12 08:28",
+  "generatedAt": "2026-11-12 17:40",
   "generatedBy": "GitHub Actions · 财经日历 + 多源新闻 + 精选底库",
-  "sourceCount": 4,
+  "sourceCount": 5,
   "calendarCount": 46,
   "seedCount": 43,
   "autoCount": 10,
@@ -141,22 +141,6 @@
       ]
     },
     {
-      "id": "au1xfnu2a",
-      "title": "Wind数据显示",
-      "tag": "宏观/综合/日程",
-      "date": "2026-11-12",
-      "region": "中国",
-      "scope": "cn",
-      "concept": "broker",
-      "source": "新浪7×24",
-      "summary": "计划于 2026-11-12 举行或公布，来源：新浪7×24。",
-      "relatedStocks": [
-        "宽基指数"
-      ],
-      "importance": 77,
-      "_auto": true
-    },
-    {
       "id": "au1v8ngwg",
       "title": "2026年大湾区（广州）航运大会",
       "tag": "贸易/供应链/日程",
@@ -203,6 +187,22 @@
         "英伟达",
         "微软",
         "台积电"
+      ],
+      "importance": 72,
+      "_auto": true
+    },
+    {
+      "id": "aunwxhto",
+      "title": "联影集团董事长薛敏：创造不同",
+      "tag": "宏观/综合/日程",
+      "date": "2026-11-12",
+      "region": "中国",
+      "scope": "cn",
+      "concept": "broker",
+      "source": "长三角资本局",
+      "summary": "今日，2026年上海证券交易所国际投资者大会在上海举行。 本届大会以“交互融通 互利共赢——全球投资者共话中国资产安全、韧性、创新价值”为主题...",
+      "relatedStocks": [
+        "宽基指数"
       ],
       "importance": 72,
       "_auto": true

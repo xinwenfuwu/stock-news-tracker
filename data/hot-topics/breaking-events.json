@@ -1,483 +1,20 @@
 {
-  "generatedAt": "2026-11-12 08:28",
+  "generatedAt": "2026-11-12 17:40",
   "generatedBy": "GitHub Actions · 多源实时聚合",
-  "sourceCount": 4,
+  "sourceCount": 5,
   "autoCount": 18,
   "events": [
     {
-      "id": "ab1dccb8e",
-      "title": "英伟达CEO黄仁勋周三又被曝光一宗婚外情，有媒体援引五位曾在英伟达工作的不具名消息人士的话称，黄仁勋还曾与该公司负责医疗保健业务的副总裁金伯利·鲍威尔（Kimberly Powe…",
-      "tag": "科技/AI",
-      "region": "全球",
-      "concept": "ai",
-      "time": "2026-11-12 08:27",
-      "datetime": "2026-11-12 08:27",
-      "source": "新浪7×24",
-      "url": "https://finance.sina.cn/7x24/2026-11-12/detail-iniymsif1241631.d.html",
-      "summary": "英伟达CEO黄仁勋周三又被曝光一宗婚外情，有媒体援引五位曾在英伟达工作的不具名消息人士的话称，黄仁勋还曾与该公司负责医疗保健业务的副总裁金伯利·鲍威尔（Kimberly Powell）存在婚外恋情。LinkedIn资料显示，鲍威尔在英伟达工作已近二十年，此前曾深耕人工智能（AI）业务拓展领域长达十年。据英伟达介绍，她曾负责公司的高等教育与研究业务，并参与领导了英伟达人工智能实…",
-      "relatedStocks": [
-        "英伟达",
-        "微软",
-        "台积电"
-      ],
-      "bullConcepts": [
-        "AI算力",
-        "半导体",
-        "国产替代"
-      ],
-      "bearConcepts": [
-        "传统软件"
-      ],
-      "bullIndustries": [
-        "半导体",
-        "AI应用",
-        "算力基础设施"
-      ],
-      "bearIndustries": [
-        "传统IT服务"
-      ],
-      "heat": 51,
-      "momentum": 46,
-      "_auto": true
-    },
-    {
-      "id": "ab1p592sb",
-      "title": "投行Baird罕见下调英伟达评级至中性，目标价从500美元降至200美元",
-      "tag": "科技/AI",
-      "region": "美国",
-      "concept": "aiCapex",
-      "time": "2026-11-12 08:18",
-      "datetime": "2026-11-12 08:18",
-      "source": "环球市场播报",
-      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-12/doc-iniymsip3896683.shtml",
-      "summary": "投资机构Baird的分析师周三发布了一份报告，罕见地下调了对英伟达股票的评级；他们将该公司CEO黄仁勋近日曝光的婚外情丑闻作为理由，对英伟达及其股票的前景表示怀疑。",
-      "relatedStocks": [
-        "英伟达",
-        "微软",
-        "台积电"
-      ],
-      "bullConcepts": [
-        "AI算力",
-        "半导体",
-        "国产替代"
-      ],
-      "bearConcepts": [
-        "传统软件"
-      ],
-      "bullIndustries": [
-        "半导体",
-        "AI应用",
-        "算力基础设施"
-      ],
-      "bearIndustries": [
-        "传统IT服务"
-      ],
-      "heat": 60,
-      "momentum": 56,
-      "_auto": true
-    },
-    {
-      "id": "ab5jj3ni",
-      "title": "据知情人士透露，在英伟达首席执行官黄仁勋被曝出多段婚外情后，公司董事会一直在与一家外部机构合作，寻找其潜在继任者。该知情人士要求匿名，因为相关信息尚未公开。其表示，董事会正在考虑…",
-      "tag": "科技/AI",
-      "region": "全球",
-      "concept": "ai",
-      "time": "2026-11-12 07:50",
-      "datetime": "2026-11-12 07:50",
-      "source": "新浪7×24",
-      "url": "https://finance.sina.cn/7x24/2026-11-12/detail-iniymmzi1350029.d.html",
-      "summary": "据知情人士透露，在英伟达首席执行官黄仁勋被曝出多段婚外情后，公司董事会一直在与一家外部机构合作，寻找其潜在继任者。该知情人士要求匿名，因为相关信息尚未公开。其表示，董事会正在考虑在物色永久继任者的同时，先任命一位临时首席执行官。另据知情人士透露，董事会于周三召开会议，讨论黄仁勋的去留问题。自黄仁勋周日承认有过婚外情以来，英伟达董事会一直面临接班人危机。这一事件暴露出英伟达在黄…",
-      "relatedStocks": [
-        "英伟达",
-        "微软",
-        "台积电"
-      ],
-      "bullConcepts": [
-        "AI算力",
-        "半导体",
-        "国产替代"
-      ],
-      "bearConcepts": [
-        "传统软件"
-      ],
-      "bullIndustries": [
-        "半导体",
-        "AI应用",
-        "算力基础设施"
-      ],
-      "bearIndustries": [
-        "传统IT服务"
-      ],
-      "heat": 55,
-      "momentum": 31,
-      "_auto": true
-    },
-    {
-      "id": "abe73ctj",
-      "title": "日本日经指数回吐涨幅，最新下跌0.2%。AI相关股票下跌，揖斐电和爱德万测试股价下跌，之前英伟达董事会据报准备罢免黄仁勋。",
-      "tag": "科技/AI",
-      "region": "全球",
-      "concept": "ai",
-      "time": "2026-11-12 08:14",
-      "datetime": "2026-11-12 08:14",
-      "source": "新浪7×24",
-      "url": "https://finance.sina.cn/7x24/2026-11-12/detail-iniymsim1804650.d.html",
-      "summary": "日本日经指数回吐涨幅，最新下跌0.2%。AI相关股票下跌，揖斐电和爱德万测试股价下跌，之前英伟达董事会据报准备罢免黄仁勋。",
-      "relatedStocks": [
-        "英伟达",
-        "微软",
-        "台积电"
-      ],
-      "bullConcepts": [
-        "AI算力",
-        "半导体",
-        "国产替代"
-      ],
-      "bearConcepts": [
-        "传统软件"
-      ],
-      "bullIndustries": [
-        "半导体",
-        "AI应用",
-        "算力基础设施"
-      ],
-      "bearIndustries": [
-        "传统IT服务"
-      ],
-      "heat": 29,
-      "momentum": 41,
-      "_auto": true
-    },
-    {
-      "id": "ab1esum2s",
-      "title": "特朗普政府已获悉，英伟达董事会正准备在近期罢免黄仁勋。（CBS）",
-      "tag": "科技/AI",
-      "region": "美国",
-      "concept": "aiCapex",
-      "time": "2026-11-12 07:36",
-      "datetime": "2026-11-12 07:36",
-      "source": "华尔街见闻",
-      "url": "https://wallstreetcn.com/livenews/3198671",
-      "summary": "特朗普政府已获悉，英伟达董事会正准备在近期罢免黄仁勋。（CBS）",
-      "relatedStocks": [
-        "英伟达",
-        "微软",
-        "台积电"
-      ],
-      "bullConcepts": [
-        "AI算力",
-        "半导体",
-        "国产替代"
-      ],
-      "bearConcepts": [
-        "传统软件"
-      ],
-      "bullIndustries": [
-        "半导体",
-        "AI应用",
-        "算力基础设施"
-      ],
-      "bearIndustries": [
-        "传统IT服务"
-      ],
-      "heat": 38,
-      "momentum": 36,
-      "_auto": true
-    },
-    {
-      "id": "ab1u0va6s",
-      "title": "英伟达据悉在与外部公司合作物色CEO候选人",
-      "tag": "科技/AI",
-      "region": "全球",
-      "concept": "ai",
-      "time": "2026-11-12 07:55",
-      "datetime": "2026-11-12 07:55",
-      "source": "环球市场播报",
-      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-12/doc-iniymsin8565699.shtml",
-      "summary": "据一位知情人士透露，英伟达董事会在与一家外部公司合作，物色首席执行官黄仁勋的潜在接班人。之前媒体报道了他的多起婚外情。",
-      "relatedStocks": [
-        "英伟达",
-        "微软",
-        "台积电"
-      ],
-      "bullConcepts": [
-        "AI算力",
-        "半导体",
-        "国产替代"
-      ],
-      "bearConcepts": [
-        "传统软件"
-      ],
-      "bullIndustries": [
-        "半导体",
-        "AI应用",
-        "算力基础设施"
-      ],
-      "bearIndustries": [
-        "传统IT服务"
-      ],
-      "heat": 47,
-      "momentum": 36,
-      "_auto": true
-    },
-    {
-      "id": "abfm4bjo",
-      "title": "英伟达董事会据悉举行会议讨论黄仁勋的去留问题",
-      "tag": "科技/AI",
-      "region": "全球",
-      "concept": "ai",
-      "time": "2026-11-12 07:55",
-      "datetime": "2026-11-12 07:55",
-      "source": "环球市场播报",
-      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-12/doc-iniymsip3881094.shtml",
-      "summary": "据知情人士称，英伟达董事会召开会议讨论首席执行官黄仁勋的去留问题，此前他承认与一名女性有染。 据知情人士称，此次会议将重点讨论黄仁勋周日承认对妻子不忠后...",
-      "relatedStocks": [
-        "英伟达",
-        "微软",
-        "台积电"
-      ],
-      "bullConcepts": [
-        "AI算力",
-        "半导体",
-        "国产替代"
-      ],
-      "bearConcepts": [
-        "传统软件"
-      ],
-      "bullIndustries": [
-        "半导体",
-        "AI应用",
-        "算力基础设施"
-      ],
-      "bearIndustries": [
-        "传统IT服务"
-      ],
-      "heat": 38,
-      "momentum": 36,
-      "_auto": true
-    },
-    {
-      "id": "ab1v8nbo8",
-      "title": "俄罗斯称扎波罗热核电站一名员工遭无人机袭击身亡",
-      "tag": "能源/资源",
-      "region": "全球",
-      "concept": "energy",
-      "time": "2026-11-12 07:47",
-      "datetime": "2026-11-12 07:47",
-      "source": "环球市场播报",
-      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-12/doc-iniymmzp1917371.shtml",
-      "summary": "俄罗斯方面管理的扎波罗热核电站周三表示，一名该核电站员工在乌克兰东南部家中遭乌克兰无人机袭击身亡。这是自4月份以来，该地区在频繁袭击中丧生的第15名核电站员工。",
-      "relatedStocks": [
-        "中国石油",
-        "紫金矿业"
-      ],
-      "bullConcepts": [
-        "油气",
-        "贵金属"
-      ],
-      "bearConcepts": [
-        "高耗能制造"
-      ],
-      "bullIndustries": [
-        "石油开采",
-        "贵金属"
-      ],
-      "bearIndustries": [
-        "航空运输",
-        "化工"
-      ],
-      "heat": 24,
-      "momentum": 26,
-      "_auto": true
-    },
-    {
-      "id": "abeuk8gl",
-      "title": "周四亚太盘初，纳指期货跌0.9%，英伟达目前（美股盘后）跌8%，报道称英伟达准备罢免CEO黄仁勋。 CoreWeave跌5.4%，报道称该公司准备出售投资级贷款来募集至少40亿美…",
-      "tag": "科技/AI",
-      "region": "美国",
-      "concept": "aiCapex",
-      "time": "2026-11-12 07:02",
-      "datetime": "2026-11-12 07:02",
-      "source": "华尔街见闻",
-      "url": "https://wallstreetcn.com/livenews/3198661",
-      "summary": "周四亚太盘初，纳指期货跌0.9%，英伟达目前（美股盘后）跌8%，报道称英伟达准备罢免CEO黄仁勋。 CoreWeave跌5.4%，报道称该公司准备出售投资级贷款来募集至少40亿美元。英特尔跌3.1%，Nebius跌2.5%，Palantir、希捷科技、甲骨文、美光、恩智浦、台积电、高通、西部数据、SK海力士ADR、闪迪等跌超1%，亚马逊涨0.6%，谷歌A涨0.9%，博通涨2.…",
-      "relatedStocks": [
-        "英伟达",
-        "微软",
-        "台积电"
-      ],
-      "bullConcepts": [
-        "AI算力",
-        "半导体",
-        "国产替代"
-      ],
-      "bearConcepts": [
-        "传统软件"
-      ],
-      "bullIndustries": [
-        "半导体",
-        "AI应用",
-        "算力基础设施"
-      ],
-      "bearIndustries": [
-        "传统IT服务"
-      ],
-      "heat": 56,
-      "momentum": 26,
-      "_auto": true
-    },
-    {
-      "id": "ab1bu4vum",
-      "title": "英伟达美股盘后跌3.1%，纽约时报援引知情人士报道称，英伟达CEO黄仁勋可能与直接向他汇报的公司高管金伯利·鲍威尔发生过婚外情。 今年3月在加州圣何塞一家酒店举行的英伟达会议期间…",
-      "tag": "科技/AI",
-      "region": "美国",
-      "concept": "aiCapex",
-      "time": "2026-11-12 05:57",
-      "datetime": "2026-11-12 05:57",
-      "source": "华尔街见闻",
-      "url": "https://wallstreetcn.com/livenews/3198639",
-      "summary": "英伟达美股盘后跌3.1%，纽约时报援引知情人士报道称，英伟达CEO黄仁勋可能与直接向他汇报的公司高管金伯利·鲍威尔发生过婚外情。 今年3月在加州圣何塞一家酒店举行的英伟达会议期间，有人拍到英伟达首席执行官和鲍威尔举止亲密的视频。",
-      "relatedStocks": [
-        "英伟达",
-        "微软",
-        "台积电"
-      ],
-      "bullConcepts": [
-        "AI算力",
-        "半导体",
-        "国产替代"
-      ],
-      "bearConcepts": [
-        "传统软件"
-      ],
-      "bullIndustries": [
-        "半导体",
-        "AI应用",
-        "算力基础设施"
-      ],
-      "bearIndustries": [
-        "传统IT服务"
-      ],
-      "heat": 56,
-      "momentum": 18,
-      "_auto": true
-    },
-    {
-      "id": "ab1g34675",
-      "title": "11月12日隔夜要闻：美股收高 金价跌破4000美元 黄仁勋被爆出轨女下属 英伟达拟对其罢免",
-      "tag": "科技/AI",
-      "region": "美国",
-      "concept": "aiCapex",
-      "time": "2026-11-12 06:53",
-      "datetime": "2026-11-12 06:53",
-      "source": "环球市场播报",
-      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-12/doc-iniymmzr3988171.shtml",
-      "summary": "市场 11月12日美股收盘：CoreWeave股价上涨重振AI交易 纳指涨超1% 11月12日美股成交额前20：CoreWeave张超24% 业绩超预期 上调全年营收指引 11月12日热门中概股涨跌互现...",
-      "relatedStocks": [
-        "英伟达",
-        "微软",
-        "台积电"
-      ],
-      "bullConcepts": [
-        "AI算力",
-        "半导体",
-        "国产替代"
-      ],
-      "bearConcepts": [
-        "传统软件"
-      ],
-      "bullIndustries": [
-        "半导体",
-        "AI应用",
-        "算力基础设施"
-      ],
-      "bearIndustries": [
-        "传统IT服务"
-      ],
-      "heat": 65,
-      "momentum": 26,
-      "_auto": true
-    },
-    {
-      "id": "ab7e0g0h",
-      "title": "大宗商品综述：油价反弹 伦铝供应严重吃紧 金价跌破4000美元",
-      "tag": "金融/宏观",
-      "region": "美国",
-      "concept": "usFinance",
-      "time": "2026-11-12 06:28",
-      "datetime": "2026-11-12 06:28",
-      "source": "环球市场播报",
-      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-12/doc-iniymmzi1321209.shtml",
-      "summary": "原油上涨，交易员正在权衡有关伊朗战争结束前景的不同信号。伦敦金属交易所（LME）的铝买家正面临数十年来最严重的供应紧张局面，因可交割库存骤降...",
-      "relatedStocks": [
-        "美股科技",
-        "黄金"
-      ],
-      "bullConcepts": [
-        "黄金",
-        "防御板块"
-      ],
-      "bearConcepts": [
-        "高估值成长股"
-      ],
-      "bullIndustries": [
-        "银行",
-        "黄金"
-      ],
-      "bearIndustries": [
-        "高杠杆地产"
-      ],
-      "heat": 65,
-      "momentum": 26,
-      "_auto": true
-    },
-    {
-      "id": "ab56hy3k",
-      "title": "英伟达董事会将于周三召开会议，决定是否罢免首席执行官黄仁勋。（路透）",
-      "tag": "科技/AI",
-      "region": "全球",
-      "concept": "ai",
-      "time": "2026-11-12 07:25",
-      "datetime": "2026-11-12 07:25",
-      "source": "华尔街见闻",
-      "url": "https://wallstreetcn.com/livenews/3198668",
-      "summary": "英伟达董事会将于周三召开会议，决定是否罢免首席执行官黄仁勋。（路透）",
-      "relatedStocks": [
-        "英伟达",
-        "微软",
-        "台积电"
-      ],
-      "bullConcepts": [
-        "AI算力",
-        "半导体",
-        "国产替代"
-      ],
-      "bearConcepts": [
-        "传统软件"
-      ],
-      "bullIndustries": [
-        "半导体",
-        "AI应用",
-        "算力基础设施"
-      ],
-      "bearIndustries": [
-        "传统IT服务"
-      ],
-      "heat": 60,
-      "momentum": 26,
-      "_auto": true
-    },
-    {
-      "id": "ab127wmk",
-      "title": "调查：今年有三分之一的日本公司或其服务提供商曾遭受网络攻击。 近三分之二的日本公司计划增加网络安全支出。 超过80%的日本企业预计2027年的工资涨幅将与2026年持平。",
+      "id": "ab2xgk83",
+      "title": "纳斯达克100ETF招商(159659)将于2026年11月13日开市起停牌，自2026年11月13日10:30起复牌，停牌期间赎回业务照常办理。",
       "tag": "宏观/综合",
-      "region": "全球",
-      "concept": "macro",
-      "time": "2026-11-12 07:06",
-      "datetime": "2026-11-12 07:06",
-      "source": "华尔街见闻",
-      "url": "https://wallstreetcn.com/livenews/3198663",
-      "summary": "调查：今年有三分之一的日本公司或其服务提供商曾遭受网络攻击。 近三分之二的日本公司计划增加网络安全支出。 超过80%的日本企业预计2027年的工资涨幅将与2026年持平。",
+      "region": "美国",
+      "concept": "usMacro",
+      "time": "2026-11-12 17:29",
+      "datetime": "2026-11-12 17:29",
+      "source": "财联社",
+      "url": "https://www.cls.cn/detail/2532845",
+      "summary": "纳斯达克100ETF招商(159659)将于2026年11月13日开市起停牌，自2026年11月13日10:30起复牌，停牌期间赎回业务照常办理。",
       "relatedStocks": [
         "宽基指数"
       ],
@@ -493,21 +30,299 @@
       "bearIndustries": [
         "顺周期"
       ],
-      "heat": 29,
+      "heat": 87,
+      "momentum": 96,
+      "_auto": true
+    },
+    {
+      "id": "ab1apay8j",
+      "title": "美股盘前，英伟达跌约7%，黄仁勋再曝新婚外情，董事会正筹划将其解职。 CoreWeave跌约7%，报道称该公司准备出售投资级贷款来募集至少40亿美元。 存储芯片股普跌，SK海力士…",
+      "tag": "科技/AI",
+      "region": "美国",
+      "concept": "aiCapex",
+      "time": "2026-11-12 17:00",
+      "datetime": "2026-11-12 17:00",
+      "source": "华尔街见闻",
+      "url": "https://wallstreetcn.com/livenews/3199016",
+      "summary": "美股盘前，英伟达跌约7%，黄仁勋再曝新婚外情，董事会正筹划将其解职。 CoreWeave跌约7%，报道称该公司准备出售投资级贷款来募集至少40亿美元。 存储芯片股普跌，SK海力士跌约4%，闪迪跌约4%，美光科技跌约4%，希捷科技跌约3%。 光通信股普跌，Coherent跌约4%，Credo跌约4%，Lumentum跌约4%，迈威尔科技跌约4%，康宁跌约3%。",
+      "relatedStocks": [
+        "英伟达",
+        "微软",
+        "台积电"
+      ],
+      "bullConcepts": [
+        "AI算力",
+        "半导体",
+        "国产替代"
+      ],
+      "bearConcepts": [
+        "传统软件"
+      ],
+      "bullIndustries": [
+        "半导体",
+        "AI应用",
+        "算力基础设施"
+      ],
+      "bearIndustries": [
+        "传统IT服务"
+      ],
+      "heat": 69,
+      "momentum": 46,
+      "_auto": true
+    },
+    {
+      "id": "ab1uhgr4t",
+      "title": "英伟达部分董事倾向于任命CFO为临时CEO 苹果高管是猎头候选人之一",
+      "tag": "科技/AI",
+      "region": "全球",
+      "concept": "ai",
+      "time": "2026-11-12 16:51",
+      "datetime": "2026-11-12 16:51",
+      "source": "环球市场播报",
+      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-12/doc-iniyniex1256257.shtml",
+      "summary": "据知情人士透露，如果英伟达创始人兼CEO黄仁勋被罢免，部分董事倾向于任命首席财务官Colette Kress担任临时CEO。 董事会尚未形成最终决议。",
+      "relatedStocks": [
+        "英伟达",
+        "微软",
+        "台积电"
+      ],
+      "bullConcepts": [
+        "AI算力",
+        "半导体",
+        "国产替代"
+      ],
+      "bearConcepts": [
+        "传统软件"
+      ],
+      "bullIndustries": [
+        "半导体",
+        "AI应用",
+        "算力基础设施"
+      ],
+      "bearIndustries": [
+        "传统IT服务"
+      ],
+      "heat": 33,
+      "momentum": 31,
+      "_auto": true
+    },
+    {
+      "id": "ab1xljz4h",
+      "title": "网传印度裔高管接替黄仁勋出任英伟达CEO？假的",
+      "tag": "科技/AI",
+      "region": "全球",
+      "concept": "ai",
+      "time": "2026-11-12 16:51",
+      "datetime": "2026-11-12 16:51",
+      "source": "新浪科技",
+      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-12/doc-iniynifc1822960.shtml",
+      "summary": "今日，网传消息称英伟达董事会已于当地时间周三早些时候召开特别会议，正式批准公司联合创始人黄仁勋辞去首席执行官职务的申请，并一致投票决定...",
+      "relatedStocks": [
+        "英伟达",
+        "微软",
+        "台积电"
+      ],
+      "bullConcepts": [
+        "AI算力",
+        "半导体",
+        "国产替代"
+      ],
+      "bearConcepts": [
+        "传统软件"
+      ],
+      "bullIndustries": [
+        "半导体",
+        "AI应用",
+        "算力基础设施"
+      ],
+      "bearIndustries": [
+        "传统IT服务"
+      ],
+      "heat": 33,
+      "momentum": 31,
+      "_auto": true
+    },
+    {
+      "id": "abzfbkf2",
+      "title": "乌克兰：俄罗斯夜间袭击损坏了能源发电设施和变电站。",
+      "tag": "能源/资源",
+      "region": "全球",
+      "concept": "energy",
+      "time": "2026-11-12 17:28",
+      "datetime": "2026-11-12 17:28",
+      "source": "新浪7×24",
+      "url": "https://finance.sina.cn/7x24/2026-11-12/detail-iniynpnv1150640.d.html",
+      "summary": "乌克兰：俄罗斯夜间袭击损坏了能源发电设施和变电站。",
+      "relatedStocks": [
+        "中国石油",
+        "紫金矿业"
+      ],
+      "bullConcepts": [
+        "油气",
+        "贵金属"
+      ],
+      "bearConcepts": [
+        "高耗能制造"
+      ],
+      "bullIndustries": [
+        "石油开采",
+        "贵金属"
+      ],
+      "bearIndustries": [
+        "航空运输",
+        "化工"
+      ],
+      "heat": 24,
+      "momentum": 36,
+      "_auto": true
+    },
+    {
+      "id": "ab16k2ht5",
+      "title": "联合航空禁止Muse、Instinct等AI智能体预订航班",
+      "tag": "科技/AI",
+      "region": "全球",
+      "concept": "ai",
+      "time": "2026-11-12 16:57",
+      "datetime": "2026-11-12 16:57",
+      "source": "环球市场播报",
+      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-12/doc-iniyniff3920123.shtml",
+      "summary": "这家航司表示，能够访问客户账户的 AI 助手可能泄露敏感信息，还会产生非用户本意的消费或账户变更。 继银行、零售商出于隐私顾虑出台同类禁令之后...",
+      "relatedStocks": [
+        "英伟达",
+        "微软",
+        "台积电"
+      ],
+      "bullConcepts": [
+        "AI算力",
+        "半导体",
+        "国产替代"
+      ],
+      "bearConcepts": [
+        "传统软件"
+      ],
+      "bullIndustries": [
+        "半导体",
+        "AI应用",
+        "算力基础设施"
+      ],
+      "bearIndustries": [
+        "传统IT服务"
+      ],
+      "heat": 24,
       "momentum": 26,
       "_auto": true
     },
     {
-      "id": "ab7no0l3",
-      "title": "随着油轮运费飙升势头消退、国际油价下跌，加拿大重质原油已从八年最弱水平回升。 截至周三，加拿大西部精选原油（WCS）在阿尔伯塔省相对美国原油期货月度均价的折价已收窄至每桶26.5…",
-      "tag": "金融/宏观",
+      "id": "ab13gzei3",
+      "title": "红杉资本拟投资AI控股集团Sequence",
+      "tag": "科技/AI",
       "region": "美国",
-      "concept": "usFinance",
-      "time": "2026-11-12 05:51",
-      "datetime": "2026-11-12 05:51",
-      "source": "华尔街见闻",
-      "url": "https://wallstreetcn.com/livenews/3198638",
-      "summary": "随着油轮运费飙升势头消退、国际油价下跌，加拿大重质原油已从八年最弱水平回升。 截至周三，加拿大西部精选原油（WCS）在阿尔伯塔省相对美国原油期货月度均价的折价已收窄至每桶26.50美元，低于11月3日的近32美元。周一该折价一度收窄至每桶25美元，为10月初以来最窄水平。本月WTI原油期货因市场对美国与伊朗战争结束的乐观情绪下跌约16%，带动折价同步收窄。",
+      "concept": "aiCapex",
+      "time": "2026-11-12 17:20",
+      "datetime": "2026-11-12 17:20",
+      "source": "环球市场播报",
+      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-12/doc-iniynpnz1710411.shtml",
+      "summary": "据知情人士透露，红杉资本将向成立仅一年的Sequence 控股集团投入数亿美元。该公司刚刚宣布一笔 77 亿美元保险行业收购案，迈克尔・戴尔家族办公室为该收购的联合牵头方。",
+      "relatedStocks": [
+        "英伟达",
+        "微软",
+        "台积电"
+      ],
+      "bullConcepts": [
+        "AI算力",
+        "半导体",
+        "国产替代"
+      ],
+      "bearConcepts": [
+        "传统软件"
+      ],
+      "bullIndustries": [
+        "半导体",
+        "AI应用",
+        "算力基础设施"
+      ],
+      "bearIndustries": [
+        "传统IT服务"
+      ],
+      "heat": 24,
+      "momentum": 36,
+      "_auto": true
+    },
+    {
+      "id": "ab1op9swl",
+      "title": "伊朗称两艘油轮在霍尔木兹海峡爆炸并停航",
+      "tag": "能源/资源",
+      "region": "全球",
+      "concept": "energy",
+      "time": "2026-11-12 17:18",
+      "datetime": "2026-11-12 17:18",
+      "source": "财联社",
+      "url": "https://www.cls.cn/detail/2532830",
+      "summary": "财联社11月12日电，伊朗伊斯兰革命卫队海军公共关系部门12日发表声明说，两艘违规油轮11日晚在霍尔木兹海峡发生爆炸并停航。声明说，革命卫队海军多次警告，霍尔木兹海峡南部航道是“未经许可且不安全的航道”，但共装载超400万桶原油的这两艘油轮仍试图通过，在航行时发生剧烈爆炸并停航。声明还说，任何在波斯湾和霍尔木兹海峡关闭导航系统、与美军合作并试图通过海峡南部非法航道的船只，“最…",
+      "relatedStocks": [
+        "中国石油",
+        "紫金矿业"
+      ],
+      "bullConcepts": [
+        "油气",
+        "贵金属"
+      ],
+      "bearConcepts": [
+        "高耗能制造"
+      ],
+      "bullIndustries": [
+        "石油开采",
+        "贵金属"
+      ],
+      "bearIndustries": [
+        "航空运输",
+        "化工"
+      ],
+      "heat": 24,
+      "momentum": 36,
+      "_auto": true
+    },
+    {
+      "id": "ab1cngcf6",
+      "title": "与黄仁勋关系密切的女子（黄乐）是否在北京，外交部：不了解情况",
+      "tag": "宏观/综合",
+      "region": "中国",
+      "concept": "broker",
+      "time": "2026-11-12 15:35",
+      "datetime": "2026-11-12 15:35",
+      "source": "澎湃新闻",
+      "url": "https://finance.sina.com.cn/jjxw/2026-11-12/doc-iniynifc1749612.shtml",
+      "summary": "11月12日，外交部发言人毛宁主持例行记者会。 彭博社记者提问，据本社报道，超速国际（Megaspeed）高管黄乐（Alice Huang）现在正在北京。",
+      "relatedStocks": [
+        "宽基指数"
+      ],
+      "bullConcepts": [
+        "防御板块"
+      ],
+      "bearConcepts": [
+        "周期股"
+      ],
+      "bullIndustries": [
+        "公用事业"
+      ],
+      "bearIndustries": [
+        "顺周期"
+      ],
+      "heat": 42,
+      "momentum": 18,
+      "_auto": true
+    },
+    {
+      "id": "ab8936sb",
+      "title": "推荐几个财经APP？2026年主流财经APP评测：看行情、读资讯、追全球市场怎么选？",
+      "tag": "金融/宏观",
+      "region": "中国",
+      "concept": "bank",
+      "time": "2026-11-12 15:10",
+      "datetime": "2026-11-12 15:10",
+      "source": "市场资讯",
+      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-12/doc-iniynifc1724867.shtml",
+      "summary": "面对越来越复杂的金融市场，手机里的财经APP早已不只是查看股票涨跌的工具。无论是关注A股、港股、美股，还是追踪全球宏观经济、上市公司财报、财经新闻和市场突发事件...",
       "relatedStocks": [
         "美股科技",
         "黄金"
@@ -526,21 +341,226 @@
       "bearIndustries": [
         "高杠杆地产"
       ],
-      "heat": 24,
+      "heat": 33,
       "momentum": 18,
       "_auto": true
     },
     {
-      "id": "abuog6y0",
-      "title": "华尔街对黄仁勋执掌的英伟达热情降温，但历史经验表明尚不该放弃这只股票",
+      "id": "abbiqbdq",
+      "title": "黄仁勋罢免传闻冲击部分英伟达生态企业 AMD、博通迎利好",
+      "tag": "科技/AI",
+      "region": "全球",
+      "concept": "ai",
+      "time": "2026-11-12 15:20",
+      "datetime": "2026-11-12 15:20",
+      "source": "环球市场播报",
+      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-12/doc-iniynifc1734541.shtml",
+      "summary": "英伟达首席执行官黄仁勋可能遭解任的消息传出后，英伟达股价大幅下挫。市场分析认为，这是出于对创始人离职带来管理层真空的担忧。",
+      "relatedStocks": [
+        "英伟达",
+        "微软",
+        "台积电"
+      ],
+      "bullConcepts": [
+        "AI算力",
+        "半导体",
+        "国产替代"
+      ],
+      "bearConcepts": [
+        "传统软件"
+      ],
+      "bullIndustries": [
+        "半导体",
+        "AI应用",
+        "算力基础设施"
+      ],
+      "bearIndustries": [
+        "传统IT服务"
+      ],
+      "heat": 42,
+      "momentum": 18,
+      "_auto": true
+    },
+    {
+      "id": "ab1fu4agb",
+      "title": "财经快讯APP哪个好？2026年6款主流财经资讯软件评测：谁更适合追踪市场突发消息？",
+      "tag": "金融/宏观",
+      "region": "美国",
+      "concept": "usFinance",
+      "time": "2026-11-12 15:14",
+      "datetime": "2026-11-12 15:14",
+      "source": "市场资讯",
+      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-12/doc-iniyniex1156506.shtml",
+      "summary": "对于经常关注股票、基金和全球金融市场的投资者来说，财经快讯已经成为日常获取信息的重要渠道。 美联储公布利率决议、美国发布非农就业数据、上市公司突然披露重大公告...",
+      "relatedStocks": [
+        "美股科技",
+        "黄金"
+      ],
+      "bullConcepts": [
+        "黄金",
+        "防御板块"
+      ],
+      "bearConcepts": [
+        "高估值成长股"
+      ],
+      "bullIndustries": [
+        "银行",
+        "黄金"
+      ],
+      "bearIndustries": [
+        "高杠杆地产"
+      ],
+      "heat": 33,
+      "momentum": 18,
+      "_auto": true
+    },
+    {
+      "id": "abmbu95l",
+      "title": "印尼总统普拉博沃：尊重并支持副总统Gibran辞职的决定。 呼吁各方保持冷静。",
+      "tag": "宏观/综合",
+      "region": "全球",
+      "concept": "macro",
+      "time": "2026-11-12 16:21",
+      "datetime": "2026-11-12 16:21",
+      "source": "华尔街见闻",
+      "url": "https://wallstreetcn.com/livenews/3198987",
+      "summary": "印尼总统普拉博沃：尊重并支持副总统Gibran辞职的决定。 呼吁各方保持冷静。",
+      "relatedStocks": [
+        "宽基指数"
+      ],
+      "bullConcepts": [
+        "防御板块"
+      ],
+      "bearConcepts": [
+        "周期股"
+      ],
+      "bullIndustries": [
+        "公用事业"
+      ],
+      "bearIndustries": [
+        "顺周期"
+      ],
+      "heat": 24,
+      "momentum": 26,
+      "_auto": true
+    },
+    {
+      "id": "ab5gmrpb",
+      "title": "美国福克斯新闻频道11日转引以色列媒体消息报道称，美国总统特朗普与以色列看守政府总理内塔尼亚胡上周末通电话时，围绕是否重启对伊朗的军事行动爆发“地狱般的激烈争吵”。(新华社)",
+      "tag": "地缘/政治",
+      "region": "美国",
+      "concept": "defense",
+      "time": "2026-11-12 16:19",
+      "datetime": "2026-11-12 16:19",
+      "source": "华尔街见闻",
+      "url": "https://wallstreetcn.com/livenews/3198986",
+      "summary": "美国福克斯新闻频道11日转引以色列媒体消息报道称，美国总统特朗普与以色列看守政府总理内塔尼亚胡上周末通电话时，围绕是否重启对伊朗的军事行动爆发“地狱般的激烈争吵”。(新华社)",
+      "relatedStocks": [
+        "军工",
+        "黄金"
+      ],
+      "bullConcepts": [
+        "军工",
+        "避险资产"
+      ],
+      "bearConcepts": [
+        "风险资产"
+      ],
+      "bullIndustries": [
+        "军工",
+        "黄金"
+      ],
+      "bearIndustries": [
+        "航空",
+        "旅游"
+      ],
+      "heat": 24,
+      "momentum": 26,
+      "_auto": true
+    },
+    {
+      "id": "ab13hud7d",
+      "title": "英伟达“黑天鹅”搅动AI信仰！黄仁勋风波送来美债买盘，长端美债逆势走高",
       "tag": "科技/AI",
       "region": "美国",
       "concept": "aiCapex",
-      "time": "2026-11-12 00:34",
-      "datetime": "2026-11-12 00:34",
+      "time": "2026-11-12 10:51",
+      "datetime": "2026-11-12 10:51",
+      "source": "智通财经APP",
+      "url": "https://finance.sina.com.cn/stock/hkstock/hkstocknews/2026-11-12/doc-iniymwrk8578217.shtml",
+      "summary": "在短暂节假日后，美国债市恢复交易，长端美债价格小幅走高。英伟达（NVDA.US）风波令市场对AI交易主线产生疑虑，避险买盘随之涌入美债。",
+      "relatedStocks": [
+        "英伟达",
+        "微软",
+        "台积电"
+      ],
+      "bullConcepts": [
+        "AI算力",
+        "半导体",
+        "国产替代"
+      ],
+      "bearConcepts": [
+        "传统软件"
+      ],
+      "bullIndustries": [
+        "半导体",
+        "AI应用",
+        "算力基础设施"
+      ],
+      "bearIndustries": [
+        "传统IT服务"
+      ],
+      "heat": 29,
+      "momentum": 18,
+      "_auto": true
+    },
+    {
+      "id": "ab1mc2ucg",
+      "title": "Yorkville Ives：若黄仁勋卸任CEO 将把英伟达目标价下调约25%",
+      "tag": "科技/AI",
+      "region": "美国",
+      "concept": "aiCapex",
+      "time": "2026-11-12 10:51",
+      "datetime": "2026-11-12 10:51",
       "source": "环球市场播报",
-      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-12/doc-iniykvcw8968811.shtml",
-      "summary": "和英伟达 “分手” 并非易事。该股下跌 25% 之后，华尔街两家头部大银行将其从首选股票名单中剔除，但两家机构尚且都没有下决心给出 “卖出” 评级。",
+      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-12/doc-iniymwrk8573686.shtml",
+      "summary": "前韦德布什证券公司分析师丹·艾夫斯创办的Yorkville Ives表示，如果没有黄仁勋，英伟达的目标价将从目前的每股300美元下调约25%至225美元。",
+      "relatedStocks": [
+        "英伟达",
+        "微软",
+        "台积电"
+      ],
+      "bullConcepts": [
+        "AI算力",
+        "半导体",
+        "国产替代"
+      ],
+      "bearConcepts": [
+        "传统软件"
+      ],
+      "bullIndustries": [
+        "半导体",
+        "AI应用",
+        "算力基础设施"
+      ],
+      "bearIndustries": [
+        "传统IT服务"
+      ],
+      "heat": 33,
+      "momentum": 18,
+      "_auto": true
+    },
+    {
+      "id": "ab8rm1bx",
+      "title": "88%的员工挺他留任，董事会却在查他？黄仁勋的\"员工民意\"有多少含金量",
+      "tag": "科技/AI",
+      "region": "全球",
+      "concept": "ai",
+      "time": "2026-11-12 11:16",
+      "datetime": "2026-11-12 11:16",
+      "source": "环球市场播报",
+      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-12/doc-iniymwrm3878915.shtml",
+      "summary": "近日，一条推文在社交平台上流传：英伟达接受调查的员工中，88%希望黄仁勋继续担任CEO，只有1%希望他下台。推文还补了一句：要是英伟达的员工反目...",
       "relatedStocks": [
         "英伟达",
         "微软",
@@ -567,50 +587,16 @@
       "_auto": true
     },
     {
-      "id": "ab1x8iz3z",
-      "title": "沙特向OPEC报告其原油产量激增26% 创战争爆发前以来新高",
-      "tag": "能源/资源",
-      "region": "全球",
-      "concept": "energy",
-      "time": "2026-11-11 21:33",
-      "datetime": "2026-11-11 21:33",
-      "source": "环球市场播报",
-      "url": "https://finance.sina.com.cn/world/2026-11-11/doc-iniykqvx2248580.shtml",
-      "summary": "沙特阿拉伯向OPEC报告称，该国上月原油产量增长26%，升至战争爆发前以来的最高水平。沙特引领地区原油产量复苏，而供应回升正推动油价走低。",
-      "relatedStocks": [
-        "中国石油",
-        "紫金矿业"
-      ],
-      "bullConcepts": [
-        "油气",
-        "贵金属"
-      ],
-      "bearConcepts": [
-        "高耗能制造"
-      ],
-      "bullIndustries": [
-        "石油开采",
-        "贵金属"
-      ],
-      "bearIndustries": [
-        "航空运输",
-        "化工"
-      ],
-      "heat": 24,
-      "momentum": 18,
-      "_auto": true
-    },
-    {
-      "id": "abr69kwe",
-      "title": "英伟达股价盘后大跌 投资者开始考虑没有黄仁勋的未来",
+      "id": "ab1g9i8pp",
+      "title": "分析：黄仁勋遭罢免或让英伟达市值蒸发1万亿美元",
       "tag": "科技/AI",
-      "region": "全球",
-      "concept": "ai",
-      "time": "2026-11-12 07:17",
-      "datetime": "2026-11-12 07:17",
+      "region": "美国",
+      "concept": "aiCapex",
+      "time": "2026-11-12 16:15",
+      "datetime": "2026-11-12 16:15",
       "source": "环球市场播报",
-      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-12/doc-iniymmzq8680459.shtml",
-      "summary": "英伟达公司股价周三盘后大跌，投资者开始面对一种可能性：这家公司的掌舵人或许不再是首席执行官黄仁勋。 英伟达股价盘后一度下跌9%。",
+      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-12/doc-iniynifc1790714.shtml",
+      "summary": "美媒报道，全球最大AI芯片供应商英伟达董事会正开会讨论是否罢免首席执行官黄仁勋，称“这对英伟达而言是一场万亿美元级别的两难抉择”。",
       "relatedStocks": [
         "英伟达",
         "微软",
@@ -838,44 +824,6 @@
       ],
       "heat": 55,
       "momentum": 30
-    },
-    {
-      "id": "b8",
-      "title": "霍尔木兹海峡三艘油轮爆炸起火，伊朗多地遭袭",
-      "tag": "地缘/能源",
-      "region": "全球",
-      "concept": "energy",
-      "time": "2026-11-08",
-      "datetime": "2026-11-08 11:20",
-      "source": "央视/塔斯尼姆通讯社",
-      "summary": "伊朗革命卫队称11月8日当天已有三艘违规油轮在霍尔木兹海峡东部禁航区触雷爆炸起火；同日格什姆岛等地传出爆炸声，伊朗称遭美军袭击。特朗普宣布针对伊朗的\"铁门\"特遣行动全面展开。海峡通航风险推升原油与航运溢价。",
-      "relatedStocks": [
-        "中国海油",
-        "山东黄金",
-        "航运"
-      ],
-      "bullConcepts": [
-        "石油",
-        "黄金",
-        "油运",
-        "军工"
-      ],
-      "bearConcepts": [
-        "航空",
-        "化工(成本端)"
-      ],
-      "bullIndustries": [
-        "石油开采",
-        "航运",
-        "黄金",
-        "军工"
-      ],
-      "bearIndustries": [
-        "航空运输",
-        "化工"
-      ],
-      "heat": 90,
-      "momentum": 88
     },
     {
       "id": "b9",
