@@ -1,6 +1,6 @@
 {
   "date": "2026-11-12",
-  "generatedAt": "2026-11-11T17:50:52.531Z",
+  "generatedAt": "2026-11-12T00:28:08.472Z",
   "sources": [
     {
       "rank": 1,
@@ -609,6 +609,186 @@
           "time": "",
           "url": "https://www.toutiao.com/trending/7706346851661987876/?category_name=topic_innerflow&event_type=hot_board&log_pb=%7B%22category_name%22%3A%22topic_innerflow%22%2C%22cluster_type%22%3A%226%22%2C%22enter_from%22%3A%22click_category%22%2C%22entrance_hotspot%22%3A%22outside%22%2C%22event_type%22%3A%22hot_board%22%2C%22hot_board_cluster_id%22%3A%227706346851661987876%22%2C%22hot_board_impr_id%22%3A%22202611120149400EF5E169F98629B7D759%22%2C%22jump_page%22%3A%22hot_board_page%22%2C%22location%22%3A%22news_hot_card%22%2C%22page_location%22%3A%22hot_board_page%22%2C%22source%22%3A%22trending_tab%22%2C%22style_id%22%3A%2240132%22%2C%22title%22%3A%22%E4%B8%AD%E5%BE%AE%E5%85%AC%E5%8F%B8%E5%88%9B%E5%A7%8B%E4%BA%BA%E5%B0%B9%E5%BF%97%E5%B0%A7%E7%9A%84%E5%88%BB%E8%9A%80%E6%9C%BA%E4%BA%BA%E7%94%9F%22%7D&rank=&style_id=40132&topic_id=7706346851661987876",
           "cat": "百强企业"
+        },
+        {
+          "text": "英伟达被曝考虑任命临时首席执行官",
+          "time": "",
+          "url": "https://www.toutiao.com/trending/7707065433639095859/?category_name=topic_innerflow&event_type=hot_board&log_pb=%7B%22category_name%22%3A%22topic_innerflow%22%2C%22cluster_type%22%3A%225%22%2C%22enter_from%22%3A%22click_category%22%2C%22entrance_hotspot%22%3A%22outside%22%2C%22event_type%22%3A%22hot_board%22%2C%22hot_board_cluster_id%22%3A%227707065433639095859%22%2C%22hot_board_impr_id%22%3A%2220261112082704A45F3E8C7FAFA52C997B%22%2C%22jump_page%22%3A%22hot_board_page%22%2C%22location%22%3A%22news_hot_card%22%2C%22page_location%22%3A%22hot_board_page%22%2C%22source%22%3A%22trending_tab%22%2C%22style_id%22%3A%2240132%22%2C%22title%22%3A%22%E8%8B%B1%E4%BC%9F%E8%BE%BE%E8%A2%AB%E6%9B%9D%E8%80%83%E8%99%91%E4%BB%BB%E5%91%BD%E4%B8%B4%E6%97%B6%E9%A6%96%E5%B8%AD%E6%89%A7%E8%A1%8C%E5%AE%98%22%7D&rank=&style_id=40132&topic_id=7707065433639095859",
+          "cat": "百强企业"
+        },
+        {
+          "text": "美股科技股再续昂扬反弹",
+          "time": "",
+          "url": "https://www.toutiao.com/trending/7707050204091911730/?category_name=topic_innerflow&event_type=hot_board&log_pb=%7B%22category_name%22%3A%22topic_innerflow%22%2C%22cluster_type%22%3A%225%22%2C%22enter_from%22%3A%22click_category%22%2C%22entrance_hotspot%22%3A%22outside%22%2C%22event_type%22%3A%22hot_board%22%2C%22hot_board_cluster_id%22%3A%227707050204091911730%22%2C%22hot_board_impr_id%22%3A%2220261112082704A45F3E8C7FAFA52C997B%22%2C%22jump_page%22%3A%22hot_board_page%22%2C%22location%22%3A%22news_hot_card%22%2C%22page_location%22%3A%22hot_board_page%22%2C%22source%22%3A%22trending_tab%22%2C%22style_id%22%3A%2240132%22%2C%22title%22%3A%22%E7%BE%8E%E8%82%A1%E7%A7%91%E6%8A%80%E8%82%A1%E5%86%8D%E7%BB%AD%E6%98%82%E6%89%AC%E5%8F%8D%E5%BC%B9%22%7D&rank=&style_id=40132&topic_id=7707050204091911730",
+          "cat": "科技"
+        },
+        {
+          "text": "Anthropic披露AI仅用3天适配AMD芯片",
+          "time": "",
+          "url": "https://www.toutiao.com/trending/7706948038756929087/?category_name=topic_innerflow&event_type=hot_board&log_pb=%7B%22category_name%22%3A%22topic_innerflow%22%2C%22cluster_type%22%3A%2213%22%2C%22enter_from%22%3A%22click_category%22%2C%22entrance_hotspot%22%3A%22outside%22%2C%22event_type%22%3A%22hot_board%22%2C%22hot_board_cluster_id%22%3A%227706948038756929087%22%2C%22hot_board_impr_id%22%3A%2220261112082704A45F3E8C7FAFA52C997B%22%2C%22jump_page%22%3A%22hot_board_page%22%2C%22location%22%3A%22news_hot_card%22%2C%22page_location%22%3A%22hot_board_page%22%2C%22source%22%3A%22trending_tab%22%2C%22style_id%22%3A%2240132%22%2C%22title%22%3A%22Anthropic%E6%8A%AB%E9%9C%B2AI%E4%BB%85%E7%94%A83%E5%A4%A9%E9%80%82%E9%85%8DAMD%E8%8A%AF%E7%89%87%22%7D&rank=&style_id=40132&topic_id=7706948038756929087",
+          "cat": "科技"
+        },
+        {
+          "text": "媒体评比亚迪大唐部分车辆轮辋装反",
+          "time": "",
+          "url": "https://www.toutiao.com/trending/7706856015555281417/?category_name=topic_innerflow&event_type=hot_board&log_pb=%7B%22category_name%22%3A%22topic_innerflow%22%2C%22cluster_type%22%3A%2215%22%2C%22enter_from%22%3A%22click_category%22%2C%22entrance_hotspot%22%3A%22outside%22%2C%22event_type%22%3A%22hot_board%22%2C%22hot_board_cluster_id%22%3A%227706856015555281417%22%2C%22hot_board_impr_id%22%3A%2220261112082704A45F3E8C7FAFA52C997B%22%2C%22jump_page%22%3A%22hot_board_page%22%2C%22location%22%3A%22news_hot_card%22%2C%22page_location%22%3A%22hot_board_page%22%2C%22source%22%3A%22trending_tab%22%2C%22style_id%22%3A%2240132%22%2C%22title%22%3A%22%E5%AA%92%E4%BD%93%E8%AF%84%E6%AF%94%E4%BA%9A%E8%BF%AA%E5%A4%A7%E5%94%90%E9%83%A8%E5%88%86%E8%BD%A6%E8%BE%86%E8%BD%AE%E8%BE%8B%E8%A3%85%E5%8F%8D%22%7D&rank=&style_id=40132&topic_id=7706856015555281417",
+          "cat": "科技"
+        },
+        {
+          "text": "燃油车国内销量接近腰斩",
+          "time": "",
+          "url": "https://www.toutiao.com/trending/7706947404267785778/?category_name=topic_innerflow&event_type=hot_board&log_pb=%7B%22category_name%22%3A%22topic_innerflow%22%2C%22cluster_type%22%3A%2213%22%2C%22enter_from%22%3A%22click_category%22%2C%22entrance_hotspot%22%3A%22outside%22%2C%22event_type%22%3A%22hot_board%22%2C%22hot_board_cluster_id%22%3A%227706947404267785778%22%2C%22hot_board_impr_id%22%3A%2220261112082704A45F3E8C7FAFA52C997B%22%2C%22jump_page%22%3A%22hot_board_page%22%2C%22location%22%3A%22news_hot_card%22%2C%22page_location%22%3A%22hot_board_page%22%2C%22source%22%3A%22trending_tab%22%2C%22style_id%22%3A%2240132%22%2C%22title%22%3A%22%E7%87%83%E6%B2%B9%E8%BD%A6%E5%9B%BD%E5%86%85%E9%94%80%E9%87%8F%E6%8E%A5%E8%BF%91%E8%85%B0%E6%96%A9%22%7D&rank=&style_id=40132&topic_id=7706947404267785778",
+          "cat": "财经"
+        },
+        {
+          "text": "俄罗斯驻美国大使达尔奇耶夫去世",
+          "time": "",
+          "url": "https://www.toutiao.com/trending/7706949175224713766/?category_name=topic_innerflow&event_type=hot_board&log_pb=%7B%22category_name%22%3A%22topic_innerflow%22%2C%22cluster_type%22%3A%2215%22%2C%22enter_from%22%3A%22click_category%22%2C%22entrance_hotspot%22%3A%22outside%22%2C%22event_type%22%3A%22hot_board%22%2C%22hot_board_cluster_id%22%3A%227706949175224713766%22%2C%22hot_board_impr_id%22%3A%2220261112082704A45F3E8C7FAFA52C997B%22%2C%22jump_page%22%3A%22hot_board_page%22%2C%22location%22%3A%22news_hot_card%22%2C%22page_location%22%3A%22hot_board_page%22%2C%22source%22%3A%22trending_tab%22%2C%22style_id%22%3A%2240132%22%2C%22title%22%3A%22%E4%BF%84%E7%BD%97%E6%96%AF%E9%A9%BB%E7%BE%8E%E5%9B%BD%E5%A4%A7%E4%BD%BF%E8%BE%BE%E5%B0%94%E5%A5%87%E8%80%B6%E5%A4%AB%E5%8E%BB%E4%B8%96%22%7D&rank=&style_id=40132&topic_id=7706949175224713766",
+          "cat": "财经"
+        },
+        {
+          "text": "国产超豪华的路是不是走偏了",
+          "time": "",
+          "url": "https://www.toutiao.com/trending/7707017161386098738/?category_name=topic_innerflow&event_type=hot_board&log_pb=%7B%22category_name%22%3A%22topic_innerflow%22%2C%22cluster_type%22%3A%220%22%2C%22enter_from%22%3A%22click_category%22%2C%22entrance_hotspot%22%3A%22outside%22%2C%22event_type%22%3A%22hot_board%22%2C%22hot_board_cluster_id%22%3A%227707017161386098738%22%2C%22hot_board_impr_id%22%3A%2220261112082704A45F3E8C7FAFA52C997B%22%2C%22jump_page%22%3A%22hot_board_page%22%2C%22location%22%3A%22news_hot_card%22%2C%22page_location%22%3A%22hot_board_page%22%2C%22source%22%3A%22trending_tab%22%2C%22style_id%22%3A%2240132%22%2C%22title%22%3A%22%E5%9B%BD%E4%BA%A7%E8%B6%85%E8%B1%AA%E5%8D%8E%E7%9A%84%E8%B7%AF%E6%98%AF%E4%B8%8D%E6%98%AF%E8%B5%B0%E5%81%8F%E4%BA%86%22%7D&rank=&style_id=40132&topic_id=7707017161386098738",
+          "cat": "财经"
+        },
+        {
+          "text": "高叶谈AI对演员职业的冲击",
+          "time": "",
+          "url": "https://www.toutiao.com/trending/7706595933592486426/?category_name=topic_innerflow&event_type=hot_board&log_pb=%7B%22category_name%22%3A%22topic_innerflow%22%2C%22cluster_type%22%3A%228%22%2C%22enter_from%22%3A%22click_category%22%2C%22entrance_hotspot%22%3A%22outside%22%2C%22event_type%22%3A%22hot_board%22%2C%22hot_board_cluster_id%22%3A%227706595933592486426%22%2C%22hot_board_impr_id%22%3A%2220261112082704A45F3E8C7FAFA52C997B%22%2C%22jump_page%22%3A%22hot_board_page%22%2C%22location%22%3A%22news_hot_card%22%2C%22page_location%22%3A%22hot_board_page%22%2C%22source%22%3A%22trending_tab%22%2C%22style_id%22%3A%2240132%22%2C%22title%22%3A%22%E9%AB%98%E5%8F%B6%E8%B0%88AI%E5%AF%B9%E6%BC%94%E5%91%98%E8%81%8C%E4%B8%9A%E7%9A%84%E5%86%B2%E5%87%BB%22%7D&rank=&style_id=40132&topic_id=7706595933592486426",
+          "cat": "科技"
+        },
+        {
+          "text": "常冰玉0-6不敌墨菲原因在哪",
+          "time": "",
+          "url": "https://www.toutiao.com/trending/7707008601465881115/?category_name=topic_innerflow&event_type=hot_board&log_pb=%7B%22category_name%22%3A%22topic_innerflow%22%2C%22cluster_type%22%3A%2215%22%2C%22enter_from%22%3A%22click_category%22%2C%22entrance_hotspot%22%3A%22outside%22%2C%22event_type%22%3A%22hot_board%22%2C%22hot_board_cluster_id%22%3A%227707008601465881115%22%2C%22hot_board_impr_id%22%3A%2220261112082704A45F3E8C7FAFA52C997B%22%2C%22jump_page%22%3A%22hot_board_page%22%2C%22location%22%3A%22news_hot_card%22%2C%22page_location%22%3A%22hot_board_page%22%2C%22source%22%3A%22trending_tab%22%2C%22style_id%22%3A%2240132%22%2C%22title%22%3A%22%E5%B8%B8%E5%86%B0%E7%8E%890-6%E4%B8%8D%E6%95%8C%E5%A2%A8%E8%8F%B2%E5%8E%9F%E5%9B%A0%E5%9C%A8%E5%93%AA%22%7D&rank=&style_id=40132&topic_id=7707008601465881115",
+          "cat": "财经"
+        },
+        {
+          "text": "名记：奥沙利文在75三杰中最先衰落",
+          "time": "",
+          "url": "https://www.toutiao.com/trending/7706931497697165850/?category_name=topic_innerflow&event_type=hot_board&log_pb=%7B%22category_name%22%3A%22topic_innerflow%22%2C%22cluster_type%22%3A%2215%22%2C%22enter_from%22%3A%22click_category%22%2C%22entrance_hotspot%22%3A%22outside%22%2C%22event_type%22%3A%22hot_board%22%2C%22hot_board_cluster_id%22%3A%227706931497697165850%22%2C%22hot_board_impr_id%22%3A%2220261112082704A45F3E8C7FAFA52C997B%22%2C%22jump_page%22%3A%22hot_board_page%22%2C%22location%22%3A%22news_hot_card%22%2C%22page_location%22%3A%22hot_board_page%22%2C%22source%22%3A%22trending_tab%22%2C%22style_id%22%3A%2240132%22%2C%22title%22%3A%22%E5%90%8D%E8%AE%B0%EF%BC%9A%E5%A5%A5%E6%B2%99%E5%88%A9%E6%96%87%E5%9C%A875%E4%B8%89%E6%9D%B0%E4%B8%AD%E6%9C%80%E5%85%88%E8%A1%B0%E8%90%BD%22%7D&rank=&style_id=40132&topic_id=7706931497697165850",
+          "cat": "财经"
+        },
+        {
+          "text": "中国女排大换血意味着什么",
+          "time": "",
+          "url": "https://www.toutiao.com/trending/7706746460657811977/?category_name=topic_innerflow&event_type=hot_board&log_pb=%7B%22category_name%22%3A%22topic_innerflow%22%2C%22cluster_type%22%3A%2215%22%2C%22enter_from%22%3A%22click_category%22%2C%22entrance_hotspot%22%3A%22outside%22%2C%22event_type%22%3A%22hot_board%22%2C%22hot_board_cluster_id%22%3A%227706746460657811977%22%2C%22hot_board_impr_id%22%3A%2220261112082704A45F3E8C7FAFA52C997B%22%2C%22jump_page%22%3A%22hot_board_page%22%2C%22location%22%3A%22news_hot_card%22%2C%22page_location%22%3A%22hot_board_page%22%2C%22source%22%3A%22trending_tab%22%2C%22style_id%22%3A%2240132%22%2C%22title%22%3A%22%E4%B8%AD%E5%9B%BD%E5%A5%B3%E6%8E%92%E5%A4%A7%E6%8D%A2%E8%A1%80%E6%84%8F%E5%91%B3%E7%9D%80%E4%BB%80%E4%B9%88%22%7D&rank=&style_id=40132&topic_id=7706746460657811977",
+          "cat": "财经"
+        },
+        {
+          "text": "美国“分裂政府”将上演攻防战",
+          "time": "",
+          "url": "https://www.toutiao.com/trending/7705975969127317567/?category_name=topic_innerflow&event_type=hot_board&log_pb=%7B%22category_name%22%3A%22topic_innerflow%22%2C%22cluster_type%22%3A%228%22%2C%22enter_from%22%3A%22click_category%22%2C%22entrance_hotspot%22%3A%22outside%22%2C%22event_type%22%3A%22hot_board%22%2C%22hot_board_cluster_id%22%3A%227705975969127317567%22%2C%22hot_board_impr_id%22%3A%2220261112082704A45F3E8C7FAFA52C997B%22%2C%22jump_page%22%3A%22hot_board_page%22%2C%22location%22%3A%22news_hot_card%22%2C%22page_location%22%3A%22hot_board_page%22%2C%22source%22%3A%22trending_tab%22%2C%22style_id%22%3A%2240132%22%2C%22title%22%3A%22%E7%BE%8E%E5%9B%BD%E2%80%9C%E5%88%86%E8%A3%82%E6%94%BF%E5%BA%9C%E2%80%9D%E5%B0%86%E4%B8%8A%E6%BC%94%E6%94%BB%E9%98%B2%E6%88%98%22%7D&rank=&style_id=40132&topic_id=7705975969127317567",
+          "cat": "政治政策"
+        },
+        {
+          "text": "5个上门维修师傅只有2个说了实话",
+          "time": "",
+          "url": "https://www.toutiao.com/trending/7706683297081999882/?category_name=topic_innerflow&event_type=hot_board&log_pb=%7B%22category_name%22%3A%22topic_innerflow%22%2C%22cluster_type%22%3A%228%22%2C%22enter_from%22%3A%22click_category%22%2C%22entrance_hotspot%22%3A%22outside%22%2C%22event_type%22%3A%22hot_board%22%2C%22hot_board_cluster_id%22%3A%227706683297081999882%22%2C%22hot_board_impr_id%22%3A%2220261112082704A45F3E8C7FAFA52C997B%22%2C%22jump_page%22%3A%22hot_board_page%22%2C%22location%22%3A%22news_hot_card%22%2C%22page_location%22%3A%22hot_board_page%22%2C%22source%22%3A%22trending_tab%22%2C%22style_id%22%3A%2240132%22%2C%22title%22%3A%225%E4%B8%AA%E4%B8%8A%E9%97%A8%E7%BB%B4%E4%BF%AE%E5%B8%88%E5%82%85%E5%8F%AA%E6%9C%892%E4%B8%AA%E8%AF%B4%E4%BA%86%E5%AE%9E%E8%AF%9D%22%7D&rank=&style_id=40132&topic_id=7706683297081999882",
+          "cat": "财经"
+        },
+        {
+          "text": "深圳机场做足准备迎APEC",
+          "time": "",
+          "url": "https://www.toutiao.com/trending/7706367964777316914/?category_name=topic_innerflow&event_type=hot_board&log_pb=%7B%22category_name%22%3A%22topic_innerflow%22%2C%22cluster_type%22%3A%223%22%2C%22enter_from%22%3A%22click_category%22%2C%22entrance_hotspot%22%3A%22outside%22%2C%22event_type%22%3A%22hot_board%22%2C%22hot_board_cluster_id%22%3A%227706367964777316914%22%2C%22hot_board_impr_id%22%3A%2220261112082704A45F3E8C7FAFA52C997B%22%2C%22jump_page%22%3A%22hot_board_page%22%2C%22location%22%3A%22news_hot_card%22%2C%22page_location%22%3A%22hot_board_page%22%2C%22source%22%3A%22trending_tab%22%2C%22style_id%22%3A%2240132%22%2C%22title%22%3A%22%E6%B7%B1%E5%9C%B3%E6%9C%BA%E5%9C%BA%E5%81%9A%E8%B6%B3%E5%87%86%E5%A4%87%E8%BF%8EAPEC%22%7D&rank=&style_id=40132&topic_id=7706367964777316914",
+          "cat": "财经"
+        },
+        {
+          "text": "彩票店主代买彩票中825万私自兑奖",
+          "time": "",
+          "url": "https://www.toutiao.com/trending/7706767171250929727/?category_name=topic_innerflow&event_type=hot_board&log_pb=%7B%22category_name%22%3A%22topic_innerflow%22%2C%22cluster_type%22%3A%220%22%2C%22enter_from%22%3A%22click_category%22%2C%22entrance_hotspot%22%3A%22outside%22%2C%22event_type%22%3A%22hot_board%22%2C%22hot_board_cluster_id%22%3A%227706767171250929727%22%2C%22hot_board_impr_id%22%3A%2220261112082704A45F3E8C7FAFA52C997B%22%2C%22jump_page%22%3A%22hot_board_page%22%2C%22location%22%3A%22news_hot_card%22%2C%22page_location%22%3A%22hot_board_page%22%2C%22source%22%3A%22trending_tab%22%2C%22style_id%22%3A%2240132%22%2C%22title%22%3A%22%E5%BD%A9%E7%A5%A8%E5%BA%97%E4%B8%BB%E4%BB%A3%E4%B9%B0%E5%BD%A9%E7%A5%A8%E4%B8%AD825%E4%B8%87%E7%A7%81%E8%87%AA%E5%85%91%E5%A5%96%22%7D&rank=&style_id=40132&topic_id=7706767171250929727",
+          "cat": "财经"
+        },
+        {
+          "text": "从双十一之变看消费者的理性务实",
+          "time": "",
+          "url": "https://www.toutiao.com/trending/7706705589304311862/?category_name=topic_innerflow&event_type=hot_board&log_pb=%7B%22category_name%22%3A%22topic_innerflow%22%2C%22cluster_type%22%3A%226%22%2C%22enter_from%22%3A%22click_category%22%2C%22entrance_hotspot%22%3A%22outside%22%2C%22event_type%22%3A%22hot_board%22%2C%22hot_board_cluster_id%22%3A%227706705589304311862%22%2C%22hot_board_impr_id%22%3A%2220261112082704A45F3E8C7FAFA52C997B%22%2C%22jump_page%22%3A%22hot_board_page%22%2C%22location%22%3A%22news_hot_card%22%2C%22page_location%22%3A%22hot_board_page%22%2C%22source%22%3A%22trending_tab%22%2C%22style_id%22%3A%2240132%22%2C%22title%22%3A%22%E4%BB%8E%E5%8F%8C%E5%8D%81%E4%B8%80%E4%B9%8B%E5%8F%98%E7%9C%8B%E6%B6%88%E8%B4%B9%E8%80%85%E7%9A%84%E7%90%86%E6%80%A7%E5%8A%A1%E5%AE%9E%22%7D&rank=&style_id=40132&topic_id=7706705589304311862",
+          "cat": "财经"
+        },
+        {
+          "text": "EIA维持2026年全球石油需求预期",
+          "time": "",
+          "url": "https://www.toutiao.com/trending/7706594492341797426/?category_name=topic_innerflow&event_type=hot_board&log_pb=%7B%22category_name%22%3A%22topic_innerflow%22%2C%22cluster_type%22%3A%224%22%2C%22enter_from%22%3A%22click_category%22%2C%22entrance_hotspot%22%3A%22outside%22%2C%22event_type%22%3A%22hot_board%22%2C%22hot_board_cluster_id%22%3A%227706594492341797426%22%2C%22hot_board_impr_id%22%3A%2220261112082704A45F3E8C7FAFA52C997B%22%2C%22jump_page%22%3A%22hot_board_page%22%2C%22location%22%3A%22news_hot_card%22%2C%22page_location%22%3A%22hot_board_page%22%2C%22source%22%3A%22trending_tab%22%2C%22style_id%22%3A%2240132%22%2C%22title%22%3A%22EIA%E7%BB%B4%E6%8C%812026%E5%B9%B4%E5%85%A8%E7%90%83%E7%9F%B3%E6%B2%B9%E9%9C%80%E6%B1%82%E9%A2%84%E6%9C%9F%22%7D&rank=&style_id=40132&topic_id=7706594492341797426",
+          "cat": "财经"
+        },
+        {
+          "text": "段永平向安徽一中学捐款4500万",
+          "time": "",
+          "url": "https://www.toutiao.com/trending/7706771108213457418/?category_name=topic_innerflow&event_type=hot_board&log_pb=%7B%22category_name%22%3A%22topic_innerflow%22%2C%22cluster_type%22%3A%2215%22%2C%22enter_from%22%3A%22click_category%22%2C%22entrance_hotspot%22%3A%22outside%22%2C%22event_type%22%3A%22hot_board%22%2C%22hot_board_cluster_id%22%3A%227706771108213457418%22%2C%22hot_board_impr_id%22%3A%2220261112082704A45F3E8C7FAFA52C997B%22%2C%22jump_page%22%3A%22hot_board_page%22%2C%22location%22%3A%22news_hot_card%22%2C%22page_location%22%3A%22hot_board_page%22%2C%22source%22%3A%22trending_tab%22%2C%22style_id%22%3A%2240132%22%2C%22title%22%3A%22%E6%AE%B5%E6%B0%B8%E5%B9%B3%E5%90%91%E5%AE%89%E5%BE%BD%E4%B8%80%E4%B8%AD%E5%AD%A6%E6%8D%90%E6%AC%BE4500%E4%B8%87%22%7D&rank=&style_id=40132&topic_id=7706771108213457418",
+          "cat": "财经"
+        },
+        {
+          "text": "MiniMax闫俊杰拆解中美AI差距",
+          "time": "",
+          "url": "https://www.toutiao.com/trending/7706541858926641206/?category_name=topic_innerflow&event_type=hot_board&log_pb=%7B%22category_name%22%3A%22topic_innerflow%22%2C%22cluster_type%22%3A%224%22%2C%22enter_from%22%3A%22click_category%22%2C%22entrance_hotspot%22%3A%22outside%22%2C%22event_type%22%3A%22hot_board%22%2C%22hot_board_cluster_id%22%3A%227706541858926641206%22%2C%22hot_board_impr_id%22%3A%2220261112082704A45F3E8C7FAFA52C997B%22%2C%22jump_page%22%3A%22hot_board_page%22%2C%22location%22%3A%22news_hot_card%22%2C%22page_location%22%3A%22hot_board_page%22%2C%22source%22%3A%22trending_tab%22%2C%22style_id%22%3A%2240132%22%2C%22title%22%3A%22MiniMax%E9%97%AB%E4%BF%8A%E6%9D%B0%E6%8B%86%E8%A7%A3%E4%B8%AD%E7%BE%8EAI%E5%B7%AE%E8%B7%9D%22%7D&rank=&style_id=40132&topic_id=7706541858926641206",
+          "cat": "科技"
+        },
+        {
+          "text": "77万亿存款到期会流向哪里",
+          "time": "",
+          "url": "https://www.toutiao.com/trending/7706011684422582313/?category_name=topic_innerflow&event_type=hot_board&log_pb=%7B%22category_name%22%3A%22topic_innerflow%22%2C%22cluster_type%22%3A%226%22%2C%22enter_from%22%3A%22click_category%22%2C%22entrance_hotspot%22%3A%22outside%22%2C%22event_type%22%3A%22hot_board%22%2C%22hot_board_cluster_id%22%3A%227706011684422582313%22%2C%22hot_board_impr_id%22%3A%2220261112082704A45F3E8C7FAFA52C997B%22%2C%22jump_page%22%3A%22hot_board_page%22%2C%22location%22%3A%22news_hot_card%22%2C%22page_location%22%3A%22hot_board_page%22%2C%22source%22%3A%22trending_tab%22%2C%22style_id%22%3A%2240132%22%2C%22title%22%3A%2277%E4%B8%87%E4%BA%BF%E5%AD%98%E6%AC%BE%E5%88%B0%E6%9C%9F%E4%BC%9A%E6%B5%81%E5%90%91%E5%93%AA%E9%87%8C%22%7D&rank=&style_id=40132&topic_id=7706011684422582313",
+          "cat": "财经"
+        },
+        {
+          "text": "山姆超市一羽绒服卖断货",
+          "time": "",
+          "url": "https://www.toutiao.com/trending/7706434048268648489/?category_name=topic_innerflow&event_type=hot_board&log_pb=%7B%22category_name%22%3A%22topic_innerflow%22%2C%22cluster_type%22%3A%220%22%2C%22enter_from%22%3A%22click_category%22%2C%22entrance_hotspot%22%3A%22outside%22%2C%22event_type%22%3A%22hot_board%22%2C%22hot_board_cluster_id%22%3A%227706434048268648489%22%2C%22hot_board_impr_id%22%3A%2220261112082704A45F3E8C7FAFA52C997B%22%2C%22jump_page%22%3A%22hot_board_page%22%2C%22location%22%3A%22news_hot_card%22%2C%22page_location%22%3A%22hot_board_page%22%2C%22source%22%3A%22trending_tab%22%2C%22style_id%22%3A%2240132%22%2C%22title%22%3A%22%E5%B1%B1%E5%A7%86%E8%B6%85%E5%B8%82%E4%B8%80%E7%BE%BD%E7%BB%92%E6%9C%8D%E5%8D%96%E6%96%AD%E8%B4%A7%22%7D&rank=&style_id=40132&topic_id=7706434048268648489",
+          "cat": "财经"
+        },
+        {
+          "text": "双十一的二十年变迁记",
+          "time": "",
+          "url": "https://www.toutiao.com/trending/7705378838569845298/?category_name=topic_innerflow&event_type=hot_board&log_pb=%7B%22category_name%22%3A%22topic_innerflow%22%2C%22cluster_type%22%3A%2215%22%2C%22enter_from%22%3A%22click_category%22%2C%22entrance_hotspot%22%3A%22outside%22%2C%22event_type%22%3A%22hot_board%22%2C%22hot_board_cluster_id%22%3A%227705378838569845298%22%2C%22hot_board_impr_id%22%3A%2220261112082704A45F3E8C7FAFA52C997B%22%2C%22jump_page%22%3A%22hot_board_page%22%2C%22location%22%3A%22news_hot_card%22%2C%22page_location%22%3A%22hot_board_page%22%2C%22source%22%3A%22trending_tab%22%2C%22style_id%22%3A%2240132%22%2C%22title%22%3A%22%E5%8F%8C%E5%8D%81%E4%B8%80%E7%9A%84%E4%BA%8C%E5%8D%81%E5%B9%B4%E5%8F%98%E8%BF%81%E8%AE%B0%22%7D&rank=&style_id=40132&topic_id=7705378838569845298",
+          "cat": "财经"
+        },
+        {
+          "text": "Fable 5.2纯代码作画能力如何",
+          "time": "",
+          "url": "https://www.toutiao.com/trending/7706947576926309942/?category_name=topic_innerflow&event_type=hot_board&log_pb=%7B%22category_name%22%3A%22topic_innerflow%22%2C%22cluster_type%22%3A%2213%22%2C%22enter_from%22%3A%22click_category%22%2C%22entrance_hotspot%22%3A%22outside%22%2C%22event_type%22%3A%22hot_board%22%2C%22hot_board_cluster_id%22%3A%227706947576926309942%22%2C%22hot_board_impr_id%22%3A%2220261112082704A45F3E8C7FAFA52C997B%22%2C%22jump_page%22%3A%22hot_board_page%22%2C%22location%22%3A%22news_hot_card%22%2C%22page_location%22%3A%22hot_board_page%22%2C%22source%22%3A%22trending_tab%22%2C%22style_id%22%3A%2240132%22%2C%22title%22%3A%22Fable+5.2%E7%BA%AF%E4%BB%A3%E7%A0%81%E4%BD%9C%E7%94%BB%E8%83%BD%E5%8A%9B%E5%A6%82%E4%BD%95%22%7D&rank=&style_id=40132&topic_id=7706947576926309942",
+          "cat": "财经"
+        },
+        {
+          "text": "女子神色慌张取20万当彩礼 柜员报警",
+          "time": "",
+          "url": "https://www.toutiao.com/trending/7706515721819570697/?category_name=topic_innerflow&event_type=hot_board&log_pb=%7B%22category_name%22%3A%22topic_innerflow%22%2C%22cluster_type%22%3A%228%22%2C%22enter_from%22%3A%22click_category%22%2C%22entrance_hotspot%22%3A%22outside%22%2C%22event_type%22%3A%22hot_board%22%2C%22hot_board_cluster_id%22%3A%227706515721819570697%22%2C%22hot_board_impr_id%22%3A%2220261112082704A45F3E8C7FAFA52C997B%22%2C%22jump_page%22%3A%22hot_board_page%22%2C%22location%22%3A%22news_hot_card%22%2C%22page_location%22%3A%22hot_board_page%22%2C%22source%22%3A%22trending_tab%22%2C%22style_id%22%3A%2240132%22%2C%22title%22%3A%22%E5%A5%B3%E5%AD%90%E7%A5%9E%E8%89%B2%E6%85%8C%E5%BC%A0%E5%8F%9620%E4%B8%87%E5%BD%93%E5%BD%A9%E7%A4%BC+%E6%9F%9C%E5%91%98%E6%8A%A5%E8%AD%A6%22%7D&rank=&style_id=40132&topic_id=7706515721819570697",
+          "cat": "社会热点"
+        },
+        {
+          "text": "致敬砥砺奋进的航空工业成飞",
+          "time": "",
+          "url": "https://www.toutiao.com/trending/7706807007739478059/?category_name=topic_innerflow&event_type=hot_board&log_pb=%7B%22category_name%22%3A%22topic_innerflow%22%2C%22cluster_type%22%3A%220%22%2C%22enter_from%22%3A%22click_category%22%2C%22entrance_hotspot%22%3A%22outside%22%2C%22event_type%22%3A%22hot_board%22%2C%22hot_board_cluster_id%22%3A%227706807007739478059%22%2C%22hot_board_impr_id%22%3A%2220261112082704A45F3E8C7FAFA52C997B%22%2C%22jump_page%22%3A%22hot_board_page%22%2C%22location%22%3A%22news_hot_card%22%2C%22page_location%22%3A%22hot_board_page%22%2C%22source%22%3A%22trending_tab%22%2C%22style_id%22%3A%2240132%22%2C%22title%22%3A%22%E8%87%B4%E6%95%AC%E7%A0%A5%E7%A0%BA%E5%A5%8B%E8%BF%9B%E7%9A%84%E8%88%AA%E7%A9%BA%E5%B7%A5%E4%B8%9A%E6%88%90%E9%A3%9E%22%7D&rank=&style_id=40132&topic_id=7706807007739478059",
+          "cat": "财经"
+        },
+        {
+          "text": "拜因体育解说员贬低萨巴伦卡外貌",
+          "time": "",
+          "url": "https://www.toutiao.com/trending/7706730884313121307/?category_name=topic_innerflow&event_type=hot_board&log_pb=%7B%22category_name%22%3A%22topic_innerflow%22%2C%22cluster_type%22%3A%2215%22%2C%22enter_from%22%3A%22click_category%22%2C%22entrance_hotspot%22%3A%22outside%22%2C%22event_type%22%3A%22hot_board%22%2C%22hot_board_cluster_id%22%3A%227706730884313121307%22%2C%22hot_board_impr_id%22%3A%2220261112082704A45F3E8C7FAFA52C997B%22%2C%22jump_page%22%3A%22hot_board_page%22%2C%22location%22%3A%22news_hot_card%22%2C%22page_location%22%3A%22hot_board_page%22%2C%22source%22%3A%22trending_tab%22%2C%22style_id%22%3A%2240132%22%2C%22title%22%3A%22%E6%8B%9C%E5%9B%A0%E4%BD%93%E8%82%B2%E8%A7%A3%E8%AF%B4%E5%91%98%E8%B4%AC%E4%BD%8E%E8%90%A8%E5%B7%B4%E4%BC%A6%E5%8D%A1%E5%A4%96%E8%B2%8C%22%7D&rank=&style_id=40132&topic_id=7706730884313121307",
+          "cat": "财经"
+        },
+        {
+          "text": "中国团队把光纤里的玻璃掏空",
+          "time": "",
+          "url": "https://www.toutiao.com/trending/7706485267128943142/?category_name=topic_innerflow&event_type=hot_board&log_pb=%7B%22category_name%22%3A%22topic_innerflow%22%2C%22cluster_type%22%3A%2215%22%2C%22enter_from%22%3A%22click_category%22%2C%22entrance_hotspot%22%3A%22outside%22%2C%22event_type%22%3A%22hot_board%22%2C%22hot_board_cluster_id%22%3A%227706485267128943142%22%2C%22hot_board_impr_id%22%3A%2220261112082704A45F3E8C7FAFA52C997B%22%2C%22jump_page%22%3A%22hot_board_page%22%2C%22location%22%3A%22news_hot_card%22%2C%22page_location%22%3A%22hot_board_page%22%2C%22source%22%3A%22trending_tab%22%2C%22style_id%22%3A%2240132%22%2C%22title%22%3A%22%E4%B8%AD%E5%9B%BD%E5%9B%A2%E9%98%9F%E6%8A%8A%E5%85%89%E7%BA%A4%E9%87%8C%E7%9A%84%E7%8E%BB%E7%92%83%E6%8E%8F%E7%A9%BA%22%7D&rank=&style_id=40132&topic_id=7706485267128943142",
+          "cat": "财经"
+        },
+        {
+          "text": "俄方高度评价中国任APEC东道主工作",
+          "time": "",
+          "url": "https://www.toutiao.com/trending/7706925186750349862/?category_name=topic_innerflow&event_type=hot_board&log_pb=%7B%22category_name%22%3A%22topic_innerflow%22%2C%22cluster_type%22%3A%2215%22%2C%22enter_from%22%3A%22click_category%22%2C%22entrance_hotspot%22%3A%22outside%22%2C%22event_type%22%3A%22hot_board%22%2C%22hot_board_cluster_id%22%3A%227706925186750349862%22%2C%22hot_board_impr_id%22%3A%2220261112082704A45F3E8C7FAFA52C997B%22%2C%22jump_page%22%3A%22hot_board_page%22%2C%22location%22%3A%22news_hot_card%22%2C%22page_location%22%3A%22hot_board_page%22%2C%22source%22%3A%22trending_tab%22%2C%22style_id%22%3A%2240132%22%2C%22title%22%3A%22%E4%BF%84%E6%96%B9%E9%AB%98%E5%BA%A6%E8%AF%84%E4%BB%B7%E4%B8%AD%E5%9B%BD%E4%BB%BBAPEC%E4%B8%9C%E9%81%93%E4%B8%BB%E5%B7%A5%E4%BD%9C%22%7D&rank=&style_id=40132&topic_id=7706925186750349862",
+          "cat": "财经"
+        },
+        {
+          "text": "新疆塔克拉玛干沙漠边的水稻迎来丰收",
+          "time": "",
+          "url": "https://www.toutiao.com/trending/7706104715431592457/?category_name=topic_innerflow&event_type=hot_board&log_pb=%7B%22category_name%22%3A%22topic_innerflow%22%2C%22cluster_type%22%3A%229%22%2C%22enter_from%22%3A%22click_category%22%2C%22entrance_hotspot%22%3A%22outside%22%2C%22event_type%22%3A%22hot_board%22%2C%22hot_board_cluster_id%22%3A%227706104715431592457%22%2C%22hot_board_impr_id%22%3A%2220261112082704A45F3E8C7FAFA52C997B%22%2C%22jump_page%22%3A%22hot_board_page%22%2C%22location%22%3A%22news_hot_card%22%2C%22page_location%22%3A%22hot_board_page%22%2C%22source%22%3A%22trending_tab%22%2C%22style_id%22%3A%2240132%22%2C%22title%22%3A%22%E6%96%B0%E7%96%86%E5%A1%94%E5%85%8B%E6%8B%89%E7%8E%9B%E5%B9%B2%E6%B2%99%E6%BC%A0%E8%BE%B9%E7%9A%84%E6%B0%B4%E7%A8%BB%E8%BF%8E%E6%9D%A5%E4%B8%B0%E6%94%B6%22%7D&rank=&style_id=40132&topic_id=7706104715431592457",
+          "cat": "财经"
+        },
+        {
+          "text": "Anthropic路演藏着什么芯片变局",
+          "time": "",
+          "url": "https://www.toutiao.com/trending/7706945966149996073/?category_name=topic_innerflow&event_type=hot_board&log_pb=%7B%22category_name%22%3A%22topic_innerflow%22%2C%22cluster_type%22%3A%2213%22%2C%22enter_from%22%3A%22click_category%22%2C%22entrance_hotspot%22%3A%22outside%22%2C%22event_type%22%3A%22hot_board%22%2C%22hot_board_cluster_id%22%3A%227706945966149996073%22%2C%22hot_board_impr_id%22%3A%2220261112082704A45F3E8C7FAFA52C997B%22%2C%22jump_page%22%3A%22hot_board_page%22%2C%22location%22%3A%22news_hot_card%22%2C%22page_location%22%3A%22hot_board_page%22%2C%22source%22%3A%22trending_tab%22%2C%22style_id%22%3A%2240132%22%2C%22title%22%3A%22Anthropic%E8%B7%AF%E6%BC%94%E8%97%8F%E7%9D%80%E4%BB%80%E4%B9%88%E8%8A%AF%E7%89%87%E5%8F%98%E5%B1%80%22%7D&rank=&style_id=40132&topic_id=7706945966149996073",
+          "cat": "科技"
         }
       ]
     },
@@ -1027,6 +1207,204 @@
           "time": "",
           "url": "https://finance.eastmoney.com/a/202611123928804566.html",
           "cat": "财经"
+        },
+        {
+          "text": "被曝新婚外情？黄仁勋据悉将遭罢免 英伟达股价盘后暴跌逾8%",
+          "time": "",
+          "url": "https://finance.eastmoney.com/a/202611123929028358.html",
+          "cat": "百强企业"
+        },
+        {
+          "text": "全球市场：美股收涨 纳指、标普500指数均涨超1% 费城半导体指数涨5.66%",
+          "time": "",
+          "url": "https://finance.eastmoney.com/a/202611123928819932.html",
+          "cat": "财经"
+        },
+        {
+          "text": "重大突破 国产1.6T光传输创新纪录！热门赛道再迎催化 有望持续高增长的光通信股出炉",
+          "time": "",
+          "url": "https://finance.eastmoney.com/a/202611123928930016.html",
+          "cat": "财经"
+        },
+        {
+          "text": "AI交易热情重燃！美股算力产业链集体飙升 云服务龙头涨超24%",
+          "time": "",
+          "url": "https://finance.eastmoney.com/a/202611123928848093.html",
+          "cat": "科技"
+        },
+        {
+          "text": "伊朗最高安全官员警告：若美国再次发动袭击 欧洲境内美军基地也将成为打击目标",
+          "time": "",
+          "url": "https://finance.eastmoney.com/a/202611123928809527.html",
+          "cat": "财经"
+        },
+        {
+          "text": "NAND合约价单月涨50%！存储超级周期延续 5股调研度居前(名单)",
+          "time": "",
+          "url": "https://finance.eastmoney.com/a/202611113928834587.html",
+          "cat": "财经"
+        },
+        {
+          "text": "政策产业双催化！人形机器人量产提速 万亿赛道景气上行(附股)",
+          "time": "",
+          "url": "https://finance.eastmoney.com/a/202611123928949525.html",
+          "cat": "科技"
+        },
+        {
+          "text": "11月12日投资日历 | 中国国际半导体博览会在北京举办",
+          "time": "",
+          "url": "https://finance.eastmoney.com/a/202611123929027972.html",
+          "cat": "科技"
+        },
+        {
+          "text": "申万宏源傅静涛：A股仍处“两段论”框架 2027年下半年有望迎来第二阶段上涨",
+          "time": "",
+          "url": "https://finance.eastmoney.com/a/202611123928873745.html",
+          "cat": "财经"
+        },
+        {
+          "text": "东方财富财经早餐 11月12日周四",
+          "time": "",
+          "url": "https://finance.eastmoney.com/a/202611113928757518.html",
+          "cat": "财经"
+        },
+        {
+          "text": "11月12日国内四大证券报纸、重要财经媒体头版头条内容精华摘要",
+          "time": "",
+          "url": "https://finance.eastmoney.com/a/202611123928809852.html",
+          "cat": "财经"
+        },
+        {
+          "text": "美国传媒巨头加码微短剧 称用户单次观看时长可达30分钟",
+          "time": "",
+          "url": "https://finance.eastmoney.com/a/202611123928837519.html",
+          "cat": "财经"
+        },
+        {
+          "text": "华尔街因黄仁勋风波“翻脸”：下调评级、目标价腰斩、“首选股”没了！",
+          "time": "",
+          "url": "https://finance.eastmoney.com/a/202611123929056577.html",
+          "cat": "百强企业"
+        },
+        {
+          "text": "ETF追踪丨11月11日股票型ETF净赎回45亿元 资金减仓创业板ETF易方达",
+          "time": "",
+          "url": "https://finance.eastmoney.com/a/202611123929021371.html",
+          "cat": "财经"
+        },
+        {
+          "text": "央行发布2026年第三季度中国货币政策执行报告提出：加力实施支持资本市场两项货币政策工具",
+          "time": "",
+          "url": "https://finance.eastmoney.com/a/202611123928811684.html",
+          "cat": "政治政策"
+        },
+        {
+          "text": "英伟达盘后跌9% 黄仁勋据悉曾与下属高管有婚外情",
+          "time": "",
+          "url": "https://finance.eastmoney.com/a/202611123928850847.html",
+          "cat": "百强企业"
+        },
+        {
+          "text": "财政部注资银行保险业新进展 工行、农行、中国人保定增获上交所审核通过",
+          "time": "",
+          "url": "https://finance.eastmoney.com/a/202611123928812013.html",
+          "cat": "财经"
+        },
+        {
+          "text": "存储市场罕见错位！产能排到2029 消费级却涨不动了",
+          "time": "",
+          "url": "https://finance.eastmoney.com/a/202611113928765990.html",
+          "cat": "财经"
+        },
+        {
+          "text": "成品油价或迎年内第六降 加满一箱将少花约15元",
+          "time": "",
+          "url": "https://finance.eastmoney.com/a/202611123928794719.html",
+          "cat": "财经"
+        },
+        {
+          "text": "光通信行业“砍单”传闻虚实几何？多家上市公司回应：没有不利变化",
+          "time": "",
+          "url": "https://finance.eastmoney.com/a/202611123928808397.html",
+          "cat": "财经"
+        },
+        {
+          "text": "通胀报告再敲警钟 美联储官员直言物价数据“令人不安”",
+          "time": "",
+          "url": "https://finance.eastmoney.com/a/202611123928810258.html",
+          "cat": "经济"
+        },
+        {
+          "text": "创业板年内最大上会项目来了！超聚变IPO迎考 拟募资80亿元",
+          "time": "",
+          "url": "https://finance.eastmoney.com/a/202611113928663090.html",
+          "cat": "财经"
+        },
+        {
+          "text": "英伟达盘后股价大跌 报道称公司拟罢免黄仁勋 董事会准备最早于今日召开会议",
+          "time": "",
+          "url": "https://finance.eastmoney.com/a/202611123928836110.html",
+          "cat": "百强企业"
+        },
+        {
+          "text": "中国船舶子公司签下超172亿元超大型油轮大单 预计2029年起交付",
+          "time": "",
+          "url": "https://finance.eastmoney.com/a/202611113928752539.html",
+          "cat": "财经"
+        },
+        {
+          "text": "存储芯片酝酿新一轮涨价？有代理商称消费级存储同步上涨 但“价格可谈”",
+          "time": "",
+          "url": "https://finance.eastmoney.com/a/202611113928625821.html",
+          "cat": "科技"
+        },
+        {
+          "text": "沙特10月原油产量恢复至战前水平 欧佩克+供应回升速度超预期",
+          "time": "",
+          "url": "https://finance.eastmoney.com/a/202611113928780431.html",
+          "cat": "财经"
+        },
+        {
+          "text": "消息称Anthropic IPO获数倍超额认购 投资者需求强劲",
+          "time": "",
+          "url": "https://finance.eastmoney.com/a/202611113928746460.html",
+          "cat": "财经"
+        },
+        {
+          "text": "16天9板！AI漫剧概念龙头文投控股最新公告！前三季净利同比变动-1120.9%",
+          "time": "",
+          "url": "https://finance.eastmoney.com/a/202611113928670181.html",
+          "cat": "科技"
+        },
+        {
+          "text": "中信建投：三重逻辑驱动下 相关战略金属商品价格有望持续受益",
+          "time": "",
+          "url": "https://finance.eastmoney.com/a/202611123929032219.html",
+          "cat": "财经"
+        },
+        {
+          "text": "张艺谋的AI困惑背后：院线电影拿什么留住观众",
+          "time": "",
+          "url": "https://finance.eastmoney.com/a/202611123928851740.html",
+          "cat": "财经"
+        },
+        {
+          "text": "昨夜今晨 集体上涨！伦铝现货大幅溢价 创逾30年新高！日本大动作 俄外交部紧急发声！",
+          "time": "",
+          "url": "https://finance.eastmoney.com/a/202611123928851980.html",
+          "cat": "政治政策"
+        },
+        {
+          "text": "上观时评 | 道路停车收费调整，折射上海城市治理三个特征",
+          "time": "",
+          "url": "https://finance.eastmoney.com/a/202611123928847976.html",
+          "cat": "财经"
+        },
+        {
+          "text": "外需降、约束增：2027年如何稳增长？",
+          "time": "",
+          "url": "https://finance.eastmoney.com/a/202611123928850516.html",
+          "cat": "经济"
         }
       ]
     },
@@ -1335,6 +1713,300 @@
           "time": "2026-11-12 00:27",
           "url": "https://finance.sina.cn/7x24/2026-11-12/detail-iniykvcw8966836.d.html",
           "cat": "财经"
+        },
+        {
+          "text": "【第二艘国产大型邮轮“爱达·花城号”完成首个试运营航次】今天（12日），第二艘国产大型邮轮“爱达·花城号”顺利完成首个试运营航次，抵达广州南沙国际邮轮母港。在首个试运营航次中，“爱",
+          "time": "2026-11-12 08:25",
+          "url": "https://finance.sina.cn/7x24/2026-11-12/detail-iniymsin8589844.d.html",
+          "cat": "财经"
+        },
+        {
+          "text": "【中工国际：目前数据中心业务营收占比较低，对公司业绩无重大影响】中工国际在互动平台表示，公司所属中国中元多年来深耕数据中心领域设计业务，依托深厚技术积累与设计革新能力，先后承接多项",
+          "time": "2026-11-12 08:24",
+          "url": "https://finance.sina.cn/7x24/2026-11-12/detail-iniymsin8589067.d.html",
+          "cat": "科技"
+        },
+        {
+          "text": "【美众议院准备就爱泼斯坦文件公开法案展开新一轮表决】据报道，华盛顿-民主党人和少数众议院共和党人已征集到足够签名，成功推动今年晚些时候再次就性犯罪者杰弗里.爱泼斯坦相关档案举行表决",
+          "time": "2026-11-12 08:24",
+          "url": "https://finance.sina.cn/7x24/2026-11-12/detail-iniymsif1239777.d.html",
+          "cat": "财经"
+        },
+        {
+          "text": "【日本最高外汇事务官员三村淳：近几日汇率波动过快】日本最高外汇事务官员三村淳12日表示，近期外汇市场的走势似乎过于迅速。他在财务省回答记者提问时作出上述表态，但拒绝对当前的汇率水平",
+          "time": "2026-11-12 08:19",
+          "url": "https://finance.sina.cn/7x24/2026-11-12/detail-iniymsin8584990.d.html",
+          "cat": "经济"
+        },
+        {
+          "text": "【华强北脑机接口产业应用中心近期开放 日均接待600至800人次参观体验】深圳华强北脑机接口产业应用示范中心近期面向公众开放体验，市民游客轮番体验脑波作画、“脑能网”多人互动游戏、",
+          "time": "2026-11-12 08:19",
+          "url": "https://finance.sina.cn/7x24/2026-11-12/detail-iniymsim1808680.d.html",
+          "cat": "财经"
+        },
+        {
+          "text": "工信部发布关于公开征求《半导体集成电路 融合视觉传感器测试方法》等46项推荐性国家标准计划项目意见的公示。",
+          "time": "2026-11-12 08:18",
+          "url": "https://finance.sina.cn/7x24/2026-11-12/detail-iniymsif1236261.d.html",
+          "cat": "科技"
+        },
+        {
+          "text": "韩国Kospi指数回吐涨幅；最新下跌0.5%，报5346.87点。",
+          "time": "2026-11-12 08:15",
+          "url": "https://finance.sina.com.cn/7x24/",
+          "cat": "财经"
+        },
+        {
+          "text": "【伊朗高官：美若再动武 参与的欧洲基地皆为目标 】伊朗最高国家安全委员会秘书雷扎伊12日表示，如果美国再对伊朗动武，其“参与侵略”的欧洲军事基地也将成为目标。雷扎伊当天在社交媒体上",
+          "time": "2026-11-12 08:15",
+          "url": "https://finance.sina.cn/7x24/2026-11-12/detail-iniymsim1805649.d.html",
+          "cat": "军事"
+        },
+        {
+          "text": "【美国2年期国债收益率上升 收益率曲线趋平】美债现货交易在周三假期后恢复，2年期美债收益率上涨，收益率曲线趋平。基准2年期国债收益率上涨4个基点至4.77%。10年期收益率基本持平",
+          "time": "2026-11-12 08:14",
+          "url": "https://finance.sina.cn/7x24/2026-11-12/detail-iniymsim1805239.d.html",
+          "cat": "经济"
+        },
+        {
+          "text": "日本最高货币外交官三村淳：过去几天的走势过于迅速。",
+          "time": "2026-11-12 08:14",
+          "url": "https://finance.sina.cn/7x24/2026-11-12/detail-iniymsin8581065.d.html",
+          "cat": "政治政策"
+        },
+        {
+          "text": "日本最高货币外交官三村淳：外汇波动过快。",
+          "time": "2026-11-12 08:14",
+          "url": "https://finance.sina.cn/7x24/2026-11-12/detail-iniymsif1233627.d.html",
+          "cat": "政治政策"
+        },
+        {
+          "text": "日本日经指数回吐涨幅，最新下跌0.2%。AI相关股票下跌，揖斐电和爱德万测试股价下跌，之前英伟达董事会据报准备罢免黄仁勋。",
+          "time": "2026-11-12 08:14",
+          "url": "https://finance.sina.cn/7x24/2026-11-12/detail-iniymsim1804650.d.html",
+          "cat": "财经"
+        },
+        {
+          "text": "【中信证券：国产算力边际向上，聚焦IDC、连接器、交换机低估龙头】中信证券研报认为，国产算力需求加速释放，在资本开支持续加码的驱动下，产业链正迈入业绩兑现期。云厂商侧，2026Q2",
+          "time": "2026-11-12 08:12",
+          "url": "https://finance.sina.cn/7x24/2026-11-12/detail-iniymsin8578545.d.html",
+          "cat": "科技"
+        },
+        {
+          "text": "SK海力士股价下跌1.7%。",
+          "time": "2026-11-12 08:12",
+          "url": "https://finance.sina.cn/7x24/2026-11-12/detail-iniymsin8578486.d.html",
+          "cat": "财经"
+        },
+        {
+          "text": "日本揖斐电和爱德万测试股价下跌。",
+          "time": "2026-11-12 08:11",
+          "url": "https://finance.sina.cn/7x24/2026-11-12/detail-iniymsin8577866.d.html",
+          "cat": "财经"
+        },
+        {
+          "text": "现货黄金失守3970美元/盎司，日内跌0.48%。",
+          "time": "2026-11-12 08:10",
+          "url": "https://finance.sina.cn/7x24/2026-11-12/detail-iniymsin8576662.d.html",
+          "cat": "财经"
+        },
+        {
+          "text": "钯金期货日内跌2%，现报1025.05美元/盎司。",
+          "time": "2026-11-12 08:09",
+          "url": "https://finance.sina.cn/7x24/2026-11-12/detail-iniymsim1799427.d.html",
+          "cat": "经济"
+        },
+        {
+          "text": "伯恩斯坦：将英伟达评级从“跑赢大盘”下调至“与大盘持平”，目标价设定为 200 美元。",
+          "time": "2026-11-12 08:08",
+          "url": "https://finance.sina.cn/7x24/2026-11-12/detail-iniymsim1798471.d.html",
+          "cat": "科技"
+        },
+        {
+          "text": "日产汽车股价跌幅扩大至逾4%，第二季度利润不及预期。",
+          "time": "2026-11-12 08:07",
+          "url": "https://finance.sina.cn/7x24/2026-11-12/detail-iniymsif1228228.d.html",
+          "cat": "财经"
+        },
+        {
+          "text": "【华泰证券：上市银行业绩恢复性增长确定性增强 国有大行配置价值凸显】华泰证券研报称，上市银行三季报营收、利润增速双双提升，大行表现亮眼。2026年1—9月上市银行营收、净利润同比增",
+          "time": "2026-11-12 08:06",
+          "url": "https://finance.sina.cn/7x24/2026-11-12/detail-iniymsim1797301.d.html",
+          "cat": "财经"
+        },
+        {
+          "text": "【中信建投：三重逻辑驱动下 相关战略金属商品价格有望持续受益】中信建投证券发布战略金属行业2027年投资策略报告称，科技康波上行周期打开新兴产业长期需求空间，叠加全球资源博弈持续升",
+          "time": "2026-11-12 08:06",
+          "url": "https://finance.sina.cn/7x24/2026-11-12/detail-iniymsim1797173.d.html",
+          "cat": "科技"
+        },
+        {
+          "text": "日产汽车股价下跌3.0%，此前第二季度录得净亏损。",
+          "time": "2026-11-12 08:06",
+          "url": "https://finance.sina.cn/7x24/2026-11-12/detail-iniymsif1226980.d.html",
+          "cat": "财经"
+        },
+        {
+          "text": "【报道：加拿大养老金计划考虑将对冲基金配置翻倍至1600亿美元】加拿大最大的养老金计划正计划在未来五至七年内将其对冲基金投资规模大致翻倍，这是来自该行业最重要支持者之一的看涨信号。",
+          "time": "2026-11-12 08:05",
+          "url": "https://finance.sina.cn/7x24/2026-11-12/detail-iniymsif1226630.d.html",
+          "cat": "经济"
+        },
+        {
+          "text": "【机构：英国房屋销售前景创2023年以来最悲观水平】周四公布的一项调查显示，随着抵押贷款利率上升挤压了购房需求，10月份英国房地产测量师对未来短期房屋销售前景的看法降至三年多来的最",
+          "time": "2026-11-12 08:04",
+          "url": "https://finance.sina.cn/7x24/2026-11-12/detail-iniymsip3886454.d.html",
+          "cat": "财经"
+        },
+        {
+          "text": "韩国搜索引擎巨头 Naver 股价下跌 3.9%，至 186,700 韩元。",
+          "time": "2026-11-12 08:04",
+          "url": "https://finance.sina.cn/7x24/2026-11-12/detail-iniymsim1795010.d.html",
+          "cat": "财经"
+        },
+        {
+          "text": "2年期美国国债收益率上涨3个基点，收益率曲线趋于平缓。",
+          "time": "2026-11-12 08:03",
+          "url": "https://finance.sina.cn/7x24/2026-11-12/detail-iniymsin8569843.d.html",
+          "cat": "经济"
+        },
+        {
+          "text": "纽约期金失守3980美元/盎司，日内跌0.52%。",
+          "time": "2026-11-12 08:02",
+          "url": "https://finance.sina.cn/7x24/2026-11-12/detail-iniymsim1793628.d.html",
+          "cat": "经济"
+        },
+        {
+          "text": "【联合国：支持有助于解决俄乌冲突的努力】为期两天的俄罗斯、美国和乌克兰三方会谈11日在阿联酋首都阿布扎比结束，各方就大规模交换被俘人员达成协议。针对此次会谈，联合国秘书长副发言人哈",
+          "time": "2026-11-12 08:02",
+          "url": "https://finance.sina.cn/7x24/2026-11-12/detail-iniymsim1793508.d.html",
+          "cat": "政治政策"
+        },
+        {
+          "text": "【A股定增一览：8家公司披露定增进展】Wind数据显示，11月12日，A股共8家公司发布定增相关公告。其中2家定增预案获股东大会通过，5家定增预案获交易所通过，1家定增方案停止实施",
+          "time": "2026-11-12 08:02",
+          "url": "https://finance.sina.cn/7x24/2026-11-12/detail-iniymsim1793232.d.html",
+          "cat": "财经"
+        },
+        {
+          "text": "英国皇家特许测量师学会：英国房屋销售前景为2023年以来最黯淡。",
+          "time": "2026-11-12 08:01",
+          "url": "https://finance.sina.cn/7x24/2026-11-12/detail-iniymsim1792551.d.html",
+          "cat": "财经"
+        },
+        {
+          "text": "韩国综合股价指数（KOSPI）开盘上涨0.2%，至5385.94点。",
+          "time": "2026-11-12 08:00",
+          "url": "https://finance.sina.cn/7x24/2026-11-12/detail-iniymsip3883204.d.html",
+          "cat": "财经"
+        },
+        {
+          "text": "【日韩股市开盘】日经225指数上午开盘报61475.11点，涨幅0.37％。韩国综合股价指数（KOSPI）开盘上涨0.2％，至5385.94点。",
+          "time": "2026-11-12 08:00",
+          "url": "https://finance.sina.cn/7x24/2026-11-12/detail-iniymsim1791489.d.html",
+          "cat": "财经"
+        },
+        {
+          "text": "【AI相关股票盘后下挫 英伟达据报计划罢免黄仁勋】AI相关股票周三盘后下挫。媒体报道称，英伟达董事会准备罢免首席执行官黄仁勋，这促使英伟达股价盘后一度暴跌10%。CoreWeave",
+          "time": "2026-11-12 07:59",
+          "url": "https://finance.sina.cn/7x24/2026-11-12/detail-iniymsim1791084.d.html",
+          "cat": "百强企业"
+        },
+        {
+          "text": "【中泰证券：医药产业链景气延续 AI4S有望推动估值持续抬升】中泰证券发布研报称，2026年前三季度多家CRO、CDMO公司布局AI，如药明康德测试业务加快“HI+AI”一体化以承",
+          "time": "2026-11-12 07:57",
+          "url": "https://finance.sina.cn/7x24/2026-11-12/detail-iniymsin8566287.d.html",
+          "cat": "经济"
+        },
+        {
+          "text": "10年期日本国债收益率下降1个基点至2.78%。",
+          "time": "2026-11-12 07:52",
+          "url": "https://finance.sina.cn/7x24/2026-11-12/detail-iniymmzq8695417.d.html",
+          "cat": "经济"
+        },
+        {
+          "text": "【北京即将迎来正式供暖 再生水“隔空换热”加入供能行列】北京即将迎来新一轮供暖季，再生水将加入热能行列。北京北排清洁能源投资有限责任公司运营的离心式水源热泵机组，每天至少10万m³",
+          "time": "2026-11-12 07:52",
+          "url": "https://finance.sina.cn/7x24/2026-11-12/detail-iniymmzq8695119.d.html",
+          "cat": "财经"
+        },
+        {
+          "text": "日本11月6日当周净买进国外债券 -5376亿日元，前值 13120亿日元。日本11月6日当周外资净买进日本债券 13711亿日元，前值 14817亿日元。日本11月6日当周净买进",
+          "time": "2026-11-12 07:52",
+          "url": "https://finance.sina.com.cn/7x24/",
+          "cat": "财经"
+        },
+        {
+          "text": "【英伟达正与外部机构合作物色新的首席执行官】据知情人士透露，在英伟达首席执行官黄仁勋被曝出多段婚外情后，公司董事会一直在与一家外部机构合作，寻找其潜在继任者。该知情人士要求匿名，因",
+          "time": "2026-11-12 07:50",
+          "url": "https://finance.sina.cn/7x24/2026-11-12/detail-iniymmzi1350029.d.html",
+          "cat": "百强企业"
+        },
+        {
+          "text": "日本10月生产者价格同比增长7.1%，预估为6.5%。日本10月生产者价格环比增长0.7%，预估为0.3%。",
+          "time": "2026-11-12 07:50",
+          "url": "https://finance.sina.com.cn/7x24/",
+          "cat": "财经"
+        },
+        {
+          "text": "【Meta基础设施主管与工程联席主管将于2027年离职】当地时间11月11日，据报道，Meta基础设施主管与工程联席主管桑托什·贾纳丹（Santosh Janardhan）周三表示",
+          "time": "2026-11-12 07:46",
+          "url": "https://finance.sina.cn/7x24/2026-11-12/detail-iniymmzp1917089.d.html",
+          "cat": "财经"
+        },
+        {
+          "text": "基准10年期日本国债期货早盘上涨0.03点。",
+          "time": "2026-11-12 07:46",
+          "url": "https://finance.sina.cn/7x24/2026-11-12/detail-iniymmzi1349005.d.html",
+          "cat": "经济"
+        },
+        {
+          "text": "日经225指数期货早盘上涨0.33%。",
+          "time": "2026-11-12 07:46",
+          "url": "https://finance.sina.cn/7x24/2026-11-12/detail-iniymmzi1348872.d.html",
+          "cat": "财经"
+        },
+        {
+          "text": "【CoreWeave计划通过投资级贷款筹资至少40亿美元】人工智能算力供应商CoreWeave Inc.计划通过一笔投资级贷款筹集至少40亿美元资金，之前其已上调年度营收展望，从而",
+          "time": "2026-11-12 07:43",
+          "url": "https://finance.sina.cn/7x24/2026-11-12/detail-iniymmzq8691773.d.html",
+          "cat": "科技"
+        },
+        {
+          "text": "【巴拿马外长驳斥美防长言论 运河控制权属于巴拿马 】针对美国国防部长赫格塞思有关美国与巴拿马共同控制巴拿马运河的言论，巴拿马外交部长马丁内斯-阿查11日予以反驳，强调运河的主权和控",
+          "time": "2026-11-12 07:43",
+          "url": "https://finance.sina.cn/7x24/2026-11-12/detail-iniymmzq8691689.d.html",
+          "cat": "政治政策"
+        },
+        {
+          "text": "【百亿私募逆势加仓 称AI长期发展趋势未改】市场震荡之际，百亿私募仍在逆势加仓。截至10月底，百亿私募仓位指数升至83.10%，连续两周上升。值得关注的是，近期海外人工智能（AI）",
+          "time": "2026-11-12 07:42",
+          "url": "https://finance.sina.cn/7x24/2026-11-12/detail-iniymmzp1915586.d.html",
+          "cat": "科技"
+        },
+        {
+          "text": "【FOF发行频现募集延期 业绩震荡削弱投资者配置热情】近期，FOF发行因业绩承压短暂遇冷，不少产品一再延长募集期。从统计数据来看，下半年成立的FOF在平均募集规模、认购户数等方面，",
+          "time": "2026-11-12 07:42",
+          "url": "https://finance.sina.cn/7x24/2026-11-12/detail-iniymmzp1915551.d.html",
+          "cat": "财经"
+        },
+        {
+          "text": "【必和必拓任命Adrian Wood为首席财务官】11月12日，必和必拓宣布任命Adrian Wood为首席财务官，自2027年2月17日起生效。Adrian于2015年加入必和必",
+          "time": "2026-11-12 07:42",
+          "url": "https://finance.sina.cn/7x24/2026-11-12/detail-iniymmzq8691514.d.html",
+          "cat": "百强企业"
+        },
+        {
+          "text": "【英伟达据悉在与外部公司合作物色CEO候选人】据报道，知情人士透露，英伟达董事会在与一家外部公司合作，物色首席执行官黄仁勋的潜在接班人。知情人士称，董事会正在考虑先任命一位临时负责",
+          "time": "2026-11-12 07:38",
+          "url": "https://finance.sina.cn/7x24/2026-11-12/detail-iniymmzp1913759.d.html",
+          "cat": "百强企业"
+        },
+        {
+          "text": "【产业链向深远海延伸！我国海上风电年发电量超千亿千瓦时】今年以来，我国海上风电开发建设持续推进，装机规模稳步扩大。记者从2026海上风电现代产业链共链行动大会上了解到，我国海上风电",
+          "time": "2026-11-12 07:34",
+          "url": "https://finance.sina.cn/7x24/2026-11-12/detail-iniymmzp1911750.d.html",
+          "cat": "财经"
         }
       ]
     },
@@ -1606,6 +2278,48 @@
           "text": "华安鑫创：股东肖炎质押120.00万股，占公司总股本1.50%17小时前",
           "time": "",
           "url": "https://www.cnstock.com/commonDetail/826713",
+          "cat": "财经"
+        },
+        {
+          "text": "学习手记 | 向着全面建成世界一流空军奋飞",
+          "time": "",
+          "url": "https://www.cnstock.com/commonDetail/827467",
+          "cat": "军事"
+        },
+        {
+          "text": "专题·上证聚焦 | AI安全迷局",
+          "time": "",
+          "url": "https://www.cnstock.com/topicDetail/639885",
+          "cat": "科技"
+        },
+        {
+          "text": "上证观察家 | 多措并举激发民间投资活力",
+          "time": "",
+          "url": "https://www.cnstock.com/topicDetail/130765",
+          "cat": "财经"
+        },
+        {
+          "text": "券商股权投资如何看长做长",
+          "time": "",
+          "url": "https://www.cnstock.com/topicDetail/193365",
+          "cat": "财经"
+        },
+        {
+          "text": "行云科技：拟斥资2.00亿元至3.00亿元回购公司股份用于出售10小时前",
+          "time": "",
+          "url": "https://www.cnstock.com/commonDetail/827295",
+          "cat": "科技"
+        },
+        {
+          "text": "直真科技：约1775.44万股定增限售股将于11月16日上市流通10小时前",
+          "time": "",
+          "url": "https://www.cnstock.com/commonDetail/827194",
+          "cat": "科技"
+        },
+        {
+          "text": "安正时尚：拟斥资2000万元至4000万元回购公司股份10小时前",
+          "time": "",
+          "url": "https://www.cnstock.com/commonDetail/827198",
           "cat": "财经"
         }
       ]
@@ -2223,6 +2937,306 @@
           "time": "2026-11-11 15:01",
           "url": "https://wallstreetcn.com/livenews/3198512",
           "cat": "社会热点"
+        },
+        {
+          "text": "日本最高外汇事务官员三村淳：过去几天的汇率波动过于迅速。",
+          "time": "2026-11-12 00:21",
+          "url": "https://wallstreetcn.com/livenews/3198693",
+          "cat": "经济"
+        },
+        {
+          "text": "华泰证券研报称，上市银行三季报营收、利润增速双双提升，大行表现亮眼。2026年1—9月上市银行营收、净利润同比增长7.8%、3.8%，增速较2026年上半年分别提升0.4pct、0",
+          "time": "2026-11-12 00:11",
+          "url": "https://wallstreetcn.com/livenews/3198692",
+          "cat": "财经"
+        },
+        {
+          "text": "日经225指数高开0.2%，韩国首尔综指高开0.2%。",
+          "time": "2026-11-12 00:01",
+          "url": "https://wallstreetcn.com/livenews/3198687",
+          "cat": "财经"
+        },
+        {
+          "text": "英国10月三个月RICS房价指数 -36，预期 -34，前值 -32。",
+          "time": "2026-11-12 00:01",
+          "url": "https://wallstreetcn.com/livenews/3198686",
+          "cat": "财经"
+        },
+        {
+          "text": "中国即将发行或正在发行的地方政府债",
+          "time": "2026-11-12 00:00",
+          "url": "https://wallstreetcn.com/livenews/3198685",
+          "cat": "政治政策"
+        },
+        {
+          "text": "中国即将发行或正在发行的国债和政策性金融债",
+          "time": "2026-11-12 00:00",
+          "url": "https://wallstreetcn.com/livenews/3198684",
+          "cat": "政治政策"
+        },
+        {
+          "text": "加拿大最大的养老金计划正计划在未来五至七年内将其对冲基金投资规模大致翻倍，这是来自该行业最重要支持者之一的看涨信号。 据知情人士透露，加拿大养老金计划投资委员会（CPPIB）计划在",
+          "time": "2026-11-11 23:55",
+          "url": "https://wallstreetcn.com/livenews/3198690",
+          "cat": "社会热点"
+        },
+        {
+          "text": "日本11月6日当周外资净买进日本股票 -1052亿日元，前值 11293亿日元。",
+          "time": "2026-11-11 23:50",
+          "url": "https://wallstreetcn.com/livenews/3198680",
+          "cat": "财经"
+        },
+        {
+          "text": "日本11月6日当周净买进国外股票 -6439亿日元，前值 10777亿日元。",
+          "time": "2026-11-11 23:50",
+          "url": "https://wallstreetcn.com/livenews/3198679",
+          "cat": "财经"
+        },
+        {
+          "text": "日本11月6日当周外资净买进日本债券 13711亿日元，前值 14817亿日元。",
+          "time": "2026-11-11 23:50",
+          "url": "https://wallstreetcn.com/livenews/3198678",
+          "cat": "财经"
+        },
+        {
+          "text": "日本11月6日当周净买进国外债券 -5376亿日元，前值 13120亿日元。",
+          "time": "2026-11-11 23:50",
+          "url": "https://wallstreetcn.com/livenews/3198677",
+          "cat": "财经"
+        },
+        {
+          "text": "日本10月国内企业商品物价指数环比 0.7%，预期 0.3%，前值 -0.3%。",
+          "time": "2026-11-11 23:50",
+          "url": "https://wallstreetcn.com/livenews/3198676",
+          "cat": "财经"
+        },
+        {
+          "text": "日本10月国内企业商品物价指数同比 7.1%，预期 6.5%，前值 6.8%。",
+          "time": "2026-11-11 23:50",
+          "url": "https://wallstreetcn.com/livenews/3198675",
+          "cat": "财经"
+        },
+        {
+          "text": "市场震荡之际，百亿私募仍在逆势加仓。截至10月底，百亿私募仓位指数升至83.10%，连续两周上升。值得关注的是，近期海外人工智能（AI）板块明显调整，市场对科技巨头资本开支、算力需",
+          "time": "2026-11-11 23:48",
+          "url": "https://wallstreetcn.com/livenews/3198674",
+          "cat": "科技"
+        },
+        {
+          "text": "英伟达与外部公司合作，物色可能的新首席执行官。 英伟达考虑在展开更广泛的CEO遴选前，先任命一位过渡期CEO。（彭博）",
+          "time": "2026-11-11 23:39",
+          "url": "https://wallstreetcn.com/livenews/3198672",
+          "cat": "百强企业"
+        },
+        {
+          "text": "特朗普政府已获悉，英伟达董事会正准备在近期罢免黄仁勋。（CBS）",
+          "time": "2026-11-11 23:36",
+          "url": "https://wallstreetcn.com/livenews/3198671",
+          "cat": "百强企业"
+        },
+        {
+          "text": "英伟达董事会将于周三召开会议，决定是否罢免首席执行官黄仁勋。（路透）",
+          "time": "2026-11-11 23:25",
+          "url": "https://wallstreetcn.com/livenews/3198668",
+          "cat": "百强企业"
+        },
+        {
+          "text": "AI交易重燃，纳指收涨1.6%，CoreWeave飙升24%；美元续涨，黄金跌破4000美元关口；英伟达盘后跌超8%。 王毅同美国国务卿鲁比奥通电话，双方就中美关系及两国元首互动深",
+          "time": "2026-11-11 23:20",
+          "url": "https://wallstreetcn.com/livenews/3198667",
+          "cat": "科技"
+        },
+        {
+          "text": "中国地震台网正式测定：11月12日7时00分，在西藏日喀则市定结县（北纬28.15度，东经87.93度）发生3.3级地震，震源深度10公里。",
+          "time": "2026-11-11 23:18",
+          "url": "https://wallstreetcn.com/livenews/3198666",
+          "cat": "社会热点"
+        },
+        {
+          "text": "正谋求组建新政府的以正直党领导人加迪·埃森科特和以色列国防军总参谋长扎米尔，均反对看守政府总理内塔尼亚胡近期对伊朗采取军事行动的计划。《以色列时报》11日报道说，埃森科特当天致信内",
+          "time": "2026-11-11 23:12",
+          "url": "https://wallstreetcn.com/livenews/3198664",
+          "cat": "军事"
+        },
+        {
+          "text": "调查：今年有三分之一的日本公司或其服务提供商曾遭受网络攻击。 近三分之二的日本公司计划增加网络安全支出。 超过80%的日本企业预计2027年的工资涨幅将与2026年持平。",
+          "time": "2026-11-11 23:06",
+          "url": "https://wallstreetcn.com/livenews/3198663",
+          "cat": "财经"
+        },
+        {
+          "text": "纳斯达克100指数期货跌幅扩大至1.1%，标普500指数期货跌0.4%。",
+          "time": "2026-11-11 23:05",
+          "url": "https://wallstreetcn.com/livenews/3198662",
+          "cat": "财经"
+        },
+        {
+          "text": "周四亚太盘初，纳指期货跌0.9%，英伟达目前（美股盘后）跌8%，报道称英伟达准备罢免CEO黄仁勋。 CoreWeave跌5.4%，报道称该公司准备出售投资级贷款来募集至少40亿美元",
+          "time": "2026-11-11 23:02",
+          "url": "https://wallstreetcn.com/livenews/3198661",
+          "cat": "百强企业"
+        },
+        {
+          "text": "加拿大驻美国大使Mark Wiseman警告称，美国总统特朗普的关税推高成本、威胁对美投资。 曾担任贝莱德高管的Wiseman在B20峰会上指出：“不确定性会提高你的资本成本。” ",
+          "time": "2026-11-11 23:02",
+          "url": "https://wallstreetcn.com/livenews/3198689",
+          "cat": "政治政策"
+        },
+        {
+          "text": "美国最新发布的通胀数据超出市场预期，不仅强化了市场对美联储货币政策的鹰派预期，也令国际黄金价格调整，失守4100美元/盎司关口。高盛等机构近日下调金价目标，但有观点表示，全球央行购",
+          "time": "2026-11-11 22:54",
+          "url": "https://wallstreetcn.com/livenews/3198660",
+          "cat": "经济"
+        },
+        {
+          "text": "近期，多家券商密集召开2027年度策略会，其对港股市场新一年走势和投资机遇的研判备受关注。业内人士认为，港股市场基本面与估值有望迎来共振修复，流动性层面的冲击有望缓和，但仍面临压力",
+          "time": "2026-11-11 22:46",
+          "url": "https://wallstreetcn.com/livenews/3198659",
+          "cat": "财经"
+        },
+        {
+          "text": "在人工智能（AI）算力供应商CoreWeave上调年度营收预测后，该公司计划通过一笔投资级贷款发行募集至少40亿美元，缓解了投资者对其高负债商业模式的担忧。 据知情人士透露，摩根士",
+          "time": "2026-11-11 22:43",
+          "url": "https://wallstreetcn.com/livenews/3198658",
+          "cat": "科技"
+        },
+        {
+          "text": "一边是部分债基提前结募，仅四、五个交易日就完成发行；另一边是多只权益产品延长募集期，发行周期拉长至月余……近期，在A股行情持续震荡的背景下，公募发行市场呈现出较为明显的分化特征。资",
+          "time": "2026-11-11 22:38",
+          "url": "https://wallstreetcn.com/livenews/3198657",
+          "cat": "财经"
+        },
+        {
+          "text": "金融管理部门部署推动支持资本市场两项工具调整优化、加力实施，一周多来，超过10家券商已在第三批证券、基金、保险公司互换便利项下买入股票，银行机构两日即申报股票回购增持再贷款额度超过",
+          "time": "2026-11-11 22:35",
+          "url": "https://wallstreetcn.com/livenews/3198655",
+          "cat": "财经"
+        },
+        {
+          "text": "作为长期被归入农药、医药中间体序列的氯化亚砜正被电解液产业链重新定价。百川盈孚数据显示，截至11月11日，氯化亚砜国内市场均价为6174元/吨，今年以来上涨76%，同比涨幅为297",
+          "time": "2026-11-11 22:34",
+          "url": "https://wallstreetcn.com/livenews/3198654",
+          "cat": "财经"
+        },
+        {
+          "text": "① 时间待定 日本央行审议委员浅田统一郎（Toichiro Asada）在长崎县金融经济恳谈会上讲话； ② 时间待定 百度世界2026大会，AI如何推动组织进化或是焦点； ③ 15",
+          "time": "2026-11-11 22:30",
+          "url": "https://wallstreetcn.com/livenews/3198656",
+          "cat": "政治政策"
+        },
+        {
+          "text": "据华尔街日报，英伟达准备罢免CEO黄仁勋，该公司董事会最快将于（当地时间）周三开会。 英伟达股价盘后跌幅迅速扩大至8%，AMD、博通盘后涨幅则扩大至3%。",
+          "time": "2026-11-11 22:29",
+          "url": "https://wallstreetcn.com/livenews/3198653",
+          "cat": "百强企业"
+        },
+        {
+          "text": "临近年底，新基金加速成立。11月11日，21只基金集中发布基金合同生效公告，发行规模合计为38.62亿元。总体来看，截至11月11日，年内共成立1557只新基金，发行规模合计为96",
+          "time": "2026-11-11 22:27",
+          "url": "https://wallstreetcn.com/livenews/3198652",
+          "cat": "财经"
+        },
+        {
+          "text": "临近年末，多家券商把脉2027年A股市场。截至11月11日，已有中信证券、中信建投、华泰证券、申万宏源等多家券商举行了2027年年度策略会。部分机构认为，2027年A股结构性机会增",
+          "time": "2026-11-11 22:22",
+          "url": "https://wallstreetcn.com/livenews/3198651",
+          "cat": "财经"
+        },
+        {
+          "text": "英伟达美股盘后跌幅扩大至4%。",
+          "time": "2026-11-11 22:22",
+          "url": "https://wallstreetcn.com/livenews/3198650",
+          "cat": "科技"
+        },
+        {
+          "text": "周三（11月11日）纽约尾盘，标普500股指期货最终涨1.29%，道指期货涨0.56%，纳斯达克100股指期货涨2.17%。 罗素2000股指期货涨0.93%。",
+          "time": "2026-11-11 22:15",
+          "url": "https://wallstreetcn.com/livenews/3198649",
+          "cat": "财经"
+        },
+        {
+          "text": "据环球网科技，近日，格力电器董事长董明珠在一档节目中透露，格力将于年底推出一款“重新定义家电存在状态”的全新产品，定位达到奢侈品级别。她表示，该产品使用满十年后，甚至可按原价转手售",
+          "time": "2026-11-11 22:11",
+          "url": "https://wallstreetcn.com/livenews/3198647",
+          "cat": "百强企业"
+        },
+        {
+          "text": "巴西政府周三提出新的支出控制方式。规划和预算部长布鲁诺·莫雷蒂（Bruno Moretti）表示，该方案预计明年将改善公共财政状况，规模最高达600亿雷亚尔（约108亿美元）。 莫",
+          "time": "2026-11-11 22:10",
+          "url": "https://wallstreetcn.com/livenews/3198646",
+          "cat": "政治政策"
+        },
+        {
+          "text": "CNN预测结果显示：民主党Colom赢得美国密西西比州在参议院的席位。",
+          "time": "2026-11-11 22:08",
+          "url": "https://wallstreetcn.com/livenews/3198645",
+          "cat": "财经"
+        },
+        {
+          "text": "周三（11月11日）纽约尾盘（周四北京时间05:59），离岸人民币（CNH）兑美元报6.6739元，较周二纽约尾盘涨27点，日内整体交投于6.6790-6.6677元区间。",
+          "time": "2026-11-11 22:07",
+          "url": "https://wallstreetcn.com/livenews/3198644",
+          "cat": "经济"
+        },
+        {
+          "text": "博通美股盘后涨1.4%，投资者关注英伟达消息。",
+          "time": "2026-11-11 22:07",
+          "url": "https://wallstreetcn.com/livenews/3198643",
+          "cat": "科技"
+        },
+        {
+          "text": "明晟公司（MSCI）披露指数评估报告：新增13只股票到MSCI ACWI指数，从中剔除100只。 按公司总市值计算，纳入MSCI世界指数的两只证券为莫德纳（Moderna）和Ari",
+          "time": "2026-11-11 22:04",
+          "url": "https://wallstreetcn.com/livenews/3198642",
+          "cat": "财经"
+        },
+        {
+          "text": "明晟公司（MSCI）披露指数评估报告：Strategy(MSTR)将被从MSCI全球标准指数中剔除。",
+          "time": "2026-11-11 22:03",
+          "url": "https://wallstreetcn.com/livenews/3198641",
+          "cat": "财经"
+        },
+        {
+          "text": "周三（11月11日）纽约尾盘，现货黄金跌1.11%，报3987.88美元/盎司，亚太盘初以来持续上扬、北京时间15:25涨至4067美元刷新日高，随后持续下挫、04:06刷新日低至",
+          "time": "2026-11-11 22:02",
+          "url": "https://wallstreetcn.com/livenews/3198640",
+          "cat": "财经"
+        },
+        {
+          "text": "英伟达美股盘后跌3.1%，纽约时报援引知情人士报道称，英伟达CEO黄仁勋可能与直接向他汇报的公司高管金伯利·鲍威尔发生过婚外情。 今年3月在加州圣何塞一家酒店举行的英伟达会议期间，",
+          "time": "2026-11-11 21:57",
+          "url": "https://wallstreetcn.com/livenews/3198639",
+          "cat": "百强企业"
+        },
+        {
+          "text": "随着油轮运费飙升势头消退、国际油价下跌，加拿大重质原油已从八年最弱水平回升。 截至周三，加拿大西部精选原油（WCS）在阿尔伯塔省相对美国原油期货月度均价的折价已收窄至每桶26.50",
+          "time": "2026-11-11 21:51",
+          "url": "https://wallstreetcn.com/livenews/3198638",
+          "cat": "财经"
+        },
+        {
+          "text": "11月11日，习近平主席特别代表、国家副主席韩正在土耳其出席《联合国气候变化框架公约》第三十一次缔约方大会（COP31）安塔利亚领导人峰会期间会见土耳其总统埃尔多安。 韩正表示，两",
+          "time": "2026-11-11 21:44",
+          "url": "https://wallstreetcn.com/livenews/3198637",
+          "cat": "政治政策"
+        },
+        {
+          "text": "明晟公司MSCI新兴市场股票指数涨1.8%，连续第三个交易日走高——为9月份以来最长连涨天数。 MSCI发展中国家外汇指数涨0.14%。",
+          "time": "2026-11-11 21:44",
+          "url": "https://wallstreetcn.com/livenews/3198636",
+          "cat": "财经"
+        },
+        {
+          "text": "必和必拓任命Adrian Wood为首席财务官（CFO），其将接替Vandita Pant的职位。",
+          "time": "2026-11-11 21:38",
+          "url": "https://wallstreetcn.com/livenews/3198635",
+          "cat": "百强企业"
+        },
+        {
+          "text": "周三（11月11日），彭博电动汽车价格回报指数涨0.55%，报2946.37点。",
+          "time": "2026-11-11 21:26",
+          "url": "https://wallstreetcn.com/livenews/3198634",
+          "cat": "财经"
         }
       ]
     },
@@ -2345,6 +3359,102 @@
           "time": "2026-11-12 01:17",
           "url": "https://flash.jin10.com/detail/20261112011732224800",
           "cat": "财经"
+        },
+        {
+          "text": "【杭州园林：子公司签署GPU产品采购合同】金十数据11月12日讯，杭州园林公告，控股子公司杭微天算与云尖信息技术股份有限公司签署了《销售合同》，杭微天算向云尖信息采购2万片NVID",
+          "time": "2026-11-12 08:26",
+          "url": "https://flash.jin10.com/detail/20261112082647117800",
+          "cat": "科技"
+        },
+        {
+          "text": "明星掌门人的治理危机，正在把人工智能估值拉回现金流与融资现实。点击查看...",
+          "time": "2026-11-12 08:21",
+          "url": "https://flash.jin10.com/detail/20261112082139788800",
+          "cat": "科技"
+        },
+        {
+          "text": "韩国KOSPI指数数回吐涨幅，最新下跌0.3%。",
+          "time": "2026-11-12 08:15",
+          "url": "https://flash.jin10.com/detail/20261112081529875800",
+          "cat": "财经"
+        },
+        {
+          "text": "日本最高外汇事务官员三村淳：过去几天的外汇波动过快。",
+          "time": "2026-11-12 08:14",
+          "url": "https://flash.jin10.com/detail/20261112081447331800",
+          "cat": "财经"
+        },
+        {
+          "text": "日本最高外汇事务官员三村淳：外汇波动过快。",
+          "time": "2026-11-12 08:14",
+          "url": "https://flash.jin10.com/detail/20261112081441803800",
+          "cat": "财经"
+        },
+        {
+          "text": "日经225指数回吐涨幅，最新下跌0.26%。",
+          "time": "2026-11-12 08:12",
+          "url": "https://flash.jin10.com/detail/20261112081230736800",
+          "cat": "财经"
+        },
+        {
+          "text": "现货黄金回落至3970美元/盎司下方，日内跌0.46%。",
+          "time": "2026-11-12 08:10",
+          "url": "https://flash.jin10.com/detail/20261112081015176800",
+          "cat": "财经"
+        },
+        {
+          "text": "1. 伊金霍洛旗安源西煤炭有限责任公司安源煤矿已通过复工复产检查验收，具备了复工复产条件。2. 马来西亚已下调12月毛棕榈油参考价，但由于价格仍处于较高区间，出口税维持在10%。3",
+          "time": "2026-11-12 08:09",
+          "url": "https://flash.jin10.com/detail/20261112080924610800",
+          "cat": "财经"
+        },
+        {
+          "text": "新加坡交易所10月证券市场成交额同比增长32%。",
+          "time": "2026-11-12 08:05",
+          "url": "https://flash.jin10.com/detail/20261112080532845800",
+          "cat": "财经"
+        },
+        {
+          "text": "英国皇家测量师学会（RICS）：购房需求依然低迷；鉴于宏观经济持续面临挑战，受访者预计未来一年销售表现将更加疲软。",
+          "time": "2026-11-12 08:03",
+          "url": "https://flash.jin10.com/detail/20261112080342878800",
+          "cat": "经济"
+        },
+        {
+          "text": "英国皇家测量师学会（RICS）：英国10月份未来12个月房屋销售前景预期指数降至-17，预计销售额将出现自2023年7月以来最广泛的下滑。",
+          "time": "2026-11-12 08:03",
+          "url": "https://flash.jin10.com/detail/20261112080341296800",
+          "cat": "财经"
+        },
+        {
+          "text": "韩股三星电子涨1.9%，SK海力士涨0.5%",
+          "time": "2026-11-12 08:02",
+          "url": "https://flash.jin10.com/detail/20261112080233095800",
+          "cat": "百强企业"
+        },
+        {
+          "text": "日经225指数11月12日（周四）开盘上涨139.28点，涨幅0.23%，报61387.87点。",
+          "time": "2026-11-12 08:01",
+          "url": "https://flash.jin10.com/detail/20261112080133529800",
+          "cat": "财经"
+        },
+        {
+          "text": "韩国KOSPI指数11月12日（周四）开盘上涨8.64点，涨幅0.16%，报5384.0点。",
+          "time": "2026-11-12 08:01",
+          "url": "https://flash.jin10.com/detail/20261112080132923800",
+          "cat": "财经"
+        },
+        {
+          "text": "英国10月三个月RICS房价指数 -36，预期-34，前值由-32.00修正为-34。",
+          "time": "2026-11-12 08:01",
+          "url": "https://flash.jin10.com/detail/20261112080102170800",
+          "cat": "财经"
+        },
+        {
+          "text": "外媒称，英伟达董事会正准备讨论黄仁勋的去留，最快或于当地时间周三召开会议。风波已从个人生活延伸至公司治理和领导层稳定，临近财报，投资者关注潜在换帅风险。点击查看",
+          "time": "2026-11-12 07:58",
+          "url": "https://flash.jin10.com/detail/20261112075814139800",
+          "cat": "百强企业"
         }
       ]
     },
@@ -2653,6 +3763,54 @@
           "time": "",
           "url": "https://www.cs.com.cn/tzjj/01/2026/11/11/detail_2026111110051323.html",
           "cat": "科技"
+        },
+        {
+          "text": "央行：加力实施支持资本市场货币政策工具",
+          "time": "",
+          "url": "https://www.cs.com.cn/xwzx/01/2026/11/12/detail_2026111210051611.html",
+          "cat": "政治政策"
+        },
+        {
+          "text": "证监会：切实维护投资者合法权益",
+          "time": "",
+          "url": "https://www.cs.com.cn/xwzx/01/2026/11/12/detail_2026111210051610.html",
+          "cat": "政治政策"
+        },
+        {
+          "text": "织密合作网络 推动外贸高质量发展",
+          "time": "",
+          "url": "https://www.cs.com.cn/xwzx/01/2026/11/12/detail_2026111210051609.html",
+          "cat": "财经"
+        },
+        {
+          "text": "会计改革与发展“十五五”规划发布 财政部将进一步完善打击财务造假“1+N”工作体系",
+          "time": "",
+          "url": "https://www.cs.com.cn/xwzx/01/2026/11/12/detail_2026111210051625.html",
+          "cat": "政治政策"
+        },
+        {
+          "text": "财政部在加拿大成功发行人民币绿色主权债券",
+          "time": "",
+          "url": "https://www.cs.com.cn/xwzx/01/2026/11/12/detail_2026111210051632.html",
+          "cat": "经济"
+        },
+        {
+          "text": "离岸信托收益征税平稳有序推进",
+          "time": "",
+          "url": "https://www.cs.com.cn/xwzx/01/2026/11/12/detail_2026111210051633.html",
+          "cat": "财经"
+        },
+        {
+          "text": "国家发展改革委：不断拓展共建“一带一路”共赢发展新空间",
+          "time": "",
+          "url": "https://www.cs.com.cn/xwzx/01/2026/11/12/detail_2026111210051631.html",
+          "cat": "财经"
+        },
+        {
+          "text": "产业资本频现 港股IPO基石投资者阵容扩容",
+          "time": "",
+          "url": "https://www.cs.com.cn/gppd/ggzx/2026/11/11/detail_2026111110051318.html",
+          "cat": "财经"
         }
       ]
     },
@@ -2961,6 +4119,306 @@
           "time": "2026-11-11 22:31",
           "url": "https://www.cls.cn/detail/2531960",
           "cat": "科技"
+        },
+        {
+          "text": "第二艘国产大型邮轮“爱达·花城号”完成首个试运营航次",
+          "time": "2026-11-12 08:26",
+          "url": "https://www.cls.cn/detail/2532129",
+          "cat": "财经"
+        },
+        {
+          "text": "我国海上风电年发电量超千亿千瓦时",
+          "time": "2026-11-12 08:25",
+          "url": "https://www.cls.cn/detail/2532127",
+          "cat": "财经"
+        },
+        {
+          "text": "财联社11月12日电，日本最高外汇事务官员三村淳称，过去几天的外汇波动过快。",
+          "time": "2026-11-12 08:16",
+          "url": "https://www.cls.cn/detail/2532123",
+          "cat": "财经"
+        },
+        {
+          "text": "【九点特供】IBM发布下一代量子处理器Nighthawk r3，计划2027年实现超1000量子比特系统，分析师看好行业正处于从实验室走向产业化的关键拐点；中国移动光传输技术试验实",
+          "time": "2026-11-12 08:13",
+          "url": "https://www.cls.cn/detail/2532010",
+          "cat": "科技"
+        },
+        {
+          "text": "财联社11月12日电，日经225指数回吐涨幅，最新下跌0.26%。",
+          "time": "2026-11-12 08:12",
+          "url": "https://www.cls.cn/detail/2532117",
+          "cat": "财经"
+        },
+        {
+          "text": "财联社11月12日电，日产汽车一度下跌4.1%，之前公布的第二季度利润不及预期。",
+          "time": "2026-11-12 08:08",
+          "url": "https://www.cls.cn/detail/2532116",
+          "cat": "财经"
+        },
+        {
+          "text": "财联社11月12日电，韩国KOSPI指数开盘上涨0.2%；日经225指数高开0.37%。",
+          "time": "2026-11-12 08:00",
+          "url": "https://www.cls.cn/detail/2532114",
+          "cat": "财经"
+        },
+        {
+          "text": "财联社11月12日早间新闻精选",
+          "time": "2026-11-12 08:00",
+          "url": "https://www.cls.cn/detail/2532109",
+          "cat": "财经"
+        },
+        {
+          "text": "投资日历：周四资本市场大事提醒",
+          "time": "2026-11-12 07:57",
+          "url": "https://www.cls.cn/detail/2532102",
+          "cat": "财经"
+        },
+        {
+          "text": "财联社11月12日电，日经225指数期货早盘上涨0.33%。",
+          "time": "2026-11-12 07:53",
+          "url": "https://www.cls.cn/detail/2532107",
+          "cat": "财经"
+        },
+        {
+          "text": "财联社11月12日电，日本至11月6日当周外资买进日股-1052亿日元，前值11293亿日元。",
+          "time": "2026-11-12 07:51",
+          "url": "https://www.cls.cn/detail/2532105",
+          "cat": "财经"
+        },
+        {
+          "text": "财联社11月12日电，日本10月生产者价格同比增长7.1%，预估为6.5%；环比增长0.7%; 预估为0.3%。",
+          "time": "2026-11-12 07:51",
+          "url": "https://www.cls.cn/detail/2532104",
+          "cat": "财经"
+        },
+        {
+          "text": "【点金互动易】人形机器人+减速器，产品覆盖RV减速机、谐波减速器、行星减速器等主流技术路线，这家公司布局关节模组业务，推动向人形机器人系统方案商升级",
+          "time": "2026-11-12 07:39",
+          "url": "https://www.cls.cn/detail/2531952",
+          "cat": "科技"
+        },
+        {
+          "text": "英伟达据悉在与外部公司合作物色CEO候选人",
+          "time": "2026-11-12 07:39",
+          "url": "https://www.cls.cn/detail/2532098",
+          "cat": "百强企业"
+        },
+        {
+          "text": "A股限售股解禁一览：138.63亿元市值限售股今日解禁",
+          "time": "2026-11-12 07:32",
+          "url": "https://www.cls.cn/detail/2532095",
+          "cat": "财经"
+        },
+        {
+          "text": "11月券商调研热度升温 青睐电子、机械设备等行业",
+          "time": "2026-11-12 07:29",
+          "url": "https://www.cls.cn/detail/2532094",
+          "cat": "财经"
+        },
+        {
+          "text": "光通信行业“砍单”传闻不断 有上市公司回应称“近期市场并没有不利变化”",
+          "time": "2026-11-12 07:27",
+          "url": "https://www.cls.cn/detail/2532092",
+          "cat": "财经"
+        },
+        {
+          "text": "上市公司“链”上发力深度参与产业并购基金",
+          "time": "2026-11-12 07:22",
+          "url": "https://www.cls.cn/detail/2532091",
+          "cat": "财经"
+        },
+        {
+          "text": "内塔尼亚胡被曝遭埃森科特警告不要对伊动武",
+          "time": "2026-11-12 07:15",
+          "url": "https://www.cls.cn/detail/2532089",
+          "cat": "财经"
+        },
+        {
+          "text": "中国汽车工业协会：10月份新能源重卡渗透率突破50%",
+          "time": "2026-11-12 07:12",
+          "url": "https://www.cls.cn/detail/2532088",
+          "cat": "财经"
+        },
+        {
+          "text": "局地能见度低于200米 中央气象台发布大雾黄色预警",
+          "time": "2026-11-12 07:10",
+          "url": "https://www.cls.cn/detail/2532087",
+          "cat": "财经"
+        },
+        {
+          "text": "也门胡塞武装称袭击沙特利雅得机场等设施",
+          "time": "2026-11-12 07:09",
+          "url": "https://www.cls.cn/detail/2532086",
+          "cat": "财经"
+        },
+        {
+          "text": "阿根廷再次向国际海洋法法庭申请临时措施 阻止马岛附近油田开发",
+          "time": "2026-11-12 07:07",
+          "url": "https://www.cls.cn/detail/2532084",
+          "cat": "财经"
+        },
+        {
+          "text": "【研选•研报数据】物理AI当前的瓶颈之一是缺乏能够持续Scaling的高质量真实世界交互数据，分析师看好数据产业链；物联网模组行业龙头，单季利润创历史新高，端侧AI全链路能力打开成",
+          "time": "2026-11-12 07:06",
+          "url": "https://www.cls.cn/detail/2530951",
+          "cat": "科技"
+        },
+        {
+          "text": "财联社11月12日电，美股股指期货低开，其中纳指期货跌超0.9%。",
+          "time": "2026-11-12 07:00",
+          "url": "https://www.cls.cn/detail/2532082",
+          "cat": "财经"
+        },
+        {
+          "text": "周四你需要知道的隔夜全球要闻：AI产业链交易热潮回归，纳斯达克100指数收涨超2%；承销商拟上调Anthropic估值至1.5万亿美元；特朗普据对万斯重启与伊朗谈判持开放态度",
+          "time": "2026-11-12 06:57",
+          "url": "https://www.cls.cn/detail/2532065",
+          "cat": "科技"
+        },
+        {
+          "text": "AI加速渗透证券行业 数字化转型进入应用阶段",
+          "time": "2026-11-12 06:55",
+          "url": "https://www.cls.cn/detail/2532079",
+          "cat": "科技"
+        },
+        {
+          "text": "券商：2027年港股基本面与估值或迎共振修复",
+          "time": "2026-11-12 06:54",
+          "url": "https://www.cls.cn/detail/2532078",
+          "cat": "财经"
+        },
+        {
+          "text": "CoreWeave计划通过投资级贷款筹资至少40亿美元",
+          "time": "2026-11-12 06:44",
+          "url": "https://www.cls.cn/detail/2532077",
+          "cat": "经济"
+        },
+        {
+          "text": "21只基金同日成立 年内新发基金规模近万亿元",
+          "time": "2026-11-12 06:43",
+          "url": "https://www.cls.cn/detail/2532076",
+          "cat": "财经"
+        },
+        {
+          "text": "MSCI：将中际旭创H股纳入MSCI中国指数",
+          "time": "2026-11-12 06:38",
+          "url": "https://www.cls.cn/detail/2532075",
+          "cat": "财经"
+        },
+        {
+          "text": "英伟达董事会据悉准备罢免CEO黄仁勋",
+          "time": "2026-11-12 06:31",
+          "url": "https://www.cls.cn/detail/2532074",
+          "cat": "百强企业"
+        },
+        {
+          "text": "英伟达盘后跌9% 黄仁勋据悉曾与下属高管有婚外情",
+          "time": "2026-11-12 06:29",
+          "url": "https://www.cls.cn/detail/2532072",
+          "cat": "百强企业"
+        },
+        {
+          "text": "券商把脉2027年A股：市场风格走向均衡 配置兼顾成长与红利",
+          "time": "2026-11-12 06:26",
+          "url": "https://www.cls.cn/detail/2532071",
+          "cat": "财经"
+        },
+        {
+          "text": "财联社11月12日电，英伟达股价盘后跌幅扩大至4%。",
+          "time": "2026-11-12 06:22",
+          "url": "https://www.cls.cn/detail/2532070",
+          "cat": "科技"
+        },
+        {
+          "text": "美联储12月加息50个基点的概率为10.4%",
+          "time": "2026-11-12 06:10",
+          "url": "https://www.cls.cn/detail/2532069",
+          "cat": "经济"
+        },
+        {
+          "text": "财联社11月12日电，博通股价盘后拉升上涨至1.3%。",
+          "time": "2026-11-12 06:07",
+          "url": "https://www.cls.cn/detail/2532068",
+          "cat": "财经"
+        },
+        {
+          "text": "财联社11月12日电，MSCI宣布将Strategy Inc从其全球标准指数中剔除。",
+          "time": "2026-11-12 06:02",
+          "url": "https://www.cls.cn/detail/2532067",
+          "cat": "财经"
+        },
+        {
+          "text": "英伟达盘后跌逾3% 黄仁勋据悉曾与下属高管有婚外情",
+          "time": "2026-11-12 06:01",
+          "url": "https://www.cls.cn/detail/2532066",
+          "cat": "百强企业"
+        },
+        {
+          "text": "财联社11月12日电，微牛（Webull）盘后上涨6.5%。",
+          "time": "2026-11-12 05:50",
+          "url": "https://www.cls.cn/detail/2532063",
+          "cat": "财经"
+        },
+        {
+          "text": "财联社11月12日电，辉瑞与黑石将共同出资最高15亿美元支持肥胖症项目。",
+          "time": "2026-11-12 05:35",
+          "url": "https://www.cls.cn/detail/2532062",
+          "cat": "经济"
+        },
+        {
+          "text": "周四（11月12日）重点关注财经事件和经济数据",
+          "time": "2026-11-12 05:26",
+          "url": "https://www.cls.cn/detail/2532059",
+          "cat": "经济"
+        },
+        {
+          "text": "财联社11月12日电，惠誉可能下调巴拉圭的BB+主权信用评级。",
+          "time": "2026-11-12 05:18",
+          "url": "https://www.cls.cn/detail/2532061",
+          "cat": "经济"
+        },
+        {
+          "text": "财联社11月12日电，富时中国A50指数期货夜盘收涨0.07%。",
+          "time": "2026-11-12 05:15",
+          "url": "https://www.cls.cn/detail/2532060",
+          "cat": "财经"
+        },
+        {
+          "text": "国际油价11日微涨",
+          "time": "2026-11-12 05:06",
+          "url": "https://www.cls.cn/detail/2532058",
+          "cat": "财经"
+        },
+        {
+          "text": "美元指数11日上涨",
+          "time": "2026-11-12 05:06",
+          "url": "https://www.cls.cn/detail/2532057",
+          "cat": "财经"
+        },
+        {
+          "text": "利弗莫尔中概股龙头指数收涨0.71%",
+          "time": "2026-11-12 05:03",
+          "url": "https://www.cls.cn/detail/2532056",
+          "cat": "财经"
+        },
+        {
+          "text": "AI交易热情重燃 纳斯达克100指数收涨超2%并在盘中收复中期选举以来全部跌幅",
+          "time": "2026-11-12 05:02",
+          "url": "https://www.cls.cn/detail/2532055",
+          "cat": "科技"
+        },
+        {
+          "text": "财联社11月12日电，iHeart表示，它没有出售播客部门的计划。",
+          "time": "2026-11-12 04:34",
+          "url": "https://www.cls.cn/detail/2532054",
+          "cat": "财经"
+        },
+        {
+          "text": "财联社11月12日电，Anthropic的承销商正考虑将此次IPO的估值目标上调至最低1.5万亿美元。",
+          "time": "2026-11-12 04:28",
+          "url": "https://www.cls.cn/detail/2532053",
+          "cat": "财经"
         }
       ]
     }

@@ -1,10 +1,10 @@
 {
-  "generatedAt": "2026-11-12 01:51",
+  "generatedAt": "2026-11-12 08:28",
   "generatedBy": "GitHub Actions · 财经日历 + 多源新闻 + 精选底库",
-  "sourceCount": 5,
-  "calendarCount": 30,
+  "sourceCount": 4,
+  "calendarCount": 46,
   "seedCount": 43,
-  "autoCount": 6,
+  "autoCount": 10,
   "events": [
     {
       "id": "uc2",
@@ -123,23 +123,6 @@
       ]
     },
     {
-      "id": "auaq2yvo",
-      "title": "美国继续缺席全球气候谈判",
-      "tag": "地缘/政治/日程",
-      "date": "2026-11-12",
-      "region": "美国",
-      "scope": "us",
-      "concept": "defense",
-      "source": "环球市场播报",
-      "summary": "特朗普总统拒绝向在土耳其举行的联合国气候峰会派遣美国官方代表团。 当世界各国领导人今天开始在土耳其安塔利亚出席联合国气候峰会时，共有197个国家将派代表参加。",
-      "relatedStocks": [
-        "军工",
-        "黄金"
-      ],
-      "importance": 87,
-      "_auto": true
-    },
-    {
       "id": "uc13",
       "title": "百度世界2026",
       "tag": "发布会/AI",
@@ -156,6 +139,89 @@
         "国产大模型",
         "智能驾驶"
       ]
+    },
+    {
+      "id": "au1xfnu2a",
+      "title": "Wind数据显示",
+      "tag": "宏观/综合/日程",
+      "date": "2026-11-12",
+      "region": "中国",
+      "scope": "cn",
+      "concept": "broker",
+      "source": "新浪7×24",
+      "summary": "计划于 2026-11-12 举行或公布，来源：新浪7×24。",
+      "relatedStocks": [
+        "宽基指数"
+      ],
+      "importance": 77,
+      "_auto": true
+    },
+    {
+      "id": "au1v8ngwg",
+      "title": "2026年大湾区（广州）航运大会",
+      "tag": "贸易/供应链/日程",
+      "date": "2026-11-12",
+      "region": "中国",
+      "scope": "cn",
+      "concept": "crossEcom",
+      "source": "每日经济新闻·财经日历",
+      "summary": "计划于 2026-11-12 举行或公布，来源：每日经济新闻·财经日历。",
+      "relatedStocks": [
+        "跨境电商",
+        "航运"
+      ],
+      "importance": 72,
+      "_auto": true
+    },
+    {
+      "id": "au1kupkyf",
+      "title": "2026工业操作系统大会",
+      "tag": "宏观/综合/日程",
+      "date": "2026-11-12",
+      "region": "中国",
+      "scope": "cn",
+      "concept": "broker",
+      "source": "每日经济新闻·财经日历",
+      "summary": "计划于 2026-11-12 举行或公布，来源：每日经济新闻·财经日历。",
+      "relatedStocks": [
+        "宽基指数"
+      ],
+      "importance": 72,
+      "_auto": true
+    },
+    {
+      "id": "au16ub2v6",
+      "title": "第二十三届中国国际半导体博览会开幕式暨第八届IC企业家大会",
+      "tag": "科技/AI/日程",
+      "date": "2026-11-12",
+      "region": "中国",
+      "scope": "cn",
+      "concept": "llm",
+      "source": "每日经济新闻·财经日历",
+      "summary": "计划于 2026-11-12 举行或公布，来源：每日经济新闻·财经日历。",
+      "relatedStocks": [
+        "英伟达",
+        "微软",
+        "台积电"
+      ],
+      "importance": 72,
+      "_auto": true
+    },
+    {
+      "id": "au1ddmd6y",
+      "title": "第六届国际新材料产业大会",
+      "tag": "宏观/综合/日程",
+      "date": "2026-11-12",
+      "region": "全球",
+      "scope": "world",
+      "concept": "macro",
+      "source": "每日经济新闻·财经日历",
+      "summary": "计划于 2026-11-12 举行或公布，来源：每日经济新闻·财经日历。",
+      "relatedStocks": [
+        "宽基指数"
+      ],
+      "importance": 69,
+      "_auto": true
     },
     {
       "id": "uc14",
