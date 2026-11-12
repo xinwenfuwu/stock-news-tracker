@@ -1211,6 +1211,80 @@
   const RATE_HIKE_BEAR = ['降息','大幅降息','美债收益率下行','美债收益率回落','国债收益率下行','收益率下行','利率下行','美联储降息','鸽派','宽松','暂停加息','降息预期','降息预期升温','鲍威尔鸽派','边际转鸽','停止加息','加息周期结束'];
   function isRateHikeTheme(name) { return /美债/.test(name || ''); }
 
+  /* ============================================================
+   * 20261112b：石油 / 原油 / 成品油 —— 「油价方向 + 未来供需预期」视角
+   * ------------------------------------------------------------
+   * 问题（用户反馈）：石油子类显示红色，但桶内新闻多是油价下跌、EIA 预计明年降价、
+   * 需求预期下调、地缘缓和溢价消退等「对未来利空」，应当显示绿色。
+   * 根因：通用 SENT_BULL/SENT_BEAR 是「公司财报口径」，把「上涨 / 上调 / 新高 / 增长」
+   * 一律当利好。用在油价新闻上会出两类错：
+   *   ① 真正的利空（预计…降至、需求下调、供应恢复、和谈缓和、限价下调）几乎全落 neutral，
+   *      不参与多数决，于是 5:4 这种微弱多数就能把整桶染红；
+   *   ② 「预算未依赖油价上涨」「延长减税以缓解油价上涨压力」「航空股回落（因油价走高）」
+   *      这类与石油板块无关、甚至反向的新闻，被算成石油利好。
+   * 口径：油价/气价上行 + 供给收紧 = 红（利好石油板块）；油价下行 + 供给宽松 /
+   * 未来价格与需求预期下修 = 绿（利空石油板块）。显式识别「预计/预期/展望 + 下降」句式，
+   * 并排除「缓解…油价上涨」等非板块利好的语境。
+   * 仅在「纯本地」或「大模型尚未给出标签」时启用；AI 已判断该批新闻时仍以 AI 多数决为准，
+   * 保持「🧮 纯本地 / 🤖 大模型」按钮语义不变。
+   * ============================================================ */
+  const OIL_BULL = [
+    '油价上涨','原油上涨','油价走高','油价攀升','油价飙升','油价大涨','油价反弹','油价重新走高','油价走强','油价上行',
+    '期货价格上涨','期货上涨','结算价上涨','价格上涨','涨幅扩大','价格走高','突破','站上','刷新高点','创历史同期新高','创新高','新高',
+    '上调油价','上调价格预测','上调预测','上调均价预期','高于此前预期','高于预期','供不应求',
+    '减产','供应中断','供应受阻','出口受阻','库存下降','库存减少','去库','地缘紧张','地缘冲突','风险溢价上升','溢价上升',
+    '需求上调','需求增长','成品油上调','限价上调','零售价上调'
+  ];
+  const OIL_BEAR = [
+    '油价下跌','原油下跌','油价走低','油价回落','油价跳水','油价暴跌','油价大跌','油价重挫','油价承压','油价下行','国际原油价格宽幅回落',
+    '期货价格下跌','期货下跌','结算价下跌','价格下跌','跌幅扩大','跌幅','跌破','失守','走低','回落','跳水','重挫','暴跌','大跌','下跌','下降','下挫','跌超','跌近','跌停',
+    '下调','调低','降价','价格下调','出口税下调','限价下调','零售限价下调','成品油下调','售价下调','升水下调','低于预期','低于此前预期',
+    '预计下降','预期下降','将降至','降至','低于','需求下调','需求下修','需求减少','需求增速放缓','需求预期下调',
+    '供应恢复','供应增加','增产','累库','库存增加','库存上升','产量升至','产量增加',
+    '地缘缓和','和谈','停火','溢价消退','风险溢价消退','紧张情绪缓和','和平谈判','冲突缓和','通航恢复','紧张预期降温',
+    '承压','走弱','低迷','萎缩'
+  ];
+  const OIL_FUTURE_BEAR = /(?:预计|预期|展望|预测|料将|将|有望)[^。；，]{0,40}(?:降至|下降|下调|回落|走低|低于|减少|放缓|走弱|下跌)/;
+  const OIL_FUTURE_BULL = /(?:预计|预期|展望|预测|料将|将|有望)[^。；，]{0,40}(?:升至|上涨|上调|走高|高于|增加|增长|走强)/;
+  const OIL_SUPPLY_UP_BEAR = /(?:预计|预期)[^。；]{0,60}(?:产量|库存|供应|出口量)[^。；]{0,30}(?:增加|上升|升至|创纪录|高于)/;
+  const OIL_PRICE_UP = /(?:原油|油价|期油|期货|结算价|布伦特|WTI|成品油|汽油|柴油|天然气|燃油)[^。；]{0,30}(?:上涨|走高|攀升|反弹|上扬|涨超|涨近|拉升|扩大涨幅|涨幅)/;
+  const OIL_PRICE_DOWN = /(?:原油|油价|期油|期货|结算价|布伦特|WTI|成品油|汽油|柴油|天然气|燃油)[^。；]{0,30}(?:下跌|走低|回落|跳水|下挫|跌超|跌近|重挫|暴跌|大跌|跌幅)/;
+  const OIL_BULL_CANCEL = /(?:缓解|抑制|未依赖|不依赖|减轻)[^。；]{0,20}油价上涨|油价上涨带来的压力|为缓解油价/;
+  function isOilTheme(name) { return /石油|原油|成品油|油气|燃油|油价/.test(name || ''); }
+  /** 只保留「最长命中」，避免『期货价格下跌』同时被『下跌』重复计票 */
+  function _longestHits(t, words) {
+    const h = words.filter(w => t.indexOf(w) >= 0);
+    return h.filter(w => !h.some(o => o !== w && o.indexOf(w) >= 0));
+  }
+  function oilNewsSentiment(text) {
+    const t = String(text || '');
+    let b = _longestHits(t, OIL_BULL).length;
+    let s = _longestHits(t, OIL_BEAR).length;
+    if (OIL_FUTURE_BULL.test(t)) b += 2;
+    if (OIL_FUTURE_BEAR.test(t)) s += 2;
+    if (OIL_SUPPLY_UP_BEAR.test(t)) s += 2;
+    if (OIL_PRICE_UP.test(t)) b += 2;
+    if (OIL_PRICE_DOWN.test(t)) s += 2;
+    if (OIL_BULL_CANCEL.test(t)) b = 0;
+    if (b === 0 && s === 0) return 'neutral';
+    if (s > b) return 'bear';
+    if (b > s) return 'bull';
+    return 'neutral';
+  }
+  /** 石油子类整体：按条数多数主导（与 computeCategorySentiment 相同阈值） */
+  function oilSentiment(newsArr) {
+    let b = 0, s = 0;
+    for (const it of (newsArr || [])) {
+      const v = oilNewsSentiment((it && it.text) || '');
+      if (v === 'bull') b++; else if (v === 'bear') s++;
+    }
+    const total = b + s;
+    if (total === 0) return 'neutral';
+    if (s / total > 0.5) return 'bear';
+    if (b / total > 0.5) return 'bull';
+    return 'neutral';
+  }
+
   /**
    * 20261111e：「军事战争 / 美债加息」两类有用户明确定义的特殊着色语义
    *   （红=战争升级 / 红=市场偏向加息），通用 AI 的「利好/利空」无法表达这种反直觉定义，
@@ -1261,6 +1335,10 @@
       if (bull / total > 0.5) return 'bull';
       return 'neutral';
     }
+    // 20261112b：石油/原油类按「油价方向 + 未来供需预期」裁决，修掉通用财报词典把
+    // 「上涨/上调/新高」当利好、却漏判「预计降价/需求下调/供应恢复」的系统性误判。
+    // AI 已判断该批新闻时仍交给 computeCategorySentiment，保持「🤖 大模型」按钮语义。
+    if (isOilTheme(nm) && aiSentiCovered(newsArr) === 0) return oilSentiment(newsArr);
     return computeCategorySentiment(newsArr);   // 其余概念：通用 A 股多空（红=利好该行业、绿=利空）
   }
 
@@ -1449,14 +1527,29 @@
     return res;
   }
 
-  function briefStats(items, mode) {
+  /**
+   * 20261112b：子类新闻的「时间范围硬约束」。
+   * 用户要求：所有子类里出现的新闻，发生时间必须落在设定的时间范围内，不得超出。
+   * win = { startMs, endMs }（闭开区间）时：
+   *   · 有逐条 time 且可解析 → 必须 inWindow；
+   *   · 无 time / 解析失败 → 无法证明发生时间落在窗口内，一律排除（不再靠快照日期猜测）。
+   * 不传 win 时保持原行为（按日视图、Node 工具、历史单测不受影响）。
+   * 这一层是最终保险：无论上游数据来自快照、实时叠加还是缓存，子类明细/计数/着色
+   * 都只会使用窗口内的新闻。
+   */
+  function itemInWin(it, win) {
+    if (!win || !isFinite(win.startMs) || !isFinite(win.endMs)) return true;
+    const t = parseBriefTime(it && it.time);
+    return t != null && inWindow(t, win.startMs, win.endMs);
+  }
+  function briefStats(items, mode, win) {
     const m = (function () {
       for (const x of BRIEF_MODES) { if (x.key === mode) return x; }
       return BRIEF_MODES[0];
     })();
     const dims = m.dims;
     const dict = m.dict;
-    const list = (items || []).filter(it => it && it.text);
+    const list = (items || []).filter(it => it && it.text && itemInWin(it, win));
     const base = list.length;
     // batch56：一次打分、统一裁决（旧逻辑是「命中任一关键词即归入」，会把「主流平台」这类
     // 顺带出现的泛词当成主题，导致算力研报被归到「互联网电商」）。
@@ -1684,6 +1777,8 @@
     BRIEF_MODES, BRIEF_OTHER_KEY,
     // batch-senti：多空着色——利好(bull)→红 / 利空(bear)→绿（新闻数量数字同源逻辑）
     computeCategorySentiment, newsSentiment, sentiClass, conceptSentiment,
+    // 20261112b：油价方向视角 + 子类新闻时间窗硬约束
+    isOilTheme, oilNewsSentiment, oilSentiment, itemInWin,
     // 20261111e：AI 情绪标签缓存（批量 AI 判断 → 所有子类多数主导着色）
     getAiSenti, setAiSentiBatch, clearAiSenti, aiSentiCount,
     exportAiSenti, importAiSenti, aiSentiKey, aiSentiCovered,

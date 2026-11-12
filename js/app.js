@@ -7968,10 +7968,11 @@ const app = createApp({
       }
       hotTopicsLoading.value = true;
       try {
-        const dates = HT.windowSnapshotDates(ws.getTime(), we.getTime());
-        const bySource = new Map();      // 时间窗过滤后条目
-        const rawBySource = new Map();   // 原始快照条目（兜底用，避免被严格时间窗误杀）
+        const wStartMs = ws.getTime(), wEndMs = we.getTime();
+        const dates = HT.windowSnapshotDates(wStartMs, wEndMs);
+        const bySource = new Map();      // 只保留设定时间范围内的条目
         let dayCount = 0;
+        let skippedOut = 0;
         for (const d of dates) {
           // 优先仓库内置最新快照（服务端每 2 小时生成，含新增来源如华尔街见闻）；
           // 本地缓存仅作离线回退，避免陈旧缓存（缺 wscn 等新增源）覆盖最新数据。
@@ -7983,31 +7984,26 @@ const app = createApp({
           if (!snap || !snap.sources) snap = getLocalHotTopicSnapshot(d);
           if (!snap || !snap.sources) continue;
           dayCount++;
+          /* 20261112b 时间范围硬约束（用户要求：子类新闻发生时间不得超出设定时间段）。
+           * 快照里大量条目没有逐条 time（实测约 72% 为空）。只有该快照的整个自然日
+           * 都完全落在 [窗口起点, 窗口终点) 内时，无时间戳条目才能被证明属于窗口；
+           * 否则一律排除，绝不靠「取了哪一天的快照」反推新闻发生时刻。
+           * 旧版还有「过滤后为空就回灌原始条目」的兜底，等于把段外新闻塞回页面，现已删除。 */
+          const dayStart = HT.parseBriefTime ? HT.parseBriefTime(d + ' 00:00') : null;
+          const dayEnd = dayStart == null ? null : dayStart + 86400000;
+          const dayFullyInside = dayStart != null && dayStart >= wStartMs && dayEnd <= wEndMs;
           for (const s of snap.sources) {
             if (!bySource.has(s.rank)) {
               bySource.set(s.rank, { rank: s.rank, key: s.key, name: s.name, color: s.color, items: [] });
-              rawBySource.set(s.rank, { rank: s.rank, key: s.key, name: s.name, color: s.color, items: [] });
             }
             const all = (s.items || []);
-            rawBySource.get(s.rank).items.push(...all);
             const items = all.filter(it => {
-              if (it.time && HT.parseBriefTime && HT.inWindow) {
-                const ts = HT.parseBriefTime(it.time);
-                if (ts != null && !HT.inWindow(ts, ws.getTime(), we.getTime())) return false;
-              }
-              return true;
+              const ts = it.time && HT.parseBriefTime ? HT.parseBriefTime(it.time) : null;
+              if (ts != null) return HT.inWindow(ts, wStartMs, wEndMs);
+              return dayFullyInside;   // 无精确时间：仅整天在窗口内才可保留
             });
+            skippedOut += all.length - items.length;
             bySource.get(s.rank).items.push(...items);
-          }
-        }
-        // 兜底：华尔街见闻等「最新 N 条」型来源，其快照时间戳集中在抓取时刻（常落在早上，
-        // 例如 08:28），而每日话题窗口为 [上一交易日15:00, 今日15:00) 起点在 15:00，
-        // 严格时间窗会把整批条目误杀成「该时间段内无数据」。
-        // 该来源的快照本就按窗口覆盖的日期取数，过滤后为空时放行其原始条目，保证来源不空洞。
-        for (const [rank, raw] of rawBySource) {
-          const cur = bySource.get(rank);
-          if (cur && cur.items.length === 0 && raw.items.length > 0) {
-            cur.items.push(...raw.items);
           }
         }
         const list = [...bySource.values()].sort((a, b) => a.rank - b.rank);
@@ -8024,8 +8020,9 @@ const app = createApp({
         hotTopicsUpdated.value = `${startStr} - ${endStr}（覆盖 ${dayCount} 天，按时间段合并）`;
         _hotTopicsLoaded = true;
         const total = list.reduce((n, s) => n + s.items.length, 0);
-        if (!total) showToast(`时间段（${startStr} - ${endStr}）内没有火热话题数据`, 'info');
-        else showToast(`已加载 ${startStr} - ${endStr} 的火热话题（${total} 条）`, 'success');
+        const skipNote = skippedOut ? `；已排除 ${skippedOut} 条不在时间段内/无精确时间的新闻` : '';
+        if (!total) showToast(`时间段（${startStr} - ${endStr}）内没有火热话题数据${skipNote}`, 'info');
+        else showToast(`已加载 ${startStr} - ${endStr} 的火热话题（${total} 条）${skipNote}`, 'success');
       } catch (e) {
         showToast('每日话题刷新失败：' + (e && e.message ? e.message : e), 'error');
       } finally {
@@ -8319,7 +8316,9 @@ const app = createApp({
         const inWin = merged
           .filter(it => {
             const t = String(it.time);
-            return t >= startStr && t <= endStr;
+            // 20261112b：统一为闭开区间 [start, end)，与 inWindow / briefActiveWindow 一致，
+            // 避免「恰好等于结束时间」的一条在快讯列表里保留、在子类统计里被剔除。
+            return t >= startStr && t < endStr;
           })
           .sort((a, b) => String(b.time).localeCompare(String(a.time)));
         briefWindowItems.value = inWin;
@@ -8405,8 +8404,36 @@ const app = createApp({
     const aiSentiTotal = ref(0);
     const aiSentiError = ref('');
 
-    /** 当前展示的数据源：闭市周期窗口优先（跨天合并），否则为所选那天的全部快讯 */
-    const briefBase = computed(() => (briefWindow.on ? briefWindowItems.value : briefItems.value));
+    /**
+     * 20261112b：当前「设定的时间范围」闭开区间，所有子类统计 / 明细 / 着色统一以此为准。
+     *  · 窗口视图（跨天合并）= briefWinStart ~ briefWinEnd；
+     *  · 按日视图 = 所选日期 00:00 ~ 次日 00:00（该日的「设定范围」就是这一整天）。
+     */
+    function briefActiveWindow() {
+      const HT = ht_();
+      if (!HT || !HT.fromLocalInputValue || !HT.parseBriefTime) return null;
+      if (briefWindow.on) {
+        const s = HT.fromLocalInputValue(briefWinStart.value), e = HT.fromLocalInputValue(briefWinEnd.value);
+        return (s && e && s.getTime() < e.getTime()) ? { startMs: s.getTime(), endMs: e.getTime() } : null;
+      }
+      const d = String(briefDate.value || '');
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(d)) return null;
+      const s = HT.parseBriefTime(d + ' 00:00');
+      return s == null ? null : { startMs: s, endMs: s + 86400000 };
+    }
+    /** 当前展示的数据源：闭市周期窗口优先（跨天合并），否则为所选那天的全部快讯。
+     *  20261112b：再加一层硬约束——无逐条时间戳、或落在设定范围之外的新闻一律剔除，
+     *  保证「全部快讯 / 子类计数 / 子类展开明细 / 红绿着色」用的是同一批窗口内新闻。 */
+    const briefBase = computed(() => {
+      const HT = ht_();
+      const raw = briefWindow.on ? briefWindowItems.value : briefItems.value;
+      const w = briefActiveWindow();
+      if (!HT || !w || !HT.parseBriefTime || !HT.inWindow) return raw;
+      return raw.filter(it => {
+        const t = HT.parseBriefTime(it && it.time);
+        return t != null && HT.inWindow(t, w.startMs, w.endMs);
+      });
+    });
     /** batch-senti：每日快讯「共 N 条」总体的多空倾向（利好→红 / 利空→绿），与分类条数同源逻辑 */
     const briefSenti = computed(() => {
       void aiSentiVersion.value;   // AI 标签就绪后重算
@@ -8654,6 +8681,7 @@ const app = createApp({
      *    自定义闭市周期窗口 → 上一个 = [当前开始−窗口长度, 当前开始)。按 窗口+来源 缓存，不重复请求。 */
     const prevBriefItems = ref([]);
     const prevBriefLoading = ref(false);
+    const prevBriefWindow = ref(null);   // 20261112b：上一周期的闭开区间，供统计层做时间硬约束
     let _prevKey = '';
     const prevStats = computed(() => {
       // 与本期同口径：关键词过滤后再统计（否则搜索状态下「数」会拿过滤后的本期数去减未过滤的上期数）
@@ -8663,7 +8691,7 @@ const app = createApp({
       const out = { map: {}, max: { theme: 1, concept: 1, industry: 1 }, hasData: raw.length > 0 };
       if (!out.hasData) return out;
       for (const m of ['theme', 'concept', 'industry']) {
-        const arr = HotTopics.briefStats(items, m);
+        const arr = HotTopics.briefStats(items, m, prevBriefWindow.value);
         let mx = 1;
         arr.forEach((c, i) => {
           out.map[m + '::' + c.key] = { rank: i + 1, count: c.count };
@@ -8683,6 +8711,7 @@ const app = createApp({
         const lw = HotTopics.lastClosedWindow();
         pwin = { startMs: lw.start.getTime(), endMs: lw.end.getTime() };
       }
+      prevBriefWindow.value = { startMs: pwin.startMs, endMs: pwin.endMs };
       const key = (briefWindow.on ? 'win' : 'def') + ':' + briefSourceName.value + ':' + pwin.startMs + '-' + pwin.endMs;
       if (key === _prevKey && prevBriefItems.value.length) return;   // 已缓存，跳过
       _prevKey = key;
@@ -8710,6 +8739,7 @@ const app = createApp({
      * 用来给每个归类子类算「昨」排名（上次周期内的名次）。同源、独立缓存。 */
     const lastBriefItems = ref([]);
     const lastBriefLoading = ref(false);
+    const lastBriefWindow = ref(null);   // 20261112b：「上次」对比周期闭开区间
     let _lastKey = '';
     const lastStats = computed(() => {
       // 与本期同口径：关键词过滤后再统计（保证搜索状态下 昨/增 与 数 的上期口径一致）
@@ -8719,7 +8749,7 @@ const app = createApp({
       const out = { map: {}, max: { theme: 1, concept: 1, industry: 1 }, hasData: raw.length > 0 };
       if (!out.hasData) return out;
       for (const m of ['theme', 'concept', 'industry']) {
-        const arr = HotTopics.briefStats(items, m);
+        const arr = HotTopics.briefStats(items, m, lastBriefWindow.value);
         let mx = 1;
         arr.forEach((c, i) => {
           out.map[m + '::' + c.key] = { rank: i + 1, count: c.count };
@@ -8736,6 +8766,7 @@ const app = createApp({
       const e = HT.fromLocalInputValue(briefPrevWinEnd.value);
       if (!s || !e) { lastBriefItems.value = []; return; }
       const startMs = s.getTime(), endMs = e.getTime();
+      lastBriefWindow.value = { startMs, endMs };
       const key = briefSourceName.value + ':' + startMs + '-' + endMs;
       if (key === _lastKey && lastBriefItems.value.length) return;   // 已缓存，跳过
       _lastKey = key;
@@ -8985,7 +9016,9 @@ const app = createApp({
      */
     function buildBriefStats(items, mode) {
       void aiSentiVersion.value;   // 20261111e：AI 标签就绪后重算子类的红/绿主导
-      const base = (typeof HotTopics !== 'undefined' && HotTopics.briefStats) ? HotTopics.briefStats(items, mode) : [];
+      // 20261112b：把「设定的时间范围」传给统计层，任何来源的段外/无时间戳新闻都进不了子类
+      const base = (typeof HotTopics !== 'undefined' && HotTopics.briefStats)
+        ? HotTopics.briefStats(items, mode, briefActiveWindow()) : [];
       const pv = prevStats.value;
       const ls = lastStats.value;
       // 读取 catMeta（响应式，颜色/备注变更时本 computed 会重排）
@@ -9122,7 +9155,10 @@ const app = createApp({
       for (const d of dayList) {
         const items = await fetchBriefsFile(d, briefSourceName.value).catch(() => []);
         if (!items.length) continue;
-        const arr = HotTopics.briefStats(items, mode);
+        // 20261112b：每个历史日的统计范围就是该自然日，段外条目同样不进入子类
+        const dayStart = HotTopics.parseBriefTime(d + ' 00:00');
+        const dayWin = dayStart == null ? null : { startMs: dayStart, endMs: dayStart + 86400000 };
+        const arr = HotTopics.briefStats(items, mode, dayWin);
         for (const cc of arr) (history[cc.key] = history[cc.key] || []).push({ date: d, count: cc.count });
       }
       const list = mode === 'concept' ? briefConceptStats.value : briefIndustryStats.value;
@@ -9289,10 +9325,12 @@ const app = createApp({
         }));
         const flat = [];
         let dayCount = 0;
-        // 严格时间窗精筛：与每日快讯同一口径（ts != null && ts >= 窗口起点 && ts < 窗口终点）。
-        // 带逐条时间戳的条目，落在窗口外的直接丢弃；无时间戳的条目无法判定，按「整日」口径保留
-        // （快照由 windowSnapshotDates 选出的日历日已受窗口约束，避免丢数据）。
-        // 不做任何「兜底」回灌——段外新闻坚决不统计、不展示。
+        let skippedOut = 0;
+        /* 20261112b 时间范围硬约束：统计分析里的每个子类（跨站重合榜 / 主题维度 / 7大类）
+         * 只能用「设定时间段内」的新闻，不得超出。旧逻辑对无逐条时间戳的条目一律放行，
+         * 而快照里约 72% 条目 time 为空，等于把整天甚至跨天的新闻都算了进来。
+         * 现在：有 time → 必须 inWindow；无 time → 只有该快照的整个自然日都完全落在
+         * 窗口内才可保留，否则排除。不做任何兜底回灌。 */
         const winBySource = new Map();
         const _ensureSrc = (m, s) => {
           if (!m.has(s.key)) m.set(s.key, { rank: s.rank, key: s.key, name: s.name, color: s.color, items: [] });
@@ -9301,18 +9339,23 @@ const app = createApp({
         for (const snap of snapshots) {
           if (!snap || !snap.sources) continue;
           dayCount++;
+          const d = String(snap.date || '');
+          const dayStart = (HT && HT.parseBriefTime) ? HT.parseBriefTime(d + ' 00:00') : null;
+          const dayEnd = dayStart == null ? null : dayStart + 86400000;
+          const dayFullyInside = winStartMs != null && dayStart != null
+            && dayStart >= winStartMs && dayEnd <= winEndMs;
           for (const s of snap.sources) {
             for (const it of (s.items || [])) {
+              const ts = (it.time && HT && HT.parseBriefTime) ? HT.parseBriefTime(it.time) : null;
+              if (winStartMs != null) {
+                if (ts != null) {
+                  if (!HT.inWindow(ts, winStartMs, winEndMs)) { skippedOut++; continue; }
+                } else if (!dayFullyInside) { skippedOut++; continue; }
+              }
               const base = {
                 sourceRank: s.rank, sourceKey: s.key, sourceName: s.name,
                 text: it.text, time: it.time, url: it.url, cat: it.cat || '财经', date: snap.date
               };
-              // 有逐条时间戳且能解析 → 严格按窗口过滤；窗口外直接丢弃（与每日快讯一致）
-              if (winStartMs != null && it.time && HT && HT.parseBriefTime && HT.inWindow) {
-                const ts = HT.parseBriefTime(it.time);
-                if (ts != null && !HT.inWindow(ts, winStartMs, winEndMs)) continue;   // 段外新闻：不统计、不展示
-              }
-              // 其余（无时间戳 / 窗口内）纳入统计
               _ensureSrc(winBySource, s).items.push(base);
             }
           }
@@ -9329,9 +9372,10 @@ const app = createApp({
               if (_ht && _ht.sources && _ht.sources.some(s => s.items && s.items.length)) {
                 for (const s of _ht.sources) {
                   for (const it of (s.items || [])) {
-                    if (winStartMs != null && it.time && HT && HT.parseBriefTime && HT.inWindow) {
-                      const ts = HT.parseBriefTime(it.time);
-                      if (ts != null && !HT.inWindow(ts, winStartMs, winEndMs)) continue;
+                    // 20261112b：实时条目同样必须有精确时间且落在窗口内；无时间无法证明，排除
+                    if (winStartMs != null) {
+                      const ts = (it.time && HT && HT.parseBriefTime) ? HT.parseBriefTime(it.time) : null;
+                      if (ts == null || !HT.inWindow(ts, winStartMs, winEndMs)) { skippedOut++; continue; }
                     }
                     const _k = (s.key || '') + ' ' + String(it.text || '').trim();
                     if (_seen.has(_k)) continue;
@@ -9368,7 +9412,7 @@ const app = createApp({
           ? (HT.fmtWindowCN(winStartMs) + ' → ' + HT.fmtWindowCN(winEndMs))
           : (opt && opt.label || '近 N 天');
         if (flat.length === 0) showToast(`时间段（${_rangeLabel}）内没有热点数据`, 'info');
-        else showToast(`已统计 ${_rangeLabel} 共 ${flat.length} 条${liveAdded ? '，其中实时叠加 ' + liveAdded + ' 条' : ''}`, 'success');
+        else showToast(`已统计 ${_rangeLabel} 共 ${flat.length} 条${liveAdded ? '，其中实时叠加 ' + liveAdded + ' 条' : ''}${skippedOut ? '；已排除 ' + skippedOut + ' 条不在时间段内/无精确时间的新闻' : ''}`, 'success');
       } catch (e) {
         showToast('统计分析失败：' + (e && e.message ? e.message : e), 'error');
       } finally {

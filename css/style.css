@@ -2330,6 +2330,13 @@ body {
 }
 .brief-search-clear:hover { background: var(--text-placeholder); color: #fff; }
 .brief-tip { margin-bottom: 6px; line-height: 1.5; }
+/* 20261112b：子类时间范围硬约束 + 油价方向着色口径说明 */
+.brief-scope-note {
+  margin: 4px 0 8px; padding: 6px 10px; line-height: 1.6;
+  border: 1px solid #dbeafe; border-left: 3px solid #2563eb;
+  border-radius: 6px; background: #f8fbff; font-size: 11px;
+}
+@media (max-width: 640px) { .brief-scope-note { font-size: 11px; padding: 6px 8px; } }
 .brief-cats { flex: 1 1 auto; overflow-y: auto; padding-right: 4px; }
 .brief-cat { border-bottom: 1px dashed var(--border); }
 .brief-cat:last-child { border-bottom: none; }
