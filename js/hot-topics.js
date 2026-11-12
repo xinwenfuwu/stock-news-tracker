@@ -1144,6 +1144,61 @@
   }
 
   /* ============================================================
+   * 20261112d：概念级 AI 情绪标签 —— 回答「这一批新闻对【半导体】整体是利好还是利空」
+   * 与新闻级标签（hash(正文) → 一条新闻一个方向）不同，这里的键是
+   * 「概念名 + 时间窗口」，一个概念只有一个方向：
+   *   · 同名概念在「题材 / 概念 / 行业」三套维度下天然共用一个裁决，不会再出现两种颜色；
+   *   · AI 能显式考虑「同一条新闻对不同板块方向相反」（如英伟达罢免传闻利空英伟达、
+   *     利好 AMD/博通），这是新闻级标签做不到的；
+   *   · local 模式完全忽略；未配置 AI / 调用失败时自动回退本地统一裁决，功能不回退。
+   * 窗口串由 app.js 在每次刷新时写入（briefWinStart~briefWinEnd），窗口一变即重新判定。
+   * ============================================================ */
+  const AI_CONCEPT = Object.create(null);  // name + '\u0001' + winKey -> 'bull'|'bear'|'neutral'
+  let AI_CONCEPT_WIN = '';
+  let AI_CONCEPT_N = 0;
+  function setAiConceptWindow(winKey) { AI_CONCEPT_WIN = String(winKey || ''); }
+  function getAiConceptWindow() { return AI_CONCEPT_WIN; }
+  function aiConceptKey(name, winKey) {
+    return String(name || '') + '\u0001' + String(winKey == null ? AI_CONCEPT_WIN : winKey);
+  }
+  function getEffectiveAiConceptSenti(name, winKey) {
+    if (SENTIMENT_MODE !== 'ai') return null;
+    const v = AI_CONCEPT[aiConceptKey(name, winKey)];
+    return (v === 'bull' || v === 'bear' || v === 'neutral') ? v : null;
+  }
+  /** entries = [{ name, sentiment }]；winKey 省略则用当前窗口 */
+  function setAiConceptBatch(entries, winKey) {
+    let n = 0;
+    for (const e of (entries || [])) {
+      if (!e || !e.name) continue;
+      const s = e.sentiment;
+      if (s !== 'bull' && s !== 'bear' && s !== 'neutral') continue;
+      const k = aiConceptKey(e.name, winKey);
+      if (!(k in AI_CONCEPT)) { AI_CONCEPT_N++; n++; }
+      AI_CONCEPT[k] = s;
+    }
+    return n;
+  }
+  function clearAiConcept() { for (const k in AI_CONCEPT) delete AI_CONCEPT[k]; AI_CONCEPT_N = 0; }
+  function aiConceptCount() { return AI_CONCEPT_N; }
+  function exportAiConcept() {
+    const out = [];
+    for (const k in AI_CONCEPT) out.push([k, AI_CONCEPT[k]]);
+    return out;
+  }
+  function importAiConcept(pairs) {
+    let n = 0;
+    for (const p of (pairs || [])) {
+      if (!Array.isArray(p) || !p[0]) continue;
+      const v = p[1];
+      if (v !== 'bull' && v !== 'bear' && v !== 'neutral') continue;
+      if (!(p[0] in AI_CONCEPT)) { AI_CONCEPT_N++; n++; }
+      AI_CONCEPT[p[0]] = v;
+    }
+    return n;
+  }
+
+  /* ============================================================
    * 新闻情绪判定（batch-sentiment）：用于「概念/行业归类」新闻数的红绿着色。
    * 利好(bull)→红、利空(bear)→绿（A 股习惯）。按关键词命中计数，多数决。
    * 20261111e：优先采用 AI 标签（若该正文已被 AI 判断过），否则回退关键词词典。
@@ -1309,6 +1364,11 @@
 
   function conceptSentiment(name, newsArr) {
     const nm = name || '';
+    // 20261112d：概念级 AI 裁决优先级最高——「这批新闻对【该概念】整体是利好还是利空」。
+    // 有标签时连战争 / 美债加息 / 石油三套硬编码特例也让位，保证「🤖 大模型」按钮语义一致，
+    // 且同名概念在任何维度、任何模块都只有一个方向（不会出现半导体一会儿红一会儿绿）。
+    const aiConcept = getEffectiveAiConceptSenti(nm);
+    if (aiConcept) return aiConcept;
     // AI 全覆盖开关：所有子类统一走 AI 多数主导（军事战争 / 美债加息 也不例外）
     if (aiSentiOverrideSpecial && aiSentiCovered(newsArr) > 0) return computeCategorySentiment(newsArr);
     if (isWarTheme(nm)) {
@@ -1346,6 +1406,40 @@
     // AI 已判断该批新闻时仍交给 computeCategorySentiment，保持「🤖 大模型」按钮语义。
     if (isOilTheme(nm) && aiSentiCovered(newsArr) === 0) return oilSentiment(newsArr);
     return computeCategorySentiment(newsArr);   // 其余概念：通用 A 股多空（红=利好该行业、绿=利空）
+  }
+
+  /**
+   * 20261112d：同名子概念统一裁决。
+   * 「题材归类 / 概念归类 / 行业归类」三套词表各自分桶，同一个名字（如 半导体）
+   * 会对应三批不完全相同的新闻。旧逻辑对三批分别裁决 → 同一概念出现红/绿两种市场情绪。
+   * 这里按名字把三批新闻合并去重（仍受设定时间窗硬约束），只裁决一次，
+   * 三栏共用同一个 sentiment，计数仍各自保留（反映各维度不同的归类口径）。
+   * @param rowsByMode { theme: rows, concept: rows, industry: rows }（briefStats 输出）
+   * @returns { name: { sentiment, news, count } }
+   */
+  function unifiedConceptSentiments(rowsByMode, win) {
+    const byName = Object.create(null);
+    for (const mode in (rowsByMode || {})) {
+      for (const r of (rowsByMode[mode] || [])) {
+        if (!r || r.isOther || !r.name) continue;
+        if (!byName[r.name]) byName[r.name] = [];
+        for (const it of (r.news || [])) byName[r.name].push(it);
+      }
+    }
+    const out = Object.create(null);
+    for (const name in byName) {
+      const seen = Object.create(null);
+      const news = [];
+      for (const it of byName[name]) {
+        if (!it) continue;
+        const k = aiSentiKey(String(it.text || '')) + '|' + String(it.time || '');
+        if (seen[k]) continue;
+        seen[k] = 1;
+        if (itemInWin(it, win)) news.push(it);
+      }
+      out[name] = { sentiment: conceptSentiment(name, news), news: news, count: news.length };
+    }
+    return out;
   }
 
 
@@ -1783,6 +1877,11 @@
     BRIEF_MODES, BRIEF_OTHER_KEY,
     // batch-senti：多空着色——利好(bull)→红 / 利空(bear)→绿（新闻数量数字同源逻辑）
     computeCategorySentiment, newsSentiment, sentiClass, conceptSentiment,
+    // 20261112d：同名子概念统一裁决 + 概念级 AI 标签
+    unifiedConceptSentiments,
+    setAiConceptWindow, getAiConceptWindow, aiConceptKey,
+    getEffectiveAiConceptSenti, setAiConceptBatch, clearAiConcept,
+    aiConceptCount, exportAiConcept, importAiConcept,
     // 20261112b：油价方向视角 + 子类新闻时间窗硬约束
     isOilTheme, oilNewsSentiment, oilSentiment, itemInWin,
     // 20261111e：AI 情绪标签缓存（批量 AI 判断 → 所有子类多数主导着色）

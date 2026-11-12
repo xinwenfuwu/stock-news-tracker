@@ -8414,6 +8414,13 @@ const app = createApp({
     const aiSentiDone = ref(0);
     const aiSentiTotal = ref(0);
     const aiSentiError = ref('');
+    /* 20261112d：概念级 AI 判定（「这批新闻对【半导体】整体是利好还是利空」） */
+    const aiConceptVersion = ref(0);
+    const aiConceptBusy = ref(false);
+    const aiConceptDone = ref(0);
+    const aiConceptTotal = ref(0);
+    const aiConceptDiff = ref(0);
+    const aiConceptError = ref('');
 
     /**
      * 20261112b：当前「设定的时间范围」闭开区间，所有子类统计 / 明细 / 着色统一以此为准。
@@ -8642,14 +8649,136 @@ const app = createApp({
       return wrote;
     }
 
-    /** 界面「重判」按钮：清缓存后重新用 AI 判断当前时间段 */
+    /* ============================================================
+     * 20261112d：概念级 AI 判定 —— 让「🤖 大模型」真正按子概念判断
+     *  旧实现只有「新闻级」标签（一条新闻一个方向、按正文哈希全局共享），既无法表达
+     *  「同一条新闻对不同板块方向相反」，也会在 AI 未配置 / 调用失败时静默回退关键词词典，
+     *  于是用户点「大模型」后颜色几乎不变。这里对每个同名子概念（三栏合并后的统一新闻桶）
+     *  单独问一次模型：「这批新闻整体对该概念是利好 / 利空 / 分化」，按 概念名+时间窗口 缓存。
+     * ============================================================ */
+    const AI_CONCEPT_CACHE_KEY = 'stock-news-tracker-ai-concept-v1';
+    const AI_CONCEPT_BATCH = 8;
+    let _aiConceptTimer = null;
+    let _aiConceptGen = 0;
+    let _aiConceptInFlight = false;
+
+    function loadAiConceptCache() {
+      const HT = ht_();
+      if (!HT || !HT.importAiConcept) return;
+      try {
+        const raw = localStorage.getItem(AI_CONCEPT_CACHE_KEY);
+        if (raw) HT.importAiConcept(JSON.parse(raw));
+      } catch (e) { /* 缓存损坏则忽略 */ }
+    }
+    function saveAiConceptCache() {
+      const HT = ht_();
+      if (!HT || !HT.exportAiConcept) return;
+      try { localStorage.setItem(AI_CONCEPT_CACHE_KEY, JSON.stringify(HT.exportAiConcept().slice(-4000))); }
+      catch (e) { /* 配额不足则忽略 */ }
+    }
+    function clearAiConceptCache() {
+      const HT = ht_();
+      if (HT && HT.clearAiConcept) HT.clearAiConcept();
+      try { localStorage.removeItem(AI_CONCEPT_CACHE_KEY); } catch (e) {}
+      aiConceptDone.value = 0; aiConceptTotal.value = 0; aiConceptDiff.value = 0;
+      aiConceptError.value = '';
+      aiConceptVersion.value++;
+    }
+    function buildAiConceptMessages(group, uni) {
+      const blocks = group.map((name, i) => {
+        const news = (uni[name] && uni[name].news) || [];
+        const lines = news.slice(0, 10).map(it =>
+          '  - ' + String(it.text || '').replace(/\s+/g, ' ').slice(0, 110)).join('\n');
+        return '【' + (i + 1) + '】' + name + '\n' + lines;
+      }).join('\n');
+      return [
+        { role: 'system', content: '你是资深 A 股行业分析师，只输出结构化标签，不解释、不寒暄。' },
+        { role: 'user', content:
+          '下面是 ' + group.length + ' 个子版块，以及各自在设定时间段内的新闻。请逐个判断「这批新闻整体对该子版块下一个交易日的情绪主导方向」：\n' +
+          'bull = 主导利好（业绩超预期、扩产涨价、资金持续流入、政策扶持、需求旺盛等占主导）\n' +
+          'bear = 主导利空（价格下跌、需求走弱、治理危机、制裁、减持、业绩下滑、板块普跌等占主导）\n' +
+          'neutral = 多空明显分化 / 中性事实 / 无明显方向\n\n' +
+          '必须站在【该子版块】立场判断：同一条新闻对不同板块方向可以相反（例如龙头公司利空对其竞争对手是利好）；' +
+          '不要按字面「上涨/增长」机械判断，要看它对这个板块意味着什么；只依据给定新闻，不预测未知事件。\n' +
+          '严格逐行输出「序号:标签」，不要输出任何其它内容：\n1:bull\n2:bear\n3:neutral\n...\n\n' + blocks }
+      ];
+    }
+    async function runAiConceptSentiment() {
+      const HT = ht_();
+      if (!HT || !HT.setAiConceptBatch || !aiConfigured.value || sentimentMode.value !== 'ai') return 0;
+      const gen = ++_aiConceptGen;
+      if (_aiConceptInFlight) return 0;
+      const uni = briefUnified.value.byName;
+      const winKey = briefWinKey.value;
+      HT.setAiConceptWindow(winKey);
+      const names = Object.keys(uni).filter(n => uni[n].count > 0 && !/^其他/.test(n));
+      if (!names.length) return 0;
+      const pending = names.filter(n => !HT.getEffectiveAiConceptSenti(n, winKey));
+      if (!pending.length) {
+        aiConceptDone.value = names.length; aiConceptTotal.value = names.length;
+        return 0;
+      }
+      const groups = [];
+      for (let i = 0; i < pending.length; i += AI_CONCEPT_BATCH) groups.push(pending.slice(i, i + AI_CONCEPT_BATCH));
+      aiConceptBusy.value = true;
+      aiConceptError.value = '';
+      aiConceptTotal.value = pending.length;
+      aiConceptDone.value = 0;
+      _aiConceptInFlight = true;
+      let cursor = 0, wrote = 0, diff = 0, lastErr = '';
+      const worker = async () => {
+        while (cursor < groups.length && gen === _aiConceptGen) {
+          const group = groups[cursor++];
+          try {
+            const res = await callOpenAICompat(buildAiConceptMessages(group, uni), { timeoutMs: 45000, maxTokens: 300 });
+            if (!res.ok) { lastErr = res.error || 'AI 请求失败'; continue; }
+            const labels = parseAiSentiLabels(res.content, group.length);
+            const entries = [];
+            for (let i = 0; i < group.length; i++) {
+              if (!labels[i]) continue;
+              // 写入前算一次「本地口径」，用于统计 AI 与本地的差异数（让调用效果可见）
+              if (HT.conceptSentiment(group[i], uni[group[i]].news) !== labels[i]) diff++;
+              entries.push({ name: group[i], sentiment: labels[i] });
+            }
+            if (entries.length && gen === _aiConceptGen) {
+              wrote += HT.setAiConceptBatch(entries, winKey);
+              aiConceptDone.value = Math.min(pending.length, aiConceptDone.value + entries.length);
+              aiConceptDiff.value = diff;
+              saveAiConceptCache();
+              aiConceptVersion.value++;
+              aiSentiVersion.value++;   // 让只依赖 aiSentiVersion 的模板/computed 一起重染
+              refreshAnalysisSentiment();
+            }
+          } catch (e) { lastErr = (e && e.message) ? e.message : String(e); }
+        }
+      };
+      try { await Promise.all([worker(), worker(), worker()]); }
+      finally {
+        _aiConceptInFlight = false;
+        if (gen === _aiConceptGen) {
+          aiConceptBusy.value = false;
+          aiConceptError.value = wrote ? '' : (lastErr || 'AI 未返回可解析的标签');
+        } else {
+          clearTimeout(_aiConceptTimer);
+          _aiConceptTimer = setTimeout(() => { runAiConceptSentiment().catch(() => {}); }, 100);
+        }
+      }
+      return wrote;
+    }
+
+    /** 界面「重判」按钮：清缓存后重新用 AI 判断当前时间段（新闻级 + 概念级） */
     async function rerunAiSentiment() {
       if (sentimentMode.value !== 'ai') {
         showToast('当前是「纯本地」着色模式，请先点工具栏的「🤖 大模型」再重判', 'info');
         return;
       }
+      if (!aiConfigured.value) {
+        showToast('尚未配置 AI 接口：请到「偏好设置 → AI 解读」填写 API 地址 / 模型名 / 密钥或代理', 'info');
+        return;
+      }
       clearAiSentimentCache();
-      await runAiSentimentBatch();
+      clearAiConceptCache();
+      await Promise.all([runAiSentimentBatch(), runAiConceptSentiment()]);
     }
 
     /* ------------------------------------------------------------
@@ -8661,18 +8790,34 @@ const app = createApp({
      * ------------------------------------------------------------ */
     function setSentimentMode(m) {
       const mode = normalizeSentimentMode(m);
-      if (mode === sentimentMode.value) return;
-      applySentimentMode(mode);
+      // 20261112d：修掉「点大模型没反应」——模块默认就是 'ai'，旧代码在 mode 相同处直接
+      // return，用户点击后既不发请求也不给任何反馈。现在同模式点击也会真正发起一次判定。
+      const same = mode === sentimentMode.value;
+      if (!same) applySentimentMode(mode);
       try { Store.saveNow(); } catch (e) { /* ignore */ }
-      ++_aiSentiGen;                 // 让正在飞行的旧批次写入失效
+      ++_aiSentiGen; ++_aiConceptGen;   // 让正在飞行的旧批次写入失效
       aiSentiBusy.value = false;
+      aiConceptBusy.value = false;
       aiSentiError.value = '';
+      aiConceptError.value = '';
       clearTimeout(_aiSentiTimer);
+      clearTimeout(_aiConceptTimer);
       aiSentiVersion.value++;        // 触发所有依赖 sentiment 的 computed / 模板重染
+      aiConceptVersion.value++;
       refreshAnalysisSentiment();
       if (mode === 'ai') {
-        // 下方的 watch(sentimentMode) 会在 600ms 防抖后自动发起批量判断
-        showToast('已切换到「🤖 大模型」：AI 逐条判断时间段内新闻，子类按多数主导染红/绿', 'success');
+        if (!aiConfigured.value) {
+          showToast('🤖 大模型：尚未配置 AI 接口（偏好设置 → AI 解读：API 地址 / 模型名 / 密钥或代理），当前仍用本地关键词口径', 'info');
+        } else {
+          // 同模式再次点击「🤖 大模型」= 主动重判：清概念级缓存后重跑，必然有可见反馈
+          // （新闻级缓存保留，避免重复计费；概念级请求量很小）。
+          if (same) clearAiConceptCache();
+          showToast('🤖 大模型：正在按子概念判断「这批新闻对该板块整体是利好还是利空」…', 'success');
+          _aiSentiTimer = setTimeout(() => {
+            runAiSentimentBatch().catch(() => {});
+            runAiConceptSentiment().catch(() => {});
+          }, 100);
+        }
       } else {
         showToast('已切换到「🧮 纯本地」：关键词词典 + 战争/美债加息特例，不再调用大模型', 'success');
       }
@@ -8680,10 +8825,14 @@ const app = createApp({
 
     // 启动时恢复缓存；数据加载 / 时间窗口 / AI 配置 / 着色模式变化时防抖触发批量判断
     loadAiSentiCache();
+    loadAiConceptCache();
     if (typeof HotTopics !== 'undefined' && HotTopics.aiSentiCount && HotTopics.aiSentiCount()) aiSentiVersion.value++;
-    watch([briefFiltered, aiConfigured, sentimentMode], () => {
+    if (typeof HotTopics !== 'undefined' && HotTopics.aiConceptCount && HotTopics.aiConceptCount()) aiConceptVersion.value++;
+    watch([briefFiltered, aiConfigured, sentimentMode, briefWinStart, briefWinEnd], () => {
       clearTimeout(_aiSentiTimer);
       _aiSentiTimer = setTimeout(() => { runAiSentimentBatch().catch(() => {}); }, 600);
+      clearTimeout(_aiConceptTimer);
+      _aiConceptTimer = setTimeout(() => { runAiConceptSentiment().catch(() => {}); }, 800);
     }, { flush: 'post' });
 
     /* ===================== batch55：每日快讯子类 → 成分股 + 序/增/数 =====================
@@ -9025,17 +9174,48 @@ const app = createApp({
      *            「上次时间段」= 新闻统计开始时间紧邻的前一个等长周期（如本次 10/12 15:00→10/13 15:00，
      *            上次 = 10/11 15:00→10/12 15:00）。上期无该子类（本期新出现）按 0 计；无上期数据则 null（显示「—」）。
      */
-    function buildBriefStats(items, mode) {
+    /** 20261112d：当前窗口唯一串；概念级 AI 标签按「概念名 + 窗口」缓存，换窗口自动重判 */
+    const briefWinKey = computed(() => {
+      const w = briefActiveWindow();
+      return w ? (w.startMs + '-' + w.endMs) : 'all';
+    });
+    /**
+     * 20261112d：三栏统一统计，修掉「同一个半导体出现两种市场情绪」。
+     *  ① 三套 briefStats 一次算完（同数据源、同设定时间窗）；
+     *  ② 同名子概念的新闻合并去重后只裁决一次情绪 → 题材/概念/行业三栏颜色一致；
+     *  ③ 概念级 AI 标签就绪时 conceptSentiment 直接返回该标签（优先级最高，含战争/美债特例）。
+     *  计数仍保留各维度自己的口径（词表不同，本来就该不同），统一的只是「市场情绪」。
+     */
+    const briefUnified = computed(() => {
+      void aiSentiVersion.value;
+      void aiConceptVersion.value;
+      const HT = ht_();
+      if (!HT || !HT.briefStats) return { rowsByMode: {}, byName: {} };
+      const win = briefActiveWindow();
+      const items = briefFiltered.value;
+      HT.setAiConceptWindow(briefWinKey.value);
+      const rowsByMode = {};
+      for (const mode of ['theme', 'concept', 'industry']) {
+        rowsByMode[mode] = HT.briefStats(items, mode, win);
+      }
+      const byName = HT.unifiedConceptSentiments
+        ? HT.unifiedConceptSentiments(rowsByMode, win) : {};
+      return { rowsByMode: rowsByMode, byName: byName };
+    });
+    function buildBriefStats(mode) {
       void aiSentiVersion.value;   // 20261111e：AI 标签就绪后重算子类的红/绿主导
+      void aiConceptVersion.value; // 20261112d：概念级 AI 标签就绪后重染
       // 20261112b：把「设定的时间范围」传给统计层，任何来源的段外/无时间戳新闻都进不了子类
-      const base = (typeof HotTopics !== 'undefined' && HotTopics.briefStats)
-        ? HotTopics.briefStats(items, mode, briefActiveWindow()) : [];
+      const u = briefUnified.value;
+      const base = u.rowsByMode[mode] || [];
       const pv = prevStats.value;
       const ls = lastStats.value;
       // 读取 catMeta（响应式，颜色/备注变更时本 computed 会重排）
       const meta = (Store.data && Store.data.catMeta) || {};
       const enriched = base.map((c, i) => {
         const seq = i + 1;
+        // 20261112d：同名子概念三栏共用同一个市场情绪（合并新闻桶 / 概念级 AI 标签）
+        const unified = u.byName[c.name];
         // batch73：「昨」= 该子类在上一个默认闭市周期窗口内的最终排名（无数据则 null → 界面显示「—」）
         const lp = ls.hasData ? ls.map[mode + '::' + c.key] : null;
         const prevSeq = lp ? lp.rank : null;
@@ -9050,6 +9230,7 @@ const app = createApp({
         const nk = newsStreak[mode + '::' + c.key];
         const mk = meta[c.key] || {};
         return Object.assign({}, c, {
+          sentiment: unified ? unified.sentiment : c.sentiment,
           seq: seq, inc: inc, cnt: cnt, prevSeq: prevSeq, prevCnt: prevCnt,
           streak: sk ? (sk.state === 'done' ? sk.value : null) : null,
           streakNa: sk ? sk.state === 'na' : false,
@@ -9074,10 +9255,10 @@ const app = createApp({
       });
       return copy;
     }
-    /** 分类统计（关键词过滤后集合上统计；三维度各自独立，附 序/增/数 且支持一键排序） */
-    const briefThemeStats = computed(() => buildBriefStats(briefFiltered.value, 'theme'));
-    const briefConceptStats = computed(() => buildBriefStats(briefFiltered.value, 'concept'));
-    const briefIndustryStats = computed(() => buildBriefStats(briefFiltered.value, 'industry'));
+    /** 分类统计（关键词过滤后集合上统计；三维度计数各自独立、同名情绪统一，附 序/增/数 且支持一键排序） */
+    const briefThemeStats = computed(() => buildBriefStats('theme'));
+    const briefConceptStats = computed(() => buildBriefStats('concept'));
+    const briefIndustryStats = computed(() => buildBriefStats('industry'));
     // 兼容旧引用（统计面板标题等）
     const briefStatsList = briefThemeStats;
     const briefDimCount = computed(() => briefThemeStats.value.length);
@@ -14386,6 +14567,9 @@ const app = createApp({
       // 20261111e：AI 情绪判断（批量 + 缓存 + 多数主导红绿）
       aiSentiVersion, aiSentiBusy, aiSentiDone, aiSentiTotal, aiSentiError,
       aiSentiConfigured: aiConfigured, runAiSentimentBatch, rerunAiSentiment, clearAiSentimentCache,
+      // 20261112d：概念级 AI 判定状态（让「大模型到底跑没跑」可见）
+      aiConceptVersion, aiConceptBusy, aiConceptDone, aiConceptTotal, aiConceptDiff, aiConceptError,
+      runAiConceptSentiment, clearAiConceptCache,
       sentimentMode, setSentimentMode,
       briefSourceName, briefSourceInput, briefSourceCustom, briefSourcePresets,
       onBriefSourcePick, commitBriefSource,

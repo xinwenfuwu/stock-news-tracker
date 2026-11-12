@@ -2269,6 +2269,8 @@ body {
 }
 .ai-senti-rebtn:hover:not(:disabled) { background: #e2e8f0; }
 .ai-senti-rebtn:disabled { opacity: .5; cursor: not-allowed; }
+/* 20261112d：未配置 AI / 调用失败时醒目提示，避免「点了大模型却毫无变化」的困惑 */
+.ai-senti-chip.ai-senti-warn { color: #b45309; background: #fffbeb; border-color: #fde68a; }
 /* 来源名下拉（batch15）：看起来像标题的一部分，点开换来源 */
 .brief-source {
   padding: 1px 4px; margin: 0 1px; font-size: inherit; font-weight: inherit; color: #b91c1c;

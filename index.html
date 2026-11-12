@@ -10,12 +10,12 @@
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
   <title>股市信息分析系统</title>
-  <link rel="stylesheet" href="css/style.css?v=20261112c">
+  <link rel="stylesheet" href="css/style.css?v=20261112d">
   <!-- Vue 3 全局构建版（v3.4.21 · 自托管）
        原先走 unpkg.com CDN：国内网络对 unpkg 的连通性不稳定，一旦该请求长时间挂起，
        <head> 里的阻塞脚本会让整页停在白屏、后续 auth-boot.js 根本不会执行。
        改为同源托管后，启动链路不再依赖任何第三方 CDN。 -->
-  <script src="js/vue.global.prod.js?v=20261112c"></script>
+  <script src="js/vue.global.prod.js?v=20261112d"></script>
 </head>
 <body class="auth-locked">
   <!-- ===== 登录关卡：登录通过前业务脚本不会被加载 ===== -->
@@ -101,7 +101,7 @@
         <input class="auth-input" type="text" id="auth-renew-user" placeholder="用户名（你注册时用的）" maxlength="20" autocomplete="off">
         <div class="auth-renew-plans" id="auth-renew-plans"></div>
         <div class="auth-renew-qr" id="auth-renew-qr">
-          <div class="auth-renew-qrbox"><img id="auth-renew-wx" src="assets/wechat-pay-qr.jpg?v=20261112c" alt="微信支付收款码"><span>微信支付（扫码支付）</span></div>
+          <div class="auth-renew-qrbox"><img id="auth-renew-wx" src="assets/wechat-pay-qr.jpg?v=20261112d" alt="微信支付收款码"><span>微信支付（扫码支付）</span></div>
           <div class="muted small" style="margin-top:6px;color:#c2410c;font-weight:600">支付时请添加会员备注，付款成功截图保存</div>
         </div>
         <input class="auth-input" type="text" id="auth-renew-amount" inputmode="decimal" placeholder="支付金额（必填，如 1000）" autocomplete="off">
@@ -996,7 +996,7 @@
                   <div class="qr-row">
                     <div class="qr-box">
                       <div class="qr-cap">推荐使用微信支付</div>
-                      <img src="assets/wechat-pay-qr.jpg?v=20261112c" alt="微信支付收款码" class="qr-pay-img">
+                      <img src="assets/wechat-pay-qr.jpg?v=20261112d" alt="微信支付收款码" class="qr-pay-img">
                       <div class="qr-cap" style="margin-top:6px;color:#c2410c;font-weight:600">支付时请添加会员备注，付款成功截图保存</div>
                       <div class="qr-cap muted small">火柴盒网络服务</div>
                     </div>
@@ -1518,14 +1518,18 @@
                 <!-- 20261111g：纯本地模式下明确显示当前口径，不显示误导性的 AI 进度 -->
                 <span class="ai-senti-chip sent-local-chip muted small" v-if="sentimentMode === 'local'"
                       title="当前为「纯本地」判据：关键词词典 SENT_BULL/SENT_BEAR + 战争视角、美债加息视角两套特例；不发起任何大模型请求">🧮 纯本地口径</span>
-                <!-- 20261111e：AI 逐条判断利好/利空，子类内多数主导染红/绿；未配置时沿用关键词口径 -->
-                <span class="ai-senti-chip muted small" v-if="aiSentiConfigured && sentimentMode === 'ai'"
-                      :title="aiSentiError || 'AI 逐条判断时间段内新闻的利好/利空，按子类多数主导染红/绿'">
-                  🤖 <template v-if="aiSentiBusy">判断中 {{ aiSentiDone }}/{{ aiSentiTotal }}</template>
-                  <template v-else-if="aiSentiError">AI 未生效 · 关键词口径</template>
-                  <template v-else>AI 情绪 {{ aiSentiDone }} 条</template>
+                <!-- 20261112d：大模型状态可见——到底调没调用、判了多少子概念、与本地口径差多少 -->
+                <span class="ai-senti-chip muted small" v-if="sentimentMode === 'ai'"
+                      :class="{ 'ai-senti-warn': !aiSentiConfigured || !!aiConceptError }"
+                      :title="!aiSentiConfigured
+                        ? '尚未配置 AI 接口（偏好设置 → AI 解读：API 地址 / 模型名 / 密钥或代理）。此刻完全沿用本地关键词口径，点「大模型」不会产生任何调用。'
+                        : (aiConceptError || ('大模型按「概念名 + 时间窗口」逐个判断这批新闻对子概念整体是利好还是利空；新闻级已判 ' + aiSentiDone + ' 条；同名子概念三栏共用同一裁决'))">
+                  🤖 <template v-if="!aiSentiConfigured">未配置 AI · 暂用本地口径</template>
+                  <template v-else-if="aiConceptBusy || aiSentiBusy">按子概念判断中 {{ aiConceptDone }}/{{ aiConceptTotal }}</template>
+                  <template v-else-if="aiConceptError">AI 调用失败 · 暂用本地口径</template>
+                  <template v-else>已判 {{ aiConceptDone }} 个子概念<span v-if="aiConceptDiff"> · 与本地不同 {{ aiConceptDiff }} 个</span></template>
                   <button class="ai-senti-rebtn" type="button" @click="rerunAiSentiment"
-                          :disabled="aiSentiBusy" title="清除缓存并重新用 AI 判断当前时间段的新闻">重判</button>
+                          :disabled="aiSentiBusy || aiConceptBusy" title="清除缓存并重新用 AI 判断当前时间段的全部新闻与子概念">重判</button>
                 </span>
               </div>
             </div>
@@ -1560,7 +1564,9 @@
             <!-- 20261112b：子类统计口径（时间范围硬约束 + 油价方向着色） -->
             <div class="brief-scope-note muted small">
               ✅ 下方子类（题材 / 概念 / 行业）只统计上方时间段内、且有精确发生时间的新闻；窗口外与无时间戳新闻不进入明细、计数与红绿着色。
-              🛢️ 石油 / 原油类按「油价方向 + 未来供需预期」判色：油价上行·供给收紧 → 红，油价下跌·需求下调·预计降价·供应恢复 → 绿。
+              🛢️ 石油 / 原油类按「油价方向 + 未来供需预期」判色：油价上行·供给收紧 → 红，油价下跌·需求下调·预计降价·供应恢复 → 绿。<br/>
+              🔗 <b>同名子概念只有一种市场情绪</b>：三套词表各自分桶（计数不同），但「半导体」这类同名概念的新闻会合并后统一裁决一次，题材 / 概念 / 行业三栏颜色必然一致。
+              🤖 选「大模型」时按<b>概念名 + 时间窗口</b>逐个判断「这批新闻对该板块整体是利好 / 利空 / 分化」；未配置 AI 会自动回退本地口径并在上方状态条明示。
             </div>
 
             <div class="brief-controls">
@@ -5287,14 +5293,14 @@
     </transition>
   </div>
 
-  <script src="js/auth.js?v=20261112c"></script>
-  <script src="js/auth-sync.js?v=20261112c"></script>
+  <script src="js/auth.js?v=20261112d"></script>
+  <script src="js/auth-sync.js?v=20261112d"></script>
   <!-- 边缘加速默认站点（batch37 治本：Cloudflare Worker 代理东财/腾讯，缓解 JSONP 限流误报）。
        若你所在地区 workers.dev 访问慢，可在「设置 → 行情加速地址」清空即恢复纯直连。 -->
   <script>window.__SNT_ACCEL__ = 'https://sichina.dpdns.org';</script>
   <!-- 扫码支付二维码渲染库（第三方 qrcodejs，本地托管避免外链失效）。renderQr 会先检测全局 QRCode 是否存在。 -->
-  <script src="assets/qrcode.min.js?v=20261112c"></script>
-  <script src="js/auth-boot.js?v=20261112c"></script>
+  <script src="assets/qrcode.min.js?v=20261112d"></script>
+  <script src="js/auth-boot.js?v=20261112d"></script>
   <!-- store / stock-api / hot-topics / app 由 auth-boot.js 在登录通过后动态装载，
        未登录时它们不会被下载，业务数据也不会进入内存 -->
 </body>
