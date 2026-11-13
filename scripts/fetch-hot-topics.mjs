@@ -160,9 +160,12 @@ async function fetchText(url, { timeout = 8000, isJson = false, encoding = '', h
   return text.replace(/^\uFEFF/, '');
 }
 
+/* 20261113a：HTML 兜底页会混进行情导航 / 刷新提示（旧东财快照里的
+ * 「纳斯达克综合指数」「60秒后刷新」等），它们不是新闻，必须挡在落库之前。 */
+const JUNK_TITLE_RE = /^(?:60秒后刷新|刷新页面|加载中|行情中心|.{0,8}(?:综合指数|工业平均指数|成份指数|指数报价))$/;
 function mkItem(text, time, url) {
   const t = ht.cleanTitle(text);
-  if (!t) return null;
+  if (!t || JUNK_TITLE_RE.test(t)) return null;
   return { text: t, time: normTime(time), url: url || '', cat: ht.classify(t) };
 }
 
@@ -377,9 +380,12 @@ async function fetchSource(s) {
     }
     if (items.length >= 3) break;
   }
-  return items.map(it => it.time
-    ? it
-    : { ...it, time: OBSERVED_AT, timeKind: 'observed' });
+  /* runId = 本轮抓取标识，供 main() 区分「本轮真实观测到的条目」与
+   * 旧版本快照里遗留的无时间条目（后者不能再被补成现在的时间）。 */
+  return items.map(it => ({
+    ...(it.time ? it : { ...it, time: OBSERVED_AT, timeKind: 'observed' }),
+    runId: OBSERVED_AT
+  }));
 }
 
 /** 从最近 N 天快照里取某源的历史条目：仅当「本次 + 当日累积」全为空时兜底，
@@ -400,9 +406,11 @@ function fallbackItemsFromRecent(dir, key, date, maxDays = 14) {
         const observedAt = p.generatedAt
           ? new Date(Date.parse(p.generatedAt) + 8 * 3600 * 1000).toISOString().slice(0, 16).replace('T', ' ')
           : (d + ' 12:00');
-        return s.items.slice(0, HOT_TOPN).map(it => it.time
-          ? it
-          : { ...it, time: observedAt, timeKind: 'inherited-observed' });
+        return s.items.slice(0, HOT_TOPN)
+          .filter(it => !JUNK_TITLE_RE.test(String(it.text || '')))
+          .map(it => it.time
+            ? it
+            : { ...it, time: observedAt, timeKind: 'inherited-observed' });
       }
     } catch (e) { /* 该日无快照，继续往前找 */ }
   }
@@ -625,10 +633,27 @@ async function main() {
       const m = prevByKey[s.key] || new Map();
       for (const it of items) {
         const ex = m.get(it.text);
-        if (ex) { if (!ex.time && it.time) ex.time = it.time; }   // 补全时间戳，提升窗口精筛命中
-        else m.set(it.text, it);
+        if (ex) {
+          if (!ex.time && it.time) { ex.time = it.time; ex.timeKind = it.timeKind; }
+          ex.runId = it.runId;                 // 本轮仍观测到 → 不算历史遗留
+        } else m.set(it.text, it);
       }
-      let merged = [...m.values()];
+      /* 20261113a：旧版本写入的无时间条目一律淘汰，绝不给它们补「现在」的时间。
+       * 否则昨天/上午的旧闻（还混着「纳斯达克综合指数」「60秒后刷新」这类页面垃圾）
+       * 会被统一标成本轮抓取时刻，在同一分钟聚集几百条，污染跨站重合榜与主题分类统计，
+       * 也违背「只统计设定窗口内、且有精确发生时间的新闻」的口径。
+       * 保留：本轮抓到的（runId 匹配）、真实发布时间的、继承兜底的可核查观测条目。 */
+      const beforeClean = [...m.values()].length;
+      let merged = [...m.values()].filter(it => {
+        if (!/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}$/.test(String(it.time || ''))) return false;
+        if (it.runId === OBSERVED_AT) return true;
+        if (it.timeKind === 'inherited-observed') return true;
+        if (!it.timeKind) return true;                    // 真实发布时间
+        return false;                                      // 历史遗留的 observed 条目
+      }).map(({ runId, ...rest }) => rest);                // runId 不落盘
+      if (beforeClean > merged.length) {
+        console.log(`     [${s.name}] 清理旧版无时间/伪观测时刻遗留条目 ${beforeClean - merged.length} 条`);
+      }
       if (!merged.length) {
         // 本次与当日累积都为 0（多为境外 runner 被源站拦截）→ 继承最近快照，避免平台空白
         const inherited = fallbackItemsFromRecent(dir, s.key, DATE);
@@ -638,11 +663,6 @@ async function main() {
         }
       }
       if (merged.length > SOURCE_ACCUM_MAX) merged = merged.slice(0, SOURCE_ACCUM_MAX);
-      /* 20261113a：当日快照里若还有历史遗留的无时间条目（旧版本写入的），统一补观测时刻，
-       * 保证「11 个平台 × 每条新闻」都有可核查的时间戳，时间窗统计不会再整源落空。 */
-      merged = merged.map(it => it.time
-        ? it
-        : { ...it, time: OBSERVED_AT, timeKind: 'observed' });
       sources.push({ rank: s.rank, key: s.key, name: s.name, color: s.color, items: merged });
       const timed = merged.filter(x => /\d{4}-\d{2}-\d{2} \d{2}:\d{2}/.test(String(x.time || ''))).length;
       console.log(`  ${s.rank}. ${s.name}: 本次 ${items.length} 条，累积 ${merged.length} 条，带精确时间 ${timed} 条`);
