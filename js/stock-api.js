@@ -6326,11 +6326,14 @@ const StockAPI = {
     const srcList = (typeof HotTopics !== 'undefined' && HotTopics.SOURCE_ORDER) || [];
     const sources = srcList.map(s => ({ ...s, items: [], loading: true, error: null }));
     const today = this._todayStr();
+    /* 20261113a：源站确实不给发布时间时，用「本次观测时刻」兜底并标记，
+     * 保证实时路径产出的每条新闻也都有可核查的时间戳，不会在时间窗里整源消失。 */
+    const observedBj = new Date(Date.now() + 8 * 3600 * 1000).toISOString().slice(0, 16).replace('T', ' ');
     await Promise.all(sources.map(async (s) => {
       try {
         let items = [];
         if (s.parse === 'news_eastmoney') {
-          // 主：Worker 专用 /news（东方财富 7x24）；失败则回退抓东财 HTML 列表页
+          // 主：Worker 专用 /news（东方财富 7x24）
           try {
             const j = await this._proxyJson(`${base}/news?page=1&size=20`);
             const list = (j.data && j.data.list) || [];
@@ -6338,24 +6341,42 @@ const StockAPI = {
               [it.title, it.summary].filter(Boolean).join('：').slice(0, 90),
               this._normTime(it.showTime), it.uniqueUrl || ''
             )).filter(it => it.text);
-          } catch (e) { /* 走下面的 HTML 兜底 */ }
+          } catch (e) { /* 走下面的时间源兜底 */ }
+          if (!items.length && s.timed && s.timed.endpoint) {
+            /* 20261113a：旧回退是抓 finance.eastmoney.com 首页，会抓到「纳斯达克综合指数」
+             * 这类行情导航词且完全没有时间；改抓 ajaxResult（LivesList[].showtime）。 */
+            try {
+              const txt = await this._proxyText(`${base}/proxy?url=${encodeURIComponent(s.timed.endpoint)}`);
+              items = this._parseHotSource('jsonp_eastmoney', s.key, txt).slice(0, 10);
+            } catch (e) { /* 继续走 HTML 兜底 */ }
+          }
           if (!items.length) {
             const html = await this._proxyText(`${base}/proxy?url=${encodeURIComponent(s.endpoint || s.fallback || 'https://finance.eastmoney.com/')}`);
             items = this._extractFromHtml(html, s.key, s.base).slice(0, 10);
           }
         } else {
-          /* 20261108e：证券时报等源在部分代理节点会超时，逐个尝试候选端点，
-           * 任一返回非空即收工；单源失败不再让该平台变成空白（app.js 还会用快照按源兜底）。 */
-          const urls = [s.endpoint, ...(Array.isArray(s.fallbacks) ? s.fallbacks : [])].filter(Boolean);
-          for (const u of urls) {
-            try {
-              const txt = await this._proxyText(`${base}/proxy?url=${encodeURIComponent(u)}`);
-              const got = this._parseHotSource(s.parse, s.key, txt).slice(0, 10);
-              if (got.length) { items = got; break; }
-            } catch (e) { /* 试下一个候选端点 */ }
+          /* 20261113a：优先「带发布时间」的 timed 端点；失败再逐个回退原端点/候选端点。
+           * 单个源失败不让该平台整块空白（app.js 还会用仓库快照按源兜底）。 */
+          const groups = [];
+          if (s.timed) {
+            groups.push({
+              parse: s.timed.parse,
+              urls: [s.timed.endpoint, ...(Array.isArray(s.timed.fallbacks) ? s.timed.fallbacks : [])].filter(Boolean)
+            });
+          }
+          groups.push({ parse: s.parse, urls: [s.endpoint, ...(Array.isArray(s.fallbacks) ? s.fallbacks : [])].filter(Boolean) });
+          for (const g of groups) {
+            for (const u of g.urls) {
+              try {
+                const txt = await this._proxyText(`${base}/proxy?url=${encodeURIComponent(u)}`);
+                const got = this._parseHotSource(g.parse, s.key, txt).slice(0, 10);
+                if (got.length) { items = got; break; }
+              } catch (e) { /* 试下一个候选端点 */ }
+            }
+            if (items.length) break;
           }
         }
-        s.items = items;
+        s.items = items.map(it => it.time ? it : { ...it, time: observedBj, timeKind: 'observed' });
         if (!items.length) s.error = '解析为空（源页面结构变化或非新闻页）';
       } catch (e) {
         s.error = this._friendlyFetchError(e);
@@ -6762,9 +6783,36 @@ const StockAPI = {
       if (it.text) out.push(it);
     };
     let j = null;
-    try { j = JSON.parse(txt); } catch (e) { j = null; }
+    try { j = JSON.parse(txt); } catch (e) {
+      // 20261113a：东财 ajaxResult 返回 `var ajaxResult={...}` 这类 JS 赋值，剥壳后再 parse
+      const s = String(txt || ''), a = s.search(/[{[]/), b = Math.max(s.lastIndexOf('}'), s.lastIndexOf(']'));
+      if (a >= 0 && b > a) { try { j = JSON.parse(s.slice(a, b + 1)); } catch (_) { j = null; } }
+    }
 
-    if (parse === 'json_toutiao' && j) {
+    /* 20261113a：与服务端定时抓取同源的「带发布时间」实时解析，保证配了代理的用户
+     * 也拿到精确时间，而不是被时间窗硬约束整批过滤掉。 */
+    if (parse === 'json_gh_live' && j) {
+      for (const it of (j.result || [])) {
+        push(String(it.content || it.title || '').replace(/<[^>]*>/g, ''),
+          this._normTime(it.createTimestamp || it.updateTimestamp),
+          it.route || 'https://www.gelonghui.com/live');
+      }
+    } else if (parse === 'json_ths_push' && j) {
+      for (const it of ((j.data && j.data.list) || [])) {
+        push(it.title || it.digest, this._normTime(it.ctime || it.rtime), it.url || it.shareUrl || '');
+      }
+    } else if (parse === 'jsonp_eastmoney' && j) {
+      for (const it of (j.LivesList || (j.data && j.data.list) || [])) {
+        push([it.title, it.digest].filter(Boolean).join('：'),
+          this._normTime(it.showtime || it.showTime || it.ordertime),
+          it.url_unique || it.url_w || '');
+      }
+    } else if (parse === 'json_sina_roll' && j) {
+      for (const it of ((j.result && j.result.data) || j.data || [])) {
+        push(it.title || it.stitle || it.summary, this._normTime(it.ctime || it.intime),
+          it.url || it.wapurl || 'https://finance.sina.com.cn/');
+      }
+    } else if (parse === 'json_toutiao' && j) {
       const arr = (j.data || []);
       for (const it of arr) {
         let u = it.Url || '';
@@ -6874,12 +6922,14 @@ const StockAPI = {
     return out;
   },
 
-  /** 归一化时间：unix 秒/毫秒 → 'YYYY-MM-DD HH:mm'，其它原样截取 */
+  /** 归一化时间：unix 秒/毫秒 → **北京时间** 'YYYY-MM-DD HH:mm'，其它原样截取。
+   *  20261113a：旧版按 UTC 输出，比真实发生时刻早 8 小时，会被时间窗硬约束整批排除。 */
   _normTime(t) {
     if (t == null) return '';
     t = String(t).trim();
-    if (/^\d{10}$/.test(t)) return new Date(+t * 1000).toISOString().slice(0, 16).replace('T', ' ');
-    if (/^\d{13}$/.test(t)) return new Date(+t).toISOString().slice(0, 16).replace('T', ' ');
+    const BJ = 8 * 3600 * 1000;
+    if (/^\d{10}$/.test(t)) return new Date(+t * 1000 + BJ).toISOString().slice(0, 16).replace('T', ' ');
+    if (/^\d{13}$/.test(t)) return new Date(+t + BJ).toISOString().slice(0, 16).replace('T', ' ');
     return t.replace('T', ' ').slice(0, 16);
   },
 

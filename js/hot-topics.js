@@ -93,6 +93,67 @@
       base: 'https://www.cls.cn' }
   ];
 
+  /* ---------- 20261113a：带「精确发生时间」的抓取源（Node 定时任务优先使用） ----------
+   * 背景：旧抓取对 11 个平台中的 7 个只走首页 HTML / 热榜 JSON，条目 time 全部为空；
+   * 而子类统计、跨站重合榜、红绿着色已规定「只认设定窗口内且有精确时间的新闻」，
+   * 结果这 7 个平台在任意时间窗口里整批消失，看起来就像「平台没抓到」。
+   * 线上 Action 日志另证实：东财 7x24 主接口 404、同花顺 / 新浪 zhibo / 证券时报 /
+   * 财联社在境外 runner 直连 fetch failed。故统一换成实测可用、且返回发布时间的接口；
+   * timed 失败时由 fetch-hot-topics.mjs 自动回退原 endpoint/parse，不影响既有可用性。
+   * 说明：今日头条热榜本身不提供发布时间，由抓取脚本补「观测时刻」(timeKind:'observed')。 */
+  const SOURCE_TIMED = {
+    gelonghui: {
+      parse: 'json_gh_live',
+      endpoint: 'https://www.gelonghui.com/api/live-channels/all/lives/v4?category=all&limit=15',
+      headers: { Referer: 'https://www.gelonghui.com/live' }
+    },
+    toutiao: {
+      parse: 'json_toutiao',
+      endpoint: 'https://www.toutiao.com/hot-event/hot-board/?origin=toutiao_pc',
+      headers: { Referer: 'https://www.toutiao.com/' }
+    },
+    ths: {
+      parse: 'json_ths_push',
+      endpoint: 'https://news.10jqka.com.cn/tapp/news/push/stock/?page=1&tag=&track=website&pagesize=100',
+      headers: { Referer: 'https://news.10jqka.com.cn/realtimenews.html' }
+    },
+    eastmoney: {
+      // 旧 getlist_102_ajax.html 已 404；此端点返回 `var ajaxResult={LivesList:[...]}`，showtime 为发布时间
+      parse: 'jsonp_eastmoney',
+      endpoint: 'https://newsapi.eastmoney.com/kuaixun/v1/getlist_102_ajaxResult_50_1_.html',
+      fallbacks: ['https://newsapi.eastmoney.com/kuaixun/v1/getlist_102_ajaxResult_50_2_.html']
+    },
+    sina: {
+      // feed.mix 域名在 GitHub Actions 已验证可达（同一脚本抓 briefs 一次可取 1200 条）
+      parse: 'json_sina_roll',
+      endpoint: 'https://feed.mix.sina.com.cn/api/roll/get?pageid=153&lid=2516&num=50&page=1',
+      headers: { Referer: 'https://finance.sina.com.cn/' }
+    },
+    cnstock: { parse: 'html_cnstock_next', endpoint: 'https://www.cnstock.com/' },
+    stcn: {
+      parse: 'html_stcn_timed',
+      endpoint: 'https://www.stcn.com/article/list/yw.html',
+      fallbacks: ['https://www.stcn.com/', 'https://stcn.com/', 'https://www.stcn.com/article/list/xw.html'],
+      timeout: 20000
+    },
+    wscn: {
+      parse: 'json_wscn',
+      endpoint: 'https://api-one.wallstcn.com/apiv1/content/lives?channel=global-channel&client=pc&limit=50'
+    },
+    jin10: {
+      parse: 'json_jin10',
+      endpoint: 'https://flash-api.jin10.com/get_flash_list?channel=-8200&vip=1',
+      headers: { 'x-app-id': 'SO1EJGmNgCtmpcPF', 'x-version': '1.0.0', Referer: 'https://flash.jin10.com/' }
+    },
+    cs: { parse: 'html_cs_timed', endpoint: 'https://www.cs.com.cn/' },
+    cls: {
+      parse: 'json_cls',
+      endpoint: 'https://www.cls.cn/v1/roll/get_roll_list?app=CailianpressWeb&category=&last_time=&os=web&refresh_type=1&rn=50&sv=7.7.5&sign=d41556984a26bb242d388ce81c66a176',
+      headers: { Referer: 'https://www.cls.cn/telegraph' }
+    }
+  };
+  SOURCE_ORDER.forEach(s => { s.timed = SOURCE_TIMED[s.key] || null; });
+
   const SOURCE_BY_KEY = {};
   SOURCE_ORDER.forEach(s => { SOURCE_BY_KEY[s.key] = s; });
 
@@ -1867,7 +1928,7 @@
   global.HotTopics = {
     CATEGORIES, CATEGORY_COLORS, CATEGORY_KEYWORDS,
     CATEGORY_ALIASES, normalizeCategory,
-    SOURCE_ORDER, SOURCE_BY_KEY,
+    SOURCE_ORDER, SOURCE_BY_KEY, SOURCE_TIMED,
     classify, normalizeTitle, bigrams, jaccard, signalTokens, isSameTopic,
     clusterItems, siteCategoryStats, siteThemeStats,
     THEME_DIMENSIONS, THEME_KEYWORDS, themeStats,

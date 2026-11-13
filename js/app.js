@@ -8031,9 +8031,13 @@ const app = createApp({
         hotTopicsUpdated.value = `${startStr} - ${endStr}（覆盖 ${dayCount} 天，按时间段合并）`;
         _hotTopicsLoaded = true;
         const total = list.reduce((n, s) => n + s.items.length, 0);
+        /* 20261113a：直接反馈「有几个平台在这个时间段里真正拿到了新闻」，
+         * 便于一眼看出某个平台是否因抓取失败/无时间戳而缺席（状态提示，非口径说明）。 */
+        const srcCount = list.filter(s => s.items.length).length;
+        const srcNote = ` · ${srcCount}/${list.length || 11} 个平台有数据`;
         const skipNote = skippedOut ? `；已排除 ${skippedOut} 条不在时间段内/无精确时间的新闻` : '';
         if (!total) showToast(`时间段（${startStr} - ${endStr}）内没有火热话题数据${skipNote}`, 'info');
-        else showToast(`已加载 ${startStr} - ${endStr} 的火热话题（${total} 条）${skipNote}`, 'success');
+        else showToast(`已加载 ${startStr} - ${endStr} 的火热话题（${total} 条${srcNote}）${skipNote}`, 'success');
       } catch (e) {
         showToast('每日话题刷新失败：' + (e && e.message ? e.message : e), 'error');
       } finally {

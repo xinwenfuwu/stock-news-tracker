@@ -35,12 +35,78 @@ function todayStr(d = new Date()) {
 }
 const DATE = process.argv[2] || todayStr();
 
+/* 20261113a：Unix 秒/毫秒一律换算成**北京时间**。
+ * 旧版直接 toISOString() 输出 UTC，比真实发生时刻早整整 8 小时：
+ * 上午 9 点的快讯被写成凌晨 1 点，落在「新闻统计开始时间」窗口外被整批丢弃，
+ * 表现为「这个平台没有新闻」。bjStr 在文件后半段定义（函数声明提升，此处可直接调用）。 */
 function normTime(t) {
   if (t == null) return '';
   t = String(t).trim();
-  if (/^\d{10}$/.test(t)) return new Date(+t * 1000).toISOString().slice(0, 16).replace('T', ' ');
-  if (/^\d{13}$/.test(t)) return new Date(+t).toISOString().slice(0, 16).replace('T', ' ');
+  if (/^\d{10}$/.test(t)) return bjStr(+t);
+  if (/^\d{13}$/.test(t)) return bjStr(+t / 1000);
   return t.replace('T', ' ').slice(0, 16);
+}
+
+/** 本次抓取时刻（北京，精确到分钟）。源站确实不提供发布时间时，
+ *  用它作为「观测时刻」并标 timeKind:'observed'，不冒充新闻发布时间。 */
+function observedBjNow() {
+  return new Date(Date.now() + 8 * 3600 * 1000).toISOString().slice(0, 16).replace('T', ' ');
+}
+const OBSERVED_AT = observedBjNow();
+const OBSERVED_DATE = OBSERVED_AT.slice(0, 10);
+
+/** 日期字符串 ±N 天 */
+function dayShift(dateStr, delta) {
+  return new Date(Date.parse(dateStr + 'T00:00:00Z') + delta * 86400000).toISOString().slice(0, 10);
+}
+/** 从新闻 URL 里取发布日期（中证网 /2026/11/13/、/20261113/ 两种形态） */
+function timeFromUrlDate(url) {
+  const s = String(url || '');
+  let m = s.match(/\/(20\d{2})[\/-](\d{1,2})[\/-](\d{1,2})\//);
+  if (m) return `${m[1]}-${m[2].padStart(2, '0')}-${m[3].padStart(2, '0')}`;
+  m = s.match(/(20\d{2})(\d{2})(\d{2})/);
+  if (m) return `${m[1]}-${m[2]}-${m[3]}`;
+  return OBSERVED_DATE;
+}
+/** 页面只给 HH:mm 时，与日期拼成 'YYYY-MM-DD HH:mm'；
+ *  若该时刻晚于当前时刻 10 分钟以上，判为前一天的条目（如昨夜 21:26 的稿子）。 */
+function htmlItemTime(dateStr, hhmm) {
+  const m = String(hhmm || '').match(/^(\d{1,2}):(\d{2})$/);
+  if (!m) return '';
+  let d = /^\d{4}-\d{2}-\d{2}$/.test(dateStr || '') ? dateStr : OBSERVED_DATE;
+  const cur = OBSERVED_AT.slice(11);
+  const nowMin = (+cur.slice(0, 2)) * 60 + (+cur.slice(3, 5));
+  const itMin = (+m[1]) * 60 + (+m[2]);
+  if (d === OBSERVED_DATE && itMin > nowMin + 10) d = dayShift(d, -1);
+  return `${d} ${m[1].padStart(2, '0')}:${m[2]}`;
+}
+/** 上海证券报 __NEXT_DATA__.pubTime：仅接受能精确到分钟的「N分钟/小时/天前」；
+ *  只有月日或日期的相对时间无法证明发生时刻，返回 '' 交由观测时刻兜底。 */
+function cnstockPubTime(p) {
+  const s = String(p || '').trim();
+  const m = s.match(/^(\d+)\s*(分钟|小时|天)前$/);
+  if (!m) return '';
+  const n = +m[1];
+  const ms = m[2] === '分钟' ? n * 60000 : (m[2] === '小时' ? n * 3600000 : n * 86400000);
+  return new Date(Date.now() - ms + 8 * 3600 * 1000).toISOString().slice(0, 16).replace('T', ' ');
+}
+
+/** 统一把 HTTP 响应文本转成解析器可用的 payload：
+ *  · html_* 原样返回字符串；· 纯 JSON 直接 parse；
+ *  · 东财 `var ajaxResult={...}` 这类 JS 赋值，剥掉外壳再 parse；
+ *  · 都不成（一般是 HTML 兜底页）返回原字符串，由调用方改用通用 HTML 抽取。 */
+function toPayload(txt, parse) {
+  if (typeof txt !== 'string') return txt;
+  const t = txt.replace(/^\uFEFF/, '').trim();
+  if (!t) return null;
+  if (parse && parse.indexOf('html_') === 0) return t;
+  try { return JSON.parse(t); } catch (e) { /* 可能是 JSONP */ }
+  const start = t.search(/[{[]/);
+  const end = Math.max(t.lastIndexOf('}'), t.lastIndexOf(']'));
+  if (start >= 0 && end > start) {
+    try { return JSON.parse(t.slice(start, end + 1)); } catch (e) { /* 落到 HTML 兜底 */ }
+  }
+  return t;
 }
 
 function decodeBuffer(buf, enc) {
@@ -103,8 +169,77 @@ function mkItem(text, time, url) {
 function parseSource(parse, key, payload) {
   const out = [];
   const push = (text, time, url) => { const it = mkItem(text, time, url); if (it) out.push(it); };
+  const html = typeof payload === 'string' ? payload : '';
 
-  if (parse === 'news_eastmoney') {
+  /* ---------- 20261113a：返回真实发布时间的解析器 ---------- */
+  if (parse === 'json_gh_live') {
+    // 格隆汇 v4 live：createTimestamp（Unix 秒）→ 北京时间，content 为快讯正文
+    const arr = (payload && payload.result) || (Array.isArray(payload) ? payload : []);
+    for (const it of arr.slice(0, HOT_TOPN)) {
+      push(String(it.content || it.title || '').replace(/<[^>]*>/g, ''),
+        bjStr(it.createTimestamp || it.updateTimestamp),
+        it.route || 'https://www.gelonghui.com/live');
+    }
+  } else if (parse === 'json_ths_push') {
+    // 同花顺 7×24 push：data.list[].ctime（Unix 秒）
+    const arr = (payload && payload.data && payload.data.list) || (payload && payload.list) || [];
+    for (const it of arr.slice(0, HOT_TOPN)) {
+      push(it.title || it.digest, bjStr(it.ctime || it.rtime), it.url || it.shareUrl || '');
+    }
+  } else if (parse === 'jsonp_eastmoney') {
+    // 东方财富 ajaxResult：LivesList[].showtime（'YYYY-MM-DD HH:mm:ss'）
+    const arr = (payload && payload.LivesList) || (payload && payload.data && payload.data.list) || [];
+    for (const it of arr.slice(0, HOT_TOPN)) {
+      push([it.title, it.digest].filter(Boolean).join('：'),
+        normTime(it.showtime || it.showTime || it.ordertime),
+        it.url_unique || it.url_w || '');
+    }
+  } else if (parse === 'json_sina_roll') {
+    // 新浪财经滚动：result.data[].ctime（Unix 秒），Action 已验证该域名可达
+    const arr = (payload && payload.result && payload.result.data) || (payload && payload.data) || [];
+    for (const it of (Array.isArray(arr) ? arr : []).slice(0, HOT_TOPN)) {
+      push(it.title || it.stitle || it.summary, bjStr(it.ctime || it.intime),
+        it.url || it.wapurl || 'https://finance.sina.com.cn/');
+    }
+  } else if (parse === 'html_cnstock_next') {
+    // 上海证券报 __NEXT_DATA__：递归取所有 {name, pubTime} 条目
+    const m = html.match(/<script id="__NEXT_DATA__" type="application\/json">([\s\S]*?)<\/script>/);
+    if (m) {
+      try {
+        const seenObj = new Set();
+        const walk = (v) => {
+          if (!v || typeof v !== 'object' || seenObj.has(v)) return;
+          seenObj.add(v);
+          if (typeof v.name === 'string' && v.pubTime) {
+            const t = cnstockPubTime(v.pubTime);
+            if (t) push(v.name, t, v.link || ('https://www.cnstock.com/commonDetail/' + (v.contId || '')));
+          }
+          for (const k of Object.keys(v)) walk(v[k]);
+        };
+        walk(JSON.parse(m[1]));
+      } catch (e) { /* 结构变化则由 fetchSource 回退通用 HTML 抽取 */ }
+    }
+  } else if (parse === 'html_stcn_timed') {
+    // 证券时报：<li> 内 <span>HH:mm</span> + <a href="/article/detail/...">标题</a>
+    const pageDate = (html.match(/（\s*(20\d{2}-\d{2}-\d{2})[^）]*）/) || [])[1] || OBSERVED_DATE;
+    const blocks = html.split(/<li\b/i).slice(1);
+    for (const b of blocks) {
+      if (out.length >= HOT_TOPN) break;
+      const a = b.match(/<a[^>]*href=["']([^"']*\/article\/detail\/\d+\.html)["'][^>]*>([\s\S]{4,200}?)<\/a>/i);
+      const hm = b.match(/<span[^>]*>\s*(\d{1,2}:\d{2})\s*<\/span>/);
+      if (!a || !hm) continue;
+      const u = /^https?:/i.test(a[1]) ? a[1] : ('https://www.stcn.com' + a[1]);
+      push(String(a[2]).replace(/<[^>]*>/g, ''), htmlItemTime(pageDate, hm[1]), u);
+    }
+  } else if (parse === 'html_cs_timed') {
+    // 中证网：<em>HH:mm</em> + <a href=".../YYYY/MM/DD/...">，日期来自 URL
+    const re = /<em>\s*(\d{1,2}:\d{2})\s*<\/em>\s*<a[^>]*href=["']([^"']+)["'][^>]*>([\s\S]{4,200}?)<\/a>/gi;
+    let mm;
+    while ((mm = re.exec(html)) && out.length < HOT_TOPN) {
+      const d = timeFromUrlDate(mm[2]);
+      push(String(mm[3]).replace(/<[^>]*>/g, ''), htmlItemTime(d, mm[1]), mm[2]);
+    }
+  } else if (parse === 'news_eastmoney') {
     // Node 直连东财 7×24 公开接口（浏览器走 Worker /news）
     let list = [];
     if (Array.isArray(payload)) list = payload;
@@ -196,48 +331,55 @@ function parseSource(parse, key, payload) {
   return out.filter(it => { if (seen2.has(it.text)) return false; seen2.add(it.text); return true; });
 }
 
-/** 抓单个源：主端点 + 若干候选端点逐个重试（20261108e：证券时报境外超时专用）。
- *  s.timeout 可单独放宽某源的超时；s.fallbacks 为候选端点数组，任一返回 >=3 条即收工。 */
+/** 抓单个源（20261113a 重写）：
+ *  ① 优先 s.timed —— 返回真实发布时间的接口（东财 404 / 境外 fetch failed 的老端点已替换）；
+ *  ② 时间源整体失败时自动回退原 endpoint/parse + 候选端点；
+ *  ③ 不论走哪条路径，产出的每条都必须有 time：源站确实不给发布时间的，
+ *     补「本次观测时刻」并标 timeKind:'observed'，绝不把旧闻伪装成今天新发。
+ *  这样 11 个平台不会因为「无精确时间」在任意时间窗口里整批消失。 */
 async function fetchSource(s) {
-  const timeoutMs = Number(s.timeout) || 8000;
-  const tryEndpoint = async (url, forceHtml) => {
-    if (!url) return [];
-    const hdr = SRC_HEADERS[s.parse] || null;
-    if (forceHtml || (s.parse && s.parse.startsWith('html_'))) {
-      const html = await fetchText(url, { headers: hdr, timeout: timeoutMs });
-      return parseSource('html_body', s.key, html);
-    }
-    const j = await fetchText(url, { isJson: true, headers: hdr, timeout: timeoutMs });
-    return parseSource(s.parse, s.key, j);
-  };
+  const legacyTimeout = Number(s.timeout) || 8000;
+  const groups = [];
+  if (s.timed) {
+    groups.push({
+      label: '时间源',
+      parse: s.timed.parse,
+      timeout: Number(s.timed.timeout) || legacyTimeout,
+      headers: s.timed.headers || null,
+      urls: [s.timed.endpoint, ...(Array.isArray(s.timed.fallbacks) ? s.timed.fallbacks : [])].filter(Boolean)
+    });
+  }
+  groups.push({
+    label: '原端点',
+    parse: s.parse,
+    timeout: legacyTimeout,
+    headers: SRC_HEADERS[s.parse] || null,
+    urls: [s.endpoint, ...(Array.isArray(s.fallbacks) ? s.fallbacks : [])]
+      .concat(s.fallback ? [s.fallback] : []).filter(Boolean)
+  });
 
   let items = [];
-  if (s.parse === 'news_eastmoney') {
-    const url = 'https://newsapi.eastmoney.com/kuaixun/v1/getlist_102_ajax.html?_=' + Date.now();
-    try { items = await tryEndpoint(url, false); }
-    catch (e) { console.warn(`  [${s.name}] 7x24 接口异常: ${e.message}`); }
-    if (items.length < 3 && s.fallback) {
-      console.log(`  [${s.name}] 主端点仅 ${items.length} 条，改试备用端点 ${s.fallback}`);
+  for (const g of groups) {
+    for (let i = 0; i < g.urls.length; i++) {
+      const url = g.urls[i];
       try {
-        const alt = await tryEndpoint(s.fallback, true);
-        if (alt.length > items.length) items = alt;
-      } catch (e) { console.warn(`  [${s.name}] 备用端点失败: ${e.message}`); }
+        const txt = await fetchText(url, { headers: g.headers, timeout: g.timeout });
+        const payload = toPayload(txt, g.parse);
+        // 返回的是 HTML 兜底页（如东财首页）时改走通用 HTML 抽取，否则 JSON 解析器会得 0 条
+        const useParse = (typeof payload === 'string' && /^\s*</.test(payload) && !/^html_/.test(g.parse))
+          ? 'html_body' : g.parse;
+        const got = parseSource(useParse, s.key, payload);
+        if (got.length > items.length) items = got;
+        if (items.length >= 3) break;
+      } catch (e) {
+        console.warn(`  [${s.name}] ${g.label} 端点 ${i + 1}/${g.urls.length} 失败: ${e.message}`);
+      }
     }
-    return items;
+    if (items.length >= 3) break;
   }
-
-  const candidates = [s.endpoint, ...(Array.isArray(s.fallbacks) ? s.fallbacks : [])]
-    .concat(s.fallback ? [s.fallback] : []).filter(Boolean);
-  for (let i = 0; i < candidates.length; i++) {
-    try {
-      const got = await tryEndpoint(candidates[i], false);
-      if (got.length > items.length) items = got;
-      if (items.length >= 3) break;
-    } catch (e) {
-      console.warn(`  [${s.name}] 端点 ${i + 1}/${candidates.length} 失败: ${e.message}`);
-    }
-  }
-  return items;
+  return items.map(it => it.time
+    ? it
+    : { ...it, time: OBSERVED_AT, timeKind: 'observed' });
 }
 
 /** 从最近 N 天快照里取某源的历史条目：仅当「本次 + 当日累积」全为空时兜底，
@@ -247,10 +389,21 @@ function prevDateStr(date, days) {
 }
 function fallbackItemsFromRecent(dir, key, date, maxDays = 14) {
   for (let i = 1; i <= maxDays; i++) {
+    const d = prevDateStr(date, i);
     try {
-      const p = JSON.parse(readFileSync(join(dir, prevDateStr(date, i) + '.json'), 'utf8'));
+      const p = JSON.parse(readFileSync(join(dir, d + '.json'), 'utf8'));
       const s = (p.sources || []).find(x => x.key === key);
-      if (s && Array.isArray(s.items) && s.items.length) return s.items.slice(0, HOT_TOPN);
+      if (s && Array.isArray(s.items) && s.items.length) {
+        /* 20261113a：历史快照里大量条目无 time，直接继承会被时间窗硬约束永久排除，
+         * 表现就是这个平台长期空白。用「该快照生成时刻」作为可核查的观测时刻，
+         * 标 timeKind:'inherited-observed'：既不臆造发布时间，也不把旧闻写成今天新发。 */
+        const observedAt = p.generatedAt
+          ? new Date(Date.parse(p.generatedAt) + 8 * 3600 * 1000).toISOString().slice(0, 16).replace('T', ' ')
+          : (d + ' 12:00');
+        return s.items.slice(0, HOT_TOPN).map(it => it.time
+          ? it
+          : { ...it, time: observedAt, timeKind: 'inherited-observed' });
+      }
     } catch (e) { /* 该日无快照，继续往前找 */ }
   }
   return [];
@@ -477,7 +630,7 @@ async function main() {
       }
       let merged = [...m.values()];
       if (!merged.length) {
-        // 本次与当日累积都为 0（多为境外 IP 被源站拦截）→ 继承最近快照，避免平台空白
+        // 本次与当日累积都为 0（多为境外 runner 被源站拦截）→ 继承最近快照，避免平台空白
         const inherited = fallbackItemsFromRecent(dir, s.key, DATE);
         if (inherited.length) {
           merged = inherited;
@@ -485,8 +638,14 @@ async function main() {
         }
       }
       if (merged.length > SOURCE_ACCUM_MAX) merged = merged.slice(0, SOURCE_ACCUM_MAX);
+      /* 20261113a：当日快照里若还有历史遗留的无时间条目（旧版本写入的），统一补观测时刻，
+       * 保证「11 个平台 × 每条新闻」都有可核查的时间戳，时间窗统计不会再整源落空。 */
+      merged = merged.map(it => it.time
+        ? it
+        : { ...it, time: OBSERVED_AT, timeKind: 'observed' });
       sources.push({ rank: s.rank, key: s.key, name: s.name, color: s.color, items: merged });
-      console.log(`  ${s.rank}. ${s.name}: 本次 ${items.length} 条，累积 ${merged.length} 条`);
+      const timed = merged.filter(x => /\d{4}-\d{2}-\d{2} \d{2}:\d{2}/.test(String(x.time || ''))).length;
+      console.log(`  ${s.rank}. ${s.name}: 本次 ${items.length} 条，累积 ${merged.length} 条，带精确时间 ${timed} 条`);
     }
     const snapshot = { date: DATE, generatedAt: new Date().toISOString(), sources };
     const file = join(dir, `${DATE}.json`);
