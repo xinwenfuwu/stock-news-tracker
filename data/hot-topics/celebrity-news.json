@@ -1,20 +1,20 @@
 {
-  "generatedAt": "2026-11-13 17:25",
+  "generatedAt": "2026-11-13 20:12",
   "generatedBy": "GitHub Actions · 多源实时聚合",
   "sourceCount": 5,
-  "autoCount": 6,
+  "autoCount": 5,
   "events": [
     {
-      "id": "ap1vn2wr9",
-      "title": "黄仁勋离任 硅谷明星CEO叙事迎终极考验",
+      "id": "ap1soudp2",
+      "title": "神秘交易者在黄仁勋辞职前做空英伟达，赚了2亿美元",
       "tag": "人物/黄仁勋",
       "region": "美国",
       "concept": "aiCapex",
-      "time": "2026-11-13 16:42",
-      "datetime": "2026-11-13 16:42",
+      "time": "2026-11-13 19:49",
+      "datetime": "2026-11-13 19:49",
       "source": "环球市场播报",
-      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-13/doc-iniyqsnc3613755.shtml",
-      "summary": "华尔街曾经认为，AI热潮围绕英伟达的黄仁勋运转，如同行星围绕太阳旋转。现在的问题是，当这颗恒星坍缩，会发生什么。 在两段婚外情被曝光后，黄仁勋于周四辞职。",
+      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-13/doc-iniyqwtz3623425.shtml",
+      "summary": "Macro Risk Advisors（MRA）的专业人士发现了一起异常操作：10月12日，有人在英伟达股票上建立了一系列大幅虚值、将于明年1月到期的看跌期权头寸。",
       "relatedStocks": [
         "英伟达",
         "微软",
@@ -36,54 +36,21 @@
       "bearIndustries": [
         "传统IT服务"
       ],
-      "heat": 69,
-      "momentum": 26,
-      "_auto": true
-    },
-    {
-      "id": "apt74d7o",
-      "title": "SpaceX与特斯拉最早或于12月宣布合并",
-      "tag": "人物/马斯克",
-      "region": "全球",
-      "concept": "green",
-      "time": "2026-11-13 17:14",
-      "datetime": "2026-11-13 17:14",
-      "source": "环球市场播报",
-      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-13/doc-iniyqsna8026749.shtml",
-      "summary": "埃隆・马斯克旗下两大巨头若完成合并，将创下史上最大规模交易。 埃隆・马斯克麾下的太空探索技术公司（SpaceX）与特斯拉，最早可能在下月对外公布合并计划。",
-      "relatedStocks": [
-        "特斯拉",
-        "比亚迪"
-      ],
-      "bullConcepts": [
-        "智能驾驶",
-        "动力电池"
-      ],
-      "bearConcepts": [
-        "传统车企"
-      ],
-      "bullIndustries": [
-        "智能驾驶",
-        "锂电池"
-      ],
-      "bearIndustries": [
-        "传统汽车制造"
-      ],
       "heat": 24,
       "momentum": 36,
       "_auto": true
     },
     {
-      "id": "ap1acargq",
-      "title": "报道：日本政府正在密切关注黄仁勋相关动向",
+      "id": "apzjmlf9",
+      "title": "华尔街：市场担忧黄仁勋离职对英伟达合作投资前景影响",
       "tag": "人物/黄仁勋",
-      "region": "全球",
-      "concept": "ai",
-      "time": "2026-11-13 17:04",
-      "datetime": "2026-11-13 17:04",
-      "source": "环球市场播报",
-      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-13/doc-iniyqsmv0968860.shtml",
-      "summary": "随着英伟达首席执行官黄仁勋卸任，一直推进和英伟达在物理AI领域合作的日本政府危机感正在升温。 据报道，日本政府正在密切关注前首席执行官黄仁勋的相关动向。",
+      "region": "美国",
+      "concept": "aiCapex",
+      "time": "2026-11-13 20:11",
+      "datetime": "2026-11-13 20:11",
+      "source": "新浪7×24",
+      "url": "https://finance.sina.cn/7x24/2026-11-13/detail-iniyqwtz3633496.d.html",
+      "summary": "【华尔街：市场担忧黄仁勋离职对英伟达合作投资前景影响】高盛分析师James Schneider在黄仁勋辞职后发布报告，维持英伟达“买入”评级，但将目标价从300美元下调至220美元。Schneider预计英伟达会履行所有已宣布的承诺，但认为没有黄仁勋的远见、影响力和号召力，再促成同等规模的多方合作投资将更加困难。他指出，英伟达股价此前相对大盘明显折价，原因之一正是投资者担心，…",
       "relatedStocks": [
         "英伟达",
         "微软",
@@ -110,16 +77,16 @@
       "_auto": true
     },
     {
-      "id": "ap1s0eo6t",
-      "title": "美联航CEO称赞星链带来百年最大竞争优势",
-      "tag": "人物/马斯克",
+      "id": "apdmzokk",
+      "title": "美国总统特朗普在一条12日发布的专访视频中称，他本可以“立即结束”伊朗战事，但应美国的中东盟友请求，他选择延缓对伊朗行动。在美国媒体人斯蒂芬·史密斯当天发布在视频分享平台优兔上的…",
+      "tag": "人物/特朗普",
       "region": "美国",
       "concept": "usMacro",
-      "time": "2026-11-13 16:25",
-      "datetime": "2026-11-13 16:25",
-      "source": "财联社",
-      "url": "https://www.cls.cn/detail/2533873",
-      "summary": "财联社11月13日电，美国联合航空公司CEO表示，Wi-Fi是旅客选择航班的头号原因，SpaceX旗下的星链为公司带来了百年历史上最大的竞争优势。他认为，星链已经在公司营收上带来提振。",
+      "time": "2026-11-13 18:05",
+      "datetime": "2026-11-13 18:05",
+      "source": "华尔街见闻",
+      "url": "https://wallstreetcn.com/livenews/3199737",
+      "summary": "美国总统特朗普在一条12日发布的专访视频中称，他本可以“立即结束”伊朗战事，但应美国的中东盟友请求，他选择延缓对伊朗行动。在美国媒体人斯蒂芬·史密斯当天发布在视频分享平台优兔上的一条专访视频中，特朗普说：“我本可以立即结束战事，但应我打算保护的国家请求，我们选择采取一种耗时更长、更加文明的方式。”（央视新闻）",
       "relatedStocks": [
         "宽基指数"
       ],
@@ -135,8 +102,8 @@
       "bearIndustries": [
         "顺周期"
       ],
-      "heat": 65,
-      "momentum": 26,
+      "heat": 24,
+      "momentum": 18,
       "_auto": true
     },
     {
@@ -169,40 +136,37 @@
         "高杠杆地产"
       ],
       "heat": 24,
-      "momentum": 26,
+      "momentum": 18,
       "_auto": true
     },
     {
-      "id": "aphuimli",
-      "title": "特朗普的特别工作组开会讨论应对AI网络攻击",
-      "tag": "人物/特朗普",
-      "region": "美国",
-      "concept": "aiCapex",
-      "time": "2026-11-13 10:55",
-      "datetime": "2026-11-13 10:55",
+      "id": "apt74d7o",
+      "title": "SpaceX与特斯拉最早或于12月宣布合并",
+      "tag": "人物/马斯克",
+      "region": "全球",
+      "concept": "green",
+      "time": "2026-11-13 17:14",
+      "datetime": "2026-11-13 17:14",
       "source": "环球市场播报",
-      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-13/doc-iniypzqc1107039.shtml",
-      "summary": "特朗普政府发言人称，美国总统唐纳德·特朗普的人工智能工作组成员于当地时间周四举行会议，讨论如何鼓励美国关键行业报告人工智能驱动的网络攻击。",
+      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-13/doc-iniyqsna8026749.shtml",
+      "summary": "埃隆・马斯克旗下两大巨头若完成合并，将创下史上最大规模交易。 埃隆・马斯克麾下的太空探索技术公司（SpaceX）与特斯拉，最早可能在下月对外公布合并计划。",
       "relatedStocks": [
-        "英伟达",
-        "微软",
-        "台积电"
+        "特斯拉",
+        "比亚迪"
       ],
       "bullConcepts": [
-        "AI算力",
-        "半导体",
-        "国产替代"
+        "智能驾驶",
+        "动力电池"
       ],
       "bearConcepts": [
-        "传统软件"
+        "传统车企"
       ],
       "bullIndustries": [
-        "半导体",
-        "AI应用",
-        "算力基础设施"
+        "智能驾驶",
+        "锂电池"
       ],
       "bearIndustries": [
-        "传统IT服务"
+        "传统汽车制造"
       ],
       "heat": 24,
       "momentum": 18,
