@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-13 12:35",
+  "generatedAt": "2026-11-13 12:46",
   "generatedBy": "GitHub Actions · 多源实时聚合",
   "sourceCount": 4,
   "autoCount": 7,
@@ -31,7 +31,7 @@
         "顺周期"
       ],
       "heat": 51,
-      "momentum": 36,
+      "momentum": 26,
       "_auto": true
     },
     {
