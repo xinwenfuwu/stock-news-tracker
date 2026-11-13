@@ -169,6 +169,18 @@ function mkItem(text, time, url) {
   return { text: t, time: normTime(time), url: url || '', cat: ht.classify(t) };
 }
 
+/* 20261113c：上海证券报首页 __NEXT_DATA__ 会混入专题 / 专栏 / 观察家 / 创业故事 /
+ * 特刊 / 研选 / 招聘 等非快讯类别（源站甚至把一条社会招聘广告误标在「快讯」channel 下），
+ * 这些不是「热点 / 快讯 / 24h」新闻，必须剔除。同时用于解析期与「累积合并」期，
+ * 确保即便历史快照里残留的旧条目也会被清掉。 */
+const CNSTOCK_BLOCK_CAT = new Set(['专题', '专栏', '观察家', '创业故事', '特刊', '聚焦', '研选']);
+const CNSTOCK_BLOCK_TITLE = /^(?:专题|上证聚焦|上证观察家|创业故事|直面掌门人|聚贤才|社会招聘|招聘|诚聘|招贤|招募|特刊|研选|每日研选|创刊|公益行动|论坛|年会|大奖|直播|视频)/;
+/** 判断一条上海证券报标题是否属于应剔除的非快讯类别 */
+function isCnstockBlocked(text) {
+  const t = String(text || '');
+  return CNSTOCK_BLOCK_CAT.has((t && t.nodeInfo && t.nodeInfo.name) || '') || CNSTOCK_BLOCK_TITLE.test(t);
+}
+
 function parseSource(parse, key, payload) {
   const out = [];
   const push = (text, time, url) => { const it = mkItem(text, time, url); if (it) out.push(it); };
@@ -205,7 +217,7 @@ function parseSource(parse, key, payload) {
         it.url || it.wapurl || 'https://finance.sina.com.cn/');
     }
   } else if (parse === 'html_cnstock_next') {
-    // 上海证券报 __NEXT_DATA__：递归取所有 {name, pubTime} 条目
+    // 上海证券报 __NEXT_DATA__：只取「新闻 / 快讯 / 要闻」类条目（见模块顶部 CNSTOCK_BLOCK_* 说明）。
     const m = html.match(/<script id="__NEXT_DATA__" type="application\/json">([\s\S]*?)<\/script>/);
     if (m) {
       try {
@@ -214,8 +226,11 @@ function parseSource(parse, key, payload) {
           if (!v || typeof v !== 'object' || seenObj.has(v)) return;
           seenObj.add(v);
           if (typeof v.name === 'string' && v.pubTime) {
-            const t = cnstockPubTime(v.pubTime);
-            if (t) push(v.name, t, v.link || ('https://www.cnstock.com/commonDetail/' + (v.contId || '')));
+            const t = String(v.name);
+            if (!CNSTOCK_BLOCK_CAT.has((v.nodeInfo && v.nodeInfo.name) || '') && !CNSTOCK_BLOCK_TITLE.test(t)) {
+              const tt = cnstockPubTime(v.pubTime);
+              if (tt) push(t, tt, v.link || ('https://www.cnstock.com/commonDetail/' + (v.contId || '')));
+            }
           }
           for (const k of Object.keys(v)) walk(v[k]);
         };
@@ -663,6 +678,13 @@ async function main() {
         }
       }
       if (merged.length > SOURCE_ACCUM_MAX) merged = merged.slice(0, SOURCE_ACCUM_MAX);
+      /* 20261113c：上海证券报的历史快照 / 继承兜底里可能残留专题 / 招聘 / 特刊 等非快讯条目，
+       * 合并后再过一遍黑名单，保证落库快照里始终是热点 / 快讯 / 要闻。 */
+      if (s.key === 'cnstock') {
+        const before = merged.length;
+        merged = merged.filter(it => !isCnstockBlocked(String(it.text || '')));
+        if (merged.length < before) console.log(`     [${s.name}] 合并期再剔除非快讯类别 ${before - merged.length} 条`);
+      }
       sources.push({ rank: s.rank, key: s.key, name: s.name, color: s.color, items: merged });
       const timed = merged.filter(x => /\d{4}-\d{2}-\d{2} \d{2}:\d{2}/.test(String(x.time || ''))).length;
       console.log(`  ${s.rank}. ${s.name}: 本次 ${items.length} 条，累积 ${merged.length} 条，带精确时间 ${timed} 条`);
