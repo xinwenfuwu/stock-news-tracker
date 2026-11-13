@@ -1,149 +1,37 @@
 {
-  "generatedAt": "2026-11-13 09:00",
+  "generatedAt": "2026-11-13 12:35",
   "generatedBy": "GitHub Actions · 多源实时聚合",
-  "sourceCount": 3,
-  "autoCount": 6,
+  "sourceCount": 4,
+  "autoCount": 7,
   "events": [
     {
-      "id": "apac3uj5",
-      "title": "据《纽约时报》报道，在英伟达首席执行官黄仁勋于11月12日辞职之前，美国总统唐纳德·特朗普曾私下敦促他“保住自己的职位”（fight for his job）。",
-      "tag": "人物/黄仁勋",
-      "region": "美国",
-      "concept": "aiCapex",
-      "time": "2026-11-13 08:18",
-      "datetime": "2026-11-13 08:18",
-      "source": "华尔街见闻",
-      "url": "https://wallstreetcn.com/livenews/3199422",
-      "summary": "据《纽约时报》报道，在英伟达首席执行官黄仁勋于11月12日辞职之前，美国总统唐纳德·特朗普曾私下敦促他“保住自己的职位”（fight for his job）。",
-      "relatedStocks": [
-        "英伟达",
-        "微软",
-        "台积电"
-      ],
-      "bullConcepts": [
-        "AI算力",
-        "半导体",
-        "国产替代"
-      ],
-      "bearConcepts": [
-        "传统软件"
-      ],
-      "bullIndustries": [
-        "半导体",
-        "AI应用",
-        "算力基础设施"
-      ],
-      "bearIndustries": [
-        "传统IT服务"
-      ],
-      "heat": 38,
-      "momentum": 26,
-      "_auto": true
-    },
-    {
-      "id": "ap1fzimgd",
-      "title": "针对美国总统特朗普此前以关税施压墨方涉及移民问题的言论，墨西哥总统辛鲍姆12日表示，自特朗普上任以来，未有任何一支移民大篷车队伍抵达过北部墨美边境。（新华社）",
+      "id": "ap2cpbkp",
+      "title": "美国总统特朗普12日在社交媒体连续发帖痛斥民主党，称其“腐败且邪恶”，呼吁共和党人“奋力抗争”。特朗普在帖文点名加利福尼亚州、明尼苏达州和伊利诺伊州等多个民主党主政的“蓝州”，称…",
       "tag": "人物/特朗普",
       "region": "美国",
-      "concept": "antitrust",
-      "time": "2026-11-13 08:48",
-      "datetime": "2026-11-13 08:48",
+      "concept": "usMacro",
+      "time": "2026-11-13 12:16",
+      "datetime": "2026-11-13 12:16",
       "source": "华尔街见闻",
-      "url": "https://wallstreetcn.com/livenews/3199437",
-      "summary": "针对美国总统特朗普此前以关税施压墨方涉及移民问题的言论，墨西哥总统辛鲍姆12日表示，自特朗普上任以来，未有任何一支移民大篷车队伍抵达过北部墨美边境。（新华社）",
+      "url": "https://wallstreetcn.com/livenews/3199559",
+      "summary": "美国总统特朗普12日在社交媒体连续发帖痛斥民主党，称其“腐败且邪恶”，呼吁共和党人“奋力抗争”。特朗普在帖文点名加利福尼亚州、明尼苏达州和伊利诺伊州等多个民主党主政的“蓝州”，称这些地方管理不善、腐败严重，每个月都有巨额资金“被盗”。",
       "relatedStocks": [
-        "跨境电商",
-        "航运"
+        "宽基指数"
       ],
       "bullConcepts": [
-        "内需",
-        "国产替代"
+        "防御板块"
       ],
       "bearConcepts": [
-        "出口链"
+        "周期股"
       ],
       "bullIndustries": [
-        "跨境电商",
-        "内需消费"
+        "公用事业"
       ],
       "bearIndustries": [
-        "出口制造",
-        "航运"
+        "顺周期"
       ],
-      "heat": 24,
+      "heat": 51,
       "momentum": 36,
-      "_auto": true
-    },
-    {
-      "id": "ap1smhwf3",
-      "title": "Jefferies：黄仁勋辞任推升地缘风险，维持对中国半导体生产设备的买入，但不涉及人工智能实验室或GPU企业。",
-      "tag": "人物/黄仁勋",
-      "region": "中国",
-      "concept": "llm",
-      "time": "2026-11-13 08:45",
-      "datetime": "2026-11-13 08:45",
-      "source": "华尔街见闻",
-      "url": "https://wallstreetcn.com/livenews/3199435",
-      "summary": "Jefferies：黄仁勋辞任推升地缘风险，维持对中国半导体生产设备的买入，但不涉及人工智能实验室或GPU企业。",
-      "relatedStocks": [
-        "英伟达",
-        "微软",
-        "台积电"
-      ],
-      "bullConcepts": [
-        "AI算力",
-        "半导体",
-        "国产替代"
-      ],
-      "bearConcepts": [
-        "传统软件"
-      ],
-      "bullIndustries": [
-        "半导体",
-        "AI应用",
-        "算力基础设施"
-      ],
-      "bearIndustries": [
-        "传统IT服务"
-      ],
-      "heat": 24,
-      "momentum": 36,
-      "_auto": true
-    },
-    {
-      "id": "apq6pvgp",
-      "title": "特斯拉网红博主建议马斯克聘请黄仁勋负责Terafab项目",
-      "tag": "人物/马斯克",
-      "region": "全球",
-      "concept": "ai",
-      "time": "2026-11-13 08:17",
-      "datetime": "2026-11-13 08:17",
-      "source": "环球市场播报",
-      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-13/doc-iniypvhn8123122.shtml",
-      "summary": "英伟达创始人黄仁勋周四宣布辞去公司CEO职位，引发网友热议。以发布特斯拉相关消息闻名的网红博主索耶·梅瑞特提议：马斯克可以聘请黄仁勋来负责特斯拉的“Terafab”超级芯片...",
-      "relatedStocks": [
-        "英伟达",
-        "微软",
-        "台积电"
-      ],
-      "bullConcepts": [
-        "AI算力",
-        "半导体",
-        "国产替代"
-      ],
-      "bearConcepts": [
-        "传统软件"
-      ],
-      "bullIndustries": [
-        "半导体",
-        "AI应用",
-        "算力基础设施"
-      ],
-      "bearIndustries": [
-        "传统IT服务"
-      ],
-      "heat": 24,
-      "momentum": 26,
       "_auto": true
     },
     {
@@ -178,41 +66,179 @@
       "bearIndustries": [
         "传统IT服务"
       ],
-      "heat": 82,
+      "heat": 47,
       "momentum": 18,
       "_auto": true
     },
     {
-      "id": "apay1vju",
-      "title": "原油：油价上涨 特朗普称美国不需要与伊朗达成协议",
-      "tag": "人物/特朗普",
-      "region": "美国",
-      "concept": "shale",
-      "time": "2026-11-13 05:34",
-      "datetime": "2026-11-13 05:34",
+      "id": "apiw6deh",
+      "title": "英伟达CEO的最后时光：黄仁勋身心俱疲、频繁使用“我不在乎”等字眼",
+      "tag": "人物/黄仁勋",
+      "region": "全球",
+      "concept": "ai",
+      "time": "2026-11-13 09:06",
+      "datetime": "2026-11-13 09:06",
       "source": "环球市场播报",
-      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-13/doc-iniypqyi1076995.shtml",
-      "summary": "油价周四走高，此前美国总统特朗普表示，美国可以不与伊朗达成协议，令结束这场扰乱中东供应的战争取得突破的前景变得黯淡。",
+      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-13/doc-iniypzqk8031838.shtml",
+      "summary": "到最后时刻，黄仁勋看起来已经身心俱疲、彻底崩溃，他传奇般的精力也消耗殆尽。在连续数周否认不忠指控并竭力保住英伟达公司首席执行官的职位后...",
       "relatedStocks": [
-        "中国石油",
-        "紫金矿业"
+        "英伟达",
+        "微软",
+        "台积电"
       ],
       "bullConcepts": [
-        "油气",
-        "贵金属"
+        "AI算力",
+        "半导体",
+        "国产替代"
       ],
       "bearConcepts": [
-        "高耗能制造"
+        "传统软件"
       ],
       "bullIndustries": [
-        "石油开采",
-        "贵金属"
+        "半导体",
+        "AI应用",
+        "算力基础设施"
       ],
       "bearIndustries": [
-        "航空运输",
-        "化工"
+        "传统IT服务"
       ],
-      "heat": 60,
+      "heat": 51,
+      "momentum": 18,
+      "_auto": true
+    },
+    {
+      "id": "apg7o2e4",
+      "title": "当地时间12日，美国总统特朗普的女婿贾里德·库什纳表示，俄罗斯和乌克兰同意扩大下一轮谈判的范围，将欧洲国家纳入其中。库什纳还表示，“美国在努力促成俄乌冲突以来规模最大的战俘交换。…",
+      "tag": "人物/特朗普",
+      "region": "美国",
+      "concept": "defense",
+      "time": "2026-11-13 10:23",
+      "datetime": "2026-11-13 10:23",
+      "source": "华尔街见闻",
+      "url": "https://wallstreetcn.com/livenews/3199512",
+      "summary": "当地时间12日，美国总统特朗普的女婿贾里德·库什纳表示，俄罗斯和乌克兰同意扩大下一轮谈判的范围，将欧洲国家纳入其中。库什纳还表示，“美国在努力促成俄乌冲突以来规模最大的战俘交换。”他表示，美国对取得的进展感到鼓舞，但仍然存在重大分歧。（央视新闻）",
+      "relatedStocks": [
+        "军工",
+        "黄金"
+      ],
+      "bullConcepts": [
+        "军工",
+        "避险资产"
+      ],
+      "bearConcepts": [
+        "风险资产"
+      ],
+      "bullIndustries": [
+        "军工",
+        "黄金"
+      ],
+      "bearIndustries": [
+        "航空",
+        "旅游"
+      ],
+      "heat": 33,
+      "momentum": 18,
+      "_auto": true
+    },
+    {
+      "id": "ap1a4rqwo",
+      "title": "段永平通过账号“大道无形我有型”回复网友提问。面对网友询问黄仁勋辞职对英伟达的冲击，段永平写道：“大概这是董事会最后的决定了。短期对英伟达的生意不会有影响，几年后就要看他们能不能…",
+      "tag": "人物/黄仁勋",
+      "region": "全球",
+      "concept": "ai",
+      "time": "2026-11-13 10:31",
+      "datetime": "2026-11-13 10:31",
+      "source": "华尔街见闻",
+      "url": "https://wallstreetcn.com/livenews/3199518",
+      "summary": "段永平通过账号“大道无形我有型”回复网友提问。面对网友询问黄仁勋辞职对英伟达的冲击，段永平写道：“大概这是董事会最后的决定了。短期对英伟达的生意不会有影响，几年后就要看他们能不能找到好的CEO了。黄仁勋是个工作非常努力的人，同时对AI的前景也很有远见，要找到这样的人很难。”",
+      "relatedStocks": [
+        "英伟达",
+        "微软",
+        "台积电"
+      ],
+      "bullConcepts": [
+        "AI算力",
+        "半导体",
+        "国产替代"
+      ],
+      "bearConcepts": [
+        "传统软件"
+      ],
+      "bullIndustries": [
+        "半导体",
+        "AI应用",
+        "算力基础设施"
+      ],
+      "bearIndustries": [
+        "传统IT服务"
+      ],
+      "heat": 24,
+      "momentum": 18,
+      "_auto": true
+    },
+    {
+      "id": "ap5btn7y",
+      "title": "北汽集团发文称，北汽集团党委书记、董事长张建勇于11月10日率队赴深圳，与华为创始人任正非及华为高层代表会谈，就进一步深化战略合作深入交流。双方表示，享界汽车融合北汽豪华造车经验…",
+      "tag": "人物/任正非",
+      "region": "中国",
+      "concept": "broker",
+      "time": "2026-11-13 09:55",
+      "datetime": "2026-11-13 09:55",
+      "source": "华尔街见闻",
+      "url": "https://wallstreetcn.com/livenews/3199489",
+      "summary": "北汽集团发文称，北汽集团党委书记、董事长张建勇于11月10日率队赴深圳，与华为创始人任正非及华为高层代表会谈，就进一步深化战略合作深入交流。双方表示，享界汽车融合北汽豪华造车经验与华为智能化优势，已取得一定成功，下一步将围绕用户体验持续加大投入，实现差异化突围，共同把享界汽车打造成中国的豪华品牌。目前，享界品牌已率先完成轿车、旅行车、SUV、MPV全领域布局。其中鸿蒙智行首款…",
+      "relatedStocks": [
+        "宽基指数"
+      ],
+      "bullConcepts": [
+        "防御板块"
+      ],
+      "bearConcepts": [
+        "周期股"
+      ],
+      "bullIndustries": [
+        "公用事业"
+      ],
+      "bearIndustries": [
+        "顺周期"
+      ],
+      "heat": 24,
+      "momentum": 18,
+      "_auto": true
+    },
+    {
+      "id": "apss36nv",
+      "title": "马斯克回应黄仁勋辞职：创始人很难被取代",
+      "tag": "人物/马斯克",
+      "region": "全球",
+      "concept": "ai",
+      "time": "2026-11-13 07:25",
+      "datetime": "2026-11-13 07:25",
+      "source": "环球市场播报",
+      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-13/doc-iniypvhm1314346.shtml",
+      "summary": "英伟达创始人黄仁勋周四宣布辞去CEO职位，引发网友热议，特斯拉和SpaceX首席执行官埃隆·马斯克也参与了相关讨论。 一位用户评论称：“对于英伟达的董事会、股东...",
+      "relatedStocks": [
+        "英伟达",
+        "微软",
+        "台积电"
+      ],
+      "bullConcepts": [
+        "AI算力",
+        "半导体",
+        "国产替代"
+      ],
+      "bearConcepts": [
+        "传统软件"
+      ],
+      "bullIndustries": [
+        "半导体",
+        "AI应用",
+        "算力基础设施"
+      ],
+      "bearIndustries": [
+        "传统IT服务"
+      ],
+      "heat": 29,
       "momentum": 18,
       "_auto": true
     },
