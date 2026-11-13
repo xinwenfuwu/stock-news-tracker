@@ -1,56 +1,20 @@
 {
-  "generatedAt": "2026-11-13 20:12",
+  "generatedAt": "2026-11-14 01:39",
   "generatedBy": "GitHub Actions · 多源实时聚合",
   "sourceCount": 5,
-  "autoCount": 5,
+  "autoCount": 8,
   "events": [
     {
-      "id": "ap1soudp2",
-      "title": "神秘交易者在黄仁勋辞职前做空英伟达，赚了2亿美元",
+      "id": "apvti659",
+      "title": "英伟达CEO继任者人选浮现：董事会据悉已接触Arm首席执行官Rene Haas",
       "tag": "人物/黄仁勋",
-      "region": "美国",
-      "concept": "aiCapex",
-      "time": "2026-11-13 19:49",
-      "datetime": "2026-11-13 19:49",
-      "source": "环球市场播报",
-      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-13/doc-iniyqwtz3623425.shtml",
-      "summary": "Macro Risk Advisors（MRA）的专业人士发现了一起异常操作：10月12日，有人在英伟达股票上建立了一系列大幅虚值、将于明年1月到期的看跌期权头寸。",
-      "relatedStocks": [
-        "英伟达",
-        "微软",
-        "台积电"
-      ],
-      "bullConcepts": [
-        "AI算力",
-        "半导体",
-        "国产替代"
-      ],
-      "bearConcepts": [
-        "传统软件"
-      ],
-      "bullIndustries": [
-        "半导体",
-        "AI应用",
-        "算力基础设施"
-      ],
-      "bearIndustries": [
-        "传统IT服务"
-      ],
-      "heat": 24,
-      "momentum": 36,
-      "_auto": true
-    },
-    {
-      "id": "apzjmlf9",
-      "title": "华尔街：市场担忧黄仁勋离职对英伟达合作投资前景影响",
-      "tag": "人物/黄仁勋",
-      "region": "美国",
-      "concept": "aiCapex",
-      "time": "2026-11-13 20:11",
-      "datetime": "2026-11-13 20:11",
+      "region": "全球",
+      "concept": "ai",
+      "time": "2026-11-14 00:58",
+      "datetime": "2026-11-14 00:58",
       "source": "新浪7×24",
-      "url": "https://finance.sina.cn/7x24/2026-11-13/detail-iniyqwtz3633496.d.html",
-      "summary": "【华尔街：市场担忧黄仁勋离职对英伟达合作投资前景影响】高盛分析师James Schneider在黄仁勋辞职后发布报告，维持英伟达“买入”评级，但将目标价从300美元下调至220美元。Schneider预计英伟达会履行所有已宣布的承诺，但认为没有黄仁勋的远见、影响力和号召力，再促成同等规模的多方合作投资将更加困难。他指出，英伟达股价此前相对大盘明显折价，原因之一正是投资者担心，…",
+      "url": "https://finance.sina.cn/7x24/2026-11-14/detail-iniyrprs7773683.d.html",
+      "summary": "【英伟达CEO继任者人选浮现：董事会据悉已接触Arm首席执行官Rene Haas】知情人士透露，英伟达董事会已接触Arm首席执行官Rene Haas，将其列为接替黄仁勋的潜在候选人之一。Haas自2022年起担任软银旗下芯片设计公司Arm的首席执行官，此前曾在英伟达工作约七年，与黄仁勋及英伟达部分董事会成员仍保持密切关系。目前，英伟达正在黄仁勋因私人丑闻辞职后物色新任首席执行…",
       "relatedStocks": [
         "英伟达",
         "微软",
@@ -72,21 +36,93 @@
       "bearIndustries": [
         "传统IT服务"
       ],
-      "heat": 24,
-      "momentum": 36,
+      "heat": 87,
+      "momentum": 66,
       "_auto": true
     },
     {
-      "id": "apdmzokk",
-      "title": "美国总统特朗普在一条12日发布的专访视频中称，他本可以“立即结束”伊朗战事，但应美国的中东盟友请求，他选择延缓对伊朗行动。在美国媒体人斯蒂芬·史密斯当天发布在视频分享平台优兔上的…",
-      "tag": "人物/特朗普",
+      "id": "ap12l1vvi",
+      "title": "市场消息：OpenAI解散其机器人团队。并将相关研究人员重新分配至公司其他部门。OpenAI表示，此举并非放弃机器人业务，而是希望通过通用AI模型加快机器人研发。",
+      "tag": "人物/奥尔特曼",
+      "region": "全球",
+      "concept": "ai",
+      "time": "2026-11-14 01:12",
+      "datetime": "2026-11-14 01:12",
+      "source": "新浪7×24",
+      "url": "https://finance.sina.cn/7x24/2026-11-14/detail-iniyrprt3368040.d.html",
+      "summary": "市场消息：OpenAI解散其机器人团队。并将相关研究人员重新分配至公司其他部门。OpenAI表示，此举并非放弃机器人业务，而是希望通过通用AI模型加快机器人研发。",
+      "relatedStocks": [
+        "英伟达",
+        "微软",
+        "台积电"
+      ],
+      "bullConcepts": [
+        "AI算力",
+        "半导体",
+        "国产替代"
+      ],
+      "bearConcepts": [
+        "传统软件"
+      ],
+      "bullIndustries": [
+        "半导体",
+        "AI应用",
+        "算力基础设施"
+      ],
+      "bearIndustries": [
+        "传统IT服务"
+      ],
+      "heat": 87,
+      "momentum": 76,
+      "_auto": true
+    },
+    {
+      "id": "ap1d1f9rf",
+      "title": "Cerebras首席执行官：过去一年，Cerebras在美国以外开展了多元化的数据中心项目。 英伟达CEO黄仁勋离任后，英伟达有“足够多优秀人才”来“接棒”。",
+      "tag": "人物/黄仁勋",
       "region": "美国",
-      "concept": "usMacro",
-      "time": "2026-11-13 18:05",
-      "datetime": "2026-11-13 18:05",
+      "concept": "aiCapex",
+      "time": "2026-11-14 01:18",
+      "datetime": "2026-11-14 01:18",
       "source": "华尔街见闻",
-      "url": "https://wallstreetcn.com/livenews/3199737",
-      "summary": "美国总统特朗普在一条12日发布的专访视频中称，他本可以“立即结束”伊朗战事，但应美国的中东盟友请求，他选择延缓对伊朗行动。在美国媒体人斯蒂芬·史密斯当天发布在视频分享平台优兔上的一条专访视频中，特朗普说：“我本可以立即结束战事，但应我打算保护的国家请求，我们选择采取一种耗时更长、更加文明的方式。”（央视新闻）",
+      "url": "https://wallstreetcn.com/livenews/3199940",
+      "summary": "Cerebras首席执行官：过去一年，Cerebras在美国以外开展了多元化的数据中心项目。 英伟达CEO黄仁勋离任后，英伟达有“足够多优秀人才”来“接棒”。",
+      "relatedStocks": [
+        "英伟达",
+        "微软",
+        "台积电"
+      ],
+      "bullConcepts": [
+        "AI算力",
+        "半导体",
+        "国产替代"
+      ],
+      "bearConcepts": [
+        "传统软件"
+      ],
+      "bullIndustries": [
+        "半导体",
+        "AI应用",
+        "算力基础设施"
+      ],
+      "bearIndustries": [
+        "传统IT服务"
+      ],
+      "heat": 56,
+      "momentum": 46,
+      "_auto": true
+    },
+    {
+      "id": "ap1iqkhc",
+      "title": "SpaceX表示，星舰第15次飞行正准备最早于11月13日发射，尚待监管批准。",
+      "tag": "人物/马斯克",
+      "region": "全球",
+      "concept": "macro",
+      "time": "2026-11-14 01:04",
+      "datetime": "2026-11-14 01:04",
+      "source": "财联社",
+      "url": "https://www.cls.cn/detail/2534295",
+      "summary": "SpaceX表示，星舰第15次飞行正准备最早于11月13日发射，尚待监管批准。",
       "relatedStocks": [
         "宽基指数"
       ],
@@ -102,21 +138,21 @@
       "bearIndustries": [
         "顺周期"
       ],
-      "heat": 24,
-      "momentum": 18,
+      "heat": 78,
+      "momentum": 41,
       "_auto": true
     },
     {
-      "id": "apjpvy40",
-      "title": "特朗普再次呼吁通过3500亿美元拨款 共和党掌控两院时间所剩无几",
-      "tag": "人物/特朗普",
+      "id": "ap1ljgmdz",
+      "title": "Atom Computing：敲定美国商务部1亿美元研发奖励，以加速容错、公用事业规模的量子计算。",
+      "tag": "人物/普京",
       "region": "美国",
       "concept": "usFinance",
-      "time": "2026-11-13 16:21",
-      "datetime": "2026-11-13 16:21",
-      "source": "环球市场播报",
-      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-13/doc-iniyqsmv0943954.shtml",
-      "summary": "美国总统特朗普周四再次呼吁参议院通过3500亿美元军事拨款法案，共和党在国会维持多数席位的时间已经所剩无几。 特朗普周四在真实社交平台（Truth...",
+      "time": "2026-11-14 01:11",
+      "datetime": "2026-11-14 01:11",
+      "source": "新浪7×24",
+      "url": "https://finance.sina.cn/7x24/2026-11-14/detail-iniyrprr1000818.d.html",
+      "summary": "Atom Computing：敲定美国商务部1亿美元研发奖励，以加速容错、公用事业规模的量子计算。",
       "relatedStocks": [
         "美股科技",
         "黄金"
@@ -136,20 +172,83 @@
         "高杠杆地产"
       ],
       "heat": 24,
-      "momentum": 18,
+      "momentum": 36,
       "_auto": true
     },
     {
-      "id": "apt74d7o",
-      "title": "SpaceX与特斯拉最早或于12月宣布合并",
+      "id": "ap195w72k",
+      "title": "美国上诉法院表示，特朗普政府不能因纽约州商业驾照问题扣留7350万美元公路资金。",
+      "tag": "人物/特朗普",
+      "region": "美国",
+      "concept": "usFinance",
+      "time": "2026-11-14 00:09",
+      "datetime": "2026-11-14 00:09",
+      "source": "财联社",
+      "url": "https://www.cls.cn/detail/2534278",
+      "summary": "美国上诉法院表示，特朗普政府不能因纽约州商业驾照问题扣留7350万美元公路资金。",
+      "relatedStocks": [
+        "美股科技",
+        "黄金"
+      ],
+      "bullConcepts": [
+        "黄金",
+        "防御板块"
+      ],
+      "bearConcepts": [
+        "高估值成长股"
+      ],
+      "bullIndustries": [
+        "银行",
+        "黄金"
+      ],
+      "bearIndustries": [
+        "高杠杆地产"
+      ],
+      "heat": 60,
+      "momentum": 26,
+      "_auto": true
+    },
+    {
+      "id": "ap1a10g8l",
+      "title": "媒体援引三位知情人士报道称，以色列摩萨德情报机构局长罗曼・戈夫曼于周五抵达华盛顿，同特朗普政府高层官员就伊朗局势举行会谈。戈夫曼将与美国中央情报局局长约翰・拉特克利夫会面；他之后…",
+      "tag": "人物/特朗普",
+      "region": "美国",
+      "concept": "usMacro",
+      "time": "2026-11-14 00:23",
+      "datetime": "2026-11-14 00:23",
+      "source": "华尔街见闻",
+      "url": "https://wallstreetcn.com/livenews/3199913",
+      "summary": "媒体援引三位知情人士报道称，以色列摩萨德情报机构局长罗曼・戈夫曼于周五抵达华盛顿，同特朗普政府高层官员就伊朗局势举行会谈。戈夫曼将与美国中央情报局局长约翰・拉特克利夫会面；他之后还将前往迈阿密，会晤白宫特使史蒂夫・威特科夫。",
+      "relatedStocks": [
+        "宽基指数"
+      ],
+      "bullConcepts": [
+        "防御板块"
+      ],
+      "bearConcepts": [
+        "周期股"
+      ],
+      "bullIndustries": [
+        "公用事业"
+      ],
+      "bearIndustries": [
+        "顺周期"
+      ],
+      "heat": 24,
+      "momentum": 26,
+      "_auto": true
+    },
+    {
+      "id": "apfeq810",
+      "title": "德州候任总检察长称将严格审查特斯拉与SpaceX的潜在合并交易",
       "tag": "人物/马斯克",
       "region": "全球",
       "concept": "green",
-      "time": "2026-11-13 17:14",
-      "datetime": "2026-11-13 17:14",
+      "time": "2026-11-13 20:51",
+      "datetime": "2026-11-13 20:51",
       "source": "环球市场播报",
-      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-13/doc-iniyqsna8026749.shtml",
-      "summary": "埃隆・马斯克旗下两大巨头若完成合并，将创下史上最大规模交易。 埃隆・马斯克麾下的太空探索技术公司（SpaceX）与特斯拉，最早可能在下月对外公布合并计划。",
+      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-13/doc-iniyrazw7926622.shtml",
+      "summary": "德克萨斯州候任总检察长Nathan Johnson誓言，将仔细审查马斯克旗下SpaceX与特斯拉任何潜在的合并交易，并警告企业权力过度集中可能带来的风险。",
       "relatedStocks": [
         "特斯拉",
         "比亚迪"
@@ -168,7 +267,7 @@
       "bearIndustries": [
         "传统汽车制造"
       ],
-      "heat": 24,
+      "heat": 42,
       "momentum": 18,
       "_auto": true
     },
