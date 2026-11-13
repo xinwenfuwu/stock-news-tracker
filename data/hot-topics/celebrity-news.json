@@ -1,128 +1,20 @@
 {
-  "generatedAt": "2026-11-14 01:39",
+  "generatedAt": "2026-11-14 07:29",
   "generatedBy": "GitHub Actions · 多源实时聚合",
   "sourceCount": 5,
-  "autoCount": 8,
+  "autoCount": 11,
   "events": [
     {
-      "id": "apvti659",
-      "title": "英伟达CEO继任者人选浮现：董事会据悉已接触Arm首席执行官Rene Haas",
-      "tag": "人物/黄仁勋",
-      "region": "全球",
-      "concept": "ai",
-      "time": "2026-11-14 00:58",
-      "datetime": "2026-11-14 00:58",
-      "source": "新浪7×24",
-      "url": "https://finance.sina.cn/7x24/2026-11-14/detail-iniyrprs7773683.d.html",
-      "summary": "【英伟达CEO继任者人选浮现：董事会据悉已接触Arm首席执行官Rene Haas】知情人士透露，英伟达董事会已接触Arm首席执行官Rene Haas，将其列为接替黄仁勋的潜在候选人之一。Haas自2022年起担任软银旗下芯片设计公司Arm的首席执行官，此前曾在英伟达工作约七年，与黄仁勋及英伟达部分董事会成员仍保持密切关系。目前，英伟达正在黄仁勋因私人丑闻辞职后物色新任首席执行…",
-      "relatedStocks": [
-        "英伟达",
-        "微软",
-        "台积电"
-      ],
-      "bullConcepts": [
-        "AI算力",
-        "半导体",
-        "国产替代"
-      ],
-      "bearConcepts": [
-        "传统软件"
-      ],
-      "bullIndustries": [
-        "半导体",
-        "AI应用",
-        "算力基础设施"
-      ],
-      "bearIndustries": [
-        "传统IT服务"
-      ],
-      "heat": 87,
-      "momentum": 66,
-      "_auto": true
-    },
-    {
-      "id": "ap12l1vvi",
-      "title": "市场消息：OpenAI解散其机器人团队。并将相关研究人员重新分配至公司其他部门。OpenAI表示，此举并非放弃机器人业务，而是希望通过通用AI模型加快机器人研发。",
-      "tag": "人物/奥尔特曼",
-      "region": "全球",
-      "concept": "ai",
-      "time": "2026-11-14 01:12",
-      "datetime": "2026-11-14 01:12",
-      "source": "新浪7×24",
-      "url": "https://finance.sina.cn/7x24/2026-11-14/detail-iniyrprt3368040.d.html",
-      "summary": "市场消息：OpenAI解散其机器人团队。并将相关研究人员重新分配至公司其他部门。OpenAI表示，此举并非放弃机器人业务，而是希望通过通用AI模型加快机器人研发。",
-      "relatedStocks": [
-        "英伟达",
-        "微软",
-        "台积电"
-      ],
-      "bullConcepts": [
-        "AI算力",
-        "半导体",
-        "国产替代"
-      ],
-      "bearConcepts": [
-        "传统软件"
-      ],
-      "bullIndustries": [
-        "半导体",
-        "AI应用",
-        "算力基础设施"
-      ],
-      "bearIndustries": [
-        "传统IT服务"
-      ],
-      "heat": 87,
-      "momentum": 76,
-      "_auto": true
-    },
-    {
-      "id": "ap1d1f9rf",
-      "title": "Cerebras首席执行官：过去一年，Cerebras在美国以外开展了多元化的数据中心项目。 英伟达CEO黄仁勋离任后，英伟达有“足够多优秀人才”来“接棒”。",
-      "tag": "人物/黄仁勋",
-      "region": "美国",
-      "concept": "aiCapex",
-      "time": "2026-11-14 01:18",
-      "datetime": "2026-11-14 01:18",
-      "source": "华尔街见闻",
-      "url": "https://wallstreetcn.com/livenews/3199940",
-      "summary": "Cerebras首席执行官：过去一年，Cerebras在美国以外开展了多元化的数据中心项目。 英伟达CEO黄仁勋离任后，英伟达有“足够多优秀人才”来“接棒”。",
-      "relatedStocks": [
-        "英伟达",
-        "微软",
-        "台积电"
-      ],
-      "bullConcepts": [
-        "AI算力",
-        "半导体",
-        "国产替代"
-      ],
-      "bearConcepts": [
-        "传统软件"
-      ],
-      "bullIndustries": [
-        "半导体",
-        "AI应用",
-        "算力基础设施"
-      ],
-      "bearIndustries": [
-        "传统IT服务"
-      ],
-      "heat": 56,
-      "momentum": 46,
-      "_auto": true
-    },
-    {
-      "id": "ap1iqkhc",
-      "title": "SpaceX表示，星舰第15次飞行正准备最早于11月13日发射，尚待监管批准。",
+      "id": "ap1deqb1i",
+      "title": "SpaceX表示，超重型助推器已在海上着陆，空中捕获尝试被取消。SpaceX盘后下跌1.5%。",
       "tag": "人物/马斯克",
       "region": "全球",
       "concept": "macro",
-      "time": "2026-11-14 01:04",
-      "datetime": "2026-11-14 01:04",
+      "time": "2026-11-14 06:54",
+      "datetime": "2026-11-14 06:54",
       "source": "财联社",
-      "url": "https://www.cls.cn/detail/2534295",
-      "summary": "SpaceX表示，星舰第15次飞行正准备最早于11月13日发射，尚待监管批准。",
+      "url": "https://www.cls.cn/detail/2534354",
+      "summary": "SpaceX表示，超重型助推器已在海上着陆，空中捕获尝试被取消。SpaceX盘后下跌1.5%。",
       "relatedStocks": [
         "宽基指数"
       ],
@@ -138,87 +30,327 @@
       "bearIndustries": [
         "顺周期"
       ],
-      "heat": 78,
-      "momentum": 41,
+      "heat": 87,
+      "momentum": 86,
       "_auto": true
     },
     {
-      "id": "ap1ljgmdz",
-      "title": "Atom Computing：敲定美国商务部1亿美元研发奖励，以加速容错、公用事业规模的量子计算。",
-      "tag": "人物/普京",
-      "region": "美国",
-      "concept": "usFinance",
-      "time": "2026-11-14 01:11",
-      "datetime": "2026-11-14 01:11",
+      "id": "apji6f0k",
+      "title": "SpaceX：热分离成功！星舰的猛禽发动机已点火，超重型助推器正返回基地，准备进行捕获。",
+      "tag": "人物/马斯克",
+      "region": "全球",
+      "concept": "macro",
+      "time": "2026-11-14 06:53",
+      "datetime": "2026-11-14 06:53",
       "source": "新浪7×24",
-      "url": "https://finance.sina.cn/7x24/2026-11-14/detail-iniyrprr1000818.d.html",
-      "summary": "Atom Computing：敲定美国商务部1亿美元研发奖励，以加速容错、公用事业规模的量子计算。",
+      "url": "https://finance.sina.cn/7x24/2026-11-14/detail-iniyryfn7605642.d.html",
+      "summary": "SpaceX：热分离成功！星舰的猛禽发动机已点火，超重型助推器正返回基地，准备进行捕获。",
       "relatedStocks": [
-        "美股科技",
-        "黄金"
+        "宽基指数"
       ],
       "bullConcepts": [
-        "黄金",
         "防御板块"
       ],
       "bearConcepts": [
-        "高估值成长股"
+        "周期股"
       ],
       "bullIndustries": [
-        "银行",
-        "黄金"
+        "公用事业"
       ],
       "bearIndustries": [
-        "高杠杆地产"
+        "顺周期"
+      ],
+      "heat": 87,
+      "momentum": 86,
+      "_auto": true
+    },
+    {
+      "id": "ap1430nai",
+      "title": "黄仁勋风波，Anthropic IPO承压？",
+      "tag": "人物/黄仁勋",
+      "region": "全球",
+      "concept": "ai",
+      "time": "2026-11-14 07:26",
+      "datetime": "2026-11-14 07:26",
+      "source": "环球市场播报",
+      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-14/doc-iniyryfp3208766.shtml",
+      "summary": "Anthropic即将启动本轮热度极高的IPO。在局势突变之下，这场上市恰逢行业失去一位极具影响力、擅长商业游说的核心人物一周之后。",
+      "relatedStocks": [
+        "英伟达",
+        "微软",
+        "台积电"
+      ],
+      "bullConcepts": [
+        "AI算力",
+        "半导体",
+        "国产替代"
+      ],
+      "bearConcepts": [
+        "传统软件"
+      ],
+      "bullIndustries": [
+        "半导体",
+        "AI应用",
+        "算力基础设施"
+      ],
+      "bearIndustries": [
+        "传统IT服务"
+      ],
+      "heat": 69,
+      "momentum": 46,
+      "_auto": true
+    },
+    {
+      "id": "appyu90j",
+      "title": "黄仁勋风波持续发酵 英伟达创逾18个月来最差单周表现",
+      "tag": "人物/黄仁勋",
+      "region": "美国",
+      "concept": "aiCapex",
+      "time": "2026-11-14 06:49",
+      "datetime": "2026-11-14 06:49",
+      "source": "环球市场播报",
+      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-14/doc-iniyryfm0827643.shtml",
+      "summary": "英伟达股价录得逾18个月来最差单周表现，这家芯片巨头在黄仁勋离职后持续承压。 英伟达周五下跌2%，收于162.85美元，过去五个交易日累计下跌13%...",
+      "relatedStocks": [
+        "英伟达",
+        "微软",
+        "台积电"
+      ],
+      "bullConcepts": [
+        "AI算力",
+        "半导体",
+        "国产替代"
+      ],
+      "bearConcepts": [
+        "传统软件"
+      ],
+      "bullIndustries": [
+        "半导体",
+        "AI应用",
+        "算力基础设施"
+      ],
+      "bearIndustries": [
+        "传统IT服务"
+      ],
+      "heat": 47,
+      "momentum": 36,
+      "_auto": true
+    },
+    {
+      "id": "app17fvc",
+      "title": "美国总统特朗普：我正在与共和党与民主党人合作，共同推进《电影、电视和娱乐振兴法案》。推动这件事、把娱乐产业带回美国所获得的支持和受欢迎程度令人难以置信！好莱坞以及许多其他地方，几…",
+      "tag": "人物/特朗普",
+      "region": "美国",
+      "concept": "usMacro",
+      "time": "2026-11-14 06:57",
+      "datetime": "2026-11-14 06:57",
+      "source": "新浪7×24",
+      "url": "https://finance.sina.cn/7x24/2026-11-14/detail-iniyryfm0830856.d.html",
+      "summary": "美国总统特朗普：我正在与共和党与民主党人合作，共同推进《电影、电视和娱乐振兴法案》。推动这件事、把娱乐产业带回美国所获得的支持和受欢迎程度令人难以置信！好莱坞以及许多其他地方，几乎被其他国家提供的税收优惠和其他政策“掏空”了。每个人都对电影和电视产业感受强烈，我也是，我们都想拯救它。它是美国制造的，必须留在美国。娱乐产业已大量转移到加拿大、英国、澳大利亚和其他国家，但演员、制…",
+      "relatedStocks": [
+        "宽基指数"
+      ],
+      "bullConcepts": [
+        "防御板块"
+      ],
+      "bearConcepts": [
+        "周期股"
+      ],
+      "bullIndustries": [
+        "公用事业"
+      ],
+      "bearIndustries": [
+        "顺周期"
+      ],
+      "heat": 29,
+      "momentum": 26,
+      "_auto": true
+    },
+    {
+      "id": "apsp1bgg",
+      "title": "马克龙将召集科技企业会议 推动欧洲科技自主",
+      "tag": "人物/马克龙",
+      "region": "欧洲",
+      "concept": "ai",
+      "time": "2026-11-14 07:25",
+      "datetime": "2026-11-14 07:25",
+      "source": "财联社",
+      "url": "https://www.cls.cn/detail/2534361",
+      "summary": "【马克龙将召集科技企业会议 推动欧洲科技自主】财联社11月14日电，法国总统马克龙当地时间11月13日在社交媒体宣布，他将于下月与荷兰首相耶滕共同在巴黎召集科技企业负责人举行会议，推动政府与行业加强合作，提升欧洲科技自主能力。马克龙谈及当天在爱尔兰首都都柏林举行的欧盟领导人非正式会议时说：“我们的独立自主不能外包，必须在欧洲本土建立起来。”人工智能是当天欧盟领导人非正式会议的…",
+      "relatedStocks": [
+        "英伟达",
+        "微软",
+        "台积电"
+      ],
+      "bullConcepts": [
+        "AI算力",
+        "半导体",
+        "国产替代"
+      ],
+      "bearConcepts": [
+        "传统软件"
+      ],
+      "bullIndustries": [
+        "半导体",
+        "AI应用",
+        "算力基础设施"
+      ],
+      "bearIndustries": [
+        "传统IT服务"
       ],
       "heat": 24,
       "momentum": 36,
       "_auto": true
     },
     {
-      "id": "ap195w72k",
-      "title": "美国上诉法院表示，特朗普政府不能因纽约州商业驾照问题扣留7350万美元公路资金。",
-      "tag": "人物/特朗普",
+      "id": "ap9vsxgr",
+      "title": "11月14日外盘头条：美国联邦航空管理局发布全国范围地面停飞指令 OpenAI撤销独立机器人研究团队",
+      "tag": "人物/奥尔特曼",
       "region": "美国",
-      "concept": "usFinance",
-      "time": "2026-11-14 00:09",
-      "datetime": "2026-11-14 00:09",
-      "source": "财联社",
-      "url": "https://www.cls.cn/detail/2534278",
-      "summary": "美国上诉法院表示，特朗普政府不能因纽约州商业驾照问题扣留7350万美元公路资金。",
+      "concept": "aiCapex",
+      "time": "2026-11-14 06:10",
+      "datetime": "2026-11-14 06:10",
+      "source": "环球市场播报",
+      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-14/doc-iniyryfm0815827.shtml",
+      "summary": "全球财经媒体昨夜今晨共同关注的头条新闻主要有： 1、美国联邦航空管理局发布全国范围地面停飞指令 2、美联储12月加息基本锁定 市场焦点转向明年1月 3...",
       "relatedStocks": [
-        "美股科技",
-        "黄金"
+        "英伟达",
+        "微软",
+        "台积电"
       ],
       "bullConcepts": [
-        "黄金",
-        "防御板块"
+        "AI算力",
+        "半导体",
+        "国产替代"
       ],
       "bearConcepts": [
-        "高估值成长股"
+        "传统软件"
       ],
       "bullIndustries": [
-        "银行",
-        "黄金"
+        "半导体",
+        "AI应用",
+        "算力基础设施"
       ],
       "bearIndustries": [
-        "高杠杆地产"
+        "传统IT服务"
+      ],
+      "heat": 100,
+      "momentum": 26,
+      "_auto": true
+    },
+    {
+      "id": "ap10lzo6w",
+      "title": "冲刺史上最大IPO之际，阿莫代伊对谈戴蒙：算力、竞争与AI未来",
+      "tag": "人物/戴蒙",
+      "region": "美国",
+      "concept": "aiCapex",
+      "time": "2026-11-14 03:02",
+      "datetime": "2026-11-14 03:02",
+      "source": "市场资讯",
+      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-14/doc-iniyryfn7600802.shtml",
+      "summary": "来源：财联社 当地时间周五，Anthropic联合创始人达里奥·阿莫代伊到访纽约，与“华尔街一哥”、摩根大通掌门杰米·戴蒙进行公开对谈，为公司下周冲刺“史上最大IPO”造势。",
+      "relatedStocks": [
+        "英伟达",
+        "微软",
+        "台积电"
+      ],
+      "bullConcepts": [
+        "AI算力",
+        "半导体",
+        "国产替代"
+      ],
+      "bearConcepts": [
+        "传统软件"
+      ],
+      "bullIndustries": [
+        "半导体",
+        "AI应用",
+        "算力基础设施"
+      ],
+      "bearIndustries": [
+        "传统IT服务"
+      ],
+      "heat": 42,
+      "momentum": 18,
+      "_auto": true
+    },
+    {
+      "id": "ap184vghm",
+      "title": "美国国土安全部（DHS）部长Mullin：没有迹象表明，是威胁导致美国联邦航空管理局停飞。 停飞的原因是电信中断。 交通部长达菲就地面停飞一事与总统特朗普进行了交谈。 解决停飞问…",
+      "tag": "人物/特朗普",
+      "region": "美国",
+      "concept": "aiCapex",
+      "time": "2026-11-14 06:02",
+      "datetime": "2026-11-14 06:02",
+      "source": "华尔街见闻",
+      "url": "https://wallstreetcn.com/livenews/3200038",
+      "summary": "美国国土安全部（DHS）部长Mullin：没有迹象表明，是威胁导致美国联邦航空管理局停飞。 停飞的原因是电信中断。 交通部长达菲就地面停飞一事与总统特朗普进行了交谈。 解决停飞问题需要一些时间。 我们还没有讨论停飞要持续多长时间。 （谈与人工智能的潜在关联）不排除任何可能性。 公众无需恐慌。",
+      "relatedStocks": [
+        "英伟达",
+        "微软",
+        "台积电"
+      ],
+      "bullConcepts": [
+        "AI算力",
+        "半导体",
+        "国产替代"
+      ],
+      "bearConcepts": [
+        "传统软件"
+      ],
+      "bullIndustries": [
+        "半导体",
+        "AI应用",
+        "算力基础设施"
+      ],
+      "bearIndustries": [
+        "传统IT服务"
       ],
       "heat": 60,
       "momentum": 26,
       "_auto": true
     },
     {
-      "id": "ap1a10g8l",
-      "title": "媒体援引三位知情人士报道称，以色列摩萨德情报机构局长罗曼・戈夫曼于周五抵达华盛顿，同特朗普政府高层官员就伊朗局势举行会谈。戈夫曼将与美国中央情报局局长约翰・拉特克利夫会面；他之后…",
-      "tag": "人物/特朗普",
-      "region": "美国",
-      "concept": "usMacro",
-      "time": "2026-11-14 00:23",
-      "datetime": "2026-11-14 00:23",
+      "id": "apukp0n8",
+      "title": "13F报告显示：Soros三季度建仓SK海力士ADR等股票。 增持英特尔、Meta Platforms等。 清仓KKR、ServiceNOW等。",
+      "tag": "人物/索罗斯",
+      "region": "全球",
+      "concept": "macro",
+      "time": "2026-11-14 05:09",
+      "datetime": "2026-11-14 05:09",
       "source": "华尔街见闻",
-      "url": "https://wallstreetcn.com/livenews/3199913",
-      "summary": "媒体援引三位知情人士报道称，以色列摩萨德情报机构局长罗曼・戈夫曼于周五抵达华盛顿，同特朗普政府高层官员就伊朗局势举行会谈。戈夫曼将与美国中央情报局局长约翰・拉特克利夫会面；他之后还将前往迈阿密，会晤白宫特使史蒂夫・威特科夫。",
+      "url": "https://wallstreetcn.com/livenews/3200018",
+      "summary": "13F报告显示：Soros三季度建仓SK海力士ADR等股票。 增持英特尔、Meta Platforms等。 清仓KKR、ServiceNOW等。",
+      "relatedStocks": [
+        "宽基指数"
+      ],
+      "bullConcepts": [
+        "防御板块"
+      ],
+      "bearConcepts": [
+        "周期股"
+      ],
+      "bullIndustries": [
+        "公用事业"
+      ],
+      "bearIndustries": [
+        "顺周期"
+      ],
+      "heat": 38,
+      "momentum": 18,
+      "_auto": true
+    },
+    {
+      "id": "ap1b91g79",
+      "title": "视频丨泽连斯基称乌军使用“星盾”再遭限速",
+      "tag": "人物/泽连斯基",
+      "region": "全球",
+      "concept": "macro",
+      "time": "2026-11-13 23:16",
+      "datetime": "2026-11-13 23:16",
+      "source": "央视",
+      "url": "https://finance.sina.com.cn/jjxw/2026-11-13/doc-iniyrprt3367158.shtml",
+      "summary": "乌克兰总统泽连斯基12日说，连日来，乌军使用的“星盾”卫星通信系统运行出现“重大中断”，导致乌军拦截俄罗斯无人机的难度大幅增加。",
       "relatedStocks": [
         "宽基指数"
       ],
@@ -235,39 +367,6 @@
         "顺周期"
       ],
       "heat": 24,
-      "momentum": 26,
-      "_auto": true
-    },
-    {
-      "id": "apfeq810",
-      "title": "德州候任总检察长称将严格审查特斯拉与SpaceX的潜在合并交易",
-      "tag": "人物/马斯克",
-      "region": "全球",
-      "concept": "green",
-      "time": "2026-11-13 20:51",
-      "datetime": "2026-11-13 20:51",
-      "source": "环球市场播报",
-      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-13/doc-iniyrazw7926622.shtml",
-      "summary": "德克萨斯州候任总检察长Nathan Johnson誓言，将仔细审查马斯克旗下SpaceX与特斯拉任何潜在的合并交易，并警告企业权力过度集中可能带来的风险。",
-      "relatedStocks": [
-        "特斯拉",
-        "比亚迪"
-      ],
-      "bullConcepts": [
-        "智能驾驶",
-        "动力电池"
-      ],
-      "bearConcepts": [
-        "传统车企"
-      ],
-      "bullIndustries": [
-        "智能驾驶",
-        "锂电池"
-      ],
-      "bearIndustries": [
-        "传统汽车制造"
-      ],
-      "heat": 42,
       "momentum": 18,
       "_auto": true
     },
