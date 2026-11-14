@@ -1,53 +1,20 @@
 {
-  "generatedAt": "2026-11-14 07:29",
+  "generatedAt": "2026-11-14 14:00",
   "generatedBy": "GitHub Actions · 多源实时聚合",
-  "sourceCount": 5,
+  "sourceCount": 4,
   "autoCount": 18,
   "events": [
     {
-      "id": "abjs2zq7",
-      "title": "马斯克旗下太空探索公SpaceX宣布，超重型助推器在近海着陆，发生爆炸，半空中捕获任务取消。 该公司股价美股盘后跌1.5%。",
-      "tag": "金融/宏观",
+      "id": "ab6dses1",
+      "title": "据美联社报道，美国总统特朗普计划下周访问亚洲时带上马斯克。匿名政府官员透露，作为SpaceX和特斯拉的掌门人，马斯克在经济和国家安全方面拥有重要利益，这使他成为特朗普的宝贵顾问。…",
+      "tag": "科技/AI",
       "region": "美国",
-      "concept": "usFinance",
-      "time": "2026-11-14 06:54",
-      "datetime": "2026-11-14 06:54",
+      "concept": "aiCapex",
+      "time": "2026-11-14 13:23",
+      "datetime": "2026-11-14 13:23",
       "source": "华尔街见闻",
-      "url": "https://wallstreetcn.com/livenews/3200050",
-      "summary": "马斯克旗下太空探索公SpaceX宣布，超重型助推器在近海着陆，发生爆炸，半空中捕获任务取消。 该公司股价美股盘后跌1.5%。",
-      "relatedStocks": [
-        "美股科技",
-        "黄金"
-      ],
-      "bullConcepts": [
-        "黄金",
-        "防御板块"
-      ],
-      "bearConcepts": [
-        "高估值成长股"
-      ],
-      "bullIndustries": [
-        "银行",
-        "黄金"
-      ],
-      "bearIndustries": [
-        "高杠杆地产"
-      ],
-      "heat": 87,
-      "momentum": 86,
-      "_auto": true
-    },
-    {
-      "id": "abjp8nud",
-      "title": "分析师：英伟达风波给Anthropic IPO带来压力",
-      "tag": "科技/AI",
-      "region": "美国",
-      "concept": "aiCapex",
-      "time": "2026-11-14 07:24",
-      "datetime": "2026-11-14 07:24",
-      "source": "新浪7×24",
-      "url": "https://finance.sina.cn/7x24/2026-11-14/detail-iniyryfm0845886.d.html",
-      "summary": "【分析师：英伟达风波给Anthropic IPO带来压力】投资者与分析师表示，尽管英伟达这场风波大概率不会冲击Anthropic核心业务，但会影响市场对AI板块的整体叙事。 西港研究伙伴公司分析师杰伊·戈德堡是华尔街少数给出英伟达卖出评级的分析师之一，他认为黄仁勋离职不会叫停本次IPO。“他们会顶着英伟达财报电话会的压力上市，我认为不会因此搁置。这是规模巨大的IPO，背后投资…",
+      "url": "https://wallstreetcn.com/livenews/3200107",
+      "summary": "据美联社报道，美国总统特朗普计划下周访问亚洲时带上马斯克。匿名政府官员透露，作为SpaceX和特斯拉的掌门人，马斯克在经济和国家安全方面拥有重要利益，这使他成为特朗普的宝贵顾问。官员还透露，特朗普并不打算提及黄仁勋相关事件，美国政府认为英伟达事件不会对此次访问产生任何影响。",
       "relatedStocks": [
         "英伟达",
         "微软",
@@ -69,21 +36,21 @@
       "bearIndustries": [
         "传统IT服务"
       ],
-      "heat": 74,
-      "momentum": 46,
+      "heat": 29,
+      "momentum": 26,
       "_auto": true
     },
     {
-      "id": "abpyu90j",
-      "title": "黄仁勋风波持续发酵 英伟达创逾18个月来最差单周表现",
+      "id": "ab36h3l2",
+      "title": "老黄离职后，“大空头”加码做空科技股！警告AI热潮或陷入“牛市陷阱”",
       "tag": "科技/AI",
       "region": "美国",
       "concept": "aiCapex",
-      "time": "2026-11-14 06:49",
-      "datetime": "2026-11-14 06:49",
-      "source": "环球市场播报",
-      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-14/doc-iniyryfm0827643.shtml",
-      "summary": "英伟达股价录得逾18个月来最差单周表现，这家芯片巨头在黄仁勋离职后持续承压。 英伟达周五下跌2%，收于162.85美元，过去五个交易日累计下跌13%...",
+      "time": "2026-11-14 13:45",
+      "datetime": "2026-11-14 13:45",
+      "source": "市场资讯",
+      "url": "https://finance.sina.com.cn/stock/hkstock/hkstocknews/2026-11-14/doc-iniysrcf2969234.shtml",
+      "summary": "本文转自“华尔街见闻” 作者：张雅琦 英伟达（NVDA.US）CEO黄仁勋的离职令科技股前景蒙上阴影，著名空头Michael Burry借势加码做空押注...",
       "relatedStocks": [
         "英伟达",
         "微软",
@@ -105,21 +72,21 @@
       "bearIndustries": [
         "传统IT服务"
       ],
-      "heat": 47,
+      "heat": 29,
       "momentum": 36,
       "_auto": true
     },
     {
-      "id": "ab20mvph",
-      "title": "美国联邦航空管理局（FAA）的地面停飞命令似乎并非网络攻击所至。（CNN）",
+      "id": "ab23n6iy",
+      "title": "据美国方面当地时间13日消息，一名知情人士表示，美国联邦调查局认为，影响美国空中交通管制的通信问题并非由网络攻击或犯罪行为所致。当前调查的一个方向是此次故障是否由软件更新引发。（…",
       "tag": "宏观/综合",
       "region": "美国",
       "concept": "usMacro",
-      "time": "2026-11-14 05:50",
-      "datetime": "2026-11-14 05:50",
+      "time": "2026-11-14 08:33",
+      "datetime": "2026-11-14 08:33",
       "source": "华尔街见闻",
-      "url": "https://wallstreetcn.com/livenews/3200032",
-      "summary": "美国联邦航空管理局（FAA）的地面停飞命令似乎并非网络攻击所至。（CNN）",
+      "url": "https://wallstreetcn.com/livenews/3200065",
+      "summary": "据美国方面当地时间13日消息，一名知情人士表示，美国联邦调查局认为，影响美国空中交通管制的通信问题并非由网络攻击或犯罪行为所致。当前调查的一个方向是此次故障是否由软件更新引发。（央视新闻）",
       "relatedStocks": [
         "宽基指数"
       ],
@@ -135,125 +102,21 @@
       "bearIndustries": [
         "顺周期"
       ],
-      "heat": 100,
-      "momentum": 51,
+      "heat": 51,
+      "momentum": 18,
       "_auto": true
     },
     {
-      "id": "ab1q39xl9",
-      "title": "周鸿祎谈黄仁勋卸任：需要关注的不是他的个人去留",
-      "tag": "科技/AI",
-      "region": "美国",
-      "concept": "aiCapex",
-      "time": "2026-11-14 07:21",
-      "datetime": "2026-11-14 07:21",
-      "source": "新浪7×24",
-      "url": "https://finance.sina.cn/7x24/2026-11-14/detail-iniyryff0546275.d.html",
-      "summary": "【周鸿祎谈黄仁勋卸任：需要关注的不是他的个人去留】11月13日，360创始人周鸿祎发布视频，谈及黄仁勋卸任英伟达CEO对中国AI产业的影响。他表示，黄仁勋离职后，真正值得关注的不是其个人去留，而是美国未来将如何对待中国AI产业。",
-      "relatedStocks": [
-        "英伟达",
-        "微软",
-        "台积电"
-      ],
-      "bullConcepts": [
-        "AI算力",
-        "半导体",
-        "国产替代"
-      ],
-      "bearConcepts": [
-        "传统软件"
-      ],
-      "bullIndustries": [
-        "半导体",
-        "AI应用",
-        "算力基础设施"
-      ],
-      "bearIndustries": [
-        "传统IT服务"
-      ],
-      "heat": 24,
-      "momentum": 36,
-      "_auto": true
-    },
-    {
-      "id": "abd9elpk",
-      "title": "埃及、土耳其和卡塔尔情报部门负责人讨论加沙停火",
-      "tag": "地缘/政治",
-      "region": "全球",
-      "concept": "macro",
-      "time": "2026-11-14 07:13",
-      "datetime": "2026-11-14 07:13",
-      "source": "财联社",
-      "url": "https://www.cls.cn/detail/2534359",
-      "summary": "【埃及、土耳其和卡塔尔情报部门负责人讨论加沙停火】财联社11月14日电，据埃及中东通讯社13日报道，埃及、土耳其和卡塔尔三国情报部门负责人当天在开罗举行三方会议，讨论加沙地带局势最新进展。报道说，三方同意继续落实停火协议第一阶段安排，遵守协议有关条款，增加人道主义援助，以应对恶劣天气带来的影响。三方还呼吁以色列持续违反停火协议的行为立即停止，敦促有关方面不再拖延，采取切实措施…",
-      "relatedStocks": [
-        "军工",
-        "黄金"
-      ],
-      "bullConcepts": [
-        "军工",
-        "避险资产"
-      ],
-      "bearConcepts": [
-        "风险资产"
-      ],
-      "bullIndustries": [
-        "军工",
-        "黄金"
-      ],
-      "bearIndustries": [
-        "航空",
-        "旅游"
-      ],
-      "heat": 24,
-      "momentum": 36,
-      "_auto": true
-    },
-    {
-      "id": "ab1i5w9dr",
-      "title": "当地时间13日晚，也门胡塞武装发布消息称，通过无人机和导弹袭击了沙特主导的联军和也门政府军位于亚丁拉斯阿巴斯地区的一座军火库。此外，胡塞武装称使用多枚弹道导弹，袭击了沙特主导的联…",
-      "tag": "地缘/政治",
-      "region": "全球",
-      "concept": "macro",
-      "time": "2026-11-14 06:13",
-      "datetime": "2026-11-14 06:13",
-      "source": "华尔街见闻",
-      "url": "https://wallstreetcn.com/livenews/3200042",
-      "summary": "当地时间13日晚，也门胡塞武装发布消息称，通过无人机和导弹袭击了沙特主导的联军和也门政府军位于亚丁拉斯阿巴斯地区的一座军火库。此外，胡塞武装称使用多枚弹道导弹，袭击了沙特主导的联军位于也门南部拉赫季省的军事集结点。胡塞武装称，此次打击直接命中目标，造成大量人员伤亡。(央视)",
-      "relatedStocks": [
-        "军工",
-        "黄金"
-      ],
-      "bullConcepts": [
-        "军工",
-        "避险资产"
-      ],
-      "bearConcepts": [
-        "风险资产"
-      ],
-      "bullIndustries": [
-        "军工",
-        "黄金"
-      ],
-      "bearIndustries": [
-        "航空",
-        "旅游"
-      ],
-      "heat": 47,
-      "momentum": 26,
-      "_auto": true
-    },
-    {
-      "id": "absw7caw",
-      "title": "英伟达回应CEO继任传闻 称尚未与任何潜在候选人正式接触",
+      "id": "ab1c4seig",
+      "title": "英伟达淡化CEO继任者传闻：尚未正式接触任何潜在人选，称一切猜测“为时过早”",
       "tag": "科技/AI",
       "region": "全球",
       "concept": "ai",
-      "time": "2026-11-14 05:13",
-      "datetime": "2026-11-14 05:13",
-      "source": "环球市场播报",
-      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-14/doc-iniyrtxi0633268.shtml",
-      "summary": "英伟达平息了有关公司已开始接触潜在CEO候选人的猜测，称仍在物色猎头公司来协助寻找接替黄仁勋的人选。 “我们尚未正式接触任何潜在候选人...",
+      "time": "2026-11-14 08:28",
+      "datetime": "2026-11-14 08:28",
+      "source": "市场资讯",
+      "url": "https://finance.sina.com.cn/stock/hkstock/ggscyd/2026-11-14/doc-iniysepc0445992.shtml",
+      "summary": "来源：智通财经网 英伟达（NVDA.US）淡化了有关该公司已在接触潜在首席执行官人选的猜测，称其仍在筛选一家猎头公司来寻找被罢免的领导人黄仁勋的继任者。",
       "relatedStocks": [
         "英伟达",
         "微软",
@@ -275,147 +138,7 @@
       "bearIndustries": [
         "传统IT服务"
       ],
-      "heat": 60,
-      "momentum": 18,
-      "_auto": true
-    },
-    {
-      "id": "ab10dya5l",
-      "title": "当地时间14日凌晨，伊朗伊斯兰革命卫队海军表示，不久前有两艘油轮在霍尔木兹海峡试图通过未经伊朗授权的航线航行，其间关闭了雷达和定位系统，随后触碰水雷，引发爆炸与火灾。伊朗伊斯兰革…",
-      "tag": "地缘/政治",
-      "region": "全球",
-      "concept": "macro",
-      "time": "2026-11-14 04:56",
-      "datetime": "2026-11-14 04:56",
-      "source": "华尔街见闻",
-      "url": "https://wallstreetcn.com/livenews/3200007",
-      "summary": "当地时间14日凌晨，伊朗伊斯兰革命卫队海军表示，不久前有两艘油轮在霍尔木兹海峡试图通过未经伊朗授权的航线航行，其间关闭了雷达和定位系统，随后触碰水雷，引发爆炸与火灾。伊朗伊斯兰革命卫队海军警告称，若未经卫队协调擅自通过霍尔木兹海峡，并无视伊朗为该水道制定的相关规定，就可能招致此类后果。（央视）",
-      "relatedStocks": [
-        "军工",
-        "黄金"
-      ],
-      "bullConcepts": [
-        "军工",
-        "避险资产"
-      ],
-      "bearConcepts": [
-        "风险资产"
-      ],
-      "bullIndustries": [
-        "军工",
-        "黄金"
-      ],
-      "bearIndustries": [
-        "航空",
-        "旅游"
-      ],
-      "heat": 38,
-      "momentum": 18,
-      "_auto": true
-    },
-    {
-      "id": "abhva9a8",
-      "title": "也门胡塞武装表示，其袭击了沙特阿拉伯东西输油管道的泵站。",
-      "tag": "地缘/政治",
-      "region": "全球",
-      "concept": "macro",
-      "time": "2026-11-14 04:36",
-      "datetime": "2026-11-14 04:36",
-      "source": "财联社",
-      "url": "https://www.cls.cn/detail/2534325",
-      "summary": "也门胡塞武装表示，其袭击了沙特阿拉伯东西输油管道的泵站。",
-      "relatedStocks": [
-        "军工",
-        "黄金"
-      ],
-      "bullConcepts": [
-        "军工",
-        "避险资产"
-      ],
-      "bearConcepts": [
-        "风险资产"
-      ],
-      "bullIndustries": [
-        "军工",
-        "黄金"
-      ],
-      "bearIndustries": [
-        "航空",
-        "旅游"
-      ],
-      "heat": 65,
-      "momentum": 18,
-      "_auto": true
-    },
-    {
-      "id": "abtootvw",
-      "title": "“大空头”加码纳指100看跌期权、增持半导体ETF空单，英伟达管理层动荡成诱因",
-      "tag": "科技/AI",
-      "region": "美国",
-      "concept": "aiCapex",
-      "time": "2026-11-13 20:16",
-      "datetime": "2026-11-13 20:16",
-      "source": "环球市场播报",
-      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-13/doc-iniyqwtt0975499.shtml",
-      "summary": "“大空头”迈克尔・伯里加大了对纳斯达克100指数以及半导体板块的看跌押注，理由是黄仁勋卸任英伟达CEO之后，他对英伟达在AI基础设施市场的影响力感到担忧。",
-      "relatedStocks": [
-        "英伟达",
-        "微软",
-        "台积电"
-      ],
-      "bullConcepts": [
-        "AI算力",
-        "半导体",
-        "国产替代"
-      ],
-      "bearConcepts": [
-        "传统软件"
-      ],
-      "bullIndustries": [
-        "半导体",
-        "AI应用",
-        "算力基础设施"
-      ],
-      "bearIndustries": [
-        "传统IT服务"
-      ],
-      "heat": 38,
-      "momentum": 18,
-      "_auto": true
-    },
-    {
-      "id": "ab6gjcps",
-      "title": "投资者消化CEO离职冲击，英伟达股价下挫3.6%，整个芯片板块普跌",
-      "tag": "科技/AI",
-      "region": "美国",
-      "concept": "aiCapex",
-      "time": "2026-11-13 23:36",
-      "datetime": "2026-11-13 23:36",
-      "source": "环球市场播报",
-      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-13/doc-iniyriiv3466622.shtml",
-      "summary": "受多起绯闻相关报道影响，AI 芯片巨头英伟达 CEO 黄仁勋离职，投资者对此消息进行消化，英伟达周五股价下跌超 3%。 该股本周料将收跌，市值跌破 4 万亿美元关口。",
-      "relatedStocks": [
-        "英伟达",
-        "微软",
-        "台积电"
-      ],
-      "bullConcepts": [
-        "AI算力",
-        "半导体",
-        "国产替代"
-      ],
-      "bearConcepts": [
-        "传统软件"
-      ],
-      "bullIndustries": [
-        "半导体",
-        "AI应用",
-        "算力基础设施"
-      ],
-      "bearIndustries": [
-        "传统IT服务"
-      ],
-      "heat": 56,
+      "heat": 51,
       "momentum": 18,
       "_auto": true
     },
@@ -451,40 +174,143 @@
       "bearIndustries": [
         "传统IT服务"
       ],
-      "heat": 38,
+      "heat": 42,
       "momentum": 18,
       "_auto": true
     },
     {
-      "id": "abbgs3sq",
-      "title": "美国商品期货交易委员会（CFTC）主席塞利格（Michael Selig）周五表示，该委员会正计划对美国的铝价机制进行全面改革，并探讨新合约能否提高市场透明度。受中东战争引发的供…",
-      "tag": "金融/宏观",
-      "region": "美国",
-      "concept": "usFinance",
-      "time": "2026-11-14 04:50",
-      "datetime": "2026-11-14 04:50",
+      "id": "ab1cdku37",
+      "title": "当地时间11月13日晚，由于通信故障引发安全隐患，全美各地航班一度停飞超过四小时。交通部长肖恩·达菲将故障归咎于老旧的空中交通管制技术和过载的路由器。国土安全部长马克韦恩·马林则…",
+      "tag": "地缘/政治",
+      "region": "全球",
+      "concept": "macro",
+      "time": "2026-11-14 12:56",
+      "datetime": "2026-11-14 12:56",
       "source": "华尔街见闻",
-      "url": "https://wallstreetcn.com/livenews/3200005",
-      "summary": "美国商品期货交易委员会（CFTC）主席塞利格（Michael Selig）周五表示，该委员会正计划对美国的铝价机制进行全面改革，并探讨新合约能否提高市场透明度。受中东战争引发的供应短缺影响，伦敦金属交易所（LME）铝价升至3,700美元以上的四年高点，这使得美国消费者面临的总成本超过每吨6,000美元。 “令人担忧的是，美国制造商……可能会因基准定价机制与美国实物金属市场脱节…",
+      "url": "https://wallstreetcn.com/livenews/3200103",
+      "summary": "当地时间11月13日晚，由于通信故障引发安全隐患，全美各地航班一度停飞超过四小时。交通部长肖恩·达菲将故障归咎于老旧的空中交通管制技术和过载的路由器。国土安全部长马克韦恩·马林则表示，目前没有任何迹象表明存在任何恶意袭击。",
       "relatedStocks": [
-        "美股科技",
+        "军工",
         "黄金"
       ],
       "bullConcepts": [
-        "黄金",
-        "防御板块"
+        "军工",
+        "避险资产"
       ],
       "bearConcepts": [
-        "高估值成长股"
+        "风险资产"
       ],
       "bullIndustries": [
-        "银行",
+        "军工",
         "黄金"
       ],
       "bearIndustries": [
-        "高杠杆地产"
+        "航空",
+        "旅游"
+      ],
+      "heat": 55,
+      "momentum": 26,
+      "_auto": true
+    },
+    {
+      "id": "ab6gjcps",
+      "title": "投资者消化CEO离职冲击，英伟达股价下挫3.6%，整个芯片板块普跌",
+      "tag": "科技/AI",
+      "region": "美国",
+      "concept": "aiCapex",
+      "time": "2026-11-13 23:36",
+      "datetime": "2026-11-13 23:36",
+      "source": "环球市场播报",
+      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-13/doc-iniyriiv3466622.shtml",
+      "summary": "受多起绯闻相关报道影响，AI 芯片巨头英伟达 CEO 黄仁勋离职，投资者对此消息进行消化，英伟达周五股价下跌超 3%。 该股本周料将收跌，市值跌破 4 万亿美元关口。",
+      "relatedStocks": [
+        "英伟达",
+        "微软",
+        "台积电"
+      ],
+      "bullConcepts": [
+        "AI算力",
+        "半导体",
+        "国产替代"
+      ],
+      "bearConcepts": [
+        "传统软件"
+      ],
+      "bullIndustries": [
+        "半导体",
+        "AI应用",
+        "算力基础设施"
+      ],
+      "bearIndustries": [
+        "传统IT服务"
+      ],
+      "heat": 51,
+      "momentum": 18,
+      "_auto": true
+    },
+    {
+      "id": "ab1ujbut0",
+      "title": "美国国土安全部长穆林：未发现任何证据表明此次事件是网络攻击或人工智能所致。 仍在审视网络攻击的可能性，并未排除这一可能。",
+      "tag": "科技/AI",
+      "region": "美国",
+      "concept": "aiCapex",
+      "time": "2026-11-14 09:48",
+      "datetime": "2026-11-14 09:48",
+      "source": "华尔街见闻",
+      "url": "https://wallstreetcn.com/livenews/3200080",
+      "summary": "美国国土安全部长穆林：未发现任何证据表明此次事件是网络攻击或人工智能所致。 仍在审视网络攻击的可能性，并未排除这一可能。",
+      "relatedStocks": [
+        "英伟达",
+        "微软",
+        "台积电"
+      ],
+      "bullConcepts": [
+        "AI算力",
+        "半导体",
+        "国产替代"
+      ],
+      "bearConcepts": [
+        "传统软件"
+      ],
+      "bullIndustries": [
+        "半导体",
+        "AI应用",
+        "算力基础设施"
+      ],
+      "bearIndustries": [
+        "传统IT服务"
       ],
       "heat": 29,
+      "momentum": 18,
+      "_auto": true
+    },
+    {
+      "id": "abfgg7kh",
+      "title": "美国国土安全部部长穆林：事态似乎正朝着正确的方向发展。 没有发生网络攻击，目前仍在走排查流程。 美国联邦航空管理局（FAA）系统故障与微软故障之间没有关联。 发布地面停飞令是出于…",
+      "tag": "宏观/综合",
+      "region": "美国",
+      "concept": "usMacro",
+      "time": "2026-11-14 09:41",
+      "datetime": "2026-11-14 09:41",
+      "source": "华尔街见闻",
+      "url": "https://wallstreetcn.com/livenews/3200078",
+      "summary": "美国国土安全部部长穆林：事态似乎正朝着正确的方向发展。 没有发生网络攻击，目前仍在走排查流程。 美国联邦航空管理局（FAA）系统故障与微软故障之间没有关联。 发布地面停飞令是出于高度谨慎的考虑。 在整个过程中，公众从未处于危险之中。",
+      "relatedStocks": [
+        "宽基指数"
+      ],
+      "bullConcepts": [
+        "防御板块"
+      ],
+      "bearConcepts": [
+        "周期股"
+      ],
+      "bullIndustries": [
+        "公用事业"
+      ],
+      "bearIndustries": [
+        "顺周期"
+      ],
+      "heat": 51,
       "momentum": 18,
       "_auto": true
     },
@@ -520,7 +346,43 @@
       "bearIndustries": [
         "传统IT服务"
       ],
-      "heat": 56,
+      "heat": 51,
+      "momentum": 18,
+      "_auto": true
+    },
+    {
+      "id": "abtootvw",
+      "title": "“大空头”加码纳指100看跌期权、增持半导体ETF空单，英伟达管理层动荡成诱因",
+      "tag": "科技/AI",
+      "region": "美国",
+      "concept": "aiCapex",
+      "time": "2026-11-13 20:16",
+      "datetime": "2026-11-13 20:16",
+      "source": "环球市场播报",
+      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-13/doc-iniyqwtt0975499.shtml",
+      "summary": "“大空头”迈克尔・伯里加大了对纳斯达克100指数以及半导体板块的看跌押注，理由是黄仁勋卸任英伟达CEO之后，他对英伟达在AI基础设施市场的影响力感到担忧。",
+      "relatedStocks": [
+        "英伟达",
+        "微软",
+        "台积电"
+      ],
+      "bullConcepts": [
+        "AI算力",
+        "半导体",
+        "国产替代"
+      ],
+      "bearConcepts": [
+        "传统软件"
+      ],
+      "bullIndustries": [
+        "半导体",
+        "AI应用",
+        "算力基础设施"
+      ],
+      "bearIndustries": [
+        "传统IT服务"
+      ],
+      "heat": 29,
       "momentum": 18,
       "_auto": true
     },
@@ -556,7 +418,105 @@
       "bearIndustries": [
         "传统IT服务"
       ],
-      "heat": 51,
+      "heat": 42,
+      "momentum": 18,
+      "_auto": true
+    },
+    {
+      "id": "ab8j81rn",
+      "title": "北京时间今天清晨，马斯克在社交媒体上公开确认，自己正在签署一份请求黄仁勋复职的请愿书。与此同时，承载一请愿活动的网站因访问量激增而面临服务器压力，目前已收集到超过1.4万人的签名…",
+      "tag": "宏观/综合",
+      "region": "中国",
+      "concept": "broker",
+      "time": "2026-11-14 12:55",
+      "datetime": "2026-11-14 12:55",
+      "source": "华尔街见闻",
+      "url": "https://wallstreetcn.com/livenews/3200102",
+      "summary": "北京时间今天清晨，马斯克在社交媒体上公开确认，自己正在签署一份请求黄仁勋复职的请愿书。与此同时，承载一请愿活动的网站因访问量激增而面临服务器压力，目前已收集到超过1.4万人的签名支持。",
+      "relatedStocks": [
+        "宽基指数"
+      ],
+      "bullConcepts": [
+        "防御板块"
+      ],
+      "bearConcepts": [
+        "周期股"
+      ],
+      "bullIndustries": [
+        "公用事业"
+      ],
+      "bearIndustries": [
+        "顺周期"
+      ],
+      "heat": 24,
+      "momentum": 26,
+      "_auto": true
+    },
+    {
+      "id": "abqualdt",
+      "title": "爱尔兰警方13日查获一枚简易爆炸装置，发现地点距多国领导人前一天晚宴的场所较近。军方拆弹专家出动，成功处置这枚“制作粗糙但具备引爆能力”的爆炸装置。",
+      "tag": "地缘/政治",
+      "region": "全球",
+      "concept": "macro",
+      "time": "2026-11-14 12:14",
+      "datetime": "2026-11-14 12:14",
+      "source": "华尔街见闻",
+      "url": "https://wallstreetcn.com/livenews/3200098",
+      "summary": "爱尔兰警方13日查获一枚简易爆炸装置，发现地点距多国领导人前一天晚宴的场所较近。军方拆弹专家出动，成功处置这枚“制作粗糙但具备引爆能力”的爆炸装置。",
+      "relatedStocks": [
+        "军工",
+        "黄金"
+      ],
+      "bullConcepts": [
+        "军工",
+        "避险资产"
+      ],
+      "bearConcepts": [
+        "风险资产"
+      ],
+      "bullIndustries": [
+        "军工",
+        "黄金"
+      ],
+      "bearIndustries": [
+        "航空",
+        "旅游"
+      ],
+      "heat": 24,
+      "momentum": 26,
+      "_auto": true
+    },
+    {
+      "id": "ab1ug7p2c",
+      "title": "伊朗伊斯兰革命卫队总司令瓦希迪11月13日称，伊朗军队已处于“最高战备状态”，以应对任何可能的袭击。一旦遭袭，伊朗将 “深入敌方领土打击敌人，不受任何地理限制”。伊朗近日在多个城…",
+      "tag": "地缘/政治",
+      "region": "全球",
+      "concept": "macro",
+      "time": "2026-11-14 09:48",
+      "datetime": "2026-11-14 09:48",
+      "source": "华尔街见闻",
+      "url": "https://wallstreetcn.com/livenews/3200079",
+      "summary": "伊朗伊斯兰革命卫队总司令瓦希迪11月13日称，伊朗军队已处于“最高战备状态”，以应对任何可能的袭击。一旦遭袭，伊朗将 “深入敌方领土打击敌人，不受任何地理限制”。伊朗近日在多个城市为新近寻获的350名两伊战争期间阵亡的将士遗骸举行葬礼。伊朗总统佩泽希齐扬及多名军方高级官员出席。（CCTV国际时讯）",
+      "relatedStocks": [
+        "军工",
+        "黄金"
+      ],
+      "bullConcepts": [
+        "军工",
+        "避险资产"
+      ],
+      "bearConcepts": [
+        "风险资产"
+      ],
+      "bullIndustries": [
+        "军工",
+        "黄金"
+      ],
+      "bearIndustries": [
+        "航空",
+        "旅游"
+      ],
+      "heat": 24,
       "momentum": 18,
       "_auto": true
     },
@@ -626,6 +586,42 @@
         "传统IT服务"
       ],
       "heat": 29,
+      "momentum": 18,
+      "_auto": true
+    },
+    {
+      "id": "ab1mm7n2v",
+      "title": "黄仁勋出事，Anthropic承压？",
+      "tag": "科技/AI",
+      "region": "全球",
+      "concept": "ai",
+      "time": "2026-11-14 07:26",
+      "datetime": "2026-11-14 07:26",
+      "source": "环球市场播报",
+      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-14/doc-iniyryfp3208766.shtml",
+      "summary": "Anthropic即将启动本轮热度极高的IPO。在局势突变之下，这场上市恰逢行业失去一位极具影响力、擅长商业游说的核心人物一周之后。",
+      "relatedStocks": [
+        "英伟达",
+        "微软",
+        "台积电"
+      ],
+      "bullConcepts": [
+        "AI算力",
+        "半导体",
+        "国产替代"
+      ],
+      "bearConcepts": [
+        "传统软件"
+      ],
+      "bullIndustries": [
+        "半导体",
+        "AI应用",
+        "算力基础设施"
+      ],
+      "bearIndustries": [
+        "传统IT服务"
+      ],
+      "heat": 42,
       "momentum": 18,
       "_auto": true
     },
@@ -868,6 +864,44 @@
       "momentum": 92
     },
     {
+      "id": "b8",
+      "title": "霍尔木兹海峡三艘油轮爆炸起火，伊朗多地遭袭",
+      "tag": "地缘/能源",
+      "region": "全球",
+      "concept": "energy",
+      "time": "2026-11-08",
+      "datetime": "2026-11-08 11:20",
+      "source": "央视/塔斯尼姆通讯社",
+      "summary": "伊朗革命卫队称11月8日当天已有三艘违规油轮在霍尔木兹海峡东部禁航区触雷爆炸起火；同日格什姆岛等地传出爆炸声，伊朗称遭美军袭击。特朗普宣布针对伊朗的\"铁门\"特遣行动全面展开。海峡通航风险推升原油与航运溢价。",
+      "relatedStocks": [
+        "中国海油",
+        "山东黄金",
+        "航运"
+      ],
+      "bullConcepts": [
+        "石油",
+        "黄金",
+        "油运",
+        "军工"
+      ],
+      "bearConcepts": [
+        "航空",
+        "化工(成本端)"
+      ],
+      "bullIndustries": [
+        "石油开采",
+        "航运",
+        "黄金",
+        "军工"
+      ],
+      "bearIndustries": [
+        "航空运输",
+        "化工"
+      ],
+      "heat": 90,
+      "momentum": 88
+    },
+    {
       "id": "b9",
       "title": "沙特阿美石油大楼遭袭受损（利雅得）",
       "tag": "地缘/能源",
@@ -901,35 +935,6 @@
       ],
       "heat": 82,
       "momentum": 80
-    },
-    {
-      "id": "b10",
-      "title": "Anthropic 拟11月16日当周登陆纳斯达克IPO",
-      "tag": "企业活动/AI",
-      "region": "美国",
-      "concept": "aiCapex",
-      "time": "2026-11-16（预计）",
-      "datetime": "2026-11-08 09:00",
-      "source": "路透/SEC S-1",
-      "summary": "Anthropic已公开递交S-1，潜在买家讨论1.2万亿至1.3万亿美元估值区间；三季度营收约169.6亿美元、环比增45%，但算力支出承诺已近8954亿美元。IPO为美股AI链重要风向标。",
-      "relatedStocks": [
-        "AI",
-        "美股"
-      ],
-      "bullConcepts": [
-        "AI算力",
-        "云计算",
-        "AI应用"
-      ],
-      "bearConcepts": [],
-      "bullIndustries": [
-        "AI",
-        "云计算",
-        "算力"
-      ],
-      "bearIndustries": [],
-      "heat": 75,
-      "momentum": 58
     },
     {
       "id": "b11",
