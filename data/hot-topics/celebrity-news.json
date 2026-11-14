@@ -1,75 +1,9 @@
 {
-  "generatedAt": "2026-11-14 14:00",
+  "generatedAt": "2026-11-14 21:26",
   "generatedBy": "GitHub Actions · 多源实时聚合",
-  "sourceCount": 4,
-  "autoCount": 9,
+  "sourceCount": 5,
+  "autoCount": 10,
   "events": [
-    {
-      "id": "ap1cuho8t",
-      "title": "加拿大总理卡尼表示，在马尼拉之行前与特朗普进行了长时间实质性会谈；有可能与美国达成双边协议，但这尚未实现。",
-      "tag": "人物/特朗普",
-      "region": "美国",
-      "concept": "usMacro",
-      "time": "2026-11-14 13:51",
-      "datetime": "2026-11-14 13:51",
-      "source": "财联社",
-      "url": "https://www.cls.cn/detail/2534442",
-      "summary": "加拿大总理卡尼表示，在马尼拉之行前与特朗普进行了长时间实质性会谈；有可能与美国达成双边协议，但这尚未实现。",
-      "relatedStocks": [
-        "宽基指数"
-      ],
-      "bullConcepts": [
-        "防御板块"
-      ],
-      "bearConcepts": [
-        "周期股"
-      ],
-      "bullIndustries": [
-        "公用事业"
-      ],
-      "bearIndustries": [
-        "顺周期"
-      ],
-      "heat": 33,
-      "momentum": 36,
-      "_auto": true
-    },
-    {
-      "id": "ap6dses1",
-      "title": "据美联社报道，美国总统特朗普计划下周访问亚洲时带上马斯克。匿名政府官员透露，作为SpaceX和特斯拉的掌门人，马斯克在经济和国家安全方面拥有重要利益，这使他成为特朗普的宝贵顾问。…",
-      "tag": "人物/马斯克",
-      "region": "美国",
-      "concept": "aiCapex",
-      "time": "2026-11-14 13:23",
-      "datetime": "2026-11-14 13:23",
-      "source": "华尔街见闻",
-      "url": "https://wallstreetcn.com/livenews/3200107",
-      "summary": "据美联社报道，美国总统特朗普计划下周访问亚洲时带上马斯克。匿名政府官员透露，作为SpaceX和特斯拉的掌门人，马斯克在经济和国家安全方面拥有重要利益，这使他成为特朗普的宝贵顾问。官员还透露，特朗普并不打算提及黄仁勋相关事件，美国政府认为英伟达事件不会对此次访问产生任何影响。",
-      "relatedStocks": [
-        "英伟达",
-        "微软",
-        "台积电"
-      ],
-      "bullConcepts": [
-        "AI算力",
-        "半导体",
-        "国产替代"
-      ],
-      "bearConcepts": [
-        "传统软件"
-      ],
-      "bullIndustries": [
-        "半导体",
-        "AI应用",
-        "算力基础设施"
-      ],
-      "bearIndustries": [
-        "传统IT服务"
-      ],
-      "heat": 29,
-      "momentum": 26,
-      "_auto": true
-    },
     {
       "id": "ap9vsxgr",
       "title": "11月14日外盘头条：美国联邦航空管理局发布全国范围地面停飞指令 OpenAI撤销独立机器人研究团队",
@@ -102,7 +36,41 @@
       "bearIndustries": [
         "传统IT服务"
       ],
-      "heat": 100,
+      "heat": 65,
+      "momentum": 18,
+      "_auto": true
+    },
+    {
+      "id": "apwi6fyg",
+      "title": "知情人士透露，美国总统特朗普近日向高级顾问表示，如果美国未受到来自伊朗或也门胡塞武装的任何新挑衅，他可能会暂缓对伊朗采取军事打击。（路透）",
+      "tag": "人物/特朗普",
+      "region": "美国",
+      "concept": "defense",
+      "time": "2026-11-14 19:15",
+      "datetime": "2026-11-14 19:15",
+      "source": "华尔街见闻",
+      "url": "https://wallstreetcn.com/livenews/3200128",
+      "summary": "知情人士透露，美国总统特朗普近日向高级顾问表示，如果美国未受到来自伊朗或也门胡塞武装的任何新挑衅，他可能会暂缓对伊朗采取军事打击。（路透）",
+      "relatedStocks": [
+        "军工",
+        "黄金"
+      ],
+      "bullConcepts": [
+        "军工",
+        "避险资产"
+      ],
+      "bearConcepts": [
+        "风险资产"
+      ],
+      "bullIndustries": [
+        "军工",
+        "黄金"
+      ],
+      "bearIndustries": [
+        "航空",
+        "旅游"
+      ],
+      "heat": 56,
       "momentum": 18,
       "_auto": true
     },
@@ -138,38 +106,74 @@
       "bearIndustries": [
         "传统IT服务"
       ],
-      "heat": 33,
+      "heat": 38,
       "momentum": 18,
       "_auto": true
     },
     {
-      "id": "aps8zld8",
-      "title": "特斯拉公司表示，已开始接受部分客户的Cybercab订单，这表明该公司正准备向普通消费者推出这款无人驾驶汽车。这款没有方向盘和脚踏板的双座汽车此前已作为特斯拉自动驾驶出租车（Ro…",
+      "id": "ap4koj5g",
+      "title": "马斯克：Cybercab每月299美元自动驾驶订阅费太高",
       "tag": "人物/马斯克",
-      "region": "全球",
-      "concept": "green",
-      "time": "2026-11-14 08:36",
-      "datetime": "2026-11-14 08:36",
-      "source": "华尔街见闻",
-      "url": "https://wallstreetcn.com/livenews/3200066",
-      "summary": "特斯拉公司表示，已开始接受部分客户的Cybercab订单，这表明该公司正准备向普通消费者推出这款无人驾驶汽车。这款没有方向盘和脚踏板的双座汽车此前已作为特斯拉自动驾驶出租车（Robotaxi）服务的一部分在奥斯汀投入运营。该公司自动驾驶出租车官方账号周五在X平台上发帖称，目前Cybercab将面向受支持服务区域内的“特定客户”开放购买。",
+      "region": "美国",
+      "concept": "usFinance",
+      "time": "2026-11-14 15:12",
+      "datetime": "2026-11-14 15:12",
+      "source": "财联社",
+      "url": "https://www.cls.cn/detail/2534461",
+      "summary": "【马斯克：Cybercab每月299美元自动驾驶订阅费太高】财联社11月14日电，特斯拉宣布开始向部分个人用户开放Cybercab购买渠道，起售价 29990 美元，首批车辆预计将于12月交付。不过，目前 Cybercab个人购买资格仅向特定受邀客户开放，首批交付范围也暂时集中在德克萨斯州奥斯汀地区。用户还需支付 1000 美元不可退还的订购定金。此外，车辆必须搭配每月 29…",
       "relatedStocks": [
-        "特斯拉",
-        "比亚迪"
+        "美股科技",
+        "黄金"
       ],
       "bullConcepts": [
-        "智能驾驶",
-        "动力电池"
+        "黄金",
+        "防御板块"
       ],
       "bearConcepts": [
-        "传统车企"
+        "高估值成长股"
       ],
       "bullIndustries": [
-        "智能驾驶",
-        "锂电池"
+        "银行",
+        "黄金"
       ],
       "bearIndustries": [
-        "传统汽车制造"
+        "高杠杆地产"
+      ],
+      "heat": 42,
+      "momentum": 18,
+      "_auto": true
+    },
+    {
+      "id": "ap6dses1",
+      "title": "据美联社报道，美国总统特朗普计划下周访问亚洲时带上马斯克。匿名政府官员透露，作为SpaceX和特斯拉的掌门人，马斯克在经济和国家安全方面拥有重要利益，这使他成为特朗普的宝贵顾问。…",
+      "tag": "人物/马斯克",
+      "region": "美国",
+      "concept": "aiCapex",
+      "time": "2026-11-14 13:23",
+      "datetime": "2026-11-14 13:23",
+      "source": "华尔街见闻",
+      "url": "https://wallstreetcn.com/livenews/3200107",
+      "summary": "据美联社报道，美国总统特朗普计划下周访问亚洲时带上马斯克。匿名政府官员透露，作为SpaceX和特斯拉的掌门人，马斯克在经济和国家安全方面拥有重要利益，这使他成为特朗普的宝贵顾问。官员还透露，特朗普并不打算提及黄仁勋相关事件，美国政府认为英伟达事件不会对此次访问产生任何影响。",
+      "relatedStocks": [
+        "英伟达",
+        "微软",
+        "台积电"
+      ],
+      "bullConcepts": [
+        "AI算力",
+        "半导体",
+        "国产替代"
+      ],
+      "bearConcepts": [
+        "传统软件"
+      ],
+      "bullIndustries": [
+        "半导体",
+        "AI应用",
+        "算力基础设施"
+      ],
+      "bearIndustries": [
+        "传统IT服务"
       ],
       "heat": 29,
       "momentum": 18,
@@ -207,7 +211,7 @@
       "bearIndustries": [
         "传统IT服务"
       ],
-      "heat": 51,
+      "heat": 60,
       "momentum": 18,
       "_auto": true
     },
@@ -248,46 +252,16 @@
       "_auto": true
     },
     {
-      "id": "apirn4iz",
-      "title": "报道：以色列情报局长访美 内塔尼亚胡敦促特朗普重启对伊朗战事",
+      "id": "ap1fcxcmc",
+      "title": "消息人士称，特朗普最近几天告诉他的高级顾问，除非伊朗再次挑衅，否则他可能会推迟对伊朗的攻击。",
       "tag": "人物/特朗普",
       "region": "美国",
       "concept": "usMacro",
-      "time": "2026-11-13 21:57",
-      "datetime": "2026-11-13 21:57",
-      "source": "环球市场播报",
-      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-13/doc-iniyrazr0896790.shtml",
-      "summary": "据三名知情消息人士透露，以色列摩萨德情报机构局长周五抵达华盛顿，与特朗普政府高层官员就伊朗局势展开磋商。 罗曼・戈夫曼是内塔尼亚胡最核心的心腹之一...",
-      "relatedStocks": [
-        "宽基指数"
-      ],
-      "bullConcepts": [
-        "防御板块"
-      ],
-      "bearConcepts": [
-        "周期股"
-      ],
-      "bullIndustries": [
-        "公用事业"
-      ],
-      "bearIndustries": [
-        "顺周期"
-      ],
-      "heat": 29,
-      "momentum": 18,
-      "_auto": true
-    },
-    {
-      "id": "ap1b91g79",
-      "title": "视频丨泽连斯基称乌军使用“星盾”再遭限速",
-      "tag": "人物/泽连斯基",
-      "region": "全球",
-      "concept": "macro",
-      "time": "2026-11-13 23:16",
-      "datetime": "2026-11-13 23:16",
-      "source": "央视",
-      "url": "https://finance.sina.com.cn/jjxw/2026-11-13/doc-iniyrprt3367158.shtml",
-      "summary": "乌克兰总统泽连斯基12日说，连日来，乌军使用的“星盾”卫星通信系统运行出现“重大中断”，导致乌军拦截俄罗斯无人机的难度大幅增加。",
+      "time": "2026-11-14 19:01",
+      "datetime": "2026-11-14 19:01",
+      "source": "新浪7×24",
+      "url": "https://finance.sina.cn/7x24/2026-11-14/detail-iniyszsx0473881.d.html",
+      "summary": "消息人士称，特朗普最近几天告诉他的高级顾问，除非伊朗再次挑衅，否则他可能会推迟对伊朗的攻击。",
       "relatedStocks": [
         "宽基指数"
       ],
@@ -304,6 +278,74 @@
         "顺周期"
       ],
       "heat": 24,
+      "momentum": 18,
+      "_auto": true
+    },
+    {
+      "id": "apxp670p",
+      "title": "泽连斯基：美国建议乌克兰放弃顿巴斯地区 以换取加入北约",
+      "tag": "人物/泽连斯基",
+      "region": "美国",
+      "concept": "defense",
+      "time": "2026-11-14 17:08",
+      "datetime": "2026-11-14 17:08",
+      "source": "财联社",
+      "url": "https://www.cls.cn/detail/2534487",
+      "summary": "【泽连斯基：相信乌克兰加入北约问题已重新提上议程】财联社11月14日电，乌克兰总统泽连斯基表示，美国谈判代表提出了一个问题，即如果乌克兰加入北约，是否准备放弃顿巴斯地区。相信乌克兰加入北约的问题已重新提上议程。",
+      "relatedStocks": [
+        "军工",
+        "黄金"
+      ],
+      "bullConcepts": [
+        "军工",
+        "避险资产"
+      ],
+      "bearConcepts": [
+        "风险资产"
+      ],
+      "bullIndustries": [
+        "军工",
+        "黄金"
+      ],
+      "bearIndustries": [
+        "航空",
+        "旅游"
+      ],
+      "heat": 51,
+      "momentum": 18,
+      "_auto": true
+    },
+    {
+      "id": "ap1agyoul",
+      "title": "泽连斯基：要求欧洲盟友在11月底前决定由谁代表欧洲参加和平谈判",
+      "tag": "人物/泽连斯基",
+      "region": "美国",
+      "concept": "defense",
+      "time": "2026-11-14 17:06",
+      "datetime": "2026-11-14 17:06",
+      "source": "财联社",
+      "url": "https://www.cls.cn/detail/2534486",
+      "summary": "【泽连斯基：要求欧洲盟友在11月底前决定由谁代表欧洲参加和平谈判】财联社11月14日电，乌克兰总统泽连斯基表示，要求欧洲盟友在11月底前决定由谁代表欧洲参加和平谈判。美国特使表示，俄罗斯总统普京同意在下一轮谈判中让欧洲参与。",
+      "relatedStocks": [
+        "军工",
+        "黄金"
+      ],
+      "bullConcepts": [
+        "军工",
+        "避险资产"
+      ],
+      "bearConcepts": [
+        "风险资产"
+      ],
+      "bullIndustries": [
+        "军工",
+        "黄金"
+      ],
+      "bearIndustries": [
+        "航空",
+        "旅游"
+      ],
+      "heat": 29,
       "momentum": 18,
       "_auto": true
     },

@@ -1,92 +1,20 @@
 {
-  "generatedAt": "2026-11-14 14:00",
+  "generatedAt": "2026-11-14 21:26",
   "generatedBy": "GitHub Actions · 多源实时聚合",
-  "sourceCount": 4,
+  "sourceCount": 5,
   "autoCount": 18,
   "events": [
     {
-      "id": "ab6dses1",
-      "title": "据美联社报道，美国总统特朗普计划下周访问亚洲时带上马斯克。匿名政府官员透露，作为SpaceX和特斯拉的掌门人，马斯克在经济和国家安全方面拥有重要利益，这使他成为特朗普的宝贵顾问。…",
-      "tag": "科技/AI",
-      "region": "美国",
-      "concept": "aiCapex",
-      "time": "2026-11-14 13:23",
-      "datetime": "2026-11-14 13:23",
-      "source": "华尔街见闻",
-      "url": "https://wallstreetcn.com/livenews/3200107",
-      "summary": "据美联社报道，美国总统特朗普计划下周访问亚洲时带上马斯克。匿名政府官员透露，作为SpaceX和特斯拉的掌门人，马斯克在经济和国家安全方面拥有重要利益，这使他成为特朗普的宝贵顾问。官员还透露，特朗普并不打算提及黄仁勋相关事件，美国政府认为英伟达事件不会对此次访问产生任何影响。",
-      "relatedStocks": [
-        "英伟达",
-        "微软",
-        "台积电"
-      ],
-      "bullConcepts": [
-        "AI算力",
-        "半导体",
-        "国产替代"
-      ],
-      "bearConcepts": [
-        "传统软件"
-      ],
-      "bullIndustries": [
-        "半导体",
-        "AI应用",
-        "算力基础设施"
-      ],
-      "bearIndustries": [
-        "传统IT服务"
-      ],
-      "heat": 29,
-      "momentum": 26,
-      "_auto": true
-    },
-    {
-      "id": "ab36h3l2",
-      "title": "老黄离职后，“大空头”加码做空科技股！警告AI热潮或陷入“牛市陷阱”",
-      "tag": "科技/AI",
-      "region": "美国",
-      "concept": "aiCapex",
-      "time": "2026-11-14 13:45",
-      "datetime": "2026-11-14 13:45",
-      "source": "市场资讯",
-      "url": "https://finance.sina.com.cn/stock/hkstock/hkstocknews/2026-11-14/doc-iniysrcf2969234.shtml",
-      "summary": "本文转自“华尔街见闻” 作者：张雅琦 英伟达（NVDA.US）CEO黄仁勋的离职令科技股前景蒙上阴影，著名空头Michael Burry借势加码做空押注...",
-      "relatedStocks": [
-        "英伟达",
-        "微软",
-        "台积电"
-      ],
-      "bullConcepts": [
-        "AI算力",
-        "半导体",
-        "国产替代"
-      ],
-      "bearConcepts": [
-        "传统软件"
-      ],
-      "bullIndustries": [
-        "半导体",
-        "AI应用",
-        "算力基础设施"
-      ],
-      "bearIndustries": [
-        "传统IT服务"
-      ],
-      "heat": 29,
-      "momentum": 36,
-      "_auto": true
-    },
-    {
-      "id": "ab23n6iy",
-      "title": "据美国方面当地时间13日消息，一名知情人士表示，美国联邦调查局认为，影响美国空中交通管制的通信问题并非由网络攻击或犯罪行为所致。当前调查的一个方向是此次故障是否由软件更新引发。（…",
+      "id": "abgo4tua",
+      "title": "荷兰皇家航空前CEO被曝机上违规使用充电宝引发火情",
       "tag": "宏观/综合",
-      "region": "美国",
-      "concept": "usMacro",
-      "time": "2026-11-14 08:33",
-      "datetime": "2026-11-14 08:33",
-      "source": "华尔街见闻",
-      "url": "https://wallstreetcn.com/livenews/3200065",
-      "summary": "据美国方面当地时间13日消息，一名知情人士表示，美国联邦调查局认为，影响美国空中交通管制的通信问题并非由网络攻击或犯罪行为所致。当前调查的一个方向是此次故障是否由软件更新引发。（央视新闻）",
+      "region": "全球",
+      "concept": "macro",
+      "time": "2026-11-14 21:14",
+      "datetime": "2026-11-14 21:14",
+      "source": "财联社",
+      "url": "https://www.cls.cn/detail/2534551",
+      "summary": "【荷兰皇家航空前CEO被曝机上违规使用充电宝引发火情】财联社11月14日电，据荷兰方面11月13日消息，荷兰皇家航空公司前首席执行官（CEO）卡米尔·厄尔林斯9月在该公司一架客机上违规使用充电宝引发火情，荷航日前已就此事向检方提请指控厄尔林斯。",
       "relatedStocks": [
         "宽基指数"
       ],
@@ -102,8 +30,72 @@
       "bearIndustries": [
         "顺周期"
       ],
-      "heat": 51,
-      "momentum": 18,
+      "heat": 65,
+      "momentum": 46,
+      "_auto": true
+    },
+    {
+      "id": "ab1da5ov",
+      "title": "巴基斯坦外交部今天（11月14日）发布声明称，巴基斯坦、埃及、沙特阿拉伯、土耳其、约旦、卡塔尔、阿拉伯联合酋长国、印度尼西亚、巴勒斯坦国、阿尔及利亚、毛里塔尼亚、苏丹、利比亚、吉…",
+      "tag": "宏观/综合",
+      "region": "全球",
+      "concept": "macro",
+      "time": "2026-11-14 20:48",
+      "datetime": "2026-11-14 20:48",
+      "source": "华尔街见闻",
+      "url": "https://wallstreetcn.com/livenews/3200133",
+      "summary": "巴基斯坦外交部今天（11月14日）发布声明称，巴基斯坦、埃及、沙特阿拉伯、土耳其、约旦、卡塔尔、阿拉伯联合酋长国、印度尼西亚、巴勒斯坦国、阿尔及利亚、毛里塔尼亚、苏丹、利比亚、吉布提、索马里、黎巴嫩和阿曼等国外长以最强烈措辞谴责以色列对加沙地带汗尤尼斯纳赛尔医疗中心发动的空袭。",
+      "relatedStocks": [
+        "宽基指数"
+      ],
+      "bullConcepts": [
+        "防御板块"
+      ],
+      "bearConcepts": [
+        "周期股"
+      ],
+      "bullIndustries": [
+        "公用事业"
+      ],
+      "bearIndustries": [
+        "顺周期"
+      ],
+      "heat": 29,
+      "momentum": 26,
+      "_auto": true
+    },
+    {
+      "id": "ab1jhikvi",
+      "title": "17国强烈谴责以色列空袭加沙医院",
+      "tag": "地缘/政治",
+      "region": "全球",
+      "concept": "macro",
+      "time": "2026-11-14 20:47",
+      "datetime": "2026-11-14 20:47",
+      "source": "财联社",
+      "url": "https://www.cls.cn/detail/2534539",
+      "summary": "财联社11月14日电，巴基斯坦外交部今天（11月14日）发布声明称，巴基斯坦、埃及、沙特阿拉伯、土耳其、约旦、卡塔尔、阿拉伯联合酋长国、印度尼西亚、巴勒斯坦国、阿尔及利亚、毛里塔尼亚、苏丹、利比亚、吉布提、索马里、黎巴嫩和阿曼等国外长以最强烈措辞谴责以色列对加沙地带汗尤尼斯纳赛尔医疗中心发动的空袭。此次袭击造成患者和医护人员伤亡，违反了国际人道主义法关于医疗设施和医护人员应受…",
+      "relatedStocks": [
+        "军工",
+        "黄金"
+      ],
+      "bullConcepts": [
+        "军工",
+        "避险资产"
+      ],
+      "bearConcepts": [
+        "风险资产"
+      ],
+      "bullIndustries": [
+        "军工",
+        "黄金"
+      ],
+      "bearIndustries": [
+        "航空",
+        "旅游"
+      ],
+      "heat": 24,
+      "momentum": 26,
       "_auto": true
     },
     {
@@ -138,7 +130,75 @@
       "bearIndustries": [
         "传统IT服务"
       ],
-      "heat": 51,
+      "heat": 65,
+      "momentum": 18,
+      "_auto": true
+    },
+    {
+      "id": "ab1qbckbe",
+      "title": "当地时间14日，加沙地带卫生部门发表声明称，在过去48小时内，加沙地带各医院共接收了16名死者和68名伤员。声明表示，自去年10月11日停火协议生效以来，加沙地带累计新增死亡人数…",
+      "tag": "地缘/政治",
+      "region": "全球",
+      "concept": "macro",
+      "time": "2026-11-14 19:54",
+      "datetime": "2026-11-14 19:54",
+      "source": "新浪7×24",
+      "url": "https://finance.sina.cn/7x24/2026-11-14/detail-iniytfyv0358602.d.html",
+      "summary": "当地时间14日，加沙地带卫生部门发表声明称，在过去48小时内，加沙地带各医院共接收了16名死者和68名伤员。声明表示，自去年10月11日停火协议生效以来，加沙地带累计新增死亡人数已达1643人，另有5964人受伤；此外，救援人员在废墟中累计寻获850具遇难者遗体。自2023年10月7日新一轮巴以大规模冲突爆发以来，以军在加沙地带的军事行动已累计造成74695人死亡、17609…",
+      "relatedStocks": [
+        "军工",
+        "黄金"
+      ],
+      "bullConcepts": [
+        "军工",
+        "避险资产"
+      ],
+      "bearConcepts": [
+        "风险资产"
+      ],
+      "bullIndustries": [
+        "军工",
+        "黄金"
+      ],
+      "bearIndustries": [
+        "航空",
+        "旅游"
+      ],
+      "heat": 38,
+      "momentum": 26,
+      "_auto": true
+    },
+    {
+      "id": "ab1cdku37",
+      "title": "当地时间11月13日晚，由于通信故障引发安全隐患，全美各地航班一度停飞超过四小时。交通部长肖恩·达菲将故障归咎于老旧的空中交通管制技术和过载的路由器。国土安全部长马克韦恩·马林则…",
+      "tag": "地缘/政治",
+      "region": "全球",
+      "concept": "macro",
+      "time": "2026-11-14 12:56",
+      "datetime": "2026-11-14 12:56",
+      "source": "华尔街见闻",
+      "url": "https://wallstreetcn.com/livenews/3200103",
+      "summary": "当地时间11月13日晚，由于通信故障引发安全隐患，全美各地航班一度停飞超过四小时。交通部长肖恩·达菲将故障归咎于老旧的空中交通管制技术和过载的路由器。国土安全部长马克韦恩·马林则表示，目前没有任何迹象表明存在任何恶意袭击。",
+      "relatedStocks": [
+        "军工",
+        "黄金"
+      ],
+      "bullConcepts": [
+        "军工",
+        "避险资产"
+      ],
+      "bearConcepts": [
+        "风险资产"
+      ],
+      "bullIndustries": [
+        "军工",
+        "黄金"
+      ],
+      "bearIndustries": [
+        "航空",
+        "旅游"
+      ],
+      "heat": 38,
       "momentum": 18,
       "_auto": true
     },
@@ -179,40 +239,6 @@
       "_auto": true
     },
     {
-      "id": "ab1cdku37",
-      "title": "当地时间11月13日晚，由于通信故障引发安全隐患，全美各地航班一度停飞超过四小时。交通部长肖恩·达菲将故障归咎于老旧的空中交通管制技术和过载的路由器。国土安全部长马克韦恩·马林则…",
-      "tag": "地缘/政治",
-      "region": "全球",
-      "concept": "macro",
-      "time": "2026-11-14 12:56",
-      "datetime": "2026-11-14 12:56",
-      "source": "华尔街见闻",
-      "url": "https://wallstreetcn.com/livenews/3200103",
-      "summary": "当地时间11月13日晚，由于通信故障引发安全隐患，全美各地航班一度停飞超过四小时。交通部长肖恩·达菲将故障归咎于老旧的空中交通管制技术和过载的路由器。国土安全部长马克韦恩·马林则表示，目前没有任何迹象表明存在任何恶意袭击。",
-      "relatedStocks": [
-        "军工",
-        "黄金"
-      ],
-      "bullConcepts": [
-        "军工",
-        "避险资产"
-      ],
-      "bearConcepts": [
-        "风险资产"
-      ],
-      "bullIndustries": [
-        "军工",
-        "黄金"
-      ],
-      "bearIndustries": [
-        "航空",
-        "旅游"
-      ],
-      "heat": 55,
-      "momentum": 26,
-      "_auto": true
-    },
-    {
       "id": "ab6gjcps",
       "title": "投资者消化CEO离职冲击，英伟达股价下挫3.6%，整个芯片板块普跌",
       "tag": "科技/AI",
@@ -244,21 +270,21 @@
       "bearIndustries": [
         "传统IT服务"
       ],
-      "heat": 51,
+      "heat": 60,
       "momentum": 18,
       "_auto": true
     },
     {
-      "id": "ab1ujbut0",
-      "title": "美国国土安全部长穆林：未发现任何证据表明此次事件是网络攻击或人工智能所致。 仍在审视网络攻击的可能性，并未排除这一可能。",
+      "id": "ab6dses1",
+      "title": "据美联社报道，美国总统特朗普计划下周访问亚洲时带上马斯克。匿名政府官员透露，作为SpaceX和特斯拉的掌门人，马斯克在经济和国家安全方面拥有重要利益，这使他成为特朗普的宝贵顾问。…",
       "tag": "科技/AI",
       "region": "美国",
       "concept": "aiCapex",
-      "time": "2026-11-14 09:48",
-      "datetime": "2026-11-14 09:48",
+      "time": "2026-11-14 13:23",
+      "datetime": "2026-11-14 13:23",
       "source": "华尔街见闻",
-      "url": "https://wallstreetcn.com/livenews/3200080",
-      "summary": "美国国土安全部长穆林：未发现任何证据表明此次事件是网络攻击或人工智能所致。 仍在审视网络攻击的可能性，并未排除这一可能。",
+      "url": "https://wallstreetcn.com/livenews/3200107",
+      "summary": "据美联社报道，美国总统特朗普计划下周访问亚洲时带上马斯克。匿名政府官员透露，作为SpaceX和特斯拉的掌门人，马斯克在经济和国家安全方面拥有重要利益，这使他成为特朗普的宝贵顾问。官员还透露，特朗普并不打算提及黄仁勋相关事件，美国政府认为英伟达事件不会对此次访问产生任何影响。",
       "relatedStocks": [
         "英伟达",
         "微软",
@@ -281,36 +307,6 @@
         "传统IT服务"
       ],
       "heat": 29,
-      "momentum": 18,
-      "_auto": true
-    },
-    {
-      "id": "abfgg7kh",
-      "title": "美国国土安全部部长穆林：事态似乎正朝着正确的方向发展。 没有发生网络攻击，目前仍在走排查流程。 美国联邦航空管理局（FAA）系统故障与微软故障之间没有关联。 发布地面停飞令是出于…",
-      "tag": "宏观/综合",
-      "region": "美国",
-      "concept": "usMacro",
-      "time": "2026-11-14 09:41",
-      "datetime": "2026-11-14 09:41",
-      "source": "华尔街见闻",
-      "url": "https://wallstreetcn.com/livenews/3200078",
-      "summary": "美国国土安全部部长穆林：事态似乎正朝着正确的方向发展。 没有发生网络攻击，目前仍在走排查流程。 美国联邦航空管理局（FAA）系统故障与微软故障之间没有关联。 发布地面停飞令是出于高度谨慎的考虑。 在整个过程中，公众从未处于危险之中。",
-      "relatedStocks": [
-        "宽基指数"
-      ],
-      "bullConcepts": [
-        "防御板块"
-      ],
-      "bearConcepts": [
-        "周期股"
-      ],
-      "bullIndustries": [
-        "公用事业"
-      ],
-      "bearIndustries": [
-        "顺周期"
-      ],
-      "heat": 51,
       "momentum": 18,
       "_auto": true
     },
@@ -346,7 +342,7 @@
       "bearIndustries": [
         "传统IT服务"
       ],
-      "heat": 51,
+      "heat": 60,
       "momentum": 18,
       "_auto": true
     },
@@ -423,6 +419,40 @@
       "_auto": true
     },
     {
+      "id": "ab13k1mcf",
+      "title": "伊朗海军：今天早上，另一艘违规油轮在霍尔木兹海峡东部限制区域起火，据报系因与海军水雷相撞所致。霍尔木兹海峡东部由伊朗海军完全控制和监视。关闭跟踪系统并在限制区域作业的违规船只的命…",
+      "tag": "地缘/政治",
+      "region": "全球",
+      "concept": "macro",
+      "time": "2026-11-14 18:26",
+      "datetime": "2026-11-14 18:26",
+      "source": "新浪7×24",
+      "url": "https://finance.sina.cn/7x24/2026-11-14/detail-iniyszsz2816131.d.html",
+      "summary": "伊朗海军：今天早上，另一艘违规油轮在霍尔木兹海峡东部限制区域起火，据报系因与海军水雷相撞所致。霍尔木兹海峡东部由伊朗海军完全控制和监视。关闭跟踪系统并在限制区域作业的违规船只的命运就是起火和爆炸。",
+      "relatedStocks": [
+        "军工",
+        "黄金"
+      ],
+      "bullConcepts": [
+        "军工",
+        "避险资产"
+      ],
+      "bearConcepts": [
+        "风险资产"
+      ],
+      "bullIndustries": [
+        "军工",
+        "黄金"
+      ],
+      "bearIndustries": [
+        "航空",
+        "旅游"
+      ],
+      "heat": 24,
+      "momentum": 18,
+      "_auto": true
+    },
+    {
       "id": "ab8j81rn",
       "title": "北京时间今天清晨，马斯克在社交媒体上公开确认，自己正在签署一份请求黄仁勋复职的请愿书。与此同时，承载一请愿活动的网站因访问量激增而面临服务器压力，目前已收集到超过1.4万人的签名…",
       "tag": "宏观/综合",
@@ -449,7 +479,7 @@
         "顺周期"
       ],
       "heat": 24,
-      "momentum": 26,
+      "momentum": 18,
       "_auto": true
     },
     {
@@ -463,40 +493,6 @@
       "source": "华尔街见闻",
       "url": "https://wallstreetcn.com/livenews/3200098",
       "summary": "爱尔兰警方13日查获一枚简易爆炸装置，发现地点距多国领导人前一天晚宴的场所较近。军方拆弹专家出动，成功处置这枚“制作粗糙但具备引爆能力”的爆炸装置。",
-      "relatedStocks": [
-        "军工",
-        "黄金"
-      ],
-      "bullConcepts": [
-        "军工",
-        "避险资产"
-      ],
-      "bearConcepts": [
-        "风险资产"
-      ],
-      "bullIndustries": [
-        "军工",
-        "黄金"
-      ],
-      "bearIndustries": [
-        "航空",
-        "旅游"
-      ],
-      "heat": 24,
-      "momentum": 26,
-      "_auto": true
-    },
-    {
-      "id": "ab1ug7p2c",
-      "title": "伊朗伊斯兰革命卫队总司令瓦希迪11月13日称，伊朗军队已处于“最高战备状态”，以应对任何可能的袭击。一旦遭袭，伊朗将 “深入敌方领土打击敌人，不受任何地理限制”。伊朗近日在多个城…",
-      "tag": "地缘/政治",
-      "region": "全球",
-      "concept": "macro",
-      "time": "2026-11-14 09:48",
-      "datetime": "2026-11-14 09:48",
-      "source": "华尔街见闻",
-      "url": "https://wallstreetcn.com/livenews/3200079",
-      "summary": "伊朗伊斯兰革命卫队总司令瓦希迪11月13日称，伊朗军队已处于“最高战备状态”，以应对任何可能的袭击。一旦遭袭，伊朗将 “深入敌方领土打击敌人，不受任何地理限制”。伊朗近日在多个城市为新近寻获的350名两伊战争期间阵亡的将士遗骸举行葬礼。伊朗总统佩泽希齐扬及多名军方高级官员出席。（CCTV国际时讯）",
       "relatedStocks": [
         "军工",
         "黄金"
@@ -590,16 +586,16 @@
       "_auto": true
     },
     {
-      "id": "ab1mm7n2v",
-      "title": "黄仁勋出事，Anthropic承压？",
+      "id": "ab36h3l2",
+      "title": "老黄离职后，“大空头”加码做空科技股！警告AI热潮或陷入“牛市陷阱”",
       "tag": "科技/AI",
-      "region": "全球",
-      "concept": "ai",
-      "time": "2026-11-14 07:26",
-      "datetime": "2026-11-14 07:26",
-      "source": "环球市场播报",
-      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-14/doc-iniyryfp3208766.shtml",
-      "summary": "Anthropic即将启动本轮热度极高的IPO。在局势突变之下，这场上市恰逢行业失去一位极具影响力、擅长商业游说的核心人物一周之后。",
+      "region": "美国",
+      "concept": "aiCapex",
+      "time": "2026-11-14 13:45",
+      "datetime": "2026-11-14 13:45",
+      "source": "市场资讯",
+      "url": "https://finance.sina.com.cn/stock/hkstock/hkstocknews/2026-11-14/doc-iniysrcf2969234.shtml",
+      "summary": "本文转自“华尔街见闻” 作者：张雅琦 英伟达（NVDA.US）CEO黄仁勋的离职令科技股前景蒙上阴影，著名空头Michael Burry借势加码做空押注...",
       "relatedStocks": [
         "英伟达",
         "微软",
@@ -621,7 +617,7 @@
       "bearIndustries": [
         "传统IT服务"
       ],
-      "heat": 42,
+      "heat": 29,
       "momentum": 18,
       "_auto": true
     },
@@ -864,44 +860,6 @@
       "momentum": 92
     },
     {
-      "id": "b8",
-      "title": "霍尔木兹海峡三艘油轮爆炸起火，伊朗多地遭袭",
-      "tag": "地缘/能源",
-      "region": "全球",
-      "concept": "energy",
-      "time": "2026-11-08",
-      "datetime": "2026-11-08 11:20",
-      "source": "央视/塔斯尼姆通讯社",
-      "summary": "伊朗革命卫队称11月8日当天已有三艘违规油轮在霍尔木兹海峡东部禁航区触雷爆炸起火；同日格什姆岛等地传出爆炸声，伊朗称遭美军袭击。特朗普宣布针对伊朗的\"铁门\"特遣行动全面展开。海峡通航风险推升原油与航运溢价。",
-      "relatedStocks": [
-        "中国海油",
-        "山东黄金",
-        "航运"
-      ],
-      "bullConcepts": [
-        "石油",
-        "黄金",
-        "油运",
-        "军工"
-      ],
-      "bearConcepts": [
-        "航空",
-        "化工(成本端)"
-      ],
-      "bullIndustries": [
-        "石油开采",
-        "航运",
-        "黄金",
-        "军工"
-      ],
-      "bearIndustries": [
-        "航空运输",
-        "化工"
-      ],
-      "heat": 90,
-      "momentum": 88
-    },
-    {
       "id": "b9",
       "title": "沙特阿美石油大楼遭袭受损（利雅得）",
       "tag": "地缘/能源",
@@ -935,6 +893,35 @@
       ],
       "heat": 82,
       "momentum": 80
+    },
+    {
+      "id": "b10",
+      "title": "Anthropic 拟11月16日当周登陆纳斯达克IPO",
+      "tag": "企业活动/AI",
+      "region": "美国",
+      "concept": "aiCapex",
+      "time": "2026-11-16（预计）",
+      "datetime": "2026-11-08 09:00",
+      "source": "路透/SEC S-1",
+      "summary": "Anthropic已公开递交S-1，潜在买家讨论1.2万亿至1.3万亿美元估值区间；三季度营收约169.6亿美元、环比增45%，但算力支出承诺已近8954亿美元。IPO为美股AI链重要风向标。",
+      "relatedStocks": [
+        "AI",
+        "美股"
+      ],
+      "bullConcepts": [
+        "AI算力",
+        "云计算",
+        "AI应用"
+      ],
+      "bearConcepts": [],
+      "bullIndustries": [
+        "AI",
+        "云计算",
+        "算力"
+      ],
+      "bearIndustries": [],
+      "heat": 75,
+      "momentum": 58
     },
     {
       "id": "b11",
