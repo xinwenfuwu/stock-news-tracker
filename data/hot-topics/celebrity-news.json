@@ -1,67 +1,41 @@
 {
-  "generatedAt": "2026-11-15 03:02",
+  "generatedAt": "2026-11-15 07:50",
   "generatedBy": "GitHub Actions · 多源实时聚合",
-  "sourceCount": 5,
-  "autoCount": 10,
+  "sourceCount": 4,
+  "autoCount": 11,
   "events": [
     {
-      "id": "apr2clj9",
-      "title": "知情人士透露，特朗普政府对驻欧美军的削减规模，将低于欧洲盟友此前担忧的水平。盟友方面目前预计，美军总共将削减约5000人，大部分裁撤集中在德国。最终决定权在特朗普总统手中，他此前…",
-      "tag": "人物/特朗普",
-      "region": "美国",
-      "concept": "usMacro",
-      "time": "2026-11-15 02:29",
-      "datetime": "2026-11-15 02:29",
-      "source": "新浪7×24",
-      "url": "https://finance.sina.cn/7x24/2026-11-15/detail-iniytwwp0078890.d.html",
-      "summary": "知情人士透露，特朗普政府对驻欧美军的削减规模，将低于欧洲盟友此前担忧的水平。盟友方面目前预计，美军总共将削减约5000人，大部分裁撤集中在德国。最终决定权在特朗普总统手中，他此前多次批评欧洲盟友，指责其在美以对抗伊朗的战事中没有给予美方支持。",
+      "id": "ap1gxubx3",
+      "title": "埃森科特：内塔尼亚胡称组建“团结政府”是故弄玄虚",
+      "tag": "人物/内塔尼亚胡",
+      "region": "全球",
+      "concept": "macro",
+      "time": "2026-11-15 07:32",
+      "datetime": "2026-11-15 07:32",
+      "source": "财联社",
+      "url": "https://www.cls.cn/detail/2534595",
+      "summary": "【埃森科特：内塔尼亚胡称组建“团结政府”是故弄玄虚】财联社11月15日电，受权组阁的以色列正直党领导人加迪·埃森科特14日在社交媒体发文称，看守政府总理内塔尼亚胡“已经意识到自己在选举中落败”，他呼吁组建“民族团结政府”不过是故弄玄虚的“政治伎俩”。埃森科特表示，内塔尼亚胡明白其将在以色列议会中遭遇“绝大多数人的反对”，一个新政府终将成立。",
       "relatedStocks": [
-        "宽基指数"
+        "军工",
+        "黄金"
       ],
       "bullConcepts": [
-        "防御板块"
+        "军工",
+        "避险资产"
       ],
       "bearConcepts": [
-        "周期股"
+        "风险资产"
       ],
       "bullIndustries": [
-        "公用事业"
+        "军工",
+        "黄金"
       ],
       "bearIndustries": [
-        "顺周期"
+        "航空",
+        "旅游"
       ],
-      "heat": 29,
-      "momentum": 26,
-      "_auto": true
-    },
-    {
-      "id": "ap13tuuyr",
-      "title": "美国交通部长达菲：总统特朗普呼吁升级空中导航设备，但国会未能认识到这样做的重要性。",
-      "tag": "人物/特朗普",
-      "region": "美国",
-      "concept": "usMacro",
-      "time": "2026-11-15 00:26",
-      "datetime": "2026-11-15 00:26",
-      "source": "新浪7×24",
-      "url": "https://finance.sina.cn/7x24/2026-11-15/detail-iniytsqs6960450.d.html",
-      "summary": "美国交通部长达菲：总统特朗普呼吁升级空中导航设备，但国会未能认识到这样做的重要性。",
-      "relatedStocks": [
-        "宽基指数"
-      ],
-      "bullConcepts": [
-        "防御板块"
-      ],
-      "bearConcepts": [
-        "周期股"
-      ],
-      "bullIndustries": [
-        "公用事业"
-      ],
-      "bearIndustries": [
-        "顺周期"
-      ],
-      "heat": 87,
-      "momentum": 18,
+      "heat": 24,
+      "momentum": 36,
       "_auto": true
     },
     {
@@ -96,21 +70,21 @@
       "bearIndustries": [
         "传统IT服务"
       ],
-      "heat": 87,
+      "heat": 69,
       "momentum": 18,
       "_auto": true
     },
     {
-      "id": "apr46b9c",
-      "title": "马斯克：SpaceX通信卫星最终将超10万颗",
+      "id": "ap1az0z1z",
+      "title": "SpaceX发布第十五次星舰试飞最新进展称，上面级飞船已成功完成离轨点火，正沿预定轨迹准备再入地球大气层，将按计划在得克萨斯州星际基地尝试发射塔机械臂捕获。",
       "tag": "人物/马斯克",
       "region": "全球",
       "concept": "macro",
-      "time": "2026-11-15 00:50",
-      "datetime": "2026-11-15 00:50",
+      "time": "2026-11-15 04:42",
+      "datetime": "2026-11-15 04:42",
       "source": "财联社",
-      "url": "https://www.cls.cn/detail/2534574",
-      "summary": "【马斯克：SpaceX通信卫星最终将超10万颗】财联社11月15日电，马斯克在回应“星舰单次发射可增加50 Tbps星链带宽”的评价时表示，这个数据对全球国际带宽总量的实际提升“没有听起来那么好”，因为星链需要在近地轨道部署大量卫星，才能在全球范围内实现这样的带宽提升。不过，他预计，SpaceX通信卫星最终将超过10万颗，其中大多数将为V4或V5版本。（注：星舰第15次试飞搭…",
+      "url": "https://www.cls.cn/detail/2534582",
+      "summary": "SpaceX发布第十五次星舰试飞最新进展称，上面级飞船已成功完成离轨点火，正沿预定轨迹准备再入地球大气层，将按计划在得克萨斯州星际基地尝试发射塔机械臂捕获。",
       "relatedStocks": [
         "宽基指数"
       ],
@@ -126,41 +100,69 @@
       "bearIndustries": [
         "顺周期"
       ],
-      "heat": 78,
+      "heat": 96,
       "momentum": 18,
       "_auto": true
     },
     {
-      "id": "ap6dses1",
-      "title": "据美联社报道，美国总统特朗普计划下周访问亚洲时带上马斯克。匿名政府官员透露，作为SpaceX和特斯拉的掌门人，马斯克在经济和国家安全方面拥有重要利益，这使他成为特朗普的宝贵顾问。…",
+      "id": "ap1qr8gmo",
+      "title": "SpaceX：各团队完成状态确认，均同意星舰飞船返回星际基地发射场",
       "tag": "人物/马斯克",
-      "region": "美国",
-      "concept": "aiCapex",
-      "time": "2026-11-14 13:23",
-      "datetime": "2026-11-14 13:23",
-      "source": "华尔街见闻",
-      "url": "https://wallstreetcn.com/livenews/3200107",
-      "summary": "据美联社报道，美国总统特朗普计划下周访问亚洲时带上马斯克。匿名政府官员透露，作为SpaceX和特斯拉的掌门人，马斯克在经济和国家安全方面拥有重要利益，这使他成为特朗普的宝贵顾问。官员还透露，特朗普并不打算提及黄仁勋相关事件，美国政府认为英伟达事件不会对此次访问产生任何影响。",
+      "region": "全球",
+      "concept": "macro",
+      "time": "2026-11-15 03:23",
+      "datetime": "2026-11-15 03:23",
+      "source": "财联社",
+      "url": "https://www.cls.cn/detail/2534580",
+      "summary": "【SpaceX：各团队完成状态确认，均同意星舰飞船返回星际基地发射场】财联社11月15日电，SpaceX在星舰第15次试飞直播中宣布，各团队已完成返回发射场前的状态核查，一致确认可以继续执行返回任务，涉及隔热盾、襟翼、结构、气动、制导导航与控制等系统。发射台及发射塔的现场检查结果正常，发射塔已做好捕获准备。星舰将尝试返回星际基地，由发射塔首次捕获其上面级。",
       "relatedStocks": [
-        "英伟达",
-        "微软",
-        "台积电"
+        "宽基指数"
       ],
       "bullConcepts": [
-        "AI算力",
-        "半导体",
-        "国产替代"
+        "防御板块"
       ],
       "bearConcepts": [
-        "传统软件"
+        "周期股"
       ],
       "bullIndustries": [
-        "半导体",
-        "AI应用",
-        "算力基础设施"
+        "公用事业"
       ],
       "bearIndustries": [
-        "传统IT服务"
+        "顺周期"
+      ],
+      "heat": 96,
+      "momentum": 18,
+      "_auto": true
+    },
+    {
+      "id": "apwi6fyg",
+      "title": "知情人士透露，美国总统特朗普近日向高级顾问表示，如果美国未受到来自伊朗或也门胡塞武装的任何新挑衅，他可能会暂缓对伊朗采取军事打击。（路透）",
+      "tag": "人物/特朗普",
+      "region": "美国",
+      "concept": "defense",
+      "time": "2026-11-14 19:15",
+      "datetime": "2026-11-14 19:15",
+      "source": "华尔街见闻",
+      "url": "https://wallstreetcn.com/livenews/3200128",
+      "summary": "知情人士透露，美国总统特朗普近日向高级顾问表示，如果美国未受到来自伊朗或也门胡塞武装的任何新挑衅，他可能会暂缓对伊朗采取军事打击。（路透）",
+      "relatedStocks": [
+        "军工",
+        "黄金"
+      ],
+      "bullConcepts": [
+        "军工",
+        "避险资产"
+      ],
+      "bearConcepts": [
+        "风险资产"
+      ],
+      "bullIndustries": [
+        "军工",
+        "黄金"
+      ],
+      "bearIndustries": [
+        "航空",
+        "旅游"
       ],
       "heat": 33,
       "momentum": 18,
@@ -198,7 +200,7 @@
       "bearIndustries": [
         "传统IT服务"
       ],
-      "heat": 33,
+      "heat": 29,
       "momentum": 18,
       "_auto": true
     },
@@ -234,7 +236,7 @@
       "bearIndustries": [
         "传统IT服务"
       ],
-      "heat": 56,
+      "heat": 51,
       "momentum": 18,
       "_auto": true
     },
@@ -275,50 +277,76 @@
       "_auto": true
     },
     {
-      "id": "apxp670p",
-      "title": "泽连斯基：美国建议乌克兰放弃顿巴斯地区 以换取加入北约",
-      "tag": "人物/泽连斯基",
+      "id": "apirn4iz",
+      "title": "报道：以色列情报局长访美 内塔尼亚胡敦促特朗普重启对伊朗战事",
+      "tag": "人物/特朗普",
       "region": "美国",
-      "concept": "defense",
-      "time": "2026-11-14 17:08",
-      "datetime": "2026-11-14 17:08",
-      "source": "财联社",
-      "url": "https://www.cls.cn/detail/2534487",
-      "summary": "【泽连斯基：相信乌克兰加入北约问题已重新提上议程】财联社11月14日电，乌克兰总统泽连斯基表示，美国谈判代表提出了一个问题，即如果乌克兰加入北约，是否准备放弃顿巴斯地区。相信乌克兰加入北约的问题已重新提上议程。",
+      "concept": "usMacro",
+      "time": "2026-11-13 21:57",
+      "datetime": "2026-11-13 21:57",
+      "source": "环球市场播报",
+      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-13/doc-iniyrazr0896790.shtml",
+      "summary": "据三名知情消息人士透露，以色列摩萨德情报机构局长周五抵达华盛顿，与特朗普政府高层官员就伊朗局势展开磋商。 罗曼・戈夫曼是内塔尼亚胡最核心的心腹之一...",
       "relatedStocks": [
-        "军工",
-        "黄金"
+        "宽基指数"
       ],
       "bullConcepts": [
-        "军工",
-        "避险资产"
+        "防御板块"
       ],
       "bearConcepts": [
-        "风险资产"
+        "周期股"
       ],
       "bullIndustries": [
-        "军工",
-        "黄金"
+        "公用事业"
       ],
       "bearIndustries": [
-        "航空",
-        "旅游"
+        "顺周期"
       ],
-      "heat": 51,
+      "heat": 24,
       "momentum": 18,
       "_auto": true
     },
     {
-      "id": "ap1agyoul",
-      "title": "泽连斯基：要求欧洲盟友在11月底前决定由谁代表欧洲参加和平谈判",
+      "id": "ap1b91g79",
+      "title": "视频丨泽连斯基称乌军使用“星盾”再遭限速",
+      "tag": "人物/泽连斯基",
+      "region": "全球",
+      "concept": "macro",
+      "time": "2026-11-13 23:16",
+      "datetime": "2026-11-13 23:16",
+      "source": "央视",
+      "url": "https://finance.sina.com.cn/jjxw/2026-11-13/doc-iniyrprt3367158.shtml",
+      "summary": "乌克兰总统泽连斯基12日说，连日来，乌军使用的“星盾”卫星通信系统运行出现“重大中断”，导致乌军拦截俄罗斯无人机的难度大幅增加。",
+      "relatedStocks": [
+        "宽基指数"
+      ],
+      "bullConcepts": [
+        "防御板块"
+      ],
+      "bearConcepts": [
+        "周期股"
+      ],
+      "bullIndustries": [
+        "公用事业"
+      ],
+      "bearIndustries": [
+        "顺周期"
+      ],
+      "heat": 33,
+      "momentum": 18,
+      "_auto": true
+    },
+    {
+      "id": "apan9u11",
+      "title": "泽连斯基称美国提出以让乌克兰加入北约来换取其放弃顿巴斯地区",
       "tag": "人物/泽连斯基",
       "region": "美国",
       "concept": "defense",
-      "time": "2026-11-14 17:06",
-      "datetime": "2026-11-14 17:06",
-      "source": "财联社",
-      "url": "https://www.cls.cn/detail/2534486",
-      "summary": "【泽连斯基：要求欧洲盟友在11月底前决定由谁代表欧洲参加和平谈判】财联社11月14日电，乌克兰总统泽连斯基表示，要求欧洲盟友在11月底前决定由谁代表欧洲参加和平谈判。美国特使表示，俄罗斯总统普京同意在下一轮谈判中让欧洲参与。",
+      "time": "2026-11-14 17:44",
+      "datetime": "2026-11-14 17:44",
+      "source": "环球市场播报",
+      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-14/doc-iniyszsy7219163.shtml",
+      "summary": "乌克兰总统泽连斯基表示，美国特使曾询问乌克兰是否愿意将东部的顿巴斯地区让给俄罗斯，以此换取加入北约的机会；这表明华盛顿的谈判策略可能发生了转变。",
       "relatedStocks": [
         "军工",
         "黄金"
@@ -338,7 +366,7 @@
         "航空",
         "旅游"
       ],
-      "heat": 29,
+      "heat": 24,
       "momentum": 18,
       "_auto": true
     },
