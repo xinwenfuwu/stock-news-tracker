@@ -1,9 +1,69 @@
 {
-  "generatedAt": "2026-11-14 21:26",
+  "generatedAt": "2026-11-15 03:02",
   "generatedBy": "GitHub Actions · 多源实时聚合",
   "sourceCount": 5,
   "autoCount": 10,
   "events": [
+    {
+      "id": "apr2clj9",
+      "title": "知情人士透露，特朗普政府对驻欧美军的削减规模，将低于欧洲盟友此前担忧的水平。盟友方面目前预计，美军总共将削减约5000人，大部分裁撤集中在德国。最终决定权在特朗普总统手中，他此前…",
+      "tag": "人物/特朗普",
+      "region": "美国",
+      "concept": "usMacro",
+      "time": "2026-11-15 02:29",
+      "datetime": "2026-11-15 02:29",
+      "source": "新浪7×24",
+      "url": "https://finance.sina.cn/7x24/2026-11-15/detail-iniytwwp0078890.d.html",
+      "summary": "知情人士透露，特朗普政府对驻欧美军的削减规模，将低于欧洲盟友此前担忧的水平。盟友方面目前预计，美军总共将削减约5000人，大部分裁撤集中在德国。最终决定权在特朗普总统手中，他此前多次批评欧洲盟友，指责其在美以对抗伊朗的战事中没有给予美方支持。",
+      "relatedStocks": [
+        "宽基指数"
+      ],
+      "bullConcepts": [
+        "防御板块"
+      ],
+      "bearConcepts": [
+        "周期股"
+      ],
+      "bullIndustries": [
+        "公用事业"
+      ],
+      "bearIndustries": [
+        "顺周期"
+      ],
+      "heat": 29,
+      "momentum": 26,
+      "_auto": true
+    },
+    {
+      "id": "ap13tuuyr",
+      "title": "美国交通部长达菲：总统特朗普呼吁升级空中导航设备，但国会未能认识到这样做的重要性。",
+      "tag": "人物/特朗普",
+      "region": "美国",
+      "concept": "usMacro",
+      "time": "2026-11-15 00:26",
+      "datetime": "2026-11-15 00:26",
+      "source": "新浪7×24",
+      "url": "https://finance.sina.cn/7x24/2026-11-15/detail-iniytsqs6960450.d.html",
+      "summary": "美国交通部长达菲：总统特朗普呼吁升级空中导航设备，但国会未能认识到这样做的重要性。",
+      "relatedStocks": [
+        "宽基指数"
+      ],
+      "bullConcepts": [
+        "防御板块"
+      ],
+      "bearConcepts": [
+        "周期股"
+      ],
+      "bullIndustries": [
+        "公用事业"
+      ],
+      "bearIndustries": [
+        "顺周期"
+      ],
+      "heat": 87,
+      "momentum": 18,
+      "_auto": true
+    },
     {
       "id": "ap9vsxgr",
       "title": "11月14日外盘头条：美国联邦航空管理局发布全国范围地面停飞指令 OpenAI撤销独立机器人研究团队",
@@ -36,110 +96,37 @@
       "bearIndustries": [
         "传统IT服务"
       ],
-      "heat": 65,
+      "heat": 87,
       "momentum": 18,
       "_auto": true
     },
     {
-      "id": "apwi6fyg",
-      "title": "知情人士透露，美国总统特朗普近日向高级顾问表示，如果美国未受到来自伊朗或也门胡塞武装的任何新挑衅，他可能会暂缓对伊朗采取军事打击。（路透）",
-      "tag": "人物/特朗普",
-      "region": "美国",
-      "concept": "defense",
-      "time": "2026-11-14 19:15",
-      "datetime": "2026-11-14 19:15",
-      "source": "华尔街见闻",
-      "url": "https://wallstreetcn.com/livenews/3200128",
-      "summary": "知情人士透露，美国总统特朗普近日向高级顾问表示，如果美国未受到来自伊朗或也门胡塞武装的任何新挑衅，他可能会暂缓对伊朗采取军事打击。（路透）",
-      "relatedStocks": [
-        "军工",
-        "黄金"
-      ],
-      "bullConcepts": [
-        "军工",
-        "避险资产"
-      ],
-      "bearConcepts": [
-        "风险资产"
-      ],
-      "bullIndustries": [
-        "军工",
-        "黄金"
-      ],
-      "bearIndustries": [
-        "航空",
-        "旅游"
-      ],
-      "heat": 56,
-      "momentum": 18,
-      "_auto": true
-    },
-    {
-      "id": "ap10lzo6w",
-      "title": "冲刺史上最大IPO之际，阿莫代伊对谈戴蒙：算力、竞争与AI未来",
-      "tag": "人物/戴蒙",
-      "region": "美国",
-      "concept": "aiCapex",
-      "time": "2026-11-14 03:02",
-      "datetime": "2026-11-14 03:02",
-      "source": "市场资讯",
-      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-14/doc-iniyryfn7600802.shtml",
-      "summary": "来源：财联社 当地时间周五，Anthropic联合创始人达里奥·阿莫代伊到访纽约，与“华尔街一哥”、摩根大通掌门杰米·戴蒙进行公开对谈，为公司下周冲刺“史上最大IPO”造势。",
-      "relatedStocks": [
-        "英伟达",
-        "微软",
-        "台积电"
-      ],
-      "bullConcepts": [
-        "AI算力",
-        "半导体",
-        "国产替代"
-      ],
-      "bearConcepts": [
-        "传统软件"
-      ],
-      "bullIndustries": [
-        "半导体",
-        "AI应用",
-        "算力基础设施"
-      ],
-      "bearIndustries": [
-        "传统IT服务"
-      ],
-      "heat": 38,
-      "momentum": 18,
-      "_auto": true
-    },
-    {
-      "id": "ap4koj5g",
-      "title": "马斯克：Cybercab每月299美元自动驾驶订阅费太高",
+      "id": "apr46b9c",
+      "title": "马斯克：SpaceX通信卫星最终将超10万颗",
       "tag": "人物/马斯克",
-      "region": "美国",
-      "concept": "usFinance",
-      "time": "2026-11-14 15:12",
-      "datetime": "2026-11-14 15:12",
+      "region": "全球",
+      "concept": "macro",
+      "time": "2026-11-15 00:50",
+      "datetime": "2026-11-15 00:50",
       "source": "财联社",
-      "url": "https://www.cls.cn/detail/2534461",
-      "summary": "【马斯克：Cybercab每月299美元自动驾驶订阅费太高】财联社11月14日电，特斯拉宣布开始向部分个人用户开放Cybercab购买渠道，起售价 29990 美元，首批车辆预计将于12月交付。不过，目前 Cybercab个人购买资格仅向特定受邀客户开放，首批交付范围也暂时集中在德克萨斯州奥斯汀地区。用户还需支付 1000 美元不可退还的订购定金。此外，车辆必须搭配每月 29…",
+      "url": "https://www.cls.cn/detail/2534574",
+      "summary": "【马斯克：SpaceX通信卫星最终将超10万颗】财联社11月15日电，马斯克在回应“星舰单次发射可增加50 Tbps星链带宽”的评价时表示，这个数据对全球国际带宽总量的实际提升“没有听起来那么好”，因为星链需要在近地轨道部署大量卫星，才能在全球范围内实现这样的带宽提升。不过，他预计，SpaceX通信卫星最终将超过10万颗，其中大多数将为V4或V5版本。（注：星舰第15次试飞搭…",
       "relatedStocks": [
-        "美股科技",
-        "黄金"
+        "宽基指数"
       ],
       "bullConcepts": [
-        "黄金",
         "防御板块"
       ],
       "bearConcepts": [
-        "高估值成长股"
+        "周期股"
       ],
       "bullIndustries": [
-        "银行",
-        "黄金"
+        "公用事业"
       ],
       "bearIndustries": [
-        "高杠杆地产"
+        "顺周期"
       ],
-      "heat": 42,
+      "heat": 78,
       "momentum": 18,
       "_auto": true
     },
@@ -175,7 +162,43 @@
       "bearIndustries": [
         "传统IT服务"
       ],
-      "heat": 29,
+      "heat": 33,
+      "momentum": 18,
+      "_auto": true
+    },
+    {
+      "id": "ap10lzo6w",
+      "title": "冲刺史上最大IPO之际，阿莫代伊对谈戴蒙：算力、竞争与AI未来",
+      "tag": "人物/戴蒙",
+      "region": "美国",
+      "concept": "aiCapex",
+      "time": "2026-11-14 03:02",
+      "datetime": "2026-11-14 03:02",
+      "source": "市场资讯",
+      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-14/doc-iniyryfn7600802.shtml",
+      "summary": "来源：财联社 当地时间周五，Anthropic联合创始人达里奥·阿莫代伊到访纽约，与“华尔街一哥”、摩根大通掌门杰米·戴蒙进行公开对谈，为公司下周冲刺“史上最大IPO”造势。",
+      "relatedStocks": [
+        "英伟达",
+        "微软",
+        "台积电"
+      ],
+      "bullConcepts": [
+        "AI算力",
+        "半导体",
+        "国产替代"
+      ],
+      "bearConcepts": [
+        "传统软件"
+      ],
+      "bullIndustries": [
+        "半导体",
+        "AI应用",
+        "算力基础设施"
+      ],
+      "bearIndustries": [
+        "传统IT服务"
+      ],
+      "heat": 33,
       "momentum": 18,
       "_auto": true
     },
@@ -211,21 +234,21 @@
       "bearIndustries": [
         "传统IT服务"
       ],
-      "heat": 60,
+      "heat": 56,
       "momentum": 18,
       "_auto": true
     },
     {
-      "id": "ap1soudp2",
-      "title": "神秘交易者在黄仁勋辞职前做空英伟达，赚了2亿美元",
+      "id": "ap17ot0af",
+      "title": "黄仁勋突然离职 存储厂商有望获更大主动权 SK海力士订单或流向AMD等竞争对手",
       "tag": "人物/黄仁勋",
-      "region": "美国",
-      "concept": "aiCapex",
-      "time": "2026-11-13 19:49",
-      "datetime": "2026-11-13 19:49",
+      "region": "全球",
+      "concept": "ai",
+      "time": "2026-11-13 21:29",
+      "datetime": "2026-11-13 21:29",
       "source": "环球市场播报",
-      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-13/doc-iniyqwtz3623425.shtml",
-      "summary": "Macro Risk Advisors（MRA）的专业人士发现了一起异常操作：10月12日，有人在英伟达股票上建立了一系列大幅虚值、将于明年1月到期的看跌期权头寸。",
+      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-13/doc-iniyrazr0882253.shtml",
+      "summary": "业内消息人士认为，高带宽内存（HBM）供货条款与客户合作关系或将出现变动，而由黄仁勋主推的项目，在新管理层上任后优先级存在不确定性。",
       "relatedStocks": [
         "英伟达",
         "微软",
@@ -247,37 +270,7 @@
       "bearIndustries": [
         "传统IT服务"
       ],
-      "heat": 42,
-      "momentum": 18,
-      "_auto": true
-    },
-    {
-      "id": "ap1fcxcmc",
-      "title": "消息人士称，特朗普最近几天告诉他的高级顾问，除非伊朗再次挑衅，否则他可能会推迟对伊朗的攻击。",
-      "tag": "人物/特朗普",
-      "region": "美国",
-      "concept": "usMacro",
-      "time": "2026-11-14 19:01",
-      "datetime": "2026-11-14 19:01",
-      "source": "新浪7×24",
-      "url": "https://finance.sina.cn/7x24/2026-11-14/detail-iniyszsx0473881.d.html",
-      "summary": "消息人士称，特朗普最近几天告诉他的高级顾问，除非伊朗再次挑衅，否则他可能会推迟对伊朗的攻击。",
-      "relatedStocks": [
-        "宽基指数"
-      ],
-      "bullConcepts": [
-        "防御板块"
-      ],
-      "bearConcepts": [
-        "周期股"
-      ],
-      "bullIndustries": [
-        "公用事业"
-      ],
-      "bearIndustries": [
-        "顺周期"
-      ],
-      "heat": 24,
+      "heat": 29,
       "momentum": 18,
       "_auto": true
     },
