@@ -1,41 +1,37 @@
 {
-  "generatedAt": "2026-11-15 07:50",
+  "generatedAt": "2026-11-15 14:04",
   "generatedBy": "GitHub Actions · 多源实时聚合",
-  "sourceCount": 4,
-  "autoCount": 11,
+  "sourceCount": 5,
+  "autoCount": 12,
   "events": [
     {
-      "id": "ap1gxubx3",
-      "title": "埃森科特：内塔尼亚胡称组建“团结政府”是故弄玄虚",
-      "tag": "人物/内塔尼亚胡",
-      "region": "全球",
-      "concept": "macro",
-      "time": "2026-11-15 07:32",
-      "datetime": "2026-11-15 07:32",
-      "source": "财联社",
-      "url": "https://www.cls.cn/detail/2534595",
-      "summary": "【埃森科特：内塔尼亚胡称组建“团结政府”是故弄玄虚】财联社11月15日电，受权组阁的以色列正直党领导人加迪·埃森科特14日在社交媒体发文称，看守政府总理内塔尼亚胡“已经意识到自己在选举中落败”，他呼吁组建“民族团结政府”不过是故弄玄虚的“政治伎俩”。埃森科特表示，内塔尼亚胡明白其将在以色列议会中遭遇“绝大多数人的反对”，一个新政府终将成立。",
+      "id": "ap5scg11",
+      "title": "一名联邦法官周六阻止特朗普政府于本周末关闭东波托马克公园，裁定该公园至少两周内不得关闭。特朗普此前称，该公园将于周日关闭，以便动工修建由建筑师汤姆·法齐奥设计的18洞锦标赛规格高…",
+      "tag": "人物/特朗普",
+      "region": "美国",
+      "concept": "usMacro",
+      "time": "2026-11-15 13:24",
+      "datetime": "2026-11-15 13:24",
+      "source": "新浪7×24",
+      "url": "https://finance.sina.cn/7x24/2026-11-15/detail-iniyuykf3208861.d.html",
+      "summary": "一名联邦法官周六阻止特朗普政府于本周末关闭东波托马克公园，裁定该公园至少两周内不得关闭。特朗普此前称，该公园将于周日关闭，以便动工修建由建筑师汤姆·法齐奥设计的18洞锦标赛规格高尔夫球场。",
       "relatedStocks": [
-        "军工",
-        "黄金"
+        "宽基指数"
       ],
       "bullConcepts": [
-        "军工",
-        "避险资产"
+        "防御板块"
       ],
       "bearConcepts": [
-        "风险资产"
+        "周期股"
       ],
       "bullIndustries": [
-        "军工",
-        "黄金"
+        "公用事业"
       ],
       "bearIndustries": [
-        "航空",
-        "旅游"
+        "顺周期"
       ],
       "heat": 24,
-      "momentum": 36,
+      "momentum": 26,
       "_auto": true
     },
     {
@@ -70,7 +66,7 @@
       "bearIndustries": [
         "传统IT服务"
       ],
-      "heat": 69,
+      "heat": 74,
       "momentum": 18,
       "_auto": true
     },
@@ -100,7 +96,7 @@
       "bearIndustries": [
         "顺周期"
       ],
-      "heat": 96,
+      "heat": 65,
       "momentum": 18,
       "_auto": true
     },
@@ -130,7 +126,7 @@
       "bearIndustries": [
         "顺周期"
       ],
-      "heat": 96,
+      "heat": 65,
       "momentum": 18,
       "_auto": true
     },
@@ -169,38 +165,32 @@
       "_auto": true
     },
     {
-      "id": "ap10lzo6w",
-      "title": "冲刺史上最大IPO之际，阿莫代伊对谈戴蒙：算力、竞争与AI未来",
-      "tag": "人物/戴蒙",
-      "region": "美国",
-      "concept": "aiCapex",
-      "time": "2026-11-14 03:02",
-      "datetime": "2026-11-14 03:02",
-      "source": "市场资讯",
-      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-14/doc-iniyryfn7600802.shtml",
-      "summary": "来源：财联社 当地时间周五，Anthropic联合创始人达里奥·阿莫代伊到访纽约，与“华尔街一哥”、摩根大通掌门杰米·戴蒙进行公开对谈，为公司下周冲刺“史上最大IPO”造势。",
+      "id": "apb62nv9",
+      "title": "11月15日，华为常务董事、产品投资评审委员会主任、终端BG董事长余承东在其个人社交平台表示，今年是华为Mate X系列走过的第八年，现在大折叠已成为千万用户的主力机型，新一代华…",
+      "tag": "人物/余承东",
+      "region": "全球",
+      "concept": "macro",
+      "time": "2026-11-15 11:54",
+      "datetime": "2026-11-15 11:54",
+      "source": "华尔街见闻",
+      "url": "https://wallstreetcn.com/livenews/3200163",
+      "summary": "11月15日，华为常务董事、产品投资评审委员会主任、终端BG董事长余承东在其个人社交平台表示，今年是华为Mate X系列走过的第八年，现在大折叠已成为千万用户的主力机型，新一代华为Mate X8将在屏幕、影像和性能体验上有新的突破。",
       "relatedStocks": [
-        "英伟达",
-        "微软",
-        "台积电"
+        "宽基指数"
       ],
       "bullConcepts": [
-        "AI算力",
-        "半导体",
-        "国产替代"
+        "防御板块"
       ],
       "bearConcepts": [
-        "传统软件"
+        "周期股"
       ],
       "bullIndustries": [
-        "半导体",
-        "AI应用",
-        "算力基础设施"
+        "公用事业"
       ],
       "bearIndustries": [
-        "传统IT服务"
+        "顺周期"
       ],
-      "heat": 29,
+      "heat": 51,
       "momentum": 18,
       "_auto": true
     },
@@ -236,21 +226,57 @@
       "bearIndustries": [
         "传统IT服务"
       ],
-      "heat": 51,
+      "heat": 47,
       "momentum": 18,
       "_auto": true
     },
     {
-      "id": "ap17ot0af",
-      "title": "黄仁勋突然离职 存储厂商有望获更大主动权 SK海力士订单或流向AMD等竞争对手",
+      "id": "ap10lzo6w",
+      "title": "冲刺史上最大IPO之际，阿莫代伊对谈戴蒙：算力、竞争与AI未来",
+      "tag": "人物/戴蒙",
+      "region": "美国",
+      "concept": "aiCapex",
+      "time": "2026-11-14 03:02",
+      "datetime": "2026-11-14 03:02",
+      "source": "市场资讯",
+      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-14/doc-iniyryfn7600802.shtml",
+      "summary": "来源：财联社 当地时间周五，Anthropic联合创始人达里奥·阿莫代伊到访纽约，与“华尔街一哥”、摩根大通掌门杰米·戴蒙进行公开对谈，为公司下周冲刺“史上最大IPO”造势。",
+      "relatedStocks": [
+        "英伟达",
+        "微软",
+        "台积电"
+      ],
+      "bullConcepts": [
+        "AI算力",
+        "半导体",
+        "国产替代"
+      ],
+      "bearConcepts": [
+        "传统软件"
+      ],
+      "bullIndustries": [
+        "半导体",
+        "AI应用",
+        "算力基础设施"
+      ],
+      "bearIndustries": [
+        "传统IT服务"
+      ],
+      "heat": 24,
+      "momentum": 18,
+      "_auto": true
+    },
+    {
+      "id": "appyu90j",
+      "title": "黄仁勋风波持续发酵 英伟达创逾18个月来最差单周表现",
       "tag": "人物/黄仁勋",
-      "region": "全球",
-      "concept": "ai",
-      "time": "2026-11-13 21:29",
-      "datetime": "2026-11-13 21:29",
+      "region": "美国",
+      "concept": "aiCapex",
+      "time": "2026-11-14 06:49",
+      "datetime": "2026-11-14 06:49",
       "source": "环球市场播报",
-      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-13/doc-iniyrazr0882253.shtml",
-      "summary": "业内消息人士认为，高带宽内存（HBM）供货条款与客户合作关系或将出现变动，而由黄仁勋主推的项目，在新管理层上任后优先级存在不确定性。",
+      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-14/doc-iniyryfm0827643.shtml",
+      "summary": "英伟达股价录得逾18个月来最差单周表现，这家芯片巨头在黄仁勋离职后持续承压。 英伟达周五下跌2%，收于162.85美元，过去五个交易日累计下跌13%...",
       "relatedStocks": [
         "英伟达",
         "微软",
@@ -273,36 +299,6 @@
         "传统IT服务"
       ],
       "heat": 29,
-      "momentum": 18,
-      "_auto": true
-    },
-    {
-      "id": "apirn4iz",
-      "title": "报道：以色列情报局长访美 内塔尼亚胡敦促特朗普重启对伊朗战事",
-      "tag": "人物/特朗普",
-      "region": "美国",
-      "concept": "usMacro",
-      "time": "2026-11-13 21:57",
-      "datetime": "2026-11-13 21:57",
-      "source": "环球市场播报",
-      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-13/doc-iniyrazr0896790.shtml",
-      "summary": "据三名知情消息人士透露，以色列摩萨德情报机构局长周五抵达华盛顿，与特朗普政府高层官员就伊朗局势展开磋商。 罗曼・戈夫曼是内塔尼亚胡最核心的心腹之一...",
-      "relatedStocks": [
-        "宽基指数"
-      ],
-      "bullConcepts": [
-        "防御板块"
-      ],
-      "bearConcepts": [
-        "周期股"
-      ],
-      "bullIndustries": [
-        "公用事业"
-      ],
-      "bearIndustries": [
-        "顺周期"
-      ],
-      "heat": 24,
       "momentum": 18,
       "_auto": true
     },
@@ -333,6 +329,40 @@
         "顺周期"
       ],
       "heat": 33,
+      "momentum": 18,
+      "_auto": true
+    },
+    {
+      "id": "ap1gxubx3",
+      "title": "埃森科特：内塔尼亚胡称组建“团结政府”是故弄玄虚",
+      "tag": "人物/内塔尼亚胡",
+      "region": "全球",
+      "concept": "macro",
+      "time": "2026-11-15 07:32",
+      "datetime": "2026-11-15 07:32",
+      "source": "财联社",
+      "url": "https://www.cls.cn/detail/2534595",
+      "summary": "【埃森科特：内塔尼亚胡称组建“团结政府”是故弄玄虚】财联社11月15日电，受权组阁的以色列正直党领导人加迪·埃森科特14日在社交媒体发文称，看守政府总理内塔尼亚胡“已经意识到自己在选举中落败”，他呼吁组建“民族团结政府”不过是故弄玄虚的“政治伎俩”。埃森科特表示，内塔尼亚胡明白其将在以色列议会中遭遇“绝大多数人的反对”，一个新政府终将成立。",
+      "relatedStocks": [
+        "军工",
+        "黄金"
+      ],
+      "bullConcepts": [
+        "军工",
+        "避险资产"
+      ],
+      "bearConcepts": [
+        "风险资产"
+      ],
+      "bullIndustries": [
+        "军工",
+        "黄金"
+      ],
+      "bearIndustries": [
+        "航空",
+        "旅游"
+      ],
+      "heat": 24,
       "momentum": 18,
       "_auto": true
     },
