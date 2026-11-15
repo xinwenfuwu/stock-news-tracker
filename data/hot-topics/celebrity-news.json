@@ -1,37 +1,76 @@
 {
-  "generatedAt": "2026-11-15 14:04",
+  "generatedAt": "2026-11-15 23:35",
   "generatedBy": "GitHub Actions · 多源实时聚合",
   "sourceCount": 5,
-  "autoCount": 12,
+  "autoCount": 10,
   "events": [
     {
-      "id": "ap5scg11",
-      "title": "一名联邦法官周六阻止特朗普政府于本周末关闭东波托马克公园，裁定该公园至少两周内不得关闭。特朗普此前称，该公园将于周日关闭，以便动工修建由建筑师汤姆·法齐奥设计的18洞锦标赛规格高…",
+      "id": "ap17oevvk",
+      "title": "美国财政部长贝森特：总统特朗普和我都相信美联储主席沃什会履行双重职责（实现充分就业+维持价格稳定）。",
       "tag": "人物/特朗普",
       "region": "美国",
-      "concept": "usMacro",
-      "time": "2026-11-15 13:24",
-      "datetime": "2026-11-15 13:24",
-      "source": "新浪7×24",
-      "url": "https://finance.sina.cn/7x24/2026-11-15/detail-iniyuykf3208861.d.html",
-      "summary": "一名联邦法官周六阻止特朗普政府于本周末关闭东波托马克公园，裁定该公园至少两周内不得关闭。特朗普此前称，该公园将于周日关闭，以便动工修建由建筑师汤姆·法齐奥设计的18洞锦标赛规格高尔夫球场。",
+      "concept": "usFinance",
+      "time": "2026-11-15 23:18",
+      "datetime": "2026-11-15 23:18",
+      "source": "华尔街见闻",
+      "url": "https://wallstreetcn.com/livenews/3200214",
+      "summary": "美国财政部长贝森特：总统特朗普和我都相信美联储主席沃什会履行双重职责（实现充分就业+维持价格稳定）。",
       "relatedStocks": [
-        "宽基指数"
+        "美股科技",
+        "黄金"
       ],
       "bullConcepts": [
+        "黄金",
         "防御板块"
       ],
       "bearConcepts": [
-        "周期股"
+        "高估值成长股"
       ],
       "bullIndustries": [
-        "公用事业"
+        "银行",
+        "黄金"
       ],
       "bearIndustries": [
-        "顺周期"
+        "高杠杆地产"
       ],
-      "heat": 24,
-      "momentum": 26,
+      "heat": 56,
+      "momentum": 71,
+      "_auto": true
+    },
+    {
+      "id": "ap16as4eq",
+      "title": "美国财政部长斯科特·贝森特表示，在首席执行官黄仁勋被罢免之后，英伟达的领导层需要经历一场“剧烈重组”。 贝森特暗示，英伟达应该从公司外部寻找新的领导层。 （被罢免的）黄仁勋是了不…",
+      "tag": "人物/黄仁勋",
+      "region": "美国",
+      "concept": "aiCapex",
+      "time": "2026-11-15 23:07",
+      "datetime": "2026-11-15 23:07",
+      "source": "华尔街见闻",
+      "url": "https://wallstreetcn.com/livenews/3200212",
+      "summary": "美国财政部长斯科特·贝森特表示，在首席执行官黄仁勋被罢免之后，英伟达的领导层需要经历一场“剧烈重组”。 贝森特暗示，英伟达应该从公司外部寻找新的领导层。 （被罢免的）黄仁勋是了不起的创新者，英伟达非常出色。 上级与下属建立恋爱关系是企业大忌。（福克斯新闻）",
+      "relatedStocks": [
+        "英伟达",
+        "微软",
+        "台积电"
+      ],
+      "bullConcepts": [
+        "AI算力",
+        "半导体",
+        "国产替代"
+      ],
+      "bearConcepts": [
+        "传统软件"
+      ],
+      "bullIndustries": [
+        "半导体",
+        "AI应用",
+        "算力基础设施"
+      ],
+      "bearIndustries": [
+        "传统IT服务"
+      ],
+      "heat": 38,
+      "momentum": 51,
       "_auto": true
     },
     {
@@ -66,167 +105,7 @@
       "bearIndustries": [
         "传统IT服务"
       ],
-      "heat": 74,
-      "momentum": 18,
-      "_auto": true
-    },
-    {
-      "id": "ap1az0z1z",
-      "title": "SpaceX发布第十五次星舰试飞最新进展称，上面级飞船已成功完成离轨点火，正沿预定轨迹准备再入地球大气层，将按计划在得克萨斯州星际基地尝试发射塔机械臂捕获。",
-      "tag": "人物/马斯克",
-      "region": "全球",
-      "concept": "macro",
-      "time": "2026-11-15 04:42",
-      "datetime": "2026-11-15 04:42",
-      "source": "财联社",
-      "url": "https://www.cls.cn/detail/2534582",
-      "summary": "SpaceX发布第十五次星舰试飞最新进展称，上面级飞船已成功完成离轨点火，正沿预定轨迹准备再入地球大气层，将按计划在得克萨斯州星际基地尝试发射塔机械臂捕获。",
-      "relatedStocks": [
-        "宽基指数"
-      ],
-      "bullConcepts": [
-        "防御板块"
-      ],
-      "bearConcepts": [
-        "周期股"
-      ],
-      "bullIndustries": [
-        "公用事业"
-      ],
-      "bearIndustries": [
-        "顺周期"
-      ],
-      "heat": 65,
-      "momentum": 18,
-      "_auto": true
-    },
-    {
-      "id": "ap1qr8gmo",
-      "title": "SpaceX：各团队完成状态确认，均同意星舰飞船返回星际基地发射场",
-      "tag": "人物/马斯克",
-      "region": "全球",
-      "concept": "macro",
-      "time": "2026-11-15 03:23",
-      "datetime": "2026-11-15 03:23",
-      "source": "财联社",
-      "url": "https://www.cls.cn/detail/2534580",
-      "summary": "【SpaceX：各团队完成状态确认，均同意星舰飞船返回星际基地发射场】财联社11月15日电，SpaceX在星舰第15次试飞直播中宣布，各团队已完成返回发射场前的状态核查，一致确认可以继续执行返回任务，涉及隔热盾、襟翼、结构、气动、制导导航与控制等系统。发射台及发射塔的现场检查结果正常，发射塔已做好捕获准备。星舰将尝试返回星际基地，由发射塔首次捕获其上面级。",
-      "relatedStocks": [
-        "宽基指数"
-      ],
-      "bullConcepts": [
-        "防御板块"
-      ],
-      "bearConcepts": [
-        "周期股"
-      ],
-      "bullIndustries": [
-        "公用事业"
-      ],
-      "bearIndustries": [
-        "顺周期"
-      ],
-      "heat": 65,
-      "momentum": 18,
-      "_auto": true
-    },
-    {
-      "id": "apwi6fyg",
-      "title": "知情人士透露，美国总统特朗普近日向高级顾问表示，如果美国未受到来自伊朗或也门胡塞武装的任何新挑衅，他可能会暂缓对伊朗采取军事打击。（路透）",
-      "tag": "人物/特朗普",
-      "region": "美国",
-      "concept": "defense",
-      "time": "2026-11-14 19:15",
-      "datetime": "2026-11-14 19:15",
-      "source": "华尔街见闻",
-      "url": "https://wallstreetcn.com/livenews/3200128",
-      "summary": "知情人士透露，美国总统特朗普近日向高级顾问表示，如果美国未受到来自伊朗或也门胡塞武装的任何新挑衅，他可能会暂缓对伊朗采取军事打击。（路透）",
-      "relatedStocks": [
-        "军工",
-        "黄金"
-      ],
-      "bullConcepts": [
-        "军工",
-        "避险资产"
-      ],
-      "bearConcepts": [
-        "风险资产"
-      ],
-      "bullIndustries": [
-        "军工",
-        "黄金"
-      ],
-      "bearIndustries": [
-        "航空",
-        "旅游"
-      ],
-      "heat": 33,
-      "momentum": 18,
-      "_auto": true
-    },
-    {
-      "id": "apb62nv9",
-      "title": "11月15日，华为常务董事、产品投资评审委员会主任、终端BG董事长余承东在其个人社交平台表示，今年是华为Mate X系列走过的第八年，现在大折叠已成为千万用户的主力机型，新一代华…",
-      "tag": "人物/余承东",
-      "region": "全球",
-      "concept": "macro",
-      "time": "2026-11-15 11:54",
-      "datetime": "2026-11-15 11:54",
-      "source": "华尔街见闻",
-      "url": "https://wallstreetcn.com/livenews/3200163",
-      "summary": "11月15日，华为常务董事、产品投资评审委员会主任、终端BG董事长余承东在其个人社交平台表示，今年是华为Mate X系列走过的第八年，现在大折叠已成为千万用户的主力机型，新一代华为Mate X8将在屏幕、影像和性能体验上有新的突破。",
-      "relatedStocks": [
-        "宽基指数"
-      ],
-      "bullConcepts": [
-        "防御板块"
-      ],
-      "bearConcepts": [
-        "周期股"
-      ],
-      "bullIndustries": [
-        "公用事业"
-      ],
-      "bearIndustries": [
-        "顺周期"
-      ],
-      "heat": 51,
-      "momentum": 18,
-      "_auto": true
-    },
-    {
-      "id": "apdnufs2",
-      "title": "黄仁勋卸任英伟达CEO之后，AI融资将走向何方",
-      "tag": "人物/黄仁勋",
-      "region": "全球",
-      "concept": "ai",
-      "time": "2026-11-13 22:47",
-      "datetime": "2026-11-13 22:47",
-      "source": "环球市场播报",
-      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-13/doc-iniyriip0790682.shtml",
-      "summary": "核心要点黄仁勋辞去英伟达首席执行官，外界开始质疑英伟达在 AI 融资领域扮演的角色。投资者正在观望，管理层更迭是否会改变英伟达扶持 AI 企业的策略。",
-      "relatedStocks": [
-        "英伟达",
-        "微软",
-        "台积电"
-      ],
-      "bullConcepts": [
-        "AI算力",
-        "半导体",
-        "国产替代"
-      ],
-      "bearConcepts": [
-        "传统软件"
-      ],
-      "bullIndustries": [
-        "半导体",
-        "AI应用",
-        "算力基础设施"
-      ],
-      "bearIndustries": [
-        "传统IT服务"
-      ],
-      "heat": 47,
+      "heat": 60,
       "momentum": 18,
       "_auto": true
     },
@@ -262,21 +141,147 @@
       "bearIndustries": [
         "传统IT服务"
       ],
+      "heat": 38,
+      "momentum": 18,
+      "_auto": true
+    },
+    {
+      "id": "apb62nv9",
+      "title": "11月15日，华为常务董事、产品投资评审委员会主任、终端BG董事长余承东在其个人社交平台表示，今年是华为Mate X系列走过的第八年，现在大折叠已成为千万用户的主力机型，新一代华…",
+      "tag": "人物/余承东",
+      "region": "全球",
+      "concept": "macro",
+      "time": "2026-11-15 11:54",
+      "datetime": "2026-11-15 11:54",
+      "source": "华尔街见闻",
+      "url": "https://wallstreetcn.com/livenews/3200163",
+      "summary": "11月15日，华为常务董事、产品投资评审委员会主任、终端BG董事长余承东在其个人社交平台表示，今年是华为Mate X系列走过的第八年，现在大折叠已成为千万用户的主力机型，新一代华为Mate X8将在屏幕、影像和性能体验上有新的突破。",
+      "relatedStocks": [
+        "宽基指数"
+      ],
+      "bullConcepts": [
+        "防御板块"
+      ],
+      "bearConcepts": [
+        "周期股"
+      ],
+      "bullIndustries": [
+        "公用事业"
+      ],
+      "bearIndustries": [
+        "顺周期"
+      ],
       "heat": 24,
       "momentum": 18,
       "_auto": true
     },
     {
-      "id": "appyu90j",
-      "title": "黄仁勋风波持续发酵 英伟达创逾18个月来最差单周表现",
-      "tag": "人物/黄仁勋",
+      "id": "apzu6zr2",
+      "title": "14日，美国纽约州民主党籍州长霍楚尔发表声明，要求美国交通部长达菲辞职，否则应由总统特朗普将其免职。霍楚尔在声明中称：“从长期存在的空中交通管制员短缺问题，到接二连三的通信系统故…",
+      "tag": "人物/特朗普",
       "region": "美国",
-      "concept": "aiCapex",
-      "time": "2026-11-14 06:49",
-      "datetime": "2026-11-14 06:49",
+      "concept": "usMacro",
+      "time": "2026-11-15 08:35",
+      "datetime": "2026-11-15 08:35",
+      "source": "华尔街见闻",
+      "url": "https://wallstreetcn.com/livenews/3200144",
+      "summary": "14日，美国纽约州民主党籍州长霍楚尔发表声明，要求美国交通部长达菲辞职，否则应由总统特朗普将其免职。霍楚尔在声明中称：“从长期存在的空中交通管制员短缺问题，到接二连三的通信系统故障，在达菲任内，美国航空系统的严重失误已经成为一种常态。”美国交通部长达菲13日将此次故障归咎于“极其陈旧的空中交通管制系统”。霍楚尔敦促国会对这次全国性航班停飞事件展开全面调查，以确保类似事件不再发…",
+      "relatedStocks": [
+        "宽基指数"
+      ],
+      "bullConcepts": [
+        "防御板块"
+      ],
+      "bearConcepts": [
+        "周期股"
+      ],
+      "bullIndustries": [
+        "公用事业"
+      ],
+      "bearIndustries": [
+        "顺周期"
+      ],
+      "heat": 24,
+      "momentum": 18,
+      "_auto": true
+    },
+    {
+      "id": "ap1t74fnf",
+      "title": "特斯拉：开始面向个人销售Cybercab",
+      "tag": "人物/马斯克",
+      "region": "全球",
+      "concept": "green",
+      "time": "2026-11-14 08:48",
+      "datetime": "2026-11-14 08:48",
       "source": "环球市场播报",
-      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-14/doc-iniyryfm0827643.shtml",
-      "summary": "英伟达股价录得逾18个月来最差单周表现，这家芯片巨头在黄仁勋离职后持续承压。 英伟达周五下跌2%，收于162.85美元，过去五个交易日累计下跌13%...",
+      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-14/doc-iniysepi0754222.shtml",
+      "summary": "特斯拉表示，已向一小部分客户开放Cybercab预订，意味着该公司准备向普通消费者推出这款无人驾驶汽车。 这款两座车型没有方向盘和脚踏板...",
+      "relatedStocks": [
+        "特斯拉",
+        "比亚迪"
+      ],
+      "bullConcepts": [
+        "智能驾驶",
+        "动力电池"
+      ],
+      "bearConcepts": [
+        "传统车企"
+      ],
+      "bullIndustries": [
+        "智能驾驶",
+        "锂电池"
+      ],
+      "bearIndustries": [
+        "传统汽车制造"
+      ],
+      "heat": 38,
+      "momentum": 18,
+      "_auto": true
+    },
+    {
+      "id": "apdp67d6",
+      "title": "马斯克称Cybercab每月299美元自动驾驶订阅费太高",
+      "tag": "人物/马斯克",
+      "region": "美国",
+      "concept": "usFinance",
+      "time": "2026-11-14 15:06",
+      "datetime": "2026-11-14 15:06",
+      "source": "环球市场播报",
+      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-14/doc-iniysvma7285464.shtml",
+      "summary": "特斯拉宣布开始向部分个人用户开放 Cybercab 购买渠道，起售价为 29990 美元，首批车辆预计将于 2026 年 12 月交付。不过，目前特斯拉 Cybercab...",
+      "relatedStocks": [
+        "美股科技",
+        "黄金"
+      ],
+      "bullConcepts": [
+        "黄金",
+        "防御板块"
+      ],
+      "bearConcepts": [
+        "高估值成长股"
+      ],
+      "bullIndustries": [
+        "银行",
+        "黄金"
+      ],
+      "bearIndustries": [
+        "高杠杆地产"
+      ],
+      "heat": 33,
+      "momentum": 18,
+      "_auto": true
+    },
+    {
+      "id": "ap1mm7n2v",
+      "title": "黄仁勋出事，Anthropic承压？",
+      "tag": "人物/黄仁勋",
+      "region": "全球",
+      "concept": "ai",
+      "time": "2026-11-14 07:26",
+      "datetime": "2026-11-14 07:26",
+      "source": "环球市场播报",
+      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-14/doc-iniyryfp3208766.shtml",
+      "summary": "Anthropic即将启动本轮热度极高的IPO。在局势突变之下，这场上市恰逢行业失去一位极具影响力、擅长商业游说的核心人物一周之后。",
       "relatedStocks": [
         "英伟达",
         "微软",
@@ -298,71 +303,7 @@
       "bearIndustries": [
         "传统IT服务"
       ],
-      "heat": 29,
-      "momentum": 18,
-      "_auto": true
-    },
-    {
-      "id": "ap1b91g79",
-      "title": "视频丨泽连斯基称乌军使用“星盾”再遭限速",
-      "tag": "人物/泽连斯基",
-      "region": "全球",
-      "concept": "macro",
-      "time": "2026-11-13 23:16",
-      "datetime": "2026-11-13 23:16",
-      "source": "央视",
-      "url": "https://finance.sina.com.cn/jjxw/2026-11-13/doc-iniyrprt3367158.shtml",
-      "summary": "乌克兰总统泽连斯基12日说，连日来，乌军使用的“星盾”卫星通信系统运行出现“重大中断”，导致乌军拦截俄罗斯无人机的难度大幅增加。",
-      "relatedStocks": [
-        "宽基指数"
-      ],
-      "bullConcepts": [
-        "防御板块"
-      ],
-      "bearConcepts": [
-        "周期股"
-      ],
-      "bullIndustries": [
-        "公用事业"
-      ],
-      "bearIndustries": [
-        "顺周期"
-      ],
-      "heat": 33,
-      "momentum": 18,
-      "_auto": true
-    },
-    {
-      "id": "ap1gxubx3",
-      "title": "埃森科特：内塔尼亚胡称组建“团结政府”是故弄玄虚",
-      "tag": "人物/内塔尼亚胡",
-      "region": "全球",
-      "concept": "macro",
-      "time": "2026-11-15 07:32",
-      "datetime": "2026-11-15 07:32",
-      "source": "财联社",
-      "url": "https://www.cls.cn/detail/2534595",
-      "summary": "【埃森科特：内塔尼亚胡称组建“团结政府”是故弄玄虚】财联社11月15日电，受权组阁的以色列正直党领导人加迪·埃森科特14日在社交媒体发文称，看守政府总理内塔尼亚胡“已经意识到自己在选举中落败”，他呼吁组建“民族团结政府”不过是故弄玄虚的“政治伎俩”。埃森科特表示，内塔尼亚胡明白其将在以色列议会中遭遇“绝大多数人的反对”，一个新政府终将成立。",
-      "relatedStocks": [
-        "军工",
-        "黄金"
-      ],
-      "bullConcepts": [
-        "军工",
-        "避险资产"
-      ],
-      "bearConcepts": [
-        "风险资产"
-      ],
-      "bullIndustries": [
-        "军工",
-        "黄金"
-      ],
-      "bearIndustries": [
-        "航空",
-        "旅游"
-      ],
-      "heat": 24,
+      "heat": 38,
       "momentum": 18,
       "_auto": true
     },
