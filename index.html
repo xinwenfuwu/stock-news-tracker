@@ -2719,6 +2719,13 @@
                     <div v-if="e.relatedStocks && e.relatedStocks.length" class="infl-stocks">
                       <span v-for="s in e.relatedStocks" :key="s" class="infl-stock-chip">{{ s }}</span>
                     </div>
+                    <!-- 20261115：影响力事件新闻同样展示「利好/利空 概念与行业」（与右侧未来事件红框功能一致） -->
+                    <div v-if="(e.bullConcepts && e.bullConcepts.length) || (e.bearConcepts && e.bearConcepts.length) || (e.bullIndustries && e.bullIndustries.length) || (e.bearIndustries && e.bearIndustries.length)" class="infl-bullbear">
+                      <div v-if="e.bullConcepts && e.bullConcepts.length" class="infl-bb-row"><span class="infl-bb-tag bull">🔼 利好概念</span><span v-for="x in e.bullConcepts" :key="'ibc'+x" class="infl-bb-chip bull">{{ x }}</span></div>
+                      <div v-if="e.bearConcepts && e.bearConcepts.length" class="infl-bb-row"><span class="infl-bb-tag bear">🔽 利空概念</span><span v-for="x in e.bearConcepts" :key="'ixc'+x" class="infl-bb-chip bear">{{ x }}</span></div>
+                      <div v-if="e.bullIndustries && e.bullIndustries.length" class="infl-bb-row"><span class="infl-bb-tag bull">🔼 利好行业</span><span v-for="x in e.bullIndustries" :key="'ibi'+x" class="infl-bb-chip bull">{{ x }}</span></div>
+                      <div v-if="e.bearIndustries && e.bearIndustries.length" class="infl-bb-row"><span class="infl-bb-tag bear">🔽 利空行业</span><span v-for="x in e.bearIndustries" :key="'ixi'+x" class="infl-bb-chip bear">{{ x }}</span></div>
+                    </div>
                   </div>
                 </div>
               </div>
