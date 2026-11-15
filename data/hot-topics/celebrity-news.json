@@ -1,53 +1,80 @@
 {
-  "generatedAt": "2026-11-15 23:35",
+  "generatedAt": "2026-11-16 04:59",
   "generatedBy": "GitHub Actions · 多源实时聚合",
   "sourceCount": 5,
-  "autoCount": 10,
+  "autoCount": 11,
   "events": [
     {
-      "id": "ap17oevvk",
-      "title": "美国财政部长贝森特：总统特朗普和我都相信美联储主席沃什会履行双重职责（实现充分就业+维持价格稳定）。",
-      "tag": "人物/特朗普",
-      "region": "美国",
-      "concept": "usFinance",
-      "time": "2026-11-15 23:18",
-      "datetime": "2026-11-15 23:18",
-      "source": "华尔街见闻",
-      "url": "https://wallstreetcn.com/livenews/3200214",
-      "summary": "美国财政部长贝森特：总统特朗普和我都相信美联储主席沃什会履行双重职责（实现充分就业+维持价格稳定）。",
+      "id": "ape08axc",
+      "title": "乌克兰总统泽连斯基：10月，俄罗斯伤亡人数超过5万，包括阵亡和受伤。11月的数字也必须保持同样高的水平。",
+      "tag": "人物/泽连斯基",
+      "region": "全球",
+      "concept": "macro",
+      "time": "2026-11-16 04:43",
+      "datetime": "2026-11-16 04:43",
+      "source": "新浪7×24",
+      "url": "https://finance.sina.cn/7x24/2026-11-16/detail-iniywhcp1503256.d.html",
+      "summary": "乌克兰总统泽连斯基：10月，俄罗斯伤亡人数超过5万，包括阵亡和受伤。11月的数字也必须保持同样高的水平。",
       "relatedStocks": [
-        "美股科技",
-        "黄金"
+        "宽基指数"
       ],
       "bullConcepts": [
-        "黄金",
         "防御板块"
       ],
       "bearConcepts": [
-        "高估值成长股"
+        "周期股"
       ],
       "bullIndustries": [
-        "银行",
-        "黄金"
+        "公用事业"
       ],
       "bearIndustries": [
-        "高杠杆地产"
+        "顺周期"
       ],
-      "heat": 56,
-      "momentum": 71,
+      "heat": 33,
+      "momentum": 36,
       "_auto": true
     },
     {
-      "id": "ap16as4eq",
-      "title": "美国财政部长斯科特·贝森特表示，在首席执行官黄仁勋被罢免之后，英伟达的领导层需要经历一场“剧烈重组”。 贝森特暗示，英伟达应该从公司外部寻找新的领导层。 （被罢免的）黄仁勋是了不…",
+      "id": "ap1b48um",
+      "title": "知情人士透露，特朗普政府已指示美国军方研究对一名高级将领提起刑事诉讼。五角大楼政治领导层指控该将领向记者提供了敏感信息。",
+      "tag": "人物/特朗普",
+      "region": "美国",
+      "concept": "usMacro",
+      "time": "2026-11-16 04:35",
+      "datetime": "2026-11-16 04:35",
+      "source": "新浪7×24",
+      "url": "https://finance.sina.cn/7x24/2026-11-16/detail-iniywhcn5953415.d.html",
+      "summary": "知情人士透露，特朗普政府已指示美国军方研究对一名高级将领提起刑事诉讼。五角大楼政治领导层指控该将领向记者提供了敏感信息。",
+      "relatedStocks": [
+        "宽基指数"
+      ],
+      "bullConcepts": [
+        "防御板块"
+      ],
+      "bearConcepts": [
+        "周期股"
+      ],
+      "bullIndustries": [
+        "公用事业"
+      ],
+      "bearIndustries": [
+        "顺周期"
+      ],
+      "heat": 24,
+      "momentum": 36,
+      "_auto": true
+    },
+    {
+      "id": "apxqlahc",
+      "title": "黄仁勋讨论重掌英伟达 硅谷盟友游说支持回归",
       "tag": "人物/黄仁勋",
       "region": "美国",
       "concept": "aiCapex",
-      "time": "2026-11-15 23:07",
-      "datetime": "2026-11-15 23:07",
-      "source": "华尔街见闻",
-      "url": "https://wallstreetcn.com/livenews/3200212",
-      "summary": "美国财政部长斯科特·贝森特表示，在首席执行官黄仁勋被罢免之后，英伟达的领导层需要经历一场“剧烈重组”。 贝森特暗示，英伟达应该从公司外部寻找新的领导层。 （被罢免的）黄仁勋是了不起的创新者，英伟达非常出色。 上级与下属建立恋爱关系是企业大忌。（福克斯新闻）",
+      "time": "2026-11-16 04:23",
+      "datetime": "2026-11-16 04:23",
+      "source": "环球市场播报",
+      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-16/doc-iniywhcp1499931.shtml",
+      "summary": "在被董事会驱逐数天之后，英伟达公司前首席执行官黄仁勋正在讨论重返公司的可能性。 随着几位硅谷盟友开始游说支持他回归，黄仁勋已经在讨论重返公司的想法。",
       "relatedStocks": [
         "英伟达",
         "微软",
@@ -69,8 +96,8 @@
       "bearIndustries": [
         "传统IT服务"
       ],
-      "heat": 38,
-      "momentum": 51,
+      "heat": 24,
+      "momentum": 26,
       "_auto": true
     },
     {
@@ -110,6 +137,75 @@
       "_auto": true
     },
     {
+      "id": "ap17oevvk",
+      "title": "美国财政部长贝森特：总统特朗普和我都相信美联储主席沃什会履行双重职责（实现充分就业+维持价格稳定）。",
+      "tag": "人物/特朗普",
+      "region": "美国",
+      "concept": "usFinance",
+      "time": "2026-11-15 23:18",
+      "datetime": "2026-11-15 23:18",
+      "source": "华尔街见闻",
+      "url": "https://wallstreetcn.com/livenews/3200214",
+      "summary": "美国财政部长贝森特：总统特朗普和我都相信美联储主席沃什会履行双重职责（实现充分就业+维持价格稳定）。",
+      "relatedStocks": [
+        "美股科技",
+        "黄金"
+      ],
+      "bullConcepts": [
+        "黄金",
+        "防御板块"
+      ],
+      "bearConcepts": [
+        "高估值成长股"
+      ],
+      "bullIndustries": [
+        "银行",
+        "黄金"
+      ],
+      "bearIndustries": [
+        "高杠杆地产"
+      ],
+      "heat": 51,
+      "momentum": 18,
+      "_auto": true
+    },
+    {
+      "id": "ap2nc5yf",
+      "title": "市场资讯：黄仁勋与盟友讨论重返英伟达担任CEO事宜。",
+      "tag": "人物/黄仁勋",
+      "region": "全球",
+      "concept": "ai",
+      "time": "2026-11-16 03:04",
+      "datetime": "2026-11-16 03:04",
+      "source": "新浪7×24",
+      "url": "https://finance.sina.cn/7x24/2026-11-16/detail-iniywhck9160156.d.html",
+      "summary": "市场资讯：黄仁勋与盟友讨论重返英伟达担任CEO事宜。",
+      "relatedStocks": [
+        "英伟达",
+        "微软",
+        "台积电"
+      ],
+      "bullConcepts": [
+        "AI算力",
+        "半导体",
+        "国产替代"
+      ],
+      "bearConcepts": [
+        "传统软件"
+      ],
+      "bullIndustries": [
+        "半导体",
+        "AI应用",
+        "算力基础设施"
+      ],
+      "bearIndustries": [
+        "传统IT服务"
+      ],
+      "heat": 56,
+      "momentum": 26,
+      "_auto": true
+    },
+    {
       "id": "ap10lzo6w",
       "title": "冲刺史上最大IPO之际，阿莫代伊对谈戴蒙：算力、竞争与AI未来",
       "tag": "人物/戴蒙",
@@ -141,7 +237,7 @@
       "bearIndustries": [
         "传统IT服务"
       ],
-      "heat": 38,
+      "heat": 33,
       "momentum": 18,
       "_auto": true
     },
@@ -172,69 +268,6 @@
         "顺周期"
       ],
       "heat": 24,
-      "momentum": 18,
-      "_auto": true
-    },
-    {
-      "id": "apzu6zr2",
-      "title": "14日，美国纽约州民主党籍州长霍楚尔发表声明，要求美国交通部长达菲辞职，否则应由总统特朗普将其免职。霍楚尔在声明中称：“从长期存在的空中交通管制员短缺问题，到接二连三的通信系统故…",
-      "tag": "人物/特朗普",
-      "region": "美国",
-      "concept": "usMacro",
-      "time": "2026-11-15 08:35",
-      "datetime": "2026-11-15 08:35",
-      "source": "华尔街见闻",
-      "url": "https://wallstreetcn.com/livenews/3200144",
-      "summary": "14日，美国纽约州民主党籍州长霍楚尔发表声明，要求美国交通部长达菲辞职，否则应由总统特朗普将其免职。霍楚尔在声明中称：“从长期存在的空中交通管制员短缺问题，到接二连三的通信系统故障，在达菲任内，美国航空系统的严重失误已经成为一种常态。”美国交通部长达菲13日将此次故障归咎于“极其陈旧的空中交通管制系统”。霍楚尔敦促国会对这次全国性航班停飞事件展开全面调查，以确保类似事件不再发…",
-      "relatedStocks": [
-        "宽基指数"
-      ],
-      "bullConcepts": [
-        "防御板块"
-      ],
-      "bearConcepts": [
-        "周期股"
-      ],
-      "bullIndustries": [
-        "公用事业"
-      ],
-      "bearIndustries": [
-        "顺周期"
-      ],
-      "heat": 24,
-      "momentum": 18,
-      "_auto": true
-    },
-    {
-      "id": "ap1t74fnf",
-      "title": "特斯拉：开始面向个人销售Cybercab",
-      "tag": "人物/马斯克",
-      "region": "全球",
-      "concept": "green",
-      "time": "2026-11-14 08:48",
-      "datetime": "2026-11-14 08:48",
-      "source": "环球市场播报",
-      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-14/doc-iniysepi0754222.shtml",
-      "summary": "特斯拉表示，已向一小部分客户开放Cybercab预订，意味着该公司准备向普通消费者推出这款无人驾驶汽车。 这款两座车型没有方向盘和脚踏板...",
-      "relatedStocks": [
-        "特斯拉",
-        "比亚迪"
-      ],
-      "bullConcepts": [
-        "智能驾驶",
-        "动力电池"
-      ],
-      "bearConcepts": [
-        "传统车企"
-      ],
-      "bullIndustries": [
-        "智能驾驶",
-        "锂电池"
-      ],
-      "bearIndustries": [
-        "传统汽车制造"
-      ],
-      "heat": 38,
       "momentum": 18,
       "_auto": true
     },
@@ -272,38 +305,35 @@
       "_auto": true
     },
     {
-      "id": "ap1mm7n2v",
-      "title": "黄仁勋出事，Anthropic承压？",
-      "tag": "人物/黄仁勋",
+      "id": "ap1t74fnf",
+      "title": "特斯拉：开始面向个人销售Cybercab",
+      "tag": "人物/马斯克",
       "region": "全球",
-      "concept": "ai",
-      "time": "2026-11-14 07:26",
-      "datetime": "2026-11-14 07:26",
+      "concept": "green",
+      "time": "2026-11-14 08:48",
+      "datetime": "2026-11-14 08:48",
       "source": "环球市场播报",
-      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-14/doc-iniyryfp3208766.shtml",
-      "summary": "Anthropic即将启动本轮热度极高的IPO。在局势突变之下，这场上市恰逢行业失去一位极具影响力、擅长商业游说的核心人物一周之后。",
+      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-14/doc-iniysepi0754222.shtml",
+      "summary": "特斯拉表示，已向一小部分客户开放Cybercab预订，意味着该公司准备向普通消费者推出这款无人驾驶汽车。 这款两座车型没有方向盘和脚踏板...",
       "relatedStocks": [
-        "英伟达",
-        "微软",
-        "台积电"
+        "特斯拉",
+        "比亚迪"
       ],
       "bullConcepts": [
-        "AI算力",
-        "半导体",
-        "国产替代"
+        "智能驾驶",
+        "动力电池"
       ],
       "bearConcepts": [
-        "传统软件"
+        "传统车企"
       ],
       "bullIndustries": [
-        "半导体",
-        "AI应用",
-        "算力基础设施"
+        "智能驾驶",
+        "锂电池"
       ],
       "bearIndustries": [
-        "传统IT服务"
+        "传统汽车制造"
       ],
-      "heat": 38,
+      "heat": 33,
       "momentum": 18,
       "_auto": true
     },
