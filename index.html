@@ -10,12 +10,12 @@
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
   <title>股市信息分析系统</title>
-  <link rel="stylesheet" href="css/style.css?v=20261113b">
+  <link rel="stylesheet" href="css/style.css?v=20261116a">
   <!-- Vue 3 全局构建版（v3.4.21 · 自托管）
        原先走 unpkg.com CDN：国内网络对 unpkg 的连通性不稳定，一旦该请求长时间挂起，
        <head> 里的阻塞脚本会让整页停在白屏、后续 auth-boot.js 根本不会执行。
        改为同源托管后，启动链路不再依赖任何第三方 CDN。 -->
-  <script src="js/vue.global.prod.js?v=20261113b"></script>
+  <script src="js/vue.global.prod.js?v=20261116a"></script>
 </head>
 <body class="auth-locked">
   <!-- ===== 登录关卡：登录通过前业务脚本不会被加载 ===== -->
@@ -101,7 +101,7 @@
         <input class="auth-input" type="text" id="auth-renew-user" placeholder="用户名（你注册时用的）" maxlength="20" autocomplete="off">
         <div class="auth-renew-plans" id="auth-renew-plans"></div>
         <div class="auth-renew-qr" id="auth-renew-qr">
-          <div class="auth-renew-qrbox"><img id="auth-renew-wx" src="assets/wechat-pay-qr.jpg?v=20261113b" alt="微信支付收款码"><span>微信支付（扫码支付）</span></div>
+          <div class="auth-renew-qrbox"><img id="auth-renew-wx" src="assets/wechat-pay-qr.jpg?v=20261116a" alt="微信支付收款码"><span>微信支付（扫码支付）</span></div>
           <div class="muted small" style="margin-top:6px;color:#c2410c;font-weight:600">支付时请添加会员备注，付款成功截图保存</div>
         </div>
         <input class="auth-input" type="text" id="auth-renew-amount" inputmode="decimal" placeholder="支付金额（必填，如 1000）" autocomplete="off">
@@ -996,7 +996,7 @@
                   <div class="qr-row">
                     <div class="qr-box">
                       <div class="qr-cap">推荐使用微信支付</div>
-                      <img src="assets/wechat-pay-qr.jpg?v=20261113b" alt="微信支付收款码" class="qr-pay-img">
+                      <img src="assets/wechat-pay-qr.jpg?v=20261116a" alt="微信支付收款码" class="qr-pay-img">
                       <div class="qr-cap" style="margin-top:6px;color:#c2410c;font-weight:600">支付时请添加会员备注，付款成功截图保存</div>
                       <div class="qr-cap muted small">火柴盒网络服务</div>
                     </div>
@@ -1393,33 +1393,13 @@
                         </div>
                         <div class="theme-topics" v-if="d._open">
                           <template v-for="t in (d.showAll ? d.topics : d.topics.slice(0, 6))" :key="t.name">
-                            <div class="theme-topic" :class="{ active: d.selTopic === t.name }"
-                                 @click="toggleThemeTopic(d, t)"
-                                 :title="'点击查看「' + t.name + '」相关的 ' + t.count + ' 条新闻'">
-                              <span class="tt-caret">{{ d.selTopic === t.name ? '▾' : '▸' }}</span>
+                            <div class="theme-topic"
+                                 @click="openThemeTopicModal(d, t)"
+                                 :title="'点击查看「' + t.name + '」的利空/利好事件、事件间隔与板块涨跌统计'">
                               <span class="tt-name">{{ t.name }}</span>
                               <span class="tt-track"><span class="tt-fill" :style="{ width: t.width + '%', background: d.color }"></span></span>
                               <span class="tt-val"><span :class="sentiClass(t.sentiment)">{{ t.count }}</span></span>
                               <span class="tt-pct">{{ t.pct }}%</span>
-                            </div>
-                            <div class="tt-news" v-if="d.selTopic === t.name">
-                              <div class="tt-news-head">
-                                <span class="tt-news-title" :style="{ color: d.color }">「{{ t.name }}」相关新闻 <span :class="sentiClass(t.sentiment)">{{ t.news.length }}</span> 条</span>
-                                <span class="muted small">点标题跳原文</span>
-                              </div>
-                              <div class="tt-news-item" v-for="(n, k) in t.news.slice(0, d.newsLimit || 30)" :key="k">
-                                <div class="tt-news-meta">
-                                  <span class="site-badge sm" :style="{ background: htSourceColor(n.sourceRank) }" :title="htSourceName(n.sourceRank)">{{ n.sourceRank }}</span>
-                                  <span class="tt-news-src">{{ n.sourceName }}</span>
-                                  <span class="tt-news-date">{{ (n.date || '').slice(5) }}</span>
-                                  <span class="tt-news-time" v-if="n.time">{{ n.time }}</span>
-                                </div>
-                                <a v-if="n.url" :href="n.url" target="_blank" rel="noopener" class="tt-news-text" :title="n.text">{{ n.text }}</a>
-                                <span v-else class="tt-news-text" :title="n.text">{{ n.text }}</span>
-                              </div>
-                              <button class="theme-more" v-if="t.news.length > (d.newsLimit || 30)" @click.stop="moreThemeNews(d)">
-                                还有 {{ t.news.length - (d.newsLimit || 30) }} 条，点击展开更多
-                              </button>
                             </div>
                           </template>
                           <button class="theme-more" v-if="d.topics.length > 6" @click="d.showAll = !d.showAll">
@@ -1490,6 +1470,74 @@
                 </div>
                 <div class="modal-footer">
                   <button class="btn" @click="closeSiteStatNews">关闭</button>
+                </div>
+              </div>
+            </div>
+
+            <!-- 20261116a：主题分类统计点子概念 → 多空事件间隔统计弹窗
+                 两张表：利空事件（事件/间隔/板块下跌）、利好事件（事件/间隔/板块上涨）；
+                 底部统计「平均间隔天数（去除节假日）」——间隔按交易日历（上证指数日K日期）计，周末与法定节假日自动跳过。 -->
+            <div class="modal-overlay" v-if="themeEventModal.show" @click.self="closeThemeTopicModal">
+              <div class="modal modal-lg site-stat-modal">
+                <div class="modal-header">
+                  <h3>「{{ themeEventModal.topic }}」多空事件统计
+                    <span class="muted small">（{{ themeEventModal.dimName }} · 利好 <span class="senti-bull">{{ themeEventModal.bullRows.length }}</span> 条 · 利空 <span class="senti-bear">{{ themeEventModal.bearRows.length }}</span> 条<template v-if="themeEventModal.winLabel"> · {{ themeEventModal.winLabel }}</template>）</span>
+                  </h3>
+                  <button class="btn-icon" @click="closeThemeTopicModal">✕</button>
+                </div>
+                <div class="modal-body">
+                  <!-- ① 利空事件 -->
+                  <div class="tmb-sec">
+                    <div class="tmb-sec-title tmb-bear">📉 利空事件</div>
+                    <div class="tmb-head">
+                      <span class="tmb-c1">利空事件</span>
+                      <span class="tmb-c2" title="本条与上一条利空事件之间间隔的交易日天数（自动跳过周末与法定节假日）">间隔(天)</span>
+                      <span class="tmb-c3" title="事件当日（非交易日取其后首个交易日）对应东财板块的涨跌幅%">板块下跌</span>
+                    </div>
+                    <div class="tmb-row" v-for="(r, k) in themeEventModal.bearRows" :key="'bear' + k">
+                      <span class="tmb-c1">
+                        <span class="tmb-dt">{{ (r.date || '').slice(5) }} {{ r.time }}</span>
+                        <a v-if="r.url" :href="r.url" target="_blank" rel="noopener" :title="r.text">{{ r.text }}</a>
+                        <span v-else :title="r.text">{{ r.text }}</span>
+                      </span>
+                      <span class="tmb-c2">{{ r.gap == null ? (r.prevDate ? '…' : '—') : r.gap }}</span>
+                      <span class="tmb-c3" :class="r.chg == null ? '' : (r.chg > 0 ? 'senti-bull' : (r.chg < 0 ? 'senti-bear' : ''))">{{ r.chg == null ? '—' : ((r.chg > 0 ? '+' : '') + r.chg + '%') }}</span>
+                    </div>
+                    <div class="muted small" v-if="!themeEventModal.bearRows.length">该时段暂无利空事件</div>
+                  </div>
+                  <!-- ② 利好事件 -->
+                  <div class="tmb-sec">
+                    <div class="tmb-sec-title tmb-bull">📈 利好事件</div>
+                    <div class="tmb-head">
+                      <span class="tmb-c1">利好事件</span>
+                      <span class="tmb-c2" title="本条与上一条利好事件之间间隔的交易日天数（自动跳过周末与法定节假日）">间隔(天)</span>
+                      <span class="tmb-c3" title="事件当日（非交易日取其后首个交易日）对应东财板块的涨跌幅%">板块上涨</span>
+                    </div>
+                    <div class="tmb-row" v-for="(r, k) in themeEventModal.bullRows" :key="'bull' + k">
+                      <span class="tmb-c1">
+                        <span class="tmb-dt">{{ (r.date || '').slice(5) }} {{ r.time }}</span>
+                        <a v-if="r.url" :href="r.url" target="_blank" rel="noopener" :title="r.text">{{ r.text }}</a>
+                        <span v-else :title="r.text">{{ r.text }}</span>
+                      </span>
+                      <span class="tmb-c2">{{ r.gap == null ? (r.prevDate ? '…' : '—') : r.gap }}</span>
+                      <span class="tmb-c3" :class="r.chg == null ? '' : (r.chg > 0 ? 'senti-bull' : (r.chg < 0 ? 'senti-bear' : ''))">{{ r.chg == null ? '—' : ((r.chg > 0 ? '+' : '') + r.chg + '%') }}</span>
+                    </div>
+                    <div class="muted small" v-if="!themeEventModal.bullRows.length">该时段暂无利好事件</div>
+                  </div>
+                  <div class="muted small tmb-note" v-if="themeEventModal.neutralCount">另有 {{ themeEventModal.neutralCount }} 条中性/未判定新闻未纳入上表与间隔统计</div>
+                  <div class="muted small tmb-note" v-if="themeEventModal.boardBk">「板块下跌/上涨」数据源：东财板块 {{ themeEventModal.boardBk }} 日K线</div>
+                  <div class="muted small tmb-note" v-else-if="!themeEventModal.loading">未匹配到对应东财板块，「板块下跌/上涨」列以 — 显示；间隔统计不受影响</div>
+                  <!-- ③ 平均间隔统计 -->
+                  <div class="tmb-avg">
+                    <b>平均间隔天数（去除节假日，按交易日计）：</b>
+                    利空事件 <span class="senti-bear">{{ themeEventModal.avgBear == null ? '—' : themeEventModal.avgBear + ' 天' }}</span>
+                    　利好事件 <span class="senti-bull">{{ themeEventModal.avgBull == null ? '—' : themeEventModal.avgBull + ' 天' }}</span>
+                    　全部 <b>{{ themeEventModal.avgAll == null ? '—' : themeEventModal.avgAll + ' 天' }}</b>
+                    <span v-if="themeEventModal.loading" class="muted small">（交易日历/板块行情计算中…）</span>
+                  </div>
+                </div>
+                <div class="modal-footer">
+                  <button class="btn" @click="closeThemeTopicModal">关闭</button>
                 </div>
               </div>
             </div>
@@ -2719,13 +2767,6 @@
                     <div v-if="e.relatedStocks && e.relatedStocks.length" class="infl-stocks">
                       <span v-for="s in e.relatedStocks" :key="s" class="infl-stock-chip">{{ s }}</span>
                     </div>
-                    <!-- 20261115：影响力事件新闻同样展示「利好/利空 概念与行业」（与右侧未来事件红框功能一致） -->
-                    <div v-if="(e.bullConcepts && e.bullConcepts.length) || (e.bearConcepts && e.bearConcepts.length) || (e.bullIndustries && e.bullIndustries.length) || (e.bearIndustries && e.bearIndustries.length)" class="infl-bullbear">
-                      <div v-if="e.bullConcepts && e.bullConcepts.length" class="infl-bb-row"><span class="infl-bb-tag bull">🔼 利好概念</span><span v-for="x in e.bullConcepts" :key="'ibc'+x" class="infl-bb-chip bull">{{ x }}</span></div>
-                      <div v-if="e.bearConcepts && e.bearConcepts.length" class="infl-bb-row"><span class="infl-bb-tag bear">🔽 利空概念</span><span v-for="x in e.bearConcepts" :key="'ixc'+x" class="infl-bb-chip bear">{{ x }}</span></div>
-                      <div v-if="e.bullIndustries && e.bullIndustries.length" class="infl-bb-row"><span class="infl-bb-tag bull">🔼 利好行业</span><span v-for="x in e.bullIndustries" :key="'ibi'+x" class="infl-bb-chip bull">{{ x }}</span></div>
-                      <div v-if="e.bearIndustries && e.bearIndustries.length" class="infl-bb-row"><span class="infl-bb-tag bear">🔽 利空行业</span><span v-for="x in e.bearIndustries" :key="'ixi'+x" class="infl-bb-chip bear">{{ x }}</span></div>
-                    </div>
                   </div>
                 </div>
               </div>
@@ -2850,8 +2891,8 @@
                     <div v-if="e.relatedStocks && e.relatedStocks.length" class="infl-stocks">
                       <span v-for="s in e.relatedStocks" :key="s" class="infl-stock-chip">{{ s }}</span>
                     </div>
-                    <!-- 20261116：未来事件三个子版块（突发/未来/人物）均展示「利好/利空 概念 与 行业」 -->
-                    <div v-if="(e.bullConcepts && e.bullConcepts.length) || (e.bearConcepts && e.bearConcepts.length) || (e.bullIndustries && e.bullIndustries.length) || (e.bearIndustries && e.bearIndustries.length)" class="infl-bullbear">
+                    <!-- 20261109b/20261109c：突发 与 人物 子版块展示「利好/利空 概念 与 行业」 -->
+                    <div v-if="(futureRegion==='breaking' || futureRegion==='people') && ((e.bullConcepts && e.bullConcepts.length) || (e.bearConcepts && e.bearConcepts.length) || (e.bullIndustries && e.bullIndustries.length) || (e.bearIndustries && e.bearIndustries.length))" class="infl-bullbear">
                       <div v-if="e.bullConcepts && e.bullConcepts.length" class="infl-bb-row"><span class="infl-bb-tag bull">🔼 利好概念</span><span v-for="x in e.bullConcepts" :key="'bc'+x" class="infl-bb-chip bull">{{ x }}</span></div>
                       <div v-if="e.bearConcepts && e.bearConcepts.length" class="infl-bb-row"><span class="infl-bb-tag bear">🔽 利空概念</span><span v-for="x in e.bearConcepts" :key="'xc'+x" class="infl-bb-chip bear">{{ x }}</span></div>
                       <div v-if="e.bullIndustries && e.bullIndustries.length" class="infl-bb-row"><span class="infl-bb-tag bull">🔼 利好行业</span><span v-for="x in e.bullIndustries" :key="'bi'+x" class="infl-bb-chip bull">{{ x }}</span></div>
@@ -5293,14 +5334,14 @@
     </transition>
   </div>
 
-  <script src="js/auth.js?v=20261113b"></script>
-  <script src="js/auth-sync.js?v=20261113b"></script>
+  <script src="js/auth.js?v=20261116a"></script>
+  <script src="js/auth-sync.js?v=20261116a"></script>
   <!-- 边缘加速默认站点（batch37 治本：Cloudflare Worker 代理东财/腾讯，缓解 JSONP 限流误报）。
        若你所在地区 workers.dev 访问慢，可在「设置 → 行情加速地址」清空即恢复纯直连。 -->
   <script>window.__SNT_ACCEL__ = 'https://sichina.dpdns.org';</script>
   <!-- 扫码支付二维码渲染库（第三方 qrcodejs，本地托管避免外链失效）。renderQr 会先检测全局 QRCode 是否存在。 -->
-  <script src="assets/qrcode.min.js?v=20261113b"></script>
-  <script src="js/auth-boot.js?v=20261113b"></script>
+  <script src="assets/qrcode.min.js?v=20261116a"></script>
+  <script src="js/auth-boot.js?v=20261116a"></script>
   <!-- store / stock-api / hot-topics / app 由 auth-boot.js 在登录通过后动态装载，
        未登录时它们不会被下载，业务数据也不会进入内存 -->
 </body>

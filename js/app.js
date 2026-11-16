@@ -7443,6 +7443,16 @@ const app = createApp({
     const siteStatModal = reactive({
       show: false, siteName: '', siteRank: 0, topic: '', dimName: '', color: '#e63525', items: []
     });
+    // 20261116a：主题分类统计点子概念 → 多空事件间隔统计弹窗
+    //   弹窗两张表：利空事件（事件 / 间隔(交易日) / 板块下跌）、利好事件（事件 / 间隔(交易日) / 板块上涨），
+    //   底部统计「平均间隔天数（去除节假日）」——间隔一律按交易日历（上证指数日K日期序列）计，周末与法定节假日自动跳过。
+    const themeEventModal = reactive({
+      show: false, dimName: '', color: '#e63525', topic: '', winLabel: '',
+      loading: false, boardBk: '',           // 匹配到的东财板块代码（BKxxxx）；空=未匹配到
+      bullRows: [], bearRows: [], neutralCount: 0,
+      avgBull: null, avgBear: null, avgAll: null,
+      _token: 0                              // 防串台：连续点开不同子概念时只让最后一次异步回填生效
+    });
     let _analysisFlat = [];   // 最近一次统计的扁平数据（不进响应式，避免大数组的代理开销）
     let _analysisWin = null;  // 20261112c：最近一次统计的时间窗口，切换维度/点开弹窗时仍按同一窗口复核
     /* batch16：统计分析（跨站重合榜 / 主题分类统计）的统计时间窗口。
@@ -9606,8 +9616,9 @@ const app = createApp({
             : HotTopics.siteThemeStats(finalFlat, siteStatsDim.value, _win))
           : [];
         // 主题维度统计（行业/概念/产品/产业/科技），多标签命中，与跨站重合榜并排展示
+        // 20261116a：点击子概念改为弹窗（多空事件间隔统计），不再就地展开
         const themeStats = (typeof HotTopics !== 'undefined' && HotTopics.themeStats ? HotTopics.themeStats(finalFlat, undefined, _win) : [])
-          .map(d => ({ ...d, _open: true, showAll: false, selTopic: null, newsLimit: 30 }));
+          .map(d => ({ ...d, _open: true, showAll: false }));
         // 请求U：主题分类统计的「总条数」= 十个新闻平台在该时间段内的全部新闻条数（与 themeStats 的分母一致，排除无文本条目）
         const themeBaseTotal = (typeof HotTopics !== 'undefined' && HotTopics.themeStats)
           ? finalFlat.filter(it => it && it.text).length
@@ -9649,12 +9660,144 @@ const app = createApp({
     }
     function closeSiteStatNews() { siteStatModal.show = false; }
 
-    /** 点击主题词（半导体 / 人工智能 / 医疗器械 …）：就地展开该主题命中的新闻明细；同一维度内一次只看一个主题 */
-    function toggleThemeTopic(dim, topic) {
-      dim.selTopic = dim.selTopic === topic.name ? null : topic.name;
+    /* ===================== 20261116a：子概念多空事件间隔统计弹窗 =====================
+     * 点击「主题分类统计」任意子概念 → 弹窗：
+     *   ① 利空事件表：事件 / 间隔(与上一条利空事件之间的交易日数) / 板块下跌(事件日板块涨跌幅%)
+     *   ② 利好事件表：事件 / 间隔(与上一条利好事件之间的交易日数) / 板块上涨(事件日板块涨跌幅%)
+     *   ③ 底部统计：平均间隔天数（去除节假日——间隔按交易日历计，周末与法定节假日自动剔除）
+     * 多空方向逐条判定与子概念着色同一套视角（HotTopics.newsSentimentOf）；
+     * 板块涨跌 = 按子概念名匹配的东财板块日K线（resolveCatBoardCode，未匹配到则该列显示 —）；
+     * 交易日历 = 上证指数日K日期序列（节假日自动不在序列中）。 */
+    const _themeModKlineCache = new Map();   // secid → { ts, bars }（10 分钟缓存，弹窗反复点不重复拉）
+    async function themeModFetchKline(secid, count) {
+      const key = secid + '|' + (count || 200);
+      const hit = _themeModKlineCache.get(key);
+      if (hit && Date.now() - hit.ts < 10 * 60 * 1000) return hit.bars;
+      const url = `https://push2his.eastmoney.com/api/qt/stock/kline/get?ut=fa5fd1943c7b386f172d6893dbfba10b&secid=${secid}` +
+        `&fields1=f1,f2,f3,f4,f5,f6&fields2=f51,f52,f53,f54,f55,f56,f57,f58&klt=101&fqt=0&beg=0&end=20500101&lmt=${count || 200}`;
+      const json = await StockAPI._eastGet(url);
+      const bars = StockAPI._parseEastKline((json && json.data && json.data.klines) || []);
+      if (!bars.length) throw new Error('K线为空');
+      _themeModKlineCache.set(key, { ts: Date.now(), bars });
+      return bars;
     }
-    /** 展开更多该主题的新闻（默认先显示 30 条） */
-    function moreThemeNews(dim) { dim.newsLimit = (dim.newsLimit || 30) + 50; }
+    let _themeModCal = null;                 // 交易日历（上证指数日K日期序列，升序）；失败不缓存以便重试
+    async function themeModCalendar() {
+      if (_themeModCal && _themeModCal.length) return _themeModCal;
+      try {
+        const bars = await themeModFetchKline('1:000001', 200);
+        if (bars.length >= 2) { _themeModCal = bars.map(b => b.date); return _themeModCal; }
+      } catch (e) { /* 回退周一~周五口径 */ }
+      return [];
+    }
+    /** 两个日期之间的交易日间隔（> d1 且 <= d2 的交易日数）；日历不可用或事件早于日历起点时回退「周一~周五」口径 */
+    function gapDaysBetween(d1, d2, calDates) {
+      if (!d1 || !d2 || d2 <= d1) return 0;
+      if (calDates && calDates.length && d1 >= calDates[0]) {
+        let n = 0;
+        for (const d of calDates) { if (d > d1 && d <= d2) n++; }
+        return n;
+      }
+      let n = 0;
+      const t1 = new Date(d1 + 'T00:00:00'), t2 = new Date(d2 + 'T00:00:00');
+      if (isNaN(t1) || isNaN(t2)) return 0;
+      for (let t = new Date(t1.getTime() + 86400000); t <= t2; t.setTime(t.getTime() + 86400000)) {
+        const w = t.getDay(); if (w !== 0 && w !== 6) n++;
+      }
+      return n;
+    }
+    /** 事件日 → 板块涨跌幅%（事件日非交易日/盘前时，取其后首个交易日的表现；找不到返回 null） */
+    function boardChgOn(date, bars) {
+      if (!bars || !bars.length || !date) return null;
+      let prev = null;
+      for (const b of bars) {
+        if (b.date >= date) {
+          if (!prev || !prev.close) return null;
+          const pct = (b.close - prev.close) / prev.close * 100;
+          return isNaN(pct) ? null : { pct: Math.round(pct * 100) / 100, date: b.date };
+        }
+        prev = b;
+      }
+      return null;
+    }
+    /** 点击主题词（半导体 / 人工智能 / 医疗器械 …）：打开多空事件间隔统计弹窗 */
+    function openThemeTopicModal(dim, topic) {
+      const HT = (typeof HotTopics !== 'undefined') ? HotTopics : null;
+      if (!HT || !HT.newsSentimentOf) return;
+      const name = (topic && topic.name) || '';
+      const news = (topic && topic.news) || [];
+      themeEventModal.show = true;
+      themeEventModal.dimName = (dim && dim.name) || '';
+      themeEventModal.color = (dim && dim.color) || '#e63525';
+      themeEventModal.topic = name;
+      themeEventModal.winLabel = _analysisWin && HT.fmtWindowCN
+        ? (HT.fmtWindowCN(_analysisWin.startMs) + ' → ' + HT.fmtWindowCN(_analysisWin.endMs)) : '';
+      themeEventModal.boardBk = '';
+      themeEventModal.loading = true;
+      themeEventModal.avgBull = null; themeEventModal.avgBear = null; themeEventModal.avgAll = null;
+      themeEventModal.neutralCount = 0;
+      const token = ++themeEventModal._token;
+      // ① 多空逐条判定（与该子概念数字着色同一套视角：AI 标签优先 / 战争 / 美债加息 / 石油特例）
+      const bull = [], bear = [];
+      let neutral = 0;
+      for (const n of news) {
+        const s = HT.newsSentimentOf(name, n && n.text);
+        if (s === 'bull') bull.push(n); else if (s === 'bear') bear.push(n); else neutral++;
+      }
+      const byAsc = (a, b) =>
+        String(a.date || '').localeCompare(String(b.date || '')) || String(a.time || '').localeCompare(String(b.time || ''));
+      bull.sort(byAsc); bear.sort(byAsc);
+      const buildRows = (list) => list.map((n, i) => ({
+        date: n.date || '', time: n.time || '', text: n.text || '', url: n.url || '',
+        sourceName: n.sourceName || '', sourceRank: n.sourceRank || 0,
+        prevDate: i > 0 ? (list[i - 1].date || '') : '',   // 首条无「上一条」，间隔显示 —
+        gap: null, chg: null
+      }));
+      themeEventModal.bullRows = buildRows(bull);
+      themeEventModal.bearRows = buildRows(bear);
+      themeEventModal.neutralCount = neutral;
+      // ② 异步补齐：交易日历（间隔列）→ 板块日K（板块下跌/上涨列）→ 平均间隔
+      (async () => {
+        const cal = await themeModCalendar().catch(() => []);
+        if (token !== themeEventModal._token) return;   // 期间用户已点开别的子概念
+        const fillGap = (rows) => {
+          for (const r of rows) if (r.prevDate && r.date) r.gap = gapDaysBetween(r.prevDate, r.date, cal);
+        };
+        fillGap(themeEventModal.bullRows);
+        fillGap(themeEventModal.bearRows);
+        try {
+          const bk = await resolveCatBoardCode({ name: themeEventModal.topic });
+          if (token !== themeEventModal._token) return;
+          if (bk) {
+            themeEventModal.boardBk = bk;
+            const code = StockAPI._normalizeBoardCode(bk);
+            const bars = code ? await themeModFetchKline('b:' + code, 200).catch(() => null) : null;
+            if (token !== themeEventModal._token) return;
+            const fillChg = (rows) => {
+              for (const r of rows) {
+                const v = bars ? boardChgOn(r.date, bars) : null;
+                r.chg = v ? v.pct : null;
+              }
+            };
+            fillChg(themeEventModal.bullRows);
+            fillChg(themeEventModal.bearRows);
+          }
+        } catch (e) { /* 板块匹配/行情失败 → 该列显示 —，不影响间隔统计 */ }
+        const avgOf = (rows) => {
+          const gs = rows.map(r => r.gap).filter(g => g != null);
+          return gs.length ? Math.round(gs.reduce((a, b) => a + b, 0) / gs.length * 10) / 10 : null;
+        };
+        if (token !== themeEventModal._token) return;
+        themeEventModal.avgBear = avgOf(themeEventModal.bearRows);
+        themeEventModal.avgBull = avgOf(themeEventModal.bullRows);
+        const all = [];
+        themeEventModal.bearRows.forEach(r => { if (r.gap != null) all.push(r.gap); });
+        themeEventModal.bullRows.forEach(r => { if (r.gap != null) all.push(r.gap); });
+        themeEventModal.avgAll = all.length ? Math.round(all.reduce((a, b) => a + b, 0) / all.length * 10) / 10 : null;
+        themeEventModal.loading = false;
+      })().catch(() => { if (token === themeEventModal._token) themeEventModal.loading = false; });
+    }
+    function closeThemeTopicModal() { themeEventModal.show = false; }
 
     async function fetchHotBoards() {
       hotLoading.value = true;
@@ -9853,20 +9996,6 @@ const app = createApp({
     function conceptOf(e) { return CONCEPT_INDEX[e.concept] || null; }
     // 归一双指标：affected=影响股民数 S，affectedPeople=影响人数 A(含 S)，investorShare=股民占比(%)
     // ⚠️ 本函数不得读取 e.region：cn/us/world 只是分类，不是影响人数的计算依据。
-    // 20261115：影响力事件「利好/利空 概念与行业」逐条映射（每个 concept 唯一对应一条事件；含空数组表示该方向无标签）
-    // 字段语义与右侧未来事件红框一致：bullConcepts 利好概念 / bearConcepts 利空概念 / bullIndustries 利好行业 / bearIndustries 利空行业
-    const CONCEPT_BULLBEAR = {"ai":{"b":["黄金","防御板块"],"s":["AI算力","美股科技"],"bi":["贵金属","公用事业"],"si":["半导体","AI应用"]},"finance":{"b":["美元","银行"],"s":["科技成长","新兴市场"],"bi":["银行","保险"],"si":["半导体","新能源"]},"trade":{"b":["内需","国产替代"],"s":["出口链","跨境电商"],"bi":["内需消费","自主可控"],"si":["外贸制造","航运"]},"aiApp":{"b":["合规","网络安全"],"s":["AI应用","大模型"],"bi":["网络安全","法律合规"],"si":["AI应用","内容平台"]},"energy":{"b":["石油","黄金","军工"],"s":["航空","化工"],"bi":["石油开采","贵金属"],"si":["航空运输","化工"]},"macro":{"b":["防御板块","黄金"],"s":["周期股","消费"],"bi":["公用事业","贵金属"],"si":["有色","可选消费"]},"semi":{"b":["半导体","存储"],"s":[],"bi":["半导体设备","晶圆制造"],"si":[]},"green":{"b":["光伏","新能源"],"s":["传统能源"],"bi":["光伏设备","组件"],"si":["火电","煤炭"]},"idc":{"b":["电力","电网"],"s":[],"bi":["电力设备","储能"],"si":[]},"ship":{"b":["航运","运价"],"s":[],"bi":["集运","港口"],"si":[]},"grain":{"b":["农业","种业"],"s":["食品加工"],"bi":["种植业","化肥"],"si":["食品饮料"]},"pharma":{"b":["仿制药","CXO"],"s":["创新药"],"bi":["仿制药","医药外包"],"si":["原研药"]},"rare":{"b":["稀土","小金属"],"s":["下游磁材"],"bi":["稀土永磁","矿业"],"si":["磁材","电池"]},"crypto":{"b":["稳定币","金融科技"],"s":["传统支付"],"bi":["跨境支付","区块链"],"si":["传统清算"]},"climate":{"b":["碳交易","环保"],"s":["高耗能"],"bi":["环保","碳中和"],"si":["钢铁","水泥"]},"ecom":{"b":["海外仓"],"s":["跨境电商"],"bi":["仓储物流"],"si":["跨境电商","物流"]},"sat":{"b":["卫星互联网","通信"],"s":[],"bi":["卫星制造","通信设备"],"si":[]},"cyber":{"b":["网络安全","数据安全"],"s":[],"bi":["网络安全","密码"],"si":[]},"luxury":{"b":[],"s":["奢侈品","可选消费"],"bi":[],"si":["高端消费","免税"]},"sports":{"b":["文旅","传媒"],"s":[],"bi":["赛事运营","旅游"],"si":[]},"usFinance":{"b":["黄金","避险"],"s":["美债","美元信用"],"bi":["贵金属"],"si":["国债","金融"]},"usMacro":{"b":["美元","银行"],"s":["科技成长","债券"],"bi":["银行","能源"],"si":["半导体","成长股"]},"usBank":{"b":["黄金","大型银行"],"s":["中小银行","信贷"],"bi":["贵金属","大行"],"si":["区域银行","信贷"]},"adr":{"b":[],"s":["中概股","ADR"],"bi":[],"si":["在美中概"]},"chip":{"b":["国产替代","半导体设备"],"s":["AI芯片出口"],"bi":["半导体设备(国产)","信创"],"si":["AI芯片出口链"]},"aiCapex":{"b":["AI算力","光模块"],"s":[],"bi":["算力基础设施","光模块"],"si":[]},"medicare":{"b":["仿制药"],"s":["创新药","药企"],"bi":["仿制药"],"si":["专利药"]},"shale":{"b":[],"s":["油价","石油"],"bi":[],"si":["石油开采","油服"]},"retail":{"b":["折扣零售"],"s":["可选零售"],"bi":["折扣店"],"si":["可选消费","信用卡"]},"mortgage":{"b":[],"s":["地产链","成屋"],"bi":[],"si":["房地产","建材"]},"evTax":{"b":[],"s":["电动车","充电桩"],"bi":[],"si":["新能源车","充电网络"]},"defense":{"b":["军工","国防"],"s":[],"bi":["军工装备","导弹"],"si":[]},"antitrust":{"b":["中小科技"],"s":["大型科技","平台"],"bi":["垂直软件"],"si":["互联网平台","广告"]},"stable":{"b":["稳定币","金融科技"],"s":[],"bi":["跨境支付","区块链"],"si":[]},"power":{"b":["电力","公用事业"],"s":["数据中心"],"bi":["电力运营","储能"],"si":["数据中心建设"]},"agri":{"b":[],"s":["农业","农机"],"bi":[],"si":["农产品","农机"]},"stream":{"b":["流媒体","传媒"],"s":[],"bi":["流媒体","内容"],"si":[]},"airline":{"b":[],"s":["航空","出行"],"bi":[],"si":["航空运输","飞机制造"]},"endow":{"b":[],"s":["资管","私募"],"bi":[],"si":["资产管理"]},"space":{"b":["商业航天","卫星"],"s":[],"bi":["火箭发射","卫星制造"],"si":[]},"broker":{"b":["券商","非银金融"],"s":[],"bi":["证券","金融科技"],"si":[]},"bank":{"b":["银行","地产","成长股"],"s":[],"bi":["银行","房地产"],"si":[]},"property":{"b":["地产","建材","家居"],"s":[],"bi":["房地产开发","建材"],"si":[]},"nev":{"b":["新能源车","电池"],"s":["燃油车"],"bi":["整车","动力电池"],"si":["传统车企"]},"core":{"b":["核心资产","白马股"],"s":[],"bi":["消费龙头","金融龙头"],"si":[]},"shortDrama":{"b":["合规","内容审核"],"s":["短剧","AI生成内容"],"bi":["网络安全","合规"],"si":["短剧","传媒"]},"llm":{"b":["国产大模型","AI应用"],"s":[],"bi":["AI应用","软件"],"si":[]},"semiEq":{"b":["半导体设备","国产替代"],"s":[],"bi":["半导体设备","零部件"],"si":[]},"vbp":{"b":[],"s":["高值耗材","器械"],"bi":[],"si":["医疗器械","耗材"]},"consume":{"b":["零售","消费服务"],"s":[],"bi":["商业零售","免税"],"si":[]},"lowAlt":{"b":["低空经济","无人机"],"s":[],"bi":["通航","无人机"],"si":[]},"elec":{"b":["电力","绿电"],"s":[],"bi":["电力运营","电网"],"si":[]},"dataEl":{"b":["数据要素","运营商"],"s":[],"bi":["数据服务","政务IT"],"si":[]},"crossEcom":{"b":["跨境电商","海外仓"],"s":[],"bi":["跨境电商","物流"],"si":[]},"robot":{"b":["机器人","减速器","伺服"],"s":[],"bi":["机器人零部件","自动化"],"si":[]},"silver":{"b":["养老","康复","保险"],"s":[],"bi":["养老服务","医疗器械"],"si":[]},"seed":{"b":["种业","转基因"],"s":[],"bi":["种业","农化"],"si":[]},"compute":{"b":["算力","IDC"],"s":[],"bi":["IDC","服务器"],"si":[]},"metro":{"b":["轨交装备","基建"],"s":[],"bi":["轨交设备","工程机械"],"si":[]},"dramaOut":{"b":["短剧","传媒出海"],"s":[],"bi":["影视传媒","文化出海"],"si":[]}};
-    /** 给影响力事件注入利好利空标签：事件自带字段优先，否则按 concept 映射；都无则给空数组（模板自动隐藏） */
-    function attachBullBear(e) {
-      const bb = CONCEPT_BULLBEAR[e.concept] || {};
-      return {
-        ...e,
-        bullConcepts:   e.bullConcepts   || bb.b  || [],
-        bearConcepts:   e.bearConcepts   || bb.s  || [],
-        bullIndustries: e.bullIndustries || bb.bi || [],
-        bearIndustries: e.bearIndustries || bb.si || []
-      };
-    }
     function resolveInfluence(e) {
       const c = conceptOf(e);
       const S = c ? c.n : 0;
@@ -9883,130 +10012,130 @@ const app = createApp({
     }
     const INFLUENCE_EVENTS_SEED = [
       // —— 全世界：全球主要市场投资该概念相关股票的股民数 ——
-      { id: 'w1', region: 'world', concept: 'ai', title: '特朗普中期选举失利，民主党推动暂停AI发展', date: '2026-11-03', source: '综合外媒',
+      { id: 'w1', region: 'world', concept: 'ai', title: '特朗普中期选举失利，民主党推动暂停AI发展', date: '2026-11-05', source: '综合外媒',
         summary: '美国中期选举结果冲击全球科技与AI产业链预期，民主党主导的AI监管暂停提案直接影响全球投资 AI / 算力相关股票的股民，涉及概念投资者数量居首。', relatedStocks: ['英伟达', '台积电', '微软'] },
-      { id: 'w2', region: 'world', concept: 'finance', title: '美联储超预期大幅加息，全球流动性收紧', date: '2026-11-03', source: '美联储',
+      { id: 'w2', region: 'world', concept: 'finance', title: '美联储超预期大幅加息，全球流动性收紧', date: '2026-10-28', source: '美联储',
         summary: '美联储加息幅度超预期，全球风险资产估值承压，直接影响投资全球金融 / 利率相关股票的股民。', relatedStocks: ['苹果', '特斯拉'] },
-      { id: 'w3', region: 'world', concept: 'trade', title: '美国对等关税全面升级，全球贸易链重构', date: '2026-11-04', source: '白宫',
+      { id: 'w3', region: 'world', concept: 'trade', title: '美国对等关税全面升级，全球贸易链重构', date: '2026-10-15', source: '白宫',
         summary: '对等关税覆盖主要贸易伙伴，全球供应链与出口链成本上升，影响投资全球贸易 / 出口链相关股票的股民。', relatedStocks: ['比亚迪', '宁德时代'] },
-      { id: 'w4', region: 'world', concept: 'aiApp', title: '生成式AI全球协同监管落地，科技股价值重估', date: '2026-11-04', source: '多国监管',
+      { id: 'w4', region: 'world', concept: 'aiApp', title: '生成式AI全球协同监管落地，科技股价值重估', date: '2026-09-30', source: '多国监管',
         summary: '欧美中同步出台AI内容与安全监管框架，算力与模型合规成本上升，影响投资 AI 应用 / 软件相关股票的股民。', relatedStocks: ['英伟达', '百度'] },
-      { id: 'w5', region: 'world', concept: 'energy', title: '地缘冲突外溢，原油与黄金剧烈波动', date: '2026-11-05', source: '国际新闻',
+      { id: 'w5', region: 'world', concept: 'energy', title: '地缘冲突外溢，原油与黄金剧烈波动', date: '2026-09-12', source: '国际新闻',
         summary: '中东局势升级推升能源与避险资产波动，影响投资能源 / 贵金属相关股票的股民。', relatedStocks: ['中国海油', '山东黄金'] },
-      { id: 'w6', region: 'world', concept: 'macro', title: '全球主要经济体同步衰退预警', date: '2026-11-05', source: 'IMF',
+      { id: 'w6', region: 'world', concept: 'macro', title: '全球主要经济体同步衰退预警', date: '2026-08-20', source: 'IMF',
         summary: 'IMF下调全球增长预期，周期与消费板块承压，影响投资全球宏观 / 周期相关股票的股民。', relatedStocks: ['贵州茅台', '招商银行'] },
       // 20261108c 扩充：全世界再补 14 条（股民数 1.65 亿 → 0.28 亿递减，r 均 ≤0.55）
-      { id: 'w7', region: 'world', concept: 'semi', title: '全球半导体库存周期见底，晶圆厂扩产提速', date: '2026-11-06', source: 'SEMI',
+      { id: 'w7', region: 'world', concept: 'semi', title: '全球半导体库存周期见底，晶圆厂扩产提速', date: '2026-08-08', source: 'SEMI',
         summary: '库存去化结束叠加AI芯片需求，全球晶圆厂资本开支上修，影响投资半导体产业链的股民。', relatedStocks: ['台积电', '中芯国际'] },
-      { id: 'w8', region: 'world', concept: 'green', title: '全球光伏装机预期上调，组件价格企稳', date: '2026-11-06', source: 'IEA',
+      { id: 'w8', region: 'world', concept: 'green', title: '全球光伏装机预期上调，组件价格企稳', date: '2026-07-26', source: 'IEA',
         summary: '主要经济体上调新能源装机目标，组件价格触底回升，影响投资光伏与新能源相关股票的股民。', relatedStocks: ['隆基绿能', '阳光电源'] },
-      { id: 'w9', region: 'world', concept: 'idc', title: '全球AI数据中心用电激增，电网投资加码', date: '2026-11-09', source: '国际能源署',
+      { id: 'w9', region: 'world', concept: 'idc', title: '全球AI数据中心用电激增，电网投资加码', date: '2026-07-12', source: '国际能源署',
         summary: '算力需求推升数据中心电力消耗，多国追加电网与储能投资，影响投资算力基础设施的股民。', relatedStocks: ['英伟达', '施耐德电气'] },
-      { id: 'w10', region: 'world', concept: 'ship', title: '红海航线复航预期反复，集运运价大幅波动', date: '2026-11-09', source: '航运交易所',
+      { id: 'w10', region: 'world', concept: 'ship', title: '红海航线复航预期反复，集运运价大幅波动', date: '2026-06-28', source: '航运交易所',
         summary: '关键航道通行不确定导致运价与保费剧烈波动，影响投资航运与出口链相关股票的股民。', relatedStocks: ['中远海控', '马士基'] },
-      { id: 'w11', region: 'world', concept: 'grain', title: '全球粮食减产预警，农产品期货走高', date: '2026-11-10', source: '联合国粮农组织',
+      { id: 'w11', region: 'world', concept: 'grain', title: '全球粮食减产预警，农产品期货走高', date: '2026-06-15', source: '联合国粮农组织',
         summary: '极端天气扰动主产区供给，粮价与农资成本上行，影响投资农业与食品相关股票的股民。', relatedStocks: ['先正达', '中粮糖业'] },
-      { id: 'w12', region: 'world', concept: 'pharma', title: '全球药价谈判机制扩围，仿制药格局重塑', date: '2026-11-10', source: 'WHO',
+      { id: 'w12', region: 'world', concept: 'pharma', title: '全球药价谈判机制扩围，仿制药格局重塑', date: '2026-05-30', source: 'WHO',
         summary: '多国联合议价压低专利药价格，仿制药与CXO分工变化，影响投资医药相关股票的股民。', relatedStocks: ['恒瑞医药', '药明康德'] },
-      { id: 'w13', region: 'world', concept: 'rare', title: '关键矿产出口管制升级，稀土供应链重构', date: '2026-11-11', source: '综合外媒',
+      { id: 'w13', region: 'world', concept: 'rare', title: '关键矿产出口管制升级，稀土供应链重构', date: '2026-05-16', source: '综合外媒',
         summary: '稀土与锂钴等关键矿产管制加码，下游磁材与电池成本承压，影响投资资源类股票的股民。', relatedStocks: ['北方稀土', '赣锋锂业'] },
-      { id: 'w14', region: 'world', concept: 'crypto', title: '多国稳定币牌照落地，跨境支付格局变化', date: '2026-11-11', source: '各国央行',
+      { id: 'w14', region: 'world', concept: 'crypto', title: '多国稳定币牌照落地，跨境支付格局变化', date: '2026-05-02', source: '各国央行',
         summary: '稳定币合规化推进，传统清算与支付机构面临分流，影响投资金融科技相关股票的股民。', relatedStocks: ['Visa', 'Coinbase'] },
-      { id: 'w15', region: 'world', concept: 'climate', title: '全球气候峰会达成减排新协议', date: '2026-11-12', source: 'UNFCCC',
+      { id: 'w15', region: 'world', concept: 'climate', title: '全球气候峰会达成减排新协议', date: '2026-04-18', source: 'UNFCCC',
         summary: '新一轮减排承诺覆盖钢铁、水泥等高耗能行业，影响投资碳交易与环保相关股票的股民。', relatedStocks: ['宁德时代', '比亚迪'] },
-      { id: 'w16', region: 'world', concept: 'ecom', title: '跨境电商小额包裹税改全面实施', date: '2026-11-12', source: 'WTO',
+      { id: 'w16', region: 'world', concept: 'ecom', title: '跨境电商小额包裹税改全面实施', date: '2026-04-04', source: 'WTO',
         summary: '多国取消小额包裹免税，直邮模式成本抬升，影响投资跨境电商与物流相关股票的股民。', relatedStocks: ['亚马逊', '顺丰控股'] },
-      { id: 'w17', region: 'world', concept: 'sat', title: '低轨卫星频谱分配落定，直连手机商用提速', date: '2026-11-13', source: 'ITU',
+      { id: 'w17', region: 'world', concept: 'sat', title: '低轨卫星频谱分配落定，直连手机商用提速', date: '2026-03-21', source: 'ITU',
         summary: '频谱与轨道资源落定推动卫星互联网商用，影响投资通信与卫星制造相关股票的股民。', relatedStocks: ['中国卫通', 'SpaceX 产业链'] },
-      { id: 'w18', region: 'world', concept: 'cyber', title: '跨国企业大规模数据泄露事件', date: '2026-11-13', source: '综合外媒',
+      { id: 'w18', region: 'world', concept: 'cyber', title: '跨国企业大规模数据泄露事件', date: '2026-03-08', source: '综合外媒',
         summary: '云服务与身份系统遭攻击引发合规整改，影响投资网络安全相关股票的股民。', relatedStocks: ['奇安信', 'Palo Alto'] },
-      { id: 'w19', region: 'world', concept: 'luxury', title: '全球奢侈品消费增速放缓', date: '2026-11-16', source: '贝恩',
+      { id: 'w19', region: 'world', concept: 'luxury', title: '全球奢侈品消费增速放缓', date: '2026-02-22', source: '贝恩',
         summary: '高净值消费趋于谨慎，奢侈品集团下调指引，影响投资可选消费相关股票的股民。', relatedStocks: ['LVMH', '贵州茅台'] },
-      { id: 'w20', region: 'world', concept: 'sports', title: '国际大型赛事带动文旅与转播产业链', date: '2026-11-16', source: '综合外媒',
+      { id: 'w20', region: 'world', concept: 'sports', title: '国际大型赛事带动文旅与转播产业链', date: '2026-02-08', source: '综合外媒',
         summary: '赛事周期拉动转播权、广告与出境游需求，影响投资文旅传媒相关股票的股民。', relatedStocks: ['分众传媒', '携程'] },
       // —— 美国：美股市场投资该概念相关股票的股民数 ——
-      { id: 'u1', region: 'us', concept: 'usFinance', title: '美国债务上限危机，政府停摆风险升温', date: '2026-11-03', source: '美国国会',
+      { id: 'u1', region: 'us', concept: 'usFinance', title: '美国债务上限危机，政府停摆风险升温', date: '2026-11-01', source: '美国国会',
         summary: '债务上限谈判僵局推升美债收益率与避险情绪，影响投资美债 / 金融相关股票的股民。', relatedStocks: ['苹果', '微软'] },
-      { id: 'u2', region: 'us', concept: 'usMacro', title: '美国通胀反弹，降息预期落空', date: '2026-11-03', source: '美国劳工部',
+      { id: 'u2', region: 'us', concept: 'usMacro', title: '美国通胀反弹，降息预期落空', date: '2026-10-22', source: '美国劳工部',
         summary: '核心CPI超预期，市场下修降息次数，影响投资美股宏观 / 利率敏感股票的股民。', relatedStocks: ['特斯拉', '英伟达'] },
-      { id: 'u3', region: 'us', concept: 'usBank', title: '美国区域性银行挤兑，信贷紧缩担忧', date: '2026-11-04', source: 'FDIC',
+      { id: 'u3', region: 'us', concept: 'usBank', title: '美国区域性银行挤兑，信贷紧缩担忧', date: '2026-10-08', source: 'FDIC',
         summary: '中小银行流动性事件引发信贷收缩预期，影响投资银行股的股民。', relatedStocks: ['摩根大通'] },
-      { id: 'u4', region: 'us', concept: 'adr', title: '纳斯达克上市规则调整，中概股承压', date: '2026-11-04', source: 'NASDAQ',
+      { id: 'u4', region: 'us', concept: 'adr', title: '纳斯达克上市规则调整，中概股承压', date: '2026-09-18', source: 'NASDAQ',
         summary: '审计与上市门槛变化影响在美中概股估值，影响投资中概股的股民。', relatedStocks: ['阿里巴巴', '京东'] },
-      { id: 'u5', region: 'us', concept: 'chip', title: '美国芯片出口管制再升级', date: '2026-11-05', source: 'BIS',
+      { id: 'u5', region: 'us', concept: 'chip', title: '美国芯片出口管制再升级', date: '2026-08-30', source: 'BIS',
         summary: '先进制程与设备出口限制扩大，半导体供应链重构，影响投资半导体相关股票的股民。', relatedStocks: ['中芯国际', '北方华创'] },
       // 20261108c 扩充：美国再补 15 条（股民数 4000 万 → 350 万递减，r 均 ≤0.70）
-      { id: 'u6', region: 'us', concept: 'aiCapex', title: '美股科技巨头上调AI资本开支指引', date: '2026-11-05', source: '公司财报',
+      { id: 'u6', region: 'us', concept: 'aiCapex', title: '美股科技巨头上调AI资本开支指引', date: '2026-08-20', source: '公司财报',
         summary: '云厂商集体上修算力投入，服务器与光模块需求外溢，影响投资AI资本开支链条的股民。', relatedStocks: ['微软', '英伟达'] },
-      { id: 'u7', region: 'us', concept: 'medicare', title: '美国医保控费新规压低药企报价', date: '2026-11-06', source: 'CMS',
+      { id: 'u7', region: 'us', concept: 'medicare', title: '美国医保控费新规压低药企报价', date: '2026-08-06', source: 'CMS',
         summary: '医保谈判目录扩容压缩专利药利润，影响投资医疗与保险相关股票的股民。', relatedStocks: ['联合健康', '礼来'] },
-      { id: 'u8', region: 'us', concept: 'shale', title: '美国页岩油产量创历史新高', date: '2026-11-06', source: 'EIA',
+      { id: 'u8', region: 'us', concept: 'shale', title: '美国页岩油产量创历史新高', date: '2026-07-24', source: 'EIA',
         summary: '供给增加压制油价，页岩油资本纪律与炼化价差变化，影响投资能源股的股民。', relatedStocks: ['埃克森美孚', '雪佛龙'] },
-      { id: 'u9', region: 'us', concept: 'retail', title: '美国零售销售连续两月下滑', date: '2026-11-09', source: '美国商务部',
+      { id: 'u9', region: 'us', concept: 'retail', title: '美国零售销售连续两月下滑', date: '2026-07-10', source: '美国商务部',
         summary: '居民消费走弱拖累可选零售业绩，影响投资消费与信用卡相关股票的股民。', relatedStocks: ['沃尔玛', '亚马逊'] },
-      { id: 'u10', region: 'us', concept: 'mortgage', title: '美国30年期房贷利率重回高位', date: '2026-11-09', source: '房地美',
+      { id: 'u10', region: 'us', concept: 'mortgage', title: '美国30年期房贷利率重回高位', date: '2026-06-26', source: '房地美',
         summary: '按揭成本上行抑制成屋成交，影响投资地产链与房贷金融相关股票的股民。', relatedStocks: ['富国银行', '莱纳房产'] },
-      { id: 'u11', region: 'us', concept: 'evTax', title: '美国电动车税收抵免退坡', date: '2026-11-10', source: '美国财政部',
+      { id: 'u11', region: 'us', concept: 'evTax', title: '美国电动车税收抵免退坡', date: '2026-06-12', source: '美国财政部',
         summary: '购车补贴退坡压制短期需求，影响投资电动车与充电网络相关股票的股民。', relatedStocks: ['特斯拉', 'Rivian'] },
-      { id: 'u12', region: 'us', concept: 'defense', title: '美国国防授权法案扩大军工订单', date: '2026-11-10', source: '五角大楼',
+      { id: 'u12', region: 'us', concept: 'defense', title: '美国国防授权法案扩大军工订单', date: '2026-05-29', source: '五角大楼',
         summary: '预算倾斜导弹与无人系统采购，影响投资国防军工相关股票的股民。', relatedStocks: ['洛克希德·马丁', '雷神'] },
-      { id: 'u13', region: 'us', concept: 'antitrust', title: '美国司法部对科技巨头提起反垄断诉讼', date: '2026-11-11', source: 'DOJ',
+      { id: 'u13', region: 'us', concept: 'antitrust', title: '美国司法部对科技巨头提起反垄断诉讼', date: '2026-05-15', source: 'DOJ',
         summary: '平台分发与广告业务面临拆分压力，影响投资大型科技股的股民。', relatedStocks: ['谷歌', 'Meta'] },
-      { id: 'u14', region: 'us', concept: 'stable', title: '美国稳定币监管框架立法通过', date: '2026-11-11', source: '美国国会',
+      { id: 'u14', region: 'us', concept: 'stable', title: '美国稳定币监管框架立法通过', date: '2026-05-01', source: '美国国会',
         summary: '储备与发行规则明确，银行与支付机构加速入场，影响投资金融科技股的股民。', relatedStocks: ['Circle', '摩根大通'] },
-      { id: 'u15', region: 'us', concept: 'power', title: '美国数据中心用电挤占居民电网容量', date: '2026-11-12', source: 'FERC',
+      { id: 'u15', region: 'us', concept: 'power', title: '美国数据中心用电挤占居民电网容量', date: '2026-04-17', source: 'FERC',
         summary: '区域电价上行推动公用事业与储能投资，影响投资电力股与用电企业的股民。', relatedStocks: ['杜克能源', '特斯拉'] },
-      { id: 'u16', region: 'us', concept: 'agri', title: '美国农产品出口订单大幅下滑', date: '2026-11-12', source: 'USDA',
+      { id: 'u16', region: 'us', concept: 'agri', title: '美国农产品出口订单大幅下滑', date: '2026-04-03', source: 'USDA',
         summary: '海外采购放缓压低大豆玉米价格，影响投资农业与农机相关股票的股民。', relatedStocks: ['迪尔', '邦吉'] },
-      { id: 'u17', region: 'us', concept: 'stream', title: '美国主流流媒体平台集体涨价', date: '2026-11-13', source: '公司公告',
+      { id: 'u17', region: 'us', concept: 'stream', title: '美国主流流媒体平台集体涨价', date: '2026-03-20', source: '公司公告',
         summary: '订阅提价与广告套餐并行，ARPU 提升但流失率承压，影响投资传媒股的股民。', relatedStocks: ['奈飞', '迪士尼'] },
-      { id: 'u18', region: 'us', concept: 'airline', title: '美国航空安全事件引发监管排查', date: '2026-11-13', source: 'FAA',
+      { id: 'u18', region: 'us', concept: 'airline', title: '美国航空安全事件引发监管排查', date: '2026-03-06', source: 'FAA',
         summary: '机队检查与航班削减推高运营成本，影响投资航空与旅出游行相关股票的股民。', relatedStocks: ['达美航空', '波音'] },
-      { id: 'u19', region: 'us', concept: 'endow', title: '美国高校捐赠基金投资收益税上调', date: '2026-11-16', source: '美国国税局',
+      { id: 'u19', region: 'us', concept: 'endow', title: '美国高校捐赠基金投资收益税上调', date: '2026-02-20', source: '美国国税局',
         summary: '税负上升改变长期资产配置，影响投资资管与私募相关股票的股民。', relatedStocks: ['贝莱德', '高盛'] },
-      { id: 'u20', region: 'us', concept: 'space', title: '美国商业航天发射牌照审批放宽', date: '2026-11-16', source: 'FAA',
+      { id: 'u20', region: 'us', concept: 'space', title: '美国商业航天发射牌照审批放宽', date: '2026-02-06', source: 'FAA',
         summary: '发射频次上限提高带动卫星与地面设备需求，影响投资商业航天相关股票的股民。', relatedStocks: ['Rocket Lab', '铱星'] },
       // —— 中国：A 股市场投资该概念相关股票的股民数 ——
       { id: 'c1', region: 'cn', concept: 'broker', title: '证监会活跃资本市场一揽子新规（降印花税/T+0讨论）', date: '2026-11-03', source: '证监会',
         summary: '交易端与融资端政策齐发，市场活跃度与风险偏好提升，影响投资券商 / 资本市场相关股票的股民。', relatedStocks: ['中信证券', '东方财富'] },
-      { id: 'c2', region: 'cn', concept: 'bank', title: '央行降准降息超预期，市场流动性宽松', date: '2026-11-04', source: '央行',
+      { id: 'c2', region: 'cn', concept: 'bank', title: '央行降准降息超预期，市场流动性宽松', date: '2026-10-25', source: '央行',
         summary: '全面降准降息释放长期资金，股债双牛预期升温，影响投资银行 / 流动性相关股票的股民。', relatedStocks: ['招商银行', '宁德时代'] },
-      { id: 'c3', region: 'cn', concept: 'property', title: '房地产一揽子救市政策出台', date: '2026-11-04', source: '住建部',
+      { id: 'c3', region: 'cn', concept: 'property', title: '房地产一揽子救市政策出台', date: '2026-10-12', source: '住建部',
         summary: '城中村改造与白名单融资扩围，地产链估值修复，影响投资房地产链相关股票的股民。', relatedStocks: ['保利发展', '万科A'] },
-      { id: 'c4', region: 'cn', concept: 'nev', title: '新能源车购置补贴延续', date: '2026-11-05', source: '工信部',
+      { id: 'c4', region: 'cn', concept: 'nev', title: '新能源车购置补贴延续', date: '2026-09-15', source: '工信部',
         summary: '以旧换新与购置税减免延续，整车与电池需求预期改善，影响投资新能源车 / 电池相关股票的股民。', relatedStocks: ['比亚迪', '宁德时代'] },
-      { id: 'c5', region: 'cn', concept: 'core', title: '北向资金单日大幅净流入创新高', date: '2026-11-05', source: '沪深港通',
+      { id: 'c5', region: 'cn', concept: 'core', title: '北向资金单日大幅净流入创新高', date: '2026-08-28', source: '沪深港通',
         summary: '外资回流共振风险偏好，影响投资外资核心资产相关股票的股民。', relatedStocks: ['贵州茅台', '中国平安'] },
-      { id: 'c6', region: 'cn', concept: 'shortDrama', title: 'AI 短剧审核监管新规落地，微短剧行业全面合规整改', date: '2026-11-03', source: '广电总局',
+      { id: 'c6', region: 'cn', concept: 'shortDrama', title: 'AI 短剧审核监管新规落地，微短剧行业全面合规整改', date: '2026-11-06', source: '广电总局',
         summary: 'AI 生成短剧纳入内容审核与标识管理，海量短剧观众、创作者、平台从业者与广告主的生产生活均受影响，但其中真正投资短剧 / 影视传媒概念股的股民只是很小一部分。', relatedStocks: ['中文在线', '掌阅科技', '芒果超媒'] },
       // 20261108c 扩充：中国再补 14 条（股民数 3000 万 → 200 万递减，r 均 <0.70）
-      { id: 'c7', region: 'cn', concept: 'llm', title: '国产大模型全面开源，应用生态加速落地', date: '2026-11-06', source: '工信部',
+      { id: 'c7', region: 'cn', concept: 'llm', title: '国产大模型全面开源，应用生态加速落地', date: '2026-08-18', source: '工信部',
         summary: '基础模型开源降低调用门槛，政企应用与智能体加速铺开，影响投资国产AI相关股票的股民。', relatedStocks: ['科大讯飞', '金山办公'] },
-      { id: 'c8', region: 'cn', concept: 'semiEq', title: '半导体设备国产化率突破关键节点', date: '2026-11-06', source: '行业协会',
+      { id: 'c8', region: 'cn', concept: 'semiEq', title: '半导体设备国产化率突破关键节点', date: '2026-08-04', source: '行业协会',
         summary: '刻蚀、薄膜与量测设备验证通过，产线招标向本土厂商倾斜，影响投资半导体设备股的股民。', relatedStocks: ['北方华创', '中微公司'] },
-      { id: 'c9', region: 'cn', concept: 'vbp', title: '医保集采扩围至高值耗材', date: '2026-11-09', source: '国家医保局',
+      { id: 'c9', region: 'cn', concept: 'vbp', title: '医保集采扩围至高值耗材', date: '2026-07-21', source: '国家医保局',
         summary: '集采规则调整压低耗材价格，医院与患者覆盖面广、但持股人群相对有限。', relatedStocks: ['迈瑞医疗', '乐普医疗'] },
-      { id: 'c10', region: 'cn', concept: 'consume', title: '首发经济与消费券政策落地', date: '2026-11-09', source: '商务部',
+      { id: 'c10', region: 'cn', concept: 'consume', title: '首发经济与消费券政策落地', date: '2026-07-07', source: '商务部',
         summary: '首店首展与消费补贴刺激线下客流，影响投资零售与消费服务相关股票的股民。', relatedStocks: ['永辉超市', '中国中免'] },
-      { id: 'c11', region: 'cn', concept: 'lowAlt', title: '低空经济试点城市扩容', date: '2026-11-10', source: '民航局',
+      { id: 'c11', region: 'cn', concept: 'lowAlt', title: '低空经济试点城市扩容', date: '2026-06-23', source: '民航局',
         summary: 'eVTOL 航线与起降点审批放开，影响投资通航、无人机与空管相关股票的股民。', relatedStocks: ['亿航智能', '中信海直'] },
-      { id: 'c12', region: 'cn', concept: 'elec', title: '电力市场化交易规则修订', date: '2026-11-10', source: '国家能源局',
+      { id: 'c12', region: 'cn', concept: 'elec', title: '电力市场化交易规则修订', date: '2026-06-09', source: '国家能源局',
         summary: '现货与绿电交易机制完善，发电侧电价弹性提升，影响投资电力与公用事业股的股民。', relatedStocks: ['长江电力', '国电南瑞'] },
-      { id: 'c13', region: 'cn', concept: 'dataEl', title: '数据要素入表试点扩围', date: '2026-11-11', source: '财政部',
+      { id: 'c13', region: 'cn', concept: 'dataEl', title: '数据要素入表试点扩围', date: '2026-05-26', source: '财政部',
         summary: '数据资源可确权入表，运营商与政务数据厂商估值重估，影响投资数据要素股的股民。', relatedStocks: ['易华录', '数据港'] },
-      { id: 'c14', region: 'cn', concept: 'crossEcom', title: '跨境电商综合试验区再扩容', date: '2026-11-11', source: '国务院',
+      { id: 'c14', region: 'cn', concept: 'crossEcom', title: '跨境电商综合试验区再扩容', date: '2026-05-12', source: '国务院',
         summary: '通关与退税便利化扩至更多城市，影响投资跨境电商与海外仓相关股票的股民。', relatedStocks: ['跨境通', '顺丰控股'] },
-      { id: 'c15', region: 'cn', concept: 'robot', title: '人形机器人量产线投产', date: '2026-11-12', source: '工信部',
+      { id: 'c15', region: 'cn', concept: 'robot', title: '人形机器人量产线投产', date: '2026-04-28', source: '工信部',
         summary: '整机成本下探带动零部件订单，影响投资减速器、伺服与传感器相关股票的股民。', relatedStocks: ['汇川技术', '三花智控'] },
-      { id: 'c16', region: 'cn', concept: 'silver', title: '银发经济支持政策出台', date: '2026-11-12', source: '国务院',
+      { id: 'c16', region: 'cn', concept: 'silver', title: '银发经济支持政策出台', date: '2026-04-14', source: '国务院',
         summary: '适老化改造与养老服务补贴覆盖面广，影响投资养老、康复与保险相关股票的股民。', relatedStocks: ['中国平安', '鱼跃医疗'] },
-      { id: 'c17', region: 'cn', concept: 'seed', title: '种业振兴行动推进，生物育种审批提速', date: '2026-11-13', source: '农业农村部',
+      { id: 'c17', region: 'cn', concept: 'seed', title: '种业振兴行动推进，生物育种审批提速', date: '2026-03-31', source: '农业农村部',
         summary: '转基因品种审定扩容，影响投资种业与农化相关股票的股民。', relatedStocks: ['隆平高科', '大北农'] },
-      { id: 'c18', region: 'cn', concept: 'compute', title: '多地发放算力券补贴智算需求', date: '2026-11-13', source: '地方发改委',
+      { id: 'c18', region: 'cn', concept: 'compute', title: '多地发放算力券补贴智算需求', date: '2026-03-17', source: '地方发改委',
         summary: '智算中心利用率提升，影响投资IDC与服务器相关股票的股民。', relatedStocks: ['浪潮信息', '光环新网'] },
-      { id: 'c19', region: 'cn', concept: 'metro', title: '城市轨道交通新线审批提速', date: '2026-11-16', source: '发改委',
+      { id: 'c19', region: 'cn', concept: 'metro', title: '城市轨道交通新线审批提速', date: '2026-03-03', source: '发改委',
         summary: '基建投资前置带动车辆与信号系统订单，影响投资轨交装备相关股票的股民。', relatedStocks: ['中国中车', '交控科技'] },
-      { id: 'c20', region: 'cn', concept: 'dramaOut', title: '网络短剧出海扶持计划发布', date: '2026-11-16', source: '广电总局',
+      { id: 'c20', region: 'cn', concept: 'dramaOut', title: '网络短剧出海扶持计划发布', date: '2026-02-18', source: '广电总局',
         summary: '译制与海外发行补贴落地，观众覆盖面大但投资相关概念股的股民很少。', relatedStocks: ['中文在线', '芒果超媒'] }
     ];
 
@@ -11341,9 +11470,7 @@ const app = createApp({
         const src = (remote && remote.length) ? remote : UPCOMING_EVENTS;
         // 统一按「今天」过滤：已结束剔除，今日举行与会期进行中的一律保留
         // 20261110k：若设置了「近 N 日」范围，「未来」子版块只保留距今不超过 N 天的事件
-        // 20261116：未来子版块事件同样注入「利好/利空 概念与行业」（按 concept 复用 CONCEPT_BULLBEAR 映射；
-        // 运行时快照与内嵌底库的事件自带字段优先，映射仅作缺省，空标签模板自动隐藏）
-        const all = src.filter(isUpcoming).filter(e => futureWithinDays(e, futureRangeDays.value)).map(e => attachBullBear(resolveFutureImpact(e)));
+        const all = src.filter(isUpcoming).filter(e => futureWithinDays(e, futureRangeDays.value)).map(resolveFutureImpact);
         all.forEach(e => { e._scope = upcomingScope(e); e.surge = computeSurge(e); });
         allUpcoming = all;
         list = (scopeAtStart === 'all') ? [...all] : all.filter(e => e._scope === scopeAtStart);
@@ -11425,7 +11552,7 @@ const app = createApp({
     }
 
     const inflRegion = ref('world');   // 'cn' | 'us' | 'world'
-    const inflSortBy = ref('time'); // 20261116：默认按时间（距离现在最近的新闻排最前）；'investors' 按影响股民数 | 'people' 按影响人数
+    const inflSortBy = ref('investors'); // 'investors' 按影响股民数排序 | 'people' 按影响人数排序
     const inflEvents = ref([]);        // 当前区域已按 inflSortBy 指定指标降序排列的事件
     const inflLoading = ref(false);
     const inflError = ref('');
@@ -11445,9 +11572,8 @@ const app = createApp({
     function sortInfluence(list) {
       const by = inflSortBy.value;
       if (by === 'time') {
-        // 20261116：按时间排序 = 距离现在最近的新闻排最前（date + 逐条 time 降序）
-        const tk = e => String((e && e.date) || '') + ' ' + String((e && e.time) || '');
-        return [...(list || [])].sort((a, b) => tk(b).localeCompare(tk(a)));
+        // 按时间：日期新的在前（降序）
+        return [...(list || [])].sort((a, b) => String(b.date).localeCompare(String(a.date)));
       }
       const key = by === 'people' ? 'affectedPeople' : 'affected';
       return [...(list || [])].sort((a, b) => (Number(b[key]) || 0) - (Number(a[key]) || 0));
@@ -11472,18 +11598,38 @@ const app = createApp({
     }
     const inflWindowDays = computed(() => inflDays());
     const inflWindowLabel = computed(() => rangeStartISO(inflDays()) + ' 15:00（收盘窗口）~ 现在');
-    // 20261116：废除「重锚」——旧逻辑会把窗口外的旧新闻重新锚进近 N 交易日展示，
-    // 与「报道时间早于时间范围的新闻不展示」的要求冲突。现改用事件真实报道日期：
-    // 严格按 inflInWindow 过滤（早于窗口起点的一律排除），列表按时间从新到旧排序。
+    // 样例数据的事件原始日期跨度数月（最早 2026-02），若直接按窗口过滤会只剩 1~2 条。
+    // 故加载时把「同一区域」的事件按原时间先后重锚到最近 N 个自然日内（每天约 2 条），
+    // 让窗口口径下列表仍保持完整内容；将来接入真实事件源时真实日期本就在窗口内，重锚不会改动它们。
+    // 20261110b：重锚天数跟随当前窗口（按天数分别缓存），选「近 3 日」时 20 条会均匀落到 3 天内。
+    const _inflAnchorCache = {};
+    function inflAnchoredSeed() {
+      const n = inflDays();
+      if (_inflAnchorCache[n]) return _inflAnchorCache[n];
+      const byReg = {};
+      INFLUENCE_EVENTS_SEED.forEach(e => { (byReg[e.region] = byReg[e.region] || []).push(e); });
+      const out = [];
+      Object.keys(byReg).forEach(reg => {
+        // 按原始日期从新到旧，保证重锚后的事件先后顺序与原来一致
+        const list = byReg[reg].slice().sort((a, b) => String(b.date).localeCompare(String(a.date)));
+        list.forEach((e, i) => {
+          const daysAgo = Math.min(n - 1,
+            Math.round(i * (n - 1) / Math.max(1, list.length - 1)));
+          out.push({ ...e, date: tradingDayOffsetISO(daysAgo) });
+        });
+      });
+      _inflAnchorCache[n] = out;
+      return out;
+    }
     function loadInfluence() {
       const reg = inflRegion.value;
       // 三个子版块互斥：中国/美国/全世界各自只展示本区域事件，点击哪个就展现哪个
       // 双指标同时存在：影响股民数 S（投资该概念股票的股民）+ 影响人数 A（生产生活全部相关人数，含 S）
       // 20261109i：只统计距今 10 日内（含今天）的事件，更早的旧事件不展示也不参与排行
       // 20261110b：窗口天数可由「新闻范围」选择框调整（未选仍是默认 10 日）
-      const filtered = INFLUENCE_EVENTS_SEED
+      const filtered = inflAnchoredSeed()
         .filter(e => e.region === reg && inflInWindow(e))
-        .map(e => attachBullBear(resolveInfluence(e)));
+        .map(resolveInfluence);
       inflEvents.value = sortInfluence(filtered);
       inflDate.value = '实时整理 · 近 ' + inflDays() + ' 交易日（收盘窗口）';
       inflError.value = '';
@@ -14592,7 +14738,7 @@ const app = createApp({
       // batch16：统计分析的统计时间窗口（15:00 换日，与快讯板块同口径）
       analysisWinStart, analysisWinEnd, analysisWinText, resetAnalysisWin,
       catColor, catLabel, htSourceColor, htSourceName, ratioClass, setHtMode, onHotTopicDateChange, runAnalysis,
-      toggleThemeTopic, moreThemeNews,
+      themeEventModal, openThemeTopicModal, closeThemeTopicModal,
       // 筛选板块
       filterPanel, openFilterPanel, resetFilter, applyFilterPool, toggleFilterLock,
       filteredFilterStocks, sortedFilterStocks, sortFilterBy, filterSortIcon,
