@@ -1,20 +1,50 @@
 {
-  "generatedAt": "2026-11-16 04:59",
+  "generatedAt": "2026-11-16 09:49",
   "generatedBy": "GitHub Actions · 多源实时聚合",
   "sourceCount": 5,
   "autoCount": 18,
   "events": [
     {
-      "id": "abxqlahc",
-      "title": "黄仁勋讨论重掌英伟达 硅谷盟友游说支持回归",
+      "id": "abv1a0b7",
+      "title": "11月16日早间，ST棕榈发布公告，11月13日，公司收到郑州市企业庭外重组中心发来的《郑州市企业庭外重组中心函》，获悉公司债权人中百福建设有限公司向重组中心提交了以公司为被申请…",
+      "tag": "宏观/综合",
+      "region": "中国",
+      "concept": "broker",
+      "time": "2026-11-16 09:44",
+      "datetime": "2026-11-16 09:44",
+      "source": "新浪7×24",
+      "url": "https://finance.sina.cn/7x24/2026-11-16/detail-iniywwzf1233626.d.html",
+      "summary": "11月16日早间，ST棕榈发布公告，11月13日，公司收到郑州市企业庭外重组中心发来的《郑州市企业庭外重组中心函》，获悉公司债权人中百福建设有限公司向重组中心提交了以公司为被申请人的庭外重组申请及相关材料。重组中心经初步审查后申请郑州市中级人民法院对本次庭外重组事项进行备案，郑州中院已向重组中心出具复函，同意对本次庭外重组事项予以备案。目前，已成立清算组，负责庭外重组期间各项…",
+      "relatedStocks": [
+        "宽基指数"
+      ],
+      "bullConcepts": [
+        "防御板块"
+      ],
+      "bearConcepts": [
+        "周期股"
+      ],
+      "bullIndustries": [
+        "公用事业"
+      ],
+      "bearIndustries": [
+        "顺周期"
+      ],
+      "heat": 24,
+      "momentum": 36,
+      "_auto": true
+    },
+    {
+      "id": "ab13etqk2",
+      "title": "Anthropic冲刺史上最大IPO AI热潮新风向标呼之欲出",
       "tag": "科技/AI",
-      "region": "美国",
-      "concept": "aiCapex",
-      "time": "2026-11-16 04:23",
-      "datetime": "2026-11-16 04:23",
+      "region": "全球",
+      "concept": "ai",
+      "time": "2026-11-16 09:11",
+      "datetime": "2026-11-16 09:11",
       "source": "环球市场播报",
-      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-16/doc-iniywhcp1499931.shtml",
-      "summary": "在被董事会驱逐数天之后，英伟达公司前首席执行官黄仁勋正在讨论重返公司的可能性。 随着几位硅谷盟友开始游说支持他回归，黄仁勋已经在讨论重返公司的想法。",
+      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-16/doc-iniywsti1335975.shtml",
+      "summary": "上周，英伟达公司的黄仁勋声誉急转直下之时，该公司芯片最重要的客户之一正准备通过一宗有望成为史上规模最大的首次公开招股（IPO），跻身全球顶尖上市公司之列。",
       "relatedStocks": [
         "英伟达",
         "微软",
@@ -35,124 +65,150 @@
       ],
       "bearIndustries": [
         "传统IT服务"
+      ],
+      "heat": 33,
+      "momentum": 26,
+      "_auto": true
+    },
+    {
+      "id": "ab1ehcm0s",
+      "title": "华滋国际海洋于11月16日上午起短暂停牌 以待刊发内幕消息",
+      "tag": "宏观/综合",
+      "region": "中国",
+      "concept": "broker",
+      "time": "2026-11-16 09:01",
+      "datetime": "2026-11-16 09:01",
+      "source": "新浪港股",
+      "url": "https://finance.sina.com.cn/stock/hkstock/ggscyd/2026-11-16/doc-iniywsti1328565.shtml",
+      "summary": "华滋国际海洋（02258）发布公告，应华滋国际海洋股份有限公司（本公司）之要求，本公司股份将于2026年11月16日上午九时正起在香港联合交易所有限公司暂停买卖...",
+      "relatedStocks": [
+        "宽基指数"
+      ],
+      "bullConcepts": [
+        "防御板块"
+      ],
+      "bearConcepts": [
+        "周期股"
+      ],
+      "bullIndustries": [
+        "公用事业"
+      ],
+      "bearIndustries": [
+        "顺周期"
+      ],
+      "heat": 29,
+      "momentum": 31,
+      "_auto": true
+    },
+    {
+      "id": "abe9q4xu",
+      "title": "伊朗：两艘油轮在霍尔木兹海峡触雷爆炸起火",
+      "tag": "贸易/供应链",
+      "region": "全球",
+      "concept": "trade",
+      "time": "2026-11-16 09:17",
+      "datetime": "2026-11-16 09:17",
+      "source": "财联社",
+      "url": "https://www.cls.cn/detail/2534919",
+      "summary": "财联社11月16日电，伊朗伊斯兰革命卫队海军公共关系部门15日发表声明说，两艘违规油轮当天在霍尔木兹海峡南部海域触雷发生爆炸并引发大火。声明说，这两艘油轮关闭了导航系统和自动识别系统，试图“秘密”通过霍尔木兹海峡未经许可的航道，随后触雷并发生爆炸、起火。声明还说，另有两艘试图“秘密”通过海峡的油轮在上述两艘油轮发生爆炸后，听从了革命卫队海军霍尔木兹海峡航运安全控制中心的警告，…",
+      "relatedStocks": [
+        "跨境电商",
+        "航运"
+      ],
+      "bullConcepts": [
+        "内需",
+        "国产替代"
+      ],
+      "bearConcepts": [
+        "出口链"
+      ],
+      "bullIndustries": [
+        "跨境电商",
+        "内需消费"
+      ],
+      "bearIndustries": [
+        "出口制造",
+        "航运"
       ],
       "heat": 24,
       "momentum": 26,
       "_auto": true
     },
     {
-      "id": "abnmbnu7",
-      "title": "当地时间15日，沙特主导的多国联军发言人在社交媒体上发布消息称，联军防空部队拦截并摧毁了也门胡塞武装向沙特首都利雅得方向发射的两枚弹道导弹。稍早前联军还表示，在东部地区拦截并摧毁…",
+      "id": "ab1hfejfe",
+      "title": "驻宋卡总领馆提醒密切留意泰南边境五府社会治安形势",
       "tag": "地缘/政治",
-      "region": "全球",
-      "concept": "macro",
-      "time": "2026-11-15 09:50",
-      "datetime": "2026-11-15 09:50",
-      "source": "华尔街见闻",
-      "url": "https://wallstreetcn.com/livenews/3200156",
-      "summary": "当地时间15日，沙特主导的多国联军发言人在社交媒体上发布消息称，联军防空部队拦截并摧毁了也门胡塞武装向沙特首都利雅得方向发射的两枚弹道导弹。稍早前联军还表示，在东部地区拦截并摧毁了两次无人机袭击。（央视新闻）",
-      "relatedStocks": [
-        "军工",
-        "黄金"
-      ],
-      "bullConcepts": [
-        "军工",
-        "避险资产"
-      ],
-      "bearConcepts": [
-        "风险资产"
-      ],
-      "bullIndustries": [
-        "军工",
-        "黄金"
-      ],
-      "bearIndustries": [
-        "航空",
-        "旅游"
-      ],
-      "heat": 74,
-      "momentum": 18,
-      "_auto": true
-    },
-    {
-      "id": "ab1d7o5kg",
-      "title": "当地时间15日凌晨，沙特首都利雅得传出多声剧烈爆炸声，居民收到经由手机程序发布的防空警报。（央视新闻）",
-      "tag": "地缘/政治",
-      "region": "全球",
-      "concept": "macro",
-      "time": "2026-11-15 09:16",
-      "datetime": "2026-11-15 09:16",
-      "source": "华尔街见闻",
-      "url": "https://wallstreetcn.com/livenews/3200155",
-      "summary": "当地时间15日凌晨，沙特首都利雅得传出多声剧烈爆炸声，居民收到经由手机程序发布的防空警报。（央视新闻）",
-      "relatedStocks": [
-        "军工",
-        "黄金"
-      ],
-      "bullConcepts": [
-        "军工",
-        "避险资产"
-      ],
-      "bearConcepts": [
-        "风险资产"
-      ],
-      "bullIndustries": [
-        "军工",
-        "黄金"
-      ],
-      "bearIndustries": [
-        "航空",
-        "旅游"
-      ],
-      "heat": 65,
-      "momentum": 18,
-      "_auto": true
-    },
-    {
-      "id": "abu9ns7n",
-      "title": "当地时间15日凌晨，伊朗伊斯兰革命卫队海军表示，稍早前，两艘油轮在霍尔木兹海峡触碰了水雷，引发爆炸并导致火灾。革命卫队称，这两艘油轮当时存在违反相关规定行为，在关闭了导航系统和自…",
-      "tag": "地缘/政治",
-      "region": "全球",
-      "concept": "macro",
-      "time": "2026-11-15 08:40",
-      "datetime": "2026-11-15 08:40",
-      "source": "华尔街见闻",
-      "url": "https://wallstreetcn.com/livenews/3200147",
-      "summary": "当地时间15日凌晨，伊朗伊斯兰革命卫队海军表示，稍早前，两艘油轮在霍尔木兹海峡触碰了水雷，引发爆炸并导致火灾。革命卫队称，这两艘油轮当时存在违反相关规定行为，在关闭了导航系统和自动识别系统的情况下，试图秘密通过霍尔木兹海峡。 伊朗伊斯兰革命卫队海军还表示，爆炸发生后，另外两艘同样试图秘密通过该海峡的油轮在收到警告后，调转航向，返回了波斯湾海域。（央视新闻）",
-      "relatedStocks": [
-        "军工",
-        "黄金"
-      ],
-      "bullConcepts": [
-        "军工",
-        "避险资产"
-      ],
-      "bearConcepts": [
-        "风险资产"
-      ],
-      "bullIndustries": [
-        "军工",
-        "黄金"
-      ],
-      "bearIndustries": [
-        "航空",
-        "旅游"
-      ],
-      "heat": 87,
-      "momentum": 18,
-      "_auto": true
-    },
-    {
-      "id": "ab2nc5yf",
-      "title": "市场资讯：黄仁勋与盟友讨论重返英伟达担任CEO事宜。",
-      "tag": "科技/AI",
-      "region": "全球",
-      "concept": "ai",
-      "time": "2026-11-16 03:04",
-      "datetime": "2026-11-16 03:04",
+      "region": "中国",
+      "concept": "core",
+      "time": "2026-11-16 09:37",
+      "datetime": "2026-11-16 09:37",
       "source": "新浪7×24",
-      "url": "https://finance.sina.cn/7x24/2026-11-16/detail-iniywhck9160156.d.html",
-      "summary": "市场资讯：黄仁勋与盟友讨论重返英伟达担任CEO事宜。",
+      "url": "https://finance.sina.cn/7x24/2026-11-16/detail-iniywsth5818358.d.html",
+      "summary": "【驻宋卡总领馆提醒密切留意泰南边境五府社会治安形势】近期，泰南边境五府社会治安不靖。11月9日以来，不明武装分子在也拉府多地实施爆炸和纵火，宋卡府、沙敦府接连发生针对电线杆的炸弹袭击，造成有学生受伤，部分公共基础设施和民众财产受损。对此，泰国总理阿努廷已紧急召见国家警察总长和国安委秘书长，部署维安措施。泰国内政部、泰国内部安全行动司令部第四军区前线指挥部、宋卡府等采取系列举措…",
+      "relatedStocks": [
+        "军工",
+        "黄金"
+      ],
+      "bullConcepts": [
+        "军工",
+        "避险资产"
+      ],
+      "bearConcepts": [
+        "风险资产"
+      ],
+      "bullIndustries": [
+        "军工",
+        "黄金"
+      ],
+      "bearIndustries": [
+        "航空",
+        "旅游"
+      ],
+      "heat": 24,
+      "momentum": 36,
+      "_auto": true
+    },
+    {
+      "id": "ab1m6g6ov",
+      "title": "新西兰金融市场管理局副局长辞职。",
+      "tag": "宏观/综合",
+      "region": "全球",
+      "concept": "macro",
+      "time": "2026-11-16 09:32",
+      "datetime": "2026-11-16 09:32",
+      "source": "新浪7×24",
+      "url": "https://finance.sina.cn/7x24/2026-11-16/detail-iniywste9036260.d.html",
+      "summary": "新西兰金融市场管理局副局长辞职。",
+      "relatedStocks": [
+        "宽基指数"
+      ],
+      "bullConcepts": [
+        "防御板块"
+      ],
+      "bearConcepts": [
+        "周期股"
+      ],
+      "bullIndustries": [
+        "公用事业"
+      ],
+      "bearIndustries": [
+        "顺周期"
+      ],
+      "heat": 24,
+      "momentum": 36,
+      "_auto": true
+    },
+    {
+      "id": "ab1q870ts",
+      "title": "11月16日周末要闻：全美航班延误持续 黄仁勋讨论重掌英伟达 美“火神”火箭发射失败",
+      "tag": "科技/AI",
+      "region": "美国",
+      "concept": "aiCapex",
+      "time": "2026-11-16 06:15",
+      "datetime": "2026-11-16 06:15",
+      "source": "环球市场播报",
+      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-16/doc-iniywnmh9064317.shtml",
+      "summary": "市场 11月14日收盘：美股涨跌不一 英伟达跌破四万亿美元大关 11月14日热门中概股多数上涨，拼多多涨1.86%，蔚来跌约5% 大宗商品综述：油价两周连跌...",
       "relatedStocks": [
         "英伟达",
         "微软",
@@ -174,21 +230,21 @@
       "bearIndustries": [
         "传统IT服务"
       ],
-      "heat": 56,
-      "momentum": 26,
+      "heat": 42,
+      "momentum": 18,
       "_auto": true
     },
     {
-      "id": "abt7q8y2",
-      "title": "美国财政部长斯科特·贝森特表示，在首席执行官黄仁勋被罢免之后，英伟达的领导层需要经历一场“剧烈重组”。 贝森特暗示，英伟达应该从公司外部寻找新的领导人。 （被罢免的）黄仁勋是了不…",
+      "id": "aba5g8zi",
+      "title": "未提前规划黄仁勋接班人 财富500强前CEO：英伟达董事会严重失职",
       "tag": "科技/AI",
-      "region": "美国",
-      "concept": "aiCapex",
-      "time": "2026-11-15 23:07",
-      "datetime": "2026-11-15 23:07",
-      "source": "华尔街见闻",
-      "url": "https://wallstreetcn.com/livenews/3200212",
-      "summary": "美国财政部长斯科特·贝森特表示，在首席执行官黄仁勋被罢免之后，英伟达的领导层需要经历一场“剧烈重组”。 贝森特暗示，英伟达应该从公司外部寻找新的领导人。 （被罢免的）黄仁勋是了不起的创新者，英伟达非常出色。 上级与下属建立恋爱关系是企业大忌。（福克斯新闻）",
+      "region": "全球",
+      "concept": "ai",
+      "time": "2026-11-16 08:14",
+      "datetime": "2026-11-16 08:14",
+      "source": "环球市场播报",
+      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-16/doc-iniywsti1301960.shtml",
+      "summary": "多名见证英伟达这场风波的前企业CEO表示，英伟达董事会没能通过这场最重要的考验。 在三位财富500强前CEO以及一位知名咨询顾问看来...",
       "relatedStocks": [
         "英伟达",
         "微软",
@@ -211,20 +267,20 @@
         "传统IT服务"
       ],
       "heat": 38,
-      "momentum": 18,
+      "momentum": 26,
       "_auto": true
     },
     {
-      "id": "ab1c4seig",
-      "title": "英伟达淡化CEO继任者传闻：尚未正式接触任何潜在人选，称一切猜测“为时过早”",
+      "id": "abx7nag7",
+      "title": "上周五纳指收跌0.9%，英伟达跌2%，苹果盘中刷新历史高位；比特币跌破7万美元。 美国PPI创四年来最大升幅，美联储官员密集释放加息信号。 黄仁勋去职后，贝森特称英伟达需要“重大…",
       "tag": "科技/AI",
-      "region": "全球",
-      "concept": "ai",
-      "time": "2026-11-14 08:28",
-      "datetime": "2026-11-14 08:28",
-      "source": "市场资讯",
-      "url": "https://finance.sina.com.cn/stock/hkstock/ggscyd/2026-11-14/doc-iniysepc0445992.shtml",
-      "summary": "来源：智通财经网 英伟达（NVDA.US）淡化了有关该公司已在接触潜在首席执行官人选的猜测，称其仍在筛选一家猎头公司来寻找被罢免的领导人黄仁勋的继任者。",
+      "region": "美国",
+      "concept": "aiCapex",
+      "time": "2026-11-16 07:30",
+      "datetime": "2026-11-16 07:30",
+      "source": "华尔街见闻",
+      "url": "https://wallstreetcn.com/livenews/3200251",
+      "summary": "上周五纳指收跌0.9%，英伟达跌2%，苹果盘中刷新历史高位；比特币跌破7万美元。 美国PPI创四年来最大升幅，美联储官员密集释放加息信号。 黄仁勋去职后，贝森特称英伟达需要“重大重组”。另据报道，黄仁勋考虑重返英伟达任CEO，其硅谷盟友正在推动他复职。 中国10月新增社融1.15万亿元，人民币贷款单月减少1000亿元，M2同比增长7.1%，M2与M1剪刀差由4.0个百分点收窄…",
       "relatedStocks": [
         "英伟达",
         "微软",
@@ -246,7 +302,43 @@
       "bearIndustries": [
         "传统IT服务"
       ],
-      "heat": 47,
+      "heat": 29,
+      "momentum": 18,
+      "_auto": true
+    },
+    {
+      "id": "ab13ye96v",
+      "title": "Hyperliquid区块链上一份与英伟达股价挂钩的永续期货合约一度上涨4.5%，此前有报道称，黄仁勋正讨论可能重返英伟达。",
+      "tag": "科技/AI",
+      "region": "全球",
+      "concept": "ai",
+      "time": "2026-11-16 07:28",
+      "datetime": "2026-11-16 07:28",
+      "source": "华尔街见闻",
+      "url": "https://wallstreetcn.com/livenews/3200250",
+      "summary": "Hyperliquid区块链上一份与英伟达股价挂钩的永续期货合约一度上涨4.5%，此前有报道称，黄仁勋正讨论可能重返英伟达。",
+      "relatedStocks": [
+        "英伟达",
+        "微软",
+        "台积电"
+      ],
+      "bullConcepts": [
+        "AI算力",
+        "半导体",
+        "国产替代"
+      ],
+      "bearConcepts": [
+        "传统软件"
+      ],
+      "bullIndustries": [
+        "半导体",
+        "AI应用",
+        "算力基础设施"
+      ],
+      "bearIndustries": [
+        "传统IT服务"
+      ],
+      "heat": 33,
       "momentum": 18,
       "_auto": true
     },
@@ -282,85 +374,21 @@
       "bearIndustries": [
         "传统IT服务"
       ],
-      "heat": 42,
+      "heat": 33,
       "momentum": 18,
       "_auto": true
     },
     {
-      "id": "abbor6v0",
-      "title": "也门胡塞武装称，用两枚弹道导弹袭击利雅得哈立德国王机场和金融中心。沙特未证实胡塞武装的说法。",
-      "tag": "地缘/政治",
-      "region": "欧洲",
-      "concept": "macro",
-      "time": "2026-11-16 02:00",
-      "datetime": "2026-11-16 02:00",
-      "source": "新浪7×24",
-      "url": "https://finance.sina.cn/7x24/2026-11-16/detail-iniyvzvr1598779.d.html",
-      "summary": "也门胡塞武装称，用两枚弹道导弹袭击利雅得哈立德国王机场和金融中心。沙特未证实胡塞武装的说法。",
-      "relatedStocks": [
-        "军工",
-        "黄金"
-      ],
-      "bullConcepts": [
-        "军工",
-        "避险资产"
-      ],
-      "bearConcepts": [
-        "风险资产"
-      ],
-      "bullIndustries": [
-        "军工",
-        "黄金"
-      ],
-      "bearIndustries": [
-        "航空",
-        "旅游"
-      ],
-      "heat": 38,
-      "momentum": 18,
-      "_auto": true
-    },
-    {
-      "id": "ab1aqww5d",
-      "title": "网络近日流传有关“某机构资金委托某公司投顾管理、与私募基金开展协议式回购并发生回购违约”等传言。对此，国泰海通资管11月14日发布公告澄清称，该网传内容与上海国泰海通证券资产管理…",
-      "tag": "宏观/综合",
-      "region": "中国",
-      "concept": "broker",
-      "time": "2026-11-15 21:07",
-      "datetime": "2026-11-15 21:07",
-      "source": "华尔街见闻",
-      "url": "https://wallstreetcn.com/livenews/3200201",
-      "summary": "网络近日流传有关“某机构资金委托某公司投顾管理、与私募基金开展协议式回购并发生回购违约”等传言。对此，国泰海通资管11月14日发布公告澄清称，该网传内容与上海国泰海通证券资产管理有限公司无关，网传业务并非国泰海通资管开展。",
-      "relatedStocks": [
-        "宽基指数"
-      ],
-      "bullConcepts": [
-        "防御板块"
-      ],
-      "bearConcepts": [
-        "周期股"
-      ],
-      "bullIndustries": [
-        "公用事业"
-      ],
-      "bearIndustries": [
-        "顺周期"
-      ],
-      "heat": 29,
-      "momentum": 18,
-      "_auto": true
-    },
-    {
-      "id": "aby4lubv",
-      "title": "英国金融时报援引多位知情人士报道称，黄仁勋正考虑重返英伟达担任首席执行官。黄仁勋在硅谷的盟友正在向英伟达董事会施压，要求恢复他的职务。黄仁勋盟友表示，他们正在组建一个由硅谷企业高…",
+      "id": "abddlp53",
+      "title": "英媒曝黄仁勋考虑重返英伟达 其硅谷盟友正组建游说团向英伟达董事会施压 要求恢复其职务",
       "tag": "科技/AI",
       "region": "美国",
       "concept": "aiCapex",
-      "time": "2026-11-16 03:46",
-      "datetime": "2026-11-16 03:46",
-      "source": "华尔街见闻",
-      "url": "https://wallstreetcn.com/livenews/3200223",
-      "summary": "英国金融时报援引多位知情人士报道称，黄仁勋正考虑重返英伟达担任首席执行官。黄仁勋在硅谷的盟友正在向英伟达董事会施压，要求恢复他的职务。黄仁勋盟友表示，他们正在组建一个由硅谷企业高管组成的“战情室”，以游说推动黄仁勋重返公司，并将努力争取白宫方面的支持。 英伟达暗盘出现V形走势，目前大致持平，北京时间23:19曾跌超2%——美国总统特朗普的财长声称英伟达需要“剧烈重组”。",
+      "time": "2026-11-16 07:28",
+      "datetime": "2026-11-16 07:28",
+      "source": "滚动播报",
+      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-16/doc-iniywsti1287142.shtml",
+      "summary": "据英国《金融时报》11月15日消息，黄仁勋正考虑重返英伟达担任首席执行官。与此同时，其硅谷盟友正向英伟达董事会施压，要求恢复其职务。",
       "relatedStocks": [
         "英伟达",
         "微软",
@@ -382,21 +410,55 @@
       "bearIndustries": [
         "传统IT服务"
       ],
-      "heat": 24,
-      "momentum": 26,
+      "heat": 29,
+      "momentum": 18,
       "_auto": true
     },
     {
-      "id": "ab14hn5h4",
-      "title": "伊朗警告地区国家，若为美国和以色列针对德黑兰的军事行动提供任何协助，相关国家须对由此产生的后果负责。",
+      "id": "abf598d8",
+      "title": "伊朗称2艘油轮触雷爆炸：一艘载有超200万桶原油 爆炸后沉没",
+      "tag": "能源/资源",
+      "region": "全球",
+      "concept": "energy",
+      "time": "2026-11-16 07:43",
+      "datetime": "2026-11-16 07:43",
+      "source": "新京报",
+      "url": "https://finance.sina.com.cn/jjxw/2026-11-16/doc-iniywste8968409.shtml",
+      "summary": "【#伊朗称2艘油轮触雷爆炸#：一艘载有超200万桶原油 爆炸后沉没】#伊朗称一超级油轮爆炸起火后沉没#11月15日，伊朗伊斯兰革命卫队海军称...",
+      "relatedStocks": [
+        "中国石油",
+        "紫金矿业"
+      ],
+      "bullConcepts": [
+        "油气",
+        "贵金属"
+      ],
+      "bearConcepts": [
+        "高耗能制造"
+      ],
+      "bullIndustries": [
+        "石油开采",
+        "贵金属"
+      ],
+      "bearIndustries": [
+        "航空运输",
+        "化工"
+      ],
+      "heat": 24,
+      "momentum": 18,
+      "_auto": true
+    },
+    {
+      "id": "ab3bci5k",
+      "title": "伊朗数周来首次直接袭击巴林 同时重申与美国结束冲突仍有可能",
       "tag": "地缘/政治",
       "region": "美国",
       "concept": "defense",
-      "time": "2026-11-16 01:52",
-      "datetime": "2026-11-16 01:52",
-      "source": "新浪7×24",
-      "url": "https://finance.sina.cn/7x24/2026-11-16/detail-iniyvzvn9278999.d.html",
-      "summary": "伊朗警告地区国家，若为美国和以色列针对德黑兰的军事行动提供任何协助，相关国家须对由此产生的后果负责。",
+      "time": "2026-11-15 21:57",
+      "datetime": "2026-11-15 21:57",
+      "source": "环球市场播报",
+      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-15/doc-iniyvrfx3012576.shtml",
+      "summary": "伊朗袭击了巴林的一处空军基地，这是数周来伊朗首次直接袭击这个海湾国家。与此同时，伊朗重申，结束与美国冲突的途径仍然存在。",
       "relatedStocks": [
         "军工",
         "黄金"
@@ -421,16 +483,16 @@
       "_auto": true
     },
     {
-      "id": "ab1lh0ift",
-      "title": "*ST闻泰公告，荷兰阿姆斯特丹上诉法院企业法庭2026年11月11日就安世境外追加临时措施申请作出裁定，责令公司、裕成控股、安世中国尊重并容忍管理人履职，不得妨碍安世半导体正常经…",
+      "id": "ab73qkh1",
+      "title": "“黄仁勋将重磅回归硅谷” 业内高管称多家公司伸出橄榄枝",
       "tag": "科技/AI",
-      "region": "中国",
-      "concept": "llm",
-      "time": "2026-11-15 17:59",
-      "datetime": "2026-11-15 17:59",
-      "source": "华尔街见闻",
-      "url": "https://wallstreetcn.com/livenews/3200190",
-      "summary": "*ST闻泰公告，荷兰阿姆斯特丹上诉法院企业法庭2026年11月11日就安世境外追加临时措施申请作出裁定，责令公司、裕成控股、安世中国尊重并容忍管理人履职，不得妨碍安世半导体正常经营；未经管理人书面同意不得与潜在意向方磋商；七日内撤回向广东省高级人民法院提交、现由东莞市中级人民法院审理的起诉状第2（1）、2（3）项诉求；禁止执行东莞市中级人民法院2026年11月2日行为保全裁定…",
+      "region": "美国",
+      "concept": "aiCapex",
+      "time": "2026-11-15 14:34",
+      "datetime": "2026-11-15 14:34",
+      "source": "环球市场播报",
+      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-15/doc-iniyuyka6448550.shtml",
+      "summary": "黄仁勋从英伟达辞职的次日，硅谷已经在期待他的回归。 黄仁勋是唐纳德·特朗普的亲密盟友，经常接到总统的电话，甚至是公开通话，他也因此成为总部大多位于加州的科技行业在...",
       "relatedStocks": [
         "英伟达",
         "微软",
@@ -457,80 +519,84 @@
       "_auto": true
     },
     {
-      "id": "abzu6zr2",
-      "title": "14日，美国纽约州民主党籍州长霍楚尔发表声明，要求美国交通部长达菲辞职，否则应由总统特朗普将其免职。霍楚尔在声明中称：“从长期存在的空中交通管制员短缺问题，到接二连三的通信系统故…",
-      "tag": "宏观/综合",
+      "id": "abthkt9g",
+      "title": "美情报机构称伊朗武器库拥有1500至2500枚导弹 与特朗普所言相悖",
+      "tag": "地缘/政治",
       "region": "美国",
-      "concept": "usMacro",
-      "time": "2026-11-15 08:35",
-      "datetime": "2026-11-15 08:35",
-      "source": "华尔街见闻",
-      "url": "https://wallstreetcn.com/livenews/3200144",
-      "summary": "14日，美国纽约州民主党籍州长霍楚尔发表声明，要求美国交通部长达菲辞职，否则应由总统特朗普将其免职。霍楚尔在声明中称：“从长期存在的空中交通管制员短缺问题，到接二连三的通信系统故障，在达菲任内，美国航空系统的严重失误已经成为一种常态。”美国交通部长达菲13日将此次故障归咎于“极其陈旧的空中交通管制系统”。霍楚尔敦促国会对这次全国性航班停飞事件展开全面调查，以确保类似事件不再发…",
+      "concept": "defense",
+      "time": "2026-11-15 10:19",
+      "datetime": "2026-11-15 10:19",
+      "source": "环球市场播报",
+      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-15/doc-iniyupum3400016.shtml",
+      "summary": "美国官员称，美国情报机构评估，伊朗武器库拥有1500至2500枚导弹。一旦全面战争重启，德黑兰仍具备相当强的能力打击美国及其盟友目标。",
       "relatedStocks": [
-        "宽基指数"
+        "军工",
+        "黄金"
       ],
       "bullConcepts": [
-        "防御板块"
+        "军工",
+        "避险资产"
       ],
       "bearConcepts": [
-        "周期股"
+        "风险资产"
       ],
       "bullIndustries": [
-        "公用事业"
+        "军工",
+        "黄金"
       ],
       "bearIndustries": [
-        "顺周期"
+        "航空",
+        "旅游"
       ],
       "heat": 24,
       "momentum": 18,
       "_auto": true
     },
     {
-      "id": "ab9rjoe6",
-      "title": "胡塞武装：我方武装部队使用两架无人机，袭击了利雅得地区东西向输油管道上的5号和6号输油泵站。",
-      "tag": "地缘/政治",
+      "id": "ab1prk64g",
+      "title": "英国海事贸易行动中心：印度当局报告波斯湾油轮遇袭",
+      "tag": "贸易/供应链",
+      "region": "欧洲",
+      "concept": "trade",
+      "time": "2026-11-15 20:56",
+      "datetime": "2026-11-15 20:56",
+      "source": "环球市场播报",
+      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-15/doc-iniyvrfu6219418.shtml",
+      "summary": "据一份安全通告称，英国海事贸易行动中心（UKMTO）表示，印度航运当局报告了一艘油轮在波斯湾遭到袭击的事件。 该油轮在进入霍尔木兹海峡前正向东航行。",
+      "relatedStocks": [
+        "跨境电商",
+        "航运"
+      ],
+      "bullConcepts": [
+        "内需",
+        "国产替代"
+      ],
+      "bearConcepts": [
+        "出口链"
+      ],
+      "bullIndustries": [
+        "跨境电商",
+        "内需消费"
+      ],
+      "bearIndustries": [
+        "出口制造",
+        "航运"
+      ],
+      "heat": 24,
+      "momentum": 18,
+      "_auto": true
+    },
+    {
+      "id": "abk0kgvr",
+      "title": "新兴市场债券供应枯竭推高价格，发行量暴跌41%",
+      "tag": "宏观/综合",
       "region": "全球",
       "concept": "macro",
-      "time": "2026-11-16 02:38",
-      "datetime": "2026-11-16 02:38",
-      "source": "新浪7×24",
-      "url": "https://finance.sina.cn/7x24/2026-11-16/detail-iniyvzvt2834649.d.html",
-      "summary": "胡塞武装：我方武装部队使用两架无人机，袭击了利雅得地区东西向输油管道上的5号和6号输油泵站。",
-      "relatedStocks": [
-        "军工",
-        "黄金"
-      ],
-      "bullConcepts": [
-        "军工",
-        "避险资产"
-      ],
-      "bearConcepts": [
-        "风险资产"
-      ],
-      "bullIndustries": [
-        "军工",
-        "黄金"
-      ],
-      "bearIndustries": [
-        "航空",
-        "旅游"
-      ],
-      "heat": 29,
-      "momentum": 18,
-      "_auto": true
-    },
-    {
-      "id": "ab13aau1m",
-      "title": "国泰海通资管澄清网传不实信息：从未曾以私募基金作为交易对手开展交易",
-      "tag": "宏观/综合",
-      "region": "中国",
-      "concept": "broker",
-      "time": "2026-11-15 21:05",
-      "datetime": "2026-11-15 21:05",
-      "source": "财联社",
-      "url": "https://www.cls.cn/detail/2534754",
-      "summary": "【国泰海通资管澄清网传不实信息：从未曾以私募基金作为交易对手开展交易】财联社11月15日电，网络近日流传有关“某机构资金委托某公司投顾管理、与私募基金开展协议式回购并发生回购违约”等传言。对此，国泰海通资管11月14日发布公告澄清称，该网传内容与上海国泰海通证券资产管理有限公司无关，网传业务并非国泰海通资管开展。国泰海通资管长期以来禁止与私募基金开展任何形式的现券、回购业务，…",
+      "time": "2026-11-15 20:54",
+      "datetime": "2026-11-15 20:54",
+      "source": "环球市场播报",
+      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-15/doc-iniyvrfs9442650.shtml",
+      "summary": "尽管国际投资者需求强劲，新兴市场主权债券的新发行量在今年下半年急剧萎缩。这种供应短缺在预期明年年初发行量反弹之前，正在支撑债券价格。",
       "relatedStocks": [
         "宽基指数"
       ],
@@ -545,74 +611,6 @@
       ],
       "bearIndustries": [
         "顺周期"
-      ],
-      "heat": 29,
-      "momentum": 18,
-      "_auto": true
-    },
-    {
-      "id": "abiyq5u8",
-      "title": "美国官员表示，美国并不急于对伊朗采取军事行动，打击似乎并不迫在眉睫。",
-      "tag": "地缘/政治",
-      "region": "美国",
-      "concept": "defense",
-      "time": "2026-11-16 02:37",
-      "datetime": "2026-11-16 02:37",
-      "source": "新浪7×24",
-      "url": "https://finance.sina.cn/7x24/2026-11-16/detail-iniyvzvn9287693.d.html",
-      "summary": "美国官员表示，美国并不急于对伊朗采取军事行动，打击似乎并不迫在眉睫。",
-      "relatedStocks": [
-        "军工",
-        "黄金"
-      ],
-      "bullConcepts": [
-        "军工",
-        "避险资产"
-      ],
-      "bearConcepts": [
-        "风险资产"
-      ],
-      "bullIndustries": [
-        "军工",
-        "黄金"
-      ],
-      "bearIndustries": [
-        "航空",
-        "旅游"
-      ],
-      "heat": 24,
-      "momentum": 18,
-      "_auto": true
-    },
-    {
-      "id": "ab173xdqv",
-      "title": "特朗普称伊朗战事美军无人阵亡 五角大楼：已有23名美军人员死亡",
-      "tag": "地缘/政治",
-      "region": "美国",
-      "concept": "defense",
-      "time": "2026-11-15 09:42",
-      "datetime": "2026-11-15 09:42",
-      "source": "环球市场播报",
-      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-15/doc-iniyupui2156375.shtml",
-      "summary": "特朗普在周四晚间播出的两场采访中为美国对伊朗的战争辩护，他谎称过去五个月没有美军人员阵亡，还称应中东国家的要求，他没有升级冲突。",
-      "relatedStocks": [
-        "军工",
-        "黄金"
-      ],
-      "bullConcepts": [
-        "军工",
-        "避险资产"
-      ],
-      "bearConcepts": [
-        "风险资产"
-      ],
-      "bullIndustries": [
-        "军工",
-        "黄金"
-      ],
-      "bearIndustries": [
-        "航空",
-        "旅游"
       ],
       "heat": 24,
       "momentum": 18,
