@@ -1,83 +1,56 @@
 {
-  "generatedAt": "2026-11-16 09:49",
+  "generatedAt": "2026-11-16 17:25",
   "generatedBy": "GitHub Actions · 多源实时聚合",
   "sourceCount": 5,
   "autoCount": 6,
   "events": [
     {
-      "id": "ap5yplcr",
-      "title": "外交部发言人11月16日宣布：11月19日，国家主席习近平将同俄罗斯总统普京、美国总统特朗普在深圳举行中俄美元首会晤。（新华社）",
-      "tag": "人物/特朗普",
-      "region": "美国",
-      "concept": "usFinance",
-      "time": "2026-11-16 09:01",
-      "datetime": "2026-11-16 09:01",
-      "source": "华尔街见闻",
-      "url": "https://wallstreetcn.com/livenews/3200282",
-      "summary": "外交部发言人11月16日宣布：11月19日，国家主席习近平将同俄罗斯总统普京、美国总统特朗普在深圳举行中俄美元首会晤。（新华社）",
-      "relatedStocks": [
-        "美股科技",
-        "黄金"
-      ],
-      "bullConcepts": [
-        "黄金",
-        "防御板块"
-      ],
-      "bearConcepts": [
-        "高估值成长股"
-      ],
-      "bullIndustries": [
-        "银行",
-        "黄金"
-      ],
-      "bearIndustries": [
-        "高杠杆地产"
-      ],
-      "heat": 51,
-      "momentum": 31,
-      "_auto": true
-    },
-    {
-      "id": "ap1nkm44h",
-      "title": "马斯克：星舰V4长度将约为70米，增幅约40%",
-      "tag": "人物/马斯克",
+      "id": "ap1clppac",
+      "title": "OpenAI：LVMH旗下媒体部门宣布与OpenAI建立合作伙伴关系，合作内容包括向LVMH媒体部门团队部署ChatGPT企业版。",
+      "tag": "人物/奥尔特曼",
       "region": "全球",
-      "concept": "macro",
-      "time": "2026-11-16 09:35",
-      "datetime": "2026-11-16 09:35",
-      "source": "新浪7×24",
-      "url": "https://finance.sina.cn/7x24/2026-11-16/detail-iniywsth5815796.d.html",
-      "summary": "【马斯克：星舰V4长度将约为70米，增幅约40%】马斯克：星舰V4长度将约为70米，增幅约40%，推进剂装载量可提升逾60%。发动机数量将增至9台，新增3台猛禽真空发动机，且均为推力更高的V4版本发动机。",
+      "concept": "ai",
+      "time": "2026-11-16 17:12",
+      "datetime": "2026-11-16 17:12",
+      "source": "华尔街见闻",
+      "url": "https://wallstreetcn.com/livenews/3200560",
+      "summary": "OpenAI：LVMH旗下媒体部门宣布与OpenAI建立合作伙伴关系，合作内容包括向LVMH媒体部门团队部署ChatGPT企业版。",
       "relatedStocks": [
-        "宽基指数"
+        "英伟达",
+        "微软",
+        "台积电"
       ],
       "bullConcepts": [
-        "防御板块"
+        "AI算力",
+        "半导体",
+        "国产替代"
       ],
       "bearConcepts": [
-        "周期股"
+        "传统软件"
       ],
       "bullIndustries": [
-        "公用事业"
+        "半导体",
+        "AI应用",
+        "算力基础设施"
       ],
       "bearIndustries": [
-        "顺周期"
+        "传统IT服务"
       ],
       "heat": 24,
       "momentum": 36,
       "_auto": true
     },
     {
-      "id": "ap1q870ts",
-      "title": "11月16日周末要闻：全美航班延误持续 黄仁勋讨论重掌英伟达 美“火神”火箭发射失败",
+      "id": "aprsudwu",
+      "title": "黄仁勋事件后仍有5家华尔街机构未下调英伟达目标价",
       "tag": "人物/黄仁勋",
       "region": "美国",
       "concept": "aiCapex",
-      "time": "2026-11-16 06:15",
-      "datetime": "2026-11-16 06:15",
-      "source": "环球市场播报",
-      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-16/doc-iniywnmh9064317.shtml",
-      "summary": "市场 11月14日收盘：美股涨跌不一 英伟达跌破四万亿美元大关 11月14日热门中概股多数上涨，拼多多涨1.86%，蔚来跌约5% 大宗商品综述：油价两周连跌...",
+      "time": "2026-11-16 17:20",
+      "datetime": "2026-11-16 17:20",
+      "source": "新浪7×24",
+      "url": "https://finance.sina.cn/7x24/2026-11-16/detail-iniyxpwz2362368.d.html",
+      "summary": "【黄仁勋事件后仍有5家华尔街机构未下调英伟达目标价】自11月9日黄仁勋事件发酵以来，华尔街对英伟达的目标价中位数已从315美元降至260美元，降幅约17%。不过，仍有5家发布最新研报的机构未下调目标价，分别为Raymond James（515美元）、Wedbush（345美元）、瑞银（300美元）、Piper Sandler（300美元）和摩根士丹利（300美元）。其中，摩根…",
       "relatedStocks": [
         "英伟达",
         "微软",
@@ -99,21 +72,93 @@
       "bearIndustries": [
         "传统IT服务"
       ],
-      "heat": 42,
+      "heat": 29,
+      "momentum": 36,
+      "_auto": true
+    },
+    {
+      "id": "apindgmh",
+      "title": "马斯克旗下AI团队大规模裁撤Grok视频生成项目",
+      "tag": "人物/马斯克",
+      "region": "中国",
+      "concept": "llm",
+      "time": "2026-11-16 17:16",
+      "datetime": "2026-11-16 17:16",
+      "source": "环球市场播报",
+      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-16/doc-iniyxpwx1134073.shtml",
+      "summary": "中国企业正领跑 AI 视频生成模型赛道 作者：艾伦・蒂利、克劳迪娅・庄、大泽次郎 据知情人士透露，SpaceX 人工智能部门裁撤了旗下图像视频生成 AI 工具 Grok Imagine...",
+      "relatedStocks": [
+        "英伟达",
+        "微软",
+        "台积电"
+      ],
+      "bullConcepts": [
+        "AI算力",
+        "半导体",
+        "国产替代"
+      ],
+      "bearConcepts": [
+        "传统软件"
+      ],
+      "bullIndustries": [
+        "半导体",
+        "AI应用",
+        "算力基础设施"
+      ],
+      "bearIndustries": [
+        "传统IT服务"
+      ],
+      "heat": 24,
+      "momentum": 36,
+      "_auto": true
+    },
+    {
+      "id": "ap1nrxxtf",
+      "title": "AI“教父”辛顿最新表态：相比奥特曼、扎克伯格、马斯克，我更信任黄仁勋",
+      "tag": "人物/马斯克",
+      "region": "全球",
+      "concept": "ai",
+      "time": "2026-11-16 14:51",
+      "datetime": "2026-11-16 14:51",
+      "source": "环球市场播报",
+      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-16/doc-iniyxiqz1157671.shtml",
+      "summary": "被誉为“AI教父”的杰弗里・辛顿在最新采访中，对英伟达前CEO黄仁勋给出了与众不同的评价。辛顿表示，“我对黄仁勋有一点了解。”，“我的印象里，他是个正派的人。",
+      "relatedStocks": [
+        "英伟达",
+        "微软",
+        "台积电"
+      ],
+      "bullConcepts": [
+        "AI算力",
+        "半导体",
+        "国产替代"
+      ],
+      "bearConcepts": [
+        "传统软件"
+      ],
+      "bullIndustries": [
+        "半导体",
+        "AI应用",
+        "算力基础设施"
+      ],
+      "bearIndustries": [
+        "传统IT服务"
+      ],
+      "heat": 29,
       "momentum": 18,
       "_auto": true
     },
     {
-      "id": "apa5g8zi",
-      "title": "未提前规划黄仁勋接班人 财富500强前CEO：英伟达董事会严重失职",
+      "id": "ap1kuhixz",
+      "title": "盛宝银行：英伟达将迎黄仁勋离任后首次大考，业绩指引及管理层交接是关键",
       "tag": "人物/黄仁勋",
-      "region": "全球",
-      "concept": "ai",
-      "time": "2026-11-16 08:14",
-      "datetime": "2026-11-16 08:14",
+      "region": "美国",
+      "concept": "aiCapex",
+      "time": "2026-11-16 16:01",
+      "datetime": "2026-11-16 16:01",
       "source": "环球市场播报",
-      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-16/doc-iniywsti1301960.shtml",
-      "summary": "多名见证英伟达这场风波的前企业CEO表示，英伟达董事会没能通过这场最重要的考验。 在三位财富500强前CEO以及一位知名咨询顾问看来...",
+      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-16/doc-iniyxirf6021118.shtml",
+      "summary": "英伟达将于北京时间11月18日5：20左右公布2027财年第三季度财报，并于6：00召开财报电话会议。市场普遍预计，英伟达第三季度营收将达到1091亿美元...",
       "relatedStocks": [
         "英伟达",
         "微软",
@@ -135,73 +180,41 @@
       "bearIndustries": [
         "传统IT服务"
       ],
-      "heat": 38,
+      "heat": 24,
       "momentum": 26,
       "_auto": true
     },
     {
-      "id": "ap1i5x9p2",
-      "title": "乌克兰总统泽连斯基：美方提出乌克兰撤出顿巴斯换取加入北约",
-      "tag": "人物/泽连斯基",
-      "region": "美国",
-      "concept": "defense",
-      "time": "2026-11-16 07:18",
-      "datetime": "2026-11-16 07:18",
-      "source": "环球市场播报",
-      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-16/doc-iniywnmk5861941.shtml",
-      "summary": "乌克兰总统泽连斯基在阿布扎比与俄罗斯举行最新一轮和平谈判后透露，美国谈判代表提出了一种设想，即乌克兰可能从其东部顿巴斯地区撤出，以换取加入北约。",
-      "relatedStocks": [
-        "军工",
-        "黄金"
-      ],
-      "bullConcepts": [
-        "军工",
-        "避险资产"
-      ],
-      "bearConcepts": [
-        "风险资产"
-      ],
-      "bullIndustries": [
-        "军工",
-        "黄金"
-      ],
-      "bearIndustries": [
-        "航空",
-        "旅游"
-      ],
-      "heat": 24,
-      "momentum": 18,
-      "_auto": true
-    },
-    {
-      "id": "apthkt9g",
-      "title": "美情报机构称伊朗武器库拥有1500至2500枚导弹 与特朗普所言相悖",
+      "id": "ap1ln4ahk",
+      "title": "消息称特朗普政府将英伟达列为AI“国家冠军”企业名单",
       "tag": "人物/特朗普",
       "region": "美国",
-      "concept": "defense",
-      "time": "2026-11-15 10:19",
-      "datetime": "2026-11-15 10:19",
+      "concept": "aiCapex",
+      "time": "2026-11-16 12:09",
+      "datetime": "2026-11-16 12:09",
       "source": "环球市场播报",
-      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-15/doc-iniyupum3400016.shtml",
-      "summary": "美国官员称，美国情报机构评估，伊朗武器库拥有1500至2500枚导弹。一旦全面战争重启，德黑兰仍具备相当强的能力打击美国及其盟友目标。",
+      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-16/doc-iniyxchy8900409.shtml",
+      "summary": "据知情人士透露，英伟达将成为二十多家被指定为人工智能“国家冠军”的公司之一，这是特朗普政府为帮助AI企业在海外赢得业务而采取的一项举措。",
       "relatedStocks": [
-        "军工",
-        "黄金"
+        "英伟达",
+        "微软",
+        "台积电"
       ],
       "bullConcepts": [
-        "军工",
-        "避险资产"
+        "AI算力",
+        "半导体",
+        "国产替代"
       ],
       "bearConcepts": [
-        "风险资产"
+        "传统软件"
       ],
       "bullIndustries": [
-        "军工",
-        "黄金"
+        "半导体",
+        "AI应用",
+        "算力基础设施"
       ],
       "bearIndustries": [
-        "航空",
-        "旅游"
+        "传统IT服务"
       ],
       "heat": 24,
       "momentum": 18,

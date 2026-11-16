@@ -1,20 +1,20 @@
 {
-  "generatedAt": "2026-11-16 09:49",
+  "generatedAt": "2026-11-16 17:25",
   "generatedBy": "GitHub Actions · 多源实时聚合",
   "sourceCount": 5,
   "autoCount": 18,
   "events": [
     {
-      "id": "abv1a0b7",
-      "title": "11月16日早间，ST棕榈发布公告，11月13日，公司收到郑州市企业庭外重组中心发来的《郑州市企业庭外重组中心函》，获悉公司债权人中百福建设有限公司向重组中心提交了以公司为被申请…",
+      "id": "abd3ccx7",
+      "title": "纳斯达克100ETF招商(159659)将于2026年11月17日开市起停牌，自2026年11月17日10:30起复牌，停牌期间赎回业务照常办理。",
       "tag": "宏观/综合",
-      "region": "中国",
-      "concept": "broker",
-      "time": "2026-11-16 09:44",
-      "datetime": "2026-11-16 09:44",
-      "source": "新浪7×24",
-      "url": "https://finance.sina.cn/7x24/2026-11-16/detail-iniywwzf1233626.d.html",
-      "summary": "11月16日早间，ST棕榈发布公告，11月13日，公司收到郑州市企业庭外重组中心发来的《郑州市企业庭外重组中心函》，获悉公司债权人中百福建设有限公司向重组中心提交了以公司为被申请人的庭外重组申请及相关材料。重组中心经初步审查后申请郑州市中级人民法院对本次庭外重组事项进行备案，郑州中院已向重组中心出具复函，同意对本次庭外重组事项予以备案。目前，已成立清算组，负责庭外重组期间各项…",
+      "region": "美国",
+      "concept": "usMacro",
+      "time": "2026-11-16 17:23",
+      "datetime": "2026-11-16 17:23",
+      "source": "财联社",
+      "url": "https://www.cls.cn/detail/2535614",
+      "summary": "纳斯达克100ETF招商(159659)将于2026年11月17日开市起停牌，自2026年11月17日10:30起复牌，停牌期间赎回业务照常办理。",
       "relatedStocks": [
         "宽基指数"
       ],
@@ -30,21 +30,141 @@
       "bearIndustries": [
         "顺周期"
       ],
-      "heat": 24,
-      "momentum": 36,
+      "heat": 87,
+      "momentum": 96,
       "_auto": true
     },
     {
-      "id": "ab13etqk2",
-      "title": "Anthropic冲刺史上最大IPO AI热潮新风向标呼之欲出",
-      "tag": "科技/AI",
+      "id": "abs42vpi",
+      "title": "纳斯达克100ETF大成：因二级市场溢价将临停并提示风险",
+      "tag": "宏观/综合",
+      "region": "美国",
+      "concept": "usMacro",
+      "time": "2026-11-16 17:19",
+      "datetime": "2026-11-16 17:19",
+      "source": "新浪7×24",
+      "url": "https://finance.sina.cn/7x24/2026-11-16/detail-iniyxpwz2361669.d.html",
+      "summary": "【纳斯达克100ETF大成：因二级市场溢价将临停并提示风险】纳斯达克100ETF大成公告称，本基金二级市场交易价格明显高于基金份额参考净值，出现较大幅度溢价。2026年11月16日，本基金二级市场收盘价为1.749元，收盘时基金份额参考净值为1.5560元。为保护投资者利益，本基金将于2026年11月17日开市起停牌，当日10:30起复牌，停牌期间赎回业务照常办理。若当日溢价…",
+      "relatedStocks": [
+        "宽基指数"
+      ],
+      "bullConcepts": [
+        "防御板块"
+      ],
+      "bearConcepts": [
+        "周期股"
+      ],
+      "bullIndustries": [
+        "公用事业"
+      ],
+      "bearIndustries": [
+        "顺周期"
+      ],
+      "heat": 87,
+      "momentum": 96,
+      "_auto": true
+    },
+    {
+      "id": "abuin85i",
+      "title": "标普500ETF华夏：二级市场价格大幅溢价 提示投资风险",
+      "tag": "宏观/综合",
       "region": "全球",
-      "concept": "ai",
-      "time": "2026-11-16 09:11",
-      "datetime": "2026-11-16 09:11",
-      "source": "环球市场播报",
-      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-16/doc-iniywsti1335975.shtml",
-      "summary": "上周，英伟达公司的黄仁勋声誉急转直下之时，该公司芯片最重要的客户之一正准备通过一宗有望成为史上规模最大的首次公开招股（IPO），跻身全球顶尖上市公司之列。",
+      "concept": "macro",
+      "time": "2026-11-16 17:18",
+      "datetime": "2026-11-16 17:18",
+      "source": "新浪7×24",
+      "url": "https://finance.sina.cn/7x24/2026-11-16/detail-iniyxpwx1135937.d.html",
+      "summary": "【标普500ETF华夏：二级市场价格大幅溢价 提示投资风险】标普500ETF华夏公告称，2026年11月16日，本基金二级市场收盘价为1.970元，收盘时基金份额参考净值（IOPV）为1.8370元，交易价格明显高于基金份额参考净值，出现较大幅度溢价。若2026年11月17日溢价幅度未有效回落，基金有权申请盘中临时停牌、延长停牌时间及连续停牌等措施警示风险。目前基金运作正常，…",
+      "relatedStocks": [
+        "宽基指数"
+      ],
+      "bullConcepts": [
+        "防御板块"
+      ],
+      "bearConcepts": [
+        "周期股"
+      ],
+      "bullIndustries": [
+        "公用事业"
+      ],
+      "bearIndustries": [
+        "顺周期"
+      ],
+      "heat": 87,
+      "momentum": 96,
+      "_auto": true
+    },
+    {
+      "id": "ab1jkhrj3",
+      "title": "纳指ETF汇添富：因二级市场价格溢价 11月17日起临停",
+      "tag": "宏观/综合",
+      "region": "全球",
+      "concept": "macro",
+      "time": "2026-11-16 17:18",
+      "datetime": "2026-11-16 17:18",
+      "source": "新浪7×24",
+      "url": "https://finance.sina.cn/7x24/2026-11-16/detail-iniyxpxf2734525.d.html",
+      "summary": "【纳指ETF汇添富：因二级市场价格溢价 11月17日起临停】纳指ETF汇添富公告称，本基金二级市场交易价格明显高于基金份额参考净值，出现较大幅度溢价。2026年11月16日，本基金二级市场收盘价为2.318元，收盘时基金份额参考净值为2.0420元。为保护投资者利益，本基金将于2026年11月17日开市起停牌，自当日10:30起复牌，停牌期间赎回业务照常办理。若当日溢价幅度未…",
+      "relatedStocks": [
+        "宽基指数"
+      ],
+      "bullConcepts": [
+        "防御板块"
+      ],
+      "bearConcepts": [
+        "周期股"
+      ],
+      "bullIndustries": [
+        "公用事业"
+      ],
+      "bearIndustries": [
+        "顺周期"
+      ],
+      "heat": 87,
+      "momentum": 96,
+      "_auto": true
+    },
+    {
+      "id": "ab16rks46",
+      "title": "纳指科技ETF景顺：因交易价格大幅溢价将停牌后复牌",
+      "tag": "宏观/综合",
+      "region": "全球",
+      "concept": "macro",
+      "time": "2026-11-16 17:18",
+      "datetime": "2026-11-16 17:18",
+      "source": "新浪7×24",
+      "url": "https://finance.sina.cn/7x24/2026-11-16/detail-iniyxpxf2734146.d.html",
+      "summary": "【纳指科技ETF景顺：因交易价格大幅溢价将停牌后复牌】纳指科技ETF景顺公告称，本基金二级市场交易价格明显高于基金份额参考净值，出现较大幅度溢价。2026年11月16日，本基金二级市场收盘价为2.895元，收盘时基金份额参考净值为2.0796元。为保护投资者利益，本基金将于2026年11月17日开市起停牌，当日10:30起复牌，停牌期间赎回业务照常办理。若当日溢价幅度未有效回…",
+      "relatedStocks": [
+        "宽基指数"
+      ],
+      "bullConcepts": [
+        "防御板块"
+      ],
+      "bearConcepts": [
+        "周期股"
+      ],
+      "bullIndustries": [
+        "公用事业"
+      ],
+      "bearIndustries": [
+        "顺周期"
+      ],
+      "heat": 87,
+      "momentum": 96,
+      "_auto": true
+    },
+    {
+      "id": "abc0t735",
+      "title": "欧洲央行副行长Vujcic：欧洲经济“韧性惊人”。 私募信贷风险看似可控，但需要监测。 近期能源价格走势可能推升通胀。 人工智能和高债务是首要的金融稳定风险。 估值、融资和网络攻…",
+      "tag": "科技/AI",
+      "region": "中国",
+      "concept": "llm",
+      "time": "2026-11-16 16:31",
+      "datetime": "2026-11-16 16:31",
+      "source": "华尔街见闻",
+      "url": "https://wallstreetcn.com/livenews/3200523",
+      "summary": "欧洲央行副行长Vujcic：欧洲经济“韧性惊人”。 私募信贷风险看似可控，但需要监测。 近期能源价格走势可能推升通胀。 人工智能和高债务是首要的金融稳定风险。 估值、融资和网络攻击属于人工智能相关风险之列。 金融稳定风险处于“高位”。 工资未对通胀表现出实质性反应。",
       "relatedStocks": [
         "英伟达",
         "微软",
@@ -67,20 +187,20 @@
         "传统IT服务"
       ],
       "heat": 33,
-      "momentum": 26,
+      "momentum": 36,
       "_auto": true
     },
     {
-      "id": "ab1ehcm0s",
-      "title": "华滋国际海洋于11月16日上午起短暂停牌 以待刊发内幕消息",
+      "id": "ab12gkg66",
+      "title": "富国中证国企改革ETF：11月19日起暂停申购业务",
       "tag": "宏观/综合",
-      "region": "中国",
-      "concept": "broker",
-      "time": "2026-11-16 09:01",
-      "datetime": "2026-11-16 09:01",
-      "source": "新浪港股",
-      "url": "https://finance.sina.com.cn/stock/hkstock/ggscyd/2026-11-16/doc-iniywsti1328565.shtml",
-      "summary": "华滋国际海洋（02258）发布公告，应华滋国际海洋股份有限公司（本公司）之要求，本公司股份将于2026年11月16日上午九时正起在香港联合交易所有限公司暂停买卖...",
+      "region": "全球",
+      "concept": "macro",
+      "time": "2026-11-16 17:18",
+      "datetime": "2026-11-16 17:18",
+      "source": "新浪7×24",
+      "url": "https://finance.sina.cn/7x24/2026-11-16/detail-iniyxpwz2361252.d.html",
+      "summary": "【富国中证国企改革ETF：11月19日起暂停申购业务】富国中证国有企业改革ETF公告称，为保护基金份额持有人利益，基金将于2026年11月19日起暂停申购业务。该基金正以通讯方式召开基金份额持有人大会，审议终止基金合同并终止上市有关事项的议案。若该次持有人大会表决通过相关议案的，基金将直接进入清算程序且不再恢复申购业务；若大会决议未获通过，恢复申购业务安排详见届时发布的相关公…",
       "relatedStocks": [
         "宽基指数"
       ],
@@ -96,55 +216,123 @@
       "bearIndustries": [
         "顺周期"
       ],
-      "heat": 29,
-      "momentum": 31,
+      "heat": 87,
+      "momentum": 96,
       "_auto": true
     },
     {
-      "id": "abe9q4xu",
-      "title": "伊朗：两艘油轮在霍尔木兹海峡触雷爆炸起火",
-      "tag": "贸易/供应链",
-      "region": "全球",
-      "concept": "trade",
-      "time": "2026-11-16 09:17",
-      "datetime": "2026-11-16 09:17",
-      "source": "财联社",
-      "url": "https://www.cls.cn/detail/2534919",
-      "summary": "财联社11月16日电，伊朗伊斯兰革命卫队海军公共关系部门15日发表声明说，两艘违规油轮当天在霍尔木兹海峡南部海域触雷发生爆炸并引发大火。声明说，这两艘油轮关闭了导航系统和自动识别系统，试图“秘密”通过霍尔木兹海峡未经许可的航道，随后触雷并发生爆炸、起火。声明还说，另有两艘试图“秘密”通过海峡的油轮在上述两艘油轮发生爆炸后，听从了革命卫队海军霍尔木兹海峡航运安全控制中心的警告，…",
+      "id": "abjwyp7b",
+      "title": "11月16日下午，知名投资人段永平通过社交媒体表示：“我会很有兴趣看看这个公司最后能不能走出这个危机，所以不想急着逃。”在评价另一位网友关于是否会卖出的文章时，段永平认为目前还不…",
+      "tag": "科技/AI",
+      "region": "中国",
+      "concept": "llm",
+      "time": "2026-11-16 17:24",
+      "datetime": "2026-11-16 17:24",
+      "source": "华尔街见闻",
+      "url": "https://wallstreetcn.com/livenews/3200567",
+      "summary": "11月16日下午，知名投资人段永平通过社交媒体表示：“我会很有兴趣看看这个公司最后能不能走出这个危机，所以不想急着逃。”在评价另一位网友关于是否会卖出的文章时，段永平认为目前还不能下定论。他认为，英伟达的“护城河”依然很强大，需求也很强，不想就这么放弃了。谈及黄仁勋未来是否可能重新回归英伟达，段永平同日表示：“我不确定这件事，但我觉得不是零概率。”（中国基金报）",
       "relatedStocks": [
-        "跨境电商",
-        "航运"
+        "英伟达",
+        "微软",
+        "台积电"
       ],
       "bullConcepts": [
-        "内需",
+        "AI算力",
+        "半导体",
         "国产替代"
       ],
       "bearConcepts": [
-        "出口链"
+        "传统软件"
       ],
       "bullIndustries": [
-        "跨境电商",
-        "内需消费"
+        "半导体",
+        "AI应用",
+        "算力基础设施"
       ],
       "bearIndustries": [
-        "出口制造",
-        "航运"
+        "传统IT服务"
       ],
       "heat": 24,
-      "momentum": 26,
+      "momentum": 36,
       "_auto": true
     },
     {
-      "id": "ab1hfejfe",
-      "title": "驻宋卡总领馆提醒密切留意泰南边境五府社会治安形势",
+      "id": "ab7wr2se",
+      "title": "日本理化学研究所16日承认，设置于该研究所的目前日本最快超级计算机“富岳”日前遭非法访问，工作人员正就信息泄露等情况展开调查。(新华社)",
+      "tag": "宏观/综合",
+      "region": "全球",
+      "concept": "macro",
+      "time": "2026-11-16 17:24",
+      "datetime": "2026-11-16 17:24",
+      "source": "新浪7×24",
+      "url": "https://finance.sina.cn/7x24/2026-11-16/detail-iniyxpxc5963212.d.html",
+      "summary": "日本理化学研究所16日承认，设置于该研究所的目前日本最快超级计算机“富岳”日前遭非法访问，工作人员正就信息泄露等情况展开调查。(新华社)",
+      "relatedStocks": [
+        "宽基指数"
+      ],
+      "bullConcepts": [
+        "防御板块"
+      ],
+      "bearConcepts": [
+        "周期股"
+      ],
+      "bullIndustries": [
+        "公用事业"
+      ],
+      "bearIndustries": [
+        "顺周期"
+      ],
+      "heat": 24,
+      "momentum": 36,
+      "_auto": true
+    },
+    {
+      "id": "abrsudwu",
+      "title": "黄仁勋事件后仍有5家华尔街机构未下调英伟达目标价",
+      "tag": "科技/AI",
+      "region": "美国",
+      "concept": "aiCapex",
+      "time": "2026-11-16 17:20",
+      "datetime": "2026-11-16 17:20",
+      "source": "新浪7×24",
+      "url": "https://finance.sina.cn/7x24/2026-11-16/detail-iniyxpwz2362368.d.html",
+      "summary": "【黄仁勋事件后仍有5家华尔街机构未下调英伟达目标价】自11月9日黄仁勋事件发酵以来，华尔街对英伟达的目标价中位数已从315美元降至260美元，降幅约17%。不过，仍有5家发布最新研报的机构未下调目标价，分别为Raymond James（515美元）、Wedbush（345美元）、瑞银（300美元）、Piper Sandler（300美元）和摩根士丹利（300美元）。其中，摩根…",
+      "relatedStocks": [
+        "英伟达",
+        "微软",
+        "台积电"
+      ],
+      "bullConcepts": [
+        "AI算力",
+        "半导体",
+        "国产替代"
+      ],
+      "bearConcepts": [
+        "传统软件"
+      ],
+      "bullIndustries": [
+        "半导体",
+        "AI应用",
+        "算力基础设施"
+      ],
+      "bearIndustries": [
+        "传统IT服务"
+      ],
+      "heat": 29,
+      "momentum": 36,
+      "_auto": true
+    },
+    {
+      "id": "abtp4t4e",
+      "title": "11月16日，外交部发言人毛宁主持例行记者会。总台央视记者提问：中方发布了中俄美三国元首深圳会晤的消息。能否介绍会晤安排及中方对会晤的期待？毛宁表示，这是中俄美三国元首历史上首次…",
       "tag": "地缘/政治",
       "region": "中国",
       "concept": "core",
-      "time": "2026-11-16 09:37",
-      "datetime": "2026-11-16 09:37",
-      "source": "新浪7×24",
-      "url": "https://finance.sina.cn/7x24/2026-11-16/detail-iniywsth5818358.d.html",
-      "summary": "【驻宋卡总领馆提醒密切留意泰南边境五府社会治安形势】近期，泰南边境五府社会治安不靖。11月9日以来，不明武装分子在也拉府多地实施爆炸和纵火，宋卡府、沙敦府接连发生针对电线杆的炸弹袭击，造成有学生受伤，部分公共基础设施和民众财产受损。对此，泰国总理阿努廷已紧急召见国家警察总长和国安委秘书长，部署维安措施。泰国内政部、泰国内部安全行动司令部第四军区前线指挥部、宋卡府等采取系列举措…",
+      "time": "2026-11-16 15:17",
+      "datetime": "2026-11-16 15:17",
+      "source": "华尔街见闻",
+      "url": "https://wallstreetcn.com/livenews/3200485",
+      "summary": "11月16日，外交部发言人毛宁主持例行记者会。总台央视记者提问：中方发布了中俄美三国元首深圳会晤的消息。能否介绍会晤安排及中方对会晤的期待？毛宁表示，这是中俄美三国元首历史上首次面对面会晤，将围绕维护世界和平、促进大国关系战略稳定深入交换意见，具有开创性意义。中俄美都是联合国创始会员国和安理会常任理事国。历史上三国曾并肩赢得世界反法西斯战争的胜利。",
       "relatedStocks": [
         "军工",
         "黄金"
@@ -164,51 +352,21 @@
         "航空",
         "旅游"
       ],
-      "heat": 24,
-      "momentum": 36,
+      "heat": 87,
+      "momentum": 18,
       "_auto": true
     },
     {
-      "id": "ab1m6g6ov",
-      "title": "新西兰金融市场管理局副局长辞职。",
-      "tag": "宏观/综合",
-      "region": "全球",
-      "concept": "macro",
-      "time": "2026-11-16 09:32",
-      "datetime": "2026-11-16 09:32",
-      "source": "新浪7×24",
-      "url": "https://finance.sina.cn/7x24/2026-11-16/detail-iniywste9036260.d.html",
-      "summary": "新西兰金融市场管理局副局长辞职。",
-      "relatedStocks": [
-        "宽基指数"
-      ],
-      "bullConcepts": [
-        "防御板块"
-      ],
-      "bearConcepts": [
-        "周期股"
-      ],
-      "bullIndustries": [
-        "公用事业"
-      ],
-      "bearIndustries": [
-        "顺周期"
-      ],
-      "heat": 24,
-      "momentum": 36,
-      "_auto": true
-    },
-    {
-      "id": "ab1q870ts",
-      "title": "11月16日周末要闻：全美航班延误持续 黄仁勋讨论重掌英伟达 美“火神”火箭发射失败",
+      "id": "ab52yy1i",
+      "title": "中信里昂下调英伟达评级，目标价由425美元大幅降至255美元",
       "tag": "科技/AI",
       "region": "美国",
       "concept": "aiCapex",
-      "time": "2026-11-16 06:15",
-      "datetime": "2026-11-16 06:15",
+      "time": "2026-11-16 14:49",
+      "datetime": "2026-11-16 14:49",
       "source": "环球市场播报",
-      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-16/doc-iniywnmh9064317.shtml",
-      "summary": "市场 11月14日收盘：美股涨跌不一 英伟达跌破四万亿美元大关 11月14日热门中概股多数上涨，拼多多涨1.86%，蔚来跌约5% 大宗商品综述：油价两周连跌...",
+      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-16/doc-iniyxiqy5632574.shtml",
+      "summary": "11月16日，中信里昂将英伟达评级由“高确信度跑赢大盘”下调至“跑赢大盘”，目标价由425美元下调至255美元，降幅达40%，主要原因是黄仁勋辞任首席执行官后...",
       "relatedStocks": [
         "英伟达",
         "微软",
@@ -235,16 +393,16 @@
       "_auto": true
     },
     {
-      "id": "aba5g8zi",
-      "title": "未提前规划黄仁勋接班人 财富500强前CEO：英伟达董事会严重失职",
+      "id": "ab1nrxxtf",
+      "title": "AI“教父”辛顿最新表态：相比奥特曼、扎克伯格、马斯克，我更信任黄仁勋",
       "tag": "科技/AI",
       "region": "全球",
       "concept": "ai",
-      "time": "2026-11-16 08:14",
-      "datetime": "2026-11-16 08:14",
+      "time": "2026-11-16 14:51",
+      "datetime": "2026-11-16 14:51",
       "source": "环球市场播报",
-      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-16/doc-iniywsti1301960.shtml",
-      "summary": "多名见证英伟达这场风波的前企业CEO表示，英伟达董事会没能通过这场最重要的考验。 在三位财富500强前CEO以及一位知名咨询顾问看来...",
+      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-16/doc-iniyxiqz1157671.shtml",
+      "summary": "被誉为“AI教父”的杰弗里・辛顿在最新采访中，对英伟达前CEO黄仁勋给出了与众不同的评价。辛顿表示，“我对黄仁勋有一点了解。”，“我的印象里，他是个正派的人。",
       "relatedStocks": [
         "英伟达",
         "微软",
@@ -266,233 +424,57 @@
       "bearIndustries": [
         "传统IT服务"
       ],
-      "heat": 38,
+      "heat": 29,
+      "momentum": 18,
+      "_auto": true
+    },
+    {
+      "id": "ab1kuhixz",
+      "title": "盛宝银行：英伟达将迎黄仁勋离任后首次大考，业绩指引及管理层交接是关键",
+      "tag": "科技/AI",
+      "region": "美国",
+      "concept": "aiCapex",
+      "time": "2026-11-16 16:01",
+      "datetime": "2026-11-16 16:01",
+      "source": "环球市场播报",
+      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-16/doc-iniyxirf6021118.shtml",
+      "summary": "英伟达将于北京时间11月18日5：20左右公布2027财年第三季度财报，并于6：00召开财报电话会议。市场普遍预计，英伟达第三季度营收将达到1091亿美元...",
+      "relatedStocks": [
+        "英伟达",
+        "微软",
+        "台积电"
+      ],
+      "bullConcepts": [
+        "AI算力",
+        "半导体",
+        "国产替代"
+      ],
+      "bearConcepts": [
+        "传统软件"
+      ],
+      "bullIndustries": [
+        "半导体",
+        "AI应用",
+        "算力基础设施"
+      ],
+      "bearIndustries": [
+        "传统IT服务"
+      ],
+      "heat": 24,
       "momentum": 26,
       "_auto": true
     },
     {
-      "id": "abx7nag7",
-      "title": "上周五纳指收跌0.9%，英伟达跌2%，苹果盘中刷新历史高位；比特币跌破7万美元。 美国PPI创四年来最大升幅，美联储官员密集释放加息信号。 黄仁勋去职后，贝森特称英伟达需要“重大…",
+      "id": "ab12nw71x",
+      "title": "知情人士：特朗普深深折服于黄仁勋的个人魅力，二人沟通记录遭国会调查",
       "tag": "科技/AI",
       "region": "美国",
       "concept": "aiCapex",
-      "time": "2026-11-16 07:30",
-      "datetime": "2026-11-16 07:30",
-      "source": "华尔街见闻",
-      "url": "https://wallstreetcn.com/livenews/3200251",
-      "summary": "上周五纳指收跌0.9%，英伟达跌2%，苹果盘中刷新历史高位；比特币跌破7万美元。 美国PPI创四年来最大升幅，美联储官员密集释放加息信号。 黄仁勋去职后，贝森特称英伟达需要“重大重组”。另据报道，黄仁勋考虑重返英伟达任CEO，其硅谷盟友正在推动他复职。 中国10月新增社融1.15万亿元，人民币贷款单月减少1000亿元，M2同比增长7.1%，M2与M1剪刀差由4.0个百分点收窄…",
-      "relatedStocks": [
-        "英伟达",
-        "微软",
-        "台积电"
-      ],
-      "bullConcepts": [
-        "AI算力",
-        "半导体",
-        "国产替代"
-      ],
-      "bearConcepts": [
-        "传统软件"
-      ],
-      "bullIndustries": [
-        "半导体",
-        "AI应用",
-        "算力基础设施"
-      ],
-      "bearIndustries": [
-        "传统IT服务"
-      ],
-      "heat": 29,
-      "momentum": 18,
-      "_auto": true
-    },
-    {
-      "id": "ab13ye96v",
-      "title": "Hyperliquid区块链上一份与英伟达股价挂钩的永续期货合约一度上涨4.5%，此前有报道称，黄仁勋正讨论可能重返英伟达。",
-      "tag": "科技/AI",
-      "region": "全球",
-      "concept": "ai",
-      "time": "2026-11-16 07:28",
-      "datetime": "2026-11-16 07:28",
-      "source": "华尔街见闻",
-      "url": "https://wallstreetcn.com/livenews/3200250",
-      "summary": "Hyperliquid区块链上一份与英伟达股价挂钩的永续期货合约一度上涨4.5%，此前有报道称，黄仁勋正讨论可能重返英伟达。",
-      "relatedStocks": [
-        "英伟达",
-        "微软",
-        "台积电"
-      ],
-      "bullConcepts": [
-        "AI算力",
-        "半导体",
-        "国产替代"
-      ],
-      "bearConcepts": [
-        "传统软件"
-      ],
-      "bullIndustries": [
-        "半导体",
-        "AI应用",
-        "算力基础设施"
-      ],
-      "bearIndustries": [
-        "传统IT服务"
-      ],
-      "heat": 33,
-      "momentum": 18,
-      "_auto": true
-    },
-    {
-      "id": "abqspbtt",
-      "title": "Anthropic IPO 之际，深陷困境的 AI 交易正寻求急需的亮点",
-      "tag": "科技/AI",
-      "region": "美国",
-      "concept": "aiCapex",
-      "time": "2026-11-15 20:36",
-      "datetime": "2026-11-15 20:36",
+      "time": "2026-11-16 14:35",
+      "datetime": "2026-11-16 14:35",
       "source": "环球市场播报",
-      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-15/doc-iniyvrfu6210816.shtml",
-      "summary": "在利率上升、全国范围内的 AI 反弹、华盛顿政坛发生重大转变以及英伟达（Nvidia）CEO 黄仁勋突然被免职的背景下，科技行业正承受着越来越大的压力。",
-      "relatedStocks": [
-        "英伟达",
-        "微软",
-        "台积电"
-      ],
-      "bullConcepts": [
-        "AI算力",
-        "半导体",
-        "国产替代"
-      ],
-      "bearConcepts": [
-        "传统软件"
-      ],
-      "bullIndustries": [
-        "半导体",
-        "AI应用",
-        "算力基础设施"
-      ],
-      "bearIndustries": [
-        "传统IT服务"
-      ],
-      "heat": 33,
-      "momentum": 18,
-      "_auto": true
-    },
-    {
-      "id": "abddlp53",
-      "title": "英媒曝黄仁勋考虑重返英伟达 其硅谷盟友正组建游说团向英伟达董事会施压 要求恢复其职务",
-      "tag": "科技/AI",
-      "region": "美国",
-      "concept": "aiCapex",
-      "time": "2026-11-16 07:28",
-      "datetime": "2026-11-16 07:28",
-      "source": "滚动播报",
-      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-16/doc-iniywsti1287142.shtml",
-      "summary": "据英国《金融时报》11月15日消息，黄仁勋正考虑重返英伟达担任首席执行官。与此同时，其硅谷盟友正向英伟达董事会施压，要求恢复其职务。",
-      "relatedStocks": [
-        "英伟达",
-        "微软",
-        "台积电"
-      ],
-      "bullConcepts": [
-        "AI算力",
-        "半导体",
-        "国产替代"
-      ],
-      "bearConcepts": [
-        "传统软件"
-      ],
-      "bullIndustries": [
-        "半导体",
-        "AI应用",
-        "算力基础设施"
-      ],
-      "bearIndustries": [
-        "传统IT服务"
-      ],
-      "heat": 29,
-      "momentum": 18,
-      "_auto": true
-    },
-    {
-      "id": "abf598d8",
-      "title": "伊朗称2艘油轮触雷爆炸：一艘载有超200万桶原油 爆炸后沉没",
-      "tag": "能源/资源",
-      "region": "全球",
-      "concept": "energy",
-      "time": "2026-11-16 07:43",
-      "datetime": "2026-11-16 07:43",
-      "source": "新京报",
-      "url": "https://finance.sina.com.cn/jjxw/2026-11-16/doc-iniywste8968409.shtml",
-      "summary": "【#伊朗称2艘油轮触雷爆炸#：一艘载有超200万桶原油 爆炸后沉没】#伊朗称一超级油轮爆炸起火后沉没#11月15日，伊朗伊斯兰革命卫队海军称...",
-      "relatedStocks": [
-        "中国石油",
-        "紫金矿业"
-      ],
-      "bullConcepts": [
-        "油气",
-        "贵金属"
-      ],
-      "bearConcepts": [
-        "高耗能制造"
-      ],
-      "bullIndustries": [
-        "石油开采",
-        "贵金属"
-      ],
-      "bearIndustries": [
-        "航空运输",
-        "化工"
-      ],
-      "heat": 24,
-      "momentum": 18,
-      "_auto": true
-    },
-    {
-      "id": "ab3bci5k",
-      "title": "伊朗数周来首次直接袭击巴林 同时重申与美国结束冲突仍有可能",
-      "tag": "地缘/政治",
-      "region": "美国",
-      "concept": "defense",
-      "time": "2026-11-15 21:57",
-      "datetime": "2026-11-15 21:57",
-      "source": "环球市场播报",
-      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-15/doc-iniyvrfx3012576.shtml",
-      "summary": "伊朗袭击了巴林的一处空军基地，这是数周来伊朗首次直接袭击这个海湾国家。与此同时，伊朗重申，结束与美国冲突的途径仍然存在。",
-      "relatedStocks": [
-        "军工",
-        "黄金"
-      ],
-      "bullConcepts": [
-        "军工",
-        "避险资产"
-      ],
-      "bearConcepts": [
-        "风险资产"
-      ],
-      "bullIndustries": [
-        "军工",
-        "黄金"
-      ],
-      "bearIndustries": [
-        "航空",
-        "旅游"
-      ],
-      "heat": 24,
-      "momentum": 18,
-      "_auto": true
-    },
-    {
-      "id": "ab73qkh1",
-      "title": "“黄仁勋将重磅回归硅谷” 业内高管称多家公司伸出橄榄枝",
-      "tag": "科技/AI",
-      "region": "美国",
-      "concept": "aiCapex",
-      "time": "2026-11-15 14:34",
-      "datetime": "2026-11-15 14:34",
-      "source": "环球市场播报",
-      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-15/doc-iniyuyka6448550.shtml",
-      "summary": "黄仁勋从英伟达辞职的次日，硅谷已经在期待他的回归。 黄仁勋是唐纳德·特朗普的亲密盟友，经常接到总统的电话，甚至是公开通话，他也因此成为总部大多位于加州的科技行业在...",
+      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-16/doc-iniyxiqw8847798.shtml",
+      "summary": "去年，多位科技高管警告，美国各州陆续出台的人工智能监管法案，可能让美国在AI竞赛中落后；而推动特朗普出手干预的人，正是黄仁勋。",
       "relatedStocks": [
         "英伟达",
         "微软",
@@ -519,84 +501,82 @@
       "_auto": true
     },
     {
-      "id": "abthkt9g",
-      "title": "美情报机构称伊朗武器库拥有1500至2500枚导弹 与特朗普所言相悖",
-      "tag": "地缘/政治",
-      "region": "美国",
-      "concept": "defense",
-      "time": "2026-11-15 10:19",
-      "datetime": "2026-11-15 10:19",
-      "source": "环球市场播报",
-      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-15/doc-iniyupum3400016.shtml",
-      "summary": "美国官员称，美国情报机构评估，伊朗武器库拥有1500至2500枚导弹。一旦全面战争重启，德黑兰仍具备相当强的能力打击美国及其盟友目标。",
-      "relatedStocks": [
-        "军工",
-        "黄金"
-      ],
-      "bullConcepts": [
-        "军工",
-        "避险资产"
-      ],
-      "bearConcepts": [
-        "风险资产"
-      ],
-      "bullIndustries": [
-        "军工",
-        "黄金"
-      ],
-      "bearIndustries": [
-        "航空",
-        "旅游"
-      ],
-      "heat": 24,
-      "momentum": 18,
-      "_auto": true
-    },
-    {
-      "id": "ab1prk64g",
-      "title": "英国海事贸易行动中心：印度当局报告波斯湾油轮遇袭",
-      "tag": "贸易/供应链",
-      "region": "欧洲",
-      "concept": "trade",
-      "time": "2026-11-15 20:56",
-      "datetime": "2026-11-15 20:56",
-      "source": "环球市场播报",
-      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-15/doc-iniyvrfu6219418.shtml",
-      "summary": "据一份安全通告称，英国海事贸易行动中心（UKMTO）表示，印度航运当局报告了一艘油轮在波斯湾遭到袭击的事件。 该油轮在进入霍尔木兹海峡前正向东航行。",
-      "relatedStocks": [
-        "跨境电商",
-        "航运"
-      ],
-      "bullConcepts": [
-        "内需",
-        "国产替代"
-      ],
-      "bearConcepts": [
-        "出口链"
-      ],
-      "bullIndustries": [
-        "跨境电商",
-        "内需消费"
-      ],
-      "bearIndustries": [
-        "出口制造",
-        "航运"
-      ],
-      "heat": 24,
-      "momentum": 18,
-      "_auto": true
-    },
-    {
-      "id": "abk0kgvr",
-      "title": "新兴市场债券供应枯竭推高价格，发行量暴跌41%",
+      "id": "ab1p8mr64",
+      "title": "超级计算机FUGAKU遭入侵后用户信息可能已泄露。（共同社）",
       "tag": "宏观/综合",
       "region": "全球",
       "concept": "macro",
-      "time": "2026-11-15 20:54",
-      "datetime": "2026-11-15 20:54",
+      "time": "2026-11-16 15:09",
+      "datetime": "2026-11-16 15:09",
+      "source": "华尔街见闻",
+      "url": "https://wallstreetcn.com/livenews/3200483",
+      "summary": "超级计算机FUGAKU遭入侵后用户信息可能已泄露。（共同社）",
+      "relatedStocks": [
+        "宽基指数"
+      ],
+      "bullConcepts": [
+        "防御板块"
+      ],
+      "bearConcepts": [
+        "周期股"
+      ],
+      "bullIndustries": [
+        "公用事业"
+      ],
+      "bearIndustries": [
+        "顺周期"
+      ],
+      "heat": 24,
+      "momentum": 18,
+      "_auto": true
+    },
+    {
+      "id": "ab1rqa11k",
+      "title": "英国上议院警告政府应对灾难性风险准备不足，呼吁加强国家韧性建设",
+      "tag": "科技/AI",
+      "region": "欧洲",
+      "concept": "ai",
+      "time": "2026-11-16 14:40",
+      "datetime": "2026-11-16 14:40",
       "source": "环球市场播报",
-      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-15/doc-iniyvrfs9442650.shtml",
-      "summary": "尽管国际投资者需求强劲，新兴市场主权债券的新发行量在今年下半年急剧萎缩。这种供应短缺在预期明年年初发行量反弹之前，正在支撑债券价格。",
+      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-16/doc-iniyxiqz1151382.shtml",
+      "summary": "11月16日，英国议会上议院国家韧性委员会发布报告，警告安迪·伯纳姆领导的英国政府对人工智能驱动的网络攻击、蓄意破坏及战争等灾难性风险重视不足...",
+      "relatedStocks": [
+        "英伟达",
+        "微软",
+        "台积电"
+      ],
+      "bullConcepts": [
+        "AI算力",
+        "半导体",
+        "国产替代"
+      ],
+      "bearConcepts": [
+        "传统软件"
+      ],
+      "bullIndustries": [
+        "半导体",
+        "AI应用",
+        "算力基础设施"
+      ],
+      "bearIndustries": [
+        "传统IT服务"
+      ],
+      "heat": 24,
+      "momentum": 18,
+      "_auto": true
+    },
+    {
+      "id": "abju1rw8",
+      "title": "亨利加集团于11月16日上午起短暂停牌 以待刊发内幕消息",
+      "tag": "宏观/综合",
+      "region": "中国",
+      "concept": "broker",
+      "time": "2026-11-16 12:56",
+      "datetime": "2026-11-16 12:56",
+      "source": "新浪港股",
+      "url": "https://finance.sina.com.cn/stock/hkstock/ggscyd/2026-11-16/doc-iniyxcif2452591.shtml",
+      "summary": "亨利加集团（03638）发布公告，应亨利加集团有限公司（本公司）要求，本公司股份已于2026年11月16日（星期一）上午九时正起于香港联合交易所有限公司主板短暂停止买卖...",
       "relatedStocks": [
         "宽基指数"
       ],
@@ -853,6 +833,44 @@
       ],
       "heat": 95,
       "momentum": 92
+    },
+    {
+      "id": "b8",
+      "title": "霍尔木兹海峡三艘油轮爆炸起火，伊朗多地遭袭",
+      "tag": "地缘/能源",
+      "region": "全球",
+      "concept": "energy",
+      "time": "2026-11-08",
+      "datetime": "2026-11-08 11:20",
+      "source": "央视/塔斯尼姆通讯社",
+      "summary": "伊朗革命卫队称11月8日当天已有三艘违规油轮在霍尔木兹海峡东部禁航区触雷爆炸起火；同日格什姆岛等地传出爆炸声，伊朗称遭美军袭击。特朗普宣布针对伊朗的\"铁门\"特遣行动全面展开。海峡通航风险推升原油与航运溢价。",
+      "relatedStocks": [
+        "中国海油",
+        "山东黄金",
+        "航运"
+      ],
+      "bullConcepts": [
+        "石油",
+        "黄金",
+        "油运",
+        "军工"
+      ],
+      "bearConcepts": [
+        "航空",
+        "化工(成本端)"
+      ],
+      "bullIndustries": [
+        "石油开采",
+        "航运",
+        "黄金",
+        "军工"
+      ],
+      "bearIndustries": [
+        "航空运输",
+        "化工"
+      ],
+      "heat": 90,
+      "momentum": 88
     },
     {
       "id": "b9",
