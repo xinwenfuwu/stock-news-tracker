@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": 1794802346757,
+  "updatedAt": 1794802406549,
   "accounts": {
     "181": {
       "hash": "pbkdf2$150000$KjYyYMWup5jVGwvFBcCcOQ==$3U/UO6mfq2XHtEoimjRCc/0rz4seqfPAhnrte+JrXlw=",
@@ -268,12 +268,12 @@
       "updatedAt": 1793957488026
     },
     "__e2e_test__": {
-      "hash": "pbkdf2$150000$fQGDVMz2h+U2uABZ0uWB7A==$6VLai/koY7+RjDcwZDtv10CpDaKZSBJQaUWX3ixzyZI=",
+      "hash": "pbkdf2$150000$Wsb/fZS47+ztQBLVtC4umQ==$CMqohKb9YH/WLDiUrbxOW/XNIMQEWgkrWpIpt387V8o=",
       "pwSeal": "MXpUH4ekwaviWD5F",
       "role": "user",
       "status": "active",
       "disabled": false,
-      "trialUntil": 1794888735577,
+      "trialUntil": 1794888795797,
       "trialDays": 1,
       "quotaMonths": 0,
       "disableDate": "",
@@ -285,7 +285,7 @@
       "paidClaimIds": [],
       "placeholder": false,
       "createdAt": 1794802335577,
-      "updatedAt": 1794802346757
+      "updatedAt": 1794802406549
     }
   }
 }
