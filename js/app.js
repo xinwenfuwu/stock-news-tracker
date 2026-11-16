@@ -11341,7 +11341,9 @@ const app = createApp({
         const src = (remote && remote.length) ? remote : UPCOMING_EVENTS;
         // 统一按「今天」过滤：已结束剔除，今日举行与会期进行中的一律保留
         // 20261110k：若设置了「近 N 日」范围，「未来」子版块只保留距今不超过 N 天的事件
-        const all = src.filter(isUpcoming).filter(e => futureWithinDays(e, futureRangeDays.value)).map(resolveFutureImpact);
+        // 20261116：未来子版块事件同样注入「利好/利空 概念与行业」（按 concept 复用 CONCEPT_BULLBEAR 映射；
+        // 运行时快照与内嵌底库的事件自带字段优先，映射仅作缺省，空标签模板自动隐藏）
+        const all = src.filter(isUpcoming).filter(e => futureWithinDays(e, futureRangeDays.value)).map(e => attachBullBear(resolveFutureImpact(e)));
         all.forEach(e => { e._scope = upcomingScope(e); e.surge = computeSurge(e); });
         allUpcoming = all;
         list = (scopeAtStart === 'all') ? [...all] : all.filter(e => e._scope === scopeAtStart);
