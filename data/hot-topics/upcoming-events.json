@@ -1,10 +1,10 @@
 {
-  "generatedAt": "2026-11-17 04:17",
+  "generatedAt": "2026-11-17 12:26",
   "generatedBy": "GitHub Actions · 财经日历 + 多源新闻 + 精选底库",
-  "sourceCount": 4,
-  "calendarCount": 0,
+  "sourceCount": 5,
+  "calendarCount": 22,
   "seedCount": 33,
-  "autoCount": 2,
+  "autoCount": 10,
   "events": [
     {
       "id": "uc2",
@@ -104,6 +104,23 @@
       ]
     },
     {
+      "id": "auz6w9fa",
+      "title": "海南洋浦港与香港港缔结伙伴港口关系",
+      "tag": "贸易/供应链/日程",
+      "date": "2026-11-17",
+      "region": "中国",
+      "scope": "cn",
+      "concept": "crossEcom",
+      "source": "财联社",
+      "summary": "从海南洋浦经济开发区管委会获悉，11月16日，在香港海运周2026暨2026世界航商大会上，《琼港（洋浦—香港）港航领域合作备忘录》正式签署。洋浦港与香港港缔结伙伴港口关系，携手构建琼港双枢纽发展新格局。根据备忘录约定，各方建立常态化沟通会商机制，聚焦选港出口布局、航线资源互补、航运绿色通道打造、航运人才交流等重点领域深化合作研讨，促进港航业务高效对接、…",
+      "relatedStocks": [
+        "跨境电商",
+        "航运"
+      ],
+      "importance": 77,
+      "_auto": true
+    },
+    {
       "id": "uc22",
       "title": "2026中国国际光伏与储能产业大会",
       "tag": "会议/新能源",
@@ -123,20 +140,68 @@
       ]
     },
     {
-      "id": "auayl1wp",
-      "title": "特斯拉拟投30亿欧元扩建德国工厂 瞄准年产百万辆Cybercab",
-      "tag": "新能源车/日程",
+      "id": "aur208kf",
+      "title": "2026OEEG全球海工链大会",
+      "tag": "宏观/综合/日程",
       "date": "2026-11-17",
-      "region": "欧洲",
-      "scope": "world",
-      "concept": "green",
-      "source": "财联社",
-      "summary": "【特斯拉拟投30亿欧元扩建德国工厂 瞄准年产百万辆Cybercab】财联社11月17日电，特斯拉计划投资30亿欧元，扩建位于德国柏林附近格伦海德的超级工厂，为在欧洲生产无人驾驶出租车Cybercab布局生产设施。特斯拉德国超级工厂负责人确认，落地德国的Cybercab生产线预期将于2029年首次投产，新厂房远期目标是每年生产最多100万辆Cybercab。",
+      "region": "中国",
+      "scope": "cn",
+      "concept": "broker",
+      "source": "每日经济新闻·财经日历",
+      "summary": "计划于 2026-11-17 举行或公布，来源：每日经济新闻·财经日历。",
       "relatedStocks": [
-        "特斯拉",
-        "比亚迪"
+        "宽基指数"
       ],
-      "importance": 59,
+      "importance": 72,
+      "_auto": true
+    },
+    {
+      "id": "au1rxadns",
+      "title": "微软年度开发者与IT大会",
+      "tag": "宏观/综合/日程",
+      "date": "2026-11-17",
+      "region": "美国",
+      "scope": "us",
+      "concept": "usMacro",
+      "source": "每日经济新闻·财经日历",
+      "summary": "计划于 2026-11-17 举行或公布，来源：每日经济新闻·财经日历。",
+      "relatedStocks": [
+        "宽基指数"
+      ],
+      "importance": 72,
+      "_auto": true
+    },
+    {
+      "id": "au31tm7v",
+      "title": "11月17日论坛",
+      "tag": "消费/零售/日程",
+      "date": "2026-11-17",
+      "region": "中国",
+      "scope": "cn",
+      "concept": "consume",
+      "source": "华尔街见闻",
+      "summary": "11月17日，在北京举办的北斗时空产业发展论坛上，中国卫星导航定位协会发布的《2026中国北斗产业发展指数报告》显示，截至2026年上半年，我国各种类型的北斗终端设备（不含消费类电子）应用数量接近4200万台/套，较去年同期增加近900万台/套，同比增长约27%，北斗综合应用渗透率超过90%。",
+      "relatedStocks": [
+        "消费龙头"
+      ],
+      "importance": 72,
+      "_auto": true
+    },
+    {
+      "id": "au1ns8fl8",
+      "title": "比亚迪李柯：未来就是新能源 很多企业点名要到比亚迪看看",
+      "tag": "能源/资源/日程",
+      "date": "2026-11-17",
+      "region": "中国",
+      "scope": "cn",
+      "concept": "elec",
+      "source": "新浪7×24",
+      "summary": "【比亚迪李柯：未来就是新能源 很多企业点名要到比亚迪看看】11月17日至18日，APEC工商领导人峰会在深圳举行，比亚迪执行副总裁李柯与新浪财经等媒体对话。李柯透露称，“APEC期间，非常多的企业、各个国家领导人都来了，点名要到比亚迪来看看。”在回应多国嘉宾提及比亚迪已成为当地主流汽车品牌时，李柯说道：“比亚迪车是最棒的了，全世界都有比亚迪车。”李柯还说道…",
+      "relatedStocks": [
+        "中国石油",
+        "紫金矿业"
+      ],
+      "importance": 72,
       "_auto": true
     },
     {
@@ -179,18 +244,17 @@
       ]
     },
     {
-      "id": "au1kflq0w",
-      "title": "中俄美元首将首次面对面会晤",
-      "tag": "金融/宏观/日程",
+      "id": "auhwsz9t",
+      "title": "2026中国5G+工业互联网大会18日在武汉举行",
+      "tag": "宏观/综合/日程",
       "date": "2026-11-18",
-      "region": "美国",
-      "scope": "us",
-      "concept": "usFinance",
-      "source": "一财网",
-      "summary": "APEC第三十三次领导人非正式会议11月18日至19日在深圳举行。 亚太经合组织（APEC）是亚太地区层级最高、领域最广、最具影响力的经济合作机制。",
+      "region": "中国",
+      "scope": "cn",
+      "concept": "broker",
+      "source": "每日经济新闻·财经日历",
+      "summary": "计划于 2026-11-18 举行或公布，来源：每日经济新闻·财经日历。",
       "relatedStocks": [
-        "美股科技",
-        "黄金"
+        "宽基指数"
       ],
       "importance": 72,
       "_auto": true
@@ -212,6 +276,54 @@
         "创投",
         "AI应用"
       ]
+    },
+    {
+      "id": "auw1irjc",
+      "title": "美国10月成屋签约销售指数",
+      "tag": "宏观/综合/日程",
+      "date": "2026-11-18",
+      "region": "美国",
+      "scope": "us",
+      "concept": "usMacro",
+      "source": "每日经济新闻·财经日历",
+      "summary": "美国10月成屋签约销售指数同比(%)，今值--，预期值--，前值-12.6",
+      "relatedStocks": [
+        "宽基指数"
+      ],
+      "importance": 52,
+      "_auto": true
+    },
+    {
+      "id": "au11l6y6i",
+      "title": "2026世界计算大会19日至21日在长沙举行",
+      "tag": "宏观/综合/日程",
+      "date": "2026-11-19",
+      "region": "中国",
+      "scope": "cn",
+      "concept": "broker",
+      "source": "每日经济新闻·财经日历",
+      "summary": "计划于 2026-11-19 举行或公布，来源：每日经济新闻·财经日历。",
+      "relatedStocks": [
+        "宽基指数"
+      ],
+      "importance": 72,
+      "_auto": true
+    },
+    {
+      "id": "au2a3fwg",
+      "title": "2026脑机接口大会11月19日在京启幕",
+      "tag": "宏观/综合/日程",
+      "date": "2026-11-19",
+      "region": "全球",
+      "scope": "world",
+      "concept": "macro",
+      "source": "每日经济新闻·财经日历",
+      "summary": "计划于 2026-11-19 举行或公布，来源：每日经济新闻·财经日历。",
+      "relatedStocks": [
+        "宽基指数"
+      ],
+      "importance": 59,
+      "_auto": true
     },
     {
       "id": "uc26",
@@ -488,6 +600,24 @@
       "relatedStocks": [
         "全球宏观"
       ]
+    },
+    {
+      "id": "au31dzbx",
+      "title": "Anthropic最快",
+      "tag": "科技/AI/日程",
+      "date": "2026-12-11",
+      "region": "美国",
+      "scope": "us",
+      "concept": "aiCapex",
+      "source": "环球市场播报",
+      "summary": "Anthropic计划中的IPO可能带来数十亿美元的指数跟踪基金买盘，不过，这家人工智能（AI）初创企业在被纳入两大主要股指之前，等待时间可能比SpaceX更长。",
+      "relatedStocks": [
+        "英伟达",
+        "微软",
+        "台积电"
+      ],
+      "importance": 58,
+      "_auto": true
     },
     {
       "id": "uc41",

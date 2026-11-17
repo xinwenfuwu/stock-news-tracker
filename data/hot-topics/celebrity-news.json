@@ -1,20 +1,20 @@
 {
-  "generatedAt": "2026-11-17 04:17",
+  "generatedAt": "2026-11-17 12:26",
   "generatedBy": "GitHub Actions · 多源实时聚合",
-  "sourceCount": 4,
-  "autoCount": 8,
+  "sourceCount": 5,
+  "autoCount": 5,
   "events": [
     {
-      "id": "ap2ztudw",
-      "title": "黄仁勋3月份曾将价值超100亿美元的英伟达股票转入家族信托",
-      "tag": "人物/黄仁勋",
-      "region": "美国",
-      "concept": "aiCapex",
-      "time": "2026-11-17 03:30",
-      "datetime": "2026-11-17 03:30",
-      "source": "新浪7×24",
-      "url": "https://finance.sina.cn/7x24/2026-11-17/detail-iniyymat5733453.d.html",
-      "summary": "【黄仁勋3月份曾将价值超100亿美元的英伟达股票转入家族信托】美国证交会文件显示，前英伟达首席执行官黄仁勋及其妻子在3月，把近6000万股股票转入一份不可撤销家族信托，市值超过105亿美元。这次转让是一项长达十年的遗产规划方案的一部分：该信托最早在2016年注入约5100万美元的英伟达股票。遗产律师表示，该架构可以让这部分增值资产传给继承人，免于缴纳联邦遗产税。这笔转让发生在…",
+      "id": "ap7c83gq",
+      "title": "百度首席执行官李彦宏：对多数公司而言AI尚未帮助提升营收和利润。 如果人工智能无法帮助提升利润，相关泡沫风险将加剧。",
+      "tag": "人物/李彦宏",
+      "region": "全球",
+      "concept": "ai",
+      "time": "2026-11-17 11:27",
+      "datetime": "2026-11-17 11:27",
+      "source": "华尔街见闻",
+      "url": "https://wallstreetcn.com/livenews/3200998",
+      "summary": "百度首席执行官李彦宏：对多数公司而言AI尚未帮助提升营收和利润。 如果人工智能无法帮助提升利润，相关泡沫风险将加剧。",
       "relatedStocks": [
         "英伟达",
         "微软",
@@ -41,16 +41,16 @@
       "_auto": true
     },
     {
-      "id": "ap1n0pvqf",
-      "title": "OpenAI CEO萨姆·奥特曼表示，没有前英伟达CEO黄仁勋的AI革命“难以想象” 。对于黄仁勋是否应该回归英伟达，他表示无法置评。",
+      "id": "ape5dped",
+      "title": "11月17日外盘头条：特朗普支持黄仁勋重掌英伟达 美联储推演AI对经济潜在影响 加州就模型失控起诉OpenAI",
       "tag": "人物/黄仁勋",
-      "region": "全球",
-      "concept": "ai",
-      "time": "2026-11-17 01:22",
-      "datetime": "2026-11-17 01:22",
-      "source": "财联社",
-      "url": "https://www.cls.cn/detail/2535997",
-      "summary": "OpenAI CEO萨姆·奥特曼表示，没有前英伟达CEO黄仁勋的AI革命“难以想象” 。对于黄仁勋是否应该回归英伟达，他表示无法置评。",
+      "region": "美国",
+      "concept": "aiCapex",
+      "time": "2026-11-17 06:07",
+      "datetime": "2026-11-17 06:07",
+      "source": "环球市场播报",
+      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-17/doc-iniyyrkr5651984.shtml",
+      "summary": "全球财经媒体昨夜今晨共同关注的头条新闻主要有： 1、俄称下轮俄美乌三方会谈仍在阿布扎比举行 时间待定 2、美联储推演AI对经济潜在影响 主席沃什称涵盖多重情景 3...",
       "relatedStocks": [
         "英伟达",
         "微软",
@@ -71,157 +71,22 @@
       ],
       "bearIndustries": [
         "传统IT服务"
-      ],
-      "heat": 51,
-      "momentum": 18,
-      "_auto": true
-    },
-    {
-      "id": "ap1unnnyy",
-      "title": "摩根大通维持特斯拉430美元目标价，预计Robotaxi运营里程最快明年下半年追平Waymo",
-      "tag": "人物/马斯克",
-      "region": "美国",
-      "concept": "usFinance",
-      "time": "2026-11-16 19:23",
-      "datetime": "2026-11-16 19:23",
-      "source": "环球市场播报",
-      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-16/doc-iniyxuev1080345.shtml",
-      "summary": "11月16日，摩根大通重申对特斯拉的“中性”评级，维持430美元的目标价。该行指出，特斯拉Robotaxi（自动驾驶出租车）车队规模及运营里程正在加速增长...",
-      "relatedStocks": [
-        "美股科技",
-        "黄金"
-      ],
-      "bullConcepts": [
-        "黄金",
-        "防御板块"
-      ],
-      "bearConcepts": [
-        "高估值成长股"
-      ],
-      "bullIndustries": [
-        "银行",
-        "黄金"
-      ],
-      "bearIndustries": [
-        "高杠杆地产"
-      ],
-      "heat": 33,
-      "momentum": 18,
-      "_auto": true
-    },
-    {
-      "id": "apwff9yz",
-      "title": "巴菲特捐赠55亿美元，感恩节信中称善良会“复利”增长",
-      "tag": "人物/巴菲特",
-      "region": "美国",
-      "concept": "usFinance",
-      "time": "2026-11-17 00:26",
-      "datetime": "2026-11-17 00:26",
-      "source": "环球市场播报",
-      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-17/doc-iniyyeux2590475.shtml",
-      "summary": "96岁的巴菲特将6150股伯克希尔A类股转换为9225000股B类股，其中3690000股捐赠给苏珊·汤普森·巴菲特基金会，其余平均分配给三个子女运营的Sherwood、HowardG...",
-      "relatedStocks": [
-        "美股科技",
-        "黄金"
-      ],
-      "bullConcepts": [
-        "黄金",
-        "防御板块"
-      ],
-      "bearConcepts": [
-        "高估值成长股"
-      ],
-      "bullIndustries": [
-        "银行",
-        "黄金"
-      ],
-      "bearIndustries": [
-        "高杠杆地产"
       ],
       "heat": 42,
       "momentum": 18,
       "_auto": true
     },
     {
-      "id": "ap1ndrsx1",
-      "title": "风波之下英伟达仍在名单内：特朗普政府拟选定20余家AI“国家冠军企业”，助力拿下海外订单",
+      "id": "apiyfr52",
+      "title": "特朗普重返白宫以来 其投资账户交易英伟达股票逾百次，持仓最高或达9750万美元",
       "tag": "人物/特朗普",
       "region": "美国",
       "concept": "aiCapex",
-      "time": "2026-11-16 20:15",
-      "datetime": "2026-11-16 20:15",
+      "time": "2026-11-17 07:33",
+      "datetime": "2026-11-17 07:33",
       "source": "环球市场播报",
-      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-16/doc-iniyxuev1103513.shtml",
-      "summary": "美国总统特朗普政府准备正式指定20余家美国人工智能企业为AI领域的“国家冠军企业”，名单包含英伟达、亚马逊、微软、OpenAI以及Anthropic。",
-      "relatedStocks": [
-        "英伟达",
-        "微软",
-        "台积电"
-      ],
-      "bullConcepts": [
-        "AI算力",
-        "半导体",
-        "国产替代"
-      ],
-      "bearConcepts": [
-        "传统软件"
-      ],
-      "bullIndustries": [
-        "半导体",
-        "AI应用",
-        "算力基础设施"
-      ],
-      "bearIndustries": [
-        "传统IT服务"
-      ],
-      "heat": 51,
-      "momentum": 18,
-      "_auto": true
-    },
-    {
-      "id": "ap1pva0xn",
-      "title": "预测市场：特斯拉‑SpaceX在2027年4月前完成合并的概率升至60%以上",
-      "tag": "人物/马斯克",
-      "region": "全球",
-      "concept": "green",
-      "time": "2026-11-17 01:00",
-      "datetime": "2026-11-17 01:00",
-      "source": "环球市场播报",
-      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-17/doc-iniyyeux2602280.shtml",
-      "summary": "核心要点自上周末以来，Kalshi 多个预测交易市场中，埃隆・马斯克旗下火箭卫星企业 SpaceX 与电动汽车厂商特斯拉的合并概率大幅飙升。",
-      "relatedStocks": [
-        "特斯拉",
-        "比亚迪"
-      ],
-      "bullConcepts": [
-        "智能驾驶",
-        "动力电池"
-      ],
-      "bearConcepts": [
-        "传统车企"
-      ],
-      "bullIndustries": [
-        "智能驾驶",
-        "锂电池"
-      ],
-      "bearIndustries": [
-        "传统汽车制造"
-      ],
-      "heat": 29,
-      "momentum": 18,
-      "_auto": true
-    },
-    {
-      "id": "apn7hud8",
-      "title": "美国中期选举削弱特朗普话语权，欧盟再度推动全球AI规则谈判",
-      "tag": "人物/特朗普",
-      "region": "美国",
-      "concept": "aiCapex",
-      "time": "2026-11-16 20:51",
-      "datetime": "2026-11-16 20:51",
-      "source": "环球市场播报",
-      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-16/doc-iniyxuez5966206.shtml",
-      "summary": "美国中期选举之后，欧盟重新发力推动人工智能全球治理协议。欧盟希望，特朗普执政地位被削弱、选民对科技巨头的反感，能够提升达成国际协议的可能性。",
+      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-17/doc-iniyyvsm1918673.shtml",
+      "summary": "根据对美国总统特朗普年度及定期财务披露文件（最新更新至8月）的最新分析，自重返白宫以来，特朗普名下的投资账户买卖英伟达股票的次数至少达到103次...",
       "relatedStocks": [
         "英伟达",
         "微软",
@@ -248,16 +113,52 @@
       "_auto": true
     },
     {
-      "id": "apvb0ezz",
-      "title": "全文|巴菲特宣布：将向四家家族基金会捐赠B类股",
-      "tag": "人物/巴菲特",
-      "region": "中国",
-      "concept": "broker",
-      "time": "2026-11-16 20:07",
-      "datetime": "2026-11-16 20:07",
+      "id": "ap1pksggj",
+      "title": "英伟达董事会无意让黄仁勋复职，白宫内部对“换帅”现分歧",
+      "tag": "人物/黄仁勋",
+      "region": "美国",
+      "concept": "aiCapex",
+      "time": "2026-11-17 06:49",
+      "datetime": "2026-11-17 06:49",
       "source": "环球市场播报",
-      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-16/doc-iniyxufc2715671.shtml",
-      "summary": "北京时间11月16日晚间消息，伯克希尔哈撒韦公司公告称，名誉董事长沃伦·E·巴菲特今日将6150股A类股份转换为922.5万股B类股份，并把这些股份捐赠给四家家族基金会：向苏珊·...",
+      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-17/doc-iniyyvsr7782214.shtml",
+      "summary": "据一位知悉董事会想法的消息人士透露，尽管一些投资者和员工不断发出呼吁其回归的呼声，但英伟达董事会目前并未考虑让黄仁勋重新担任首席执行官。",
+      "relatedStocks": [
+        "英伟达",
+        "微软",
+        "台积电"
+      ],
+      "bullConcepts": [
+        "AI算力",
+        "半导体",
+        "国产替代"
+      ],
+      "bearConcepts": [
+        "传统软件"
+      ],
+      "bullIndustries": [
+        "半导体",
+        "AI应用",
+        "算力基础设施"
+      ],
+      "bearIndustries": [
+        "传统IT服务"
+      ],
+      "heat": 24,
+      "momentum": 18,
+      "_auto": true
+    },
+    {
+      "id": "ap1iok7pk",
+      "title": "民调显示特朗普支持率仍陷32%低迷水位，接近任内谷底",
+      "tag": "人物/特朗普",
+      "region": "美国",
+      "concept": "usMacro",
+      "time": "2026-11-17 09:29",
+      "datetime": "2026-11-17 09:29",
+      "source": "环球市场播报",
+      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-17/doc-iniyyzyp2287788.shtml",
+      "summary": "最新公布的益普索民调显示，美国总统特朗普的支持率仍徘徊任内最低水平附近，另一方面，参议院民主党领袖舒默（Charles Schumer）在领导地位面临挑战之际...",
       "relatedStocks": [
         "宽基指数"
       ],
