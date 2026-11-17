@@ -14412,50 +14412,16 @@ const app = createApp({
         ],
         note: '情绪决定敢不敢干，资金决定能不能持续，业绩决定能走多远，拥挤度决定该不该止盈。四个信号里只要"资金"和"业绩"双双背离，即使情绪很热也只当反弹做，不重仓过夜。'
       },
-      intraday: {
-        label: '盘中板块',
-        order: [
-          '开盘前看隔夜外盘 / 消息面（定开盘情绪基调）',
-          '集合竞价看涨跌家数、涨停封板率（定当日强弱）',
-          '盘中看主力净流入方向 + 量能同比（钱是否持续）',
-          '扫涨停分布与连板梯队（题材是否健康）',
-          '盯高位股与避险资产表现（风险温度）',
-          '填盘中打分表，给出当日交易档位'
-        ],
-        signals: [
-          { no: 1, name: '实时强弱', desc: '盘中多空谁占上风', rows: [
-            { track: '涨跌家数（实时）', where: '行情软件/同花顺', good: '上涨家数>3500 且持续扩大', warn: '上涨<1500 且缩窄' },
-            { track: '涨停封板率（实时）', where: '涨停板/涨停复盘', good: '>70% 且秒板多', warn: '<50%、炸板多' },
-            { track: '连板梯队（实时）', where: '涨停复盘', good: '有 3 板以上梯队', warn: '高度板断板' },
-            { track: '指数分时（黄白线）', where: '分时图', good: '黄线在白线上、小盘活跃', warn: '白线护盘、黄线大跌（赚指数不赚钱）' },
-            { track: '主力/北向分时净流入', where: '资金流向', good: '持续净流入', warn: '持续净流出/冲高回落' }
-          ]},
-          { no: 2, name: '盘中资金', desc: '钱是否真实持续流入', rows: [
-            { track: '主力净流入（实时）', where: '资金流向榜', good: '主线板块持续净流入', warn: '主线净流出、尾盘跳水' },
-            { track: '成交金额（实时）', where: '行情首页', good: '早盘放量、量能同比放大', warn: '缩量、无量震荡' },
-            { track: 'ETF 盘中申赎', where: 'ETF 分时', good: '主线 ETF 盘中净申购', warn: '高位大幅净赎回' },
-            { track: '融资买入额（实时）', where: '两融实时', good: '融资买入回升', warn: '融资偿还>买入' }
-          ]},
-          { no: 3, name: '题材活跃度', desc: '热点是否成势', rows: [
-            { track: '涨停分布（实时）', where: '涨停复盘', good: '主线题材梯队完整、有补涨', warn: '只剩龙头独苗、跟风熄火' },
-            { track: '热点集中度', where: '板块涨幅榜', good: '1–2 个主线清晰领涨', warn: '热点散乱、快速轮动' },
-            { track: '题材持续性', where: '5日/3日涨幅', good: '主线连续上榜', warn: '一日游、隔日闷杀' },
-            { track: '龙头表现', where: '个股分时', good: '龙头强势封板、带动板块', warn: '龙头炸板/跳水拖累' }
-          ]},
-          { no: 4, name: '风险温度', desc: '是否已经过热或转弱', rows: [
-            { track: '炸板率（实时）', where: '涨停复盘', good: '<30%', warn: '>45%' },
-            { track: '高位股表现', where: '涨跌幅榜', good: '高位趋势股继续新高', warn: '高位股批量跳水（杀高位）' },
-            { track: '回落幅度（分时）', where: '指数分时', good: '维持高位、回踩不破', warn: '冲高大幅回落（上影长）' },
-            { track: '避险资产（实时）', where: '银行/红利/国债', good: '防守走弱=风险偏好升', warn: '避险资产逆势走强' }
-          ]}
-        ],
-        usageTitle: '当下/半日/节奏怎么用这份清单',
-        usage: [
-          { t: '看当下', d: '①实时强弱 + ②盘中资金同步转强，可顺势加仓；任一项转弱则降仓。' },
-          { t: '看半日', d: '上午②资金和③题材活跃度都拿 2 分，下午延续概率高，可持有主线。' },
-          { t: '看节奏', d: '把每日盘中合计分连线——连续高位=可滚动做多；反复 3–4 分=快进快出、不恋战。' }
-        ],
-        note: '盘中只做"当下"判断：情绪（强弱）决定敢不敢出手，资金（净流入）决定能不能持续，题材（活跃度）决定主攻方向，风险温度决定该不该止盈。资金与题材双双走弱，即使指数红盘也只做超短、不过夜。'
+      // 20261117f：原「盘中板块」整体替换为「产业投资」——全国上市公司工厂/产能投放进度跟踪。
+      // 该子版块的打分表不适用（不是每日信号打分，而是项目节点跟踪），故 signals/order 留空，
+      // 页面用 v-if 切换为独立的产业投资面板；原 intraday 打分数据与历史记录仍保留在 Store 中不删。
+      invest: {
+        label: '产业投资',
+        order: [],
+        signals: [],
+        usageTitle: '',
+        usage: [],
+        note: '产业投资面板跟踪的是「未来 12 个月上市公司工厂/产能投放节点」，不是每日交易信号，因此不走四信号打分。'
       }
     };
 
@@ -14509,6 +14475,319 @@ const app = createApp({
       }
     };
 
+    // ========================================================================
+    // 量化板块「产业投资」：全国上市公司工厂 / 产能投放进度跟踪（20261117f）
+    // 口径：公开公告 + 环评/能评公示 + 地方重大项目清单整理的「计划节点」跟踪稿。
+    //   日期是计划节点（不是公司承诺日期），以最新公告为准；页面内可编辑 / 新增 / 删除，
+    //   修改后写入本地 Store（D.indProjects）并随云同步；「恢复内置样例」可回到初始基准库。
+    // 字段：代码, 公司, 项目, 投资主体, 投资性质, 投资额(亿元), 产品/产能, 省份, 产业,
+    //       当前阶段, 下一节点日期, 下一节点, 确定性, 开工日期
+    // ========================================================================
+    const IND_SEED_RAW = [
+      ['688981','中芯国际','中芯京城 12 英寸二期','中芯京城集成电路制造（北京）有限公司','合资建设',497,'12 英寸晶圆 10 万片/月','北京','半导体','设备搬入','2026-12-08','试产','中','2024-06-20'],
+      ['601689','拓普集团','宁波一体化压铸基地','拓普电动车底盘系统（宁波）有限公司','定增募投',40,'一体化压铸底盘 120 万套/年','浙江','锂电与新能源车','试产','2026-12-12','小批量','高','2025-03-10'],
+      ['600690','海尔智家','胶州上合冰箱互联工厂','海尔智家（胶州）有限公司','自建',25,'高端冰箱 300 万台/年','山东','消费与轻工','安装调试','2026-12-15','量产','高','2024-11-08'],
+      ['688012','中微公司','南昌半导体设备产业园','中微半导体设备（南昌）有限公司','自建',30,'MOCVD / 刻蚀设备 800 台/年','江西','半导体','试产','2026-12-18','量产','中','2025-05-16'],
+      ['300122','智飞生物','合肥疫苗产业基地','安徽智飞龙科马生物制药有限公司','自建',30,'重组蛋白疫苗 1 亿剂/年','安徽','医药生物','安装调试','2026-12-20','试产','中','2024-09-12'],
+      ['601012','隆基绿能','铜川 HPBC 电池基地','隆基乐叶光伏科技（铜川）有限公司','自建',60,'HPBC 电池 12GW','陕西','新能源（光储风）','小批量','2026-12-25','量产','高','2025-02-18'],
+      ['000063','中兴通讯','南京滨江 5G 与算力基地二期','中兴通讯（南京）有限责任公司','自建',40,'服务器 / 基站整机','江苏','AI 与算力','封顶','2026-12-28','设备搬入','中','2025-07-22'],
+      ['300750','宁德时代','洛阳基地二期','中州时代新能源科技有限公司','自建',140,'动力电池 30GWh','河南','锂电与新能源车','安装调试','2026-12-30','量产','高','2024-12-06'],
+      ['002812','恩捷股份','玉溪隔膜基地','云南恩捷新材料股份有限公司','自建',45,'湿法隔膜 20 亿平米/年','云南','锂电与新能源车','试产','2027-01-08','量产','中','2025-04-15'],
+      ['601138','工业富联','郑州 AI 服务器制造基地','富士康工业互联网（郑州）有限公司','自建',60,'AI 服务器 20 万台/年','河南','AI 与算力','安装调试','2027-01-10','量产','中','2025-06-10'],
+      ['601899','紫金矿业','巨龙铜矿二期','西藏巨龙铜业有限公司','自建',180,'铜精矿 20 万吨/年','西藏','有色与资源','小批量','2027-01-15','量产','中','2024-08-20'],
+      ['002156','通富微电','南通先进封装基地','通富微电子股份有限公司','定增募投',78,'2.5D / Chiplet 先进封装','江苏','半导体','封顶','2027-01-20','设备搬入','中','2025-03-28'],
+      ['600887','伊利股份','呼和浩特智慧健康谷二期','内蒙古伊利实业集团股份有限公司','自建',45,'乳制品 120 万吨/年','内蒙古','消费与轻工','安装调试','2027-01-25','试产','高','2024-10-15'],
+      ['600089','特变电工','昌吉新能源装备基地','特变电工新疆新能源股份有限公司','自建',50,'变压器 / 新能源装备','新疆','电力与公用','试产','2027-02-08','量产','中','2025-01-12'],
+      ['688599','天合光能','淮安 210 组件基地二期','天合光能（淮安）光电有限公司','定增募投',55,'210 组件 15GW','江苏','新能源（光储风）','试产','2027-02-10','量产','中','2025-02-25'],
+      ['600426','华鲁恒升','荆州基地二期','华鲁恒升（荆州）有限公司','自建',100,'己二酸 / 尼龙 66','湖北','化工新材料','安装调试','2027-02-18','量产','中','2025-04-08'],
+      ['002371','北方华创','亦庄半导体设备基地二期','北京北方华创微电子装备有限公司','自建',45,'刻蚀 / 薄膜设备 1200 台/年','北京','半导体','封顶','2027-02-26','设备搬入','中','2025-08-15'],
+      ['000333','美的集团','佛山库卡智能制造基地二期','库卡机器人（广东）有限公司','自建',30,'工业机器人 3 万台/年','广东','军工与高端制造','试产','2027-02-28','量产','高','2024-12-20'],
+      ['002594','比亚迪','郑州工厂三期','比亚迪汽车工业（郑州）有限公司','自建',150,'新能源整车 40 万辆/年','河南','锂电与新能源车','设备搬入','2027-03-05','试产','高','2025-05-20'],
+      ['603799','华友钴业','印尼华飞湿法二期','华飞镍钴（印尼）有限公司','合资建设',90,'硫酸镍 6 万吨/年','印尼','有色与资源','安装调试','2027-03-08','试产','中','2025-03-18'],
+      ['002202','金风科技','包头风电装备基地','金风科技（包头）有限公司','自建',35,'风机主机 5GW/年','内蒙古','新能源（光储风）','试产','2027-03-12','量产','中','2025-06-28'],
+      ['688347','华虹公司','无锡 12 英寸二期','华虹半导体制造（无锡）有限公司','自建',470,'12 英寸晶圆 8.3 万片/月','江苏','半导体','土建','2027-03-15','设备搬入','中','2025-01-08'],
+      ['002463','沪电股份','泰国 PCB 基地','沪士电子（泰国）有限公司','自建',30,'高阶 PCB（通信 / 服务器）','泰国','半导体','小批量','2027-03-20','量产','中','2024-11-25'],
+      ['300274','阳光电源','合肥储能装备基地三期','阳光电源股份有限公司','自建',35,'储能系统 20GWh/年','安徽','新能源（光储风）','安装调试','2027-03-28','量产','高','2025-04-22'],
+      ['002475','立讯精密','昆山 AI 硬件智造基地','立讯精密工业（昆山）有限公司','自建',55,'高速互连 / 服务器精密件','江苏','AI 与算力','安装调试','2027-04-05','试产','中','2025-07-10'],
+      ['600438','通威股份','包头 20 万吨高纯晶硅','通威高纯晶硅（包头）有限公司','自建',100,'多晶硅 20 万吨/年','内蒙古','新能源（光储风）','设备搬入','2027-04-12','试产','中','2025-05-06'],
+      ['603993','洛阳钼业','刚果（金）TFM 混合矿扩产','TFM 控股子公司','自建',180,'铜 20 万吨/年','刚果（金）','有色与资源','试产','2027-04-20','量产','中','2024-07-15'],
+      ['300666','江丰电子','宁波超高纯溅射靶材基地','宁波江丰电子材料股份有限公司','定增募投',20,'超高纯溅射靶材','浙江','半导体','安装调试','2027-04-22','试产','中','2025-06-18'],
+      ['300014','亿纬锂能','荆门 60GWh 储能电池','湖北亿纬动力有限公司','自建',108,'储能电池 60GWh','湖北','锂电与新能源车','设备搬入','2027-04-28','量产','高','2025-02-12'],
+      ['300207','欣旺达','枣庄动力电池三期','欣旺达动力科技（枣庄）有限公司','合资建设',80,'动力电池 30GWh','山东','锂电与新能源车','土建','2027-05-06','设备搬入','低','2025-08-08'],
+      ['002714','牧原股份','南阳肉食加工产业园','牧原肉食品有限公司','自建',30,'屠宰 / 肉制品加工','河南','消费与轻工','安装调试','2027-05-15','试产','中','2025-03-05'],
+      ['600584','长电科技','江阴晶圆级封装四期','长电科技管理有限公司','自建',100,'WLP / TSV 先进封装','江苏','半导体','设备搬入','2027-05-18','试产','中','2025-04-30'],
+      ['603259','药明康德','泰兴新药研发生产基地','药明康德新药开发有限公司','自建',55,'CDMO 原料药 / 制剂','江苏','医药生物','土建','2027-05-25','试产','中','2025-09-12'],
+      ['600031','三一重工','长沙电动工程机械基地','三一重工股份有限公司','定增募投',50,'电动挖机 / 装载机 2 万台/年','湖南','军工与高端制造','安装调试','2027-06-05','试产','中','2025-05-15'],
+      ['601127','赛力斯','重庆超级工厂二期','赛力斯汽车有限公司','自建',90,'增程 / 纯电整车 20 万辆','重庆','锂电与新能源车','设备搬入','2027-06-10','量产','中','2024-12-12'],
+      ['600760','中航沈飞','沈阳航空产业园','沈阳飞机工业（集团）有限公司','自建',60,'航空整机结构件','辽宁','军工与高端制造','封顶','2027-06-18','设备搬入','中','2025-06-06'],
+      ['688249','晶合集成','合肥 40nm OLED 驱动芯片扩产','合肥晶合集成电路股份有限公司','自建',210,'40nm 驱动芯片 4 万片/月','安徽','半导体','土建','2027-06-20','设备搬入','低','2025-10-10'],
+      ['600309','万华化学','蓬莱新材料一体化二期','万华化学（蓬莱）有限公司','自建',320,'POE / 高端聚烯烃','山东','化工新材料','设备搬入','2027-06-30','试产','中','2024-09-28'],
+      ['000977','浪潮信息','济南算力装备产业园','浪潮电子信息产业股份有限公司','政府代建',35,'AI 服务器 / 液冷整机柜','山东','AI 与算力','土建','2027-07-08','量产','低','2025-11-05'],
+      ['002074','国轩高科','合肥新站 20GWh 半固态','合肥国轩高科动力能源有限公司','定增募投',68,'半固态电池 20GWh','安徽','锂电与新能源车','土建','2027-07-15','试产','低','2025-09-20'],
+      ['600989','宝丰能源','内蒙古三期烯烃','内蒙古宝丰煤基新材料有限公司','自建',400,'烯烃 300 万吨/年','内蒙古','化工新材料','安装调试','2027-07-28','量产','中','2024-06-15'],
+      ['600276','恒瑞医药','连云港生物医药产业园','江苏恒瑞医药股份有限公司','自建',40,'生物药原液 / 制剂','江苏','医药生物','封顶','2027-08-08','设备搬入','中','2025-07-28'],
+      ['002459','晶澳科技','鄂尔多斯一体化基地','晶澳太阳能（内蒙古）有限公司','自建',120,'硅片 / 电池 / 组件一体化','内蒙古','新能源（光储风）','土建','2027-08-15','设备搬入','低','2025-10-20'],
+      ['600585','海螺水泥','芜湖绿色建材产业园','安徽海螺水泥股份有限公司','自建',40,'骨料 / 绿色水泥','安徽','建材与建筑','安装调试','2027-08-20','量产','中','2025-04-18'],
+      ['600893','航发动力','西安航空发动机产业基地','中国航发动力股份有限公司','自建',85,'航发关键零部件','陕西','军工与高端制造','土建','2027-09-05','设备搬入','中','2025-08-25'],
+      ['688126','沪硅产业','上海临港 300mm 大硅片二期','上海新昇半导体科技有限公司','定增募投',132,'300mm 硅片 60 万片/月','上海','半导体','土建','2027-09-10','设备搬入','低','2025-11-18'],
+      ['600741','华域汽车','上海临港智能座舱工厂','华域汽车系统股份有限公司','自建',25,'座舱域控 300 万套/年','上海','锂电与新能源车','土建','2027-09-22','封顶','低','2025-12-06'],
+      ['002493','荣盛石化','舟山炼化三期','浙江石油化工有限公司','合资建设',600,'炼化一体化（乙烯 / PX）','浙江','化工新材料','土建','2027-10-15','设备搬入','低','2025-06-30'],
+      ['600905','三峡能源','库布其光伏治沙基地','三峡新能源（内蒙古）有限公司','自建',260,'光伏 8GW','内蒙古','电力与公用','土建','2027-10-28','并网','低','2025-03-20'],
+      ['601766','中国中车','株洲轨道交通装备基地','中车株洲电力机车有限公司','自建',45,'轨道交通装备','湖南','军工与高端制造','土建','2027-11-05','试产','低','2025-10-28'],
+      ['000725','京东方Ａ','成都 8.6 代 AMOLED 二期','成都京东方光电科技有限公司','政府代建',630,'8.6 代 AMOLED 面板 3.2 万片/月','四川','半导体','土建','2027-11-25','设备搬入','低','2025-04-10'],
+      ['601985','中国核电','漳州核电 3 号机组','中核国电漳州能源有限公司','合资建设',400,'核电 1218MW','福建','电力与公用','安装调试','2027-11-15','并网','中','2021-06-30'],
+      // —— 同一上市公司的第二 / 第三个项目（跟踪表要能看出「一家公司多主体、多节点」）——
+      ['300750','宁德时代','宜宾三江新区 30GWh','四川时代新能源科技有限公司','自建',120,'动力电池 30GWh','四川','锂电与新能源车','设备搬入','2027-05-20','试产','中','2025-01-20'],
+      ['002594','比亚迪','济南工厂二期','比亚迪汽车工业（济南）有限公司','自建',100,'新能源整车 30 万辆/年','山东','锂电与新能源车','土建','2027-04-18','设备搬入','低','2025-09-15'],
+      ['601012','隆基绿能','鄂尔多斯单晶硅片基地','隆基绿能科技（鄂尔多斯）有限公司','自建',80,'单晶硅片 30GW','内蒙古','新能源（光储风）','设备搬入','2027-08-28','试产','中','2025-06-12'],
+      ['600438','通威股份','乐山 12 万吨高纯晶硅','四川永祥新能源有限公司','自建',70,'多晶硅 12 万吨/年','四川','新能源（光储风）','试产','2027-02-20','量产','中','2024-10-08']
+    ];
+
+    const IND_NATURE_OPTS = ['自建', '定增募投', '可转债募投', '合资建设', '收购产能', '政府代建'];
+    const IND_IND_OPTS = ['半导体', 'AI 与算力', '新能源（光储风）', '锂电与新能源车', '化工新材料', '有色与资源', '医药生物', '军工与高端制造', '消费与轻工', '电力与公用', '建材与建筑'];
+    const IND_STAGE_OPTS = ['立项', '开工', '土建', '封顶', '设备搬入', '安装调试', '试产', '小批量', '量产', '并网'];
+    const IND_STAGE_PCT = { '立项': 8, '开工': 20, '土建': 35, '封顶': 50, '设备搬入': 65, '安装调试': 75, '试产': 85, '小批量': 92, '量产': 100, '并网': 100 };
+
+    function indSeed() {
+      return IND_SEED_RAW.map((r, i) => ({
+        id: 'ind' + (i + 1),
+        code: r[0], name: r[1], proj: r[2], subject: r[3], nature: r[4],
+        amt: r[5], product: r[6], prov: r[7], ind: r[8],
+        stage: r[9], next: r[10], nextStage: r[11], conf: r[12], start: r[13],
+        custom: false
+      }));
+    }
+
+    // 用户改过就用本地存的那份，没改过用内置基准库
+    const indList = computed(() => (Array.isArray(D.indProjects) && D.indProjects.length ? D.indProjects : indSeed()));
+
+    const indQ = ref('');
+    const indInd = ref('');
+    const indNature = ref('');
+    const indMonth = ref('');
+    const indKeyOnly = ref(false);
+
+    function indParse(d) {
+      const m = String(d || '').match(/^(\d{4})-(\d{2})-(\d{2})$/);
+      if (!m) return null;
+      return Date.UTC(+m[1], +m[2] - 1, +m[3]);
+    }
+    function indTodayUTC() {
+      const t = new Date();
+      return Date.UTC(t.getFullYear(), t.getMonth(), t.getDate());
+    }
+    /** 距今天还有多少自然日（负数=已过） */
+    function indDays(d) {
+      const x = indParse(d);
+      return x == null ? null : Math.round((x - indTodayUTC()) / 86400000);
+    }
+    function indDayText(d) {
+      const n = indDays(d);
+      if (n == null) return '—';
+      if (n === 0) return '就在今天';
+      return n > 0 ? '还有 ' + n + ' 天' : '已过 ' + Math.abs(n) + ' 天';
+    }
+    function indMonthLabel(k) {
+      const m = String(k || '').match(/^(\d{4})-(\d{2})$/);
+      if (!m) return k || '未填日期';
+      const d = new Date();
+      const cur = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0');
+      const base = m[1].slice(2) + ' 年 ' + Number(m[2]) + ' 月';
+      return k === cur ? '本月（' + base + '）' : base;
+    }
+    function indPct(p) {
+      const v = IND_STAGE_PCT[p && p.stage];
+      return v == null ? 10 : v;
+    }
+    function indNatCls(n) {
+      return n === '自建' ? 'nat-self'
+        : n === '合资建设' ? 'nat-jv'
+        : n === '政府代建' ? 'nat-gov'
+        : n === '收购产能' ? 'nat-ma'
+        : 'nat-raise';
+    }
+    function indStageCls(s) {
+      if (/量产|并网/.test(String(s || ''))) return 'st-hot';
+      if (/试产|小批量/.test(String(s || ''))) return 'st-warm';
+      if (/设备搬入|安装调试/.test(String(s || ''))) return 'st-mid';
+      return 'st-cold';
+    }
+    /** 确定性中文 → CSS 类名（避免直接用中文类名） */
+    function indConfCls(c) {
+      return c === '高' ? 'high' : c === '低' ? 'low' : 'mid';
+    }
+
+    const indFiltered = computed(() => {
+      const q = String(indQ.value || '').trim().toLowerCase();
+      return indList.value.filter(p => {
+        if (indInd.value && p.ind !== indInd.value) return false;
+        if (indNature.value && p.nature !== indNature.value) return false;
+        if (indKeyOnly.value && !/量产|并网/.test(String(p.nextStage || ''))) return false;
+        if (q) {
+          const hay = [p.code, p.name, p.proj, p.subject, p.product, p.prov, p.ind].join(' ').toLowerCase();
+          if (hay.indexOf(q) === -1) return false;
+        }
+        return true;
+      }).slice().sort((a, b) => {
+        const x = String(a.next || '9999'), y = String(b.next || '9999');
+        return x < y ? -1 : x > y ? 1 : 0;
+      });
+    });
+
+    /** 未来 12 个月的月份标签条（当前月开头，含每月节点数） */
+    const indMonths = computed(() => {
+      const map = {};
+      indFiltered.value.forEach(p => {
+        const k = String(p.next || '').slice(0, 7);
+        if (!k) return;
+        map[k] = (map[k] || 0) + 1;
+      });
+      const out = [];
+      const now = new Date();
+      for (let i = 0; i < 12; i++) {
+        const d = new Date(now.getFullYear(), now.getMonth() + i, 1);
+        const k = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0');
+        out.push({ key: k, label: indMonthLabel(k), n: map[k] || 0 });
+      }
+      // 12 个月之外仍有节点的月份追加在后面，避免被筛掉看不到
+      Object.keys(map).sort().forEach(k => {
+        if (!out.some(m => m.key === k)) out.push({ key: k, label: indMonthLabel(k), n: map[k] });
+      });
+      return out;
+    });
+
+    /** 按月份分组（组内按日期升序），供表格渲染 */
+    const indGroups = computed(() => {
+      const src = indMonth.value
+        ? indFiltered.value.filter(p => String(p.next || '').slice(0, 7) === indMonth.value)
+        : indFiltered.value;
+      const groups = [];
+      let cur = null;
+      src.forEach(p => {
+        const k = String(p.next || '').slice(0, 7) || 'nodate';
+        if (!cur || cur.key !== k) { cur = { key: k, label: indMonthLabel(k), items: [], amt: 0 }; groups.push(cur); }
+        cur.items.push(p);
+        cur.amt += (Number(p.amt) || 0);
+      });
+      return groups;
+    });
+
+    const indStats = computed(() => {
+      const all = indFiltered.value;
+      const codes = {};
+      let amt = 0, in30 = 0, hot = 0, soon = 0;
+      all.forEach(p => {
+        codes[p.code] = 1;
+        amt += (Number(p.amt) || 0);
+        const n = indDays(p.next);
+        if (n != null && n >= 0 && n <= 30) in30 += 1;
+        if (/量产|并网/.test(String(p.nextStage || ''))) hot += 1;
+        if (/试产|小批量/.test(String(p.nextStage || ''))) soon += 1;
+      });
+      return { n: all.length, codes: Object.keys(codes).length, amt: amt, in30: in30, hot: hot, soon: soon };
+    });
+
+    // ---- 新增 / 编辑表单 ----
+    const indForm = reactive({
+      open: false, editId: null,
+      code: '', name: '', proj: '', subject: '', nature: '自建', amt: '',
+      product: '', prov: '', ind: '半导体', stage: '开工', next: '', nextStage: '试产',
+      conf: '中', start: '', note: ''
+    });
+
+    /** 任何写操作前先把内置基准库落到本地存储，后续一律以本地为准 */
+    function indEnsure() {
+      if (!Array.isArray(D.indProjects) || !D.indProjects.length) {
+        D.indProjects = indSeed();
+      }
+      return D.indProjects;
+    }
+    function openIndForm(row) {
+      indForm.open = true;
+      if (row) {
+        indForm.editId = row.id;
+        ['code', 'name', 'proj', 'subject', 'nature', 'amt', 'product', 'prov', 'ind', 'stage', 'next', 'nextStage', 'conf', 'start', 'note'].forEach(k => {
+          indForm[k] = row[k] == null ? '' : row[k];
+        });
+      } else {
+        indForm.editId = null;
+        Object.assign(indForm, {
+          code: '', name: '', proj: '', subject: '', nature: '自建', amt: '',
+          product: '', prov: '', ind: indInd.value || '半导体', stage: '开工',
+          next: '', nextStage: '试产', conf: '中', start: Store.today(), note: ''
+        });
+      }
+      const el = document.querySelector('.ind-form');
+      if (el) el.scrollIntoView({ block: 'center', behavior: 'smooth' });
+    }
+    function closeIndForm() {
+      indForm.open = false;
+      indForm.editId = null;
+    }
+    function saveIndRow() {
+      if (!String(indForm.name || '').trim()) { showToast('请填写上市公司名称', 'warn'); return; }
+      if (!String(indForm.proj || '').trim()) { showToast('请填写项目名称', 'warn'); return; }
+      if (!indParse(indForm.next)) { showToast('请填写下一节点日期（YYYY-MM-DD）', 'warn'); return; }
+      const list = indEnsure();
+      const rec = {
+        id: indForm.editId || ('ind' + Date.now()),
+        code: String(indForm.code || '').trim(),
+        name: String(indForm.name || '').trim(),
+        proj: String(indForm.proj || '').trim(),
+        subject: String(indForm.subject || '').trim(),
+        nature: indForm.nature || '自建',
+        amt: indForm.amt === '' ? null : Number(indForm.amt),
+        product: String(indForm.product || '').trim(),
+        prov: String(indForm.prov || '').trim(),
+        ind: indForm.ind || '半导体',
+        stage: indForm.stage || '开工',
+        next: indForm.next,
+        nextStage: indForm.nextStage || '试产',
+        conf: indForm.conf || '中',
+        start: indForm.start || '',
+        note: String(indForm.note || '').trim(),
+        custom: true
+      };
+      const i = list.findIndex(x => x.id === rec.id);
+      if (i >= 0) list.splice(i, 1, rec);
+      else list.push(rec);
+      Store.saveNow();
+      closeIndForm();
+      showToast((i >= 0 ? '已更新：' : '已新增：') + rec.name + ' · ' + rec.proj, 'success');
+    }
+    function delIndRow(row) {
+      if (!row) return;
+      if (!window.confirm('删除「' + row.name + ' · ' + row.proj + '」这条跟踪记录？')) return;
+      const list = indEnsure();
+      const i = list.findIndex(x => x.id === row.id);
+      if (i >= 0) list.splice(i, 1);
+      Store.saveNow();
+      showToast('已删除该条跟踪记录', 'info');
+    }
+    function resetIndSeed() {
+      if (!window.confirm('恢复内置样例基准库？你新增 / 修改的记录会被清空。')) return;
+      D.indProjects = [];
+      Store.saveNow();
+      indMonth.value = '';
+      showToast('已恢复内置样例（' + indSeed().length + ' 条）', 'success');
+    }
+    function indExportCsv() {
+      const head = ['节点日期', '股票代码', '上市公司', '项目', '投资主体', '投资性质', '投资额(亿元)', '产品/产能', '省份/地区', '产业', '当前阶段', '下一节点', '确定性', '开工日期', '备注'];
+      const rows = [head];
+      indFiltered.value.forEach(p => {
+        rows.push([p.next, p.code, p.name, p.proj, p.subject, p.nature, p.amt == null ? '' : p.amt, p.product, p.prov, p.ind, p.stage, p.nextStage, p.conf, p.start, p.note || '']);
+      });
+      const csv = '\ufeff' + rows.map(r => r.map(v => '"' + String(v == null ? '' : v).replace(/"/g, '""') + '"').join(',')).join('\r\n');
+      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = '产业投资_工厂进度跟踪_' + Store.today() + '.csv';
+      document.body.appendChild(a);
+      a.click();
+      setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 2000);
+      showToast('已导出 ' + indFiltered.value.length + ' 条项目跟踪（Excel 可直接打开）', 'success');
+    }
+
     // 打分表单状态：每个板块一份（s1..s4 打分，b1..b4 一句话依据）
     function blankQuantForm() {
       return { s1: 1, s2: 1, s3: 1, s4: 1, b1: '', b2: '', b3: '', b4: '' };
@@ -14519,7 +14798,7 @@ const app = createApp({
     const quantOrderOpen = ref(false);
     const quantSignalOpen = ref(true);
     const quantEditingId = ref(null);
-    const currentQuant = computed(() => QUANT[quantTab.value]);
+    const currentQuant = computed(() => QUANT[quantTab.value] || QUANT.post);
 
     function quantTotalOf(board) {
       const f = quantForm[board];
@@ -14560,7 +14839,8 @@ const app = createApp({
       quantEditingId.value = null;
     }
     function editQuantScore(rec) {
-      quantTab.value = rec.board;
+      // 20261117f：盘中子版块已换成产业投资，历史 intraday 记录只读回看，编辑时落到盘后板块避免取不到定义
+      quantTab.value = QUANT[rec.board] ? rec.board : 'post';
       quantDate.value = rec.date;
       quantForm[rec.board] = {
         s1: rec.s1, s2: rec.s2, s3: rec.s3, s4: rec.s4,
@@ -15303,10 +15583,15 @@ const app = createApp({
       generateHefeiReport, hfeiTargetTradingDay,
       // 交易逻辑记录表
       tradeLogicOpen, tradeLogicForm, tradeLogicInputs, tradeLogicRows,
-      // 量化板块（选股页右侧）：盘后 / 盘中 每日操作信号打分
+      // 量化板块（选股页右侧）：盘后 / 产业投资
       QUANT, quantTab, quantDate, quantForm, quantOrderOpen, quantSignalOpen, quantEditingId,
       currentQuant, quantTotalOf, quantLevelOf, quantHistory, quantTrend,
       saveQuantScore, editQuantScore, cancelQuantEdit, deleteQuantScore,
+      // 20261117f：产业投资——上市公司工厂/产能投放进度跟踪（原「盘中板块」位置）
+      IND_NATURE_OPTS, IND_IND_OPTS, IND_STAGE_OPTS,
+      indQ, indInd, indNature, indMonth, indKeyOnly, indMonths, indGroups, indStats,
+      indDays, indDayText, indPct, indNatCls, indStageCls, indConfCls,
+      indForm, openIndForm, closeIndForm, saveIndRow, delIndRow, resetIndSeed, indExportCsv,
       // 量化板块：数据端口 / 自动打分 / 共振选股
       quantData, quantFetchedAt, quantFetching, quantSearching, quantMsg, quantAiReport, quantAiBusy, quantAiDrafts,
       quantAiPredictionsView, saveAiPrediction, deleteAiPrediction, openAiConceptInSector, fmtTime,

@@ -4445,3 +4445,162 @@ body.guest-mode #app { display: none; }
   .hfei-head { align-items: flex-start; }
   .hfei-head-ops { width: 100%; justify-content: flex-end; }
 }
+
+/* ==========================================================================
+   量化板块「产业投资」：上市公司工厂 / 产能投放进度跟踪（20261117f）
+   布局：筛选行 → 统计卡 → 月份切换条 → 按月分组表格 → 口径说明
+   ========================================================================== */
+/* 修复既有隐患：.btn-xs 的 background:#fff 写在 .btn-primary 之后（同为单类选择器），
+   导致 class="btn btn-xs btn-primary" 的按钮变成白底白字（文字看不见）。
+   这里用三合一选择器提高优先级修正，顺带修好「AI 预测记录 → 保存」按钮。 */
+.btn.btn-xs.btn-primary { background: var(--primary); border-color: var(--primary); color: #fff; }
+.btn.btn-xs.btn-primary:hover { background: var(--primary-hover); border-color: var(--primary-hover); color: #fff; }
+.ind-toolbar {
+  display: flex; flex-wrap: wrap; gap: 8px; align-items: center;
+  margin: 10px 0 8px;
+}
+/* .q-input 全局是 width:100%，在筛选行里必须放开，否则每个控件独占一行 */
+.ind-toolbar .q-input { width: auto; height: 32px; font-size: 12px; padding: 0 8px; }
+.ind-toolbar input.ind-search { flex: 1 1 240px; min-width: 170px; }
+.ind-toolbar select.q-input { flex: 0 0 auto; width: 152px; }
+.ind-toolbar .btn { flex: 0 0 auto; }
+
+.ind-stats {
+  display: grid; grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 8px; margin: 8px 0 10px;
+}
+.ind-stat {
+  background: var(--surface-alt); border: 1px solid var(--border);
+  border-radius: 10px; padding: 8px 6px; text-align: center;
+}
+.ind-stat b { display: block; font-size: 16px; line-height: 1.25; color: var(--text); }
+.ind-stat span { display: block; font-size: 11px; color: var(--muted); margin-top: 2px; }
+.ind-stat.is-hot b { color: var(--up); }
+
+.ind-month-tabs { display: flex; flex-wrap: wrap; gap: 6px; margin: 10px 0 6px; }
+.ind-month-tab {
+  border: 1px solid var(--border); background: var(--surface); color: var(--text-secondary);
+  border-radius: 999px; padding: 3px 10px; font-size: 12px; cursor: pointer; line-height: 18px;
+}
+.ind-month-tab:hover { border-color: var(--primary); color: var(--primary); }
+.ind-month-tab.active { background: var(--primary); border-color: var(--primary); color: #fff; }
+.ind-month-tab.empty { opacity: .45; cursor: not-allowed; }
+.ind-month-tab:disabled { pointer-events: none; }
+.ind-month-tab em {
+  font-style: normal; margin-left: 4px; padding: 0 5px; border-radius: 999px;
+  background: rgba(0, 0, 0, .08); font-size: 11px;
+}
+.ind-month-tab.active em { background: rgba(255, 255, 255, .25); }
+
+.ind-month-group { margin: 12px 0 4px; }
+.ind-scroll-hint { display: none; margin: 6px 0 0; }
+.ind-month-head {
+  display: flex; justify-content: space-between; align-items: baseline; gap: 8px;
+  padding: 6px 2px; margin-bottom: 6px; border-bottom: 2px solid var(--border);
+}
+.ind-month-name { font-size: 13px; font-weight: 700; color: var(--text); }
+.ind-month-meta { font-size: 11px; color: var(--muted); }
+
+.ind-table td { vertical-align: top; }
+.ind-table .ind-date { display: block; font-size: 12px; white-space: nowrap; }
+.ind-table .ind-dday { display: block; font-size: 11px; color: var(--muted); margin-top: 2px; white-space: nowrap; }
+.ind-table .ind-dday.soon { color: var(--up); font-weight: 600; }
+.ind-table .ind-code { display: block; font-size: 11px; color: var(--muted); margin-top: 2px; }
+.ind-proj { display: block; font-size: 12px; }
+.ind-prov {
+  display: inline-block; margin-top: 3px; padding: 0 5px; font-size: 11px;
+  color: var(--muted); border: 1px solid var(--border); border-radius: 4px;
+}
+.ind-subject { font-size: 11px; color: var(--text-secondary); line-height: 1.5; }
+.ind-product { font-size: 11px; color: var(--text-secondary); line-height: 1.5; }
+.ind-ind {
+  display: inline-block; padding: 1px 6px; border-radius: 4px;
+  font-size: 11px; line-height: 16px; white-space: nowrap;
+  color: #0f766e; background: #ccfbf1;
+}
+
+.ind-nat {
+  display: inline-block; padding: 1px 7px; border-radius: 999px;
+  font-size: 11px; line-height: 16px; white-space: nowrap;
+}
+.ind-nat.nat-self { color: #1d4ed8; background: var(--primary-light); }
+.ind-nat.nat-raise { color: #6d28d9; background: #ede9fe; }
+.ind-nat.nat-jv { color: #b45309; background: #fef3c7; }
+.ind-nat.nat-gov { color: #0e7490; background: #cffafe; }
+.ind-nat.nat-ma { color: #475569; background: #f1f5f9; }
+
+.ind-stage {
+  display: inline-block; padding: 1px 7px; border-radius: 6px;
+  font-size: 11px; font-weight: 600; white-space: nowrap;
+}
+.ind-stage.st-hot { color: var(--up); background: #fee2e2; }
+.ind-stage.st-warm { color: #c2410c; background: #ffedd5; }
+.ind-stage.st-mid { color: #1d4ed8; background: var(--primary-light); }
+.ind-stage.st-cold { color: #475569; background: #f1f5f9; }
+
+.ind-prog {
+  width: 84px; height: 6px; border-radius: 999px; overflow: hidden;
+  background: var(--border);
+}
+.ind-prog span { display: block; height: 100%; border-radius: 999px; background: linear-gradient(90deg, #60a5fa, #2563eb); }
+.ind-prog-txt { display: block; font-size: 11px; color: var(--muted); margin-top: 3px; white-space: nowrap; }
+
+.ind-conf { font-size: 12px; font-weight: 600; }
+.ind-conf.c-high { color: #1d4ed8; }
+.ind-conf.c-mid { color: #64748b; }
+.ind-conf.c-low { color: #c2410c; }
+
+.ind-form {
+  border: 1px solid var(--primary); background: var(--surface-alt);
+  border-radius: 10px; padding: 10px 12px; margin: 10px 0;
+}
+.ind-form-title { font-size: 13px; font-weight: 700; margin-bottom: 8px; }
+.ind-form-grid {
+  display: grid; grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px 10px;
+}
+.ind-form-grid label {
+  display: flex; flex-direction: column; gap: 4px;
+  font-size: 12px; color: var(--text-secondary);
+}
+.ind-form-grid .span2 { grid-column: span 2; }
+.ind-form-grid .q-input { height: 30px; font-size: 12px; }
+.ind-form-actions { display: flex; gap: 8px; margin-top: 10px; }
+
+.ind-note-box {
+  margin-top: 12px; padding: 9px 11px; border-radius: 8px;
+  background: var(--surface-alt); border: 1px dashed var(--border);
+  font-size: 11.5px; line-height: 1.7; color: var(--text-secondary);
+}
+
+/* 桌面端：12 列宽表，容器内横向滚动；关键列给最小宽度，避免文字挤成竖排 */
+@media (min-width: 769px) {
+  .ind-table { min-width: 1420px; table-layout: auto; }
+  .ind-table th, .ind-table td { white-space: nowrap; }
+  .ind-table td[data-label="项目"],
+  .ind-table td[data-label="投资主体"],
+  .ind-table td[data-label="产品/产能"] { white-space: normal; }
+  .ind-table td[data-label="项目"] { min-width: 180px; }
+  .ind-table td[data-label="投资主体"] { min-width: 200px; }
+  .ind-table td[data-label="产品/产能"] { min-width: 140px; }
+  .ind-table td[data-label="进度"] { min-width: 112px; }
+  .ind-table td[data-label="操作"] { min-width: 92px; }
+  .ind-scroll-hint { display: block; }
+}
+
+@media (max-width: 980px) {
+  .ind-stats { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .ind-form-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 640px) {
+  .ind-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .ind-form-grid { grid-template-columns: 1fr; }
+  .ind-form-grid .span2 { grid-column: span 1; }
+  .ind-toolbar input.ind-search { flex: 1 1 100%; }
+  .ind-toolbar select.q-input { flex: 1 1 46%; width: auto; }
+  /* 月份多时不要换成 4 行占满屏幕：改成横向滑动的一条 */
+  .ind-month-tabs { flex-wrap: nowrap; overflow-x: auto; padding-bottom: 4px; -webkit-overflow-scrolling: touch; }
+  .ind-month-tab { flex: 0 0 auto; padding: 3px 8px; font-size: 11px; }
+  .ind-prog { width: 100%; max-width: 140px; }
+  .ind-month-head { flex-wrap: wrap; }
+}

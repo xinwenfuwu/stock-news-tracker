@@ -32,6 +32,10 @@ const Store = {
       quantPredictions: [],   // 盘前预测记录：[{id, board, targetDate(预测对象日), basisDate(预测时数据日), s1..s4, total, level, basis:[], createdAt}]
       quantAiPredictions: [], // AI 研判预测记录：[{id, at(预测时间), model, concepts:[], industries:[], stocks:[{code,name}], summary, createdAt}]
       quantAiTableRecords: [], // 量化预测明细表（DeepSeek 按跟踪项量化）：[{id, at, board, industries:[2], concept1:{name,stocks:[3]}, concept2:{name,stocks:[3]}, topStocks:[3], createdAt}]
+      // 20261117f 量化板块「产业投资」：上市公司工厂/产能投放进度跟踪。
+      //   空数组 = 使用内置基准库（js/app.js 的 IND_SEED_RAW）；一旦在页面内新增/编辑/删除，
+      //   就把整份清单落到这里，此后以本地为准（随云同步）；「恢复内置样例」置空即回到基准库。
+      indProjects: [],
       favorites: [],          // 收藏股票：[{code, name, favDate, note}]
       catMeta: {},             // 子类标注：{ "概念归类::人工智能": { color:'#ff0000', note:'重点' }, ... }（概念/行业归类行右侧颜色与备注）
       holdings: {},            // 用户持仓：{ [username]: [{id, code, name, entryDate, entryPrice, currentPrice, shares, direction, fee, note, createdAt, updatedAt}] }

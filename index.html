@@ -10,12 +10,12 @@
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
   <title>股市信息分析系统</title>
-  <link rel="stylesheet" href="css/style.css?v=20261117e">
+  <link rel="stylesheet" href="css/style.css?v=20261117f">
   <!-- Vue 3 全局构建版（v3.4.21 · 自托管）
        原先走 unpkg.com CDN：国内网络对 unpkg 的连通性不稳定，一旦该请求长时间挂起，
        <head> 里的阻塞脚本会让整页停在白屏、后续 auth-boot.js 根本不会执行。
        改为同源托管后，启动链路不再依赖任何第三方 CDN。 -->
-  <script src="js/vue.global.prod.js?v=20261117e"></script>
+  <script src="js/vue.global.prod.js?v=20261117f"></script>
 </head>
 <body class="auth-locked">
   <!-- ===== 登录关卡：登录通过前业务脚本不会被加载 ===== -->
@@ -101,7 +101,7 @@
         <input class="auth-input" type="text" id="auth-renew-user" placeholder="用户名（你注册时用的）" maxlength="20" autocomplete="off">
         <div class="auth-renew-plans" id="auth-renew-plans"></div>
         <div class="auth-renew-qr" id="auth-renew-qr">
-          <div class="auth-renew-qrbox"><img id="auth-renew-wx" src="assets/wechat-pay-qr.jpg?v=20261117e" alt="微信支付收款码"><span>微信支付（扫码支付）</span></div>
+          <div class="auth-renew-qrbox"><img id="auth-renew-wx" src="assets/wechat-pay-qr.jpg?v=20261117f" alt="微信支付收款码"><span>微信支付（扫码支付）</span></div>
           <div class="muted small" style="margin-top:6px;color:#c2410c;font-weight:600">支付时请添加会员备注，付款成功截图保存</div>
         </div>
         <input class="auth-input" type="text" id="auth-renew-amount" inputmode="decimal" placeholder="支付金额（必填，如 1000）" autocomplete="off">
@@ -741,7 +741,7 @@
         <div class="page-footer">共 {{ sortedHoldings.length }} 条持仓</div>
 
 
-        <!-- ===== 20261117e：合肥模式 · 每交易日开盘前预测报告（大模型生成） =====
+        <!-- ===== 20261117f：合肥模式 · 每交易日开盘前预测报告（大模型生成） =====
              时间段沿用系统口径（每天 15:00 换日、起止可改、今天/昨天/前天快捷）；
              内容 = 影响力事件（中国/美国/全世界）+ 未来事件（突发/未来/人物）6 个子版块事件
                     ＋ 最近 3 个交易日大盘情绪 → 即将开盘交易日的板块预测、对中事件研判、
@@ -1155,7 +1155,7 @@
                   <div class="qr-row">
                     <div class="qr-box">
                       <div class="qr-cap">推荐使用微信支付</div>
-                      <img src="assets/wechat-pay-qr.jpg?v=20261117e" alt="微信支付收款码" class="qr-pay-img">
+                      <img src="assets/wechat-pay-qr.jpg?v=20261117f" alt="微信支付收款码" class="qr-pay-img">
                       <div class="qr-cap" style="margin-top:6px;color:#c2410c;font-weight:600">支付时请添加会员备注，付款成功截图保存</div>
                       <div class="qr-cap muted small">火柴盒网络服务</div>
                     </div>
@@ -2561,7 +2561,7 @@
         <div class="page-toolbar">
           <div class="toolbar-left"><h2 class="page-title">📊 量化板块</h2></div>
           <div class="toolbar-right">
-            <span class="muted small">盘后 / 盘中 两大子版块 · 每日四信号打分 · 打分按日期自动存档对比</span>
+            <span class="muted small">盘后 / 产业投资 两大子版块 · 盘后每日四信号打分 · 产业投资跟踪上市公司未来 12 个月工厂投产节点</span>
           </div>
         </div>
         <div class="quant-page">
@@ -2569,10 +2569,170 @@
           <div class="quant-board-wrap">
           <div class="quant-tabs">
             <button type="button" :class="['quant-tab', { active: quantTab === 'post' }]" @click="quantTab = 'post'">📕 盘后板块</button>
-            <button type="button" :class="['quant-tab', { active: quantTab === 'intraday' }]" @click="quantTab = 'intraday'">📗 盘中板块</button>
+            <!-- 20261117f：原「盘中板块」替换为「产业投资」——上市公司工厂/产能投放进度跟踪 -->
+            <button type="button" :class="['quant-tab', { active: quantTab === 'invest' }]" @click="quantTab = 'invest'">🏭 产业投资</button>
           </div>
 
           <div class="quant-board">
+            <!-- 产业投资面板（v-if 与下方盘后打分表互斥渲染） -->
+            <section class="q-block ind-block" v-if="quantTab === 'invest'">
+              <div class="q-block-head" style="cursor:default">
+                <span>🏭 上市公司工厂 / 产能投放进度跟踪 · 未来 12 个月（按月度分组，精确到日期）</span>
+              </div>
+
+              <!-- 筛选与操作行 -->
+              <div class="ind-toolbar">
+                <input class="q-input ind-search" v-model="indQ" placeholder="搜公司 / 代码 / 项目 / 产品 / 省份">
+                <select class="q-input" v-model="indInd">
+                  <option value="">全部产业</option>
+                  <option v-for="o in IND_IND_OPTS" :key="o" :value="o">{{ o }}</option>
+                </select>
+                <select class="q-input" v-model="indNature">
+                  <option value="">全部投资性质</option>
+                  <option v-for="o in IND_NATURE_OPTS" :key="o" :value="o">{{ o }}</option>
+                </select>
+                <button type="button" class="btn btn-xs" :class="{ 'btn-primary': indKeyOnly }" @click="indKeyOnly = !indKeyOnly" :title="'只看下一节点是量产 / 并网的项目（真正兑现产能的节点）'">🔥 只看量产/并网</button>
+                <button type="button" class="btn btn-xs btn-primary" @click="openIndForm(null)">＋ 新增项目</button>
+                <button type="button" class="btn btn-xs" @click="indExportCsv()">⬇ 导出 CSV</button>
+                <button type="button" class="btn btn-xs" @click="resetIndSeed()" title="清空你在表内的改动，回到内置样例基准库">↺ 恢复样例</button>
+              </div>
+
+              <!-- 统计卡 -->
+              <div class="ind-stats">
+                <div class="ind-stat"><b>{{ indStats.n }}</b><span>跟踪项目</span></div>
+                <div class="ind-stat"><b>{{ indStats.codes }}</b><span>涉及上市公司</span></div>
+                <div class="ind-stat"><b>{{ indStats.amt >= 10000 ? (indStats.amt / 10000).toFixed(2) + ' 万亿' : indStats.amt + ' 亿' }}</b><span>计划投资合计</span></div>
+                <div class="ind-stat is-hot"><b>{{ indStats.in30 }}</b><span>未来 30 天节点</span></div>
+                <div class="ind-stat is-hot"><b>{{ indStats.hot }}</b><span>量产 / 并网节点</span></div>
+                <div class="ind-stat"><b>{{ indStats.soon }}</b><span>试产 / 小批量</span></div>
+              </div>
+
+              <!-- 月份切换条 -->
+              <div class="ind-month-tabs">
+                <button type="button" :class="['ind-month-tab', { active: indMonth === '' }]" @click="indMonth = ''">全部月份</button>
+                <button type="button" v-for="m in indMonths" :key="m.key"
+                        :class="['ind-month-tab', { active: indMonth === m.key, empty: !m.n }]"
+                        :disabled="!m.n"
+                        :title="m.n ? (m.label + ' 共 ' + m.n + ' 个节点') : (m.label + ' 无节点安排')"
+                        @click="indMonth = (indMonth === m.key ? '' : m.key)">
+                  {{ m.label }}<em v-if="m.n">{{ m.n }}</em>
+                </button>
+              </div>
+
+              <!-- 新增 / 编辑表单 -->
+              <div class="ind-form" v-if="indForm.open">
+                <div class="ind-form-title">{{ indForm.editId ? '编辑跟踪记录' : '新增跟踪记录' }}</div>
+                <div class="ind-form-grid">
+                  <label>股票代码<input class="q-input" v-model="indForm.code" placeholder="如 600519" maxlength="6"></label>
+                  <label>上市公司<input class="q-input" v-model="indForm.name" placeholder="公司简称"></label>
+                  <label class="span2">项目名称<input class="q-input" v-model="indForm.proj" placeholder="如 ×× 二期 12 英寸晶圆项目"></label>
+                  <label class="span2">投资主体<input class="q-input" v-model="indForm.subject" placeholder="实施主体（子公司 / 合资公司 / 项目公司）"></label>
+                  <label>投资性质
+                    <select class="q-input" v-model="indForm.nature">
+                      <option v-for="o in IND_NATURE_OPTS" :key="o" :value="o">{{ o }}</option>
+                    </select>
+                  </label>
+                  <label>投资额（亿元）<input class="q-input" v-model="indForm.amt" type="number" step="0.1" placeholder="未披露可不填"></label>
+                  <label class="span2">产品 / 产能<input class="q-input" v-model="indForm.product" placeholder="如 动力电池 30GWh、12 英寸晶圆 5 万片/月"></label>
+                  <label>省份 / 地区<input class="q-input" v-model="indForm.prov" placeholder="如 安徽"></label>
+                  <label>产业
+                    <select class="q-input" v-model="indForm.ind">
+                      <option v-for="o in IND_IND_OPTS" :key="o" :value="o">{{ o }}</option>
+                    </select>
+                  </label>
+                  <label>当前阶段
+                    <select class="q-input" v-model="indForm.stage">
+                      <option v-for="o in IND_STAGE_OPTS" :key="o" :value="o">{{ o }}</option>
+                    </select>
+                  </label>
+                  <label>开工日期<input class="q-input" v-model="indForm.start" type="date"></label>
+                  <label>下一节点日期<input class="q-input" v-model="indForm.next" type="date"></label>
+                  <label>下一节点
+                    <select class="q-input" v-model="indForm.nextStage">
+                      <option v-for="o in IND_STAGE_OPTS" :key="o" :value="o">{{ o }}</option>
+                    </select>
+                  </label>
+                  <label>确定性
+                    <select class="q-input" v-model="indForm.conf">
+                      <option value="高">高（已签设备 / 已封顶）</option>
+                      <option value="中">中（在建，按期推进）</option>
+                      <option value="低">低（前期 / 可能延期）</option>
+                    </select>
+                  </label>
+                  <label class="span2">备注 / 来源<input class="q-input" v-model="indForm.note" placeholder="如：公告编号、环评公示、可能延期说明"></label>
+                </div>
+                <div class="ind-form-actions">
+                  <button type="button" class="btn btn-primary btn-sm" @click="saveIndRow()">{{ indForm.editId ? '保存修改' : '添加' }}</button>
+                  <button type="button" class="btn btn-sm" @click="closeIndForm()">取消</button>
+                </div>
+              </div>
+
+              <!-- 按月分组的进度表 -->
+              <p class="ind-scroll-hint muted small">表格列较多，窗口较窄时可在表格区域内左右滑动，查看右侧「进度 / 确定性 / 操作」列 ↔</p>
+              <div v-for="g in indGroups" :key="g.key" class="ind-month-group">
+                <div class="ind-month-head">
+                  <span class="ind-month-name">{{ g.label }}</span>
+                  <span class="ind-month-meta">{{ g.items.length }} 个节点 · 计划投资 {{ g.amt }} 亿</span>
+                </div>
+                <div class="q-table-wrap">
+                  <table class="q-table ind-table">
+                    <thead>
+                      <tr>
+                        <th>节点日期</th>
+                        <th>上市公司</th>
+                        <th>项目</th>
+                        <th>投资主体</th>
+                        <th>投资性质</th>
+                        <th>投资额</th>
+                        <th>产品 / 产能</th>
+                        <th>产业</th>
+                        <th>下一节点</th>
+                        <th>进度</th>
+                        <th>确定性</th>
+                        <th>操作</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr v-for="p in g.items" :key="p.id">
+                        <td data-label="节点日期">
+                          <b class="ind-date">{{ p.next }}</b>
+                          <span class="ind-dday" :class="{ soon: indDays(p.next) >= 0 && indDays(p.next) <= 30 }">{{ indDayText(p.next) }}</span>
+                        </td>
+                        <td data-label="上市公司"><b>{{ p.name }}</b><span class="ind-code">{{ p.code }}</span></td>
+                        <td data-label="项目">
+                          <span class="ind-proj">{{ p.proj }}</span>
+                          <span class="ind-prov" v-if="p.prov">{{ p.prov }}</span>
+                        </td>
+                        <td data-label="投资主体" class="ind-subject">{{ p.subject || '—' }}</td>
+                        <td data-label="投资性质"><span class="ind-nat" :class="indNatCls(p.nature)">{{ p.nature }}</span></td>
+                        <td data-label="投资额"><b>{{ p.amt ? p.amt + ' 亿' : '未披露' }}</b></td>
+                        <td data-label="产品/产能" class="ind-product">{{ p.product }}</td>
+                        <td data-label="产业"><span class="ind-ind">{{ p.ind }}</span></td>
+                        <td data-label="下一节点"><span class="ind-stage" :class="indStageCls(p.nextStage)">{{ p.nextStage }}</span></td>
+                        <td data-label="进度">
+                          <div class="ind-prog"><span :style="{ width: indPct(p) + '%' }"></span></div>
+                          <span class="ind-prog-txt">{{ indPct(p) }}% · 当前{{ p.stage }}</span>
+                        </td>
+                        <td data-label="确定性"><span class="ind-conf" :class="'c-' + indConfCls(p.conf)">{{ p.conf }}</span></td>
+                        <td data-label="操作" class="q-ops">
+                          <button type="button" class="btn btn-xs" @click="openIndForm(p)">编辑</button>
+                          <button type="button" class="btn btn-xs btn-danger" @click="delIndRow(p)">删</button>
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+              <p v-if="!indGroups.length" class="muted small">没有符合筛选条件的项目，换个产业 / 性质或清空搜索框试试。</p>
+
+              <div class="ind-note-box">
+                <b>口径说明：</b>节点日期为按<b>公司公告、环评/能评公示、地方重大项目清单</b>整理的<b>计划节点</b>（非公司承诺日期），实际以最新公告为准；
+                投资性质中「定增募投 / 可转债募投」= 用募集资金建设项目，「合资建设」= 与地方政府平台或其他股东共同出资，「政府代建」= 由地方平台代建厂房、公司租用或回购。
+                表格可直接编辑修正，改动保存在本机并随云端同步；「⬇ 导出 CSV」可拿去 Excel 做进一步跟踪。
+              </div>
+            </section>
+
+            <template v-if="quantTab !== 'invest'">
             <!-- 一、操作顺序 -->
             <section class="q-block">
               <div class="q-block-head" @click="quantOrderOpen = !quantOrderOpen">
@@ -2824,6 +2984,7 @@
               </table>
               <p v-else class="muted small">尚无「{{ currentQuant.label }}」打分记录，填好上方打分表点「保存打分」即可。</p>
             </section>
+            </template><!-- /quantTab !== 'invest' -->
           </div>
                   </div><!-- /quant-board-wrap -->
         </div>
@@ -5503,14 +5664,14 @@
     </transition>
   </div>
 
-  <script src="js/auth.js?v=20261117e"></script>
-  <script src="js/auth-sync.js?v=20261117e"></script>
+  <script src="js/auth.js?v=20261117f"></script>
+  <script src="js/auth-sync.js?v=20261117f"></script>
   <!-- 边缘加速默认站点（batch37 治本：Cloudflare Worker 代理东财/腾讯，缓解 JSONP 限流误报）。
        若你所在地区 workers.dev 访问慢，可在「设置 → 行情加速地址」清空即恢复纯直连。 -->
   <script>window.__SNT_ACCEL__ = 'https://sichina.dpdns.org';</script>
   <!-- 扫码支付二维码渲染库（第三方 qrcodejs，本地托管避免外链失效）。renderQr 会先检测全局 QRCode 是否存在。 -->
-  <script src="assets/qrcode.min.js?v=20261117e"></script>
-  <script src="js/auth-boot.js?v=20261117e"></script>
+  <script src="assets/qrcode.min.js?v=20261117f"></script>
+  <script src="js/auth-boot.js?v=20261117f"></script>
   <!-- store / stock-api / hot-topics / app 由 auth-boot.js 在登录通过后动态装载，
        未登录时它们不会被下载，业务数据也不会进入内存 -->
 </body>
