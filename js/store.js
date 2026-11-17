@@ -36,6 +36,13 @@ const Store = {
       //   空数组 = 使用内置基准库（js/app.js 的 IND_SEED_RAW）；一旦在页面内新增/编辑/删除，
       //   就把整份清单落到这里，此后以本地为准（随云同步）；「恢复内置样例」置空即回到基准库。
       indProjects: [],
+      // 20261117e/g 用户页「合肥模式」：按目标交易日存盘前报告 / 收盘复盘 / 预测逻辑版本
+      //   hfeiReports : { 'YYYY-MM-DD': rec }  （最多 20 份，见 app.js 的生成逻辑）
+      //   hfeiReviews : { 'YYYY-MM-DD': rv }   （复盘：板块与标的的当日实际涨跌、命中率、AI 归因）
+      //   hfeiStrategy: { version, updatedAt, weights:{cn,us,world,breaking,future,people}, lessons:[], log:[] }
+      hfeiReports: {},
+      hfeiReviews: {},
+      hfeiStrategy: null,
       favorites: [],          // 收藏股票：[{code, name, favDate, note}]
       catMeta: {},             // 子类标注：{ "概念归类::人工智能": { color:'#ff0000', note:'重点' }, ... }（概念/行业归类行右侧颜色与备注）
       holdings: {},            // 用户持仓：{ [username]: [{id, code, name, entryDate, entryPrice, currentPrice, shares, direction, fee, note, createdAt, updatedAt}] }

@@ -4425,6 +4425,60 @@ body.guest-mode #app { display: none; }
   border: 1px solid #fde68a; border-radius: 6px; padding: 6px 10px; line-height: 1.7;
 }
 
+/* ===== 20261117g ===== */
+/* 主导子版块（6 个子版块由模型研判，哪个是主导） */
+.hfei-dominant {
+  display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap;
+  margin: -4px 0 12px; padding: 8px 12px;
+  background: linear-gradient(90deg, #eef2ff, #f8faff);
+  border: 1px solid #e0e7ff; border-left: 3px solid #6366f1; border-radius: 8px;
+}
+.hfei-dom-tag { font-size: 12px; color: #4338ca; background: #e0e7ff; border-radius: 999px; padding: 1px 9px; }
+.hfei-dom-name { font-size: 13.5px; color: #312e81; }
+.hfei-dom-w { color: #6366f1; font-size: 9px; letter-spacing: 1px; }
+.hfei-dom-why { font-size: 12.5px; color: var(--text-secondary); line-height: 1.6; }
+
+/* 标的股行情三列 */
+.hfei-chg { white-space: nowrap; font-variant-numeric: tabular-nums; }
+.hfei-ndate { white-space: nowrap; color: var(--text-secondary); font-size: 12px; }
+
+/* ⑦ 收盘复盘 */
+.hfei-rv-stats { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; margin: 8px 0 12px; }
+.hfei-rv-stat {
+  display: flex; flex-direction: column; gap: 2px;
+  padding: 8px 10px; border: 1px solid var(--border); border-radius: 8px; background: var(--surface-2, #fafafa);
+}
+.hfei-rv-lbl { font-size: 11.5px; color: var(--text-secondary); }
+.hfei-rv-stat b { font-size: 18px; line-height: 1.2; }
+.hfei-rv-stat em { font-size: 11.5px; color: var(--muted); font-style: normal; }
+.hfei-rv-two .hfei-sec { margin-top: 0; }
+.hfei-rv-table { font-size: 12.5px; }
+.hfei-rv-table td, .hfei-rv-table th { padding: 5px 8px; vertical-align: middle; }
+.hfei-hit { font-weight: 700; }
+.hfei-hit.ok { color: #15803d; }
+.hfei-hit.no { color: var(--muted); }
+.hfei-hit.na { color: #d1d5db; }
+.hfei-rv-ai { margin-top: 10px; padding: 10px 12px; border: 1px solid var(--border); border-radius: 8px; background: var(--surface-2, #fafafa); }
+.hfei-rv-line { font-size: 13px; line-height: 1.8; }
+.hfei-rv-line b { display: inline-block; min-width: 42px; margin-right: 6px; }
+.hfei-lessons { margin: 8px 0 0; padding-left: 20px; }
+.hfei-lessons li { font-size: 12.5px; line-height: 1.8; color: var(--text-secondary); }
+
+/* ⑧ 预测逻辑版本 */
+.hfei-strat-w { display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 0 4px; }
+.hfei-strat-chip {
+  display: inline-flex; align-items: center; gap: 5px;
+  font-size: 12px; padding: 3px 9px; border-radius: 999px;
+  border: 1px solid var(--border); background: #fff; color: var(--text-secondary);
+}
+.hfei-strat-chip b { font-size: 12.5px; font-variant-numeric: tabular-nums; color: var(--text); }
+.hfei-strat-chip.hi { border-color: #fecaca; background: #fef2f2; }
+.hfei-strat-chip.hi b { color: #b91c1c; }
+.hfei-strat-chip.lo { border-color: #bbf7d0; background: #f0fdf4; }
+.hfei-strat-chip.lo b { color: #15803d; }
+.hfei-strat-log { margin-top: 8px; border-top: 1px dashed var(--border); padding-top: 8px; }
+.hfei-strat-log-row { display: flex; gap: 10px; flex-wrap: wrap; font-size: 12px; color: var(--text-secondary); line-height: 1.9; }
+
 @media (max-width: 900px) {
   .hfei-two { grid-template-columns: 1fr; gap: 0; }
 }
@@ -4435,6 +4489,8 @@ body.guest-mode #app { display: none; }
   .hfei-badge { font-size: 11px; padding: 2px 8px; }
   .hfei-sector { flex-wrap: wrap; }
   .hfei-del { margin-left: 0; }
+  .hfei-rv-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .hfei-dominant { padding: 7px 10px; }
 }
 /* 手机端：datetime-local 原生控件较宽，改成每个时间框独占一行，避免横向溢出 */
 @media (max-width: 640px) {

@@ -10,12 +10,12 @@
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
   <title>股市信息分析系统</title>
-  <link rel="stylesheet" href="css/style.css?v=20261117f">
+  <link rel="stylesheet" href="css/style.css?v=20261117g">
   <!-- Vue 3 全局构建版（v3.4.21 · 自托管）
        原先走 unpkg.com CDN：国内网络对 unpkg 的连通性不稳定，一旦该请求长时间挂起，
        <head> 里的阻塞脚本会让整页停在白屏、后续 auth-boot.js 根本不会执行。
        改为同源托管后，启动链路不再依赖任何第三方 CDN。 -->
-  <script src="js/vue.global.prod.js?v=20261117f"></script>
+  <script src="js/vue.global.prod.js?v=20261117g"></script>
 </head>
 <body class="auth-locked">
   <!-- ===== 登录关卡：登录通过前业务脚本不会被加载 ===== -->
@@ -101,7 +101,7 @@
         <input class="auth-input" type="text" id="auth-renew-user" placeholder="用户名（你注册时用的）" maxlength="20" autocomplete="off">
         <div class="auth-renew-plans" id="auth-renew-plans"></div>
         <div class="auth-renew-qr" id="auth-renew-qr">
-          <div class="auth-renew-qrbox"><img id="auth-renew-wx" src="assets/wechat-pay-qr.jpg?v=20261117f" alt="微信支付收款码"><span>微信支付（扫码支付）</span></div>
+          <div class="auth-renew-qrbox"><img id="auth-renew-wx" src="assets/wechat-pay-qr.jpg?v=20261117g" alt="微信支付收款码"><span>微信支付（扫码支付）</span></div>
           <div class="muted small" style="margin-top:6px;color:#c2410c;font-weight:600">支付时请添加会员备注，付款成功截图保存</div>
         </div>
         <input class="auth-input" type="text" id="auth-renew-amount" inputmode="decimal" placeholder="支付金额（必填，如 1000）" autocomplete="off">
@@ -741,7 +741,7 @@
         <div class="page-footer">共 {{ sortedHoldings.length }} 条持仓</div>
 
 
-        <!-- ===== 20261117f：合肥模式 · 每交易日开盘前预测报告（大模型生成） =====
+        <!-- ===== 20261117g：合肥模式 · 每交易日开盘前预测报告（大模型生成） =====
              时间段沿用系统口径（每天 15:00 换日、起止可改、今天/昨天/前天快捷）；
              内容 = 影响力事件（中国/美国/全世界）+ 未来事件（突发/未来/人物）6 个子版块事件
                     ＋ 最近 3 个交易日大盘情绪 → 即将开盘交易日的板块预测、对中事件研判、
@@ -798,8 +798,17 @@
               <span class="hfei-badge">生成于 {{ hfeiReport.generatedAtText }}</span>
               <span class="hfei-badge">统计窗口 {{ hfeiReport.windowText }}<span class="hfei-badge-sub">（数据截至生成时刻）</span></span>
               <span class="hfei-badge">模型 {{ hfeiReport.model }}</span>
+              <span class="hfei-badge" v-if="hfeiReport.strategyVersion">逻辑 v{{ hfeiReport.strategyVersion }}</span>
               <span class="hfei-badge">事件：中 {{ hfeiReport.events.cn }} · 美 {{ hfeiReport.events.us }} · 全球 {{ hfeiReport.events.world }} · 突发 {{ hfeiReport.events.breaking }} · 未来 {{ hfeiReport.events.future }} · 人物 {{ hfeiReport.events.people }}</span>
               <button class="btn btn-sm hfei-del" @click="hfeiDeleteReport(hfeiReport.targetDate)" title="删除这份报告">🗑</button>
+            </div>
+
+            <!-- 20261117g：6 个子版块由模型自行研判「哪个是主导」，不再由前端写死优先级 -->
+            <div class="hfei-dominant" v-if="hfeiReport.ai.dominant && hfeiReport.ai.dominant.source">
+              <span class="hfei-dom-tag">主导子版块</span>
+              <b class="hfei-dom-name">{{ hfeiReport.ai.dominant.source }}</b>
+              <span class="hfei-dom-w" :title="'主导权重 ' + hfeiReport.ai.dominant.weight + '/5'">{{ '●'.repeat(hfeiReport.ai.dominant.weight) }}</span>
+              <span class="hfei-dom-why">{{ hfeiReport.ai.dominant.why }}</span>
             </div>
 
             <div class="hfei-mood" :class="'is-' + (hfeiReport.ai.mood.score >= 60 ? 'bull' : (hfeiReport.ai.mood.score <= 40 ? 'bear' : 'flat'))">
@@ -865,11 +874,12 @@
               <div class="hfei-sec-head">
                 <span class="hfei-sec-no">⑤</span>
                 <span class="hfei-sec-title">对应标的股（10 只）</span>
-                <span class="muted small">方向 = 本次事件组合下该股的预期方向；代码已按名称反查校验，取不到的显示「待校验」</span>
+                <button class="btn btn-sm" :disabled="hfeiQuoting" @click="hfeiRefreshCurrent">{{ hfeiQuoting ? '刷新中…' : '🔄 刷新行情' }}</button>
+                <span class="muted small">今日涨幅 = {{ hfeiReport.targetDate }} 当日涨跌；距今涨幅 = 新闻日收盘 → 最新价；红涨绿跌</span>
               </div>
               <div class="table-wrap table-scroll-x">
                 <table class="data-table hfei-pick-table">
-                  <thead><tr><th class="num-col">#</th><th>代码</th><th>名称</th><th>所属板块</th><th>方向</th><th>入选逻辑</th><th class="num-col">最近价</th></tr></thead>
+                  <thead><tr><th class="num-col">#</th><th>代码</th><th>名称</th><th>所属板块</th><th>方向</th><th>入选逻辑</th><th class="num-col">{{ hfeiChgLabel }}</th><th class="num-col">新闻日期</th><th class="num-col">距今涨幅</th><th class="num-col">最近价</th></tr></thead>
                   <tbody>
                     <tr v-for="(p, i) in hfeiReport.ai.picks" :key="'pk'+i">
                       <td class="num-col" :data-label="'#'">{{ i + 1 }}</td>
@@ -878,9 +888,18 @@
                       <td :data-label="'所属板块'">{{ p.sector || '—' }}</td>
                       <td :data-label="'方向'"><span class="hfei-side" :class="'is-' + p.side">{{ p.side === 'bear' ? '利空' : '利好' }}</span></td>
                       <td :data-label="'入选逻辑'">{{ p.reason }}</td>
-                      <td class="num-col" :data-label="'最近价'">{{ (p.quote && p.quote.price != null) ? p.quote.price : '—' }}</td>
+                      <td class="num-col hfei-chg" :data-label="hfeiChgLabel">
+                        <span v-if="p.live && p.live.dayChg != null" :class="p.live.dayChg >= 0 ? 'up' : 'down'">{{ (p.live.dayChg >= 0 ? '+' : '') + p.live.dayChg.toFixed(2) + '%' }}</span>
+                        <span v-else class="muted">—</span>
+                      </td>
+                      <td class="num-col hfei-ndate" :data-label="'新闻日期'">{{ p.newsDate || '—' }}</td>
+                      <td class="num-col hfei-chg" :data-label="'距今涨幅'">
+                        <span v-if="p.live && p.live.sincePct != null" :class="p.live.sincePct >= 0 ? 'up' : 'down'">{{ (p.live.sincePct >= 0 ? '+' : '') + p.live.sincePct.toFixed(2) + '%' }}</span>
+                        <span v-else class="muted">—</span>
+                      </td>
+                      <td class="num-col" :data-label="'最近价'">{{ (p.live && p.live.price != null) ? p.live.price : ((p.quote && p.quote.price != null) ? p.quote.price : '—') }}</td>
                     </tr>
-                    <tr v-if="!hfeiReport.ai.picks.length"><td colspan="7" class="empty-row">模型未给出标的股，可重试生成</td></tr>
+                    <tr v-if="!hfeiReport.ai.picks.length"><td colspan="10" class="empty-row">模型未给出标的股，可重试生成</td></tr>
                   </tbody>
                 </table>
               </div>
@@ -894,6 +913,157 @@
               <p class="hfei-summary-text">{{ hfeiReport.ai.summary }}</p>
               <p class="hfei-risk" v-if="hfeiReport.ai.risk">⚠️ {{ hfeiReport.ai.risk }}</p>
               <p class="muted small">本报告由大模型依据上述新闻事件与大盘数据生成，仅供研究参考，不构成投资建议。</p>
+            </div>
+
+            <!-- ⑦ 收盘复盘：预测的利好/利空板块 vs 当日实际涨幅（按目标交易日存档） -->
+            <div class="hfei-sec hfei-review">
+              <div class="hfei-sec-head">
+                <span class="hfei-sec-no">⑦</span>
+                <span class="hfei-sec-title">收盘复盘 · 预测 vs 实际</span>
+                <button class="btn btn-sm" v-if="hfeiCanReview" :disabled="hfeiReviewing" @click="hfeiRunReview">
+                  {{ hfeiReviewing ? '复盘中…' : (hfeiReview ? '🔁 重新复盘' : '🔍 收盘复盘') }}
+                </button>
+                <span class="hfei-badge" v-if="hfeiReview">复盘于 {{ hfeiReview.atText }}</span>
+                <span class="hfei-badge" v-if="hfeiReview">当日板块快照 {{ hfeiReview.boardTotal }} 个</span>
+              </div>
+              <div class="hfei-tip" v-if="hfeiReviewing">⏳ {{ hfeiReviewStep }}</div>
+              <div class="muted small" v-else-if="!hfeiCanReview">复盘需在 <b>{{ hfeiReport.targetDate }}</b> 收盘（15:00）后进行：届时把预测的利好 / 利空板块与当日实际涨幅逐项对比，生成总结并按日期存档。</div>
+              <div class="muted small" v-else-if="!hfeiReview">当日已收盘。点「🔍 收盘复盘」即可对比预测与实际涨跌，并让模型做归因、产出改进条款。</div>
+
+              <template v-if="hfeiReview">
+                <div class="hfei-rv-stats">
+                  <div class="hfei-rv-stat">
+                    <span class="hfei-rv-lbl">综合命中率</span>
+                    <b>{{ hfeiReview.stats.overallRate == null ? '—' : hfeiReview.stats.overallRate + '%' }}</b>
+                    <em>{{ hfeiReview.stats.overallHit }}/{{ hfeiReview.stats.overallN }}</em>
+                  </div>
+                  <div class="hfei-rv-stat">
+                    <span class="hfei-rv-lbl">利好板块</span>
+                    <b class="up">{{ hfeiReview.stats.bullHit }}/{{ hfeiReview.stats.bullN }}</b>
+                    <em>均值 {{ hfeiReview.stats.bullAvg == null ? '—' : ((hfeiReview.stats.bullAvg >= 0 ? '+' : '') + hfeiReview.stats.bullAvg + '%') }}</em>
+                  </div>
+                  <div class="hfei-rv-stat">
+                    <span class="hfei-rv-lbl">利空板块</span>
+                    <b class="down">{{ hfeiReview.stats.bearHit }}/{{ hfeiReview.stats.bearN }}</b>
+                    <em>均值 {{ hfeiReview.stats.bearAvg == null ? '—' : ((hfeiReview.stats.bearAvg >= 0 ? '+' : '') + hfeiReview.stats.bearAvg + '%') }}</em>
+                  </div>
+                  <div class="hfei-rv-stat">
+                    <span class="hfei-rv-lbl">标的股</span>
+                    <b>{{ hfeiReview.stats.pickHit }}/{{ hfeiReview.stats.pickN }}</b>
+                    <em>均值 {{ hfeiReview.stats.pickAvg == null ? '—' : ((hfeiReview.stats.pickAvg >= 0 ? '+' : '') + hfeiReview.stats.pickAvg + '%') }}</em>
+                  </div>
+                </div>
+
+                <div class="hfei-two hfei-rv-two">
+                  <div class="hfei-sec hfei-sec-bull">
+                    <div class="hfei-sec-head"><span class="hfei-sec-title">利好板块 · 实际</span></div>
+                    <table class="data-table hfei-rv-table">
+                      <thead><tr><th>预测板块</th><th class="num-col">强度</th><th>对应板块</th><th class="num-col">当日涨跌</th><th class="num-col">命中</th></tr></thead>
+                      <tbody>
+                        <tr v-for="(x, i) in hfeiReview.bull" :key="'rvb'+i">
+                          <td data-label="预测板块">{{ x.name }}</td>
+                          <td class="num-col" data-label="强度">{{ x.level }}</td>
+                          <td data-label="对应板块">{{ x.board || '未匹配' }}</td>
+                          <td class="num-col" data-label="当日涨跌">
+                            <span v-if="x.chg != null" :class="x.chg >= 0 ? 'up' : 'down'">{{ (x.chg >= 0 ? '+' : '') + x.chg + '%' }}</span>
+                            <span v-else class="muted">—</span>
+                          </td>
+                          <td class="num-col" data-label="命中"><span class="hfei-hit" :class="x.hit === null ? 'na' : (x.hit ? 'ok' : 'no')">{{ x.hit === null ? '—' : (x.hit ? '✓' : '✗') }}</span></td>
+                        </tr>
+                        <tr v-if="!hfeiReview.bull.length"><td colspan="5" class="empty-row">无利好板块记录</td></tr>
+                      </tbody>
+                    </table>
+                  </div>
+                  <div class="hfei-sec hfei-sec-bear">
+                    <div class="hfei-sec-head"><span class="hfei-sec-title">利空板块 · 实际</span></div>
+                    <table class="data-table hfei-rv-table">
+                      <thead><tr><th>预测板块</th><th class="num-col">强度</th><th>对应板块</th><th class="num-col">当日涨跌</th><th class="num-col">命中</th></tr></thead>
+                      <tbody>
+                        <tr v-for="(x, i) in hfeiReview.bear" :key="'rvx'+i">
+                          <td data-label="预测板块">{{ x.name }}</td>
+                          <td class="num-col" data-label="强度">{{ x.level }}</td>
+                          <td data-label="对应板块">{{ x.board || '未匹配' }}</td>
+                          <td class="num-col" data-label="当日涨跌">
+                            <span v-if="x.chg != null" :class="x.chg >= 0 ? 'up' : 'down'">{{ (x.chg >= 0 ? '+' : '') + x.chg + '%' }}</span>
+                            <span v-else class="muted">—</span>
+                          </td>
+                          <td class="num-col" data-label="命中"><span class="hfei-hit" :class="x.hit === null ? 'na' : (x.hit ? 'ok' : 'no')">{{ x.hit === null ? '—' : (x.hit ? '✓' : '✗') }}</span></td>
+                        </tr>
+                        <tr v-if="!hfeiReview.bear.length"><td colspan="5" class="empty-row">无利空板块记录</td></tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+
+                <div class="hfei-sec hfei-rv-picks">
+                  <div class="hfei-sec-head"><span class="hfei-sec-title">标的股 · 当日实际</span></div>
+                  <table class="data-table hfei-rv-table">
+                    <thead><tr><th>代码</th><th>名称</th><th>方向</th><th class="num-col">当日涨跌</th><th class="num-col">距今涨幅</th><th class="num-col">命中</th></tr></thead>
+                    <tbody>
+                      <tr v-for="(p, i) in hfeiReview.picks" :key="'rvp'+i">
+                        <td class="hfei-code" data-label="代码">{{ p.code }}</td>
+                        <td data-label="名称">{{ p.name }}</td>
+                        <td data-label="方向"><span class="hfei-side" :class="'is-' + p.side">{{ p.side === 'bear' ? '利空' : '利好' }}</span></td>
+                        <td class="num-col" data-label="当日涨跌">
+                          <span v-if="p.chg != null" :class="p.chg >= 0 ? 'up' : 'down'">{{ (p.chg >= 0 ? '+' : '') + p.chg.toFixed(2) + '%' }}</span>
+                          <span v-else class="muted">—</span>
+                        </td>
+                        <td class="num-col" data-label="距今涨幅">
+                          <span v-if="p.sincePct != null" :class="p.sincePct >= 0 ? 'up' : 'down'">{{ (p.sincePct >= 0 ? '+' : '') + p.sincePct.toFixed(2) + '%' }}</span>
+                          <span v-else class="muted">—</span>
+                        </td>
+                        <td class="num-col" data-label="命中"><span class="hfei-hit" :class="p.hit === null ? 'na' : (p.hit ? 'ok' : 'no')">{{ p.hit === null ? '—' : (p.hit ? '✓' : '✗') }}</span></td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+
+                <div class="hfei-rv-ai" v-if="hfeiReview.ai">
+                  <div class="hfei-rv-line" v-if="hfeiReview.ai.verdict"><b>结论</b>{{ hfeiReview.ai.verdict }}</div>
+                  <div class="hfei-rv-line" v-if="hfeiReview.ai.right"><b class="up">判对</b>{{ hfeiReview.ai.right }}</div>
+                  <div class="hfei-rv-line" v-if="hfeiReview.ai.wrong"><b class="down">判错</b>{{ hfeiReview.ai.wrong }}</div>
+                  <ul class="hfei-lessons" v-if="hfeiReview.lessons && hfeiReview.lessons.length">
+                    <li v-for="(l, i) in hfeiReview.lessons" :key="'rls'+i">{{ l }}</li>
+                  </ul>
+                </div>
+                <div class="hfei-rv-ai" v-else>
+                  <div class="muted small">本次复盘只做了数值对比（未调用大模型或调用失败）：板块与个股的实际涨跌已核对，可作为迭代依据。</div>
+                </div>
+              </template>
+            </div>
+
+            <!-- ⑧ 预测逻辑版本：6 子版块权重 + 经验条款；「一键迭代」由复盘结果反推 -->
+            <div class="hfei-sec hfei-strat">
+              <div class="hfei-sec-head">
+                <span class="hfei-sec-no">⑧</span>
+                <span class="hfei-sec-title">预测逻辑版本</span>
+                <span class="hfei-badge" v-if="hfeiStratRef">v{{ hfeiStratRef.version }}</span>
+                <span class="muted small" v-if="hfeiStratRef">已复盘 {{ hfeiReviewCount() }} 个交易日 · 迭代 {{ (hfeiStratRef.log || []).length }} 次</span>
+                <button class="btn btn-sm" :disabled="hfeiIterating" @click="hfeiIterate">{{ hfeiIterating ? '迭代中…' : '♻️ 一键迭代' }}</button>
+                <button class="btn btn-sm" @click="hfeiStratShow = !hfeiStratShow">{{ hfeiStratShow ? '收起明细' : '明细' }}</button>
+              </div>
+              <div class="hfei-tip" v-if="hfeiIterating">⏳ {{ hfeiIterateStep }}</div>
+              <div class="muted small">
+                每次「一键迭代」会按 6 个子版块的历史命中率调整权重、凝练经验条款，版本号 +1；下一次生成报告时整段注入提示词 —— 效果比上一版更准。
+              </div>
+              <div class="hfei-strat-w">
+                <span class="hfei-strat-chip" v-for="r in hfeiWeightRows" :key="'w'+r.key"
+                      :class="{ hi: r.w > 1.05, lo: r.w < 0.95 }">
+                  {{ r.tag }}<b>{{ r.w.toFixed(2) }}</b>
+                </span>
+              </div>
+              <ul class="hfei-lessons" v-if="hfeiStratRef && hfeiStratRef.lessons && hfeiStratRef.lessons.length">
+                <li v-for="(l, i) in hfeiStratRef.lessons" :key="'sl'+i">{{ l }}</li>
+              </ul>
+              <div class="muted small" v-else>还没有经验条款：做完收盘复盘后点「♻️ 一键迭代」即可生成。</div>
+              <div class="hfei-strat-log" v-if="hfeiStratShow">
+                <div class="hfei-strat-log-row" v-for="(g, i) in (hfeiStratRef.log || []).slice().reverse()" :key="'lg'+i">
+                  <b>v{{ g.v }}</b>
+                  <span>{{ new Date(g.at).toLocaleString('zh-CN', { hour12: false }) }}</span>
+                  <span class="muted">复盘 {{ g.n }} 次 · 条款 {{ g.lessons }} 条</span>
+                </div>
+                <div class="muted small" v-if="!((hfeiStratRef.log || []).length)">暂无迭代历史</div>
+              </div>
             </div>
           </template>
         </div>
@@ -1155,7 +1325,7 @@
                   <div class="qr-row">
                     <div class="qr-box">
                       <div class="qr-cap">推荐使用微信支付</div>
-                      <img src="assets/wechat-pay-qr.jpg?v=20261117f" alt="微信支付收款码" class="qr-pay-img">
+                      <img src="assets/wechat-pay-qr.jpg?v=20261117g" alt="微信支付收款码" class="qr-pay-img">
                       <div class="qr-cap" style="margin-top:6px;color:#c2410c;font-weight:600">支付时请添加会员备注，付款成功截图保存</div>
                       <div class="qr-cap muted small">火柴盒网络服务</div>
                     </div>
@@ -2569,7 +2739,7 @@
           <div class="quant-board-wrap">
           <div class="quant-tabs">
             <button type="button" :class="['quant-tab', { active: quantTab === 'post' }]" @click="quantTab = 'post'">📕 盘后板块</button>
-            <!-- 20261117f：原子版块替换为「产业投资」——上市公司工厂/产能投放进度跟踪 -->
+            <!-- 20261117g：原子版块替换为「产业投资」——上市公司工厂/产能投放进度跟踪 -->
             <button type="button" :class="['quant-tab', { active: quantTab === 'invest' }]" @click="quantTab = 'invest'">🏭 产业投资</button>
           </div>
 
@@ -5664,14 +5834,14 @@
     </transition>
   </div>
 
-  <script src="js/auth.js?v=20261117f"></script>
-  <script src="js/auth-sync.js?v=20261117f"></script>
+  <script src="js/auth.js?v=20261117g"></script>
+  <script src="js/auth-sync.js?v=20261117g"></script>
   <!-- 边缘加速默认站点（batch37 治本：Cloudflare Worker 代理东财/腾讯，缓解 JSONP 限流误报）。
        若你所在地区 workers.dev 访问慢，可在「设置 → 行情加速地址」清空即恢复纯直连。 -->
   <script>window.__SNT_ACCEL__ = 'https://sichina.dpdns.org';</script>
   <!-- 扫码支付二维码渲染库（第三方 qrcodejs，本地托管避免外链失效）。renderQr 会先检测全局 QRCode 是否存在。 -->
-  <script src="assets/qrcode.min.js?v=20261117f"></script>
-  <script src="js/auth-boot.js?v=20261117f"></script>
+  <script src="assets/qrcode.min.js?v=20261117g"></script>
+  <script src="js/auth-boot.js?v=20261117g"></script>
   <!-- store / stock-api / hot-topics / app 由 auth-boot.js 在登录通过后动态装载，
        未登录时它们不会被下载，业务数据也不会进入内存 -->
 </body>
