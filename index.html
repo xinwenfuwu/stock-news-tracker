@@ -10,12 +10,12 @@
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
   <title>股市信息分析系统</title>
-  <link rel="stylesheet" href="css/style.css?v=20261117h">
+  <link rel="stylesheet" href="css/style.css?v=20261117i">
   <!-- Vue 3 全局构建版（v3.4.21 · 自托管）
        原先走 unpkg.com CDN：国内网络对 unpkg 的连通性不稳定，一旦该请求长时间挂起，
        <head> 里的阻塞脚本会让整页停在白屏、后续 auth-boot.js 根本不会执行。
        改为同源托管后，启动链路不再依赖任何第三方 CDN。 -->
-  <script src="js/vue.global.prod.js?v=20261117h"></script>
+  <script src="js/vue.global.prod.js?v=20261117i"></script>
 </head>
 <body class="auth-locked">
   <!-- ===== 登录关卡：登录通过前业务脚本不会被加载 ===== -->
@@ -101,7 +101,7 @@
         <input class="auth-input" type="text" id="auth-renew-user" placeholder="用户名（你注册时用的）" maxlength="20" autocomplete="off">
         <div class="auth-renew-plans" id="auth-renew-plans"></div>
         <div class="auth-renew-qr" id="auth-renew-qr">
-          <div class="auth-renew-qrbox"><img id="auth-renew-wx" src="assets/wechat-pay-qr.jpg?v=20261117h" alt="微信支付收款码"><span>微信支付（扫码支付）</span></div>
+          <div class="auth-renew-qrbox"><img id="auth-renew-wx" src="assets/wechat-pay-qr.jpg?v=20261117i" alt="微信支付收款码"><span>微信支付（扫码支付）</span></div>
           <div class="muted small" style="margin-top:6px;color:#c2410c;font-weight:600">支付时请添加会员备注，付款成功截图保存</div>
         </div>
         <input class="auth-input" type="text" id="auth-renew-amount" inputmode="decimal" placeholder="支付金额（必填，如 1000）" autocomplete="off">
@@ -741,7 +741,7 @@
         <div class="page-footer">共 {{ sortedHoldings.length }} 条持仓</div>
 
 
-        <!-- ===== 20261117h：合肥模式 · 每交易日开盘前预测报告（大模型生成） =====
+        <!-- ===== 20261117i：合肥模式 · 每交易日开盘前预测报告（大模型生成） =====
              时间段沿用系统口径（每天 15:00 换日、起止可改、今天/昨天/前天快捷）；
              内容 = 影响力事件（中国/美国/全世界）+ 未来事件（突发/未来/人物）6 个子版块事件
                     ＋ 最近 3 个交易日大盘情绪 → 即将开盘交易日的板块预测、对中事件研判、
@@ -804,7 +804,7 @@
               <button class="btn btn-sm hfei-del" @click="hfeiDeleteReport(hfeiReport.targetDate)" title="删除这份报告">🗑</button>
             </div>
 
-            <!-- 20261117h：6 个子版块由模型自行研判「哪个是主导」，不再由前端写死优先级 -->
+            <!-- 20261117i：6 个子版块由模型自行研判「哪个是主导」，不再由前端写死优先级 -->
             <div class="hfei-dominant" v-if="hfeiReport.ai.dominant && hfeiReport.ai.dominant.source">
               <span class="hfei-dom-tag">主导子版块</span>
               <b class="hfei-dom-name">{{ hfeiReport.ai.dominant.source }}</b>
@@ -1326,7 +1326,7 @@
                   <div class="qr-row">
                     <div class="qr-box">
                       <div class="qr-cap">推荐使用微信支付</div>
-                      <img src="assets/wechat-pay-qr.jpg?v=20261117h" alt="微信支付收款码" class="qr-pay-img">
+                      <img src="assets/wechat-pay-qr.jpg?v=20261117i" alt="微信支付收款码" class="qr-pay-img">
                       <div class="qr-cap" style="margin-top:6px;color:#c2410c;font-weight:600">支付时请添加会员备注，付款成功截图保存</div>
                       <div class="qr-cap muted small">火柴盒网络服务</div>
                     </div>
@@ -2740,7 +2740,7 @@
           <div class="quant-board-wrap">
           <div class="quant-tabs">
             <button type="button" :class="['quant-tab', { active: quantTab === 'post' }]" @click="quantTab = 'post'">📕 盘后板块</button>
-            <!-- 20261117h：原子版块替换为「产业投资」——上市公司工厂/产能投放进度跟踪 -->
+            <!-- 20261117i：原子版块替换为「产业投资」——上市公司工厂/产能投放进度跟踪 -->
             <button type="button" :class="['quant-tab', { active: quantTab === 'invest' }]" @click="quantTab = 'invest'">🏭 产业投资</button>
           </div>
 
@@ -2753,7 +2753,8 @@
 
               <!-- 筛选与操作行 -->
               <div class="ind-toolbar">
-                <input class="q-input ind-search" v-model="indQ" placeholder="搜公司 / 代码 / 项目 / 产品 / 省份">
+                <input class="q-input ind-search" v-model="indQ" @keyup.enter="indNetSearch()" placeholder="搜公司 / 代码 / 项目 / 产品 / 省份（回车可全网检索）">
+                <button type="button" class="btn btn-xs btn-primary ind-net-btn" :disabled="indSearching" @click="indNetSearch()" title="按关键词用 AI 全网检索相关上市公司工厂 / 产能项目，可一键加入跟踪表">{{ indSearching ? '检索中…' : '🔍 全网搜索' }}</button>
                 <select class="q-input" v-model="indInd">
                   <option value="">全部产业</option>
                   <option v-for="o in IND_IND_OPTS" :key="o" :value="o">{{ o }}</option>
@@ -2766,6 +2767,48 @@
                 <button type="button" class="btn btn-xs btn-primary" @click="openIndForm(null)">＋ 新增项目</button>
                 <button type="button" class="btn btn-xs" @click="indExportCsv()">⬇ 导出 CSV</button>
                 <button type="button" class="btn btn-xs" @click="resetIndSeed()" title="清空你在表内的改动，回到内置样例基准库">↺ 恢复样例</button>
+              </div>
+
+              <!-- 全网检索结果面板 -->
+              <div class="ind-net" v-if="indSearching || indSearchErr || indSearchResults.length">
+                <div class="ind-net-head">
+                  <span class="ind-net-title">🔍 全网项目检索<span v-if="indSearchQuery" class="ind-net-kw">「{{ indSearchQuery }}」</span></span>
+                  <span class="muted small">AI 依据公开信息整理 · 节点日期 / 投资额请点「联网核实」确认后再加入</span>
+                  <button type="button" class="btn btn-xs" @click="indSearchResults=[]; indSearchErr=''; indSearchPicked={}">✕ 关闭</button>
+                </div>
+                <div class="ind-net-tip" v-if="indSearching">⏳ 正在检索「{{ indSearchQuery }}」相关的上市公司工厂 / 产能项目…</div>
+                <div class="ind-net-tip is-err" v-else-if="indSearchErr">{{ indSearchErr }}</div>
+                <template v-if="indSearchResults.length">
+                  <div class="ind-net-ops">
+                    <label class="ind-net-all"><input type="checkbox" :checked="Object.values(indSearchPicked).filter(Boolean).length === indSearchResults.length" @change="const on=$event.target.checked; const p={}; indSearchResults.forEach((_,i)=>p[i]=on); indSearchPicked=p"> 全选</label>
+                    <span class="muted small">已选 {{ Object.values(indSearchPicked).filter(Boolean).length }} / {{ indSearchResults.length }}</span>
+                    <button type="button" class="btn btn-xs btn-primary" :disabled="!Object.values(indSearchPicked).filter(Boolean).length" @click="indAddSearchResults()">＋ 一键加入跟踪表</button>
+                  </div>
+                  <div class="table-wrap table-scroll-x">
+                    <table class="data-table ind-net-table">
+                      <thead><tr><th class="num-col">选</th><th>上市公司</th><th>项目 / 工厂</th><th>产业</th><th>投资额</th><th>产品 / 产能</th><th>地区</th><th>阶段</th><th>下一节点</th><th>依据</th><th>操作</th></tr></thead>
+                      <tbody>
+                        <tr v-for="(c, i) in indSearchResults" :key="'net'+i">
+                          <td class="num-col" data-label="选择"><input type="checkbox" v-model="indSearchPicked[i]"></td>
+                          <td data-label="上市公司"><b>{{ c.name }}</b><span class="ind-net-code" v-if="c.code">{{ c.code }}</span></td>
+                          <td class="ind-net-proj" data-label="项目/工厂">{{ c.proj }}</td>
+                          <td data-label="产业">{{ c.ind }}</td>
+                          <td class="num-col" data-label="投资额">{{ c.amt != null ? c.amt + ' 亿' : '—' }}</td>
+                          <td class="ind-net-prod" data-label="产品/产能">{{ c.product || '—' }}</td>
+                          <td data-label="地区">{{ c.prov || '—' }}</td>
+                          <td data-label="阶段"><span class="ind-stage" :class="indStageCls(c.stage)">{{ c.stage }}</span></td>
+                          <td class="num-col" data-label="下一节点">{{ c.next || '待补' }}<span class="ind-net-ns" v-if="c.nextStage"> · {{ c.nextStage }}</span></td>
+                          <td class="ind-net-note" data-label="依据">{{ c.note || '—' }}</td>
+                          <td class="ind-net-ops-cell" data-label="操作">
+                            <button type="button" class="btn btn-xs btn-primary" @click="indAddOne(i)">＋加入</button>
+                            <button type="button" class="btn btn-xs" @click="indVerifyCandidate(c)">🔗核实</button>
+                          </td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                  <div class="muted small ind-net-foot">加入后标记为「AI检索·待核实」；重复项（公司+项目+代码相同）自动跳过。缺名称或下一节点日期的候选不会被加入。</div>
+                </template>
               </div>
 
               <!-- 统计卡 -->
@@ -5835,14 +5878,14 @@
     </transition>
   </div>
 
-  <script src="js/auth.js?v=20261117h"></script>
-  <script src="js/auth-sync.js?v=20261117h"></script>
+  <script src="js/auth.js?v=20261117i"></script>
+  <script src="js/auth-sync.js?v=20261117i"></script>
   <!-- 边缘加速默认站点（batch37 治本：Cloudflare Worker 代理东财/腾讯，缓解 JSONP 限流误报）。
        若你所在地区 workers.dev 访问慢，可在「设置 → 行情加速地址」清空即恢复纯直连。 -->
   <script>window.__SNT_ACCEL__ = 'https://sichina.dpdns.org';</script>
   <!-- 扫码支付二维码渲染库（第三方 qrcodejs，本地托管避免外链失效）。renderQr 会先检测全局 QRCode 是否存在。 -->
-  <script src="assets/qrcode.min.js?v=20261117h"></script>
-  <script src="js/auth-boot.js?v=20261117h"></script>
+  <script src="assets/qrcode.min.js?v=20261117i"></script>
+  <script src="js/auth-boot.js?v=20261117i"></script>
   <!-- store / stock-api / hot-topics / app 由 auth-boot.js 在登录通过后动态装载，
        未登录时它们不会被下载，业务数据也不会进入内存 -->
 </body>

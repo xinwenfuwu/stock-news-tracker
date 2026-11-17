@@ -4526,6 +4526,35 @@ body.guest-mode #app { display: none; }
 .ind-toolbar input.ind-search { flex: 1 1 240px; min-width: 170px; }
 .ind-toolbar select.q-input { flex: 0 0 auto; width: 152px; }
 .ind-toolbar .btn { flex: 0 0 auto; }
+/* 全网搜索按钮：与新增项目按钮区分，加左侧搜索图标语义色 */
+.ind-toolbar .ind-net-btn { flex: 0 0 auto; }
+
+/* ---- 全网检索结果面板 ---- */
+.ind-net {
+  border: 1px solid var(--primary); border-radius: 10px;
+  background: var(--surface); margin: 8px 0 12px; padding: 10px 12px;
+}
+.ind-net-head { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 6px; }
+.ind-net-title { font-size: 13px; font-weight: 700; color: var(--text); }
+.ind-net-kw { color: var(--primary); font-weight: 700; }
+.ind-net-head .muted { flex: 1 1 260px; }
+.ind-net-tip {
+  font-size: 12px; color: var(--text-secondary); background: var(--surface-alt);
+  border: 1px dashed var(--border); border-radius: 6px; padding: 7px 10px; margin: 6px 0; line-height: 1.6;
+}
+.ind-net-tip.is-err { color: var(--danger); border-color: #fecaca; background: #fef2f2; }
+.ind-net-ops { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin: 8px 0 6px; }
+.ind-net-all { font-size: 12px; color: var(--text-secondary); display: inline-flex; align-items: center; gap: 4px; cursor: pointer; }
+.ind-net-table { min-width: 1080px; font-size: 12px; }
+.ind-net-table th, .ind-net-table td { padding: 6px 7px; }
+.ind-net-code { color: var(--muted); font-size: 11px; margin-left: 5px; }
+.ind-net-proj { min-width: 150px; line-height: 1.4; }
+.ind-net-prod { min-width: 120px; font-size: 11px; color: var(--text-secondary); line-height: 1.4; }
+.ind-net-ns { color: var(--muted); font-size: 11px; }
+.ind-net-note { min-width: 120px; font-size: 11px; color: var(--muted); line-height: 1.4; }
+.ind-net-ops-cell { white-space: nowrap; }
+.ind-net-ops-cell .btn { padding: 2px 7px; margin: 1px 2px 1px 0; }
+.ind-net-foot { margin-top: 6px; line-height: 1.6; }
 
 .ind-stats {
   display: grid; grid-template-columns: repeat(6, minmax(0, 1fr));
@@ -4665,4 +4694,8 @@ body.guest-mode #app { display: none; }
   .ind-month-tab { flex: 0 0 auto; padding: 3px 8px; font-size: 11px; }
   .ind-prog { width: 100%; max-width: 140px; }
   .ind-month-head { flex-wrap: wrap; }
+  /* 全网检索面板：表头/操作横向滚动交给 table-scroll-x，这里收紧间距 */
+  .ind-net { padding: 8px 8px; }
+  .ind-net-head .muted { flex: 1 1 100%; }
+  .ind-net-ops { gap: 6px; }
 }

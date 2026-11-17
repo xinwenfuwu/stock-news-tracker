@@ -15325,6 +15325,164 @@ const app = createApp({
       showToast('已导出 ' + indFiltered.value.length + ' 条项目跟踪（Excel 可直接打开）', 'success');
     }
 
+    // ---- 全网检索项目：AI 检索 + 每条附豆包联网核实入口，结果可一键加入跟踪表 ----
+    // 说明：项目现有豆包接口是固定「热搜榜」路由，没有通用全网搜索；真要实时抓取需另部署搜索 Worker。
+    // 这里用用户已配置的 AI 接口做「产业项目检索」，结构化成跟踪表字段，并明确标注「AI 整理·需核实」，
+    // 每条结果同时给「🔗 联网核实」直达豆包搜索，用户可自行验证节点日期 / 投资额后再加入。
+    const indSearching = ref(false);
+    const indSearchErr = ref('');
+    const indSearchResults = ref([]);      // 候选项目数组（字段对齐 indForm）
+    const indSearchPicked = ref({});       // {index:true} 勾选要加入的候选
+    const indSearchQuery = ref('');        // 本次检索用的关键词（展示用）
+
+    /** 把 AI 返回的候选项目归一成跟踪表字段，剔除明显无效项 */
+    function indNormCandidate(x) {
+      if (!x || typeof x !== 'object') return null;
+      const name = String(x.name || x.company || '').trim();
+      let proj = String(x.proj || x.project || x.title || '').trim();
+      if (!name && !proj) return null;
+      const normEnum = (v, opts, def) => {
+        const s = String(v || '').trim();
+        const hit = opts.find(o => s === o || s.indexOf(o) >= 0 || o.indexOf(s) >= 0 && s.length >= 2);
+        return hit || def;
+      };
+      // 下一节点日期：接受 YYYY-MM-DD / YYYY年M月D日，取不到留空（加入时要求补填）
+      let next = String(x.next || x.nextDate || x.date || '').trim();
+      let m = /^(\d{4})-(\d{1,2})-(\d{1,2})/.exec(next);
+      if (m) next = m[1] + '-' + String(m[2]).padStart(2, '0') + '-' + String(m[3]).padStart(2, '0');
+      else {
+        m = /(\d{4})年(\d{1,2})月(\d{1,2})日?/.exec(next);
+        next = m ? (m[1] + '-' + String(m[2]).padStart(2, '0') + '-' + String(m[3]).padStart(2, '0')) : '';
+      }
+      let start = String(x.start || x.startDate || '').trim();
+      m = /^(\d{4})-(\d{1,2})-(\d{1,2})/.exec(start);
+      if (m) start = m[1] + '-' + String(m[2]).padStart(2, '0') + '-' + String(m[3]).padStart(2, '0');
+      else start = '';
+      const amtRaw = x.amt != null ? x.amt : (x.amount != null ? x.amount : x.invest);
+      const amtNum = parseFloat(String(amtRaw == null ? '' : amtRaw).replace(/[^\d.\-]/g, ''));
+      return {
+        code: String(x.code || '').replace(/\D/g, '').slice(0, 6),
+        name: name,
+        proj: proj || (name + ' 产能项目'),
+        subject: String(x.subject || '').trim(),
+        nature: normEnum(x.nature, IND_NATURE_OPTS, '自建'),
+        amt: isNaN(amtNum) ? null : amtNum,
+        product: String(x.product || x.capacity || '').trim(),
+        prov: String(x.prov || x.province || x.region || '').trim(),
+        ind: normEnum(x.ind || x.industry, IND_IND_OPTS, '半导体'),
+        stage: normEnum(x.stage, IND_STAGE_OPTS, '开工'),
+        next: next,
+        nextStage: normEnum(x.nextStage || x.milestone, IND_STAGE_OPTS, '试产'),
+        conf: /高|确定|已公告|已签约/.test(String(x.conf || x.note || '')) ? '高' : (/低|传闻|规划|意向/.test(String(x.conf || x.note || '')) ? '低' : '中'),
+        start: start,
+        note: String(x.note || x.source || '').trim().slice(0, 60),
+        sourceUrl: String(x.url || x.sourceUrl || '').trim().slice(0, 300)
+      };
+    }
+
+    /** 全网检索：调 AI 生成候选项目清单（结构化 JSON） */
+    async function indNetSearch() {
+      if (indSearching.value) return;
+      const kw = String(indQ.value || '').trim();
+      if (!kw) { showToast('请先在搜索框输入关键词（公司 / 产业 / 地区 / 产品）', 'warn'); return; }
+      if (!aiConfigured.value) {
+        indSearchErr.value = '未配置 AI 接口：请在「偏好设置 → AI 解读」填入 API 地址、密钥与模型后重试';
+        showToast('请先在「偏好设置 → AI 解读」配置 AI 接口', 'info');
+        showPrefs.value = true;
+        return;
+      }
+      indSearching.value = true;
+      indSearchErr.value = '';
+      indSearchResults.value = [];
+      indSearchPicked.value = {};
+      indSearchQuery.value = kw;
+      try {
+        const sys = '你是 A 股产业投资研究助理，熟悉全国上市公司的在建工程、募投项目、新工厂与产能投放。'
+          + '你只能基于公开信息中真实存在的上市公司与项目作答；不确定或缺失的字段留空，绝不编造股票代码。'
+          + '输出必须是严格的 JSON 对象（不要 markdown 代码块、不要多余文字），结构：'
+          + '{"list":[{"code":"6位A股代码","name":"上市公司简称","proj":"项目/工厂名称",'
+          + '"subject":"投资主体全称","nature":"自建/定增募投/可转债募投/合资建设/收购产能/政府代建之一",'
+          + '"amt":投资额数字单位亿元,"product":"产品/产能","prov":"省份或地区",'
+          + '"ind":"半导体/AI 与算力/新能源（光储风）/锂电与新能源车/化工新材料/有色与资源/医药生物/军工与高端制造/消费与轻工/电力与公用/建材与建筑 之一",'
+          + '"stage":"立项/开工/土建/封顶/设备搬入/安装调试/试产/小批量/量产/并网 之一（当前进度）",'
+          + '"next":"下一节点日期 YYYY-MM-DD","nextStage":"下一节点阶段（同上枚举，如 量产/并网/试产）",'
+          + '"start":"开工日期 YYYY-MM-DD","conf":"高/中/低","note":"信息来源或依据，30字内","url":"可核实的网页链接，没有就留空"}]}';
+        const user = '【检索关键词】' + kw + '\n'
+          + '请列出全国范围内与该关键词相关的、真实存在的上市公司工厂 / 产能投放项目，最多 8 条。'
+          + '优先给有明确公告、环评公示或地方重大项目清单依据的；每条的 next（下一节点日期）尽量精确到日。'
+          + '严格按上面的 JSON 结构输出；字段拿不准就留空，不要编造。';
+        const res = await callOpenAICompat(
+          [{ role: 'system', content: sys }, { role: 'user', content: user }],
+          { maxTokens: 4000, timeoutMs: 120000 }
+        );
+        if (!res.ok) throw new Error(res.error || 'AI 调用失败');
+        const mm = String(res.content || '').match(/\{[\s\S]*\}/);
+        let arr = [];
+        if (mm) {
+          try { const j = JSON.parse(mm[0]); arr = Array.isArray(j) ? j : (j && Array.isArray(j.list) ? j.list : []); } catch (e) { arr = []; }
+        }
+        if (!arr.length) {
+          // 兜底：模型偶尔直接返回数组
+          try { const a2 = JSON.parse(String(res.content || '').trim()); if (Array.isArray(a2)) arr = a2; } catch (e) { /* ignore */ }
+        }
+        const cleaned = arr.map(indNormCandidate).filter(Boolean).slice(0, 8);
+        if (!cleaned.length) throw new Error('AI 未返回可识别的项目（可换个关键词或重试）');
+        indSearchResults.value = cleaned;
+        const picked = {};
+        cleaned.forEach((_, i) => { picked[i] = true; });   // 默认全选，方便一键加入
+        indSearchPicked.value = picked;
+        showToast('检索到 ' + cleaned.length + ' 个候选项目（AI 整理，加入前请联网核实）', 'success');
+      } catch (e) {
+        indSearchErr.value = '检索失败：' + ((e && e.message) ? e.message : e);
+        showToast(indSearchErr.value, 'error');
+      } finally {
+        indSearching.value = false;
+      }
+    }
+
+    /** 把选中的候选项目一键加入跟踪表（按 代码+项目 去重） */
+    function indAddSearchResults() {
+      const list = indEnsure();
+      const picked = indSearchPicked.value || {};
+      let added = 0, dup = 0, invalid = 0;
+      (indSearchResults.value || []).forEach((c, i) => {
+        if (!picked[i]) return;
+        if (!String(c.name || '').trim() || !indParse(c.next)) { invalid++; return; }
+        const keyCode = String(c.code || '').trim();
+        const dupHit = list.some(r => String(r.name || '').trim() === String(c.name).trim()
+          && String(r.proj || '').trim() === String(c.proj).trim()
+          && (!keyCode || String(r.code || '') === keyCode));
+        if (dupHit) { dup++; return; }
+        list.push({
+          id: 'ind' + Date.now() + '_' + i,
+          code: c.code || '', name: c.name, proj: c.proj, subject: c.subject || '',
+          nature: c.nature, amt: c.amt, product: c.product || '', prov: c.prov || '', ind: c.ind,
+          stage: c.stage, next: c.next, nextStage: c.nextStage, conf: c.conf, start: c.start || '',
+          note: (c.note ? c.note + '｜' : '') + 'AI检索·待核实', custom: true
+        });
+        added++;
+      });
+      Store.saveNow();
+      if (added) showToast('已加入 ' + added + ' 个项目' + (dup ? '（跳过 ' + dup + ' 个重复）' : '') + (invalid ? '，' + invalid + ' 个因缺名称/节点日期未加入' : ''), 'success');
+      else showToast('没有可加入的项目' + (dup ? '（' + dup + ' 个已在表中）' : '') + (invalid ? '（' + invalid + ' 个缺名称或节点日期）' : ''), 'warn');
+      if (added) { indSearchResults.value = []; indSearchPicked.value = {}; }
+    }
+
+    /** 单条候选加入 */
+    function indAddOne(i) {
+      const c = (indSearchResults.value || [])[i];
+      if (!c) return;
+      const picked = Object.assign({}, indSearchPicked.value); picked[i] = true; indSearchPicked.value = picked;
+      indAddSearchResults();
+    }
+
+    /** 打开豆包联网搜索核实某条候选（关键词 = 公司 + 项目） */
+    function indVerifyCandidate(c) {
+      if (!c) return;
+      const q = [c.name, c.proj].filter(Boolean).join(' ') + ' 投产 节点 投资额';
+      doubaoSearch(q);
+    }
+
     // 打分表单状态：每个板块一份（s1..s4 打分，b1..b4 一句话依据）
     function blankQuantForm() {
       return { s1: 1, s2: 1, s3: 1, s4: 1, b1: '', b2: '', b3: '', b4: '' };
@@ -16134,6 +16292,8 @@ const app = createApp({
       indQ, indInd, indNature, indMonth, indKeyOnly, indMonths, indGroups, indStats,
       indDays, indDayText, indPct, indNatCls, indStageCls, indConfCls,
       indForm, openIndForm, closeIndForm, saveIndRow, delIndRow, resetIndSeed, indExportCsv,
+      indSearching, indSearchErr, indSearchResults, indSearchPicked, indSearchQuery,
+      indNetSearch, indAddSearchResults, indAddOne, indVerifyCandidate,
       // 量化板块：数据端口 / 自动打分 / 共振选股
       quantData, quantFetchedAt, quantFetching, quantSearching, quantMsg, quantAiReport, quantAiBusy, quantAiDrafts,
       quantAiPredictionsView, saveAiPrediction, deleteAiPrediction, openAiConceptInSector, fmtTime,
