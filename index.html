@@ -10,12 +10,12 @@
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
   <title>股市信息分析系统</title>
-  <link rel="stylesheet" href="css/style.css?v=20261116a">
+  <link rel="stylesheet" href="css/style.css?v=20261117a">
   <!-- Vue 3 全局构建版（v3.4.21 · 自托管）
        原先走 unpkg.com CDN：国内网络对 unpkg 的连通性不稳定，一旦该请求长时间挂起，
        <head> 里的阻塞脚本会让整页停在白屏、后续 auth-boot.js 根本不会执行。
        改为同源托管后，启动链路不再依赖任何第三方 CDN。 -->
-  <script src="js/vue.global.prod.js?v=20261116a"></script>
+  <script src="js/vue.global.prod.js?v=20261117a"></script>
 </head>
 <body class="auth-locked">
   <!-- ===== 登录关卡：登录通过前业务脚本不会被加载 ===== -->
@@ -101,7 +101,7 @@
         <input class="auth-input" type="text" id="auth-renew-user" placeholder="用户名（你注册时用的）" maxlength="20" autocomplete="off">
         <div class="auth-renew-plans" id="auth-renew-plans"></div>
         <div class="auth-renew-qr" id="auth-renew-qr">
-          <div class="auth-renew-qrbox"><img id="auth-renew-wx" src="assets/wechat-pay-qr.jpg?v=20261116a" alt="微信支付收款码"><span>微信支付（扫码支付）</span></div>
+          <div class="auth-renew-qrbox"><img id="auth-renew-wx" src="assets/wechat-pay-qr.jpg?v=20261117a" alt="微信支付收款码"><span>微信支付（扫码支付）</span></div>
           <div class="muted small" style="margin-top:6px;color:#c2410c;font-weight:600">支付时请添加会员备注，付款成功截图保存</div>
         </div>
         <input class="auth-input" type="text" id="auth-renew-amount" inputmode="decimal" placeholder="支付金额（必填，如 1000）" autocomplete="off">
@@ -996,7 +996,7 @@
                   <div class="qr-row">
                     <div class="qr-box">
                       <div class="qr-cap">推荐使用微信支付</div>
-                      <img src="assets/wechat-pay-qr.jpg?v=20261116a" alt="微信支付收款码" class="qr-pay-img">
+                      <img src="assets/wechat-pay-qr.jpg?v=20261117a" alt="微信支付收款码" class="qr-pay-img">
                       <div class="qr-cap" style="margin-top:6px;color:#c2410c;font-weight:600">支付时请添加会员备注，付款成功截图保存</div>
                       <div class="qr-cap muted small">火柴盒网络服务</div>
                     </div>
@@ -2713,20 +2713,21 @@
                 </button>
               </div>
 
-              <!-- 三个子版块：中国 / 美国 / 全世界，点击切换 -->
-              <div class="infl-tabs infl-region-tabs">
-                <button class="infl-tab" :class="{active: inflRegion==='cn'}" @click="setInflRegion('cn')">🇨🇳 中国</button>
-                <button class="infl-tab" :class="{active: inflRegion==='us'}" @click="setInflRegion('us')">🇺🇸 美国</button>
-                <button class="infl-tab" :class="{active: inflRegion==='world'}" @click="setInflRegion('world')">🌍 全世界</button>
-              </div>
-
-              <!-- 20261108a：两个指标均可作为排序依据 -->
+              <!-- 20261117a：排序依据移到子版块 tabs 上方，对下方 中国/美国/全世界 三个子版块统一生效 -->
               <div class="infl-sortbar">
                 <span class="muted small">排序依据：</span>
                 <button class="infl-sort-btn" :class="{active: inflSortBy==='investors'}" @click="setInflSort('investors')">按影响股民数</button>
                 <button class="infl-sort-btn" :class="{active: inflSortBy==='people'}" @click="setInflSort('people')">按影响人数</button>
                 <button class="infl-sort-btn" :class="{active: inflSortBy==='time'}" @click="setInflSort('time')">按时间</button>
+                <button class="infl-sort-btn" :class="{active: inflSortBy==='cnimp'}" @click="setInflSort('cnimp')" title="对中影响度：事件对中国行业与概念的影响程度（满分100），利好影响得分红色、利空影响得分绿色">按对中</button>
                 <span class="muted small infl-sort-hint">当前：{{ sortLabel() }}<template v-if="inflSortBy!=='time'"> 从大到小</template><template v-else> 新→旧</template></span>
+              </div>
+
+              <!-- 三个子版块：中国 / 美国 / 全世界，点击切换 -->
+              <div class="infl-tabs infl-region-tabs">
+                <button class="infl-tab" :class="{active: inflRegion==='cn'}" @click="setInflRegion('cn')">🇨🇳 中国</button>
+                <button class="infl-tab" :class="{active: inflRegion==='us'}" @click="setInflRegion('us')">🇺🇸 美国</button>
+                <button class="infl-tab" :class="{active: inflRegion==='world'}" @click="setInflRegion('world')">🌍 全世界</button>
               </div>
 
               <!-- 20261108b：口径说明左侧的一键隐藏按钮，点击后整段说明隐藏不显示；按钮切换为「显示说明」可恢复 -->
@@ -2760,6 +2761,9 @@
                       </span>
                       <span class="infl-affected infl-people">影响人数 <b>{{ fmtAffected(e.affectedPeople) }}</b>人</span>
                       <span class="infl-affected">影响股民数 <b>{{ fmtAffected(e.affected) }}</b>人<span class="infl-share" v-if="e.investorShare">（占 {{ e.investorShare }}%）</span></span>
+                      <!-- 20261117a：对中影响度（满分100）——利好影响得分红色 / 利空影响得分绿色 -->
+                      <span class="infl-cnimp" :class="(e.cnImp && e.cnImp.dir==='bear') ? 'bear' : 'bull'"
+                            :title="'对中：该事件对中国行业与概念的影响程度（满分100）· ' + ((e.cnImp && e.cnImp.dir==='bear') ? '利空影响（得分绿色）' : '利好影响（得分红色）')">对中 <b>{{ e.cnImp ? e.cnImp.score : '—' }}</b></span>
                       <span v-if="e.date">· {{ e.date }}</span>
                       <span v-if="e.source">· {{ e.source }}</span>
                     </div>
@@ -2812,6 +2816,18 @@
                 </button>
               </div>
 
+              <!-- 20261117a：排序依据移到子版块 tabs 上方，对下方 突发/未来/人物 三个子版块统一生效（切换子版块不再重置排序） -->
+              <div class="infl-sortbar">
+                <span class="muted small">排序依据：</span>
+                <button class="infl-sort-btn" :class="{active: futureSortBy==='investors'}" @click="setFutureSort('investors')">按影响股民数</button>
+                <button class="infl-sort-btn" :class="{active: futureSortBy==='people'}" @click="setFutureSort('people')">按影响人数</button>
+                <button class="infl-sort-btn" :class="{active: futureSortBy==='cnimp'}" @click="setFutureSort('cnimp')" title="对中影响度：事件对中国行业与概念的影响程度（满分100），利好影响得分红色、利空影响得分绿色">按对中</button>
+                <button class="infl-sort-btn" v-if="futureRegion!=='future'" :class="{active: futureSortBy==='surge'}" @click="setFutureSort('surge')">按飙升度</button>
+                <button class="infl-sort-btn" v-if="futureRegion!=='future'" :class="{active: futureSortBy==='time'}" @click="setFutureSort('time')">按时间</button>
+                <button class="infl-sort-btn" v-if="futureRegion==='future'" :class="{active: futureSortBy==='date'}" @click="setFutureSort('date')">按日期</button>
+                <span class="muted small infl-sort-hint">当前：{{ futureSortLabel() }}</span>
+              </div>
+
               <!-- 两个子版块：突发（全球当前大事件） / 未来（未来三个月全球大事件） -->
               <div class="infl-tabs infl-region-tabs future-tabs">
                 <button class="infl-tab" :class="{active: futureRegion==='breaking'}" @click="setFutureRegion('breaking')">⚡ 突发</button>
@@ -2830,11 +2846,6 @@
                 <button class="infl-sort-btn" :class="{active: futureRefreshMs===3600000}" @click="setFutureRefreshMs(3600000)">1小时</button>
                 <span class="muted small" v-if="futureLastRefresh">· 上次刷新 {{ futureLastRefresh }}</span>
               </div>
-              <div class="muted small" style="margin:6px 0 2px">
-                <template v-if="futureRegion==='breaking'">⚡ 突发：全球当前正在发生的大事件（多源实时抓取，定时自动更新；每 {{ futureRefreshMs===600000 ? '10分钟' : '1小时' }} 刷新，新事件标红 🆕）</template>
-                <template v-else-if="futureRegion==='people'">👤 人物：全球名人发言与重大新闻（多源实时聚合），排序口径与突发一致（按影响股民数 / 影响人数 / 飙升度 / 时间）</template>
-                <template v-else>🔮 未来：中国 / 美国 / 全球重大未来事件（会议·政策·数据·财报·展会），多源实时聚合，自动剔除已结束事件；今日举行与会期进行中的照常展示</template>
-              </div>
               <!-- 20261109d/e：三个子版块都展示 GitHub Actions 抓取快照的真实更新时间 -->
               <div class="muted small future-databar" v-if="futureDate">📡 {{ futureDate }}</div>
 
@@ -2846,17 +2857,6 @@
                 <button class="infl-sort-btn" :class="{active: futureScope==='us'}" @click="setFutureScope('us')">🇺🇸 美国 {{ futureScopeCounts().us }}</button>
                 <button class="infl-sort-btn" :class="{active: futureScope==='world'}" @click="setFutureScope('world')">🌐 全球 {{ futureScopeCounts().world }}</button>
                 <span class="muted small">当前：{{ futureScopeLabel() }}</span>
-              </div>
-
-              <!-- 20261109c：排序依据。突发/人物支持 影响股民数/影响人数/飙升度/时间；未来支持 日期/影响股民数/影响人数 -->
-              <div class="infl-sortbar">
-                <span class="muted small">排序依据：</span>
-                <button class="infl-sort-btn" :class="{active: futureSortBy==='investors'}" @click="setFutureSort('investors')">按影响股民数</button>
-                <button class="infl-sort-btn" :class="{active: futureSortBy==='people'}" @click="setFutureSort('people')">按影响人数</button>
-                <button class="infl-sort-btn" v-if="futureRegion!=='future'" :class="{active: futureSortBy==='surge'}" @click="setFutureSort('surge')">按飙升度</button>
-                <button class="infl-sort-btn" v-if="futureRegion!=='future'" :class="{active: futureSortBy==='time'}" @click="setFutureSort('time')">按时间</button>
-                <button class="infl-sort-btn" v-if="futureRegion==='future'" :class="{active: futureSortBy==='date'}" @click="setFutureSort('date')">按日期</button>
-                <span class="muted small infl-sort-hint">当前：{{ futureSortLabel() }}</span>
               </div>
 
               <!-- 事件列表：突发显示发生/更新时间；未来显示日期 + 距今天数（倒计时动态计算）；均含影响人数/影响股民数双指标 -->
@@ -2877,6 +2877,9 @@
                       <span class="infl-affected infl-people">影响人数 <b>{{ fmtAffected(e.affectedPeople) }}</b>人</span>
                       <span class="infl-affected">影响股民数 <b>{{ fmtAffected(e.affected) }}</b>人<span class="infl-share" v-if="e.investorShare">（占 {{ e.investorShare }}%）</span></span>
                       <span v-if="e.surge != null && futureRegion!=='future'" class="infl-surge" :class="surgeClass(e.surge)">🔥飙升度 {{ e.surge }}</span>
+                      <!-- 20261117a：对中影响度（满分100）——利好影响得分红色 / 利空影响得分绿色 -->
+                      <span class="infl-cnimp" :class="(e.cnImp && e.cnImp.dir==='bear') ? 'bear' : 'bull'"
+                            :title="'对中：该事件对中国行业与概念的影响程度（满分100）· ' + ((e.cnImp && e.cnImp.dir==='bear') ? '利空影响（得分绿色）' : '利好影响（得分红色）')">对中 <b>{{ e.cnImp ? e.cnImp.score : '—' }}</b></span>
                       <span v-if="e.location" class="infl-location">📍 {{ e.location }}</span>
                       <span v-if="e.datetime || e.time">🕒 {{ e.datetime || e.time }}</span>
                       <span v-if="e.date">📅 {{ e.date }}<template v-if="e.endDate && e.endDate !== e.date"> ~ {{ e.endDate }}</template></span>
@@ -5334,14 +5337,14 @@
     </transition>
   </div>
 
-  <script src="js/auth.js?v=20261116a"></script>
-  <script src="js/auth-sync.js?v=20261116a"></script>
+  <script src="js/auth.js?v=20261117a"></script>
+  <script src="js/auth-sync.js?v=20261117a"></script>
   <!-- 边缘加速默认站点（batch37 治本：Cloudflare Worker 代理东财/腾讯，缓解 JSONP 限流误报）。
        若你所在地区 workers.dev 访问慢，可在「设置 → 行情加速地址」清空即恢复纯直连。 -->
   <script>window.__SNT_ACCEL__ = 'https://sichina.dpdns.org';</script>
   <!-- 扫码支付二维码渲染库（第三方 qrcodejs，本地托管避免外链失效）。renderQr 会先检测全局 QRCode 是否存在。 -->
-  <script src="assets/qrcode.min.js?v=20261116a"></script>
-  <script src="js/auth-boot.js?v=20261116a"></script>
+  <script src="assets/qrcode.min.js?v=20261117a"></script>
+  <script src="js/auth-boot.js?v=20261117a"></script>
   <!-- store / stock-api / hot-topics / app 由 auth-boot.js 在登录通过后动态装载，
        未登录时它们不会被下载，业务数据也不会进入内存 -->
 </body>

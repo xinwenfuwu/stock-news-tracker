@@ -11368,6 +11368,7 @@ const app = createApp({
       if (k === 'date') return '日期';
       if (k === 'time') return '时间';
       if (k === 'surge') return '飙升度';
+      if (k === 'cnimp') return '对中影响度';
       return (k === 'people') ? '影响人数' : '影响股民数';
     }
     // 20261109c：飙升度 = 时间最近(40%) + 热度最高(35%) + 上升最快(25%)，0~100。
@@ -11405,6 +11406,7 @@ const app = createApp({
         || (Number(b.importance) || 0) - (Number(a.importance) || 0));
       if (k === 'time') return arr.sort((a, b) => _evtSortTime(b) - _evtSortTime(a));   // 离现在最近在前
       if (k === 'surge') return arr.sort((a, b) => (Number(b.surge) || 0) - (Number(a.surge) || 0));
+      if (k === 'cnimp') return arr.sort((a, b) => (Number(b.cnImp && b.cnImp.score) || 0) - (Number(a.cnImp && a.cnImp.score) || 0));
       const key = (k === 'people') ? 'affectedPeople' : 'affected';
       return arr.sort((a, b) => (Number(b[key]) || 0) - (Number(a[key]) || 0));
     }
@@ -11451,7 +11453,7 @@ const app = createApp({
         // initial：首屏把这些 id 标记为已见，避免初始事件被误标红；非 initial：新 id 标红，加载后延迟标记为已见
         // 注意：一律标记「未筛选的全量」，这样放宽范围后重新出现的事件不会被误判为「新」
         if (initial) { src0.forEach(e => futureSeenIds.value.add(e.id)); persistFutureSeen(); }
-        list = src.map(resolveFutureImpact);
+        list = src.map(e => withCnImp(resolveFutureImpact(e)));
         list.forEach(e => { e.surge = computeSurge(e); e._new = !futureSeenIds.value.has(e.id); });
         list = sortFuture(list);
         if (!initial) {
@@ -11461,7 +11463,7 @@ const app = createApp({
         const remote = await fetchCelebrityNews(seq);
         const src0 = (remote && remote.length) ? remote : CELEBRITY_EVENTS_SEED;
         const src = Number(futureRangeDays.value) ? src0.filter(e => newsInRange(e, futureRangeDays.value)) : src0;
-        list = src.map(resolveFutureImpact);
+        list = src.map(e => withCnImp(resolveFutureImpact(e)));
         list.forEach(e => { e.surge = computeSurge(e); e._new = false; });   // 人物为静态榜单，不标红
         list = sortFuture(list);
       } else {
@@ -11470,7 +11472,7 @@ const app = createApp({
         const src = (remote && remote.length) ? remote : UPCOMING_EVENTS;
         // 统一按「今天」过滤：已结束剔除，今日举行与会期进行中的一律保留
         // 20261110k：若设置了「近 N 日」范围，「未来」子版块只保留距今不超过 N 天的事件
-        const all = src.filter(isUpcoming).filter(e => futureWithinDays(e, futureRangeDays.value)).map(resolveFutureImpact);
+        const all = src.filter(isUpcoming).filter(e => futureWithinDays(e, futureRangeDays.value)).map(e => withCnImp(resolveFutureImpact(e)));
         all.forEach(e => { e._scope = upcomingScope(e); e.surge = computeSurge(e); });
         allUpcoming = all;
         list = (scopeAtStart === 'all') ? [...all] : all.filter(e => e._scope === scopeAtStart);
@@ -11492,9 +11494,7 @@ const app = createApp({
     function setFutureRegion(r) {
       futureRegion.value = r;
       if (D && D.futureRegion !== undefined) D.futureRegion = r;
-      // 未来默认按日期；突发/人物默认按影响股民数（排序口径与突发一致）
-      futureSortBy.value = (r === 'future') ? 'date' : 'investors';
-      if (D && D.futureSortBy !== undefined) D.futureSortBy = futureSortBy.value;
+      // 20261117a：排序依据条移到子版块上方，统一对三个子版块生效——切换子版块不再重置排序口径
       loadFutureData();
     }
     // 20261109e：未来子版块的覆盖范围筛选（全部 / 中国 / 美国 / 全球），持久化到 Store.data
@@ -11505,7 +11505,7 @@ const app = createApp({
       loadFutureData();
     }
     function setFutureSort(k) {
-      if (k !== 'date' && k !== 'people' && k !== 'investors' && k !== 'surge' && k !== 'time') k = 'investors';
+      if (k !== 'date' && k !== 'people' && k !== 'investors' && k !== 'surge' && k !== 'time' && k !== 'cnimp') k = 'investors';
       futureSortBy.value = k;
       if (D && D.futureSortBy !== undefined) D.futureSortBy = k;
       loadFutureData();
@@ -11564,9 +11564,56 @@ const app = createApp({
       if (D) D.inflInfoHidden = inflInfoHidden.value;
     }
     function regionLabel(r) { return r === 'cn' ? '中国' : r === 'us' ? '美国' : '全世界'; }
+    // ===== 20261117a：「对中」影响度（新增排序指标）=====
+    // 字段含义：该新闻事件对中国行业与概念的影响程度，满分 100。
+    // 得分配色：利好影响 → 红色；利空影响 → 绿色（中国股市惯例：涨红跌绿）。
+    // 可解释的构成口径：
+    //   ① 中国相关命中：事件自带的多空行业/概念标签、涉及概念名、相关股票、标题+摘要
+    //      命中「中国行业/概念词表」的个数（每个 +8 分，封顶 34）；
+    //   ② 强度：影响人数（affectedPeople）对数缩放，1 亿人 → 满强度 28 分；
+    //   ③ 中国区域加权：事件属 🇨🇳 中国子版块 +16 分；
+    //   ④ 基础分 22。合计封顶 100（22+34+28+16）、保底 5。
+    // 方向判定：优先看「命中中国词表的多空标签」谁主导；无标签时看全部多空标签；
+    //   再无标签回退 HotTopics.newsSentimentOf 文本情绪（与子概念多空着色同一套口径）。
+    const CN_IMPACT_WORDS = ['国产替代','信创','稀土','军工','电网','储能','光伏','锂电','新能源','医保','房贷','白酒','消费','跨境电商','中概','A股','沪深','人民币','基建','钢铁','煤炭','电力','环保','绿电','芯片','半导体','算力','数据中心','数字经济','低空经济','机器人','汽车','新能源车','地产','银行','保险','券商','农业','大飞机','北斗','5G','6G','短剧','游戏','影视','旅游','免税','一带一路','中欧班列','出口','关税','台积电','比亚迪','宁德时代','腾讯','阿里','百度','京东','华为','中远海控','顺丰','隆基','阳光电源','恒瑞','药明康德','中国海油','山东黄金','中粮','先正达','奇安信','中国卫通','分众传媒','携程','贵州茅台','招商银行','中芯国际','北方华创','北方稀土','赣锋锂业','上证','深证','北交所','港股','能源安全','粮食安全','科技自主','碳交易','环保工程','电力运营','电力设备','智能驾驶','AI应用','先进封装','高股息'];
+    function _cnHitCount(list) {
+      let n = 0;
+      (list || []).forEach(t => { const s = String(t); if (CN_IMPACT_WORDS.some(w => s.indexOf(w) >= 0)) n++; });
+      return n;
+    }
+    function _cnTextHits(e) {
+      const text = String(e.title || '') + String(e.summary || '');
+      let n = 0;
+      CN_IMPACT_WORDS.forEach(w => { if (text.indexOf(w) >= 0) n++; });
+      return Math.min(4, n);
+    }
+    function computeChinaImpact(e) {
+      const tagBull = [].concat(e.bullConcepts || [], e.bullIndustries || []);
+      const tagBear = [].concat(e.bearConcepts || [], e.bearIndustries || []);
+      const hits = _cnHitCount(tagBull) + _cnHitCount(tagBear) + _cnHitCount(e.relatedStocks) + _cnTextHits(e)
+        + ((e.conceptName && CN_IMPACT_WORDS.some(w => String(e.conceptName).indexOf(w) >= 0)) ? 1 : 0);
+      const intensity = Math.min(1, Math.log10(Math.max(1, Number(e.affectedPeople) || 1)) / 8);   // 1 亿人 → 1
+      const regBonus = ((e._ir || e.region) === 'cn') ? 16 : 0;
+      const score = Math.max(5, Math.min(100, Math.round(22 + Math.min(34, hits * 8) + intensity * 28 + regBonus)));
+      let dir;
+      const cb = _cnHitCount(tagBull), cx = _cnHitCount(tagBear);
+      if (cb || cx) dir = (cb >= cx) ? 'bull' : 'bear';
+      else if (tagBull.length || tagBear.length) dir = (tagBull.length >= tagBear.length) ? 'bull' : 'bear';
+      else {
+        try {
+          const s = (typeof HotTopics !== 'undefined' && HotTopics.newsSentimentOf)
+            ? HotTopics.newsSentimentOf(String(e.conceptName || ''), String(e.title || '') + ' ' + String(e.summary || '')) : null;
+          dir = (s === 'bear') ? 'bear' : 'bull';
+        } catch (err) { dir = 'bull'; }
+      }
+      return { score, dir };
+    }
+    /** 在 resolve 之后给事件挂上 cnImp（对中影响度 + 方向），供排序与卡片展示 */
+    function withCnImp(e) { e.cnImp = computeChinaImpact(e); return e; }
     function sortLabel() {
       const k = inflSortBy.value;
       if (k === 'time') return '时间';
+      if (k === 'cnimp') return '对中影响度';
       return k === 'people' ? '影响人数' : '影响股民数';
     }
     function sortInfluence(list) {
@@ -11575,6 +11622,7 @@ const app = createApp({
         // 按时间：日期新的在前（降序）
         return [...(list || [])].sort((a, b) => String(b.date).localeCompare(String(a.date)));
       }
+      if (by === 'cnimp') return [...(list || [])].sort((a, b) => (Number(b.cnImp && b.cnImp.score) || 0) - (Number(a.cnImp && a.cnImp.score) || 0));
       const key = by === 'people' ? 'affectedPeople' : 'affected';
       return [...(list || [])].sort((a, b) => (Number(b[key]) || 0) - (Number(a[key]) || 0));
     }
@@ -11629,7 +11677,7 @@ const app = createApp({
       // 20261110b：窗口天数可由「新闻范围」选择框调整（未选仍是默认 10 日）
       const filtered = inflAnchoredSeed()
         .filter(e => e.region === reg && inflInWindow(e))
-        .map(resolveInfluence);
+        .map(e => withCnImp(resolveInfluence(e)));
       inflEvents.value = sortInfluence(filtered);
       inflDate.value = '实时整理 · 近 ' + inflDays() + ' 交易日（收盘窗口）';
       inflError.value = '';
@@ -11637,6 +11685,7 @@ const app = createApp({
     function setInflRegion(r) { inflRegion.value = r; if (D && D.inflRegion !== undefined) D.inflRegion = r; loadInfluence(); }
     function setInflSort(k) {
       if (k === 'time') inflSortBy.value = 'time';
+      else if (k === 'cnimp') inflSortBy.value = 'cnimp';
       else inflSortBy.value = (k === 'people') ? 'people' : 'investors';
       if (D && D.inflSortBy !== undefined) D.inflSortBy = inflSortBy.value;
       loadInfluence();
@@ -12293,13 +12342,13 @@ const app = createApp({
     if (D.emHotStocks && D.emHotStocks.length) emHotStocks.value = D.emHotStocks;
     // 影响力事件：恢复上次选择的区域与排序口径，并加载对应事件（数据来自本地整理样例，非日期维度）
     if (D.inflRegion === 'cn' || D.inflRegion === 'us' || D.inflRegion === 'world') inflRegion.value = D.inflRegion;
-    if (D.inflSortBy === 'people' || D.inflSortBy === 'investors' || D.inflSortBy === 'time') inflSortBy.value = D.inflSortBy;
+    if (D.inflSortBy === 'people' || D.inflSortBy === 'investors' || D.inflSortBy === 'time' || D.inflSortBy === 'cnimp') inflSortBy.value = D.inflSortBy;
     // 20261108b：恢复「口径说明」的隐藏状态（用户上次点了隐藏，刷新后仍保持隐藏）
     if (typeof D.inflInfoHidden === 'boolean') inflInfoHidden.value = D.inflInfoHidden;
     loadInfluence();
     // 未来事件（20261109a）：恢复子版块 / 排序口径 / 自动刷新设置 / 已见集合，并加载（首屏 seed 已见以免误标红），启动自动刷新轮询
     if (D.futureRegion === 'breaking' || D.futureRegion === 'future' || D.futureRegion === 'people') futureRegion.value = D.futureRegion;
-    if (D.futureSortBy === 'date' || D.futureSortBy === 'investors' || D.futureSortBy === 'people' || D.futureSortBy === 'surge' || D.futureSortBy === 'time') futureSortBy.value = D.futureSortBy;
+    if (D.futureSortBy === 'date' || D.futureSortBy === 'investors' || D.futureSortBy === 'people' || D.futureSortBy === 'surge' || D.futureSortBy === 'time' || D.futureSortBy === 'cnimp') futureSortBy.value = D.futureSortBy;
     if (typeof D.futureAutoRefresh === 'boolean') futureAutoRefresh.value = D.futureAutoRefresh;
     if (D.futureRefreshMs) futureRefreshMs.value = D.futureRefreshMs;
     if (D.futureScope === 'all' || D.futureScope === 'cn' || D.futureScope === 'us' || D.futureScope === 'world') futureScope.value = D.futureScope;

@@ -980,6 +980,12 @@ body {
 .infl-share { color: var(--text-muted, #64748b); }
 /* 20261109c：飙升度标签（🔥飙升度 N）配色：≥80 红(火爆) / ≥60 橙(升温) / 其余 蓝(平稳) */
 .infl-surge { padding: 1px 8px; border-radius: 999px; font-size: 12px; font-weight: 700; border: 1px solid transparent; }
+/* 20261117a：对中影响度 chip——利好影响=红 / 利空影响=绿（中国股市惯例） */
+.infl-cnimp { padding: 1px 8px; border-radius: 999px; font-size: 12px; font-weight: 700; border: 1px solid transparent; }
+.infl-cnimp.bull { color: #b91c1c; background: #fef2f2; border-color: #fecaca; }
+.infl-cnimp.bull b { color: #dc2626; }
+.infl-cnimp.bear { color: #15803d; background: #f0fdf4; border-color: #bbf7d0; }
+.infl-cnimp.bear b { color: #16a34a; }
 .infl-surge.surge-hot { color: #b91c1c; background: #fef2f2; border-color: #fecaca; }
 .infl-surge.surge-warm { color: #c2410c; background: #fff7ed; border-color: #fed7aa; }
 .infl-surge.surge-normal { color: #1d4ed8; background: #eff6ff; border-color: #dbeafe; }
