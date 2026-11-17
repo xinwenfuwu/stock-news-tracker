@@ -11841,8 +11841,24 @@ const app = createApp({
     function hfeiDateISO(d) {
       return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
     }
-    /** 即将开盘的交易日：交易日 09:30 之前 = 今天；其余 = 下一个交易日（跳过周末） */
+    /**
+     * 目标交易日：由「统计结束时间」（时间行第二个输入框 / 红框）确定。
+     * 口径：取结束时间的日期；若该日非交易日（周末）顺延到其后第一个交易日。
+     * 系统的 defaultWindowEnd() 已保证「15:00 后跳到下一交易日」，故直接取日期即可与系统换日口径一致。
+     * 例：结束 2026-11-17 09:30 → 目标 2026-11-17；结束周六 → 顺延到周一。
+     * 结束时间缺失（极端情况）时回退旧口径：按系统当前时间推算。
+     */
     function hfeiTargetTradingDay(now) {
+      const HT = ht_();
+      const eD = (HT && HT.fromLocalInputValue) ? HT.fromLocalInputValue(hfeiWinEnd.value) : null;
+      if (eD && !isNaN(eD.getTime())) {
+        const base = new Date(eD.getFullYear(), eD.getMonth(), eD.getDate());
+        if (!hfeiIsTradingDay(base)) {
+          do { base.setDate(base.getDate() + 1); } while (!hfeiIsTradingDay(base));
+        }
+        return hfeiDateISO(base);
+      }
+      // 回退：结束时间未设置时，按系统当前时间（交易日 09:30 前 = 今天，否则下一交易日）
       const n = now ? new Date(now.getTime()) : new Date();
       const today = new Date(n.getFullYear(), n.getMonth(), n.getDate());
       const mins = n.getHours() * 60 + n.getMinutes();
@@ -11851,6 +11867,10 @@ const app = createApp({
       do { t.setDate(t.getDate() + 1); } while (!hfeiIsTradingDay(t));
       return hfeiDateISO(t);
     }
+    /** 时间行实时预览：当前结束时间对应的目标交易日（随 v-model 变化即时更新） */
+    const hfeiTargetPreview = computed(() => {
+      try { return hfeiTargetTradingDay(); } catch (e) { return ''; }
+    });
     /** 是否处于「交易日盘前」自动生成窗口（07:30 ~ 09:30） */
     function hfeiInPreOpen(now) {
       const n = now ? new Date(now.getTime()) : new Date();
@@ -16096,6 +16116,7 @@ const app = createApp({
       // 20261117e：用户页「合肥模式」——每交易日盘前预测报告（大模型生成）
       hfeiPanelOpen, hfeiToggle, hfeiLoading, hfeiStep, hfeiError, hfeiReport,
       hfeiWinStart, hfeiWinEnd, hfeiWinDay, hfeiWinText, hfeiSetWinDay, hfeiResetWin,
+      hfeiTargetPreview,
       hfeiHistShow, hfeiHistList, hfeiPickHistory, hfeiDeleteReport,
       generateHefeiReport, hfeiTargetTradingDay,
       // 20261117g：行情三列（今日涨幅/新闻日期/距今涨幅）+ 收盘复盘 + 预测逻辑迭代

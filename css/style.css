@@ -4358,6 +4358,12 @@ body.guest-mode #app { display: none; }
 .hfei-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 10px; flex-wrap: wrap; }
 .hfei-head-ops { display: flex; gap: 6px; flex-wrap: wrap; }
 .hfei-win { flex-wrap: wrap; row-gap: 6px; }
+.hfei-target-prev {
+  font-size: 12px; color: var(--primary); background: var(--surface-alt);
+  border: 1px solid var(--primary); border-radius: 999px;
+  padding: 3px 10px; white-space: nowrap; font-weight: 500;
+}
+.hfei-target-prev b { font-weight: 700; }
 .hfei-hist { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; margin: 8px 0 4px; }
 .hfei-hist-label { font-size: 12px; color: var(--text-secondary); }
 .hfei-hist .btn.active { background: var(--primary); color: #fff; border-color: var(--primary); }

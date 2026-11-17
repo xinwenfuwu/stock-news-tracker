@@ -10,12 +10,12 @@
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
   <title>股市信息分析系统</title>
-  <link rel="stylesheet" href="css/style.css?v=20261117g">
+  <link rel="stylesheet" href="css/style.css?v=20261117h">
   <!-- Vue 3 全局构建版（v3.4.21 · 自托管）
        原先走 unpkg.com CDN：国内网络对 unpkg 的连通性不稳定，一旦该请求长时间挂起，
        <head> 里的阻塞脚本会让整页停在白屏、后续 auth-boot.js 根本不会执行。
        改为同源托管后，启动链路不再依赖任何第三方 CDN。 -->
-  <script src="js/vue.global.prod.js?v=20261117g"></script>
+  <script src="js/vue.global.prod.js?v=20261117h"></script>
 </head>
 <body class="auth-locked">
   <!-- ===== 登录关卡：登录通过前业务脚本不会被加载 ===== -->
@@ -101,7 +101,7 @@
         <input class="auth-input" type="text" id="auth-renew-user" placeholder="用户名（你注册时用的）" maxlength="20" autocomplete="off">
         <div class="auth-renew-plans" id="auth-renew-plans"></div>
         <div class="auth-renew-qr" id="auth-renew-qr">
-          <div class="auth-renew-qrbox"><img id="auth-renew-wx" src="assets/wechat-pay-qr.jpg?v=20261117g" alt="微信支付收款码"><span>微信支付（扫码支付）</span></div>
+          <div class="auth-renew-qrbox"><img id="auth-renew-wx" src="assets/wechat-pay-qr.jpg?v=20261117h" alt="微信支付收款码"><span>微信支付（扫码支付）</span></div>
           <div class="muted small" style="margin-top:6px;color:#c2410c;font-weight:600">支付时请添加会员备注，付款成功截图保存</div>
         </div>
         <input class="auth-input" type="text" id="auth-renew-amount" inputmode="decimal" placeholder="支付金额（必填，如 1000）" autocomplete="off">
@@ -741,7 +741,7 @@
         <div class="page-footer">共 {{ sortedHoldings.length }} 条持仓</div>
 
 
-        <!-- ===== 20261117g：合肥模式 · 每交易日开盘前预测报告（大模型生成） =====
+        <!-- ===== 20261117h：合肥模式 · 每交易日开盘前预测报告（大模型生成） =====
              时间段沿用系统口径（每天 15:00 换日、起止可改、今天/昨天/前天快捷）；
              内容 = 影响力事件（中国/美国/全世界）+ 未来事件（突发/未来/人物）6 个子版块事件
                     ＋ 最近 3 个交易日大盘情绪 → 即将开盘交易日的板块预测、对中事件研判、
@@ -775,6 +775,7 @@
               {{ hfeiLoading ? '生成中…' : '🧿 生成盘前报告' }}
             </button>
             <button class="sw-btn sw-btn-ghost" :disabled="hfeiLoading" @click="hfeiResetWin">重置</button>
+            <span class="hfei-target-prev" v-if="hfeiTargetPreview">目标交易日 <b>{{ hfeiTargetPreview }}</b></span>
             <span class="sw-text" v-if="hfeiWinText">{{ hfeiWinText }}</span>
           </div>
 
@@ -803,7 +804,7 @@
               <button class="btn btn-sm hfei-del" @click="hfeiDeleteReport(hfeiReport.targetDate)" title="删除这份报告">🗑</button>
             </div>
 
-            <!-- 20261117g：6 个子版块由模型自行研判「哪个是主导」，不再由前端写死优先级 -->
+            <!-- 20261117h：6 个子版块由模型自行研判「哪个是主导」，不再由前端写死优先级 -->
             <div class="hfei-dominant" v-if="hfeiReport.ai.dominant && hfeiReport.ai.dominant.source">
               <span class="hfei-dom-tag">主导子版块</span>
               <b class="hfei-dom-name">{{ hfeiReport.ai.dominant.source }}</b>
@@ -1325,7 +1326,7 @@
                   <div class="qr-row">
                     <div class="qr-box">
                       <div class="qr-cap">推荐使用微信支付</div>
-                      <img src="assets/wechat-pay-qr.jpg?v=20261117g" alt="微信支付收款码" class="qr-pay-img">
+                      <img src="assets/wechat-pay-qr.jpg?v=20261117h" alt="微信支付收款码" class="qr-pay-img">
                       <div class="qr-cap" style="margin-top:6px;color:#c2410c;font-weight:600">支付时请添加会员备注，付款成功截图保存</div>
                       <div class="qr-cap muted small">火柴盒网络服务</div>
                     </div>
@@ -2739,7 +2740,7 @@
           <div class="quant-board-wrap">
           <div class="quant-tabs">
             <button type="button" :class="['quant-tab', { active: quantTab === 'post' }]" @click="quantTab = 'post'">📕 盘后板块</button>
-            <!-- 20261117g：原子版块替换为「产业投资」——上市公司工厂/产能投放进度跟踪 -->
+            <!-- 20261117h：原子版块替换为「产业投资」——上市公司工厂/产能投放进度跟踪 -->
             <button type="button" :class="['quant-tab', { active: quantTab === 'invest' }]" @click="quantTab = 'invest'">🏭 产业投资</button>
           </div>
 
@@ -5834,14 +5835,14 @@
     </transition>
   </div>
 
-  <script src="js/auth.js?v=20261117g"></script>
-  <script src="js/auth-sync.js?v=20261117g"></script>
+  <script src="js/auth.js?v=20261117h"></script>
+  <script src="js/auth-sync.js?v=20261117h"></script>
   <!-- 边缘加速默认站点（batch37 治本：Cloudflare Worker 代理东财/腾讯，缓解 JSONP 限流误报）。
        若你所在地区 workers.dev 访问慢，可在「设置 → 行情加速地址」清空即恢复纯直连。 -->
   <script>window.__SNT_ACCEL__ = 'https://sichina.dpdns.org';</script>
   <!-- 扫码支付二维码渲染库（第三方 qrcodejs，本地托管避免外链失效）。renderQr 会先检测全局 QRCode 是否存在。 -->
-  <script src="assets/qrcode.min.js?v=20261117g"></script>
-  <script src="js/auth-boot.js?v=20261117g"></script>
+  <script src="assets/qrcode.min.js?v=20261117h"></script>
+  <script src="js/auth-boot.js?v=20261117h"></script>
   <!-- store / stock-api / hot-topics / app 由 auth-boot.js 在登录通过后动态装载，
        未登录时它们不会被下载，业务数据也不会进入内存 -->
 </body>
