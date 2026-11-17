@@ -2556,7 +2556,7 @@
 
       </section>
 
-      <!-- ===== 独立页面：量化板块（盘后 / 盘中 每日操作信号打分） ===== -->
+      <!-- ===== 独立页面：量化板块（盘后信号打分 / 产业投资 项目进度跟踪） ===== -->
       <section v-show="currentPage === 'quant'" class="page">
         <div class="page-toolbar">
           <div class="toolbar-left"><h2 class="page-title">📊 量化板块</h2></div>
@@ -2565,11 +2565,11 @@
           </div>
         </div>
         <div class="quant-page">
-        <!-- 量化板块内容：盘后 / 盘中 每日操作信号打分（页面标题已在 .page-toolbar，此处不再重复标题） -->
+        <!-- 量化板块内容：盘后每日信号打分 + 产业投资产能投放跟踪（页面标题已在 .page-toolbar，此处不再重复标题） -->
           <div class="quant-board-wrap">
           <div class="quant-tabs">
             <button type="button" :class="['quant-tab', { active: quantTab === 'post' }]" @click="quantTab = 'post'">📕 盘后板块</button>
-            <!-- 20261117f：原「盘中板块」替换为「产业投资」——上市公司工厂/产能投放进度跟踪 -->
+            <!-- 20261117f：原子版块替换为「产业投资」——上市公司工厂/产能投放进度跟踪 -->
             <button type="button" :class="['quant-tab', { active: quantTab === 'invest' }]" @click="quantTab = 'invest'">🏭 产业投资</button>
           </div>
 
