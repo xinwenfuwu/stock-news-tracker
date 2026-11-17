@@ -1,20 +1,20 @@
 {
-  "generatedAt": "2026-11-17 12:26",
+  "generatedAt": "2026-11-17 23:53",
   "generatedBy": "GitHub Actions · 多源实时聚合",
   "sourceCount": 5,
-  "autoCount": 14,
+  "autoCount": 18,
   "events": [
     {
-      "id": "ab1kljv7o",
-      "title": "蒙古国总统呼日勒苏赫当地时间17日上午宣布辞去职务。按照蒙古国相关法律规定，总统辞职决定须经国家大呼拉尔（议会）批准方能生效。",
+      "id": "ab1et65aj",
+      "title": "据知情人士透露，美国国家安全局（NSA）用于内部通信的高度机密网络已经宕机。该网络名为NSA Net，供员工在内部传递机密信息。目前没有证据显示这是一起网络攻击。在国安局努力查明…",
       "tag": "宏观/综合",
-      "region": "全球",
-      "concept": "macro",
-      "time": "2026-11-17 12:26",
-      "datetime": "2026-11-17 12:26",
+      "region": "美国",
+      "concept": "usMacro",
+      "time": "2026-11-17 23:34",
+      "datetime": "2026-11-17 23:34",
       "source": "新浪7×24",
-      "url": "https://finance.sina.cn/7x24/2026-11-17/detail-iniyzhhm7730041.d.html",
-      "summary": "蒙古国总统呼日勒苏赫当地时间17日上午宣布辞去职务。按照蒙古国相关法律规定，总统辞职决定须经国家大呼拉尔（议会）批准方能生效。",
+      "url": "https://finance.sina.cn/7x24/2026-11-17/detail-inizaitx7459184.d.html",
+      "summary": "据知情人士透露，美国国家安全局（NSA）用于内部通信的高度机密网络已经宕机。该网络名为NSA Net，供员工在内部传递机密信息。目前没有证据显示这是一起网络攻击。在国安局努力查明问题的影响范围之际，该局已对人员到岗实行错峰安排。",
       "relatedStocks": [
         "宽基指数"
       ],
@@ -30,21 +30,315 @@
       "bearIndustries": [
         "顺周期"
       ],
-      "heat": 29,
+      "heat": 51,
+      "momentum": 56,
+      "_auto": true
+    },
+    {
+      "id": "ab135rxwv",
+      "title": "伊朗称美国袭击了格什姆，未造成人员伤亡。（迈赫尔通讯社）",
+      "tag": "地缘/政治",
+      "region": "美国",
+      "concept": "defense",
+      "time": "2026-11-17 23:47",
+      "datetime": "2026-11-17 23:47",
+      "source": "华尔街见闻",
+      "url": "https://wallstreetcn.com/livenews/3201407",
+      "summary": "伊朗称美国袭击了格什姆，未造成人员伤亡。（迈赫尔通讯社）",
+      "relatedStocks": [
+        "军工",
+        "黄金"
+      ],
+      "bullConcepts": [
+        "军工",
+        "避险资产"
+      ],
+      "bearConcepts": [
+        "风险资产"
+      ],
+      "bullIndustries": [
+        "军工",
+        "黄金"
+      ],
+      "bearIndustries": [
+        "航空",
+        "旅游"
+      ],
+      "heat": 38,
+      "momentum": 51,
+      "_auto": true
+    },
+    {
+      "id": "ab1ms98rb",
+      "title": "周二晚间，伊朗格什姆市传出五至六次爆炸声。",
+      "tag": "地缘/政治",
+      "region": "全球",
+      "concept": "macro",
+      "time": "2026-11-17 23:46",
+      "datetime": "2026-11-17 23:46",
+      "source": "新浪7×24",
+      "url": "https://finance.sina.cn/7x24/2026-11-17/detail-inizaitx2076009.d.html",
+      "summary": "周二晚间，伊朗格什姆市传出五至六次爆炸声。",
+      "relatedStocks": [
+        "军工",
+        "黄金"
+      ],
+      "bullConcepts": [
+        "军工",
+        "避险资产"
+      ],
+      "bearConcepts": [
+        "风险资产"
+      ],
+      "bullIndustries": [
+        "军工",
+        "黄金"
+      ],
+      "bearIndustries": [
+        "航空",
+        "旅游"
+      ],
+      "heat": 24,
       "momentum": 36,
       "_auto": true
     },
     {
-      "id": "abpyyzpu",
-      "title": "11月17日午间涨停分析",
+      "id": "ab1ry1bng",
+      "title": "惠誉表示，10月份私人信贷违约率降至6.2%。",
+      "tag": "宏观/综合",
+      "region": "全球",
+      "concept": "macro",
+      "time": "2026-11-17 23:40",
+      "datetime": "2026-11-17 23:40",
+      "source": "新浪7×24",
+      "url": "https://finance.sina.cn/7x24/2026-11-17/detail-inizaitt1577978.d.html",
+      "summary": "惠誉表示，10月份私人信贷违约率降至6.2%。",
+      "relatedStocks": [
+        "宽基指数"
+      ],
+      "bullConcepts": [
+        "防御板块"
+      ],
+      "bearConcepts": [
+        "周期股"
+      ],
+      "bullIndustries": [
+        "公用事业"
+      ],
+      "bearIndustries": [
+        "顺周期"
+      ],
+      "heat": 24,
+      "momentum": 36,
+      "_auto": true
+    },
+    {
+      "id": "ab1bti196",
+      "title": "黄仁勋将于12月1日出席美国众议院多个委员会的听证会。",
+      "tag": "宏观/综合",
+      "region": "美国",
+      "concept": "usMacro",
+      "time": "2026-11-17 23:07",
+      "datetime": "2026-11-17 23:07",
+      "source": "华尔街见闻",
+      "url": "https://wallstreetcn.com/livenews/3201387",
+      "summary": "黄仁勋将于12月1日出席美国众议院多个委员会的听证会。",
+      "relatedStocks": [
+        "宽基指数"
+      ],
+      "bullConcepts": [
+        "防御板块"
+      ],
+      "bearConcepts": [
+        "周期股"
+      ],
+      "bullIndustries": [
+        "公用事业"
+      ],
+      "bearIndustries": [
+        "顺周期"
+      ],
+      "heat": 24,
+      "momentum": 26,
+      "_auto": true
+    },
+    {
+      "id": "abieallj",
+      "title": "加州就Hugging Face遭袭及其他网络安全事件起诉OpenAI",
       "tag": "科技/AI",
       "region": "全球",
       "concept": "ai",
-      "time": "2026-11-17 11:38",
-      "datetime": "2026-11-17 11:38",
-      "source": "财联社",
-      "url": "https://www.cls.cn/detail/2536320",
-      "summary": "财联社11月17日电，今日午盘全市场共42股涨停，连板股总数7只，7股封板未遂，封板率为86%（不含ST股、退市股）。焦点股方面，商业航天概念股阳光照明14天8板，零售板块广百股份4连板，端侧AI概念股瀛通通讯6天4板。",
+      "time": "2026-11-17 17:20",
+      "datetime": "2026-11-17 17:20",
+      "source": "环球市场播报",
+      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-17/doc-iniyzswf7651155.shtml",
+      "summary": "十多名州总检察长正在调查 Hugging Face 安全事件。 加州总检察长罗布・邦塔于周一提起诉讼，缘由是 OpenAI 的一批 AI 智能体在 7 月对开源代码托管平台 Hugging Face...",
+      "relatedStocks": [
+        "英伟达",
+        "微软",
+        "台积电"
+      ],
+      "bullConcepts": [
+        "AI算力",
+        "半导体",
+        "国产替代"
+      ],
+      "bearConcepts": [
+        "传统软件"
+      ],
+      "bullIndustries": [
+        "半导体",
+        "AI应用",
+        "算力基础设施"
+      ],
+      "bearIndustries": [
+        "传统IT服务"
+      ],
+      "heat": 38,
+      "momentum": 18,
+      "_auto": true
+    },
+    {
+      "id": "ab1a5snzr",
+      "title": "报道：以色列向亚马逊人脸识别平台上传数百万张照片，用于追踪巴勒斯坦人",
+      "tag": "宏观/综合",
+      "region": "美国",
+      "concept": "usMacro",
+      "time": "2026-11-17 16:00",
+      "datetime": "2026-11-17 16:00",
+      "source": "环球市场播报",
+      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-17/doc-iniyzswc5402864.shtml",
+      "summary": "以色列军方向亚马逊云平台上传350万张照片，借助这家美国企业的人脸识别技术，分析巴勒斯坦人的影像资料。 泄露文件显示，这批海量影像库...",
+      "relatedStocks": [
+        "宽基指数"
+      ],
+      "bullConcepts": [
+        "防御板块"
+      ],
+      "bearConcepts": [
+        "周期股"
+      ],
+      "bullIndustries": [
+        "公用事业"
+      ],
+      "bearIndustries": [
+        "顺周期"
+      ],
+      "heat": 38,
+      "momentum": 18,
+      "_auto": true
+    },
+    {
+      "id": "ab1dd36v",
+      "title": "ST佳缘索赔持续推进 后续股民仍可起诉",
+      "tag": "宏观/综合",
+      "region": "全球",
+      "concept": "macro",
+      "time": "2026-11-17 17:26",
+      "datetime": "2026-11-17 17:26",
+      "source": "市场资讯",
+      "url": "https://finance.sina.com.cn/stock/gmwq/rightscase/2026-11-17/doc-iniyzsvz1773720.shtml",
+      "summary": "近日，投资者诉佳缘科技股份有限公司（简称：佳缘科技、ST佳缘，代码：301117）证券虚假陈述案持续推进。 曾代理投资者告赢150余家上市公司并获赔的浙江裕丰律师事务所厉健...",
+      "relatedStocks": [
+        "宽基指数"
+      ],
+      "bullConcepts": [
+        "防御板块"
+      ],
+      "bearConcepts": [
+        "周期股"
+      ],
+      "bullIndustries": [
+        "公用事业"
+      ],
+      "bearIndustries": [
+        "顺周期"
+      ],
+      "heat": 42,
+      "momentum": 18,
+      "_auto": true
+    },
+    {
+      "id": "ab10h5sr2",
+      "title": "英伟达“后黄仁勋时代”首份财报将至，华尔街：风险比估值更值得关注",
+      "tag": "科技/AI",
+      "region": "中国",
+      "concept": "llm",
+      "time": "2026-11-17 22:08",
+      "datetime": "2026-11-17 22:08",
+      "source": "环球市场播报",
+      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-17/doc-inizacmx5389405.shtml",
+      "summary": "英伟达将于北京时间11月18日凌晨公布2027财年第三季度财报，这是黄仁勋离任后公司公布的首份财报。多家华尔街机构认为，相比本季度财务表现...",
+      "relatedStocks": [
+        "英伟达",
+        "微软",
+        "台积电"
+      ],
+      "bullConcepts": [
+        "AI算力",
+        "半导体",
+        "国产替代"
+      ],
+      "bearConcepts": [
+        "传统软件"
+      ],
+      "bullIndustries": [
+        "半导体",
+        "AI应用",
+        "算力基础设施"
+      ],
+      "bearIndustries": [
+        "传统IT服务"
+      ],
+      "heat": 29,
+      "momentum": 26,
+      "_auto": true
+    },
+    {
+      "id": "ab1ckwlik",
+      "title": "美国第三艘航母进驻中东，伊朗加大威慑力度，霍尔木兹海峡发生油轮遇袭事件",
+      "tag": "贸易/供应链",
+      "region": "美国",
+      "concept": "antitrust",
+      "time": "2026-11-17 16:50",
+      "datetime": "2026-11-17 16:50",
+      "source": "环球市场播报",
+      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-17/doc-iniyzsvz1752204.shtml",
+      "summary": "核心要点伊朗升级针对美军以及商业航运的威胁。美国第三艘航空母舰驶入海湾地区，美军在当地军事力量进一步增强。分析师称：德黑兰方面持续试图扰乱这处关键航运咽喉要道...",
+      "relatedStocks": [
+        "跨境电商",
+        "航运"
+      ],
+      "bullConcepts": [
+        "内需",
+        "国产替代"
+      ],
+      "bearConcepts": [
+        "出口链"
+      ],
+      "bullIndustries": [
+        "跨境电商",
+        "内需消费"
+      ],
+      "bearIndustries": [
+        "出口制造",
+        "航运"
+      ],
+      "heat": 24,
+      "momentum": 18,
+      "_auto": true
+    },
+    {
+      "id": "ab16agfzc",
+      "title": "艾斯曼：受英伟达风波波及，AI“新云概念股”陷入“巨大困境”",
+      "tag": "科技/AI",
+      "region": "全球",
+      "concept": "ai",
+      "time": "2026-11-17 21:57",
+      "datetime": "2026-11-17 21:57",
+      "source": "环球市场播报",
+      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-17/doc-inizacmx5383382.shtml",
+      "summary": "因《大空头》一书为人熟知的投资人史蒂夫・艾斯曼表示，在英伟达丑闻持续发酵的过程中，所谓 AI新云概念股将会是最大输家。",
       "relatedStocks": [
         "英伟达",
         "微软",
@@ -71,340 +365,46 @@
       "_auto": true
     },
     {
-      "id": "ab49xaz8",
-      "title": "加州就 Hugging Face 遭入侵及其他 AI 模型失控事件起诉 OpenAI",
-      "tag": "科技/AI",
-      "region": "全球",
-      "concept": "ai",
-      "time": "2026-11-17 05:11",
-      "datetime": "2026-11-17 05:11",
-      "source": "环球市场播报",
-      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-17/doc-iniyyrkt7874617.shtml",
-      "summary": "加利福尼亚州总检察长罗布·邦塔周一（11月16日）对人工智能巨头 OpenAI 提起诉讼，指控该公司在缺乏足够安全防护和监控的情况下开发先进 AI 模型，涉嫌危害公众安全。",
+      "id": "abbeq9cg",
+      "title": "突发！300069，重大资产重组终止",
+      "tag": "宏观/综合",
+      "region": "中国",
+      "concept": "broker",
+      "time": "2026-11-17 21:33",
+      "datetime": "2026-11-17 21:33",
+      "source": "证券时报",
+      "url": "https://finance.sina.com.cn/stock/s/2026-11-17/doc-inizacmz2145931.shtml",
+      "summary": "又有A股上市公司重大资产重组终止。 11月17日晚间，金利华电（300069）公告，当日公司召开第六届董事会第二十四次会议，审议通过相关议案...",
       "relatedStocks": [
-        "英伟达",
-        "微软",
-        "台积电"
+        "宽基指数"
       ],
       "bullConcepts": [
-        "AI算力",
-        "半导体",
-        "国产替代"
+        "防御板块"
       ],
       "bearConcepts": [
-        "传统软件"
+        "周期股"
       ],
       "bullIndustries": [
-        "半导体",
-        "AI应用",
-        "算力基础设施"
+        "公用事业"
       ],
       "bearIndustries": [
-        "传统IT服务"
+        "顺周期"
       ],
-      "heat": 33,
+      "heat": 38,
       "momentum": 18,
       "_auto": true
     },
     {
-      "id": "abzbqiun",
-      "title": "AI热潮是引擎还是泡沫？美联储主席沃什画出三种结局：生产率跃升、大规模失业，或股市暴跌",
-      "tag": "科技/AI",
-      "region": "美国",
-      "concept": "aiCapex",
-      "time": "2026-11-17 06:02",
-      "datetime": "2026-11-17 06:02",
-      "source": "智通财经APP",
-      "url": "https://finance.sina.com.cn/stock/hkstock/ggscyd/2026-11-17/doc-iniyyvsr2307587.shtml",
-      "summary": "美联储主席沃什周一表示，人工智能（AI）技术的快速发展可能为美国经济带来生产率跃升和持续增长，但也可能引发大规模失业，甚至因投资回报不及预期而导致股市下跌和经济放...",
-      "relatedStocks": [
-        "英伟达",
-        "微软",
-        "台积电"
-      ],
-      "bullConcepts": [
-        "AI算力",
-        "半导体",
-        "国产替代"
-      ],
-      "bearConcepts": [
-        "传统软件"
-      ],
-      "bullIndustries": [
-        "半导体",
-        "AI应用",
-        "算力基础设施"
-      ],
-      "bearIndustries": [
-        "传统IT服务"
-      ],
-      "heat": 24,
-      "momentum": 18,
-      "_auto": true
-    },
-    {
-      "id": "abidwo75",
-      "title": "前OpenAI研究员阿申布伦纳的对冲基金在10月股市暴跌前再次押注人工智能",
-      "tag": "科技/AI",
-      "region": "全球",
-      "concept": "ai",
-      "time": "2026-11-17 08:21",
-      "datetime": "2026-11-17 08:21",
-      "source": "环球市场播报",
-      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-17/doc-iniyyvsr2368316.shtml",
-      "summary": "利奥波德·阿申布伦纳（Leopold Aschenbrenner）旗下以人工智能为主题的对冲基金Situational Awareness在7月份曾濒临崩溃；该基金在第三季度末重返金融市场时...",
-      "relatedStocks": [
-        "英伟达",
-        "微软",
-        "台积电"
-      ],
-      "bullConcepts": [
-        "AI算力",
-        "半导体",
-        "国产替代"
-      ],
-      "bearConcepts": [
-        "传统软件"
-      ],
-      "bullIndustries": [
-        "半导体",
-        "AI应用",
-        "算力基础设施"
-      ],
-      "bearIndustries": [
-        "传统IT服务"
-      ],
-      "heat": 33,
-      "momentum": 18,
-      "_auto": true
-    },
-    {
-      "id": "ab1sfm2e7",
-      "title": "特朗普支持黄仁勋重掌英伟达 董事会据悉未考虑让他复职",
-      "tag": "科技/AI",
-      "region": "美国",
-      "concept": "aiCapex",
-      "time": "2026-11-17 07:27",
-      "datetime": "2026-11-17 07:27",
-      "source": "环球市场播报",
-      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-17/doc-iniyyvsm1915781.shtml",
-      "summary": "美国总统唐纳德·特朗普支持一些硅谷领袖让黄仁勋重新担任英伟达首席执行官的呼声，但这家芯片制造商的董事会依然在推进物色新掌门的工作。",
-      "relatedStocks": [
-        "英伟达",
-        "微软",
-        "台积电"
-      ],
-      "bullConcepts": [
-        "AI算力",
-        "半导体",
-        "国产替代"
-      ],
-      "bearConcepts": [
-        "传统软件"
-      ],
-      "bullIndustries": [
-        "半导体",
-        "AI应用",
-        "算力基础设施"
-      ],
-      "bearIndustries": [
-        "传统IT服务"
-      ],
-      "heat": 33,
-      "momentum": 18,
-      "_auto": true
-    },
-    {
-      "id": "ab1pksggj",
-      "title": "英伟达董事会无意让黄仁勋复职，白宫内部对“换帅”现分歧",
-      "tag": "科技/AI",
-      "region": "美国",
-      "concept": "aiCapex",
-      "time": "2026-11-17 06:49",
-      "datetime": "2026-11-17 06:49",
-      "source": "环球市场播报",
-      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-17/doc-iniyyvsr7782214.shtml",
-      "summary": "据一位知悉董事会想法的消息人士透露，尽管一些投资者和员工不断发出呼吁其回归的呼声，但英伟达董事会目前并未考虑让黄仁勋重新担任首席执行官。",
-      "relatedStocks": [
-        "英伟达",
-        "微软",
-        "台积电"
-      ],
-      "bullConcepts": [
-        "AI算力",
-        "半导体",
-        "国产替代"
-      ],
-      "bearConcepts": [
-        "传统软件"
-      ],
-      "bullIndustries": [
-        "半导体",
-        "AI应用",
-        "算力基础设施"
-      ],
-      "bearIndustries": [
-        "传统IT服务"
-      ],
-      "heat": 24,
-      "momentum": 18,
-      "_auto": true
-    },
-    {
-      "id": "abc9llyr",
-      "title": "英伟达员工致信董事会，警告或流失“不可替代”的人才",
-      "tag": "科技/AI",
-      "region": "全球",
-      "concept": "ai",
-      "time": "2026-11-17 11:21",
-      "datetime": "2026-11-17 11:21",
-      "source": "环球市场播报",
-      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-17/doc-iniyzhhm7686788.shtml",
-      "summary": "据知情人士透露，英伟达一名资深员工致信该公司高管和董事会，称如果不恢复黄仁勋的首席执行官职务，可能会导致“不可替代的人才”流失。",
-      "relatedStocks": [
-        "英伟达",
-        "微软",
-        "台积电"
-      ],
-      "bullConcepts": [
-        "AI算力",
-        "半导体",
-        "国产替代"
-      ],
-      "bearConcepts": [
-        "传统软件"
-      ],
-      "bullIndustries": [
-        "半导体",
-        "AI应用",
-        "算力基础设施"
-      ],
-      "bearIndustries": [
-        "传统IT服务"
-      ],
-      "heat": 24,
-      "momentum": 26,
-      "_auto": true
-    },
-    {
-      "id": "ab1wcs8wk",
-      "title": "“这是个糟糕透顶的主意”：共和党人坚决反对黄仁勋重返英伟达",
-      "tag": "科技/AI",
-      "region": "美国",
-      "concept": "aiCapex",
-      "time": "2026-11-17 09:14",
-      "datetime": "2026-11-17 09:14",
-      "source": "环球市场播报",
-      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-17/doc-iniyyzyi1842407.shtml",
-      "summary": "据报道，美国总统唐纳德·特朗普为黄仁勋重返英伟达留下了一丝余地。但国会山的共和党人正试图彻底关上这扇门。九名共和党籍议员（其中包括参议院银行委员会和外交关系委员...",
-      "relatedStocks": [
-        "英伟达",
-        "微软",
-        "台积电"
-      ],
-      "bullConcepts": [
-        "AI算力",
-        "半导体",
-        "国产替代"
-      ],
-      "bearConcepts": [
-        "传统软件"
-      ],
-      "bullIndustries": [
-        "半导体",
-        "AI应用",
-        "算力基础设施"
-      ],
-      "bearIndustries": [
-        "传统IT服务"
-      ],
-      "heat": 24,
-      "momentum": 18,
-      "_auto": true
-    },
-    {
-      "id": "ab15vhq1i",
-      "title": "英伟达从市场宠儿沦为弃儿 空头账面大赚240亿美元而散户却在抄底",
-      "tag": "科技/AI",
-      "region": "美国",
-      "concept": "aiCapex",
-      "time": "2026-11-17 08:10",
-      "datetime": "2026-11-17 08:10",
-      "source": "环球市场播报",
-      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-17/doc-iniyyvsr7816180.shtml",
-      "summary": "英伟达前首席执行官黄仁勋因丑闻遭罢免后，公司股价大幅下挫，让做空者获得数百亿美元的账面收益。 S3 Partners数据显示，英伟达股价较10月6日创下的历史高点下跌35%...",
-      "relatedStocks": [
-        "英伟达",
-        "微软",
-        "台积电"
-      ],
-      "bullConcepts": [
-        "AI算力",
-        "半导体",
-        "国产替代"
-      ],
-      "bearConcepts": [
-        "传统软件"
-      ],
-      "bullIndustries": [
-        "半导体",
-        "AI应用",
-        "算力基础设施"
-      ],
-      "bearIndustries": [
-        "传统IT服务"
-      ],
-      "heat": 24,
-      "momentum": 18,
-      "_auto": true
-    },
-    {
-      "id": "ab11xyxgf",
-      "title": "至少12家家族办公室上季减持英伟达 黄仁勋离职前锁定获利",
-      "tag": "科技/AI",
-      "region": "全球",
-      "concept": "ai",
-      "time": "2026-11-17 07:17",
-      "datetime": "2026-11-17 07:17",
-      "source": "环球市场播报",
-      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-17/doc-iniyyvsr7792113.shtml",
-      "summary": "乔治·索罗斯的家族办公室上季加入为全球超级富豪管理资本的投资机构行列，减持英伟达，在这家备受推崇的芯片设计公司首席执行官黄仁勋戏剧性离职前锁定获利。",
-      "relatedStocks": [
-        "英伟达",
-        "微软",
-        "台积电"
-      ],
-      "bullConcepts": [
-        "AI算力",
-        "半导体",
-        "国产替代"
-      ],
-      "bearConcepts": [
-        "传统软件"
-      ],
-      "bullIndustries": [
-        "半导体",
-        "AI应用",
-        "算力基础设施"
-      ],
-      "bearIndustries": [
-        "传统IT服务"
-      ],
-      "heat": 24,
-      "momentum": 18,
-      "_auto": true
-    },
-    {
-      "id": "ab22prj",
-      "title": "美国副总统万斯：美国不会长期投入伊朗战争 甚至不会持续两年",
+      "id": "abmve0zr",
+      "title": "乌克兰重创普京看重的克里米亚大桥，泽连斯基盛赞这是一次 “史无前例的行动”",
       "tag": "地缘/政治",
-      "region": "美国",
-      "concept": "defense",
-      "time": "2026-11-17 04:40",
-      "datetime": "2026-11-17 04:40",
+      "region": "全球",
+      "concept": "macro",
+      "time": "2026-11-17 20:04",
+      "datetime": "2026-11-17 20:04",
       "source": "环球市场播报",
-      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-17/doc-iniyyrkp1985854.shtml",
-      "summary": "美国副总统JD·万斯在福克斯新闻预先录制的采访片段中谈到伊朗战争时表示：“我们不会让这成为一项持续10年或15年的投入，坦率地说，甚至不会持续两年。”",
+      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-17/doc-inizacmz2087669.shtml",
+      "summary": "核心要点乌克兰连续第二天袭击连接俄罗斯与被占领克里米亚的刻赤海峡（克里米亚）大桥，这座极具战略意义的跨海峡大桥交通被迫中断。",
       "relatedStocks": [
         "军工",
         "黄金"
@@ -429,70 +429,161 @@
       "_auto": true
     },
     {
-      "id": "abxm4ijl",
-      "title": "黄仁勋被罢免 “英伟达银行”能否继续力挺新云企业成疑",
-      "tag": "科技/AI",
-      "region": "全球",
-      "concept": "ai",
-      "time": "2026-11-17 05:57",
-      "datetime": "2026-11-17 05:57",
-      "source": "环球市场播报",
-      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-17/doc-iniyyrkt7891110.shtml",
-      "summary": "黄仁勋将英伟达打造成全球市值最高的公司，并利用其雄厚财力为新云（neoclouds）企业提供资金支持。这类新兴企业囤积芯片并出租算力。",
+      "id": "abwxjv9d",
+      "title": "南京熊猫索赔时效或剩四个月 受损股民仍可起诉",
+      "tag": "宏观/综合",
+      "region": "中国",
+      "concept": "broker",
+      "time": "2026-11-17 17:26",
+      "datetime": "2026-11-17 17:26",
+      "source": "市场资讯",
+      "url": "https://finance.sina.com.cn/stock/gmwq/rightscase/2026-11-17/doc-iniyzswf7656026.shtml",
+      "summary": "近日，投资者与南京熊猫电子股份有限公司（简称：南京熊猫，代码：600775 ）证券虚假陈述责任纠纷案持续推进。 原告代理人之一、浙江裕丰律师事务所厉健律师表示...",
       "relatedStocks": [
-        "英伟达",
-        "微软",
-        "台积电"
+        "宽基指数"
       ],
       "bullConcepts": [
-        "AI算力",
-        "半导体",
-        "国产替代"
+        "防御板块"
       ],
       "bearConcepts": [
-        "传统软件"
+        "周期股"
       ],
       "bullIndustries": [
-        "半导体",
-        "AI应用",
-        "算力基础设施"
+        "公用事业"
       ],
       "bearIndustries": [
-        "传统IT服务"
+        "顺周期"
+      ],
+      "heat": 33,
+      "momentum": 18,
+      "_auto": true
+    },
+    {
+      "id": "abztpwz1",
+      "title": "日本提议设立“亚洲版国际能源署” 提升东南亚储油能力应对能源危机",
+      "tag": "能源/资源",
+      "region": "全球",
+      "concept": "energy",
+      "time": "2026-11-17 15:21",
+      "datetime": "2026-11-17 15:21",
+      "source": "环球市场播报",
+      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-17/doc-iniyzswf2140450.shtml",
+      "summary": "日本提议设立一个“亚洲版国际能源署”，负责管理战略石油储备，让该地区免受战争或气候变化引发的能源冲击。 日本首相高市早苗于周二提议成立一支区域专项工作组...",
+      "relatedStocks": [
+        "中国石油",
+        "紫金矿业"
+      ],
+      "bullConcepts": [
+        "油气",
+        "贵金属"
+      ],
+      "bearConcepts": [
+        "高耗能制造"
+      ],
+      "bullIndustries": [
+        "石油开采",
+        "贵金属"
+      ],
+      "bearIndustries": [
+        "航空运输",
+        "化工"
       ],
       "heat": 24,
       "momentum": 18,
       "_auto": true
     },
     {
-      "id": "ab1aelxfb",
-      "title": "一油轮在霍尔木兹海峡遇袭后失去动力并起火",
-      "tag": "贸易/供应链",
-      "region": "欧洲",
-      "concept": "trade",
-      "time": "2026-11-17 05:34",
-      "datetime": "2026-11-17 05:34",
-      "source": "央视",
-      "url": "https://finance.sina.com.cn/jjxw/2026-11-17/doc-iniyyrkr5642840.shtml",
-      "summary": "当地时间11月16日，英国海上贸易行动办公室发布消息称，该机构收到一起发生在阿曼海塞卜以北约7海里处的袭击事件报告。报告称，一艘正在通过霍尔木兹海峡的油轮遭到袭击...",
+      "id": "abtbsfb2",
+      "title": "特朗普称正调查伊朗是否计划袭击华盛顿 有报道称其拟使用脏弹或化武",
+      "tag": "地缘/政治",
+      "region": "美国",
+      "concept": "defense",
+      "time": "2026-11-17 20:40",
+      "datetime": "2026-11-17 20:40",
+      "source": "环球市场播报",
+      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-17/doc-inizacmz7506217.shtml",
+      "summary": "美国总统唐纳德·特朗普表示，美国有关部门正在调查伊朗是否有袭击华盛顿的计划。 特朗普周二晚间在马尼拉被问一篇报道时表示：“我们正在调查。",
       "relatedStocks": [
-        "跨境电商",
-        "航运"
+        "军工",
+        "黄金"
       ],
       "bullConcepts": [
-        "内需",
-        "国产替代"
+        "军工",
+        "避险资产"
       ],
       "bearConcepts": [
-        "出口链"
+        "风险资产"
       ],
       "bullIndustries": [
-        "跨境电商",
-        "内需消费"
+        "军工",
+        "黄金"
       ],
       "bearIndustries": [
-        "出口制造",
-        "航运"
+        "航空",
+        "旅游"
+      ],
+      "heat": 24,
+      "momentum": 18,
+      "_auto": true
+    },
+    {
+      "id": "abhxcko",
+      "title": "举报者曝光爱泼斯坦付款记录、德意志银行股价暴跌",
+      "tag": "宏观/综合",
+      "region": "全球",
+      "concept": "macro",
+      "time": "2026-11-17 20:52",
+      "datetime": "2026-11-17 20:52",
+      "source": "环球市场播报",
+      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-17/doc-inizacmz2119172.shtml",
+      "summary": "核心要点国际媒体联盟查阅超过 1500 万份德意志银行泄露文件，揭露该行多年来在风险管理、合规及公司治理层面涉嫌存在多重失职。",
+      "relatedStocks": [
+        "宽基指数"
+      ],
+      "bullConcepts": [
+        "防御板块"
+      ],
+      "bearConcepts": [
+        "周期股"
+      ],
+      "bullIndustries": [
+        "公用事业"
+      ],
+      "bearIndustries": [
+        "顺周期"
+      ],
+      "heat": 24,
+      "momentum": 18,
+      "_auto": true
+    },
+    {
+      "id": "ab1h46j15",
+      "title": "欧盟称欧元区经济料保持稳健增长 通胀影响有限",
+      "tag": "金融/宏观",
+      "region": "欧洲",
+      "concept": "finance",
+      "time": "2026-11-17 20:52",
+      "datetime": "2026-11-17 20:52",
+      "source": "环球市场播报",
+      "url": "https://finance.sina.com.cn/world/2026-11-17/doc-inizacmz2118884.shtml",
+      "summary": "欧盟委员会称，未来几年欧元区经济将保持稳健增长，在伊朗战争爆发后通胀远比决策者预期顽固的情况下，经济仍展现出进一步韧性。",
+      "relatedStocks": [
+        "美股科技",
+        "黄金"
+      ],
+      "bullConcepts": [
+        "黄金",
+        "防御板块"
+      ],
+      "bearConcepts": [
+        "高估值成长股"
+      ],
+      "bullIndustries": [
+        "银行",
+        "黄金"
+      ],
+      "bearIndustries": [
+        "高杠杆地产"
       ],
       "heat": 24,
       "momentum": 18,
@@ -735,44 +826,6 @@
       ],
       "heat": 95,
       "momentum": 92
-    },
-    {
-      "id": "b8",
-      "title": "霍尔木兹海峡三艘油轮爆炸起火，伊朗多地遭袭",
-      "tag": "地缘/能源",
-      "region": "全球",
-      "concept": "energy",
-      "time": "2026-11-08",
-      "datetime": "2026-11-08 11:20",
-      "source": "央视/塔斯尼姆通讯社",
-      "summary": "伊朗革命卫队称11月8日当天已有三艘违规油轮在霍尔木兹海峡东部禁航区触雷爆炸起火；同日格什姆岛等地传出爆炸声，伊朗称遭美军袭击。特朗普宣布针对伊朗的\"铁门\"特遣行动全面展开。海峡通航风险推升原油与航运溢价。",
-      "relatedStocks": [
-        "中国海油",
-        "山东黄金",
-        "航运"
-      ],
-      "bullConcepts": [
-        "石油",
-        "黄金",
-        "油运",
-        "军工"
-      ],
-      "bearConcepts": [
-        "航空",
-        "化工(成本端)"
-      ],
-      "bullIndustries": [
-        "石油开采",
-        "航运",
-        "黄金",
-        "军工"
-      ],
-      "bearIndustries": [
-        "航空运输",
-        "化工"
-      ],
-      "heat": 90,
-      "momentum": 88
     },
     {
       "id": "b9",
