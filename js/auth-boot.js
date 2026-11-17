@@ -27,7 +27,7 @@
   'use strict';
 
   // 与 index.html 中静态资源版本号保持一致，避免升级后命中旧缓存
-  var ASSET_V = '20261117o';
+  var ASSET_V = '20261117p';
 
   // 管理员点开「注册申请导入链接」后，申请码暂存在这里，等业务层（app.js）就绪后取走
   var IMPORT_KEY = 'snt-pending-import-v1';
@@ -42,6 +42,7 @@
     'js/cloud-sync.js',
     'js/stock-api.js',
     'js/hot-topics.js',
+    'js/fgw-detail.js',
     'js/app.js'
   ];
 
@@ -578,6 +579,7 @@
     'js/cloud-sync.js': function () { return typeof CloudSync !== 'undefined' && !!CloudSync; },
     'js/stock-api.js': function () { return typeof StockAPI !== 'undefined' && !!StockAPI; },
     'js/hot-topics.js': function () { return !!(typeof window !== 'undefined' && window.HotTopics); },
+    'js/fgw-detail.js': function () { return !!(typeof window !== 'undefined' && Array.isArray(window.FGW_DETAIL_RAW)); },
     'js/app.js': function () {
       return typeof app !== 'undefined' && !!app && typeof app.mount === 'function';
     }

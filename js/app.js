@@ -16008,17 +16008,78 @@ const app = createApp({
         return x < y ? -1 : x > y ? 1 : 0;
       });
     });
-    /** 三级树：省 → 市 → 项目（只统计当前筛选结果） */
+    /** 20261117p：官方完整明细索引（安徽1806/上海198），按 省 -> 市 -> [项目]；已去重 */
+    const FGW_DETAIL_INDEX = (function () {
+      const idx = {};
+      const raw = (typeof window !== 'undefined' && Array.isArray(window.FGW_DETAIL_RAW)) ? window.FGW_DETAIL_RAW : [];
+      const seen = {};
+      raw.forEach(function (r) {
+        const pv = r[0], ct = r[1], proj = r[2], cat = r[3] || '';
+        if (!pv || !proj) return;
+        const key = pv + '|' + proj;
+        if (seen[key]) return; // 省+项目名去重
+        seen[key] = 1;
+        if (!idx[pv]) idx[pv] = {};
+        if (!idx[pv][ct]) idx[pv][ct] = [];
+        idx[pv][ct].push({ id: 'fd' + Object.keys(seen).length, prov: pv, city: ct, proj: proj,
+          category: cat, source: '官方重点项目清单（完整明细）', pub: '', amt: null, next: '',
+          _detail: true, leader: fgwLeaderOf(proj, '') });
+      });
+      return idx;
+    })();
+    /** 项目主导方分类：上市公司 / 有限公司 / 国企央企 / 政府事业 / 其他 */
+    function fgwLeaderOf(proj, subject) {
+      const s = String(proj || '') + ' ' + String(subject || '');
+      const listed = ['比亚迪','宁德时代','京东方','隆基','中芯','华友','万华','海尔','美的','格力','立讯','工业富联','赛力斯','拓普','恩捷','国轩','通威','长电','兆易','中微','沪硅','晶合','华鲁恒升','福莱特','中科曙光','浪潮','海光','三一','宝钢','河钢','中航沈飞','特变电工','天齐锂业','科大讯飞','华工科技','中船','中国建筑','申能','上海机场','格科微','中电科'];
+      for (let i = 0; i < listed.length; i++) if (s.indexOf(listed[i]) >= 0) return '上市公司';
+      if (/中国|中建|中铁|中交|国网|南网|国电|华电|大唐|中煤|中石化|中石油|央企|能源集团|建工集团|城投集团/.test(s)) return '国企央企';
+      if (/有限公司|集团|股份|实业|科技|制造|工业|厂|公司/.test(s)) return '有限公司';
+      if (/管委会|政府|医院|学校|学院|大学|公园|中心|管理局|研究院|实验室|中心|大道|道路|隧道|轨道|高铁|机场|港口|水利|防洪|供水|污水|棚户|安置|保障房/.test(s)) return '政府事业';
+      return '其他';
+    }
+    const FGW_LEADER_OPTS = ['全部主导方', '上市公司', '有限公司', '国企央企', '政府事业', '其他'];
+    const fgwLeader = ref('全部主导方');
+    /** 三级树：省 → 市 → 项目（样例 + 官方完整明细统一分组、去重、应用全部筛选） */
     const fgwTree = computed(() => {
+      const leader = fgwLeader.value;
+      const q = String(fgwQ.value || '').trim().toLowerCase();
+      const provFilter = fgwProv.value;
+      const catFilter = fgwCategory.value;
+      const yr = fgwYear.value === '全部年度' ? '2026' : fgwYear.value;
+      const passLeader = (r) => !leader || leader === '全部主导方' || (r.leader || fgwLeaderOf(r.proj, r.subject)) === leader;
+      const passQ = (r) => {
+        if (!q) return true;
+        return [r.prov, r.city, r.proj, r.code, r.name, r.subject, r.category, r.source].join(' ').toLowerCase().indexOf(q) >= 0;
+      };
+
+      // 1) 样例行（fgwFiltered 已应用 省/类别/年度/搜索），叠加主导方筛选
+      const seedRows = fgwFiltered.value.filter(passLeader);
+      // 2) 官方明细行：手动应用 省/搜索/主导方；类别筛选与明细类别体系不同时排除明细
+      const detailRows = [];
+      Object.keys(FGW_DETAIL_INDEX).forEach(pv => {
+        if (provFilter && pv !== provFilter) return;
+        if (catFilter) return;
+        Object.keys(FGW_DETAIL_INDEX[pv]).forEach(ct => {
+          FGW_DETAIL_INDEX[pv][ct].forEach(d => {
+            if (!passQ(d) || !passLeader(d)) return;
+            detailRows.push(d);
+          });
+        });
+      });
+
+      // 3) 统一按 省→市 分组；样例中与明细同名(省+项目名)的项目去重
       const byProv = {};
-      fgwFiltered.value.forEach(p => {
-        const pv = p.prov || '其他', ct = p.city || '其他';
+      const addRow = (r) => {
+        const pv = r.prov || '其他', ct = r.city || '其他';
         if (!byProv[pv]) byProv[pv] = {};
         if (!byProv[pv][ct]) byProv[pv][ct] = [];
-        byProv[pv][ct].push(p);
-      });
+        byProv[pv][ct].push(r);
+      };
+      const detailNames = {};
+      detailRows.forEach(d => { addRow(d); detailNames[d.prov + '|' + d.proj] = 1; });
+      seedRows.forEach(s => { if (!detailNames[s.prov + '|' + s.proj]) addRow(s); });
+
       const cmp = (a, b) => String(a || '') < String(b || '') ? -1 : String(a || '') > String(b || '') ? 1 : 0;
-      const yr = fgwYear.value === '全部年度' ? '2026' : fgwYear.value;
       return Object.keys(byProv).sort(cmp).map(pv => {
         const cities = Object.keys(byProv[pv]).sort(cmp).map(ct => {
           const rows = byProv[pv][ct];
@@ -16027,8 +16088,9 @@ const app = createApp({
           return {
             key: 'city:' + pv + '|' + ct, label: ct, n: rows.length, amt: amtSum,
             year: yr, title: fgwListTitle(pv, ct, yr, false),
-            totalText: meta ? (meta.total || '') : fgwAmtText(amtSum),
+            totalText: meta ? (meta.total || '') : (amtSum > 0 ? fgwAmtText(amtSum) : ''),
             countText: meta && meta.count ? meta.count : (rows.length + '项'),
+            detailCount: rows.filter(r => r._detail).length,
             annualText: meta && meta.annual ? meta.annual : '',
             pub: meta && meta.pub ? meta.pub : '',
             siteUrl: fgwSiteUrl(pv, ct, yr), rows
@@ -16040,7 +16102,7 @@ const app = createApp({
         return {
           key: 'prov:' + pv, label: pv, n: all.length, cityN: cities.length, amt: amtSum,
           year: yr, title: fgwListTitle(pv, '', yr, true),
-          totalText: meta ? (meta.total || '') : fgwAmtText(amtSum),
+          totalText: meta ? (meta.total || '') : (amtSum > 0 ? fgwAmtText(amtSum) : ''),
           countText: meta && meta.count ? meta.count : (all.length + '项'),
           annualText: meta && meta.annual ? meta.annual : '',
           pub: meta && meta.pub ? meta.pub : '',
@@ -16973,8 +17035,8 @@ const app = createApp({
       indSearching, indSearchErr, indSearchResults, indSearchPicked, indSearchQuery,
       indNetSearch, indAddSearchResults, indAddOne, indVerifyCandidate,
       // 20261117j/k：右侧「各省发改委投资大项目清单」（k：省→市→项目三级）
-      FGW_CATEGORY_OPTS, FGW_YEAR_OPTS, fgwAmtText, fgwList, fgwProvs, fgwcitiesOfProv, fgwFiltered, fgwTree, fgwExpanded,
-      fgwQ, fgwProv, fgwCategory, fgwYear, fgwToggle, fgwGroupToggle, fgwExpandAll, fgwToInd, fgwResetSeed, fgwVerify,
+      FGW_CATEGORY_OPTS, FGW_YEAR_OPTS, FGW_LEADER_OPTS, fgwAmtText, fgwList, fgwProvs, fgwcitiesOfProv, fgwFiltered, fgwTree, fgwExpanded,
+      fgwQ, fgwProv, fgwCategory, fgwYear, fgwLeader, fgwToggle, fgwGroupToggle, fgwExpandAll, fgwToInd, fgwResetSeed, fgwVerify,
       fgwForm, openFgwForm, closeFgwForm, saveFgwRow, delFgwRow,
       // 量化板块：数据端口 / 自动打分 / 共振选股
       quantData, quantFetchedAt, quantFetching, quantSearching, quantMsg, quantAiReport, quantAiBusy, quantAiDrafts,

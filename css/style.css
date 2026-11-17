@@ -4715,13 +4715,9 @@ body.guest-mode #app { display: none; }
 .ind-warn-tag.w-10d { color: #fff; background: var(--up); border-radius: 4px; padding: 1px 5px; }
 .ind-warn-tag.w-100d { color: #9a3412; background: #ffedd5; border-radius: 4px; padding: 1px 5px; }
 
-/* 主体两栏：左进度表 / 右发改委清单 */
+/* 20261117p：产业投资主体单栏（发改委清单已迁至「各省项目」独立板块） */
 .ind-two-col { display: grid; grid-template-columns: minmax(0, 1fr); gap: 14px; align-items: start; }
-@media (min-width: 1280px) {
-  .ind-two-col { grid-template-columns: minmax(0, 1.85fr) minmax(300px, 0.95fr); }
-}
 .ind-left { min-width: 0; }
-.ind-right { min-width: 0; }
 
 /* 屏幕底部固定横向滚动条 */
 .ind-hdock {
@@ -4813,6 +4809,8 @@ body.guest-mode #app { display: none; }
 }
 .fgw-card-link:hover { background: var(--primary); color: #fff; }
 .fgw-year-sel { flex: 0 0 auto; width: 92px !important; font-weight: 700; color: var(--primary); }
+.fgw-leader-sel { flex: 0 0 auto; width: 108px !important; font-weight: 600; color: #b45309; }
+.fgw-detail-count { color: #0e7490; font-weight: 600; }
 
 /* 20261117m：独立「各省项目」板块（清单全宽展示，功能与右侧面板一致、共享状态） */
 .fgw-page .fgw-panel { position: static; max-width: none; }
