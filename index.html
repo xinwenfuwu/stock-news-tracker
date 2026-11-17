@@ -10,12 +10,12 @@
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
   <title>股市信息分析系统</title>
-  <link rel="stylesheet" href="css/style.css?v=20261117d">
+  <link rel="stylesheet" href="css/style.css?v=20261117e">
   <!-- Vue 3 全局构建版（v3.4.21 · 自托管）
        原先走 unpkg.com CDN：国内网络对 unpkg 的连通性不稳定，一旦该请求长时间挂起，
        <head> 里的阻塞脚本会让整页停在白屏、后续 auth-boot.js 根本不会执行。
        改为同源托管后，启动链路不再依赖任何第三方 CDN。 -->
-  <script src="js/vue.global.prod.js?v=20261117d"></script>
+  <script src="js/vue.global.prod.js?v=20261117e"></script>
 </head>
 <body class="auth-locked">
   <!-- ===== 登录关卡：登录通过前业务脚本不会被加载 ===== -->
@@ -101,7 +101,7 @@
         <input class="auth-input" type="text" id="auth-renew-user" placeholder="用户名（你注册时用的）" maxlength="20" autocomplete="off">
         <div class="auth-renew-plans" id="auth-renew-plans"></div>
         <div class="auth-renew-qr" id="auth-renew-qr">
-          <div class="auth-renew-qrbox"><img id="auth-renew-wx" src="assets/wechat-pay-qr.jpg?v=20261117d" alt="微信支付收款码"><span>微信支付（扫码支付）</span></div>
+          <div class="auth-renew-qrbox"><img id="auth-renew-wx" src="assets/wechat-pay-qr.jpg?v=20261117e" alt="微信支付收款码"><span>微信支付（扫码支付）</span></div>
           <div class="muted small" style="margin-top:6px;color:#c2410c;font-weight:600">支付时请添加会员备注，付款成功截图保存</div>
         </div>
         <input class="auth-input" type="text" id="auth-renew-amount" inputmode="decimal" placeholder="支付金额（必填，如 1000）" autocomplete="off">
@@ -660,6 +660,7 @@
             <button class="btn btn-data" v-if="can('data.clear')" @click="openLocalData">🗄 本地数据</button>
             <button class="btn btn-notice" @click="openUserNotice">📋 用户须知</button>
             <button class="btn btn-vip" @click="openMembershipService">👑 会员服务</button>
+            <button class="btn btn-hefei" @click="hfeiToggle" title="合肥模式：每交易日开盘前，用大模型把 6 个子版块事件 ＋ 近 3 日大盘情绪综合成板块预测报告">🧿 合肥模式</button>
             <button class="btn" @click="openTradeLogicPanel">📊 交易逻辑</button>
             <button class="btn btn-primary" @click="openAddHolding">➕ 添加持仓</button>
             <button class="btn" @click="refreshHoldingPrices" :disabled="holdingRefreshing">
@@ -738,6 +739,164 @@
           </table>
         </div>
         <div class="page-footer">共 {{ sortedHoldings.length }} 条持仓</div>
+
+
+        <!-- ===== 20261117e：合肥模式 · 每交易日开盘前预测报告（大模型生成） =====
+             时间段沿用系统口径（每天 15:00 换日、起止可改、今天/昨天/前天快捷）；
+             内容 = 影响力事件（中国/美国/全世界）+ 未来事件（突发/未来/人物）6 个子版块事件
+                    ＋ 最近 3 个交易日大盘情绪 → 即将开盘交易日的板块预测、对中事件研判、
+                      利好/利空板块、10 只标的股。 -->
+        <div class="hfei-panel" v-show="hfeiPanelOpen">
+          <div class="hfei-head">
+            <h3 class="panel-title" style="margin:0">🧿 合肥模式
+              <span class="muted small">每交易日开盘前 · 6 个子版块事件 ＋ 近 3 日大盘情绪 → 板块预测与 10 只标的股</span>
+            </h3>
+            <div class="hfei-head-ops">
+              <button class="btn btn-sm" @click="hfeiHistShow = !hfeiHistShow">🗂 历史（{{ hfeiHistList().length }}）</button>
+              <button class="btn btn-sm" @click="hfeiPanelOpen = false">🙈 收起</button>
+            </div>
+          </div>
+
+          <div class="stat-win hfei-win">
+            <span class="sw-label">新闻统计开始时间</span>
+            <input type="datetime-local" class="sw-input" v-model="hfeiWinStart" :disabled="hfeiLoading"
+                   title="统计开始时间（系统口径：每天 15:00 换日）" @input="hfeiWinDay = -1">
+            <span class="sw-sep">-</span>
+            <input type="datetime-local" class="sw-input" v-model="hfeiWinEnd" :disabled="hfeiLoading"
+                   title="统计结束时间（默认本次闭市 15:00，可修改）" @input="hfeiWinDay = -1">
+            <span class="sw-sep">｜</span>
+            <button class="sw-btn sw-btn-day" :class="{active: hfeiWinDay===0}" :disabled="hfeiLoading" @click="hfeiSetWinDay(0)"
+                    title="按系统「今天」默认时间段填充（上次闭市 15:00 → 本次闭市 15:00）">今天</button>
+            <button class="sw-btn sw-btn-day" :class="{active: hfeiWinDay===1}" :disabled="hfeiLoading" @click="hfeiSetWinDay(1)"
+                    title="前移 1 个交易日">昨天</button>
+            <button class="sw-btn sw-btn-day" :class="{active: hfeiWinDay===2}" :disabled="hfeiLoading" @click="hfeiSetWinDay(2)"
+                    title="前移 2 个交易日">前天</button>
+            <button class="sw-btn" :disabled="hfeiLoading" @click="generateHefeiReport()">
+              {{ hfeiLoading ? '生成中…' : '🧿 生成盘前报告' }}
+            </button>
+            <button class="sw-btn sw-btn-ghost" :disabled="hfeiLoading" @click="hfeiResetWin">重置</button>
+            <span class="sw-text" v-if="hfeiWinText">{{ hfeiWinText }}</span>
+          </div>
+
+          <div class="hfei-hist" v-if="hfeiHistShow">
+            <span class="hfei-hist-label">历史报告</span>
+            <button class="btn btn-sm" v-for="r in hfeiHistList()" :key="'hf'+r.targetDate"
+                    :class="{active: hfeiReport && hfeiReport.targetDate === r.targetDate}"
+                    @click="hfeiPickHistory(r.targetDate)">{{ r.targetDate }}</button>
+            <span class="muted small" v-if="!hfeiHistList().length">暂无历史报告（最多保留最近 20 份）</span>
+          </div>
+
+          <div class="hfei-tip" v-if="hfeiLoading">⏳ {{ hfeiStep }}</div>
+          <div class="hfei-tip is-err" v-else-if="hfeiError">{{ hfeiError }}</div>
+          <div class="hfei-tip" v-else-if="!hfeiReport">
+            还没有报告：点「🧿 生成盘前报告」立即生成。交易日 07:30–09:30 打开本页会自动生成当日盘前报告（需先在「偏好设置 → AI 解读」配置大模型接口）。
+          </div>
+
+          <template v-if="hfeiReport && !hfeiLoading">
+            <div class="hfei-meta">
+              <span class="hfei-badge">目标交易日 <b>{{ hfeiReport.targetDate }}</b></span>
+              <span class="hfei-badge">生成于 {{ hfeiReport.generatedAtText }}</span>
+              <span class="hfei-badge">统计窗口 {{ hfeiReport.windowText }}<span class="hfei-badge-sub">（数据截至生成时刻）</span></span>
+              <span class="hfei-badge">模型 {{ hfeiReport.model }}</span>
+              <span class="hfei-badge">事件：中 {{ hfeiReport.events.cn }} · 美 {{ hfeiReport.events.us }} · 全球 {{ hfeiReport.events.world }} · 突发 {{ hfeiReport.events.breaking }} · 未来 {{ hfeiReport.events.future }} · 人物 {{ hfeiReport.events.people }}</span>
+              <button class="btn btn-sm hfei-del" @click="hfeiDeleteReport(hfeiReport.targetDate)" title="删除这份报告">🗑</button>
+            </div>
+
+            <div class="hfei-mood" :class="'is-' + (hfeiReport.ai.mood.score >= 60 ? 'bull' : (hfeiReport.ai.mood.score <= 40 ? 'bear' : 'flat'))">
+              <div class="hfei-mood-head">
+                <span class="hfei-sec-no">①</span>
+                <span class="hfei-sec-title">最近 3 个交易日大盘情绪</span>
+                <span class="hfei-mood-chip">{{ hfeiReport.ai.mood.label }} · {{ hfeiReport.ai.mood.score }} 分</span>
+              </div>
+              <div class="hfei-mood-comment">{{ hfeiReport.ai.mood.comment }}</div>
+              <div class="hfei-mood-raw">{{ hfeiReport.market.text }}</div>
+            </div>
+
+            <div class="hfei-sec">
+              <div class="hfei-sec-head">
+                <span class="hfei-sec-no">②</span>
+                <span class="hfei-sec-title">对中国影响最大的事件（6 个子版块中研判）</span>
+              </div>
+              <div class="table-wrap table-scroll-x">
+                <table class="data-table hfei-evt-table">
+                  <thead><tr><th>子版块</th><th>事件</th><th class="num-col">对中</th><th>方向</th><th>对中国行业 / 概念的影响</th></tr></thead>
+                  <tbody>
+                    <tr v-for="(e, i) in hfeiReport.ai.topEvents" :key="'te'+i">
+                      <td :data-label="'子版块'"><span class="hfei-src">{{ e.source }}</span></td>
+                      <td :data-label="'事件'">{{ e.title }}</td>
+                      <td class="num-col" :data-label="'对中'">{{ e.score }}</td>
+                      <td :data-label="'方向'"><span class="hfei-side" :class="'is-' + e.dir">{{ e.dir === 'bear' ? '利空' : '利好' }}</span></td>
+                      <td :data-label="'影响'">{{ e.why }}</td>
+                    </tr>
+                    <tr v-if="!hfeiReport.ai.topEvents.length"><td colspan="5" class="empty-row">模型未给出重点事件</td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <div class="hfei-two">
+              <div class="hfei-sec hfei-sec-bull">
+                <div class="hfei-sec-head">
+                  <span class="hfei-sec-no">③</span>
+                  <span class="hfei-sec-title">利好板块 <span class="hfei-side is-bull">红</span></span>
+                </div>
+                <div class="hfei-sector" v-for="(s, i) in hfeiReport.ai.bullSectors" :key="'bs'+i">
+                  <span class="hfei-sector-name">{{ s.name }}</span>
+                  <span class="hfei-lv" :title="'强度 ' + s.level + '/5'">{{ '●'.repeat(s.level) }}</span>
+                  <span class="hfei-sector-why">{{ s.why }}</span>
+                </div>
+                <div class="muted small" v-if="!hfeiReport.ai.bullSectors.length">—</div>
+              </div>
+              <div class="hfei-sec hfei-sec-bear">
+                <div class="hfei-sec-head">
+                  <span class="hfei-sec-no">④</span>
+                  <span class="hfei-sec-title">利空板块 <span class="hfei-side is-bear">绿</span></span>
+                </div>
+                <div class="hfei-sector" v-for="(s, i) in hfeiReport.ai.bearSectors" :key="'xs'+i">
+                  <span class="hfei-sector-name">{{ s.name }}</span>
+                  <span class="hfei-lv is-bear" :title="'强度 ' + s.level + '/5'">{{ '●'.repeat(s.level) }}</span>
+                  <span class="hfei-sector-why">{{ s.why }}</span>
+                </div>
+                <div class="muted small" v-if="!hfeiReport.ai.bearSectors.length">—</div>
+              </div>
+            </div>
+
+            <div class="hfei-sec">
+              <div class="hfei-sec-head">
+                <span class="hfei-sec-no">⑤</span>
+                <span class="hfei-sec-title">对应标的股（10 只）</span>
+                <span class="muted small">方向 = 本次事件组合下该股的预期方向；代码已按名称反查校验，取不到的显示「待校验」</span>
+              </div>
+              <div class="table-wrap table-scroll-x">
+                <table class="data-table hfei-pick-table">
+                  <thead><tr><th class="num-col">#</th><th>代码</th><th>名称</th><th>所属板块</th><th>方向</th><th>入选逻辑</th><th class="num-col">最近价</th></tr></thead>
+                  <tbody>
+                    <tr v-for="(p, i) in hfeiReport.ai.picks" :key="'pk'+i">
+                      <td class="num-col" :data-label="'#'">{{ i + 1 }}</td>
+                      <td class="hfei-code" :data-label="'代码'">{{ /^\d{6}$/.test(p.code) ? p.code : '待校验' }}</td>
+                      <td :data-label="'名称'">{{ p.name || '—' }}</td>
+                      <td :data-label="'所属板块'">{{ p.sector || '—' }}</td>
+                      <td :data-label="'方向'"><span class="hfei-side" :class="'is-' + p.side">{{ p.side === 'bear' ? '利空' : '利好' }}</span></td>
+                      <td :data-label="'入选逻辑'">{{ p.reason }}</td>
+                      <td class="num-col" :data-label="'最近价'">{{ (p.quote && p.quote.price != null) ? p.quote.price : '—' }}</td>
+                    </tr>
+                    <tr v-if="!hfeiReport.ai.picks.length"><td colspan="7" class="empty-row">模型未给出标的股，可重试生成</td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <div class="hfei-sec hfei-summary">
+              <div class="hfei-sec-head">
+                <span class="hfei-sec-no">⑥</span>
+                <span class="hfei-sec-title">对 {{ hfeiReport.targetDate }} 开盘的综合研判</span>
+              </div>
+              <p class="hfei-summary-text">{{ hfeiReport.ai.summary }}</p>
+              <p class="hfei-risk" v-if="hfeiReport.ai.risk">⚠️ {{ hfeiReport.ai.risk }}</p>
+              <p class="muted small">本报告由大模型依据上述新闻事件与大盘数据生成，仅供研究参考，不构成投资建议。</p>
+            </div>
+          </template>
+        </div>
 
 
         <!-- 交易逻辑板块（普通用户交易逻辑记录表；入口在持仓页 toolbar「📊 交易逻辑」） -->
@@ -996,7 +1155,7 @@
                   <div class="qr-row">
                     <div class="qr-box">
                       <div class="qr-cap">推荐使用微信支付</div>
-                      <img src="assets/wechat-pay-qr.jpg?v=20261117d" alt="微信支付收款码" class="qr-pay-img">
+                      <img src="assets/wechat-pay-qr.jpg?v=20261117e" alt="微信支付收款码" class="qr-pay-img">
                       <div class="qr-cap" style="margin-top:6px;color:#c2410c;font-weight:600">支付时请添加会员备注，付款成功截图保存</div>
                       <div class="qr-cap muted small">火柴盒网络服务</div>
                     </div>
@@ -5344,14 +5503,14 @@
     </transition>
   </div>
 
-  <script src="js/auth.js?v=20261117d"></script>
-  <script src="js/auth-sync.js?v=20261117d"></script>
+  <script src="js/auth.js?v=20261117e"></script>
+  <script src="js/auth-sync.js?v=20261117e"></script>
   <!-- 边缘加速默认站点（batch37 治本：Cloudflare Worker 代理东财/腾讯，缓解 JSONP 限流误报）。
        若你所在地区 workers.dev 访问慢，可在「设置 → 行情加速地址」清空即恢复纯直连。 -->
   <script>window.__SNT_ACCEL__ = 'https://sichina.dpdns.org';</script>
   <!-- 扫码支付二维码渲染库（第三方 qrcodejs，本地托管避免外链失效）。renderQr 会先检测全局 QRCode 是否存在。 -->
-  <script src="assets/qrcode.min.js?v=20261117d"></script>
-  <script src="js/auth-boot.js?v=20261117d"></script>
+  <script src="assets/qrcode.min.js?v=20261117e"></script>
+  <script src="js/auth-boot.js?v=20261117e"></script>
   <!-- store / stock-api / hot-topics / app 由 auth-boot.js 在登录通过后动态装载，
        未登录时它们不会被下载，业务数据也不会进入内存 -->
 </body>

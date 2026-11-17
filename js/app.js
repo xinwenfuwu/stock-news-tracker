@@ -116,6 +116,8 @@ const app = createApp({
       // 进入「全球信息」页：优先展示最近可用的内置快照（同源、无需代理），再考虑实时抓取
       if (key === 'finance') autoLoadHotTopics();
       maybeAutoLoadBriefs(key);
+      // 20261117e：进入「用户」页时检查是否需要自动生成「合肥模式」盘前报告（交易日 07:30~09:30）
+      if (key === 'holdings') setTimeout(hfeiMaybeAutoGenerate, 1200);
     }
     // 初始化路由
     const hash = location.hash.replace('#', '');
@@ -11804,6 +11806,402 @@ const app = createApp({
       return String(x);
     }
 
+    // ===== 20261117e：用户页「合肥模式」——每交易日盘前预测报告（大模型生成） =====
+    // 需求：在「用户」页新增「合肥模式」报告。每个交易日开盘前，按系统统一的「时间段」口径
+    //   （每天 15:00 换日、起止可改，另有 今天/昨天/前天 快捷），取该时间段内
+    //   「影响力事件（中国/美国/全世界）＋ 未来事件（突发/未来/人物）」共 6 个子版块的事件，
+    //   结合最近 3 个交易日的大盘情绪，用大模型预测即将开盘交易日的板块方向，
+    //   重点研判对中国影响最大的事件，给出利好 / 利空板块与 10 只标的股。
+    const HF_PREOPEN_START = 7 * 60 + 30;   // 盘前自动生成窗口起点 07:30
+    const HF_PREOPEN_END = 9 * 60 + 30;     // 开盘 09:30：此后生成的报告面向下一交易日
+    const hfeiPanelOpen = ref(false);
+    const hfeiLoading = ref(false);
+    const hfeiStep = ref('');
+    const hfeiError = ref('');
+    const hfeiWinStart = ref('');
+    const hfeiWinEnd = ref('');
+    const hfeiWinDay = ref(0);              // 0=今天 1=昨天 2=前天；-1=自定义
+    const hfeiReport = ref(null);           // 当前展示的报告
+    const hfeiHistShow = ref(false);
+
+    /** 报告仓库：按「目标交易日」存，最多保留 20 份（随 Store 自动落盘 / 云同步） */
+    function hfeiAll() {
+      if (!D.hfeiReports || typeof D.hfeiReports !== 'object') D.hfeiReports = {};
+      return D.hfeiReports;
+    }
+    function hfeiReportOf(dateKey) { const m = hfeiAll(); return (dateKey && m[dateKey]) ? m[dateKey] : null; }
+    function hfeiHistList() {
+      const m = hfeiAll();
+      return Object.keys(m).sort().reverse().map(k => m[k]).filter(Boolean);
+    }
+    function hfeiIsTradingDay(d) {
+      const HT = ht_();
+      return (HT && HT.isTradingDay) ? HT.isTradingDay(d) : (d.getDay() !== 0 && d.getDay() !== 6);
+    }
+    function hfeiDateISO(d) {
+      return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+    }
+    /** 即将开盘的交易日：交易日 09:30 之前 = 今天；其余 = 下一个交易日（跳过周末） */
+    function hfeiTargetTradingDay(now) {
+      const n = now ? new Date(now.getTime()) : new Date();
+      const today = new Date(n.getFullYear(), n.getMonth(), n.getDate());
+      const mins = n.getHours() * 60 + n.getMinutes();
+      if (hfeiIsTradingDay(today) && mins < HF_PREOPEN_END) return hfeiDateISO(today);
+      const t = new Date(today.getTime());
+      do { t.setDate(t.getDate() + 1); } while (!hfeiIsTradingDay(t));
+      return hfeiDateISO(t);
+    }
+    /** 是否处于「交易日盘前」自动生成窗口（07:30 ~ 09:30） */
+    function hfeiInPreOpen(now) {
+      const n = now ? new Date(now.getTime()) : new Date();
+      const mins = n.getHours() * 60 + n.getMinutes();
+      return hfeiIsTradingDay(n) && mins >= HF_PREOPEN_START && mins <= HF_PREOPEN_END;
+    }
+    /** 默认时间段 = 系统口径（上次闭市 15:00 → 本次闭市 15:00） */
+    function hfeiResetWin() {
+      const HT = ht_();
+      if (!HT || !HT.defaultWindowStart || !HT.defaultWindowEnd || !HT.toLocalInputValue) return;
+      hfeiWinStart.value = HT.toLocalInputValue(HT.defaultWindowStart());
+      hfeiWinEnd.value = HT.toLocalInputValue(HT.defaultWindowEnd());
+      hfeiWinDay.value = 0;
+    }
+    hfeiResetWin();
+    /** 今天 / 昨天 / 前天：与每日快讯同一个窗口口径（15:00 换日、按交易日平移） */
+    function hfeiSetWinDay(k) {
+      const HT = ht_();
+      const w = briefShiftedDefaults(k);
+      if (!w || !HT || !HT.toLocalInputValue) return;
+      hfeiWinStart.value = HT.toLocalInputValue(w.start);
+      hfeiWinEnd.value = HT.toLocalInputValue(w.end);
+      hfeiWinDay.value = k;
+    }
+    const hfeiWinText = computed(() => {
+      const HT = ht_();
+      if (!HT || !HT.fromLocalInputValue || !HT.fmtWindowCN) return '';
+      const s = HT.fromLocalInputValue(hfeiWinStart.value);
+      const e = HT.fromLocalInputValue(hfeiWinEnd.value);
+      if (!s || !e) return '';
+      return HT.fmtWindowCN(s.getTime()) + ' - ' + HT.fmtWindowCN(e.getTime());
+    });
+    function hfeiToggle() {
+      hfeiPanelOpen.value = !hfeiPanelOpen.value;
+      if (hfeiPanelOpen.value && !hfeiReport.value) {
+        const old = hfeiReportOf(hfeiTargetTradingDay());
+        if (old) hfeiReport.value = old;
+      }
+    }
+    function hfeiPickHistory(dateKey) {
+      const r = hfeiReportOf(dateKey);
+      if (r) { hfeiReport.value = r; hfeiHistShow.value = false; }
+    }
+    function hfeiDeleteReport(dateKey) {
+      const m = hfeiAll();
+      if (!m[dateKey]) return;
+      delete m[dateKey];
+      try { Store.saveNow(); } catch (e) { /* ignore */ }
+      if (hfeiReport.value && hfeiReport.value.targetDate === dateKey) hfeiReport.value = null;
+      showToast('已删除 ' + dateKey + ' 的合肥模式报告', 'info');
+    }
+    function hfeiFmtPct(x) {
+      return (x == null || isNaN(x)) ? '—' : ((x >= 0 ? '+' : '') + Number(x).toFixed(2) + '%');
+    }
+    function hfeiFetchJson(path) {
+      return fetch(path + '?_=' + Date.now(), { cache: 'no-store' })
+        .then(r => (r.ok ? r.json() : null))
+        .then(j => {
+          const arr = Array.isArray(j) ? j : (j && j.events) || null;
+          return (arr && arr.length) ? arr : null;
+        })
+        .catch(() => null);
+    }
+    /** 事件日期（datetime / time / date 三种字段里取第一个可用的 YYYY-MM-DD） */
+    function hfeiEvtDateOf(e) {
+      const m = /^(\d{4}-\d{2}-\d{2})/.exec(String((e && (e.datetime || e.time || e.date)) || ''));
+      return m ? m[1] : '';
+    }
+    /**
+     * 汇总 6 个子版块的事件（每块按「对中影响度」降序取前 10 条）
+     *  - 影响力事件：本地精选库按系统窗口重锚后的全量，按 region 分组（不依赖当前选中区域）
+     *  - 未来事件：远端快照优先（突发 / 人物 / 未来），失败回退内嵌底库
+     */
+    async function hfeiCollectEvents() {
+      const out = { cn: [], us: [], world: [], breaking: [], future: [], people: [] };
+      const HT = ht_();
+      const sD = (HT && HT.fromLocalInputValue) ? HT.fromLocalInputValue(hfeiWinStart.value) : null;
+      const startISO = sD ? hfeiDateISO(sD) : '';
+      /** YYYY-MM-DD 往前推 n 天（补足事件时用） */
+      const daysBefore = (iso, n) => {
+        const d = new Date(iso + 'T12:00:00');
+        if (isNaN(d.getTime())) return iso;
+        d.setDate(d.getDate() - n);
+        return hfeiDateISO(d);
+      };
+      const topBy = (arr) => arr
+        .map(e => withCnImp(resolveFutureImpact(e)))
+        .sort((a, b) => (Number(b.cnImp && b.cnImp.score) || 0) - (Number(a.cnImp && a.cnImp.score) || 0))
+        .slice(0, 10);
+      try {
+        const anchored = inflAnchoredSeed();
+        ['cn', 'us', 'world'].forEach(reg => {
+          const pool = anchored
+            .filter(e => e.region === reg)
+            .map(e => inflWithBullBear(withCnImp(resolveInfluence(e))))
+            .sort((a, b) => (Number(b.cnImp && b.cnImp.score) || 0) - (Number(a.cnImp && a.cnImp.score) || 0));
+          // 时间段内事件太少时（盘前窗口通常只覆盖收盘后到此刻），前溯 5 个自然日补足，
+          // 保证 6 个子版块都有足够素材供模型研判；报告 meta 会注明事件条数。
+          let list = startISO ? pool.filter(e => hfeiEvtDateOf(e) >= startISO) : pool;
+          if (list.length < 3 && startISO) {
+            const relax = daysBefore(startISO, 5);
+            list = pool.filter(e => hfeiEvtDateOf(e) >= relax);
+          }
+          out[reg] = list.slice(0, 10);
+        });
+      } catch (err) { /* 事件库异常不阻断报告 */ }
+      const b = await hfeiFetchJson('data/hot-topics/breaking-events.json');
+      out.breaking = topBy((b && b.length) ? b : BREAKING_EVENTS_SEED);
+      const p = await hfeiFetchJson('data/hot-topics/celebrity-news.json');
+      out.people = topBy((p && p.length) ? p : CELEBRITY_EVENTS_SEED);
+      const u = await hfeiFetchJson('data/hot-topics/upcoming-events.json');
+      const upSrc = (u && u.length) ? u : UPCOMING_EVENTS;
+      const upLive = upSrc.filter(isUpcoming);
+      out.future = topBy(upLive.length ? upLive : upSrc);
+      return out;
+    }
+    /** 最近 3 个交易日大盘情绪：上证 / 创业板指 日K 涨跌幅 + 量能环比 + 涨跌家数（best-effort） */
+    async function hfeiMarketMood() {
+      const mood = { rows: [], cybRows: [], breadth: null, text: '', ok: false };
+      const series = async (code, name) => {
+        let bars = [];
+        try { bars = await StockAPI.getKline(code, '', '', 12); } catch (e) { bars = []; }
+        if (!bars || bars.length < 2) return null;
+        const tail = bars.slice(-4);            // 多取一根用于算第一天量能环比
+        const rows = [];
+        for (let i = 1; i < tail.length; i++) {
+          const b = tail[i], pv = tail[i - 1];
+          if (!pv.close || !b.close) continue;
+          rows.push({
+            date: b.date,
+            close: b.close,
+            chg: (b.close / pv.close - 1) * 100,
+            vol: b.volume || 0,
+            volChg: (pv.volume && b.volume) ? (b.volume / pv.volume - 1) * 100 : null
+          });
+        }
+        return { name, rows: rows.slice(-3) };
+      };
+      const pair = await Promise.all([series('sh000001', '上证指数'), series('sz399006', '创业板指')]);
+      const sh = pair[0], cyb = pair[1];
+      try {
+        if (typeof StockAPI._eastGet === 'function') {
+          const j = await StockAPI._eastGet('https://push2.eastmoney.com/api/qt/stock/get?secid=1.000001&fields=f43,f104,f105,f106');
+          const d = j && j.data;
+          if (d && (d.f104 != null || d.f105 != null)) mood.breadth = { up: d.f104, down: d.f105, flat: d.f106 };
+        }
+      } catch (e) { /* 接口不可用则略过，不编造数字 */ }
+      const lines = [];
+      if (sh && sh.rows.length) {
+        lines.push('上证指数：' + sh.rows.map(r => r.date + ' ' + r.close.toFixed(2) + '点 ' + hfeiFmtPct(r.chg)
+          + (r.volChg == null ? '' : '（量' + (r.volChg >= 0 ? '增' : '缩') + Math.abs(r.volChg).toFixed(0) + '%）')).join('；'));
+      }
+      if (cyb && cyb.rows.length) {
+        lines.push('创业板指：' + cyb.rows.map(r => r.date + ' ' + r.close.toFixed(2) + '点 ' + hfeiFmtPct(r.chg)).join('；'));
+      }
+      if (mood.breadth) lines.push('最新涨跌家数：上涨 ' + mood.breadth.up + ' / 下跌 ' + mood.breadth.down + ' / 平盘 ' + mood.breadth.flat);
+      mood.rows = (sh && sh.rows) || [];
+      mood.cybRows = (cyb && cyb.rows) || [];
+      mood.ok = !!(sh || cyb);
+      mood.text = lines.length ? lines.join('\n') : '（行情接口暂不可用：本次未取得最近 3 个交易日大盘数据）';
+      return mood;
+    }
+    /** 单条事件的提示词行（压缩到 1 行，控制 token） */
+    function hfeiEventLine(tag, e) {
+      const dir = (e.cnImp && e.cnImp.dir === 'bear') ? '利空' : '利好';
+      const good = [].concat(e.bullConcepts || [], e.bullIndustries || []).filter(Boolean).slice(0, 3).join('/');
+      const bad = [].concat(e.bearConcepts || [], e.bearIndustries || []).filter(Boolean).slice(0, 3).join('/');
+      return '[' + tag + '] ' + (hfeiEvtDateOf(e) || '') + ' ' + String(e.title || '').slice(0, 60)
+        + '｜概念:' + (e.conceptName || '—') + '｜对中' + ((e.cnImp && e.cnImp.score) || '—') + '分(' + dir + ')'
+        + (good ? '｜利好:' + good : '') + (bad ? '｜利空:' + bad : '');
+    }
+    /** 校验大模型给的 10 只标的股：代码格式 + 名称反查补全（不编造代码） */
+    async function hfeiVerifyPicks(list) {
+      const out = [];
+      for (const p of (list || []).slice(0, 12)) {
+        const item = {
+          code: String((p && p.code) || '').replace(/\D/g, '').slice(0, 6),
+          name: String((p && p.name) || ''),
+          sector: String((p && p.sector) || ''),
+          side: (p && p.side === 'bear') ? 'bear' : 'bull',
+          reason: String((p && p.reason) || ''),
+          quote: null
+        };
+        if (!/^\d{6}$/.test(item.code) && item.name) {
+          try {
+            const r = await StockAPI.searchStocks(item.name);
+            if (r && r.length) {
+              item.code = String(r[0].code || '').replace(/\D/g, '').slice(0, 6);
+              if (!item.name) item.name = r[0].name || '';
+            }
+          } catch (e) { /* 保持原样 */ }
+        }
+        if (!item.name && /^\d{6}$/.test(item.code)) item.name = item.code;
+        out.push(item);
+      }
+      const short = out.slice(0, 10);
+      // best-effort：补最近价（盘前为上一交易日收盘），取不到就留空
+      try {
+        const codes = short.filter(x => /^\d{6}$/.test(x.code))
+          .map(x => (StockAPI.inferPrefix ? StockAPI.inferPrefix(x.code) : x.code));
+        if (codes.length) {
+          const q = await StockAPI.getQuotes(codes);
+          short.forEach(x => {
+            const k = (StockAPI.inferPrefix ? StockAPI.inferPrefix(x.code) : x.code);
+            const v = q && q[k];
+            if (v) x.quote = { price: v.price, changePercent: v.changePercent };
+          });
+        }
+      } catch (e) { /* 行情缺失不影响报告 */ }
+      return short;
+    }
+    /**
+     * 生成报告（silent=true 时不弹「请先配置 AI」的跳转，用于盘前自动触发）
+     * 流程：汇总事件 → 取大盘情绪 → 大模型 → 解析 JSON → 校验标的股 → 落盘
+     */
+    async function generateHefeiReport(silent) {
+      if (hfeiLoading.value) return;
+      hfeiPanelOpen.value = true;
+      if (!aiConfigured.value) {
+        hfeiError.value = '未配置 AI 接口：请在「偏好设置 → AI 解读」填入 API 地址、密钥与模型后重试';
+        if (!silent) { showToast('请先在「偏好设置 → AI 解读」配置 AI 接口', 'info'); showPrefs.value = true; }
+        return;
+      }
+      const HT = ht_();
+      const sD = (HT && HT.fromLocalInputValue) ? HT.fromLocalInputValue(hfeiWinStart.value) : null;
+      const eD = (HT && HT.fromLocalInputValue) ? HT.fromLocalInputValue(hfeiWinEnd.value) : null;
+      if (!sD || !eD || sD.getTime() >= eD.getTime()) {
+        hfeiError.value = '时间段无效：开始时间需早于结束时间';
+        if (!silent) showToast('时间段无效：开始时间需早于结束时间', 'error');
+        return;
+      }
+      hfeiLoading.value = true;
+      hfeiError.value = '';
+      hfeiStep.value = '① 汇总 6 个子版块的事件…';
+      try {
+        const targetDate = hfeiTargetTradingDay();
+        const ev = await hfeiCollectEvents();
+        hfeiStep.value = '② 读取最近 3 个交易日的大盘情绪…';
+        const mood = await hfeiMarketMood();
+        hfeiStep.value = '③ 大模型研判中（通常 30~90 秒）…';
+        const model = D.settings.aiModel || 'AI';
+        const blocks = [
+          ['影响力·中国', ev.cn], ['影响力·美国', ev.us], ['影响力·全世界', ev.world],
+          ['未来·突发', ev.breaking], ['未来·未来', ev.future], ['未来·人物', ev.people]
+        ];
+        const evText = blocks.map(function (pair) {
+          const list = pair[1];
+          return '【' + pair[0] + '】共 ' + list.length + ' 条\n'
+            + (list.length ? list.map(e => hfeiEventLine(pair[0], e)).join('\n') : '（该时间段内暂无）');
+        }).join('\n\n');
+        const sys = '你是 A 股盘前策略分析师，擅长把全球新闻事件映射到 A 股板块与个股。'
+          + '你只能基于用户给出的事件清单与大盘数据推理：不得编造清单里没有的消息，不得虚构股票代码，不确定的宁可不写。'
+          + '输出必须是严格的 JSON 对象（不要 markdown 代码块、不要任何多余文字），结构如下：\n'
+          + '{"mood":{"label":"强势/偏强/中性/偏弱/弱势","score":0-100,"comment":"对最近3个交易日大盘情绪的2-3句研判"},'
+          + '"topEvents":[{"source":"影响力·中国/影响力·美国/影响力·全世界/未来·突发/未来·未来/未来·人物","title":"事件标题","score":0-100,"dir":"bull或bear","why":"对中国行业/概念的具体影响，40字内"}],'
+          + '"bullSectors":[{"name":"板块名","level":1-5,"why":"利好逻辑，30字内"}],'
+          + '"bearSectors":[{"name":"板块名","level":1-5,"why":"利空逻辑，30字内"}],'
+          + '"picks":[{"code":"6位A股代码","name":"股票简称","sector":"所属板块","side":"bull或bear","reason":"入选逻辑，30字内"}],'
+          + '"summary":"对即将开盘交易日的整体研判，150-250字","risk":"风险提示，60字内"}\n'
+          + '硬性要求：'
+          + '① topEvents 3-6 条，必须覆盖「对中国影响最大」的事件（对中分越高越优先），dir 为该事件主导方向；'
+          + '② bullSectors 3-6 个、bearSectors 2-5 个，用 A 股常用板块名（如 半导体设备、光模块、稀土永磁、光伏、军工、券商、创新药、白酒、电力、机器人、算力租赁、消费电子）；'
+          + '③ picks 必须正好 10 只：6-7 只 side=bull（受益方向）、3-4 只 side=bear（受冲击或需回避），优先从你给出的利好/利空板块里选龙头或高弹性标的；'
+          + '④ code 必须是真实的 6 位 A 股代码（沪市 60/68 开头、深市 00/30 开头、北交所 8 开头），名称与代码必须对应，写不准就换一只；'
+          + '⑤ 只讲方向与逻辑，不承诺收益、不写目标价。';
+        const user = '【目标交易日】' + targetDate + '（即将开盘的交易日）\n'
+          + '【统计时间段】' + (hfeiWinText.value || (hfeiWinStart.value + ' ~ ' + hfeiWinEnd.value))
+          + '（系统口径：每天 15:00 换日，自动跳过周末）\n'
+          + '【最近 3 个交易日大盘情绪】\n' + mood.text + '\n\n'
+          + '【6 个子版块事件（时间段内，按「对中国影响度」降序，最多每块 10 条）】\n' + evText + '\n\n'
+          + '请综合上面的事件与大盘情绪，给出对 ' + targetDate + ' 开盘的板块预测，严格按要求输出 JSON。';
+        const res = await callOpenAICompat(
+          [{ role: 'system', content: sys }, { role: 'user', content: user }],
+          { maxTokens: 4000, timeoutMs: 180000 }
+        );
+        if (!res.ok) throw new Error(res.error || 'AI 调用失败');
+        let j = null;
+        const mm = String(res.content || '').match(/\{[\s\S]*\}/);
+        if (mm) { try { j = JSON.parse(mm[0]); } catch (e) { j = null; } }
+        if (!j) throw new Error('AI 返回内容无法解析为 JSON（可点「生成盘前报告」重试）：' + String(res.content || '').slice(0, 100));
+        hfeiStep.value = '④ 校验 10 只标的股代码…';
+        const arrOf = (a) => Array.isArray(a) ? a : [];
+        const clamp100 = (x) => Math.max(0, Math.min(100, Math.round(Number(x) || 0)));
+        const section = (a, max) => arrOf(a).slice(0, max).map(x => ({
+          name: String((x && x.name) || ''),
+          level: Math.max(1, Math.min(5, Math.round(Number(x && x.level) || 3))),
+          why: String((x && x.why) || '')
+        })).filter(x => x.name);
+        const picks = await hfeiVerifyPicks(arrOf(j.picks));
+        const rec = {
+          id: 'hf_' + Date.now(),
+          targetDate: targetDate,
+          generatedAt: Date.now(),
+          generatedAtText: new Date().toLocaleString('zh-CN', { hour12: false }),
+          windowStart: hfeiWinStart.value,
+          windowEnd: hfeiWinEnd.value,
+          windowText: hfeiWinText.value,
+          model: model,
+          market: { text: mood.text, rows: mood.rows, cybRows: mood.cybRows, breadth: mood.breadth },
+          events: {
+            cn: ev.cn.length, us: ev.us.length, world: ev.world.length,
+            breaking: ev.breaking.length, future: ev.future.length, people: ev.people.length
+          },
+          ai: {
+            mood: {
+              label: String((j.mood && j.mood.label) || '中性'),
+              score: clamp100(j.mood && j.mood.score),
+              comment: String((j.mood && j.mood.comment) || '')
+            },
+            topEvents: arrOf(j.topEvents).slice(0, 8).map(x => ({
+              source: String((x && x.source) || ''),
+              title: String((x && x.title) || ''),
+              score: clamp100(x && x.score),
+              dir: (x && x.dir === 'bear') ? 'bear' : 'bull',
+              why: String((x && x.why) || '')
+            })).filter(x => x.title),
+            bullSectors: section(j.bullSectors, 8),
+            bearSectors: section(j.bearSectors, 8),
+            picks: picks,
+            summary: String(j.summary || ''),
+            risk: String(j.risk || '')
+          }
+        };
+        hfeiAll()[targetDate] = rec;
+        const keys = Object.keys(hfeiAll()).sort();
+        while (keys.length > 20) { delete hfeiAll()[keys.shift()]; }
+        try { Store.saveNow(); } catch (e) { /* ignore */ }
+        hfeiReport.value = rec;
+        hfeiStep.value = '';
+        showToast('合肥模式报告已生成：目标交易日 ' + targetDate, 'success');
+      } catch (e) {
+        hfeiError.value = '生成失败：' + ((e && e.message) ? e.message : e);
+        if (!silent) showToast(hfeiError.value, 'error');
+      } finally {
+        hfeiLoading.value = false;
+      }
+    }
+    /** 盘前自动生成：交易日 07:30~09:30 打开用户页时，若当日盘前报告还没生成就自动跑一次 */
+    function hfeiMaybeAutoGenerate() {
+      try {
+        if (hfeiLoading.value || !aiConfigured.value) return;
+        if (!hfeiInPreOpen()) return;
+        const t = hfeiTargetTradingDay();
+        const old = hfeiReportOf(t);
+        if (old) { if (!hfeiReport.value) hfeiReport.value = old; return; }
+        generateHefeiReport(true);
+      } catch (e) { /* 自动触发失败不影响页面 */ }
+    }
+    // 页面长时间挂着时也能在盘前自动完成：每 10 分钟自查一次（只在交易日 07:30~09:30 且当日报告缺失时才真正发起）
+    try { setInterval(hfeiMaybeAutoGenerate, 10 * 60 * 1000); } catch (e) { /* ignore */ }
+
     // ============ 豆包榜「用户自带 Key」：每用户各自消耗自己账户 500 次/月免费额度 ============
     const doubaoKeyInput = ref('');        // 输入框临时值（不进 localStorage，保存时才写 D.settings.doubaoKey）
     const doubaoKeyFormShow = ref(false);  // 内联 Key 表单展开/收起
@@ -14898,6 +15296,11 @@ const app = createApp({
       // 用户持仓
       myHoldings, sortedHoldings, holdingSummary, holdingModal, openAddHolding, editHolding,
       saveHolding, deleteHoldingRow, refreshHoldingPrices, holdingRefreshing,
+      // 20261117e：用户页「合肥模式」——每交易日盘前预测报告（大模型生成）
+      hfeiPanelOpen, hfeiToggle, hfeiLoading, hfeiStep, hfeiError, hfeiReport,
+      hfeiWinStart, hfeiWinEnd, hfeiWinDay, hfeiWinText, hfeiSetWinDay, hfeiResetWin,
+      hfeiHistShow, hfeiHistList, hfeiPickHistory, hfeiDeleteReport,
+      generateHefeiReport, hfeiTargetTradingDay,
       // 交易逻辑记录表
       tradeLogicOpen, tradeLogicForm, tradeLogicInputs, tradeLogicRows,
       // 量化板块（选股页右侧）：盘后 / 盘中 每日操作信号打分
