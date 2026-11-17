@@ -7143,6 +7143,13 @@ const app = createApp({
     //             次数相同再看连板数 → 当日涨幅 → 代码，取前 25）
     // 20261108f：'streak' 改为只显示「最新交易日仍涨停 = 未断板」的真实连续涨停股，
     //   断板股连板数归零并剔除；按实际连板数从大到小，最多 50 只。
+    // 20261117c：热榜合并板块（同花顺热度榜 / 东方财富人气榜）Tab 切换
+    const hotRankTab = ref('ths');
+    function setHotRankTab(k) {
+      hotRankTab.value = (k === 'em') ? 'em' : 'ths';
+      if (D) D.hotRankTab = hotRankTab.value;   // Store autosave 自动落盘 + Gist 同步
+    }
+
     const lianbanTab = ref('days10');
     function setLianbanTab(k) {
       lianbanTab.value = (k === 'streak') ? 'streak' : 'days10';
@@ -12423,6 +12430,7 @@ const app = createApp({
     // 20261006h：三平台热度榜缓存恢复
     if (D.thsHotStocks && D.thsHotStocks.length) thsHotStocks.value = D.thsHotStocks;
     if (D.emHotStocks && D.emHotStocks.length) emHotStocks.value = D.emHotStocks;
+    if (D.hotRankTab === 'ths' || D.hotRankTab === 'em') hotRankTab.value = D.hotRankTab;
     // 影响力事件：恢复上次选择的区域与排序口径，并加载对应事件（数据来自本地整理样例，非日期维度）
     if (D.inflRegion === 'cn' || D.inflRegion === 'us' || D.inflRegion === 'world') inflRegion.value = D.inflRegion;
     if (D.inflSortBy === 'people' || D.inflSortBy === 'investors' || D.inflSortBy === 'time' || D.inflSortBy === 'cnimp') inflSortBy.value = D.inflSortBy;
@@ -14823,6 +14831,7 @@ const app = createApp({
       // 20261006h：三平台热度股票排行榜（同花顺 / 东方财富 / 豆包搜索）
       thsHotStocks, thsHotLoading, refreshThsHotOnly,
       emHotStocks, emHotLoading, refreshEmHotOnly,
+      hotRankTab, setHotRankTab,
       inflRegion, inflEvents, inflLoading, inflError, inflDate, inflSortBy, setInflRegion, setInflSort, sortLabel, refreshInfluence, regionLabel, fmtAffected, impactScopeLabel,
       // 20261109i：影响力事件只统计距今 10 日内（含今天），窗口标签用于面板展示
       INFL_WINDOW_DAYS, inflWindowLabel, inflWindowDays,

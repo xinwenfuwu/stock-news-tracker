@@ -763,7 +763,8 @@ body {
 
 /* 热门板块页新版式：顶行（当日热门板块 | 注意事项 | 当日热门股票）+ 三并排（盘前热点板块 | 尾盘买入法 | 振幅板块） */
 .hot-stack { display: flex; flex-direction: column; gap: 14px; margin-bottom: 20px; }
-.hot-top-row { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
+/* 20261117c：顶行只留「影响力事件 / 未来事件」两面板，平分宽度 */
+.hot-top-row { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
 .hot-row-3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
 .tail-buy-rubric { display: grid; grid-template-columns: 1fr 1fr; gap: 5px 12px; margin: 8px 0 6px; font-size: 12px; color: #6b7280; }
 .tail-buy-rubric .tb-rule b { color: #111827; font-weight: 700; margin-right: 2px; }

@@ -10,12 +10,12 @@
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
   <title>股市信息分析系统</title>
-  <link rel="stylesheet" href="css/style.css?v=20261117b">
+  <link rel="stylesheet" href="css/style.css?v=20261117c">
   <!-- Vue 3 全局构建版（v3.4.21 · 自托管）
        原先走 unpkg.com CDN：国内网络对 unpkg 的连通性不稳定，一旦该请求长时间挂起，
        <head> 里的阻塞脚本会让整页停在白屏、后续 auth-boot.js 根本不会执行。
        改为同源托管后，启动链路不再依赖任何第三方 CDN。 -->
-  <script src="js/vue.global.prod.js?v=20261117b"></script>
+  <script src="js/vue.global.prod.js?v=20261117c"></script>
 </head>
 <body class="auth-locked">
   <!-- ===== 登录关卡：登录通过前业务脚本不会被加载 ===== -->
@@ -101,7 +101,7 @@
         <input class="auth-input" type="text" id="auth-renew-user" placeholder="用户名（你注册时用的）" maxlength="20" autocomplete="off">
         <div class="auth-renew-plans" id="auth-renew-plans"></div>
         <div class="auth-renew-qr" id="auth-renew-qr">
-          <div class="auth-renew-qrbox"><img id="auth-renew-wx" src="assets/wechat-pay-qr.jpg?v=20261117b" alt="微信支付收款码"><span>微信支付（扫码支付）</span></div>
+          <div class="auth-renew-qrbox"><img id="auth-renew-wx" src="assets/wechat-pay-qr.jpg?v=20261117c" alt="微信支付收款码"><span>微信支付（扫码支付）</span></div>
           <div class="muted small" style="margin-top:6px;color:#c2410c;font-weight:600">支付时请添加会员备注，付款成功截图保存</div>
         </div>
         <input class="auth-input" type="text" id="auth-renew-amount" inputmode="decimal" placeholder="支付金额（必填，如 1000）" autocomplete="off">
@@ -996,7 +996,7 @@
                   <div class="qr-row">
                     <div class="qr-box">
                       <div class="qr-cap">推荐使用微信支付</div>
-                      <img src="assets/wechat-pay-qr.jpg?v=20261117b" alt="微信支付收款码" class="qr-pay-img">
+                      <img src="assets/wechat-pay-qr.jpg?v=20261117c" alt="微信支付收款码" class="qr-pay-img">
                       <div class="qr-cap" style="margin-top:6px;color:#c2410c;font-weight:600">支付时请添加会员备注，付款成功截图保存</div>
                       <div class="qr-cap muted small">火柴盒网络服务</div>
                     </div>
@@ -2915,46 +2915,6 @@
               <div class="muted small" v-else>{{ (futureRegion !== 'future' && futureRangeDays) ? ('近 ' + futureRangeDays + ' 交易日内该子版块暂无事件') : '该子版块暂无事件' }}</div>
             </div>
 
-            <!-- 连板股票（Tab：10日内 = 近 10 个交易日「涨停板数量」从大到小，允许断板，前 25；
-                 连板 = 仅「未断板」的真实连续涨停股，按连板数降序，最多 50 只） -->
-            <div class="hot-panel">
-              <div class="panel-title-row">
-                <h3 class="panel-title" style="margin:0">🚀 连板股票</h3>
-                <button class="btn btn-sm" @click="refreshHotStocksOnly" :disabled="hotStocksLoading" title="刷新「连板股票」数据，不影响其他子版块">
-                  <span v-if="hotStocksLoading">⏳ 刷新中...</span>
-                  <span v-else>🔄 刷新数据</span>
-                </button>
-              </div>
-              <!-- 20261108d：10日内 / 连板 两种口径 Tab 互斥切换（沿用影响力事件按钮样式，不显示说明文字） -->
-              <div class="infl-tabs lianban-tabs">
-                <button class="infl-tab" :class="{active: lianbanTab==='days10'}" @click="setLianbanTab('days10')">📅 10日内</button>
-                <button class="infl-tab" :class="{active: lianbanTab==='streak'}" @click="setLianbanTab('streak')">🔥 连板</button>
-              </div>
-              <div class="hot-list lianban-list" v-if="lianbanStocks.length">
-                <div class="hot-item hot-item-click" v-for="(s, i) in lianbanStocks" :key="lianbanTab + '-' + i"
-                     :class="{ active: hotBoardActive === s.name && hotDetailIsStock }"
-                     @click="askHotExclude({ type: 'stock', stock: s })"
-                     :title="'点击在下方「股票明细」中显示个股「' + s.name + '」的详细信息｜近 10 个交易日涨停 ' + (s.ztCount || 1) + ' 次（可断板）'
-                       + ((s.streakCount || s.boardCount) ? '，当前 ' + (s.streakCount || s.boardCount) + ' 连板' : '')
-                       + (s.industry ? '｜' + s.industry : '')
-                       + (s.boomCount ? '｜炸板 ' + s.boomCount + ' 次' : '')">
-                  <span class="hot-rank">{{ i + 1 }}</span>
-                  <span class="hot-name">{{ s.name }}</span>
-                  <span class="hot-val" style="display:flex; flex-direction:column; align-items:flex-end; line-height:1.25;">
-                    <template v-if="lianbanTab==='streak'">
-                      <span style="color:#dc2626; font-weight:700;">{{ s.streakCount || s.boardCount || 2 }}连板</span>
-                      <span class="muted small" style="font-weight:400;">连续涨停</span>
-                    </template>
-                    <template v-else>
-                      <span style="color:#dc2626; font-weight:700;">{{ s.ztCount || 1 }}次涨停</span>
-                      <span class="muted small" style="font-weight:400;">10日内 · 当前{{ s.boardCount || 1 }}板</span>
-                    </template>
-                  </span>
-                </div>
-              </div>
-              <div class="muted small" v-else-if="lianbanTab==='streak'">当前无未断板的连续涨停（2 板及以上）股票</div>
-              <div class="muted small" v-else>点击「刷新数据」加载</div>
-            </div>
           </div>
 
           <div class="hot-notice" title="服务器资源有限，单个板块的股票数量建议不超过 30 只">
@@ -2962,7 +2922,7 @@
             <p>添加股票信息时，股票数量最好不要超过 <b>30</b> 个，服务器有限。</p>
           </div>
 
-          <!-- 三并排（20261108j 起）：同花顺热门板块（副本） | 同花顺热度榜 | 东方财富人气榜 -->
+          <!-- 三并排（20261117c 起）：同花顺热门板块（副本） | 连板股票（顶行迁入） | 热榜合并板块（同花顺热度榜 ⇄ 东方财富人气榜 Tab 切换） -->
           <div class="hot-row-3">
             <!-- 20261108j：原「盘前热点板块」位置改为「同花顺热门板块」副本（与顶行共用 thsSectors / thsSectorTab，切换任一处两处同步） -->
             <div class="hot-panel ths-sector-copy">
@@ -3003,17 +2963,67 @@
               <div class="muted small" v-else>点击「刷新数据」加载当前同花顺热门行业与概念</div>
             </div>
 
-            <!-- 同花顺热度股票排行榜（20261006i）：反代 dq.10jqka.com.cn 热股榜 -->
+            <!-- 连板股票（20261117c 从顶行迁入原「同花顺热度榜」位置）：
+                 Tab：10日内 = 近 10 个交易日「涨停板数量」从大到小，允许断板，前 25；
+                 连板 = 仅「未断板」的真实连续涨停股，按连板数降序，最多 50 只 -->
             <div class="hot-panel">
               <div class="panel-title-row">
-                <h3 class="panel-title" style="margin:0">🟠 同花顺热度榜</h3>
-                <button class="btn btn-sm" @click="refreshThsHotOnly" :disabled="thsHotLoading" title="刷新同花顺热股榜（按热度排名）">
-                  <span v-if="thsHotLoading">⏳ 刷新中...</span>
+                <h3 class="panel-title" style="margin:0">🚀 连板股票</h3>
+                <button class="btn btn-sm" @click="refreshHotStocksOnly" :disabled="hotStocksLoading" title="刷新「连板股票」数据，不影响其他子版块">
+                  <span v-if="hotStocksLoading">⏳ 刷新中...</span>
                   <span v-else>🔄 刷新数据</span>
                 </button>
               </div>
-              <div class="hot-list" v-if="thsHotStocks.length">
-                <div class="hot-item hot-item-click" v-for="(s, i) in thsHotStocks" :key="i"
+              <div class="infl-tabs lianban-tabs">
+                <button class="infl-tab" :class="{active: lianbanTab==='days10'}" @click="setLianbanTab('days10')">📅 10日内</button>
+                <button class="infl-tab" :class="{active: lianbanTab==='streak'}" @click="setLianbanTab('streak')">🔥 连板</button>
+              </div>
+              <div class="hot-list lianban-list" v-if="lianbanStocks.length">
+                <div class="hot-item hot-item-click" v-for="(s, i) in lianbanStocks" :key="lianbanTab + '-' + i"
+                     :class="{ active: hotBoardActive === s.name && hotDetailIsStock }"
+                     @click="askHotExclude({ type: 'stock', stock: s })"
+                     :title="'点击在下方「股票明细」中显示个股「' + s.name + '」的详细信息｜近 10 个交易日涨停 ' + (s.ztCount || 1) + ' 次（可断板）'
+                       + ((s.streakCount || s.boardCount) ? '，当前 ' + (s.streakCount || s.boardCount) + ' 连板' : '')
+                       + (s.industry ? '｜' + s.industry : '')
+                       + (s.boomCount ? '｜炸板 ' + s.boomCount + ' 次' : '')">
+                  <span class="hot-rank">{{ i + 1 }}</span>
+                  <span class="hot-name">{{ s.name }}</span>
+                  <span class="hot-val" style="display:flex; flex-direction:column; align-items:flex-end; line-height:1.25;">
+                    <template v-if="lianbanTab==='streak'">
+                      <span style="color:#dc2626; font-weight:700;">{{ s.streakCount || s.boardCount || 2 }}连板</span>
+                      <span class="muted small" style="font-weight:400;">连续涨停</span>
+                    </template>
+                    <template v-else>
+                      <span style="color:#dc2626; font-weight:700;">{{ s.ztCount || 1 }}次涨停</span>
+                      <span class="muted small" style="font-weight:400;">10日内 · 当前{{ s.boardCount || 1 }}板</span>
+                    </template>
+                  </span>
+                </div>
+              </div>
+              <div class="muted small" v-else-if="lianbanTab==='streak'">当前无未断板的连续涨停（2 板及以上）股票</div>
+              <div class="muted small" v-else>点击「刷新数据」加载</div>
+            </div>
+
+            <!-- 热榜合并板块（20261117c）：原「东方财富人气榜」位置，Tab 切换 同花顺热度榜 / 东方财富人气榜 -->
+            <div class="hot-panel">
+              <div class="panel-title-row">
+                <h3 class="panel-title" style="margin:0">🔥 热榜（切换）</h3>
+                <button class="btn btn-sm" v-if="hotRankTab==='ths'" @click="refreshThsHotOnly" :disabled="thsHotLoading" title="刷新同花顺热股榜（按热度排名）">
+                  <span v-if="thsHotLoading">⏳ 刷新中...</span>
+                  <span v-else>🔄 刷新数据</span>
+                </button>
+                <button class="btn btn-sm" v-else @click="refreshEmHotOnly" :disabled="emHotLoading" title="刷新东方财富人气榜（按人气排名）">
+                  <span v-if="emHotLoading">⏳ 刷新中...</span>
+                  <span v-else>🔄 刷新数据</span>
+                </button>
+              </div>
+              <div class="infl-tabs hot-rank-tabs">
+                <button class="infl-tab" :class="{active: hotRankTab==='ths'}" @click="setHotRankTab('ths')">🟠 同花顺热度榜</button>
+                <button class="infl-tab" :class="{active: hotRankTab==='em'}" @click="setHotRankTab('em')">🟢 东方财富人气榜</button>
+              </div>
+              <!-- 同花顺热度榜 -->
+              <div class="hot-list" v-if="hotRankTab==='ths' && thsHotStocks.length">
+                <div class="hot-item hot-item-click" v-for="(s, i) in thsHotStocks" :key="'ths' + i"
                      @click="askHotExclude({ type: 'stock', stock: { code: s.code, name: s.name } })"
                      :title="'点击在下方「股票明细」中显示「' + s.name + '」详情｜热度 ' + s.heat">
                   <span class="hot-rank">{{ s.rank }}</span>
@@ -3021,20 +3031,10 @@
                   <span class="hot-val" :class="pctClass(s.change)">{{ fmtPct(s.change) }}</span>
                 </div>
               </div>
-              <div class="muted small" v-else>点击「获取热门板块」或右侧「刷新数据」加载</div>
-            </div>
-
-            <!-- 东方财富热度股票排行榜（20261006i）：反代 emappdata 人气榜 -->
-            <div class="hot-panel">
-              <div class="panel-title-row">
-                <h3 class="panel-title" style="margin:0">🟢 东方财富人气榜</h3>
-                <button class="btn btn-sm" @click="refreshEmHotOnly" :disabled="emHotLoading" title="刷新东方财富人气榜（按人气排名）">
-                  <span v-if="emHotLoading">⏳ 刷新中...</span>
-                  <span v-else>🔄 刷新数据</span>
-                </button>
-              </div>
-              <div class="hot-list" v-if="emHotStocks.length">
-                <div class="hot-item hot-item-click" v-for="(s, i) in emHotStocks" :key="i"
+              <div class="muted small" v-else-if="hotRankTab==='ths'">点击「获取热门板块」或右侧「刷新数据」加载同花顺热度榜</div>
+              <!-- 东方财富人气榜 -->
+              <div class="hot-list" v-if="hotRankTab==='em' && emHotStocks.length">
+                <div class="hot-item hot-item-click" v-for="(s, i) in emHotStocks" :key="'em' + i"
                      @click="askHotExclude({ type: 'stock', stock: { code: s.code, name: s.name } })"
                      :title="'点击在下方「股票明细」中显示「' + s.name + '」详情｜人气排名 ' + s.rank">
                   <span class="hot-rank">{{ s.rank }}</span>
@@ -3042,7 +3042,7 @@
                   <span class="hot-val muted small">人气 {{ s.rank }}</span>
                 </div>
               </div>
-              <div class="muted small" v-else>点击「获取热门板块」或右侧「刷新数据」加载</div>
+              <div class="muted small" v-else-if="hotRankTab==='em'">点击「获取热门板块」或右侧「刷新数据」加载东方财富人气榜</div>
             </div>
           </div>
         </div>
@@ -5344,14 +5344,14 @@
     </transition>
   </div>
 
-  <script src="js/auth.js?v=20261117b"></script>
-  <script src="js/auth-sync.js?v=20261117b"></script>
+  <script src="js/auth.js?v=20261117c"></script>
+  <script src="js/auth-sync.js?v=20261117c"></script>
   <!-- 边缘加速默认站点（batch37 治本：Cloudflare Worker 代理东财/腾讯，缓解 JSONP 限流误报）。
        若你所在地区 workers.dev 访问慢，可在「设置 → 行情加速地址」清空即恢复纯直连。 -->
   <script>window.__SNT_ACCEL__ = 'https://sichina.dpdns.org';</script>
   <!-- 扫码支付二维码渲染库（第三方 qrcodejs，本地托管避免外链失效）。renderQr 会先检测全局 QRCode 是否存在。 -->
-  <script src="assets/qrcode.min.js?v=20261117b"></script>
-  <script src="js/auth-boot.js?v=20261117b"></script>
+  <script src="assets/qrcode.min.js?v=20261117c"></script>
+  <script src="js/auth-boot.js?v=20261117c"></script>
   <!-- store / stock-api / hot-topics / app 由 auth-boot.js 在登录通过后动态装载，
        未登录时它们不会被下载，业务数据也不会进入内存 -->
 </body>
