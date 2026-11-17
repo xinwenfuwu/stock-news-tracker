@@ -4664,6 +4664,125 @@ body.guest-mode #app { display: none; }
   font-size: 11.5px; line-height: 1.7; color: var(--text-secondary);
 }
 
+/* ==========================================================================
+   20261117j 产业投资增强：预警条 / 二栏 / 底部固定横滚 / 发改委清单
+   ========================================================================== */
+/* 产能投放预警条 */
+.ind-warnbar {
+  display: flex; align-items: center; flex-wrap: wrap; gap: 6px;
+  padding: 7px 10px; margin: 4px 0 8px; border-radius: 8px;
+  background: #fff7ed; border: 1px solid #fed7aa;
+}
+.ind-warnbar-t { font-size: 12px; font-weight: 700; color: #9a3412; margin-right: 2px; }
+.ind-warn-chip {
+  display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px;
+  border-radius: 999px; font-size: 11px; font-weight: 600; cursor: help;
+}
+.ind-warn-chip em { font-style: normal; font-weight: 800; }
+.ind-warn-chip small { font-size: 10px; opacity: .8; }
+.ind-warn-chip.is-urgent { color: #fff; background: var(--up); }
+.ind-warn-chip.is-soon { color: #9a3412; background: #ffedd5; border: 1px solid #fed7aa; }
+
+/* 第二行筛选 */
+.ind-filter2 { border-top: 1px dashed var(--border); padding-top: 8px; }
+.ind-filter2-l {
+  font-size: 11px; font-weight: 700; color: var(--muted);
+  background: var(--surface-alt); border: 1px solid var(--border);
+  border-radius: 5px; padding: 3px 6px; flex: 0 0 auto;
+}
+.ind-filter2 select.q-input { width: 116px; }
+.ind-filter2 input.ind-place { flex: 1 1 160px; width: auto; min-width: 130px; }
+
+/* 月份条：按年分组 */
+.ind-month-wrap { border: 1px solid var(--border); border-radius: 10px; padding: 8px 10px; margin: 8px 0; background: var(--surface-alt); }
+.ind-month-title { font-size: 12px; font-weight: 700; color: var(--text); margin-bottom: 6px; }
+.ind-month-tabs { display: flex; flex-wrap: wrap; gap: 6px; margin: 0; }
+.ind-year-label {
+  flex: 0 0 auto; align-self: center; font-size: 11px; font-weight: 700;
+  color: var(--primary); padding: 0 4px 0 8px; border-left: 2px solid var(--primary); margin-left: 2px;
+}
+.ind-month-tab.ind-tab-all { font-weight: 700; }
+.ind-month-tab.active { background: var(--primary); border-color: var(--primary); color: #fff; }
+
+/* 预警标签（表格内） */
+.ind-warn-tag {
+  display: block; margin-top: 3px; font-size: 10px; font-weight: 700;
+  line-height: 1.4; white-space: nowrap;
+}
+.ind-warn-tag.w-10d { color: #fff; background: var(--up); border-radius: 4px; padding: 1px 5px; }
+.ind-warn-tag.w-100d { color: #9a3412; background: #ffedd5; border-radius: 4px; padding: 1px 5px; }
+
+/* 主体两栏：左进度表 / 右发改委清单 */
+.ind-two-col { display: grid; grid-template-columns: minmax(0, 1fr); gap: 14px; align-items: start; }
+@media (min-width: 1280px) {
+  .ind-two-col { grid-template-columns: minmax(0, 1.85fr) minmax(300px, 0.95fr); }
+}
+.ind-left { min-width: 0; }
+.ind-right { min-width: 0; }
+
+/* 屏幕底部固定横向滚动条 */
+.ind-hdock {
+  position: fixed; left: 0; right: 0; bottom: 0; z-index: 60;
+  display: flex; align-items: center; gap: 10px;
+  padding: 6px 12px; background: var(--surface);
+  border-top: 1px solid var(--border); box-shadow: 0 -2px 10px rgba(0, 0, 0, .08);
+}
+.ind-hdock-label { flex: 0 0 auto; font-size: 11px; color: var(--muted); white-space: nowrap; }
+.ind-hdock-scroll { flex: 1 1 auto; overflow-x: auto; overflow-y: hidden; height: 16px; }
+.ind-hdock-inner { height: 1px; }
+.ind-block { padding-bottom: 44px; } /* 给底部固定条留出空间 */
+
+/* ===== 右侧发改委大项目清单 ===== */
+.fgw-panel {
+  border: 1px solid var(--primary); border-radius: 10px; background: var(--surface);
+  padding: 10px; position: sticky; top: 8px;
+}
+.fgw-head { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; margin-bottom: 8px; }
+.fgw-title { font-size: 13px; font-weight: 700; color: var(--text); }
+.fgw-count { font-size: 11px; color: var(--muted); white-space: nowrap; }
+.fgw-toolbar { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin-bottom: 8px; }
+.fgw-toolbar .q-input { width: auto; height: 30px; font-size: 11.5px; padding: 0 7px; }
+.fgw-toolbar input.fgw-search { flex: 1 1 140px; min-width: 110px; }
+.fgw-toolbar select.q-input { flex: 0 0 auto; width: 96px; }
+.fgw-toolbar .btn { flex: 0 0 auto; }
+
+.fgw-list { max-height: 560px; overflow-y: auto; border: 1px solid var(--border); border-radius: 8px; }
+.fgw-item { border-bottom: 1px solid var(--border); }
+.fgw-item:last-child { border-bottom: none; }
+.fgw-item.open { background: var(--surface-alt); }
+.fgw-row {
+  display: flex; align-items: center; gap: 6px; padding: 7px 8px; cursor: pointer; font-size: 12px;
+}
+.fgw-row:hover { background: var(--primary-light); }
+.fgw-caret { flex: 0 0 auto; color: var(--muted); }
+.fgw-prov {
+  flex: 0 0 auto; font-size: 10px; color: #0f766e; background: #ccfbf1;
+  border-radius: 4px; padding: 1px 5px; white-space: nowrap;
+}
+.fgw-proj { flex: 1 1 auto; min-width: 0; color: var(--text); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.fgw-amt { flex: 0 0 auto; font-size: 11px; font-weight: 700; color: var(--text-secondary); white-space: nowrap; }
+.fgw-next { flex: 0 0 auto; font-size: 10px; color: var(--muted); white-space: nowrap; }
+.fgw-detail { padding: 4px 10px 10px 10px; }
+.fgw-dl { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 5px 10px; }
+.fgw-dl span { display: flex; flex-direction: column; min-width: 0; }
+.fgw-dl span.span2 { grid-column: span 2; }
+.fgw-dl i { font-style: normal; font-size: 10px; color: var(--muted); }
+.fgw-dl b { font-size: 11.5px; color: var(--text); font-weight: 600; line-height: 1.4; word-break: break-all; }
+.fgw-ops { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 9px; }
+.fgw-foot { margin-top: 8px; line-height: 1.6; }
+
+/* 发改委新增/编辑表单 */
+.fgw-form {
+  border: 1px dashed var(--primary); background: var(--surface-alt);
+  border-radius: 8px; padding: 8px; margin-bottom: 8px;
+}
+.fgw-form-title { font-size: 12px; font-weight: 700; margin-bottom: 6px; }
+.fgw-form-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px 8px; }
+.fgw-form-grid label { display: flex; flex-direction: column; gap: 3px; font-size: 11px; color: var(--text-secondary); min-width: 0; }
+.fgw-form-grid .span2 { grid-column: span 2; }
+.fgw-form-grid .q-input { width: 100%; height: 28px; font-size: 11.5px; }
+.fgw-form-actions { display: flex; gap: 6px; margin-top: 8px; }
+
 /* 桌面端：12 列宽表，容器内横向滚动；关键列给最小宽度，避免文字挤成竖排 */
 @media (min-width: 769px) {
   .ind-table { min-width: 1420px; table-layout: auto; }
@@ -4698,4 +4817,27 @@ body.guest-mode #app { display: none; }
   .ind-net { padding: 8px 8px; }
   .ind-net-head .muted { flex: 1 1 100%; }
   .ind-net-ops { gap: 6px; }
+  /* 20261117j：移动端筛选行、两栏堆叠、底部滚动条标签 */
+  .ind-filter2-l { flex: 1 1 100%; }
+  .ind-filter2 select.q-input { flex: 1 1 46%; width: auto; }
+  .ind-filter2 input.ind-place { flex: 1 1 100%; }
+  .ind-two-col { grid-template-columns: minmax(0, 1fr); }
+  .fgw-panel { position: static; }
+  .fgw-list { max-height: 460px; }
+  .fgw-form-grid { grid-template-columns: 1fr; }
+  .fgw-form-grid .span2 { grid-column: span 1; }
+  .ind-warnbar-t { flex: 1 1 100%; }
+  .ind-hdock-label { display: none; }
+  .ind-block { padding-bottom: 40px; }
+}
+/* 移动端底部有固定 Tab 导航（z-index:200，高约 68px），把产业投资横滚条抬到它上方 */
+@media (max-width: 768px) {
+  .ind-hdock {
+    bottom: calc(70px + env(safe-area-inset-bottom, 0px)); z-index: 150;
+    padding: 7px 10px; background: var(--surface-alt);
+  }
+  .ind-hdock-label { display: inline; font-size: 10px; color: var(--primary); }
+  .ind-hdock-scroll { background: var(--border); border-radius: 999px; height: 8px; }
+  .ind-hdock-inner { height: 8px; background: linear-gradient(90deg, #60a5fa, #2563eb); border-radius: 999px; }
+  .ind-block { padding-bottom: 100px; }
 }

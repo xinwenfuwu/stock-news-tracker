@@ -15077,7 +15077,28 @@ const app = createApp({
       ['300750','宁德时代','宜宾三江新区 30GWh','四川时代新能源科技有限公司','自建',120,'动力电池 30GWh','四川','锂电与新能源车','设备搬入','2027-05-20','试产','中','2025-01-20'],
       ['002594','比亚迪','济南工厂二期','比亚迪汽车工业（济南）有限公司','自建',100,'新能源整车 30 万辆/年','山东','锂电与新能源车','土建','2027-04-18','设备搬入','低','2025-09-15'],
       ['601012','隆基绿能','鄂尔多斯单晶硅片基地','隆基绿能科技（鄂尔多斯）有限公司','自建',80,'单晶硅片 30GW','内蒙古','新能源（光储风）','设备搬入','2027-08-28','试产','中','2025-06-12'],
-      ['600438','通威股份','乐山 12 万吨高纯晶硅','四川永祥新能源有限公司','自建',70,'多晶硅 12 万吨/年','四川','新能源（光储风）','试产','2027-02-20','量产','中','2024-10-08']
+      ['600438','通威股份','乐山 12 万吨高纯晶硅','四川永祥新能源有限公司','自建',70,'多晶硅 12 万吨/年','四川','新能源（光储风）','试产','2027-02-20','量产','中','2024-10-08'],
+      // —— 20261117j：跟踪窗口从 12 个月延长到 24 个月，补齐 2027-12 ~ 2028-10 节点 ——
+      ['688347','华虹公司','无锡 12 英寸三期','华虹半导体制造（无锡）有限公司','定增募投',380,'12 英寸晶圆 6 万片/月','江苏','半导体','土建','2027-12-08','设备搬入','中','2026-03-18'],
+      ['600030','中信证券','深圳总部第二园区','中信证券股份有限公司','自建',60,'办公 / 交易数据中心','广东','电力与公用','封顶','2027-12-18','设备搬入','高','2025-08-12'],
+      ['002466','天齐锂业','遂宁安居锂盐二期','遂宁天齐锂业有限公司','自建',48,'碳酸锂 3 万吨/年','四川','有色与资源','安装调试','2028-01-10','试产','中','2025-11-20'],
+      ['603986','兆易创新','合肥存储芯片研发基地','合肥兆易创新电子有限公司','自建',55,'NOR / DRAM 存储芯片','安徽','半导体','设备搬入','2028-01-22','试产','中','2026-01-15'],
+      ['601857','中国石油','揭阳炼化一体化二期','中国石油天然气股份有限公司','合资建设',520,'乙烯 / 芳烃一体化','广东','化工新材料','土建','2028-02-06','设备搬入','低','2026-02-28'],
+      ['600900','长江电力','金沙江下游水光互补基地','中国长江电力股份有限公司','自建',180,'水光互补 6GW','云南','电力与公用','立项','2028-02-20','开工','低','2026-04-10'],
+      ['688111','金山办公','珠海湾区研发中心','金山办公软件股份有限公司','自建',35,'办公软件研发 / 数据中心','广东','AI 与算力','土建','2028-03-05','封顶','中','2026-01-08'],
+      ['300760','迈瑞医疗','光明医疗器械产业园','深圳迈瑞生物医疗电子股份有限公司','自建',45,'高端监护 / 影像设备','广东','医药生物','封顶','2028-03-18','设备搬入','高','2025-10-12'],
+      ['002241','歌尔股份','潍坊 XR 光学模组基地','歌尔股份有限公司','自建',50,'VR / AR 光学模组','山东','消费与轻工','设备搬入','2028-04-08','试产','中','2026-02-15'],
+      ['601088','中国神华','鄂尔多斯煤制油升级','中国神华煤制油化工有限公司','自建',260,'煤制油 400 万吨/年','内蒙古','化工新材料','立项','2028-05-12','开工','低','2026-05-06'],
+      ['688041','海光信息','成都海光CPU三期','海光信息技术股份有限公司','自建',70,'国产 CPU / DCU 芯片','四川','半导体','土建','2028-05-26','封顶','中','2026-03-22'],
+      ['300124','汇川技术','苏州机器人机电基地','深圳市汇川技术股份有限公司','自建',40,'伺服 / 工业机器人','江苏','军工与高端制造','封顶','2028-06-10','设备搬入','高','2025-12-18'],
+      ['600196','复星医药','上海生物药CDMO基地','上海复星医药（集团）股份有限公司','合资建设',50,'生物药 CDMO 产能','上海','医药生物','土建','2028-06-22','设备搬入','中','2026-04-16'],
+      ['601225','陕西煤业','榆林高端煤化工基地','陕西煤业化工集团有限责任公司','合资建设',300,'煤基新材料 100 万吨/年','陕西','化工新材料','立项','2028-07-08','开工','低','2026-06-20'],
+      ['002415','海康威视','杭州智能物联产业园','杭州海康威视数字技术股份有限公司','自建',55,'智能物联 / 安防设备','浙江','AI 与算力','设备搬入','2028-07-20','试产','高','2026-01-28'],
+      ['600111','北方稀土','包头稀土功能材料基地','中国北方稀土（集团）高科技股份有限公司','自建',65,'稀土永磁 / 催化材料','内蒙古','有色与资源','安装调试','2028-08-08','量产','中','2025-09-30'],
+      ['688256','寒武纪','昆山AI芯片先进封装','中科寒武纪科技股份有限公司','定增募投',45,'AI 芯片 Chiplet 封装','江苏','半导体','土建','2028-08-22','设备搬入','中','2026-05-12'],
+      ['601668','中国建筑','雄安绿色建材产业园','中国建筑股份有限公司','政府代建',80,'装配式建筑 / 绿色建材','河北','建材与建筑','立项','2028-09-06','开工','低','2026-07-08'],
+      ['300015','爱尔眼科','长沙眼科医疗产业园','爱尔眼科医院集团股份有限公司','自建',30,'眼科医疗 / 视光设备','湖南','医药生物','封顶','2028-09-20','设备搬入','中','2026-02-08'],
+      ['600009','上海机场','浦东国际机场四期配套','上海国际机场股份有限公司','政府代建',120,'机场配套 / 智慧物流','上海','建材与建筑','土建','2028-10-12','封顶','低','2026-06-15']
     ];
 
     const IND_NATURE_OPTS = ['自建', '定增募投', '可转债募投', '合资建设', '收购产能', '政府代建'];
@@ -15103,6 +15124,34 @@ const app = createApp({
     const indNature = ref('');
     const indMonth = ref('');
     const indKeyOnly = ref(false);
+    // 20261117j：年 / 月分开选 + 全部地区 + 节点 / 时间 / 地点筛选
+    const indYear = ref('');
+    const indMon = ref('');
+    const indProv = ref('');
+    const indNode = ref('');
+    const indPlace = ref('');
+    const indRange = ref('');
+    const indYearOpts = computed(() => {
+      const s = {};
+      indList.value.forEach(p => { const m = String(p.next || '').slice(0, 4); if (m) s[m] = 1; });
+      return Object.keys(s).sort();
+    });
+    const indMonOpts = ['01','02','03','04','05','06','07','08','09','10','11','12'];
+    const indProvOpts = computed(() => {
+      const s = {};
+      indList.value.forEach(p => { if (p.prov) s[p.prov] = 1; });
+      return Object.keys(s).sort();
+    });
+    function indClearMonth() { indYear.value = ''; indMon.value = ''; indMonth.value = ''; }
+    function indPickMonth(k) {
+      const m = String(k || '').match(/^(\d{4})-(\d{2})$/);
+      if (m) { indYear.value = m[1]; indMon.value = m[2]; indMonth.value = k; }
+      else indClearMonth();
+    }
+    function indRangeDays() {
+      const n = Number(indRange.value);
+      return isNaN(n) || n <= 0 ? 0 : n;
+    }
 
     function indParse(d) {
       const m = String(d || '').match(/^(\d{4})-(\d{2})-(\d{2})$/);
@@ -15156,10 +15205,30 @@ const app = createApp({
 
     const indFiltered = computed(() => {
       const q = String(indQ.value || '').trim().toLowerCase();
+      const place = String(indPlace.value || '').trim().toLowerCase();
+      const range = indRangeDays();
+      const today = indTodayUTC();
       return indList.value.filter(p => {
         if (indInd.value && p.ind !== indInd.value) return false;
         if (indNature.value && p.nature !== indNature.value) return false;
         if (indKeyOnly.value && !/量产|并网/.test(String(p.nextStage || ''))) return false;
+        // 年 / 月分开选（与月份条联动，两者同时满足）
+        if (indYear.value && String(p.next || '').slice(0, 4) !== indYear.value) return false;
+        if (indMon.value && String(p.next || '').slice(5, 7) !== indMon.value) return false;
+        // 全部地区（省份）筛选
+        if (indProv.value && p.prov !== indProv.value) return false;
+        // 节点筛选：当前阶段或下一节点
+        if (indNode.value && p.stage !== indNode.value && p.nextStage !== indNode.value) return false;
+        // 时间筛选：节点日期在 N 天内
+        if (range) {
+          const d = indDays(p.next);
+          if (d == null || d < 0 || d > range) return false;
+        }
+        // 地点筛选：省份 / 项目 / 投资主体 / 产品里匹配地名关键词
+        if (place) {
+          const hay = [p.prov, p.proj, p.subject, p.product].join(' ').toLowerCase();
+          if (hay.indexOf(place) === -1) return false;
+        }
         if (q) {
           const hay = [p.code, p.name, p.proj, p.subject, p.product, p.prov, p.ind].join(' ').toLowerCase();
           if (hay.indexOf(q) === -1) return false;
@@ -15171,26 +15240,39 @@ const app = createApp({
       });
     });
 
-    /** 未来 12 个月的月份标签条（当前月开头，含每月节点数） */
+    /** 24 个月的月份标签条（当前月开头，含每月节点数）；按年分组显示 */
     const indMonths = computed(() => {
       const map = {};
-      indFiltered.value.forEach(p => {
+      indList.value.forEach(p => {
         const k = String(p.next || '').slice(0, 7);
         if (!k) return;
         map[k] = (map[k] || 0) + 1;
       });
       const out = [];
       const now = new Date();
-      for (let i = 0; i < 12; i++) {
+      for (let i = 0; i < 24; i++) {
         const d = new Date(now.getFullYear(), now.getMonth() + i, 1);
         const k = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0');
-        out.push({ key: k, label: indMonthLabel(k), n: map[k] || 0 });
+        out.push({ key: k, label: indMonthLabel(k), n: map[k] || 0, year: String(d.getFullYear()) });
       }
-      // 12 个月之外仍有节点的月份追加在后面，避免被筛掉看不到
+      // 24 个月之外仍有节点的月份追加在后面，避免被筛掉看不到
       Object.keys(map).sort().forEach(k => {
-        if (!out.some(m => m.key === k)) out.push({ key: k, label: indMonthLabel(k), n: map[k] });
+        if (!out.some(m => m.key === k)) {
+          const y = k.slice(0, 4);
+          out.push({ key: k, label: indMonthLabel(k), n: map[k], year: y });
+        }
       });
       return out;
+    });
+    /** 月份条按年份分组，每组带年份标题 */
+    const indMonthYears = computed(() => {
+      const g = {};
+      indMonths.value.forEach(m => {
+        const y = m.year || String(m.key || '').slice(0, 4) || '其他';
+        if (!g[y]) g[y] = { year: y, months: [] };
+        g[y].months.push(m);
+      });
+      return Object.keys(g).sort().map(k => g[k]);
     });
 
     /** 按月份分组（组内按日期升序），供表格渲染 */
@@ -15223,6 +15305,74 @@ const app = createApp({
       });
       return { n: all.length, codes: Object.keys(codes).length, amt: amt, in30: in30, hot: hot, soon: soon };
     });
+
+    // ---- 20261117j：产能投放预警（距试产 100 天预警 / 10 天内预警板块）----
+    /** 是否属于产能兑现类节点（试产 / 小批量 / 量产 / 并网） */
+    function indIsProdNode(p) {
+      return /试产|小批量|量产|并网/.test(String((p && p.nextStage) || ''));
+    }
+    /** 预警等级：'10d'（10 天内，红）/ '100d'（100 天内，橙）/ ''（无） */
+    function indWarnLevel(p) {
+      const n = indDays(p && p.next);
+      if (n == null || n < 0 || n > 100) return '';
+      if (!indIsProdNode(p)) return '';
+      return n <= 10 ? '10d' : '100d';
+    }
+    function indWarnText(p) {
+      const lv = indWarnLevel(p);
+      if (!lv) return '';
+      const n = indDays(p.next);
+      return lv === '10d' ? ('🚨 ' + n + '天内投产预警') : ('⚠ 距试产 ' + n + ' 天');
+    }
+    /** 10 天内预警板块汇总：按产业聚合，供顶部预警条展示 */
+    const indWarnBoards = computed(() => {
+      const m = {};
+      indFiltered.value.forEach(p => {
+        if (indWarnLevel(p) !== '10d') return;
+        const k = p.ind || '其他';
+        if (!m[k]) m[k] = { name: k, n: 0, items: [] };
+        m[k].n += 1;
+        m[k].items.push(p);
+      });
+      return Object.keys(m).map(k => m[k]).sort((a, b) => b.n - a.n);
+    });
+    const indWarn100Count = computed(() => indFiltered.value.filter(p => indWarnLevel(p) === '100d').length);
+
+    // ---- 20261117j：屏幕底部固定横向滚动条 ----
+    // 表格列多，原生横向滚动条在表格底部；当表格很长时纵向滚动后看不到它。
+    // 这里在屏幕底部放一条固定滚动条，宽度与最宽的表格一致，和所有 ind 表格的
+    // scrollLeft 双向同步 —— 无论滚到哪一行，都能在屏幕下方左右拖动。
+    const indDockBar = ref(null);
+    const indDockInnerW = ref(1600);
+    function indTableWraps() {
+      try { return Array.prototype.slice.call(document.querySelectorAll('.ind-block .q-table-wrap')); }
+      catch (e) { return []; }
+    }
+    function indRecalcDock() {
+      nextTick(() => {
+        let max = 1200;
+        indTableWraps().forEach(w => { if (w.scrollWidth > max) max = w.scrollWidth; });
+        indDockInnerW.value = max;
+      });
+    }
+    let indHScrolling = false;
+    function onIndDockScroll(e) {
+      if (indHScrolling) return;
+      indHScrolling = true;
+      const sl = e.target.scrollLeft;
+      indTableWraps().forEach(w => { if (Math.abs(w.scrollLeft - sl) > 1) w.scrollLeft = sl; });
+      nextTick(() => { indHScrolling = false; });
+    }
+    function onIndTableScroll(e) {
+      if (indHScrolling) return;
+      const bar = indDockBar.value;
+      if (!bar || Math.abs(bar.scrollLeft - e.target.scrollLeft) <= 1) return;
+      indHScrolling = true;
+      bar.scrollLeft = e.target.scrollLeft;
+      nextTick(() => { indHScrolling = false; });
+    }
+    // 表内容变化（筛选/分组/切月）后重算底部滚动条宽度；切 tab 的 watch 在 quantTab 定义之后补
+    watch([indGroups, indMonth, indYear, indMon], () => indRecalcDock(), { flush: 'post' });
 
     // ---- 新增 / 编辑表单 ----
     const indForm = reactive({
@@ -15305,7 +15455,7 @@ const app = createApp({
       if (!window.confirm('恢复内置样例基准库？你新增 / 修改的记录会被清空。')) return;
       D.indProjects = [];
       Store.saveNow();
-      indMonth.value = '';
+      indClearMonth();
       showToast('已恢复内置样例（' + indSeed().length + ' 条）', 'success');
     }
     function indExportCsv() {
@@ -15483,12 +15633,179 @@ const app = createApp({
       doubaoSearch(q);
     }
 
+    // ========================================================================
+    // 20261117j：右侧「各省发改委投资大项目清单」
+    //   口径：各省 / 市发改委公布的重大项目清单、核准 / 备案公示整理。字段与产业投资跟踪表
+    //   对齐并额外带「发布时间 / 项目类别 / 核准文号 / 清单来源」；每条可展开查看完整跟踪内容，
+    //   可「加入跟踪」直接写入 indProjects（复用同一套字段），内容只多不少。
+    // 字段：prov, pub(发布时间), proj, code, name, subject, nature, amt, product, ind,
+    //       stage, next, nextStage, conf, start, category, docNo, source
+    // ========================================================================
+    const FGW_SEED_RAW = [
+      ['北京','2026-09-12','中芯京城 12 英寸集成电路生产线二期','688981','中芯国际','中芯京城集成电路制造（北京）有限公司','合资建设',497,'12 英寸晶圆 10 万片/月','半导体','设备搬入','2026-12-08','试产','中','2024-06-20','重大项目','京发改〔2024〕118号','2026年北京市重点工程计划'],
+      ['浙江','2026-08-30','宁波一体化压铸生产基地','601689','拓普集团','拓普电动车底盘系统（宁波）有限公司','定增募投',40,'一体化压铸底盘 120 万套/年','锂电与新能源车','试产','2026-12-12','小批量','高','2025-03-10','技改项目','浙发改技改〔2025〕206号','浙江省扩大有效投资重大项目'],
+      ['山东','2026-09-02','胶州上合冰箱互联工厂','600690','海尔智家','海尔智家（胶州）有限公司','自建',25,'高端冰箱 300 万台/年','消费与轻工','安装调试','2026-12-15','量产','高','2024-11-08','智能制造','鲁发改工业〔2024〕963号','山东省新旧动能转换重大项目'],
+      ['河南','2026-08-18','洛阳基地动力电池二期','300750','宁德时代','中州时代新能源科技有限公司','自建',140,'动力电池 30GWh','锂电与新能源车','安装调试','2026-12-30','量产','高','2024-12-06','重大项目','豫发改能源〔2024〕1520号','河南省重点建设项目清单'],
+      ['江苏','2026-09-20','南京滨江 5G 与算力基地二期','000063','中兴通讯','中兴通讯（南京）有限责任公司','自建',40,'服务器 / 基站整机','AI 与算力','封顶','2026-12-28','设备搬入','中','2025-07-22','新基建','苏发改高技〔2025〕884号','江苏省重大项目清单'],
+      ['安徽','2026-08-25','合肥 40nm OLED 驱动芯片扩产','688249','晶合集成','合肥晶合集成电路股份有限公司','自建',210,'40nm 驱动芯片 4 万片/月','半导体','土建','2027-06-20','设备搬入','低','2025-10-10','集成电路','皖发改高技〔2025〕1188号','安徽省集成电路产业重点项目'],
+      ['湖北','2026-09-08','华鲁恒升荆州基地二期','600426','华鲁恒升','华鲁恒升（荆州）有限公司','自建',100,'己二酸 / 尼龙 66','化工新材料','安装调试','2027-02-18','量产','中','2025-04-08','化工项目','鄂发改工业〔2025〕441号','湖北省重大项目建设计划'],
+      ['内蒙古','2026-07-28','包头 20 万吨高纯晶硅','600438','通威股份','通威高纯晶硅（包头）有限公司','自建',100,'多晶硅 20 万吨/年','新能源（光储风）','设备搬入','2027-04-12','试产','中','2025-05-06','新能源','蒙发改能源〔2025〕612号','内蒙古新能源重点项目'],
+      ['四川','2026-09-15','宜宾三江新区动力电池 30GWh','300750','宁德时代','四川时代新能源科技有限公司','自建',120,'动力电池 30GWh','锂电与新能源车','设备搬入','2027-05-20','试产','中','2025-01-20','重大项目','川发改产业〔2025〕233号','四川省重点项目清单'],
+      ['广东','2026-08-12','佛山库卡智能制造基地二期','000333','美的集团','库卡机器人（广东）有限公司','自建',30,'工业机器人 3 万台/年','军工与高端制造','试产','2027-02-28','量产','高','2024-12-20','智能制造','粤发改产业〔2024〕1320号','广东省制造业重大项目'],
+      ['重庆','2026-09-05','赛力斯超级工厂二期','601127','赛力斯','赛力斯汽车有限公司','自建',90,'增程 / 纯电整车 20 万辆','锂电与新能源车','设备搬入','2027-06-10','量产','中','2024-12-12','汽车项目','渝发改工业〔2024〕980号','重庆市重大项目清单'],
+      ['陕西','2026-08-22','铜川 HPBC 电池基地','601012','隆基绿能','隆基乐叶光伏科技（铜川）有限公司','自建',60,'HPBC 电池 12GW','新能源（光储风）','小批量','2026-12-25','量产','高','2025-02-18','新能源','陕发改能源〔2025〕305号','陕西省重点建设项目'],
+      ['江西','2026-09-10','南昌半导体设备产业园','688012','中微公司','中微半导体设备（南昌）有限公司','自建',30,'MOCVD / 刻蚀设备 800 台/年','半导体','试产','2026-12-18','量产','中','2025-05-16','集成电路','赣发改高技〔2025〕720号','江西省电子信息产业项目'],
+      ['上海','2026-09-18','临港 300mm 大硅片二期','688126','沪硅产业','上海新昇半导体科技有限公司','定增募投',132,'300mm 硅片 60 万片/月','半导体','土建','2027-09-10','设备搬入','低','2025-11-18','集成电路','沪发改高技〔2025〕156号','上海市重大工程'],
+      ['福建','2026-08-16','漳州核电 3 号机组','601985','中国核电','中核国电漳州能源有限公司','合资建设',400,'核电 1218MW','电力与公用','安装调试','2027-11-15','并网','中','2021-06-30','能源项目','闽发改能源〔2021〕410号','福建省重点建设项目'],
+      ['湖南','2026-09-22','湘潭 8.6 代 AMOLED 面板','000725','京东方Ａ','成都京东方光电科技有限公司','政府代建',630,'8.6 代 AMOLED 3.2 万片/月','半导体','土建','2027-11-25','设备搬入','低','2025-04-10','显示面板','湘发改高技〔2025〕690号','湖南省重大项目清单'],
+      ['云南','2026-08-28','玉溪湿法隔膜基地','002812','恩捷股份','云南恩捷新材料股份有限公司','自建',45,'湿法隔膜 20 亿平米/年','锂电与新能源车','试产','2027-01-08','量产','中','2025-04-15','新能源','云发改产业〔2025〕518号','云南省"三个一批"项目'],
+      ['新疆','2026-07-20','昌吉新能源装备基地','600089','特变电工','特变电工新疆新能源股份有限公司','自建',50,'变压器 / 新能源装备','电力与公用','试产','2027-02-08','量产','中','2025-01-12','能源装备','新发改工业〔2025〕88号','新疆重点建设项目'],
+      ['广西','2026-09-06','南宁新能源电池回收基地','002074','国轩高科','国轩高科（南宁）有限公司','合资建设',35,'废旧电池回收 10 万吨/年','锂电与新能源车','土建','2028-03-18','设备搬入','低','2026-02-10','循环经济','桂发改环资〔2026〕122号','广西重大项目清单'],
+      ['辽宁','2026-08-14','沈阳航空产业园','600760','中航沈飞','沈阳飞机工业（集团）有限公司','自建',60,'航空整机结构件','军工与高端制造','封顶','2027-06-18','设备搬入','中','2025-06-06','军工项目','辽发改工业〔2025〕672号','辽宁省重点项目'],
+      ['河北','2026-09-11','雄安绿色建材产业园','601668','中国建筑','中国建筑股份有限公司','政府代建',80,'装配式建筑 / 绿色建材','建材与建筑','立项','2028-09-06','开工','低','2026-07-08','基建项目','冀发改投资〔2026〕305号','雄安新区重点工程'],
+      ['印尼','2026-08-06','印尼华飞湿法二期','603799','华友钴业','华飞镍钴（印尼）有限公司','合资建设',90,'硫酸镍 6 万吨/年','有色与资源','安装调试','2027-03-08','试产','中','2025-03-18','境外投资','境外投资备案〔2025〕66号','境外投资项目备案'],
+      ['贵州','2026-09-01','贵阳算力数据中心集群','000977','浪潮信息','浪潮电子信息产业股份有限公司','政府代建',45,'AI 服务器 / 液冷整机柜','AI 与算力','土建','2027-10-08','设备搬入','低','2025-12-20','新基建','黔发改高技〔2025〕510号','贵州省数字经济的重点项目'],
+      ['天津','2026-08-24','天津 8 英寸功率半导体扩产','688261','中电科','中电科半导体材料有限公司','自建',38,'8 英寸功率器件 30 万片/月','半导体','设备搬入','2027-12-16','试产','中','2025-09-12','集成电路','津发改高技〔2025〕268号','天津市重大项目清单']
+    ];
+    const FGW_CATEGORY_OPTS = ['重大项目', '新基建', '集成电路', '新能源', '智能制造', '化工项目', '能源项目', '汽车项目', '技改项目', '循环经济', '军工项目', '基建项目', '境外投资', '显示面板', '能源装备', '医药项目', 'IT项目'];
+    function fgwSeed() {
+      return FGW_SEED_RAW.map((r, i) => ({
+        id: 'fgw' + (i + 1),
+        prov: r[0], pub: r[1], proj: r[2], code: r[3], name: r[4], subject: r[5], nature: r[6],
+        amt: r[7], product: r[8], ind: r[9], stage: r[10], next: r[11], nextStage: r[12],
+        conf: r[13], start: r[14], category: r[15], docNo: r[16], source: r[17], custom: false
+      }));
+    }
+    /** 展开详情：每条记录记住用户是否展开 */
+    const fgwExpanded = ref({});
+    const fgwQ = ref('');
+    const fgwProv = ref('');
+    const fgwCategory = ref('');
+    const fgwList = computed(() => (Array.isArray(D.fgwProjects) && D.fgwProjects.length ? D.fgwProjects : fgwSeed()));
+    const fgwProvs = computed(() => {
+      const s = {}; fgwList.value.forEach(p => { if (p.prov) s[p.prov] = 1; });
+      return Object.keys(s).sort();
+    });
+    const fgwFiltered = computed(() => {
+      const q = String(fgwQ.value || '').trim().toLowerCase();
+      return fgwList.value.filter(p => {
+        if (fgwProv.value && p.prov !== fgwProv.value) return false;
+        if (fgwCategory.value && p.category !== fgwCategory.value) return false;
+        if (q) {
+          const hay = [p.prov, p.proj, p.code, p.name, p.subject, p.product, p.ind, p.category, p.docNo, p.source].join(' ').toLowerCase();
+          if (hay.indexOf(q) === -1) return false;
+        }
+        return true;
+      }).slice().sort((a, b) => {
+        const x = String(a.next || '9999'), y = String(b.next || '9999');
+        return x < y ? -1 : x > y ? 1 : 0;
+      });
+    });
+    function fgwToggle(id) {
+      const o = Object.assign({}, fgwExpanded.value);
+      o[id] = !o[id];
+      fgwExpanded.value = o;
+    }
+    function fgwExpandAll(on) {
+      const o = {};
+      fgwFiltered.value.forEach(p => { o[p.id] = !!on; });
+      fgwExpanded.value = o;
+    }
+    /** 把发改委项目「加入跟踪」写入 indProjects（内容只多不少，额外字段并入备注） */
+    function fgwToInd(row) {
+      if (!row) return;
+      const list = indEnsure();
+      const dup = list.some(r => String(r.name || '').trim() === String(row.name || '').trim()
+        && String(r.proj || '').trim() === String(row.proj || '').trim());
+      if (dup) { showToast('跟踪表中已有「' + row.name + ' · ' + row.proj + '」', 'warn'); return; }
+      list.push({
+        id: 'ind' + Date.now() + '_fgw',
+        code: row.code || '', name: row.name || '', proj: row.proj || '', subject: row.subject || '',
+        nature: row.nature || '自建', amt: row.amt, product: row.product || '', prov: row.prov || '',
+        ind: row.ind || '半导体', stage: row.stage || '开工', next: row.next || '',
+        nextStage: row.nextStage || '试产', conf: row.conf || '中', start: row.start || '',
+        note: ['发改委清单·' + (row.prov || ''), '类别:' + (row.category || ''), '核准:' + (row.docNo || ''), '发布:' + (row.pub || ''), '来源:' + (row.source || ''), row.note || ''].filter(Boolean).join('｜'),
+        custom: true
+      });
+      Store.saveNow();
+      showToast('已加入跟踪表：' + row.name + ' · ' + row.proj, 'success');
+    }
+    function fgwResetSeed() {
+      if (!window.confirm('恢复发改委内置清单？你新增的记录会被清空。')) return;
+      D.fgwProjects = [];
+      Store.saveNow();
+      fgwExpanded.value = {};
+      showToast('已恢复发改委内置清单（' + fgwSeed().length + ' 条）', 'success');
+    }
+    /** 联网核实发改委项目（豆包搜索：地区 + 项目 + 核准文号） */
+    function fgwVerify(row) {
+      if (!row) return;
+      const q = [row.prov, row.proj, row.docNo, row.name, '投资 进度'].filter(Boolean).join(' ');
+      doubaoSearch(q);
+    }
+    const fgwForm = reactive({
+      open: false, editId: null,
+      prov: '', pub: Store.today(), proj: '', code: '', name: '', subject: '', nature: '自建',
+      amt: '', product: '', ind: '半导体', stage: '开工', next: '', nextStage: '试产',
+      conf: '中', start: '', category: '重大项目', docNo: '', source: '', note: ''
+    });
+    function openFgwForm(row) {
+      fgwForm.open = true;
+      if (row) {
+        fgwForm.editId = row.id;
+        ['prov','pub','proj','code','name','subject','nature','amt','product','ind','stage','next','nextStage','conf','start','category','docNo','source','note'].forEach(k => {
+          fgwForm[k] = row[k] == null ? '' : row[k];
+        });
+      } else {
+        fgwForm.editId = null;
+        Object.assign(fgwForm, {
+          prov: fgwProv.value || '', pub: Store.today(), proj: '', code: '', name: '', subject: '', nature: '自建',
+          amt: '', product: '', ind: '半导体', stage: '开工', next: '', nextStage: '试产',
+          conf: '中', start: '', category: '重大项目', docNo: '', source: '', note: ''
+        });
+      }
+      nextTick(() => { const el = document.querySelector('.fgw-form'); if (el) el.scrollIntoView({ block: 'center', behavior: 'smooth' }); });
+    }
+    function closeFgwForm() { fgwForm.open = false; fgwForm.editId = null; }
+    function saveFgwRow() {
+      if (!String(fgwForm.proj || '').trim()) { showToast('请填写项目名称', 'warn'); return; }
+      if (!String(fgwForm.prov || '').trim()) { showToast('请填写地区', 'warn'); return; }
+      if (!Array.isArray(D.fgwProjects) || !D.fgwProjects.length) D.fgwProjects = fgwSeed();
+      const rec = {
+        id: fgwForm.editId || ('fgw' + Date.now()),
+        prov: String(fgwForm.prov || '').trim(), pub: fgwForm.pub || Store.today(), proj: String(fgwForm.proj || '').trim(),
+        code: String(fgwForm.code || '').trim(), name: String(fgwForm.name || '').trim(),
+        subject: String(fgwForm.subject || '').trim(), nature: fgwForm.nature || '自建',
+        amt: fgwForm.amt === '' ? null : Number(fgwForm.amt), product: String(fgwForm.product || '').trim(),
+        ind: fgwForm.ind || '半导体', stage: fgwForm.stage || '开工', next: fgwForm.next || '',
+        nextStage: fgwForm.nextStage || '试产', conf: fgwForm.conf || '中', start: fgwForm.start || '',
+        category: fgwForm.category || '重大项目', docNo: String(fgwForm.docNo || '').trim(),
+        source: String(fgwForm.source || '').trim(), note: String(fgwForm.note || '').trim(), custom: true
+      };
+      const i = D.fgwProjects.findIndex(x => x.id === rec.id);
+      if (i >= 0) D.fgwProjects.splice(i, 1, rec); else D.fgwProjects.push(rec);
+      Store.saveNow();
+      closeFgwForm();
+      showToast((i >= 0 ? '已更新：' : '已新增：') + rec.prov + ' · ' + rec.proj, 'success');
+    }
+    function delFgwRow(row) {
+      if (!row) return;
+      if (!window.confirm('删除「' + row.prov + ' · ' + row.proj + '」？')) return;
+      if (!Array.isArray(D.fgwProjects) || !D.fgwProjects.length) D.fgwProjects = fgwSeed();
+      const i = D.fgwProjects.findIndex(x => x.id === row.id);
+      if (i >= 0) D.fgwProjects.splice(i, 1);
+      Store.saveNow();
+      showToast('已删除', 'info');
+    }
+
     // 打分表单状态：每个板块一份（s1..s4 打分，b1..b4 一句话依据）
     function blankQuantForm() {
       return { s1: 1, s2: 1, s3: 1, s4: 1, b1: '', b2: '', b3: '', b4: '' };
     }
     const quantTab = ref('post');
     const quantDate = ref(Store.today());
+    // 切到产业投资 tab 后重算底部固定滚动条宽度（DOM 需等渲染完成）
+    watch(quantTab, v => { if (v === 'invest') indRecalcDock(); }, { flush: 'post' });
     const quantForm = reactive({ post: blankQuantForm(), intraday: blankQuantForm() });
     const quantOrderOpen = ref(false);
     const quantSignalOpen = ref(true);
@@ -16289,11 +16606,19 @@ const app = createApp({
       saveQuantScore, editQuantScore, cancelQuantEdit, deleteQuantScore,
       // 20261117f：产业投资——上市公司工厂/产能投放进度跟踪（原「盘中板块」位置）
       IND_NATURE_OPTS, IND_IND_OPTS, IND_STAGE_OPTS,
-      indQ, indInd, indNature, indMonth, indKeyOnly, indMonths, indGroups, indStats,
+      indQ, indInd, indNature, indMonth, indKeyOnly, indMonths, indMonthYears, indGroups, indStats,
+      indYear, indMon, indProv, indNode, indPlace, indRange, indYearOpts, indMonOpts, indProvOpts,
+      indClearMonth, indPickMonth,
       indDays, indDayText, indPct, indNatCls, indStageCls, indConfCls,
+      indIsProdNode, indWarnLevel, indWarnText, indWarnBoards, indWarn100Count,
+      indDockBar, indDockInnerW, onIndDockScroll, onIndTableScroll, indRecalcDock,
       indForm, openIndForm, closeIndForm, saveIndRow, delIndRow, resetIndSeed, indExportCsv,
       indSearching, indSearchErr, indSearchResults, indSearchPicked, indSearchQuery,
       indNetSearch, indAddSearchResults, indAddOne, indVerifyCandidate,
+      // 20261117j：右侧「各省发改委投资大项目清单」
+      FGW_CATEGORY_OPTS, fgwList, fgwProvs, fgwFiltered, fgwExpanded,
+      fgwQ, fgwProv, fgwCategory, fgwToggle, fgwExpandAll, fgwToInd, fgwResetSeed, fgwVerify,
+      fgwForm, openFgwForm, closeFgwForm, saveFgwRow, delFgwRow,
       // 量化板块：数据端口 / 自动打分 / 共振选股
       quantData, quantFetchedAt, quantFetching, quantSearching, quantMsg, quantAiReport, quantAiBusy, quantAiDrafts,
       quantAiPredictionsView, saveAiPrediction, deleteAiPrediction, openAiConceptInSector, fmtTime,

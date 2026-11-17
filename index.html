@@ -10,12 +10,12 @@
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
   <title>股市信息分析系统</title>
-  <link rel="stylesheet" href="css/style.css?v=20261117i">
+  <link rel="stylesheet" href="css/style.css?v=20261117j">
   <!-- Vue 3 全局构建版（v3.4.21 · 自托管）
        原先走 unpkg.com CDN：国内网络对 unpkg 的连通性不稳定，一旦该请求长时间挂起，
        <head> 里的阻塞脚本会让整页停在白屏、后续 auth-boot.js 根本不会执行。
        改为同源托管后，启动链路不再依赖任何第三方 CDN。 -->
-  <script src="js/vue.global.prod.js?v=20261117i"></script>
+  <script src="js/vue.global.prod.js?v=20261117j"></script>
 </head>
 <body class="auth-locked">
   <!-- ===== 登录关卡：登录通过前业务脚本不会被加载 ===== -->
@@ -101,7 +101,7 @@
         <input class="auth-input" type="text" id="auth-renew-user" placeholder="用户名（你注册时用的）" maxlength="20" autocomplete="off">
         <div class="auth-renew-plans" id="auth-renew-plans"></div>
         <div class="auth-renew-qr" id="auth-renew-qr">
-          <div class="auth-renew-qrbox"><img id="auth-renew-wx" src="assets/wechat-pay-qr.jpg?v=20261117i" alt="微信支付收款码"><span>微信支付（扫码支付）</span></div>
+          <div class="auth-renew-qrbox"><img id="auth-renew-wx" src="assets/wechat-pay-qr.jpg?v=20261117j" alt="微信支付收款码"><span>微信支付（扫码支付）</span></div>
           <div class="muted small" style="margin-top:6px;color:#c2410c;font-weight:600">支付时请添加会员备注，付款成功截图保存</div>
         </div>
         <input class="auth-input" type="text" id="auth-renew-amount" inputmode="decimal" placeholder="支付金额（必填，如 1000）" autocomplete="off">
@@ -1326,7 +1326,7 @@
                   <div class="qr-row">
                     <div class="qr-box">
                       <div class="qr-cap">推荐使用微信支付</div>
-                      <img src="assets/wechat-pay-qr.jpg?v=20261117i" alt="微信支付收款码" class="qr-pay-img">
+                      <img src="assets/wechat-pay-qr.jpg?v=20261117j" alt="微信支付收款码" class="qr-pay-img">
                       <div class="qr-cap" style="margin-top:6px;color:#c2410c;font-weight:600">支付时请添加会员备注，付款成功截图保存</div>
                       <div class="qr-cap muted small">火柴盒网络服务</div>
                     </div>
@@ -2732,7 +2732,7 @@
         <div class="page-toolbar">
           <div class="toolbar-left"><h2 class="page-title">📊 量化板块</h2></div>
           <div class="toolbar-right">
-            <span class="muted small">盘后 / 产业投资 两大子版块 · 盘后每日四信号打分 · 产业投资跟踪上市公司未来 12 个月工厂投产节点</span>
+            <span class="muted small">盘后 / 产业投资 两大子版块 · 盘后每日四信号打分 · 产业投资跟踪上市公司未来 24 个月工厂投产节点</span>
           </div>
         </div>
         <div class="quant-page">
@@ -2747,8 +2747,20 @@
           <div class="quant-board">
             <!-- 产业投资面板（v-if 与下方盘后打分表互斥渲染） -->
             <section class="q-block ind-block" v-if="quantTab === 'invest'">
-              <div class="q-block-head" style="cursor:default">
-                <span>🏭 上市公司工厂 / 产能投放进度跟踪 · 未来 12 个月（按月度分组，精确到日期）</span>
+              <!-- 20261117j：去掉原说明文字（未来12个月那段），改为独立筛选区 -->
+
+              <!-- 20261117j：产能投放预警条（距试产100天 / 10天内预警板块） -->
+              <div class="ind-warnbar" v-if="indWarnBoards.length || indWarn100Count">
+                <span class="ind-warnbar-t">🚨 产能投放预警</span>
+                <template v-if="indWarnBoards.length">
+                  <span class="ind-warn-chip is-urgent" v-for="b in indWarnBoards" :key="b.name"
+                        :title="b.items.map(p => p.name + '·' + p.proj + '（' + p.next + '）').join('\n')">
+                    {{ b.name }} <em>{{ b.n }}</em><small>10天内</small>
+                  </span>
+                </template>
+                <span class="ind-warn-chip is-soon" v-if="indWarn100Count" title="距试产 100 天内（含已列 10 天内板块）">
+                  距试产100天预警 <em>{{ indWarn100Count }}</em>
+                </span>
               </div>
 
               <!-- 筛选与操作行 -->
@@ -2767,6 +2779,36 @@
                 <button type="button" class="btn btn-xs btn-primary" @click="openIndForm(null)">＋ 新增项目</button>
                 <button type="button" class="btn btn-xs" @click="indExportCsv()">⬇ 导出 CSV</button>
                 <button type="button" class="btn btn-xs" @click="resetIndSeed()" title="清空你在表内的改动，回到内置样例基准库">↺ 恢复样例</button>
+              </div>
+
+              <!-- 20261117j：新增筛选行 —— 年 / 月分开选、全部地区、节点 / 时间 / 地点 -->
+              <div class="ind-toolbar ind-filter2">
+                <span class="ind-filter2-l">筛选</span>
+                <select class="q-input" v-model="indYear" @change="indMon && (indMonth = indYear ? indYear + '-' + indMon : '')">
+                  <option value="">全部年份</option>
+                  <option v-for="y in indYearOpts" :key="y" :value="y">{{ y }} 年</option>
+                </select>
+                <select class="q-input" v-model="indMon" @change="indMonth = (indYear && indMon) ? indYear + '-' + indMon : ''">
+                  <option value="">全部月份</option>
+                  <option v-for="mo in indMonOpts" :key="mo" :value="mo">{{ Number(mo) }} 月</option>
+                </select>
+                <select class="q-input" v-model="indProv">
+                  <option value="">全部地区</option>
+                  <option v-for="pv in indProvOpts" :key="pv" :value="pv">{{ pv }}</option>
+                </select>
+                <select class="q-input" v-model="indNode">
+                  <option value="">全部节点</option>
+                  <option v-for="o in IND_STAGE_OPTS" :key="o" :value="o">{{ o }}</option>
+                </select>
+                <select class="q-input" v-model="indRange">
+                  <option value="">全部时间</option>
+                  <option value="10">10 天内节点</option>
+                  <option value="30">30 天内节点</option>
+                  <option value="100">100 天内节点</option>
+                  <option value="365">1 年内节点</option>
+                </select>
+                <input class="q-input ind-place" v-model="indPlace" placeholder="地点关键词（省 / 市 / 园区）">
+                <button type="button" class="btn btn-xs" @click="indClearMonth(); indProv=''; indNode=''; indRange=''; indPlace=''; indInd=''; indNature=''; indQ=''; indKeyOnly=false">清空筛选</button>
               </div>
 
               <!-- 全网检索结果面板 -->
@@ -2811,7 +2853,7 @@
                 </template>
               </div>
 
-              <!-- 统计卡 -->
+              <!-- 统计卡：节点数随筛选联动（含 10 天内预警数） -->
               <div class="ind-stats">
                 <div class="ind-stat"><b>{{ indStats.n }}</b><span>跟踪项目</span></div>
                 <div class="ind-stat"><b>{{ indStats.codes }}</b><span>涉及上市公司</span></div>
@@ -2821,16 +2863,22 @@
                 <div class="ind-stat"><b>{{ indStats.soon }}</b><span>试产 / 小批量</span></div>
               </div>
 
-              <!-- 月份切换条 -->
-              <div class="ind-month-tabs">
-                <button type="button" :class="['ind-month-tab', { active: indMonth === '' }]" @click="indMonth = ''">全部月份</button>
-                <button type="button" v-for="m in indMonths" :key="m.key"
-                        :class="['ind-month-tab', { active: indMonth === m.key, empty: !m.n }]"
-                        :disabled="!m.n"
-                        :title="m.n ? (m.label + ' 共 ' + m.n + ' 个节点') : (m.label + ' 无节点安排')"
-                        @click="indMonth = (indMonth === m.key ? '' : m.key)">
-                  {{ m.label }}<em v-if="m.n">{{ m.n }}</em>
-                </button>
+              <!-- 月份切换条（按年分组，24 个月）：全部展示 + 每年每月单独可选 -->
+              <div class="ind-month-wrap">
+                <div class="ind-month-title">📅 节点月份 <span class="muted small">（跟踪未来 24 个月 · 按年 / 月单独可选）</span></div>
+                <div class="ind-month-tabs">
+                  <button type="button" :class="['ind-month-tab', 'ind-tab-all', { active: !indMonth && !indYear && !indMon }]" @click="indClearMonth()">全部展示</button>
+                  <template v-for="gy in indMonthYears" :key="gy.year">
+                    <span class="ind-year-label">{{ gy.year }} 年</span>
+                    <button type="button" v-for="m in gy.months" :key="m.key"
+                            :class="['ind-month-tab', { active: indMonth === m.key, empty: !m.n }]"
+                            :disabled="!m.n"
+                            :title="m.n ? (m.label + ' 共 ' + m.n + ' 个节点') : (m.label + ' 无节点安排')"
+                            @click="indPickMonth(indMonth === m.key ? '' : m.key)">
+                      {{ Number(m.key.slice(5,7)) }} 月<em v-if="m.n">{{ m.n }}</em>
+                    </button>
+                  </template>
+                </div>
               </div>
 
               <!-- 新增 / 编辑表单 -->
@@ -2881,6 +2929,9 @@
                 </div>
               </div>
 
+              <!-- 20261117j：主体两栏 —— 左：月度进度表 / 右：各省发改委大项目清单 -->
+              <div class="ind-two-col">
+              <div class="ind-left">
               <!-- 按月分组的进度表 -->
               <p class="ind-scroll-hint muted small">表格列较多，窗口较窄时可在表格区域内左右滑动，查看右侧「进度 / 确定性 / 操作」列 ↔</p>
               <div v-for="g in indGroups" :key="g.key" class="ind-month-group">
@@ -2888,7 +2939,7 @@
                   <span class="ind-month-name">{{ g.label }}</span>
                   <span class="ind-month-meta">{{ g.items.length }} 个节点 · 计划投资 {{ g.amt }} 亿</span>
                 </div>
-                <div class="q-table-wrap">
+                <div class="q-table-wrap" @scroll.passive="onIndTableScroll">
                   <table class="q-table ind-table">
                     <thead>
                       <tr>
@@ -2911,6 +2962,7 @@
                         <td data-label="节点日期">
                           <b class="ind-date">{{ p.next }}</b>
                           <span class="ind-dday" :class="{ soon: indDays(p.next) >= 0 && indDays(p.next) <= 30 }">{{ indDayText(p.next) }}</span>
+                          <span class="ind-warn-tag" v-if="indWarnLevel(p)" :class="'w-' + indWarnLevel(p)">{{ indWarnText(p) }}</span>
                         </td>
                         <td data-label="上市公司"><b>{{ p.name }}</b><span class="ind-code">{{ p.code }}</span></td>
                         <td data-label="项目">
@@ -2943,6 +2995,111 @@
                 <b>口径说明：</b>节点日期为按<b>公司公告、环评/能评公示、地方重大项目清单</b>整理的<b>计划节点</b>（非公司承诺日期），实际以最新公告为准；
                 投资性质中「定增募投 / 可转债募投」= 用募集资金建设项目，「合资建设」= 与地方政府平台或其他股东共同出资，「政府代建」= 由地方平台代建厂房、公司租用或回购。
                 表格可直接编辑修正，改动保存在本机并随云端同步；「⬇ 导出 CSV」可拿去 Excel 做进一步跟踪。
+              </div>
+              </div><!-- /.ind-left -->
+
+              <!-- ===== 20261117j：右侧「各省发改委投资大项目清单」 ===== -->
+              <aside class="ind-right fgw-panel">
+                <div class="fgw-head">
+                  <span class="fgw-title">🏛️ 各省发改委投资大项目清单</span>
+                  <span class="fgw-count">{{ fgwFiltered.length }} / {{ fgwList.length }} 项</span>
+                </div>
+                <div class="fgw-toolbar">
+                  <input class="q-input fgw-search" v-model="fgwQ" placeholder="搜地区 / 项目 / 公司 / 文号">
+                  <select class="q-input" v-model="fgwProv">
+                    <option value="">全部地区</option>
+                    <option v-for="pv in fgwProvs" :key="pv" :value="pv">{{ pv }}</option>
+                  </select>
+                  <select class="q-input" v-model="fgwCategory">
+                    <option value="">全部类别</option>
+                    <option v-for="o in FGW_CATEGORY_OPTS" :key="o" :value="o">{{ o }}</option>
+                  </select>
+                  <button type="button" class="btn btn-xs" @click="fgwExpandAll(true)">展开全部</button>
+                  <button type="button" class="btn btn-xs" @click="fgwExpandAll(false)">收起</button>
+                  <button type="button" class="btn btn-xs btn-primary" @click="openFgwForm(null)">＋ 新增</button>
+                  <button type="button" class="btn btn-xs" @click="fgwResetSeed()" title="恢复内置发改委清单">↺</button>
+                </div>
+
+                <!-- 新增 / 编辑发改委项目表单 -->
+                <div class="fgw-form" v-if="fgwForm.open">
+                  <div class="fgw-form-title">{{ fgwForm.editId ? '编辑发改委项目' : '新增发改委项目' }}</div>
+                  <div class="fgw-form-grid">
+                    <label>地区<input class="q-input" v-model="fgwForm.prov" placeholder="如 浙江"></label>
+                    <label>发布时间<input class="q-input" v-model="fgwForm.pub" type="date"></label>
+                    <label class="span2">项目名称<input class="q-input" v-model="fgwForm.proj" placeholder="清单中的项目全称"></label>
+                    <label>股票代码<input class="q-input" v-model="fgwForm.code" maxlength="6" placeholder="可留空"></label>
+                    <label>关联上市公司<input class="q-input" v-model="fgwForm.name" placeholder="可留空"></label>
+                    <label class="span2">投资主体<input class="q-input" v-model="fgwForm.subject"></label>
+                    <label>投资性质<select class="q-input" v-model="fgwForm.nature"><option v-for="o in IND_NATURE_OPTS" :key="o" :value="o">{{ o }}</option></select></label>
+                    <label>投资额（亿元）<input class="q-input" v-model="fgwForm.amt" type="number" step="0.1"></label>
+                    <label class="span2">建设内容 / 产能<input class="q-input" v-model="fgwForm.product"></label>
+                    <label>产业<select class="q-input" v-model="fgwForm.ind"><option v-for="o in IND_IND_OPTS" :key="o" :value="o">{{ o }}</option></select></label>
+                    <label>项目类别<input class="q-input" v-model="fgwForm.category" list="fgw-cat-opts"><datalist id="fgw-cat-opts"><option v-for="o in FGW_CATEGORY_OPTS" :key="o" :value="o"></option></datalist></label>
+                    <label>当前阶段<select class="q-input" v-model="fgwForm.stage"><option v-for="o in IND_STAGE_OPTS" :key="o" :value="o">{{ o }}</option></select></label>
+                    <label>下一节点<select class="q-input" v-model="fgwForm.nextStage"><option v-for="o in IND_STAGE_OPTS" :key="o" :value="o">{{ o }}</option></select></label>
+                    <label>节点日期<input class="q-input" v-model="fgwForm.next" type="date"></label>
+                    <label>开工日期<input class="q-input" v-model="fgwForm.start" type="date"></label>
+                    <label>确定性<select class="q-input" v-model="fgwForm.conf"><option value="高">高</option><option value="中">中</option><option value="低">低</option></select></label>
+                    <label class="span2">核准文号<input class="q-input" v-model="fgwForm.docNo" placeholder="如 浙发改〔2025〕 xx 号"></label>
+                    <label class="span2">清单来源<input class="q-input" v-model="fgwForm.source" placeholder="如 2026年省重点建设项目清单"></label>
+                    <label class="span2">备注<input class="q-input" v-model="fgwForm.note"></label>
+                  </div>
+                  <div class="fgw-form-actions">
+                    <button type="button" class="btn btn-xs btn-primary" @click="saveFgwRow()">{{ fgwForm.editId ? '保存修改' : '添加' }}</button>
+                    <button type="button" class="btn btn-xs" @click="closeFgwForm()">取消</button>
+                  </div>
+                </div>
+
+                <!-- 清单：每条可展开查看完整跟踪字段（只多不少） -->
+                <div class="fgw-list">
+                  <div class="fgw-item" v-for="row in fgwFiltered" :key="row.id" :class="{ open: !!fgwExpanded[row.id] }">
+                    <div class="fgw-row" @click="fgwToggle(row.id)">
+                      <span class="fgw-caret">{{ fgwExpanded[row.id] ? '▾' : '▸' }}</span>
+                      <span class="fgw-prov">{{ row.prov }}</span>
+                      <span class="fgw-proj">{{ row.proj }}</span>
+                      <span class="fgw-amt">{{ row.amt ? row.amt + '亿' : '—' }}</span>
+                      <span class="fgw-next">{{ row.next || '待定' }}</span>
+                    </div>
+                    <div class="fgw-detail" v-show="fgwExpanded[row.id]">
+                      <div class="fgw-dl">
+                        <span><i>地区</i><b>{{ row.prov }}</b></span>
+                        <span><i>发布时间</i><b>{{ row.pub || '—' }}</b></span>
+                        <span><i>项目类别</i><b>{{ row.category || '—' }}</b></span>
+                        <span><i>核准文号</i><b>{{ row.docNo || '—' }}</b></span>
+                        <span><i>股票代码</i><b>{{ row.code || '—' }}</b></span>
+                        <span><i>上市公司</i><b>{{ row.name || '—' }}</b></span>
+                        <span><i>投资主体</i><b>{{ row.subject || '—' }}</b></span>
+                        <span><i>投资性质</i><b>{{ row.nature || '—' }}</b></span>
+                        <span><i>投资额</i><b>{{ row.amt != null ? row.amt + ' 亿元' : '未披露' }}</b></span>
+                        <span><i>建设内容 / 产能</i><b>{{ row.product || '—' }}</b></span>
+                        <span><i>产业</i><b>{{ row.ind || '—' }}</b></span>
+                        <span><i>当前阶段</i><b>{{ row.stage || '—' }}</b></span>
+                        <span><i>下一节点</i><b>{{ row.next || '—' }} · {{ row.nextStage || '—' }}</b></span>
+                        <span><i>开工日期</i><b>{{ row.start || '—' }}</b></span>
+                        <span><i>确定性</i><b>{{ row.conf || '—' }}</b></span>
+                        <span><i>清单来源</i><b>{{ row.source || '—' }}</b></span>
+                        <span class="span2" v-if="row.note"><i>备注</i><b>{{ row.note }}</b></span>
+                      </div>
+                      <div class="fgw-ops">
+                        <button type="button" class="btn btn-xs btn-primary" @click.stop="fgwToInd(row)">＋ 加入产业投资跟踪</button>
+                        <button type="button" class="btn btn-xs" @click.stop="fgwVerify(row)">🔗 核实</button>
+                        <button type="button" class="btn btn-xs" @click.stop="openFgwForm(row)">编辑</button>
+                        <button type="button" class="btn btn-xs btn-danger" @click.stop="delFgwRow(row)">删</button>
+                      </div>
+                    </div>
+                  </div>
+                  <p v-if="!fgwFiltered.length" class="muted small">没有匹配的发改委项目，换个地区 / 类别或清空搜索。</p>
+                </div>
+                <div class="fgw-foot muted small">清单为各省 / 市发改委公开重大项目整理，节点 / 投资额以最新公告为准；展开可看完整字段，点「加入产业投资跟踪」写入左侧跟踪表。</div>
+              </aside>
+              </div><!-- /.ind-two-col -->
+
+              <!-- 20261117j：屏幕底部固定的横向滚动条（与所有 ind 表格同步） -->
+              <div class="ind-hdock" v-if="quantTab === 'invest'">
+                <span class="ind-hdock-label">↔ 左右滑动查看宽表</span>
+                <div class="ind-hdock-scroll" ref="indDockBar" @scroll.passive="onIndDockScroll">
+                  <div class="ind-hdock-inner" :style="{ width: indDockInnerW + 'px' }"></div>
+                </div>
               </div>
             </section>
 
@@ -5878,14 +6035,14 @@
     </transition>
   </div>
 
-  <script src="js/auth.js?v=20261117i"></script>
-  <script src="js/auth-sync.js?v=20261117i"></script>
+  <script src="js/auth.js?v=20261117j"></script>
+  <script src="js/auth-sync.js?v=20261117j"></script>
   <!-- 边缘加速默认站点（batch37 治本：Cloudflare Worker 代理东财/腾讯，缓解 JSONP 限流误报）。
        若你所在地区 workers.dev 访问慢，可在「设置 → 行情加速地址」清空即恢复纯直连。 -->
   <script>window.__SNT_ACCEL__ = 'https://sichina.dpdns.org';</script>
   <!-- 扫码支付二维码渲染库（第三方 qrcodejs，本地托管避免外链失效）。renderQr 会先检测全局 QRCode 是否存在。 -->
-  <script src="assets/qrcode.min.js?v=20261117i"></script>
-  <script src="js/auth-boot.js?v=20261117i"></script>
+  <script src="assets/qrcode.min.js?v=20261117j"></script>
+  <script src="js/auth-boot.js?v=20261117j"></script>
   <!-- store / stock-api / hot-topics / app 由 auth-boot.js 在登录通过后动态装载，
        未登录时它们不会被下载，业务数据也不会进入内存 -->
 </body>
