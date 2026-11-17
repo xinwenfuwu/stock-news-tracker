@@ -1,184 +1,20 @@
 {
-  "generatedAt": "2026-11-17 23:53",
+  "generatedAt": "2026-11-18 07:28",
   "generatedBy": "GitHub Actions · 多源实时聚合",
   "sourceCount": 5,
   "autoCount": 10,
   "events": [
     {
-      "id": "ap55ms66",
-      "title": "美联储理事库克将不参加白宫听证 律师称程序不公",
-      "tag": "人物/库克",
-      "region": "美国",
-      "concept": "usFinance",
-      "time": "2026-11-17 23:16",
-      "datetime": "2026-11-17 23:16",
-      "source": "财联社",
-      "url": "https://www.cls.cn/detail/2537139",
-      "summary": "【美联储理事库克将不参加白宫听证 律师称程序不公】美联储理事丽莎·库克明确拒绝出席白宫计划举行的听证会，并称该程序有失公允。美国总统唐纳德·特朗普正寻求将她解职，此次听证会是相关行动的一部分。库克的律师在致白宫的一封信中表示，针对未经证实的抵押贷款欺诈指控，这位美联储官员没有法律义务参加12月14日的听证会。库克的律师Abbe Lowell表示，近期来自白宫的函件未能回应她的…",
-      "relatedStocks": [
-        "美股科技",
-        "黄金"
-      ],
-      "bullConcepts": [
-        "黄金",
-        "防御板块"
-      ],
-      "bearConcepts": [
-        "高估值成长股"
-      ],
-      "bullIndustries": [
-        "银行",
-        "黄金"
-      ],
-      "bearIndustries": [
-        "高杠杆地产"
-      ],
-      "heat": 29,
-      "momentum": 26,
-      "_auto": true
-    },
-    {
-      "id": "ap98ndp5",
-      "title": "特朗普政府要求拨款501亿美元用于空中基础设施建设。",
-      "tag": "人物/特朗普",
-      "region": "美国",
-      "concept": "usFinance",
-      "time": "2026-11-17 23:48",
-      "datetime": "2026-11-17 23:48",
-      "source": "新浪7×24",
-      "url": "https://finance.sina.cn/7x24/2026-11-17/detail-inizaitt1581957.d.html",
-      "summary": "特朗普政府要求拨款501亿美元用于空中基础设施建设。",
-      "relatedStocks": [
-        "美股科技",
-        "黄金"
-      ],
-      "bullConcepts": [
-        "黄金",
-        "防御板块"
-      ],
-      "bearConcepts": [
-        "高估值成长股"
-      ],
-      "bullIndustries": [
-        "银行",
-        "黄金"
-      ],
-      "bearIndustries": [
-        "高杠杆地产"
-      ],
-      "heat": 29,
-      "momentum": 41,
-      "_auto": true
-    },
-    {
-      "id": "apa0p2o6",
-      "title": "乌克兰总统泽连斯基在北约会议期间呼吁盟友立即向乌克兰交付“爱国者”导弹。",
-      "tag": "人物/泽连斯基",
-      "region": "全球",
-      "concept": "macro",
-      "time": "2026-11-17 23:37",
-      "datetime": "2026-11-17 23:37",
-      "source": "新浪7×24",
-      "url": "https://finance.sina.cn/7x24/2026-11-17/detail-inizaitt1576671.d.html",
-      "summary": "乌克兰总统泽连斯基在北约会议期间呼吁盟友立即向乌克兰交付“爱国者”导弹。",
-      "relatedStocks": [
-        "军工",
-        "黄金"
-      ],
-      "bullConcepts": [
-        "军工",
-        "避险资产"
-      ],
-      "bearConcepts": [
-        "风险资产"
-      ],
-      "bullIndustries": [
-        "军工",
-        "黄金"
-      ],
-      "bearIndustries": [
-        "航空",
-        "旅游"
-      ],
-      "heat": 24,
-      "momentum": 36,
-      "_auto": true
-    },
-    {
-      "id": "ap1bti196",
-      "title": "黄仁勋将于12月1日出席美国众议院多个委员会的听证会。",
+      "id": "apii9cgv",
+      "title": "一、领导层继任与公司治理。 1、董事会主席哈维·琼斯（Harvey Jones）明确表示，黄仁勋不会回归。重申黄仁勋（Jensen Huang）系“自愿辞职”，并明确表示董事会无…",
       "tag": "人物/黄仁勋",
-      "region": "美国",
-      "concept": "usMacro",
-      "time": "2026-11-17 23:07",
-      "datetime": "2026-11-17 23:07",
-      "source": "华尔街见闻",
-      "url": "https://wallstreetcn.com/livenews/3201387",
-      "summary": "黄仁勋将于12月1日出席美国众议院多个委员会的听证会。",
-      "relatedStocks": [
-        "宽基指数"
-      ],
-      "bullConcepts": [
-        "防御板块"
-      ],
-      "bearConcepts": [
-        "周期股"
-      ],
-      "bullIndustries": [
-        "公用事业"
-      ],
-      "bearIndustries": [
-        "顺周期"
-      ],
-      "heat": 24,
-      "momentum": 26,
-      "_auto": true
-    },
-    {
-      "id": "appkfwqt",
-      "title": "据美国有线电视新闻网(CNN)报道，当地时间17日，美国总统特朗普在菲律宾马尼拉表示，“我期待访问中国，我们有一些十分重要的议题需要磋商。” 报道称，特朗普17日抵达马尼拉，开启…",
-      "tag": "人物/特朗普",
-      "region": "美国",
-      "concept": "antitrust",
-      "time": "2026-11-17 22:44",
-      "datetime": "2026-11-17 22:44",
-      "source": "华尔街见闻",
-      "url": "https://wallstreetcn.com/livenews/3201374",
-      "summary": "据美国有线电视新闻网(CNN)报道，当地时间17日，美国总统特朗普在菲律宾马尼拉表示，“我期待访问中国，我们有一些十分重要的议题需要磋商。” 报道称，特朗普17日抵达马尼拉，开启亚洲之行。特朗普预计18日前往中国深圳，参加亚太经合组织领导人非正式会议。 据此前报道，美国《国会山报》称，陪同特朗普出访亚洲的成员包括美国国务卿鲁比奥、美国财政部长贝森特、美国贸易代表格里尔以及多位…",
-      "relatedStocks": [
-        "跨境电商",
-        "航运"
-      ],
-      "bullConcepts": [
-        "内需",
-        "国产替代"
-      ],
-      "bearConcepts": [
-        "出口链"
-      ],
-      "bullIndustries": [
-        "跨境电商",
-        "内需消费"
-      ],
-      "bearIndustries": [
-        "出口制造",
-        "航运"
-      ],
-      "heat": 69,
-      "momentum": 26,
-      "_auto": true
-    },
-    {
-      "id": "ap11e1t1o",
-      "title": "OpenAI的Sam Altman称，芯片厂商在高估OpenAI需求、存在重复统计：各家都默认OpenAI会买下他们全部芯片。他表示：“没错。很长一段时间里，行业里基本只有一家芯…",
-      "tag": "人物/奥尔特曼",
       "region": "全球",
       "concept": "ai",
-      "time": "2026-11-17 22:49",
-      "datetime": "2026-11-17 22:49",
+      "time": "2026-11-18 07:06",
+      "datetime": "2026-11-18 07:06",
       "source": "华尔街见闻",
-      "url": "https://wallstreetcn.com/livenews/3201377",
-      "summary": "OpenAI的Sam Altman称，芯片厂商在高估OpenAI需求、存在重复统计：各家都默认OpenAI会买下他们全部芯片。他表示：“没错。很长一段时间里，行业里基本只有一家芯片供应商。所以当时大家统计晶圆产能时，可以向我们这类公司了解需求预期，从而大致判断自家芯片的终端需求空间。现在做芯片的厂商变多了。其中不少厂商都认为，自己大部分芯片出货量都会卖给我们、Anthropi…",
+      "url": "https://wallstreetcn.com/livenews/3201572",
+      "summary": "一、领导层继任与公司治理。 1、董事会主席哈维·琼斯（Harvey Jones）明确表示，黄仁勋不会回归。重申黄仁勋（Jensen Huang）系“自愿辞职”，并明确表示董事会无意重新任命其担任首席执行官。 2、审慎推进CEO遴选： 董事会正在评估内部和外部候选人。琼斯强调，遴选工作“将十分审慎”，在找到能够驾驭先进芯片与国家安全领域重大市场变革的“合适人选”之前，不会仓促做…",
       "relatedStocks": [
         "英伟达",
         "微软",
@@ -200,21 +36,125 @@
       "bearIndustries": [
         "传统IT服务"
       ],
-      "heat": 38,
+      "heat": 33,
+      "momentum": 36,
+      "_auto": true
+    },
+    {
+      "id": "apxwduq1",
+      "title": "在该公司给出超出华尔街预期的销售预测后，英伟达股价在盘后交易中上涨5%，这表明在其首席执行官黄仁勋离职后的首次财报中，市场需求依然强劲。英伟达临时首席执行官科莱特·克雷斯强调，在…",
+      "tag": "人物/黄仁勋",
+      "region": "美国",
+      "concept": "aiCapex",
+      "time": "2026-11-18 07:11",
+      "datetime": "2026-11-18 07:11",
+      "source": "新浪7×24",
+      "url": "https://finance.sina.cn/7x24/2026-11-18/detail-inizayrr1809881.d.html",
+      "summary": "在该公司给出超出华尔街预期的销售预测后，英伟达股价在盘后交易中上涨5%，这表明在其首席执行官黄仁勋离职后的首次财报中，市场需求依然强劲。英伟达临时首席执行官科莱特·克雷斯强调，在黄仁勋戏剧性离任后，该公司不会发生任何变化。",
+      "relatedStocks": [
+        "英伟达",
+        "微软",
+        "台积电"
+      ],
+      "bullConcepts": [
+        "AI算力",
+        "半导体",
+        "国产替代"
+      ],
+      "bearConcepts": [
+        "传统软件"
+      ],
+      "bullIndustries": [
+        "半导体",
+        "AI应用",
+        "算力基础设施"
+      ],
+      "bearIndustries": [
+        "传统IT服务"
+      ],
+      "heat": 51,
+      "momentum": 36,
+      "_auto": true
+    },
+    {
+      "id": "apn99imi",
+      "title": "美国总统特朗普：汽油价格创18年来最大跌幅。注意，他们是等到“选举”之后才这么做的吗？",
+      "tag": "人物/特朗普",
+      "region": "美国",
+      "concept": "shale",
+      "time": "2026-11-18 06:42",
+      "datetime": "2026-11-18 06:42",
+      "source": "新浪7×24",
+      "url": "https://finance.sina.cn/7x24/2026-11-18/detail-inizayrm1294300.d.html",
+      "summary": "美国总统特朗普：汽油价格创18年来最大跌幅。注意，他们是等到“选举”之后才这么做的吗？",
+      "relatedStocks": [
+        "中国石油",
+        "紫金矿业"
+      ],
+      "bullConcepts": [
+        "油气",
+        "贵金属"
+      ],
+      "bearConcepts": [
+        "高耗能制造"
+      ],
+      "bullIndustries": [
+        "石油开采",
+        "贵金属"
+      ],
+      "bearIndustries": [
+        "航空运输",
+        "化工"
+      ],
+      "heat": 24,
       "momentum": 26,
       "_auto": true
     },
     {
-      "id": "ap1ql9at9",
-      "title": "据知情人士透露，为SpaceX购买人工智能（AI）芯片而安排的400亿美元债务融资中，有一部分最早可能于本周开始出售，高盛集团和阿波罗全球管理公司将担任该预期交易的主承销商。 该…",
+      "id": "ap1v6se9p",
+      "title": "市场消息：日本首相高市早苗与美国总统特朗普在东盟峰会举行了会谈。",
+      "tag": "人物/特朗普",
+      "region": "美国",
+      "concept": "defense",
+      "time": "2026-11-18 06:55",
+      "datetime": "2026-11-18 06:55",
+      "source": "新浪7×24",
+      "url": "https://finance.sina.cn/7x24/2026-11-18/detail-inizayrr7184591.d.html",
+      "summary": "市场消息：日本首相高市早苗与美国总统特朗普在东盟峰会举行了会谈。",
+      "relatedStocks": [
+        "军工",
+        "黄金"
+      ],
+      "bullConcepts": [
+        "军工",
+        "避险资产"
+      ],
+      "bearConcepts": [
+        "风险资产"
+      ],
+      "bullIndustries": [
+        "军工",
+        "黄金"
+      ],
+      "bearIndustries": [
+        "航空",
+        "旅游"
+      ],
+      "heat": 24,
+      "momentum": 26,
+      "_auto": true
+    },
+    {
+      "id": "ap3t8458",
+      "title": "11月18日美股成交额前20：SpaceX涨超3% 高盛维持买入评级 看好星舰第15次试飞的技术突破",
       "tag": "人物/马斯克",
       "region": "美国",
       "concept": "aiCapex",
-      "time": "2026-11-17 22:28",
-      "datetime": "2026-11-17 22:28",
-      "source": "华尔街见闻",
-      "url": "https://wallstreetcn.com/livenews/3201365",
-      "summary": "据知情人士透露，为SpaceX购买人工智能（AI）芯片而安排的400亿美元债务融资中，有一部分最早可能于本周开始出售，高盛集团和阿波罗全球管理公司将担任该预期交易的主承销商。 该出售安排旨在将这笔债务隔离在SpaceX资产负债表之外。 此前消息称，这笔交易将由阿波罗支持的Atlas SP管理的一个特殊目的载体（SPV）来购买英伟达公司的芯片，并发行资产支持证券（ABS）。高盛…",
+      "time": "2026-11-18 06:24",
+      "datetime": "2026-11-18 06:24",
+      "source": "环球市场播报",
+      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-18/doc-inizayrp5012267.shtml",
+      "summary": "周二美股成交额第1名英伟达收跌0.44%，成交586.47亿美元。 黄仁勋周二表态，如果董事会邀请，自己愿意回归英伟达担任CEO，该消息一度带动股价盘中拉升。",
       "relatedStocks": [
         "英伟达",
         "微软",
@@ -272,21 +212,21 @@
       "bearIndustries": [
         "传统IT服务"
       ],
-      "heat": 38,
+      "heat": 73,
       "momentum": 18,
       "_auto": true
     },
     {
-      "id": "ap10h5sr2",
-      "title": "英伟达“后黄仁勋时代”首份财报将至，华尔街：风险比估值更值得关注",
-      "tag": "人物/黄仁勋",
-      "region": "中国",
-      "concept": "llm",
-      "time": "2026-11-17 22:08",
-      "datetime": "2026-11-17 22:08",
-      "source": "环球市场播报",
-      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-17/doc-inizacmx5389405.shtml",
-      "summary": "英伟达将于北京时间11月18日凌晨公布2027财年第三季度财报，这是黄仁勋离任后公司公布的首份财报。多家华尔街机构认为，相比本季度财务表现...",
+      "id": "apv6vpg5",
+      "title": "OpenAI：我们推出面向销售场景的ChatGPT。",
+      "tag": "人物/奥尔特曼",
+      "region": "全球",
+      "concept": "ai",
+      "time": "2026-11-18 06:26",
+      "datetime": "2026-11-18 06:26",
+      "source": "华尔街见闻",
+      "url": "https://wallstreetcn.com/livenews/3201555",
+      "summary": "OpenAI：我们推出面向销售场景的ChatGPT。",
       "relatedStocks": [
         "英伟达",
         "微软",
@@ -308,8 +248,44 @@
       "bearIndustries": [
         "传统IT服务"
       ],
-      "heat": 29,
+      "heat": 69,
       "momentum": 26,
+      "_auto": true
+    },
+    {
+      "id": "ap1kcogm5",
+      "title": "英伟达：日本软银集团那些能源计划处于正轨之上。",
+      "tag": "人物/孙正义",
+      "region": "全球",
+      "concept": "ai",
+      "time": "2026-11-18 06:20",
+      "datetime": "2026-11-18 06:20",
+      "source": "华尔街见闻",
+      "url": "https://wallstreetcn.com/livenews/3201552",
+      "summary": "英伟达：日本软银集团那些能源计划处于正轨之上。",
+      "relatedStocks": [
+        "英伟达",
+        "微软",
+        "台积电"
+      ],
+      "bullConcepts": [
+        "AI算力",
+        "半导体",
+        "国产替代"
+      ],
+      "bearConcepts": [
+        "传统软件"
+      ],
+      "bullIndustries": [
+        "半导体",
+        "AI应用",
+        "算力基础设施"
+      ],
+      "bearIndustries": [
+        "传统IT服务"
+      ],
+      "heat": 87,
+      "momentum": 51,
       "_auto": true
     },
     {
@@ -343,6 +319,39 @@
         "旅游"
       ],
       "heat": 24,
+      "momentum": 18,
+      "_auto": true
+    },
+    {
+      "id": "ap55ms66",
+      "title": "美联储理事库克将不参加白宫听证 律师称程序不公",
+      "tag": "人物/库克",
+      "region": "美国",
+      "concept": "usFinance",
+      "time": "2026-11-18 02:17",
+      "datetime": "2026-11-18 02:17",
+      "source": "环球市场播报",
+      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-18/doc-inizapzr1488983.shtml",
+      "summary": "美联储理事丽莎·库克更进一步，明确拒绝出席白宫计划举行的听证会，并称该程序有失公允。美国总统唐纳德·特朗普正寻求将她解职，此次听证会是相关行动的一部分。",
+      "relatedStocks": [
+        "美股科技",
+        "黄金"
+      ],
+      "bullConcepts": [
+        "黄金",
+        "防御板块"
+      ],
+      "bearConcepts": [
+        "高估值成长股"
+      ],
+      "bullIndustries": [
+        "银行",
+        "黄金"
+      ],
+      "bearIndustries": [
+        "高杠杆地产"
+      ],
+      "heat": 29,
       "momentum": 18,
       "_auto": true
     },
