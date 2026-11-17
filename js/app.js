@@ -11262,7 +11262,7 @@ const app = createApp({
       const n = Number(v);
       inflRangeDays.value = (n > 0) ? n : null;
       if (D) D.inflRangeDays = inflRangeDays.value;
-      loadInfluence();
+      loadInfluenceAsync();
     }
     /** 未来事件：改自己的范围 → 只重算未来事件列表（不影响左侧影响力事件） */
     function setFutureRangeDays(v) {
@@ -11628,8 +11628,8 @@ const app = createApp({
     function sortInfluence(list) {
       const by = inflSortBy.value;
       if (by === 'time') {
-        // 按时间：日期新的在前（降序）
-        return [...(list || [])].sort((a, b) => String(b.date).localeCompare(String(a.date)));
+        // 按时间：以「全网最早报道时间」为准，新的在前（降序）；无全网报道者回退到整理日期
+        return [...(list || [])].sort((a, b) => String(b._timeKey || b.date).localeCompare(String(a._timeKey || a.date)));
       }
       if (by === 'cnimp') return [...(list || [])].sort((a, b) => (Number(b.cnImp && b.cnImp.score) || 0) - (Number(a.cnImp && a.cnImp.score) || 0));
       const key = by === 'people' ? 'affectedPeople' : 'affected';
@@ -11655,6 +11655,83 @@ const app = createApp({
     }
     const inflWindowDays = computed(() => inflDays());
     const inflWindowLabel = computed(() => rangeStartISO(inflDays()) + ' 15:00（收盘窗口）~ 现在');
+
+    // ===== 20261117n：影响力事件时间口径改为「全网最早报道时间」=====
+    // 需求：影响力事件下的时间逻辑，以全网最早的报道时间为准进行逻辑筛选。
+    // 实现：加载当前筛选窗口内的全网新闻快照（11 平台、每条带精确 time），用事件的
+    //       相关股票 / 标题关键词匹配报道，取最早一条的 time 作为该事件的时间；
+    //       命中 → date = 报道日期、reportTime = 完整时间、dateSource='report'；
+    //       未命中 → 回退到重锚日期、dateSource='fallback'（精选事件不因快照缺口消失）。
+    // 窗口筛选与「按时间排序」均使用这个口径；卡片展示「全网首报」时间。
+    let _inflNewsFlat = [];        // 当前窗口的全网新闻（含 time），非响应式避免大数组代理开销
+    let _inflNewsStart = null;     // 已尝试加载的窗口起点（YYYY-MM-DD），成功/失败都标记，避免重复拉取
+    let _inflNewsLoading = false;
+    /** 生成 [fromISO, toISO] 之间的日期列表（含两端） */
+    function inflDateRangeISO(fromISO, toISO) {
+      const out = [];
+      const a = new Date(String(fromISO) + 'T12:00:00');
+      const b = new Date(String(toISO) + 'T12:00:00');
+      if (isNaN(a.getTime()) || isNaN(b.getTime())) return out;
+      const cur = new Date(a);
+      let guard = 0;
+      while (cur <= b && guard++ < 90) {
+        out.push(cur.getFullYear() + '-' + String(cur.getMonth() + 1).padStart(2, '0') + '-' + String(cur.getDate()).padStart(2, '0'));
+        cur.setDate(cur.getDate() + 1);
+      }
+      return out;
+    }
+    /** 异步确保「当前窗口」的全网新闻已加载；窗口起点变化才重新拉（近的日期优先） */
+    async function inflEnsureNews() {
+      const start = rangeStartISO(inflDays());
+      if (_inflNewsStart === start) return;
+      if (_inflNewsLoading) return;
+      _inflNewsLoading = true;
+      try {
+        const dates = inflDateRangeISO(start, todayISO()).reverse();
+        const snaps = await Promise.all(dates.map(async d => {
+          try {
+            const r = await fetch('./data/hot-topics/' + d + '.json', { cache: 'no-store' });
+            return r.ok ? await r.json() : null;
+          } catch (e) { return null; }
+        }));
+        const flat = [];
+        snaps.forEach(s => {
+          if (!s || !s.sources) return;
+          s.sources.forEach(src => (src.items || []).forEach(it => {
+            if (it && it.text && it.time) flat.push({ text: String(it.text), time: String(it.time) });
+          }));
+        });
+        _inflNewsFlat = flat;
+      } catch (e) {
+        _inflNewsFlat = [];   // 加载失败 → 全部回退重锚日期
+      } finally {
+        _inflNewsStart = start;
+        _inflNewsLoading = false;
+      }
+    }
+    const INFL_STOP_SEGS = { '全球': 1, '美国': 1, '中国': 1, '影响': 1, '相关': 1, '预期': 1, '板块': 1, '概念': 1, '市场': 1, '事件': 1, '报道': 1, '投资': 1 };
+    /** 匹配事件在全网报道里的最早时间；返回 'YYYY-MM-DD HH:mm' 或 null */
+    function inflEarliestOf(e) {
+      if (!_inflNewsFlat.length || !e) return null;
+      const segs = new Set();
+      (e.relatedStocks || []).forEach(s => {
+        const c = String(s).replace(/[^一-龥A-Za-z0-9]/g, '');
+        if (c.length >= 3) segs.add(c);
+      });
+      const title = String(e.title || '').replace(/[^一-龥A-Za-z0-9]/g, '');
+      for (let i = 0; i + 2 < title.length; i++) {
+        const g = title.slice(i, i + 3);
+        if (!INFL_STOP_SEGS[g]) segs.add(g);
+      }
+      if (!segs.size) return null;
+      let earliest = null;
+      for (const it of _inflNewsFlat) {
+        let hit = false;
+        for (const s of segs) { if (s.length >= 3 && it.text.indexOf(s) >= 0) { hit = true; break; } }
+        if (hit && (!earliest || it.time < earliest)) earliest = it.time;
+      }
+      return earliest;
+    }
     // 样例数据的事件原始日期跨度数月（最早 2026-02），若直接按窗口过滤会只剩 1~2 条。
     // 故加载时把「同一区域」的事件按原时间先后重锚到最近 N 个自然日内（每天约 2 条），
     // 让窗口口径下列表仍保持完整内容；将来接入真实事件源时真实日期本就在窗口内，重锚不会改动它们。
@@ -11672,7 +11749,9 @@ const app = createApp({
         list.forEach((e, i) => {
           const daysAgo = Math.min(n - 1,
             Math.round(i * (n - 1) / Math.max(1, list.length - 1)));
-          out.push({ ...e, date: tradingDayOffsetISO(daysAgo) });
+          // 20261117n：date 先用重锚日期占位；loadInfluence 会用全网最早报道时间覆盖（命中时），
+      // 未命中时保留重锚日期作为兜底，保证精选事件不因快照缺口消失。
+      out.push({ ...e, date: tradingDayOffsetISO(daysAgo), dateSource: 'fallback' });
         });
       });
       _inflAnchorCache[n] = out;
@@ -11767,12 +11846,35 @@ const app = createApp({
       // 双指标同时存在：影响股民数 S（投资该概念股票的股民）+ 影响人数 A（生产生活全部相关人数，含 S）
       // 20261109i：只统计距今 10 日内（含今天）的事件，更早的旧事件不展示也不参与排行
       // 20261110b：窗口天数可由「新闻范围」选择框调整（未选仍是默认 10 日）
+      // 20261117n：用全网最早报道时间覆盖占位日期，再按该时间做窗口筛选与排序。
+      // 若全网新闻尚未加载完成（异步），先按占位日期渲染，加载完成后由回调再刷一次（见 loadInfluenceAsync）。
       const filtered = inflAnchoredSeed()
+        .map(e => {
+          const rep = inflEarliestOf(e);
+          if (rep) {
+            // 命中全网报道：date 取最早报道的日期部分，供窗口筛选；_timeKey 用完整时间供精确排序
+            e.date = String(rep).slice(0, 10);
+            e.reportTime = rep;
+            e.dateSource = 'report';
+            e._timeKey = rep;
+          } else {
+            e.dateSource = 'fallback';
+            e._timeKey = e.date;
+          }
+          return e;
+        })
         .filter(e => e.region === reg && inflInWindow(e))
         .map(e => inflWithBullBear(withCnImp(resolveInfluence(e))));
       inflEvents.value = sortInfluence(filtered);
-      inflDate.value = '实时整理 · 近 ' + inflDays() + ' 交易日（收盘窗口）';
+      const _repN = filtered.filter(e => e.dateSource === 'report').length;
+      inflDate.value = '全网首报时间 · 近 ' + inflDays() + ' 交易日窗口（' + _repN + '/' + filtered.length + ' 条已匹配全网首报）';
       inflError.value = '';
+    }
+    /** 异步加载全网新闻后重算影响力事件（保证首报口径生效），加载前后各渲染一次避免空白 */
+    async function loadInfluenceAsync() {
+      loadInfluence();
+      await inflEnsureNews();
+      loadInfluence();
     }
     function setInflRegion(r) { inflRegion.value = r; if (D && D.inflRegion !== undefined) D.inflRegion = r; loadInfluence(); }
     function setInflSort(k) {
@@ -11786,8 +11888,9 @@ const app = createApp({
       if (inflLoading.value) return;
       inflLoading.value = true;
       try {
-        // 预留：若后端提供影响力事件接口可在此 fetch 并合并；当前以本地整理数据为准
-        loadInfluence();
+        // 20261117n：强制重新拉取全网快照后按首报时间重算（清缓存让窗口重新加载）
+        _inflNewsStart = null;
+        await loadInfluenceAsync();
         showToast(`已刷新影响力事件（${inflEvents.value.length} 条，按${sortLabel()}从大到小排序）`, 'success');
       } catch (e) {
         inflError.value = (e && e.message) || '影响力事件获取失败';
@@ -13371,7 +13474,7 @@ const app = createApp({
     if (D.inflSortBy === 'people' || D.inflSortBy === 'investors' || D.inflSortBy === 'time' || D.inflSortBy === 'cnimp') inflSortBy.value = D.inflSortBy;
     // 20261108b：恢复「口径说明」的隐藏状态（用户上次点了隐藏，刷新后仍保持隐藏）
     if (typeof D.inflInfoHidden === 'boolean') inflInfoHidden.value = D.inflInfoHidden;
-    loadInfluence();
+    loadInfluenceAsync();   // 20261117n：首屏即加载全网快照并按首报时间渲染
     // 未来事件（20261109a）：恢复子版块 / 排序口径 / 自动刷新设置 / 已见集合，并加载（首屏 seed 已见以免误标红），启动自动刷新轮询
     if (D.futureRegion === 'breaking' || D.futureRegion === 'future' || D.futureRegion === 'people') futureRegion.value = D.futureRegion;
     if (D.futureSortBy === 'date' || D.futureSortBy === 'investors' || D.futureSortBy === 'people' || D.futureSortBy === 'surge' || D.futureSortBy === 'time' || D.futureSortBy === 'cnimp') futureSortBy.value = D.futureSortBy;

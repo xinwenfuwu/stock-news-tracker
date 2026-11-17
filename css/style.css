@@ -958,6 +958,9 @@ body {
 .infl-sort-hint { margin-left: auto; }
 .infl-affected { font-size: 12px; }
 .infl-affected b { color: #c2410c; }
+/* 20261117n：全网最早报道时间标记 */
+.infl-report-time { color: #1d4ed8; font-weight: 600; font-size: 11.5px; }
+.infl-report-fallback { color: var(--text-secondary, #94a3b8); font-size: 11px; }
 .infl-countdown { color: #e67e22; font-weight: 600; }
 .future-tabs .infl-tab.active { background: #7c3aed; border-color: #7c3aed; }
 /* 20261109a：突发自动刷新控件 + 新事件红色标识 */
