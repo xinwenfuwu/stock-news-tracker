@@ -10,12 +10,12 @@
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
   <title>股市信息分析系统</title>
-  <link rel="stylesheet" href="css/style.css?v=20261117k">
+  <link rel="stylesheet" href="css/style.css?v=20261117l">
   <!-- Vue 3 全局构建版（v3.4.21 · 自托管）
        原先走 unpkg.com CDN：国内网络对 unpkg 的连通性不稳定，一旦该请求长时间挂起，
        <head> 里的阻塞脚本会让整页停在白屏、后续 auth-boot.js 根本不会执行。
        改为同源托管后，启动链路不再依赖任何第三方 CDN。 -->
-  <script src="js/vue.global.prod.js?v=20261117k"></script>
+  <script src="js/vue.global.prod.js?v=20261117l"></script>
 </head>
 <body class="auth-locked">
   <!-- ===== 登录关卡：登录通过前业务脚本不会被加载 ===== -->
@@ -101,7 +101,7 @@
         <input class="auth-input" type="text" id="auth-renew-user" placeholder="用户名（你注册时用的）" maxlength="20" autocomplete="off">
         <div class="auth-renew-plans" id="auth-renew-plans"></div>
         <div class="auth-renew-qr" id="auth-renew-qr">
-          <div class="auth-renew-qrbox"><img id="auth-renew-wx" src="assets/wechat-pay-qr.jpg?v=20261117k" alt="微信支付收款码"><span>微信支付（扫码支付）</span></div>
+          <div class="auth-renew-qrbox"><img id="auth-renew-wx" src="assets/wechat-pay-qr.jpg?v=20261117l" alt="微信支付收款码"><span>微信支付（扫码支付）</span></div>
           <div class="muted small" style="margin-top:6px;color:#c2410c;font-weight:600">支付时请添加会员备注，付款成功截图保存</div>
         </div>
         <input class="auth-input" type="text" id="auth-renew-amount" inputmode="decimal" placeholder="支付金额（必填，如 1000）" autocomplete="off">
@@ -1326,7 +1326,7 @@
                   <div class="qr-row">
                     <div class="qr-box">
                       <div class="qr-cap">推荐使用微信支付</div>
-                      <img src="assets/wechat-pay-qr.jpg?v=20261117k" alt="微信支付收款码" class="qr-pay-img">
+                      <img src="assets/wechat-pay-qr.jpg?v=20261117l" alt="微信支付收款码" class="qr-pay-img">
                       <div class="qr-cap" style="margin-top:6px;color:#c2410c;font-weight:600">支付时请添加会员备注，付款成功截图保存</div>
                       <div class="qr-cap muted small">火柴盒网络服务</div>
                     </div>
@@ -3006,6 +3006,9 @@
                 </div>
                 <div class="fgw-toolbar">
                   <input class="q-input fgw-search" v-model="fgwQ" placeholder="搜地区 / 项目 / 公司 / 文号">
+                  <select class="q-input fgw-year-sel" v-model="fgwYear" title="选择重点建设项目清单年度">
+                    <option v-for="y in FGW_YEAR_OPTS" :key="y" :value="y">{{ y }}</option>
+                  </select>
                   <select class="q-input" v-model="fgwProv">
                     <option value="">全部地区</option>
                     <option v-for="pv in fgwProvs" :key="pv" :value="pv">{{ pv }}</option>
@@ -3056,20 +3059,32 @@
                   <!-- 第一级：省份（选定省份时隐藏省行、直接展示该省市列表） -->
                   <div class="fgw-node fgw-lv1" v-for="pv in fgwTree" :key="pv.key"
                        v-show="!fgwProv || fgwProv === pv.label">
-                    <div class="fgw-node-row" v-show="!fgwProv" @click="fgwGroupToggle(pv.key)">
+                    <div class="fgw-node-row fgw-card-row" v-show="!fgwProv" @click="fgwGroupToggle(pv.key)">
                       <span class="fgw-caret">{{ fgwExpanded[pv.key] ? '▾' : '▸' }}</span>
-                      <span class="fgw-node-badge b-prov">省</span>
-                      <span class="fgw-node-name">{{ pv.label }}<em>重点项目建设清单</em></span>
-                      <span class="fgw-node-meta">{{ pv.cityN }} 市 · {{ pv.n }} 项 · {{ pv.amt ? pv.amt.toFixed(0) : 0 }} 亿</span>
+                      <div class="fgw-card-main">
+                        <div class="fgw-card-title">{{ pv.title }}<span class="fgw-card-total">总投资 {{ pv.totalText }}</span></div>
+                        <div class="fgw-card-sub">
+                          <span class="fgw-node-badge b-prov">省</span>
+                          <span>共 {{ pv.countText }} · {{ pv.cityN }} 市</span>
+                          <span v-if="pv.pub">{{ pv.pub }}</span>
+                          <a class="fgw-card-link" :href="pv.siteUrl" target="_blank" rel="noopener" @click.stop title="在该省发改委官网下载重点项目清单">📋 清单↗</a>
+                        </div>
+                      </div>
                     </div>
                     <div class="fgw-node-children" v-show="fgwProv || fgwExpanded[pv.key]">
                       <!-- 第二级：城市 -->
                       <div class="fgw-node fgw-lv2" v-for="ct in pv.cities" :key="ct.key">
-                        <div class="fgw-node-row" @click="fgwGroupToggle(ct.key)">
+                        <div class="fgw-node-row fgw-card-row" @click="fgwGroupToggle(ct.key)">
                           <span class="fgw-caret">{{ fgwExpanded[ct.key] ? '▾' : '▸' }}</span>
-                          <span class="fgw-node-badge b-city">市</span>
-                          <span class="fgw-node-name">{{ ct.label }}<em>重点项目</em></span>
-                          <span class="fgw-node-meta">{{ ct.n }} 项 · {{ ct.amt ? ct.amt.toFixed(0) : 0 }} 亿</span>
+                          <div class="fgw-card-main">
+                            <div class="fgw-card-title">{{ ct.title }}<span class="fgw-card-total">总投资 {{ ct.totalText }}</span></div>
+                            <div class="fgw-card-sub">
+                              <span class="fgw-node-badge b-city">市</span>
+                              <span>共 {{ ct.countText }}</span>
+                              <span v-if="ct.pub">{{ ct.pub }}</span>
+                              <a class="fgw-card-link" :href="ct.siteUrl" target="_blank" rel="noopener" @click.stop title="在该市发改委官网下载重点项目清单">📋 清单↗</a>
+                            </div>
+                          </div>
                         </div>
                         <div class="fgw-node-children" v-show="fgwExpanded[ct.key]">
                           <!-- 第三级：项目 -->
@@ -3115,7 +3130,7 @@
                   </div>
                   <p v-if="!fgwFiltered.length" class="muted small">没有匹配的发改委项目，换个地区 / 类别或清空搜索。</p>
                 </div>
-                <div class="fgw-foot muted small">清单按「省 → 市 → 项目」三级展开：全部地区展示各省重点项目建设清单，选定省份后直接展示该省各市项目；点开项目看完整字段，点「加入产业投资跟踪」写入左侧跟踪表。</div>
+                <div class="fgw-foot muted small">按「年度 + 省 → 市 → 项目」三级展开：选年度切换各省市重点建设项目清单，卡片显示总投资并附「📋 清单」直达该省市发改委官网下载；点开市看项目，点项目看完整字段。</div>
               </aside>
               </div><!-- /.ind-two-col -->
 
@@ -6060,14 +6075,14 @@
     </transition>
   </div>
 
-  <script src="js/auth.js?v=20261117k"></script>
-  <script src="js/auth-sync.js?v=20261117k"></script>
+  <script src="js/auth.js?v=20261117l"></script>
+  <script src="js/auth-sync.js?v=20261117l"></script>
   <!-- 边缘加速默认站点（batch37 治本：Cloudflare Worker 代理东财/腾讯，缓解 JSONP 限流误报）。
        若你所在地区 workers.dev 访问慢，可在「设置 → 行情加速地址」清空即恢复纯直连。 -->
   <script>window.__SNT_ACCEL__ = 'https://sichina.dpdns.org';</script>
   <!-- 扫码支付二维码渲染库（第三方 qrcodejs，本地托管避免外链失效）。renderQr 会先检测全局 QRCode 是否存在。 -->
-  <script src="assets/qrcode.min.js?v=20261117k"></script>
-  <script src="js/auth-boot.js?v=20261117k"></script>
+  <script src="assets/qrcode.min.js?v=20261117l"></script>
+  <script src="js/auth-boot.js?v=20261117l"></script>
   <!-- store / stock-api / hot-topics / app 由 auth-boot.js 在登录通过后动态装载，
        未登录时它们不会被下载，业务数据也不会进入内存 -->
 </body>

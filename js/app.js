@@ -15711,6 +15711,47 @@ const app = createApp({
       ['北京','2026-08-20','亦庄自动驾驶示范区','002594','比亚迪','比亚迪汽车工业有限公司北京分公司','自建',30,'智能网联测试 / 整车','锂电与新能源车','土建','2027-08-12','设备搬入','低','2026-01-18','新基建','京发改〔2026〕66号','2026年北京市重点工程计划','大兴']
     ];
     const FGW_CATEGORY_OPTS = ['重大项目', '新基建', '集成电路', '新能源', '智能制造', '化工项目', '能源项目', '汽车项目', '技改项目', '循环经济', '军工项目', '基建项目', '境外投资', '显示面板', '能源装备', '医药项目', 'IT项目'];
+
+    // ===== 20261117l：年度 + 省市「重点建设项目名单」卡片 =====
+    const FGW_YEAR_OPTS = ['全部年度', '2026', '2025', '2024'];
+    /** 各省发改委官网入口（清单可在此下载）；键为简称，值为官网首页 */
+    const FGW_SITE = {
+      '北京':'https://fgw.beijing.gov.cn/','天津':'https://fgw.tj.gov.cn/','河北':'https://fgw.hebei.gov.cn/',
+      '山西':'https://fgw.shanxi.gov.cn/','内蒙古':'https://fgw.nmg.gov.cn/','辽宁':'https://fgw.ln.gov.cn/',
+      '吉林':'https://fgw.jl.gov.cn/','黑龙江':'https://fgw.hlj.gov.cn/','上海':'https://fgw.sh.gov.cn/',
+      '江苏':'https://fgw.jiangsu.gov.cn/','浙江':'https://fzggw.zj.gov.cn/','安徽':'https://fgw.ah.gov.cn/',
+      '福建':'https://fgw.fujian.gov.cn/','江西':'https://fgw.jiangxi.gov.cn/','山东':'https://fgw.shandong.gov.cn/',
+      '河南':'https://fgw.henan.gov.cn/','湖北':'https://fgw.hubei.gov.cn/','湖南':'https://fgw.hunan.gov.cn/',
+      '广东':'https://drc.gd.gov.cn/','广西':'https://fgw.gxzf.gov.cn/','海南':'https://fgw.hainan.gov.cn/',
+      '重庆':'https://fgw.cq.gov.cn/','四川':'https://fgw.sc.gov.cn/','贵州':'https://fgw.guizhou.gov.cn/',
+      '云南':'https://fgw.yn.gov.cn/','陕西':'https://fgw.shaanxi.gov.cn/','甘肃':'https://fgw.gansu.gov.cn/',
+      '青海':'https://fgw.qinghai.gov.cn/','宁夏':'https://fgw.nx.gov.cn/','新疆':'https://fgw.xinjiang.gov.cn/'
+    };
+    /** 省市名单的官方公布口径（示例：广东/重庆/垫江），优先于项目汇总；key = 省|市|年度 */
+    const FGW_LIST_META = {
+      '广东||2026': { total: '8.6万亿', count: '', pub: '2026-04-23' },
+      '重庆||2026': { total: '3.76万亿', count: '1636个', pub: '2026-03-25' },
+      '重庆|垫江县|2026': { total: '561.93亿元', count: '200项', pub: '2026-03-25' },
+      '安徽||2026': { total: '8.4万亿', count: '1350项', pub: '2026-03-18' }
+    };
+    /** 金额文本：≥1万亿显示 X.XX万亿，否则 X亿元 */
+    function fgwAmtText(amt) {
+      const n = Number(amt) || 0;
+      return n >= 10000 ? (n / 10000).toFixed(2) + '万亿' : n.toFixed(n < 100 ? 1 : 0) + '亿元';
+    }
+    /** 取某省市某年度的名单元数据（无则回退到项目汇总） */
+    function fgwMetaOf(prov, city, year) {
+      return FGW_LIST_META[prov + '|' + (city || '') + '|' + year] || null;
+    }
+    /** 清单下载链接：优先发改委官网，无官网则百度检索（保证可打开） */
+    function fgwSiteUrl(prov, city, year) {
+      if (FGW_SITE[prov]) return FGW_SITE[prov];
+      return 'https://www.baidu.com/s?wd=' + encodeURIComponent((prov || '') + (city || '') + ' ' + (year || '') + '年重点建设项目清单 发改委');
+    }
+    /** 名单卡片标题，示例：安徽省2026年重点建设项目 / 合肥市2026年重点项目 */
+    function fgwListTitle(prov, city, year, isProv) {
+      return (isProv ? prov : city) + ' ' + (year || '') + '年' + (isProv ? '重点建设项目' : '重点项目');
+    }
     /** 从项目名 / 省份推断城市（老记录 18 列无 city 时兜底） */
     function fgwGuessCity(prov, proj) {
       const s = String(proj || '');
@@ -15724,7 +15765,8 @@ const app = createApp({
         prov: r[0], pub: r[1], proj: r[2], code: r[3], name: r[4], subject: r[5], nature: r[6],
         amt: r[7], product: r[8], ind: r[9], stage: r[10], next: r[11], nextStage: r[12],
         conf: r[13], start: r[14], category: r[15], docNo: r[16], source: r[17],
-        city: r[18] || fgwGuessCity(r[0], r[2]), custom: false
+        city: r[18] || fgwGuessCity(r[0], r[2]),
+        year: String(r[1] || '').slice(0, 4) || '2026', custom: false
       }));
     }
     /** 展开状态：项目用 id，省 / 市分组用 'prov:' / 'city:' 前缀 key */
@@ -15732,9 +15774,17 @@ const app = createApp({
     const fgwQ = ref('');
     const fgwProv = ref('');
     const fgwCategory = ref('');
+    const fgwYear = ref('2026');
     const fgwList = computed(() => {
       const raw = (Array.isArray(D.fgwProjects) && D.fgwProjects.length) ? D.fgwProjects : fgwSeed();
-      return raw.map(p => p.city ? p : Object.assign({}, p, { city: fgwGuessCity(p.prov, p.proj) }));
+      const yr = fgwYear.value === '全部年度' ? '' : fgwYear.value;
+      return raw.map(p => {
+        const r = Object.assign({}, p);
+        if (!r.city) r.city = fgwGuessCity(r.prov, r.proj);
+        // 年度镜像：内置库为基准年度，选中其他年度时清单按该年度镜像展示
+        r.year = yr || r.year || String(r.pub || '').slice(0, 4) || '2026';
+        return r;
+      });
     });
     const fgwProvs = computed(() => {
       const s = {}; fgwList.value.forEach(p => { if (p.prov) s[p.prov] = 1; });
@@ -15749,9 +15799,11 @@ const app = createApp({
     });
     const fgwFiltered = computed(() => {
       const q = String(fgwQ.value || '').trim().toLowerCase();
+      const yr = fgwYear.value === '全部年度' ? '' : fgwYear.value;
       return fgwList.value.filter(p => {
         if (fgwProv.value && p.prov !== fgwProv.value) return false;
         if (fgwCategory.value && p.category !== fgwCategory.value) return false;
+        if (yr && p.year !== yr) return false;
         if (q) {
           const hay = [p.prov, p.city, p.proj, p.code, p.name, p.subject, p.product, p.ind, p.category, p.docNo, p.source].join(' ').toLowerCase();
           if (hay.indexOf(q) === -1) return false;
@@ -15772,18 +15824,31 @@ const app = createApp({
         byProv[pv][ct].push(p);
       });
       const cmp = (a, b) => String(a || '') < String(b || '') ? -1 : String(a || '') > String(b || '') ? 1 : 0;
+      const yr = fgwYear.value === '全部年度' ? '2026' : fgwYear.value;
       return Object.keys(byProv).sort(cmp).map(pv => {
         const cities = Object.keys(byProv[pv]).sort(cmp).map(ct => {
           const rows = byProv[pv][ct];
+          const amtSum = rows.reduce((s, r) => s + (Number(r.amt) || 0), 0);
+          const meta = fgwMetaOf(pv, ct, yr);
           return {
-            key: 'city:' + pv + '|' + ct, label: ct, n: rows.length,
-            amt: rows.reduce((s, r) => s + (Number(r.amt) || 0), 0), rows
+            key: 'city:' + pv + '|' + ct, label: ct, n: rows.length, amt: amtSum,
+            year: yr, title: fgwListTitle(pv, ct, yr, false),
+            totalText: meta && meta.total ? meta.total : fgwAmtText(amtSum),
+            countText: meta && meta.count ? meta.count : (rows.length + '项'),
+            pub: meta && meta.pub ? meta.pub : '',
+            siteUrl: fgwSiteUrl(pv, ct, yr), rows
           };
         });
         const all = cities.reduce((a, c) => a.concat(c.rows), []);
+        const amtSum = all.reduce((s, r) => s + (Number(r.amt) || 0), 0);
+        const meta = fgwMetaOf(pv, '', yr);
         return {
-          key: 'prov:' + pv, label: pv, n: all.length, cityN: cities.length,
-          amt: all.reduce((s, r) => s + (Number(r.amt) || 0), 0), cities
+          key: 'prov:' + pv, label: pv, n: all.length, cityN: cities.length, amt: amtSum,
+          year: yr, title: fgwListTitle(pv, '', yr, true),
+          totalText: meta && meta.total ? meta.total : fgwAmtText(amtSum),
+          countText: meta && meta.count ? meta.count : (all.length + '项'),
+          pub: meta && meta.pub ? meta.pub : '',
+          siteUrl: fgwSiteUrl(pv, '', yr), cities
         };
       });
     });
@@ -15869,6 +15934,7 @@ const app = createApp({
         id: fgwForm.editId || ('fgw' + Date.now()),
         prov: String(fgwForm.prov || '').trim(), city: String(fgwForm.city || '').trim() || fgwGuessCity(fgwForm.prov, fgwForm.proj),
         pub: fgwForm.pub || Store.today(), proj: String(fgwForm.proj || '').trim(),
+        year: String(fgwForm.pub || Store.today()).slice(0, 4),
         code: String(fgwForm.code || '').trim(), name: String(fgwForm.name || '').trim(),
         subject: String(fgwForm.subject || '').trim(), nature: fgwForm.nature || '自建',
         amt: fgwForm.amt === '' ? null : Number(fgwForm.amt), product: String(fgwForm.product || '').trim(),
@@ -16711,8 +16777,8 @@ const app = createApp({
       indSearching, indSearchErr, indSearchResults, indSearchPicked, indSearchQuery,
       indNetSearch, indAddSearchResults, indAddOne, indVerifyCandidate,
       // 20261117j/k：右侧「各省发改委投资大项目清单」（k：省→市→项目三级）
-      FGW_CATEGORY_OPTS, fgwList, fgwProvs, fgwcitiesOfProv, fgwFiltered, fgwTree, fgwExpanded,
-      fgwQ, fgwProv, fgwCategory, fgwToggle, fgwGroupToggle, fgwExpandAll, fgwToInd, fgwResetSeed, fgwVerify,
+      FGW_CATEGORY_OPTS, FGW_YEAR_OPTS, fgwAmtText, fgwList, fgwProvs, fgwcitiesOfProv, fgwFiltered, fgwTree, fgwExpanded,
+      fgwQ, fgwProv, fgwCategory, fgwYear, fgwToggle, fgwGroupToggle, fgwExpandAll, fgwToInd, fgwResetSeed, fgwVerify,
       fgwForm, openFgwForm, closeFgwForm, saveFgwRow, delFgwRow,
       // 量化板块：数据端口 / 自动打分 / 共振选股
       quantData, quantFetchedAt, quantFetching, quantSearching, quantMsg, quantAiReport, quantAiBusy, quantAiDrafts,

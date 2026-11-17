@@ -4791,6 +4791,25 @@ body.guest-mode #app { display: none; }
 .fgw-lv2 .fgw-node-children { border-left-color: var(--border); }
 .fgw-proj-row .fgw-proj { font-weight: 600; }
 
+/* 20261117l：省市名单卡片（示例：广东省2026年重点建设项目 总投资8.6万亿 | 清单） */
+.fgw-card-row { align-items: flex-start; padding: 8px 8px; }
+.fgw-card-main { flex: 1 1 auto; min-width: 0; }
+.fgw-card-title {
+  font-size: 12px; font-weight: 700; color: var(--text); line-height: 1.45;
+  display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 8px;
+}
+.fgw-card-total { color: var(--up, #dc2626); font-weight: 700; font-size: 11.5px; }
+.fgw-card-sub {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 4px 8px;
+  margin-top: 4px; font-size: 10px; color: var(--muted);
+}
+.fgw-card-link {
+  margin-left: auto; flex: 0 0 auto; color: var(--primary); font-weight: 700;
+  text-decoration: none; padding: 1px 5px; border: 1px solid var(--primary); border-radius: 4px;
+}
+.fgw-card-link:hover { background: var(--primary); color: #fff; }
+.fgw-year-sel { flex: 0 0 auto; width: 92px !important; font-weight: 700; color: var(--primary); }
+
 /* 发改委新增/编辑表单 */
 .fgw-form {
   border: 1px dashed var(--primary); background: var(--surface-alt);
