@@ -4771,6 +4771,26 @@ body.guest-mode #app { display: none; }
 .fgw-ops { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 9px; }
 .fgw-foot { margin-top: 8px; line-height: 1.6; }
 
+/* 20261117k：省 → 市 → 项目 三级层级 */
+.fgw-node { border-bottom: 1px solid var(--border); }
+.fgw-node:last-child { border-bottom: none; }
+.fgw-node-row {
+  display: flex; align-items: center; gap: 6px; padding: 7px 8px; cursor: pointer;
+  font-size: 12px; background: var(--surface-alt);
+}
+.fgw-node-row:hover { background: var(--primary-light); }
+.fgw-lv1 > .fgw-node-row { background: var(--primary-light); font-weight: 700; }
+.fgw-node-badge { flex: 0 0 auto; font-size: 10px; line-height: 1; border-radius: 4px; padding: 2px 5px; font-weight: 700; }
+.fgw-node-badge.b-prov { color: #fff; background: #2563eb; }
+.fgw-node-badge.b-city { color: #0f766e; background: #ccfbf1; }
+.fgw-node-name { flex: 1 1 auto; min-width: 0; color: var(--text); display: flex; align-items: baseline; gap: 6px; overflow: hidden; white-space: nowrap; }
+.fgw-node-name em { font-style: normal; font-size: 10px; font-weight: 400; color: var(--muted); }
+.fgw-node-meta { flex: 0 0 auto; font-size: 10px; color: var(--text-secondary); white-space: nowrap; }
+.fgw-node-children { border-left: 2px solid var(--primary-light); margin-left: 12px; }
+.fgw-lv2 > .fgw-node-row { background: transparent; font-weight: 600; }
+.fgw-lv2 .fgw-node-children { border-left-color: var(--border); }
+.fgw-proj-row .fgw-proj { font-weight: 600; }
+
 /* 发改委新增/编辑表单 */
 .fgw-form {
   border: 1px dashed var(--primary); background: var(--surface-alt);
