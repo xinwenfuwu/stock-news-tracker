@@ -4810,6 +4810,17 @@ body.guest-mode #app { display: none; }
 .fgw-card-link:hover { background: var(--primary); color: #fff; }
 .fgw-year-sel { flex: 0 0 auto; width: 92px !important; font-weight: 700; color: var(--primary); }
 
+/* 20261117m：独立「各省项目」板块（清单全宽展示，功能与右侧面板一致、共享状态） */
+.fgw-page .fgw-panel { position: static; max-width: none; }
+.fgw-page .fgw-list { max-height: none; }
+.fgw-page .fgw-toolbar input.fgw-search { flex: 1 1 260px; }
+.fgw-page .fgw-form-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.fgw-page .fgw-dl { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+@media (max-width: 980px) {
+  .fgw-page .fgw-form-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .fgw-page .fgw-dl { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
 /* 发改委新增/编辑表单 */
 .fgw-form {
   border: 1px dashed var(--primary); background: var(--surface-alt);
