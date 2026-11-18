@@ -15953,6 +15953,21 @@ const app = createApp({
       for (let i = 0; i < cityHits.length; i++) if (s.indexOf(cityHits[i]) >= 0) return cityHits[i] === '胶州' ? '青岛' : cityHits[i] === '临港' ? '浦东' : cityHits[i];
       return prov || '其他';
     }
+    /** ===== 20261118a：上市公司识别词库（用于把无公司字段的官方明细项目归到关联上市公司） =====
+     *  词库 = 已知上市公司关键词 ∪ 内置样例「关联上市公司」字段值；长词优先匹配避免「隆基」抢「隆基绿能」 */
+    const FGW_COMPANY_DICT = (function () {
+      const set = {};
+      ['比亚迪','宁德时代','京东方','隆基绿能','中芯国际','华友钴业','万华化学','海尔智家','美的集团','格力电器','立讯精密','工业富联','赛力斯','拓普集团','恩捷股份','国轩高科','通威股份','长电科技','兆易创新','中微公司','沪硅产业','晶合集成','华鲁恒升','福莱特','中科曙光','浪潮信息','海光信息','三一重工','宝钢股份','河钢股份','中航沈飞','特变电工','天齐锂业','科大讯飞','华工科技','中国建筑','申能股份','上海机场','格科微','中电科','中国石化','中国石油','中国神华','中国核电','恒瑞医药','亿纬锂能','广汽集团','长城汽车','中国商飞','特斯拉','中海壳牌','巴斯夫','巨正源','中集绿能','惠州宙邦','广东云硫','中航商用航空发动机','隆基','中芯','华友','京东方Ａ']
+        .forEach(k => { set[k] = 1; });
+      FGW_SEED_RAW.forEach(r => { const n = String(r[4] || '').trim(); if (n && n !== '—' && !/实验室|研究院|临床中心|研究所/.test(n)) set[n] = 1; });
+      return Object.keys(set).sort((a, b) => b.length - a.length);
+    })();
+    /** 从项目名推断关联上市公司（无匹配返回空串） */
+    function fgwCompanyOf(proj) {
+      const s = String(proj || '');
+      for (let i = 0; i < FGW_COMPANY_DICT.length; i++) if (s.indexOf(FGW_COMPANY_DICT[i]) >= 0) return FGW_COMPANY_DICT[i];
+      return '';
+    }
     function fgwSeed() {
       return FGW_SEED_RAW.map((r, i) => ({
         id: 'fgw' + (i + 1),
@@ -15998,6 +16013,8 @@ const app = createApp({
         if (fgwProv.value && p.prov !== fgwProv.value) return false;
         if (fgwCategory.value && p.category !== fgwCategory.value) return false;
         if (yr && p.year !== yr) return false;
+        // 节点筛选：当前阶段或下一节点匹配（同产业投资「全部节点」）
+        if (fgwNode.value && p.stage !== fgwNode.value && p.nextStage !== fgwNode.value) return false;
         if (q) {
           const hay = [p.prov, p.city, p.proj, p.code, p.name, p.subject, p.product, p.ind, p.category, p.docNo, p.source].join(' ').toLowerCase();
           if (hay.indexOf(q) === -1) return false;
@@ -16023,7 +16040,7 @@ const app = createApp({
         if (!idx[pv][ct]) idx[pv][ct] = [];
         idx[pv][ct].push({ id: 'fd' + Object.keys(seen).length, prov: pv, city: ct, proj: proj,
           category: cat, source: '官方重点项目清单（完整明细）', pub: '', amt: null, next: '',
-          _detail: true, leader: fgwLeaderOf(proj, '') });
+          _detail: true, leader: fgwLeaderOf(proj, ''), company: fgwCompanyOf(proj) });
       });
       return idx;
     })();
@@ -16039,6 +16056,10 @@ const app = createApp({
     }
     const FGW_LEADER_OPTS = ['全部主导方', '上市公司', '有限公司', '国企央企', '政府事业', '其他'];
     const fgwLeader = ref('全部主导方');
+    /** ===== 20261118a：视图切换（按项目树 / 按上市公司聚合）+ 节点筛选（功能同产业投资「全部节点」） ===== */
+    const FGW_VIEW_OPTS = ['按项目', '按上市公司'];
+    const fgwView = ref('按项目');
+    const fgwNode = ref('');
     /** 三级树：省 → 市 → 项目（样例 + 官方完整明细统一分组、去重、应用全部筛选） */
     const fgwTree = computed(() => {
       const leader = fgwLeader.value;
@@ -16054,18 +16075,21 @@ const app = createApp({
 
       // 1) 样例行（fgwFiltered 已应用 省/类别/年度/搜索），叠加主导方筛选
       const seedRows = fgwFiltered.value.filter(passLeader);
-      // 2) 官方明细行：手动应用 省/搜索/主导方；类别筛选与明细类别体系不同时排除明细
+      // 2) 官方明细行：手动应用 省/搜索/主导方；类别筛选与明细类别体系不同时排除明细；
+      //    节点筛选时明细无阶段数据，一并排除（同产业投资语义）
       const detailRows = [];
-      Object.keys(FGW_DETAIL_INDEX).forEach(pv => {
-        if (provFilter && pv !== provFilter) return;
-        if (catFilter) return;
-        Object.keys(FGW_DETAIL_INDEX[pv]).forEach(ct => {
-          FGW_DETAIL_INDEX[pv][ct].forEach(d => {
-            if (!passQ(d) || !passLeader(d)) return;
-            detailRows.push(d);
+      if (!fgwNode.value) {
+        Object.keys(FGW_DETAIL_INDEX).forEach(pv => {
+          if (provFilter && pv !== provFilter) return;
+          if (catFilter) return;
+          Object.keys(FGW_DETAIL_INDEX[pv]).forEach(ct => {
+            FGW_DETAIL_INDEX[pv][ct].forEach(d => {
+              if (!passQ(d) || !passLeader(d)) return;
+              detailRows.push(d);
+            });
           });
         });
-      });
+      }
 
       // 3) 统一按 省→市 分组；样例中与明细同名(省+项目名)的项目去重
       const byProv = {};
@@ -16115,6 +16139,57 @@ const app = createApp({
       o[id] = !o[id];
       fgwExpanded.value = o;
     }
+    /** ===== 20261118a：上市公司聚合视图 =====
+     *  把「按项目」同一筛选口径（搜索/地区/类别/年度/主导方/节点）下的所有项目，
+     *  按「关联上市公司」聚合：样例行直接取 name 字段；官方明细行用上市公司词库从项目名匹配归属。
+     *  明细行无阶段/年度数据：节点筛选启用时不含明细（与项目树口径一致）。 */
+    const fgwCompanies = computed(() => {
+      const leader = fgwLeader.value;
+      const q = String(fgwQ.value || '').trim().toLowerCase();
+      const provFilter = fgwProv.value;
+      const catFilter = fgwCategory.value;
+      const passLeader = (r) => !leader || leader === '全部主导方' || (r.leader || fgwLeaderOf(r.proj, r.subject)) === leader;
+      const passQ = (r) => {
+        if (!q) return true;
+        return [r.prov, r.city, r.proj, r.code, r.name, r.subject, r.category, r.source].join(' ').toLowerCase().indexOf(q) >= 0;
+      };
+      const byComp = {};
+      const addRow = (comp, code, r) => {
+        const key = comp;
+        if (!byComp[key]) byComp[key] = { key: 'comp:' + key, name: key, code: code || '', rows: [], provs: {}, amt: 0 };
+        if (!byComp[key].code && code) byComp[key].code = code;
+        byComp[key].rows.push(r);
+        if (r.prov) byComp[key].provs[r.prov] = 1;
+        byComp[key].amt += Number(r.amt) || 0;
+      };
+      // 1) 样例 / 自定义行（fgwFiltered 已应用 省/类别/年度/节点/搜索）
+      fgwFiltered.value.forEach(r => {
+        if (!passLeader(r)) return;
+        const c = String(r.name || '').trim();
+        if (!c || c === '—' || /实验室|研究院|临床中心|研究所/.test(c)) return;
+        addRow(c, r.code, r);
+      });
+      // 2) 官方明细行：词库匹配到公司的才归入
+      if (!fgwNode.value) {
+        Object.keys(FGW_DETAIL_INDEX).forEach(pv => {
+          if (provFilter && pv !== provFilter) return;
+          if (catFilter) return;
+          Object.keys(FGW_DETAIL_INDEX[pv]).forEach(ct => {
+            FGW_DETAIL_INDEX[pv][ct].forEach(d => {
+              if (!d.company || !passQ(d) || !passLeader(d)) return;
+              addRow(d.company, '', d);
+            });
+          });
+        });
+      }
+      return Object.keys(byComp).map(k => {
+        const c = byComp[k];
+        c.n = c.rows.length;
+        c.provs = Object.keys(c.provs).sort().slice(0, 6).join('、') + (Object.keys(c.provs).length > 6 ? ' 等' : '');
+        c.rows.sort((a, b) => (String(a.prov) < String(b.prov) ? -1 : String(a.prov) > String(b.prov) ? 1 : 0));
+        return c;
+      }).sort((a, b) => b.n - a.n || (a.name < b.name ? -1 : 1));
+    });
     function fgwGroupToggle(key) {
       const o = Object.assign({}, fgwExpanded.value);
       o[key] = !o[key];
@@ -17035,7 +17110,7 @@ const app = createApp({
       indSearching, indSearchErr, indSearchResults, indSearchPicked, indSearchQuery,
       indNetSearch, indAddSearchResults, indAddOne, indVerifyCandidate,
       // 20261117j/k：右侧「各省发改委投资大项目清单」（k：省→市→项目三级）
-      FGW_CATEGORY_OPTS, FGW_YEAR_OPTS, FGW_LEADER_OPTS, fgwAmtText, fgwList, fgwProvs, fgwcitiesOfProv, fgwFiltered, fgwTree, fgwExpanded,
+      FGW_CATEGORY_OPTS, FGW_YEAR_OPTS, FGW_LEADER_OPTS, FGW_VIEW_OPTS, fgwView, fgwNode, fgwCompanies, fgwAmtText, fgwList, fgwProvs, fgwcitiesOfProv, fgwFiltered, fgwTree, fgwExpanded,
       fgwQ, fgwProv, fgwCategory, fgwYear, fgwLeader, fgwToggle, fgwGroupToggle, fgwExpandAll, fgwToInd, fgwResetSeed, fgwVerify,
       fgwForm, openFgwForm, closeFgwForm, saveFgwRow, delFgwRow,
       // 量化板块：数据端口 / 自动打分 / 共振选股
