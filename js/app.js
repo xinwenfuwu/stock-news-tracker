@@ -10115,7 +10115,7 @@ const app = createApp({
         summary: '以旧换新与购置税减免延续，整车与电池需求预期改善，影响投资新能源车 / 电池相关股票的股民。', relatedStocks: ['比亚迪', '宁德时代'] },
       { id: 'c5', region: 'cn', concept: 'core', title: '北向资金单日大幅净流入创新高', date: '2026-08-28', source: '沪深港通',
         summary: '外资回流共振风险偏好，影响投资外资核心资产相关股票的股民。', relatedStocks: ['贵州茅台', '中国平安'] },
-      { id: 'c6', region: 'cn', concept: 'shortDrama', title: 'AI 短剧审核监管新规落地，微短剧行业全面合规整改', date: '2026-11-06', source: '广电总局',
+      { id: 'c6', region: 'cn', concept: 'shortDrama', title: 'AI 短剧审核监管新规落地，微短剧行业全面合规整改', date: '2026-11-01', source: '广电总局',
         summary: 'AI 生成短剧纳入内容审核与标识管理，海量短剧观众、创作者、平台从业者与广告主的生产生活均受影响，但其中真正投资短剧 / 影视传媒概念股的股民只是很小一部分。', relatedStocks: ['中文在线', '掌阅科技', '芒果超媒'] },
       // 20261108c 扩充：中国再补 14 条（股民数 3000 万 → 200 万递减，r 均 <0.70）
       { id: 'c7', region: 'cn', concept: 'llm', title: '国产大模型全面开源，应用生态加速落地', date: '2026-08-18', source: '工信部',
@@ -11663,8 +11663,7 @@ const app = createApp({
     //       命中 → date = 报道日期、reportTime = 完整时间、dateSource='report'；
     //       未命中 → 回退到重锚日期、dateSource='fallback'（精选事件不因快照缺口消失）。
     // 窗口筛选与「按时间排序」均使用这个口径；卡片展示「全网首报」时间。
-    let _inflNewsFlat = [];        // 当前窗口的全网新闻（含 time），非响应式避免大数组代理开销
-    let _inflNewsStart = null;     // 已尝试加载的窗口起点（YYYY-MM-DD），成功/失败都标记，避免重复拉取
+    let _inflNewsFlat = [];        // 全历史全网新闻（含 time），非响应式避免大数组代理开销
     let _inflNewsLoading = false;
     /** 生成 [fromISO, toISO] 之间的日期列表（含两端） */
     function inflDateRangeISO(fromISO, toISO) {
@@ -11680,55 +11679,61 @@ const app = createApp({
       }
       return out;
     }
-    /** 异步确保「当前窗口」的全网新闻已加载；窗口起点变化才重新拉（近的日期优先） */
+    /** 20261118f：全网新闻加载范围与筛选窗口解耦——首报时间是新闻固有属性，必须全历史搜索。
+     *  加载 seed 最早日期 ~ 今天的所有快照（约 60 天）一次，缓存复用；不再随「近 N 交易日」窗口变化，
+     *  否则近 1 交易日时只加载今天的新闻，11-01 首报的新闻匹配不到就被误判成「整理日=今天」。 */
+    let _inflNewsAllLoaded = false;
+    function inflHistoryStartISO() {
+      let min = todayISO();
+      INFLUENCE_EVENTS_SEED.forEach(e => { if (e.date && e.date < min) min = e.date; });
+      return min;
+    }
     async function inflEnsureNews() {
-      const start = rangeStartISO(inflDays());
-      if (_inflNewsStart === start) return;
+      if (_inflNewsAllLoaded) return;
       if (_inflNewsLoading) return;
       _inflNewsLoading = true;
       try {
-        const dates = inflDateRangeISO(start, todayISO()).reverse();
-        const snaps = await Promise.all(dates.map(async d => {
-          try {
-            const r = await fetch('./data/hot-topics/' + d + '.json', { cache: 'no-store' });
-            return r.ok ? await r.json() : null;
-          } catch (e) { return null; }
-        }));
+        const dates = inflDateRangeISO(inflHistoryStartISO(), todayISO()).reverse();
+        // 全历史最多 90 天，分批并发拉取，避免一次 90 个请求压垮静态站
         const flat = [];
-        snaps.forEach(s => {
-          if (!s || !s.sources) return;
-          s.sources.forEach(src => (src.items || []).forEach(it => {
-            if (it && it.text && it.time) flat.push({ text: String(it.text), time: String(it.time) });
+        for (let i = 0; i < dates.length; i += 15) {
+          const batch = dates.slice(i, i + 15);
+          const snaps = await Promise.all(batch.map(async d => {
+            try {
+              const r = await fetch('./data/hot-topics/' + d + '.json', { cache: 'no-store' });
+              return r.ok ? await r.json() : null;
+            } catch (e) { return null; }
           }));
-        });
+          snaps.forEach(s => {
+            if (!s || !s.sources) return;
+            s.sources.forEach(src => (src.items || []).forEach(it => {
+              if (it && it.text && it.time) flat.push({ text: String(it.text), time: String(it.time) });
+            }));
+          });
+        }
         _inflNewsFlat = flat;
+        _inflNewsAllLoaded = true;
       } catch (e) {
-        _inflNewsFlat = [];   // 加载失败 → 全部回退重锚日期
+        _inflNewsFlat = [];   // 加载失败 → 全部回退 seed 真实日期
       } finally {
-        _inflNewsStart = start;
         _inflNewsLoading = false;
       }
     }
-    const INFL_STOP_SEGS = { '全球': 1, '美国': 1, '中国': 1, '影响': 1, '相关': 1, '预期': 1, '板块': 1, '概念': 1, '市场': 1, '事件': 1, '报道': 1, '投资': 1 };
-    /** 匹配事件在全网报道里的最早时间；返回 'YYYY-MM-DD HH:mm' 或 null */
+    /** 20261118f：匹配事件在全网历史报道里的最早时间；返回 'YYYY-MM-DD HH:mm' 或 null。
+     *  收紧匹配口径：只用标题连续 4 字片段（语义主干），要求同一条报道命中 ≥2 个不同片段才算「该新闻的报道」。
+     *  不再用相关股票名单匹配——否则「中文在线/掌阅科技涨停」等股票异动新闻会被误当成
+     *  「短剧审核监管新规」的首报，把首报时间错误提前（或把旧新闻伪装成今天）。 */
     function inflEarliestOf(e) {
       if (!_inflNewsFlat.length || !e) return null;
-      const segs = new Set();
-      (e.relatedStocks || []).forEach(s => {
-        const c = String(s).replace(/[^一-龥A-Za-z0-9]/g, '');
-        if (c.length >= 3) segs.add(c);
-      });
       const title = String(e.title || '').replace(/[^一-龥A-Za-z0-9]/g, '');
-      for (let i = 0; i + 2 < title.length; i++) {
-        const g = title.slice(i, i + 3);
-        if (!INFL_STOP_SEGS[g]) segs.add(g);
-      }
+      const segs = new Set();
+      for (let i = 0; i + 3 < title.length; i++) segs.add(title.slice(i, i + 4));
       if (!segs.size) return null;
       let earliest = null;
       for (const it of _inflNewsFlat) {
-        let hit = false;
-        for (const s of segs) { if (s.length >= 3 && it.text.indexOf(s) >= 0) { hit = true; break; } }
-        if (hit && (!earliest || it.time < earliest)) earliest = it.time;
+        let hit = 0;
+        for (const s of segs) { if (it.text.indexOf(s) >= 0 && ++hit >= 2) break; }
+        if (hit >= 2 && (!earliest || it.time < earliest)) earliest = it.time;
       }
       return earliest;
     }
@@ -11749,9 +11754,10 @@ const app = createApp({
         list.forEach((e, i) => {
           const daysAgo = Math.min(n - 1,
             Math.round(i * (n - 1) / Math.max(1, list.length - 1)));
-          // 20261117n：date 先用重锚日期占位；loadInfluence 会用全网最早报道时间覆盖（命中时），
-      // 未命中时保留重锚日期作为兜底，保证精选事件不因快照缺口消失。
-      out.push({ ...e, date: tradingDayOffsetISO(daysAgo), dateSource: 'fallback' });
+          // 20261118f：originDate = seed 原始真实日期（首次出现/整理日），供影响力事件按真实首报时间筛选排序。
+          // date 仍重锚给「合肥模式」等依赖方使用；影响力事件链路(loadInfluence)会改用 originDate/全网首报，
+          // 绝不再用重锚日期——重锚会把 11-01 首报的新闻伪装成今天，违背「以首次出现时间为准」的口径。
+          out.push({ ...e, originDate: e.date, date: tradingDayOffsetISO(daysAgo), dateSource: 'fallback' });
         });
       });
       _inflAnchorCache[n] = out;
@@ -11850,24 +11856,32 @@ const app = createApp({
       // 若全网新闻尚未加载完成（异步），先按占位日期渲染，加载完成后由回调再刷一次（见 loadInfluenceAsync）。
       const filtered = inflAnchoredSeed()
         .map(e => {
+          // 20261118f：真实首次出现时间 = 全网历史最早报道（若早于 seed 原始日期）否则 seed 原始日期。
+          // 绝不使用重锚 date——它把 11-01 首报的新闻伪装成今天，导致近1交易日误纳入 + 时间排序错位。
+          const origin = String(e.originDate || e.date);           // seed 真实日期（未重锚前）
           const rep = inflEarliestOf(e);
-          if (rep) {
-            // 命中全网报道：date 取最早报道的日期部分，供窗口筛选；_timeKey 用完整时间供精确排序
-            e.date = String(rep).slice(0, 10);
+          let firstISO;
+          if (rep && String(rep).slice(0, 10) < origin) {
+            // 全网报道比 seed 原始日期更早 → 以全网首报为准（真正的首次出现）
+            firstISO = String(rep).slice(0, 10);
             e.reportTime = rep;
             e.dateSource = 'report';
             e._timeKey = rep;
           } else {
-            e.dateSource = 'fallback';
-            e._timeKey = e.date;
+            // 未匹配或 seed 本身更早 → 用 seed 真实日期；reportTime 仍保留匹配到的报道（展示用）
+            firstISO = origin;
+            e.dateSource = rep ? 'report' : 'seed';
+            e._timeKey = rep || origin;
+            if (rep) e.reportTime = rep; else delete e.reportTime;
           }
+          e.date = firstISO;                                       // 窗口筛选(inflInWindow)以此为准
           return e;
         })
         .filter(e => e.region === reg && inflInWindow(e))
         .map(e => inflWithBullBear(withCnImp(resolveInfluence(e))));
       inflEvents.value = sortInfluence(filtered);
       const _repN = filtered.filter(e => e.dateSource === 'report').length;
-      inflDate.value = '全网首报时间 · 近 ' + inflDays() + ' 交易日窗口（' + _repN + '/' + filtered.length + ' 条已匹配全网首报）';
+      inflDate.value = '全网首报时间（真实首次出现）· 近 ' + inflDays() + ' 交易日窗口（' + _repN + '/' + filtered.length + ' 条匹配全网报道）';
       inflError.value = '';
     }
     /** 异步加载全网新闻后重算影响力事件（保证首报口径生效），加载前后各渲染一次避免空白 */
@@ -11888,8 +11902,9 @@ const app = createApp({
       if (inflLoading.value) return;
       inflLoading.value = true;
       try {
-        // 20261117n：强制重新拉取全网快照后按首报时间重算（清缓存让窗口重新加载）
-        _inflNewsStart = null;
+        // 20261118f：强制重新拉取全历史全网快照后按真实首报时间重算
+        _inflNewsAllLoaded = false;
+        _inflNewsFlat = [];
         await loadInfluenceAsync();
         showToast(`已刷新影响力事件（${inflEvents.value.length} 条，按${sortLabel()}从大到小排序）`, 'success');
       } catch (e) {
