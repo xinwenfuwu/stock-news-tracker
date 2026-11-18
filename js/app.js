@@ -11447,6 +11447,49 @@ const app = createApp({
         return (arr && arr.length) ? arr : null;
       } catch (e) { return null; }
     }
+    /** 20261119a：未来事件（突发/人物）语义首报锚定。
+     *  口径：语义相同（含义相同，非字面百分比）的新闻视为同一新闻；同一新闻在不同平台/时间报道
+     *  （误差几小时~几天）一律按首次报道时间锚定；很多年前的同类旧闻不参与锚定。
+     *  做法：对事件列表按标题语义聚类，每组取组内最早的 datetime 作为首报时间，
+     *  把组内每条事件的时间统一为该首报（影响排序/范围筛选/卡片展示），
+     *  同时记录 _origDatetime（各条原本时间）与 _sameNewsCount（同新闻跨平台报道条数）供展示。
+     *  超出最近一个月的旧事件直接排除。 */
+    function futureAnchorFirstReport(src) {
+      const oneMonthAgo = dateOffsetISO(30);
+      const arr = Array.isArray(src) ? src.map(e => ({ ...e })) : [];
+      // 只保留最近一个月内发生的事件（首报新鲜口径）
+      const fresh = arr.filter(e => {
+        const t = String(hfeiEvtDateOf(e) || (e.datetime || e.time || e.date || ''));
+        return t && t >= oneMonthAgo;
+      });
+      // 语义聚类：标题语义相同 → 同一新闻组
+      const groups = [];
+      fresh.forEach(e => {
+        const title = String(e.title || '');
+        let g = groups.find(gr => gr.title && semIsSameNews(gr.title, title));
+        if (!g) { g = { title, members: [] }; groups.push(g); }
+        g.members.push(e);
+      });
+      const out = [];
+      groups.forEach(g => {
+        // 组内最早报道时间 = 首报时间
+        const sorted = g.members.slice().sort((a, b) => {
+          const ta = String(a.datetime || a.time || ''), tb = String(b.datetime || b.time || '');
+          return ta.localeCompare(tb);
+        });
+        const firstMs = sorted[0] ? _evtTimeMs(sorted[0]) : null;
+        const firstISO = sorted[0] ? String(sorted[0].datetime || sorted[0].time || '') : '';
+        sorted.forEach(e => {
+          e._origDatetime = String(e.datetime || e.time || '');   // 各条原始报道时间
+          e._sameNewsCount = sorted.length;                        // 同一新闻跨平台/时间报道条数
+          e._firstReport = true;
+          if (firstISO) { e.datetime = firstISO; e.time = firstISO; }  // 统一锚定到首报时间
+          if (firstMs != null) e._timeKey = firstISO;
+          out.push(e);
+        });
+      });
+      return out;
+    }
     async function loadFutureData({ initial = false } = {}) {
       // 20261109f：每次加载分配序号；快速切换子版块/覆盖范围时，旧请求后返回不得覆盖新结果
       const seq = ++futureLoadSeq;
@@ -11456,11 +11499,12 @@ const app = createApp({
       let allUpcoming = null;
       if (reg === 'breaking') {
         const remote = await fetchBreakingEvents(seq);
-        const src0 = (remote && remote.length) ? remote : BREAKING_EVENTS_SEED;
-        // 20261110c：新闻范围筛选（本面板自己的 futureRangeDays，不影响左侧影响力事件）
+        const raw = (remote && remote.length) ? remote : BREAKING_EVENTS_SEED;
+        // 20261119a：先按语义首报锚定（同义新闻取最早报道时间、排除一个月外旧闻），
+        // 再用首报时间参与本面板自己的「近 N 日」范围筛选（不影响左侧影响力事件）
+        const src0 = futureAnchorFirstReport(raw);
         const src = Number(futureRangeDays.value) ? src0.filter(e => newsInRange(e, futureRangeDays.value)) : src0;
         // initial：首屏把这些 id 标记为已见，避免初始事件被误标红；非 initial：新 id 标红，加载后延迟标记为已见
-        // 注意：一律标记「未筛选的全量」，这样放宽范围后重新出现的事件不会被误判为「新」
         if (initial) { src0.forEach(e => futureSeenIds.value.add(e.id)); persistFutureSeen(); }
         list = src.map(e => withCnImp(resolveFutureImpact(e)));
         list.forEach(e => { e.surge = computeSurge(e); e._new = !futureSeenIds.value.has(e.id); });
@@ -11470,7 +11514,8 @@ const app = createApp({
         }
       } else if (reg === 'people') {
         const remote = await fetchCelebrityNews(seq);
-        const src0 = (remote && remote.length) ? remote : CELEBRITY_EVENTS_SEED;
+        const raw = (remote && remote.length) ? remote : CELEBRITY_EVENTS_SEED;
+        const src0 = futureAnchorFirstReport(raw);
         const src = Number(futureRangeDays.value) ? src0.filter(e => newsInRange(e, futureRangeDays.value)) : src0;
         list = src.map(e => withCnImp(resolveFutureImpact(e)));
         list.forEach(e => { e.surge = computeSurge(e); e._new = false; });   // 人物为静态榜单，不标红
@@ -11619,6 +11664,71 @@ const app = createApp({
     }
     /** 在 resolve 之后给事件挂上 cnImp（对中影响度 + 方向），供排序与卡片展示 */
     function withCnImp(e) { e.cnImp = computeChinaImpact(e); return e; }
+
+    // ===== 20261119a：语义首报锚定引擎（影响力事件 / 未来事件 两个板块共用） =====
+    // 用户口径：搜索范围=最近一个月发生的全网新闻；「文字不是百分比相同但含义相同」=同一新闻；
+    //   同一新闻在不同平台/时间（误差几小时~几天）一律按首次报道时间锚定；
+    //   「很多年前有过这个新闻，但不符合锚定时间」→ 一个月外的旧报道一律不参与锚定。
+    // 实现：语义相似度（归一化 + 2-gram 词集 + 同义词归一键 + 包含度）判定「同一新闻」，
+    //   再在时间升序的报道集中取该新闻语义命中的最早一条，作为首报锚点。
+    const SEM_STOP_WORDS = new Set([
+      '格隆','隆汇','新浪','财经','证券','时报','记者','报道','消息','获悉','表示','称','称','的','了','和','与','在','是','有','为','将','被','把','对','从','等','及','或',
+      '公司','方面','相关','情况','进行','通过','关于','人士','今日','近日','分析','分析师','指出','认为','预计','市场','投资者','公告','影响','概念','板块','涨停','大涨',
+      '月日','日前','这个','可能','已经','还是','有关','其中','目前','此外','同时','但是','不过','因此','所以','如果','虽然','需要','可以','之后','之前','以来'
+    ]);
+    // 同义/近义归一：含义相同但字面不同的词 → 同一语义键（值以 @ 开头，避免与字面 2-gram 冲突）
+    const SEM_SYNONYM = {
+      '辞职':'辞任','辞去':'辞任','离任':'辞任','卸任':'辞任','去职':'辞任','离职':'辞任','请辞':'辞任','下台':'辞任',
+      '微短剧':'短剧','网络短剧':'短剧','短剧行业':'短剧','漫剧':'短剧','微剧':'短剧',
+      '暴跌':'大跌','重挫':'大跌','下挫':'大跌','跳水':'大跌','崩盘':'大跌','闪崩':'大跌',
+      '监管':'审核','整治':'审核','整改':'审核','审查':'审核','合规':'审核','治理':'审核',
+      '涨价':'提价','上涨':'拉升','走强':'上涨','飙升':'上涨','新高':'上涨',
+      '新规':'政策','一揽子':'系列','关税':'贸易','降准':'宽松','降息':'宽松'
+    };
+    /** 文本归一化：去来源前缀/日期/数字/标点，保留中文语义主干 */
+    function semNorm(text) {
+      let t = String(text || '');
+      t = t.replace(/^[^｜|]{0,24}[｜|]/, '');                       // 去「格隆汇11月13日｜」等来源前缀
+      t = t.replace(/\d{4}[年\-]\d{1,2}[月\-]\d{1,2}日?/g, '');     // 去日期
+      t = t.replace(/[0-9A-Za-z%．.、，,。；;：:！!？?（）()\[\]【】"'""''\-—｜|·\s]/g, '');
+      return t;
+    }
+    /** 语义词集：2-gram 主干 + 同义词归一键 */
+    function semTokens(text) {
+      const t = semNorm(text);
+      const s = new Set();
+      for (let i = 0; i + 1 < t.length; i++) {
+        const g = t.slice(i, i + 2);
+        if (!SEM_STOP_WORDS.has(g) && !/^\d/.test(g)) s.add(g);
+      }
+      for (const k in SEM_SYNONYM) { if (t.indexOf(k) >= 0) s.add('@' + SEM_SYNONYM[k]); }
+      return s;
+    }
+    /** 语义包含度：交集 / 较小词集大小（短新闻被长标题覆盖的比例） */
+    function semSimilarity(a, b) {
+      const A = semTokens(a), B = semTokens(b);
+      if (!A.size || !B.size) return 0;
+      let inter = 0; A.forEach(x => { if (B.has(x)) inter++; });
+      return inter / Math.min(A.size, B.size);
+    }
+    /** 同一新闻判定：语义包含度达阈值。SELF 标题较长，用较小词集做分母，短报道也易命中。 */
+    const SEM_SAME_THRESHOLD = 0.13;
+    function semIsSameNews(a, b, threshold) {
+      return semSimilarity(a, b) >= (Number(threshold) || SEM_SAME_THRESHOLD);
+    }
+    /** 从时间升序报道集中，取与 seed 语义相同的最早一条的 time；无命中返回 null。
+     *  withinOneMonth=true 时只认「最近一个月」内的报道（锚定新鲜发生，排除多年前旧闻翻炒）。 */
+    function semEarliestReport(title, newsFlat, withinOneMonth, threshold) {
+      if (!title || !Array.isArray(newsFlat) || !newsFlat.length) return null;
+      const cutoff = withinOneMonth ? dateOffsetISO(30) : '0000-00-00';
+      for (const it of newsFlat) {                       // newsFlat 已按 time 升序
+        const t = String(it.time || '');
+        if (t.slice(0, 10) < cutoff) continue;           // 一个月外旧报道不参与锚定
+        if (semIsSameNews(title, it.text, threshold)) return t;
+      }
+      return null;
+    }
+
     function sortLabel() {
       const k = inflSortBy.value;
       if (k === 'time') return '时间';
@@ -11679,22 +11789,18 @@ const app = createApp({
       }
       return out;
     }
-    /** 20261118f：全网新闻加载范围与筛选窗口解耦——首报时间是新闻固有属性，必须全历史搜索。
-     *  加载 seed 最早日期 ~ 今天的所有快照（约 60 天）一次，缓存复用；不再随「近 N 交易日」窗口变化，
-     *  否则近 1 交易日时只加载今天的新闻，11-01 首报的新闻匹配不到就被误判成「整理日=今天」。 */
+    /** 20261119a：新闻搜索范围与筛选窗口解耦，但锚定范围锁定「最近一个月」。
+     *  用户口径：两个板块搜索的全网新闻都是「最近一个月发生的新闻」，锚定也只认一个月内新鲜报道，
+     *  很多年前的同类旧闻不参与锚定。加载最近 30 天快照一次，缓存复用；按 time 升序排列，
+     *  便于 semEarliestReport 取「语义命中的最早一条」。与「近 N 交易日」筛选窗口无关。 */
     let _inflNewsAllLoaded = false;
-    function inflHistoryStartISO() {
-      let min = todayISO();
-      INFLUENCE_EVENTS_SEED.forEach(e => { if (e.date && e.date < min) min = e.date; });
-      return min;
-    }
     async function inflEnsureNews() {
       if (_inflNewsAllLoaded) return;
       if (_inflNewsLoading) return;
       _inflNewsLoading = true;
       try {
-        const dates = inflDateRangeISO(inflHistoryStartISO(), todayISO()).reverse();
-        // 全历史最多 90 天，分批并发拉取，避免一次 90 个请求压垮静态站
+        // 只加载最近一个月（30 天自然日）的快照，越界即旧闻，不参与锚定
+        const dates = inflDateRangeISO(dateOffsetISO(30), todayISO()).reverse();
         const flat = [];
         for (let i = 0; i < dates.length; i += 15) {
           const batch = dates.slice(i, i + 15);
@@ -11711,6 +11817,7 @@ const app = createApp({
             }));
           });
         }
+        flat.sort((a, b) => String(a.time).localeCompare(String(b.time)));  // 升序：最早在前
         _inflNewsFlat = flat;
         _inflNewsAllLoaded = true;
       } catch (e) {
@@ -11719,23 +11826,13 @@ const app = createApp({
         _inflNewsLoading = false;
       }
     }
-    /** 20261118f：匹配事件在全网历史报道里的最早时间；返回 'YYYY-MM-DD HH:mm' 或 null。
-     *  收紧匹配口径：只用标题连续 4 字片段（语义主干），要求同一条报道命中 ≥2 个不同片段才算「该新闻的报道」。
-     *  不再用相关股票名单匹配——否则「中文在线/掌阅科技涨停」等股票异动新闻会被误当成
-     *  「短剧审核监管新规」的首报，把首报时间错误提前（或把旧新闻伪装成今天）。 */
+    /** 20261119a：语义首报匹配——「含义相同（非字面百分比相同）即为同一新闻」。
+     *  用语义引擎（2-gram 词集 + 同义词归一键 + 包含度）匹配该事件标题，
+     *  只认最近一个月内新鲜报道，取语义命中的最早一条时间。返回 'YYYY-MM-DD HH:mm' 或 null。
+     *  不再用相关股票名单匹配——否则股票异动新闻会被误当成事件首报。 */
     function inflEarliestOf(e) {
-      if (!_inflNewsFlat.length || !e) return null;
-      const title = String(e.title || '').replace(/[^一-龥A-Za-z0-9]/g, '');
-      const segs = new Set();
-      for (let i = 0; i + 3 < title.length; i++) segs.add(title.slice(i, i + 4));
-      if (!segs.size) return null;
-      let earliest = null;
-      for (const it of _inflNewsFlat) {
-        let hit = 0;
-        for (const s of segs) { if (it.text.indexOf(s) >= 0 && ++hit >= 2) break; }
-        if (hit >= 2 && (!earliest || it.time < earliest)) earliest = it.time;
-      }
-      return earliest;
+      if (!e) return null;
+      return semEarliestReport(e.title || e.originTitle, _inflNewsFlat, true);
     }
     // 样例数据的事件原始日期跨度数月（最早 2026-02），若直接按窗口过滤会只剩 1~2 条。
     // 故加载时把「同一区域」的事件按原时间先后重锚到最近 N 个自然日内（每天约 2 条），
@@ -11854,30 +11951,35 @@ const app = createApp({
       // 20261110b：窗口天数可由「新闻范围」选择框调整（未选仍是默认 10 日）
       // 20261117n：用全网最早报道时间覆盖占位日期，再按该时间做窗口筛选与排序。
       // 若全网新闻尚未加载完成（异步），先按占位日期渲染，加载完成后由回调再刷一次（见 loadInfluenceAsync）。
+      const oneMonthAgo = dateOffsetISO(30);
       const filtered = inflAnchoredSeed()
         .map(e => {
-          // 20261118f：真实首次出现时间 = 全网历史最早报道（若早于 seed 原始日期）否则 seed 原始日期。
-          // 绝不使用重锚 date——它把 11-01 首报的新闻伪装成今天，导致近1交易日误纳入 + 时间排序错位。
+          // 20261119a：首报时间 = 最近一个月内语义最早报道 vs seed 原始日期，取更早者。
+          // 口径：新闻一定符合「最近一个月发生」；很多年前的同类旧闻不参与锚定。
+          // 绝不使用重锚 date——它把 11-01 首报的新闻伪装成今天。
           const origin = String(e.originDate || e.date);           // seed 真实日期（未重锚前）
-          const rep = inflEarliestOf(e);
+          e.originTitle = e.originTitle || e.title;                // 语义匹配用原始标题
+          const rep = inflEarliestOf(e);                           // 最近一个月内语义命中的最早报道
           let firstISO;
           if (rep && String(rep).slice(0, 10) < origin) {
-            // 全网报道比 seed 原始日期更早 → 以全网首报为准（真正的首次出现）
+            // 一个月内语义报道比 seed 更早 → 以全网首报为准
             firstISO = String(rep).slice(0, 10);
             e.reportTime = rep;
             e.dateSource = 'report';
             e._timeKey = rep;
           } else {
-            // 未匹配或 seed 本身更早 → 用 seed 真实日期；reportTime 仍保留匹配到的报道（展示用）
+            // 未匹配或 seed 本身更早 → 用 seed 真实日期
             firstISO = origin;
             e.dateSource = rep ? 'report' : 'seed';
             e._timeKey = rep || origin;
             if (rep) e.reportTime = rep; else delete e.reportTime;
           }
           e.date = firstISO;                                       // 窗口筛选(inflInWindow)以此为准
+          // 「很多年前发生」的 seed 旧事件不属于最近一个月新闻，排除（一个月新鲜口径）
+          e._tooOld = firstISO < oneMonthAgo;
           return e;
         })
-        .filter(e => e.region === reg && inflInWindow(e))
+        .filter(e => e.region === reg && !e._tooOld && inflInWindow(e))
         .map(e => inflWithBullBear(withCnImp(resolveInfluence(e))));
       inflEvents.value = sortInfluence(filtered);
       const _repN = filtered.filter(e => e.dateSource === 'report').length;
