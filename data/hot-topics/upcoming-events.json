@@ -1,9 +1,9 @@
 {
-  "generatedAt": "2026-11-18 15:02",
+  "generatedAt": "2026-11-19 01:10",
   "generatedBy": "GitHub Actions · 财经日历 + 多源新闻 + 精选底库",
   "sourceCount": 5,
-  "calendarCount": 12,
-  "seedCount": 32,
+  "calendarCount": 4,
+  "seedCount": 31,
   "autoCount": 4,
   "events": [
     {
@@ -44,25 +44,6 @@
         "AI算力",
         "液冷",
         "HBM"
-      ]
-    },
-    {
-      "id": "uc20",
-      "title": "APEC 工商领导人峰会",
-      "tag": "峰会/经济",
-      "date": "2026-11-17",
-      "endDate": "2026-11-18",
-      "region": "中国",
-      "scope": "cn",
-      "location": "深圳",
-      "concept": "core",
-      "source": "中国贸促会/每日经济新闻",
-      "importance": 88,
-      "summary": "APEC领导人会议配套活动，全球工商领袖聚焦亚太供应链、数字经济与AI合作。",
-      "relatedStocks": [
-        "外贸",
-        "数字经济",
-        "深圳本地股"
       ]
     },
     {
@@ -143,22 +124,6 @@
       ]
     },
     {
-      "id": "auhwsz9t",
-      "title": "2026中国5G+工业互联网大会18日在武汉举行",
-      "tag": "宏观/综合/日程",
-      "date": "2026-11-18",
-      "region": "中国",
-      "scope": "cn",
-      "concept": "broker",
-      "source": "每日经济新闻·财经日历",
-      "summary": "计划于 2026-11-18 举行或公布，来源：每日经济新闻·财经日历。",
-      "relatedStocks": [
-        "宽基指数"
-      ],
-      "importance": 72,
-      "_auto": true
-    },
-    {
       "id": "uc25",
       "title": "Slush 2026 科技创业大会",
       "tag": "会议/创投",
@@ -175,22 +140,6 @@
         "创投",
         "AI应用"
       ]
-    },
-    {
-      "id": "auw1irjc",
-      "title": "美国10月成屋签约销售指数",
-      "tag": "宏观/综合/日程",
-      "date": "2026-11-18",
-      "region": "美国",
-      "scope": "us",
-      "concept": "usMacro",
-      "source": "每日经济新闻·财经日历",
-      "summary": "美国10月成屋签约销售指数同比(%)，今值--，预期值--，前值-12.6",
-      "relatedStocks": [
-        "宽基指数"
-      ],
-      "importance": 52,
-      "_auto": true
     },
     {
       "id": "au11l6y6i",
@@ -225,6 +174,24 @@
       "_auto": true
     },
     {
+      "id": "au1xvvih9",
+      "title": "Anthropic IPO前瞻：你需要了解全部信息",
+      "tag": "科技/AI/日程",
+      "date": "2026-11-19",
+      "region": "全球",
+      "scope": "world",
+      "concept": "ai",
+      "source": "环球市场播报",
+      "summary": "开发 Claude 的这家 AI 实验室将于 2026 年 11 月 19 日正式挂牌交易 在获得监管机构批准后，Anthropic 将于 11 月 18 日（周三）正式完成 IPO 定价...",
+      "relatedStocks": [
+        "英伟达",
+        "微软",
+        "台积电"
+      ],
+      "importance": 59,
+      "_auto": true
+    },
+    {
       "id": "uc26",
       "title": "虹桥国际科技周",
       "tag": "展会/科技",
@@ -242,6 +209,22 @@
         "AI",
         "智能装备"
       ]
+    },
+    {
+      "id": "au11utkhg",
+      "title": "市场消息：塞尔维亚议会结束第二天辩论",
+      "tag": "宏观/综合/日程",
+      "date": "2026-11-20",
+      "region": "全球",
+      "scope": "world",
+      "concept": "macro",
+      "source": "新浪7×24",
+      "summary": "计划于 2026-11-20 举行或公布，来源：新浪7×24。",
+      "relatedStocks": [
+        "宽基指数"
+      ],
+      "importance": 59,
+      "_auto": true
     },
     {
       "id": "uc27",

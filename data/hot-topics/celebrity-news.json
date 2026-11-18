@@ -1,20 +1,56 @@
 {
-  "generatedAt": "2026-11-18 15:02",
+  "generatedAt": "2026-11-19 01:10",
   "generatedBy": "GitHub Actions · 多源实时聚合",
   "sourceCount": 5,
-  "autoCount": 7,
+  "autoCount": 11,
   "events": [
     {
-      "id": "ap1ek12oe",
-      "title": "特朗普启程深圳，登机前对着镜头做出标志性挥拳动作。（中新网）",
-      "tag": "人物/特朗普",
-      "region": "中国",
-      "concept": "broker",
-      "time": "2026-11-18 14:58",
-      "datetime": "2026-11-18 14:58",
+      "id": "ap15gb8to",
+      "title": "摩根士丹利表示，SpaceX或将与AI板块行情走势脱钩。",
+      "tag": "人物/马斯克",
+      "region": "全球",
+      "concept": "ai",
+      "time": "2026-11-19 01:06",
+      "datetime": "2026-11-19 01:06",
+      "source": "财联社",
+      "url": "https://www.cls.cn/detail/2538377",
+      "summary": "摩根士丹利表示，SpaceX或将与AI板块行情走势脱钩。",
+      "relatedStocks": [
+        "英伟达",
+        "微软",
+        "台积电"
+      ],
+      "bullConcepts": [
+        "AI算力",
+        "半导体",
+        "国产替代"
+      ],
+      "bearConcepts": [
+        "传统软件"
+      ],
+      "bullIndustries": [
+        "半导体",
+        "AI应用",
+        "算力基础设施"
+      ],
+      "bearIndustries": [
+        "传统IT服务"
+      ],
+      "heat": 56,
+      "momentum": 56,
+      "_auto": true
+    },
+    {
+      "id": "api1yds3",
+      "title": "Skydance创始人兼首席执行官大卫·埃里森：马斯克纪录片将在Skydance网络播出。",
+      "tag": "人物/马斯克",
+      "region": "全球",
+      "concept": "macro",
+      "time": "2026-11-19 00:45",
+      "datetime": "2026-11-19 00:45",
       "source": "新浪7×24",
-      "url": "https://finance.sina.cn/7x24/2026-11-18/detail-inizcvvf6939885.d.html",
-      "summary": "特朗普启程深圳，登机前对着镜头做出标志性挥拳动作。（中新网）",
+      "url": "https://finance.sina.cn/7x24/2026-11-19/detail-inizesyt4655456.d.html",
+      "summary": "Skydance创始人兼首席执行官大卫·埃里森：马斯克纪录片将在Skydance网络播出。",
       "relatedStocks": [
         "宽基指数"
       ],
@@ -30,21 +66,259 @@
       "bearIndustries": [
         "顺周期"
       ],
-      "heat": 46,
+      "heat": 47,
+      "momentum": 61,
+      "_auto": true
+    },
+    {
+      "id": "ap3a6tpk",
+      "title": "11月18日，俄罗斯总统普京在出席亚太经合组织（APEC）第三十三次领导人非正式会议期间参访深圳北理莫斯科大学并发表演讲。他表示，俄中两国师生们为俄中睦邻友好关系做出了重要贡献。…",
+      "tag": "人物/普京",
+      "region": "中国",
+      "concept": "broker",
+      "time": "2026-11-19 00:39",
+      "datetime": "2026-11-19 00:39",
+      "source": "新浪7×24",
+      "url": "https://finance.sina.cn/7x24/2026-11-19/detail-inizesyv1429313.d.html",
+      "summary": "11月18日，俄罗斯总统普京在出席亚太经合组织（APEC）第三十三次领导人非正式会议期间参访深圳北理莫斯科大学并发表演讲。他表示，俄中两国师生们为俄中睦邻友好关系做出了重要贡献。(新华社)",
+      "relatedStocks": [
+        "宽基指数"
+      ],
+      "bullConcepts": [
+        "防御板块"
+      ],
+      "bearConcepts": [
+        "周期股"
+      ],
+      "bullIndustries": [
+        "公用事业"
+      ],
+      "bearIndustries": [
+        "顺周期"
+      ],
+      "heat": 64,
+      "momentum": 46,
+      "_auto": true
+    },
+    {
+      "id": "ap1wkdt3m",
+      "title": "市场消息：美国总统特朗普因美国副总统万斯批评伊朗战争一事而对其日益感到不满。",
+      "tag": "人物/特朗普",
+      "region": "美国",
+      "concept": "defense",
+      "time": "2026-11-19 00:55",
+      "datetime": "2026-11-19 00:55",
+      "source": "新浪7×24",
+      "url": "https://finance.sina.cn/7x24/2026-11-19/detail-inizesyv1435048.d.html",
+      "summary": "市场消息：美国总统特朗普因美国副总统万斯批评伊朗战争一事而对其日益感到不满。",
+      "relatedStocks": [
+        "军工",
+        "黄金"
+      ],
+      "bullConcepts": [
+        "军工",
+        "避险资产"
+      ],
+      "bearConcepts": [
+        "风险资产"
+      ],
+      "bullIndustries": [
+        "军工",
+        "黄金"
+      ],
+      "bearIndustries": [
+        "航空",
+        "旅游"
+      ],
+      "heat": 56,
+      "momentum": 71,
+      "_auto": true
+    },
+    {
+      "id": "apzazpa3",
+      "title": "欧洲央行行长拉加德：AI股票估值“非常激进” 最终可能出现调整",
+      "tag": "人物/拉加德",
+      "region": "中国",
+      "concept": "llm",
+      "time": "2026-11-19 00:53",
+      "datetime": "2026-11-19 00:53",
+      "source": "环球市场播报",
+      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-19/doc-inizesyr0853159.shtml",
+      "summary": "欧洲央行行长克里斯蒂娜·拉加德表示，人工智能公司的高估值最终可能回落。 尽管“过去几周出现了显著的价格回调”，拉加德仍将人工智能股的估值水平描述为“非常激进”。",
+      "relatedStocks": [
+        "英伟达",
+        "微软",
+        "台积电"
+      ],
+      "bullConcepts": [
+        "AI算力",
+        "半导体",
+        "国产替代"
+      ],
+      "bearConcepts": [
+        "传统软件"
+      ],
+      "bullIndustries": [
+        "半导体",
+        "AI应用",
+        "算力基础设施"
+      ],
+      "bearIndustries": [
+        "传统IT服务"
+      ],
+      "heat": 29,
       "momentum": 36,
       "_auto": true
     },
     {
-      "id": "apgk0n1z",
-      "title": "OpenAI董事：一年内发生AI灾难具备合理可能性",
+      "id": "ap170xkhg",
+      "title": "美国官员称，美国总统特朗普将与俄罗斯总统普京举行一对一会晤。",
+      "tag": "人物/特朗普",
+      "region": "美国",
+      "concept": "usMacro",
+      "time": "2026-11-19 00:28",
+      "datetime": "2026-11-19 00:28",
+      "source": "新浪7×24",
+      "url": "https://finance.sina.cn/7x24/2026-11-19/detail-inizesyt4648868.d.html",
+      "summary": "美国官员称，美国总统特朗普将与俄罗斯总统普京举行一对一会晤。",
+      "relatedStocks": [
+        "宽基指数"
+      ],
+      "bullConcepts": [
+        "防御板块"
+      ],
+      "bearConcepts": [
+        "周期股"
+      ],
+      "bullIndustries": [
+        "公用事业"
+      ],
+      "bearIndustries": [
+        "顺周期"
+      ],
+      "heat": 51,
+      "momentum": 31,
+      "_auto": true
+    },
+    {
+      "id": "apl6w9ie",
+      "title": "OpenAI的CEO Altman：AI行业将需要一些共同的安全标准。",
       "tag": "人物/奥尔特曼",
       "region": "全球",
       "concept": "ai",
-      "time": "2026-11-18 14:37",
-      "datetime": "2026-11-18 14:37",
+      "time": "2026-11-18 23:19",
+      "datetime": "2026-11-18 23:19",
+      "source": "华尔街见闻",
+      "url": "https://wallstreetcn.com/livenews/3202035",
+      "summary": "OpenAI的CEO Altman：AI行业将需要一些共同的安全标准。",
+      "relatedStocks": [
+        "英伟达",
+        "微软",
+        "台积电"
+      ],
+      "bullConcepts": [
+        "AI算力",
+        "半导体",
+        "国产替代"
+      ],
+      "bearConcepts": [
+        "传统软件"
+      ],
+      "bullIndustries": [
+        "半导体",
+        "AI应用",
+        "算力基础设施"
+      ],
+      "bearIndustries": [
+        "传统IT服务"
+      ],
+      "heat": 42,
+      "momentum": 26,
+      "_auto": true
+    },
+    {
+      "id": "apacphi2",
+      "title": "软银孙正义承认未投资Anthropic是“错误”，对此感到遗憾",
+      "tag": "人物/孙正义",
+      "region": "全球",
+      "concept": "ai",
+      "time": "2026-11-18 16:31",
+      "datetime": "2026-11-18 16:31",
       "source": "环球市场播报",
-      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-18/doc-inizcvvf1589441.shtml",
-      "summary": "知名AI安全研究者、OpenAI控股实体董事会成员保罗・克里斯蒂亚诺，在一档热门科技播客采访中，对人工智能的发展前景发出警示。他表示...",
+      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-18/doc-inizeaax0992248.shtml",
+      "summary": "软银集团创始人孙正义表示，他对未能在Anthropic进行备受瞩目的首次公开募股（IPO）之前投资该公司感到遗憾，并将错失这一人工智能实验室投资机会称为一个错误。",
+      "relatedStocks": [
+        "英伟达",
+        "微软",
+        "台积电"
+      ],
+      "bullConcepts": [
+        "AI算力",
+        "半导体",
+        "国产替代"
+      ],
+      "bearConcepts": [
+        "传统软件"
+      ],
+      "bullIndustries": [
+        "半导体",
+        "AI应用",
+        "算力基础设施"
+      ],
+      "bearIndustries": [
+        "传统IT服务"
+      ],
+      "heat": 87,
+      "momentum": 18,
+      "_auto": true
+    },
+    {
+      "id": "apsw6jen",
+      "title": "OpenAI董事称：未来一年内发生AI灾难存在 “不小可能性”",
+      "tag": "人物/奥尔特曼",
+      "region": "全球",
+      "concept": "ai",
+      "time": "2026-11-18 17:15",
+      "datetime": "2026-11-18 17:15",
+      "source": "环球市场播报",
+      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-18/doc-inizeacc6903616.shtml",
+      "summary": "保罗・克里斯蒂亚诺于 9 月加入 OpenAI 基金会董事会。他表示，近几个月 AI 技术飞速迭代，致使他对 AI 风险的判断进一步趋于悲观。",
+      "relatedStocks": [
+        "英伟达",
+        "微软",
+        "台积电"
+      ],
+      "bullConcepts": [
+        "AI算力",
+        "半导体",
+        "国产替代"
+      ],
+      "bearConcepts": [
+        "传统软件"
+      ],
+      "bullIndustries": [
+        "半导体",
+        "AI应用",
+        "算力基础设施"
+      ],
+      "bearIndustries": [
+        "传统IT服务"
+      ],
+      "heat": 38,
+      "momentum": 18,
+      "_auto": true
+    },
+    {
+      "id": "ap1pl9c5b",
+      "title": "美国参议院银行委员会主席：黄仁勋同意出席参议院银行委员会听证会",
+      "tag": "人物/黄仁勋",
+      "region": "美国",
+      "concept": "aiCapex",
+      "time": "2026-11-18 21:56",
+      "datetime": "2026-11-18 21:56",
+      "source": "环球市场播报",
+      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-18/doc-inizensx1493921.shtml",
+      "summary": "美国参议院银行委员会主席、南卡罗来纳州共和党参议员蒂姆・斯科特周三表示，英伟达前CEO黄仁勋已同意出席该委员会的听证。",
       "relatedStocks": [
         "英伟达",
         "微软",
@@ -67,152 +341,20 @@
         "传统IT服务"
       ],
       "heat": 24,
-      "momentum": 36,
-      "_auto": true
-    },
-    {
-      "id": "apueczal",
-      "title": "微软CEO盛赞黄仁勋，回应大规模服务中断和员工买断计划",
-      "tag": "人物/黄仁勋",
-      "region": "全球",
-      "concept": "ai",
-      "time": "2026-11-18 08:30",
-      "datetime": "2026-11-18 08:30",
-      "source": "环球市场播报",
-      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-18/doc-inizcexm4950812.shtml",
-      "summary": "微软CEO萨蒂亚·纳德拉（Satya Nadella）称赞已遭罢免的英伟达创始人黄仁勋是一位“独一无二的人”，并指出他对科技行业做出了巨大贡献。",
-      "relatedStocks": [
-        "英伟达",
-        "微软",
-        "台积电"
-      ],
-      "bullConcepts": [
-        "AI算力",
-        "半导体",
-        "国产替代"
-      ],
-      "bearConcepts": [
-        "传统软件"
-      ],
-      "bullIndustries": [
-        "半导体",
-        "AI应用",
-        "算力基础设施"
-      ],
-      "bearIndustries": [
-        "传统IT服务"
-      ],
-      "heat": 47,
       "momentum": 18,
       "_auto": true
     },
     {
-      "id": "apyy9afb",
-      "title": "习近平在亚太经合组织工商领导人峰会上的主旨演讲（全文）发布。 习近平会见俄罗斯总统普京。 中国证监会：“监管要求基金公司上报全部产品AI敞口”信息不属实。 人民币兑美元中间价创2…",
-      "tag": "人物/普京",
+      "id": "aplrjjbm",
+      "title": "CoreWeave首席执行官：没有黄仁勋英伟达不会受影响",
+      "tag": "人物/黄仁勋",
       "region": "美国",
       "concept": "aiCapex",
-      "time": "2026-11-18 12:30",
-      "datetime": "2026-11-18 12:30",
-      "source": "华尔街见闻",
-      "url": "https://wallstreetcn.com/livenews/3201703",
-      "summary": "习近平在亚太经合组织工商领导人峰会上的主旨演讲（全文）发布。 习近平会见俄罗斯总统普京。 中国证监会：“监管要求基金公司上报全部产品AI敞口”信息不属实。 人民币兑美元中间价创2022年以来新高，报6.7118，较上日上调14点。 现货黄金跌破每盎司3,800美元，为去年9月份来首次。 创业板指高开低走，早盘收跌0.58%，算力租赁概念逆势大涨。 恒指半日跌1.1%，恒生科技…",
-      "relatedStocks": [
-        "英伟达",
-        "微软",
-        "台积电"
-      ],
-      "bullConcepts": [
-        "AI算力",
-        "半导体",
-        "国产替代"
-      ],
-      "bearConcepts": [
-        "传统软件"
-      ],
-      "bullIndustries": [
-        "半导体",
-        "AI应用",
-        "算力基础设施"
-      ],
-      "bearIndustries": [
-        "传统IT服务"
-      ],
-      "heat": 46,
-      "momentum": 18,
-      "_auto": true
-    },
-    {
-      "id": "apgxztp5",
-      "title": "特朗普：鉴于核能是安全的，我们现在非常重视核能。",
-      "tag": "人物/特朗普",
-      "region": "美国",
-      "concept": "usMacro",
-      "time": "2026-11-18 11:41",
-      "datetime": "2026-11-18 11:41",
-      "source": "华尔街见闻",
-      "url": "https://wallstreetcn.com/livenews/3201691",
-      "summary": "特朗普：鉴于核能是安全的，我们现在非常重视核能。",
-      "relatedStocks": [
-        "宽基指数"
-      ],
-      "bullConcepts": [
-        "防御板块"
-      ],
-      "bearConcepts": [
-        "周期股"
-      ],
-      "bullIndustries": [
-        "公用事业"
-      ],
-      "bearIndustries": [
-        "顺周期"
-      ],
-      "heat": 29,
-      "momentum": 18,
-      "_auto": true
-    },
-    {
-      "id": "apjo6d2b",
-      "title": "墨西哥称在海滩收集到疑似SpaceX星舰助推器碎片",
-      "tag": "人物/马斯克",
-      "region": "全球",
-      "concept": "macro",
-      "time": "2026-11-18 10:17",
-      "datetime": "2026-11-18 10:17",
+      "time": "2026-11-18 16:06",
+      "datetime": "2026-11-18 16:06",
       "source": "环球市场播报",
-      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-18/doc-inizcmff1162484.shtml",
-      "summary": "墨西哥称收集了约 2 公斤冲上塔毛利帕斯州海滩的碎片，这些碎片可能与 SpaceX 于 11 月 13 日从德克萨斯州发射的星舰有关。",
-      "relatedStocks": [
-        "宽基指数"
-      ],
-      "bullConcepts": [
-        "防御板块"
-      ],
-      "bearConcepts": [
-        "周期股"
-      ],
-      "bullIndustries": [
-        "公用事业"
-      ],
-      "bearIndustries": [
-        "顺周期"
-      ],
-      "heat": 29,
-      "momentum": 18,
-      "_auto": true
-    },
-    {
-      "id": "aphc71t2",
-      "title": "黄仁勋卸任后首次表态：愿意回归 英伟达盘后大涨5%，财报超预期",
-      "tag": "人物/黄仁勋",
-      "region": "全球",
-      "concept": "ai",
-      "time": "2026-11-18 09:28",
-      "datetime": "2026-11-18 09:28",
-      "source": "滚动播报",
-      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-18/doc-inizcexi1252779.shtml",
-      "summary": "黄仁勋卸任后首次表态：愿意回归；英伟达盘后大涨5%，财报超预期 来源：大河财立方 【大河财立方消息】当地时间11月17日，前英伟达首席执行官黄仁勋卸任后在社交媒体首次公...",
+      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-18/doc-inizcvuz1106882.shtml",
+      "summary": "周二，“硅谷与世界”大会上，CoreWeave首席执行官迈克尔·因特拉托（Michael Intrator）暗示，他并不特别担心黄仁勋离职会对CoreWeave的业务造成影响。",
       "relatedStocks": [
         "英伟达",
         "微软",
