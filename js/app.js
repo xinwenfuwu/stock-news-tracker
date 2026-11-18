@@ -16009,12 +16009,18 @@ const app = createApp({
     const fgwFiltered = computed(() => {
       const q = String(fgwQ.value || '').trim().toLowerCase();
       const yr = fgwYear.value === '全部年度' ? '' : fgwYear.value;
+      const dayR = fgwDayRange();
       return fgwList.value.filter(p => {
         if (fgwProv.value && p.prov !== fgwProv.value) return false;
         if (fgwCategory.value && p.category !== fgwCategory.value) return false;
         if (yr && p.year !== yr) return false;
         // 节点筛选：当前阶段或下一节点匹配（同产业投资「全部节点」）
         if (fgwNode.value && p.stage !== fgwNode.value && p.nextStage !== fgwNode.value) return false;
+        // 距离今天数范围筛选（基于下一节点日期 p.next；无日期 / 已过 / 超出区间均排除）
+        if (dayR) {
+          const d = indDays(p.next);
+          if (d == null || d < dayR.min || d > dayR.max) return false;
+        }
         if (q) {
           const hay = [p.prov, p.city, p.proj, p.code, p.name, p.subject, p.product, p.ind, p.category, p.docNo, p.source].join(' ').toLowerCase();
           if (hay.indexOf(q) === -1) return false;
@@ -16060,6 +16066,22 @@ const app = createApp({
     const FGW_VIEW_OPTS = ['按项目', '按上市公司'];
     const fgwView = ref('按项目');
     const fgwNode = ref('');
+    /** 20261118b：距离今天数范围输入——30-60 表示 30~60 天内；单数字 60 表示 60 天内；空=不筛选 */
+    const fgwDays = ref('');
+    function fgwDayRange() {
+      const s = String(fgwDays.value || '')
+        .replace(/[０-９]/g, c => String.fromCharCode(c.charCodeAt(0) - 0xFEE0))
+        .replace(/[~～—–至到]/g, '-').trim();
+      if (!s) return null;
+      const m = /^(\d{1,4})(?:\s*-\s*(\d{1,4}))?$/.exec(s);
+      if (!m) return null;
+      const a = Number(m[1]);
+      if (!isFinite(a) || a < 0) return null;
+      if (m[2] == null) return { min: 0, max: a };
+      const b = Number(m[2]);
+      if (!isFinite(b) || b < 0) return null;
+      return { min: Math.min(a, b), max: Math.max(a, b) };
+    }
     /** 三级树：省 → 市 → 项目（样例 + 官方完整明细统一分组、去重、应用全部筛选） */
     const fgwTree = computed(() => {
       const leader = fgwLeader.value;
@@ -16076,9 +16098,9 @@ const app = createApp({
       // 1) 样例行（fgwFiltered 已应用 省/类别/年度/搜索），叠加主导方筛选
       const seedRows = fgwFiltered.value.filter(passLeader);
       // 2) 官方明细行：手动应用 省/搜索/主导方；类别筛选与明细类别体系不同时排除明细；
-      //    节点筛选时明细无阶段数据，一并排除（同产业投资语义）
+      //    节点 / 距离天数筛选时明细无阶段/日期数据，一并排除（同产业投资语义）
       const detailRows = [];
-      if (!fgwNode.value) {
+      if (!fgwNode.value && !fgwDayRange()) {
         Object.keys(FGW_DETAIL_INDEX).forEach(pv => {
           if (provFilter && pv !== provFilter) return;
           if (catFilter) return;
@@ -16142,7 +16164,7 @@ const app = createApp({
     /** ===== 20261118a：上市公司聚合视图 =====
      *  把「按项目」同一筛选口径（搜索/地区/类别/年度/主导方/节点）下的所有项目，
      *  按「关联上市公司」聚合：样例行直接取 name 字段；官方明细行用上市公司词库从项目名匹配归属。
-     *  明细行无阶段/年度数据：节点筛选启用时不含明细（与项目树口径一致）。 */
+     *  明细行无阶段/年度/节点日期数据：节点或距离天数筛选启用时不含明细（与项目树口径一致）。 */
     const fgwCompanies = computed(() => {
       const leader = fgwLeader.value;
       const q = String(fgwQ.value || '').trim().toLowerCase();
@@ -16170,7 +16192,7 @@ const app = createApp({
         addRow(c, r.code, r);
       });
       // 2) 官方明细行：词库匹配到公司的才归入
-      if (!fgwNode.value) {
+      if (!fgwNode.value && !fgwDayRange()) {
         Object.keys(FGW_DETAIL_INDEX).forEach(pv => {
           if (provFilter && pv !== provFilter) return;
           if (catFilter) return;
@@ -17110,7 +17132,7 @@ const app = createApp({
       indSearching, indSearchErr, indSearchResults, indSearchPicked, indSearchQuery,
       indNetSearch, indAddSearchResults, indAddOne, indVerifyCandidate,
       // 20261117j/k：右侧「各省发改委投资大项目清单」（k：省→市→项目三级）
-      FGW_CATEGORY_OPTS, FGW_YEAR_OPTS, FGW_LEADER_OPTS, FGW_VIEW_OPTS, fgwView, fgwNode, fgwCompanies, fgwAmtText, fgwList, fgwProvs, fgwcitiesOfProv, fgwFiltered, fgwTree, fgwExpanded,
+      FGW_CATEGORY_OPTS, FGW_YEAR_OPTS, FGW_LEADER_OPTS, FGW_VIEW_OPTS, fgwView, fgwNode, fgwDays, fgwDayRange, fgwCompanies, fgwAmtText, fgwList, fgwProvs, fgwcitiesOfProv, fgwFiltered, fgwTree, fgwExpanded,
       fgwQ, fgwProv, fgwCategory, fgwYear, fgwLeader, fgwToggle, fgwGroupToggle, fgwExpandAll, fgwToInd, fgwResetSeed, fgwVerify,
       fgwForm, openFgwForm, closeFgwForm, saveFgwRow, delFgwRow,
       // 量化板块：数据端口 / 自动打分 / 共振选股

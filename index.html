@@ -10,12 +10,12 @@
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
   <title>股市信息分析系统</title>
-  <link rel="stylesheet" href="css/style.css?v=20261118a">
+  <link rel="stylesheet" href="css/style.css?v=20261118b">
   <!-- Vue 3 全局构建版（v3.4.21 · 自托管）
        原先走 unpkg.com CDN：国内网络对 unpkg 的连通性不稳定，一旦该请求长时间挂起，
        <head> 里的阻塞脚本会让整页停在白屏、后续 auth-boot.js 根本不会执行。
        改为同源托管后，启动链路不再依赖任何第三方 CDN。 -->
-  <script src="js/vue.global.prod.js?v=20261118a"></script>
+  <script src="js/vue.global.prod.js?v=20261118b"></script>
 </head>
 <body class="auth-locked">
   <!-- ===== 登录关卡：登录通过前业务脚本不会被加载 ===== -->
@@ -101,7 +101,7 @@
         <input class="auth-input" type="text" id="auth-renew-user" placeholder="用户名（你注册时用的）" maxlength="20" autocomplete="off">
         <div class="auth-renew-plans" id="auth-renew-plans"></div>
         <div class="auth-renew-qr" id="auth-renew-qr">
-          <div class="auth-renew-qrbox"><img id="auth-renew-wx" src="assets/wechat-pay-qr.jpg?v=20261118a" alt="微信支付收款码"><span>微信支付（扫码支付）</span></div>
+          <div class="auth-renew-qrbox"><img id="auth-renew-wx" src="assets/wechat-pay-qr.jpg?v=20261118b" alt="微信支付收款码"><span>微信支付（扫码支付）</span></div>
           <div class="muted small" style="margin-top:6px;color:#c2410c;font-weight:600">支付时请添加会员备注，付款成功截图保存</div>
         </div>
         <input class="auth-input" type="text" id="auth-renew-amount" inputmode="decimal" placeholder="支付金额（必填，如 1000）" autocomplete="off">
@@ -1326,7 +1326,7 @@
                   <div class="qr-row">
                     <div class="qr-box">
                       <div class="qr-cap">推荐使用微信支付</div>
-                      <img src="assets/wechat-pay-qr.jpg?v=20261118a" alt="微信支付收款码" class="qr-pay-img">
+                      <img src="assets/wechat-pay-qr.jpg?v=20261118b" alt="微信支付收款码" class="qr-pay-img">
                       <div class="qr-cap" style="margin-top:6px;color:#c2410c;font-weight:600">支付时请添加会员备注，付款成功截图保存</div>
                       <div class="qr-cap muted small">火柴盒网络服务</div>
                     </div>
@@ -2931,7 +2931,7 @@
                 </div>
               </div>
 
-              <!-- 20261118a：产业投资主体（发改委清单已迁至「各省项目」独立板块，此处仅保留进度表） -->
+              <!-- 20261118b：产业投资主体（发改委清单已迁至「各省项目」独立板块，此处仅保留进度表） -->
               <div class="ind-two-col">
               <div class="ind-left">
               <!-- 按月分组的进度表 -->
@@ -3016,7 +3016,7 @@
               <div class="fgw-panel">
                 <div class="fgw-head">
                   <span class="fgw-title">🏛️ 各省发改委投资大项目清单</span>
-                  <!-- 20261118a：视图切换（按项目 / 按上市公司）+ 节点筛选（功能同产业投资「全部节点」） -->
+                  <!-- 20261118b：视图切换（按项目 / 按上市公司）+ 节点筛选（功能同产业投资「全部节点」） -->
                   <select class="q-input fgw-head-sel" v-model="fgwView" title="切换下方列表：按项目（省→市→项目树）或按上市公司（聚合所有项目涉及的公司）">
                     <option v-for="o in FGW_VIEW_OPTS" :key="o" :value="o">{{ o === '按上市公司' ? '🏢 上市公司' : '📋 按项目' }}</option>
                   </select>
@@ -3024,6 +3024,9 @@
                     <option value="">全部节点</option>
                     <option v-for="o in IND_STAGE_OPTS" :key="o" :value="o">{{ o }}</option>
                   </select>
+                  <!-- 20261118b：距离今天数范围（如 30-60 = 30~60 天内；60 = 60 天内；官方明细无节点日期，启用时仅显示样例中有日期的项目） -->
+                  <input class="q-input fgw-head-sel fgw-days" v-model="fgwDays" placeholder="距离xx-xx天" title="按节点日期距今天数范围筛选：如 30-60 = 30~60 天内、60 = 60 天内、0-30 = 30 天内；留空不筛选">
+                  <span class="fgw-days-tag" v-if="fgwDayRange()">⏱ {{ fgwDayRange().min }}-{{ fgwDayRange().max }}天</span>
                   <span class="fgw-count">{{ fgwView === '按上市公司' ? (fgwCompanies.length + ' 家上市公司') : (fgwFiltered.length + ' / ' + fgwList.length + ' 项') }}</span>
                 </div>
                 <div class="fgw-toolbar">
@@ -3154,7 +3157,7 @@
                   <p v-if="!fgwFiltered.length" class="muted small">没有匹配的发改委项目，换个年度 / 地区 / 类别或清空搜索。</p>
                 </div>
 
-                <!-- 20261118a：上市公司聚合视图（与项目树共用筛选口径：搜索/地区/类别/年度/主导方/节点） -->
+                <!-- 20261118b：上市公司聚合视图（与项目树共用筛选口径：搜索/地区/类别/年度/主导方/节点） -->
                 <div class="fgw-list fgw-comp-list" v-if="fgwView === '按上市公司'">
                   <div class="fgw-node fgw-comp" v-for="c in fgwCompanies" :key="c.key">
                     <div class="fgw-node-row fgw-card-row" @click="fgwGroupToggle(c.key)">
@@ -3531,7 +3534,7 @@
                   <p class="muted small" style="margin:8px 0 10px">
                     📅 数据整理时间：<b>{{ inflDate || '—' }}</b>　·　统计窗口 <b>近 {{ inflWindowDays }} 交易日（收盘窗口：{{ inflWindowLabel }}）</b>　·　当前区域 <b>{{ regionLabel(inflRegion) }}</b> 共 <b>{{ inflEvents.length }}</b> 条事件<br/>
                     🔎 <b>新闻范围：</b>{{ inflRangeLabel }}<template v-if="inflRangeDays">（本面板只统计最近 {{ inflRangeDays }} 个交易日（15:00 收盘窗口）内的新闻/事件；右侧「未来事件」的选择框独立设置）</template><template v-else>（未选择 = 按上方默认窗口统计；可在面板右上角「刷新数据」左侧选择「近 N 交易日」）</template><br/>
-                    🕐 <b>时间口径（20261118a）：</b>每条事件的时间以<b>全网最早报道时间</b>为准——在所选窗口内扫描全网 11 平台新闻，用该事件的相关股票 / 标题关键词匹配报道，取<b>最早一条的报道时间</b>作为事件时间，并据此做窗口筛选与「按时间排序」；卡片显示「🕐 全网首报」。窗口内未匹配到报道的少数事件，暂用整理日期占位（标注「整理日」），不会丢失。<br/>
+                    🕐 <b>时间口径（20261118b）：</b>每条事件的时间以<b>全网最早报道时间</b>为准——在所选窗口内扫描全网 11 平台新闻，用该事件的相关股票 / 标题关键词匹配报道，取<b>最早一条的报道时间</b>作为事件时间，并据此做窗口筛选与「按时间排序」；卡片显示「🕐 全网首报」。窗口内未匹配到报道的少数事件，暂用整理日期占位（标注「整理日」），不会丢失。<br/>
                     <b>双指标（同时存在）：</b>「<b>影响人数</b>」= 该事件影响到<b>生产 + 生活</b>的全部相关人数（从业者 / 上下游、使用该产品服务的消费者与用户、泛受影响公众，<b>并包含股民</b>）；「<b>影响股民数</b>」= 其中<b>投资该事件所涉概念相关股票</b>的股民人数，是影响人数的子集。<br/>
                     <b>计算公式（20261112a 修正）：</b><b>A = max(该概念「影响范围」人群基数 × 触达率 r, 影响股民数 S)</b>，max 保证 S ⊆ A；股民占比 = S / A。<b>🇨🇳 中国 / 🇺🇸 美国 / 🌍 全世界只是分类</b>，只决定事件归到哪个页签、配色与文案，<b>不参与影响人数计算</b>——同一条事件放到哪个页签，影响人数完全相同。<br/>
                     <b>影响范围由「概念性质」决定：</b>全球传导型（美债 / 通胀 / 降息预期 / 芯片出口 / 原油 / 中概股 / 跨境电商 / 短剧出海等）按<b>全球 82 亿</b>人口基数估算；境内民生型（医保 / 房贷 / 零售 / 短剧监管 / 电力等）按该概念真实覆盖的<b>境内人群</b>估算。r 为该范围内的生产生活触达率，已分别按全球 / 境内口径标定。<br/>
@@ -6140,14 +6143,14 @@
     </transition>
   </div>
 
-  <script src="js/auth.js?v=20261118a"></script>
-  <script src="js/auth-sync.js?v=20261118a"></script>
+  <script src="js/auth.js?v=20261118b"></script>
+  <script src="js/auth-sync.js?v=20261118b"></script>
   <!-- 边缘加速默认站点（batch37 治本：Cloudflare Worker 代理东财/腾讯，缓解 JSONP 限流误报）。
        若你所在地区 workers.dev 访问慢，可在「设置 → 行情加速地址」清空即恢复纯直连。 -->
   <script>window.__SNT_ACCEL__ = 'https://sichina.dpdns.org';</script>
   <!-- 扫码支付二维码渲染库（第三方 qrcodejs，本地托管避免外链失效）。renderQr 会先检测全局 QRCode 是否存在。 -->
-  <script src="assets/qrcode.min.js?v=20261118a"></script>
-  <script src="js/auth-boot.js?v=20261118a"></script>
+  <script src="assets/qrcode.min.js?v=20261118b"></script>
+  <script src="js/auth-boot.js?v=20261118b"></script>
   <!-- store / stock-api / hot-topics / app 由 auth-boot.js 在登录通过后动态装载，
        未登录时它们不会被下载，业务数据也不会进入内存 -->
 </body>
