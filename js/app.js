@@ -16328,6 +16328,50 @@ const app = createApp({
     const quantEditingId = ref(null);
     const currentQuant = computed(() => QUANT[quantTab.value] || QUANT.post);
 
+    // ===== 20261118d：量化模式——研判记录表（可编辑 / 增删行列 / 本机持久化） =====
+    const QM_KEY = 'snt-qm-table';
+    const QM_DEFAULT_COLS = ['保存', '研判类别', '研判信息', '区间主导新闻集', '进入新闻集的标准', '研判新闻', '主导逻辑', '逻辑过程'];
+    function qmSeedGroups() {
+      return [{
+        date: '',
+        rows: [
+          ['信息', '+', '', '', '', '', '', ''],
+          ['正确率', '', '', '', '', '', '', ''],
+          ['昨日正确率', '', '', '', '', '', '', ''],
+          ['', '利好行业', '利好概念', '利好股票', '利好概念', '利好股票', '利空行业', '利空概念'],
+          ['', '行业概念', 'ai研判', 'ai研判', 'ai研判', 'ai研判', 'ai研判', 'ai研判'],
+          ['盘后验证', '涨跌幅', '涨跌幅', '涨跌幅', '涨跌幅', '涨跌幅', '涨跌幅', '涨跌幅'],
+          ['正确率', '涨跌幅', '涨跌幅', '涨跌幅', '涨跌幅', '涨跌幅', '涨跌幅', '涨跌幅']
+        ].map(cells => ({ cells: cells.slice() }))
+      }];
+    }
+    function qmLoadState() {
+      try {
+        const o = JSON.parse(localStorage.getItem(QM_KEY) || 'null');
+        if (o && Array.isArray(o.cols) && Array.isArray(o.groups) && o.groups.length) return o;
+      } catch (e) { /* ignore */ }
+      return { cols: QM_DEFAULT_COLS.slice(), groups: qmSeedGroups() };
+    }
+    const qmInit = qmLoadState();
+    const qmCols = ref(qmInit.cols);
+    const qmGroups = ref(qmInit.groups);
+    watch([qmCols, qmGroups], () => {
+      try { localStorage.setItem(QM_KEY, JSON.stringify({ cols: qmCols.value, groups: qmGroups.value })); } catch (e) { /* ignore */ }
+    }, { deep: true });
+    function qmSetCell(gi, ri, ci, v) { const g = qmGroups.value[gi]; if (g && g.rows[ri]) g.rows[ri].cells[ci] = v; }
+    function qmSetDate(gi, v) { if (qmGroups.value[gi]) qmGroups.value[gi].date = v; }
+    function qmAddRow(gi) { const g = qmGroups.value[gi]; if (g) g.rows.push({ cells: qmCols.value.map(() => '') }); }
+    function qmDelRow(gi, ri) { const g = qmGroups.value[gi]; if (g && g.rows.length > 1) g.rows.splice(ri, 1); }
+    function qmAddGroup() { qmGroups.value.push({ date: '', rows: [{ cells: qmCols.value.map(() => '') }] }); }
+    function qmDelGroup(gi) { if (qmGroups.value.length > 1) qmGroups.value.splice(gi, 1); }
+    function qmAddCol() { qmCols.value.push('新维度'); qmGroups.value.forEach(g => g.rows.forEach(r => r.cells.push(''))); }
+    function qmDelCol(ci) {
+      if (qmCols.value.length <= 1) return;
+      qmCols.value.splice(ci, 1);
+      qmGroups.value.forEach(g => g.rows.forEach(r => r.cells.splice(ci, 1)));
+    }
+    function qmReset() { qmCols.value = QM_DEFAULT_COLS.slice(); qmGroups.value = qmSeedGroups(); }
+
     function quantTotalOf(board) {
       const f = quantForm[board];
       return (+f.s1 || 0) + (+f.s2 || 0) + (+f.s3 || 0) + (+f.s4 || 0);
@@ -17116,9 +17160,11 @@ const app = createApp({
       hfeiIterating, hfeiIterateStep, hfeiIterate, hfeiStratRef, hfeiStratShow, hfeiStrategy, hfeiWeightRows,
       // 交易逻辑记录表
       tradeLogicOpen, tradeLogicForm, tradeLogicInputs, tradeLogicRows,
-      // 量化板块（选股页右侧）：盘后 / 产业投资
+      // 量化板块（选股页右侧）：盘后 / 量化模式 / 产业投资
       QUANT, quantTab, quantDate, quantForm, quantOrderOpen, quantSignalOpen, quantEditingId,
       currentQuant, quantTotalOf, quantLevelOf, quantHistory, quantTrend,
+      // 20261118d：量化模式——研判记录表
+      qmCols, qmGroups, qmSetCell, qmSetDate, qmAddRow, qmDelRow, qmAddGroup, qmDelGroup, qmAddCol, qmDelCol, qmReset,
       saveQuantScore, editQuantScore, cancelQuantEdit, deleteQuantScore,
       // 20261117f：产业投资——上市公司工厂/产能投放进度跟踪（原「盘中板块」位置）
       IND_NATURE_OPTS, IND_IND_OPTS, IND_STAGE_OPTS,
