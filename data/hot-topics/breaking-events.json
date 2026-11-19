@@ -1,121 +1,270 @@
 {
-  "generatedAt": "2026-11-19 01:10",
+  "generatedAt": "2026-11-19 08:12",
   "generatedBy": "GitHub Actions · 多源实时聚合",
   "sourceCount": 5,
   "autoCount": 18,
   "events": [
     {
-      "id": "ab1wkdt3m",
-      "title": "市场消息：美国总统特朗普因美国副总统万斯批评伊朗战争一事而对其日益感到不满。",
-      "tag": "地缘/政治",
+      "id": "abr4nxz3",
+      "title": "马斯克：解雇黄仁勋好比让乔丹坐冷板凳",
+      "tag": "科技/AI",
       "region": "美国",
-      "concept": "defense",
-      "time": "2026-11-19 00:55",
-      "datetime": "2026-11-19 00:55",
-      "source": "新浪7×24",
-      "url": "https://finance.sina.cn/7x24/2026-11-19/detail-inizesyv1435048.d.html",
-      "summary": "市场消息：美国总统特朗普因美国副总统万斯批评伊朗战争一事而对其日益感到不满。",
+      "concept": "aiCapex",
+      "time": "2026-11-19 07:24",
+      "datetime": "2026-11-19 07:24",
+      "source": "环球市场播报",
+      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-19/doc-inizfiwm4369171.shtml",
+      "summary": "科技界亿万富豪埃隆·马斯克并不认为英伟达前首席执行官黄仁勋对美国不忠，并称黄仁勋被解职令他震惊。“这就像你的球队正处于连胜势头时把迈克尔·乔丹踢出队伍...",
       "relatedStocks": [
-        "军工",
-        "黄金"
+        "英伟达",
+        "微软",
+        "台积电"
       ],
       "bullConcepts": [
-        "军工",
-        "避险资产"
+        "AI算力",
+        "半导体",
+        "国产替代"
       ],
       "bearConcepts": [
-        "风险资产"
+        "传统软件"
       ],
       "bullIndustries": [
-        "军工",
-        "黄金"
+        "半导体",
+        "AI应用",
+        "算力基础设施"
       ],
       "bearIndustries": [
-        "航空",
-        "旅游"
+        "传统IT服务"
       ],
-      "heat": 56,
-      "momentum": 71,
-      "_auto": true
-    },
-    {
-      "id": "abjfni12",
-      "title": "据媒体报道，俄罗斯发动袭击，基辅佩切尔斯克区遭袭。",
-      "tag": "地缘/政治",
-      "region": "全球",
-      "concept": "macro",
-      "time": "2026-11-19 00:57",
-      "datetime": "2026-11-19 00:57",
-      "source": "新浪7×24",
-      "url": "https://finance.sina.cn/7x24/2026-11-19/detail-inizesyt4659471.d.html",
-      "summary": "据媒体报道，俄罗斯发动袭击，基辅佩切尔斯克区遭袭。",
-      "relatedStocks": [
-        "军工",
-        "黄金"
-      ],
-      "bullConcepts": [
-        "军工",
-        "避险资产"
-      ],
-      "bearConcepts": [
-        "风险资产"
-      ],
-      "bullIndustries": [
-        "军工",
-        "黄金"
-      ],
-      "bearIndustries": [
-        "航空",
-        "旅游"
-      ],
-      "heat": 29,
+      "heat": 47,
       "momentum": 41,
       "_auto": true
     },
     {
-      "id": "ab1leq8gq",
-      "title": "金价跌破每盎司3,800美元，为2025年9月以来首次；美联储官员主张进一步加息，铜价也大幅下挫。 自2月下旬美伊战争爆发以来，黄金已下跌超过四分之一，原因是更高的能源成本推高通…",
-      "tag": "金融/宏观",
+      "id": "ab40v440",
+      "title": "科技界亿万富豪埃隆·马斯克并不认为英伟达前首席执行官黄仁勋对美国不忠，并称黄仁勋被解职令他震惊。“这就像你的球队正处于连胜势头时把迈克尔·乔丹踢出队伍，“马斯克在周三举行的《纽约…",
+      "tag": "科技/AI",
       "region": "美国",
-      "concept": "usFinance",
-      "time": "2026-11-18 23:40",
-      "datetime": "2026-11-18 23:40",
-      "source": "华尔街见闻",
-      "url": "https://wallstreetcn.com/livenews/3202051",
-      "summary": "金价跌破每盎司3,800美元，为2025年9月以来首次；美联储官员主张进一步加息，铜价也大幅下挫。 自2月下旬美伊战争爆发以来，黄金已下跌超过四分之一，原因是更高的能源成本推高通胀，并促使各国央行收紧货币政策。 跌幅较大的个股包括：自由港麦克莫兰（Freeport-McMoRan）下跌7.1%；纽蒙特矿业（Newmont）下跌6.1%；巴里克矿业（Barrick Mining…",
+      "concept": "aiCapex",
+      "time": "2026-11-19 07:23",
+      "datetime": "2026-11-19 07:23",
+      "source": "新浪7×24",
+      "url": "https://finance.sina.cn/7x24/2026-11-19/detail-inizfiwp1145227.d.html",
+      "summary": "科技界亿万富豪埃隆·马斯克并不认为英伟达前首席执行官黄仁勋对美国不忠，并称黄仁勋被解职令他震惊。“这就像你的球队正处于连胜势头时把迈克尔·乔丹踢出队伍，“马斯克在周三举行的《纽约时报》DealBook峰会上说，“这对股东来说似乎不是好事。”他说，他会聘用黄仁勋，并补充说：“但谁不会呢？”当被问及他是否曾与特朗普谈到这位前芯片业高管的未来时，马斯克回避了有关黄仁勋问题的一再追问…",
       "relatedStocks": [
-        "美股科技",
-        "黄金"
+        "英伟达",
+        "微软",
+        "台积电"
       ],
       "bullConcepts": [
-        "黄金",
-        "防御板块"
+        "AI算力",
+        "半导体",
+        "国产替代"
       ],
       "bearConcepts": [
-        "高估值成长股"
+        "传统软件"
       ],
       "bullIndustries": [
-        "银行",
-        "黄金"
+        "半导体",
+        "AI应用",
+        "算力基础设施"
       ],
       "bearIndustries": [
-        "高杠杆地产"
+        "传统IT服务"
       ],
-      "heat": 87,
-      "momentum": 51,
+      "heat": 24,
+      "momentum": 26,
       "_auto": true
     },
     {
-      "id": "abmdka10",
-      "title": "美国国家情报总监克莱顿：美国境内的服务中断并非协调一致或由国家支持的网络攻击。 美国面临日益严峻的威胁环境。",
+      "id": "abt6dj5n",
+      "title": "美国官员和以色列官员们介绍称，总统特朗普考虑对伊朗实施新的袭击，以色列敦促采取行动。 但特朗普还没有做决定。（纽约时报）",
+      "tag": "地缘/政治",
+      "region": "美国",
+      "concept": "defense",
+      "time": "2026-11-19 07:16",
+      "datetime": "2026-11-19 07:16",
+      "source": "华尔街见闻",
+      "url": "https://wallstreetcn.com/livenews/3202230",
+      "summary": "美国官员和以色列官员们介绍称，总统特朗普考虑对伊朗实施新的袭击，以色列敦促采取行动。 但特朗普还没有做决定。（纽约时报）",
+      "relatedStocks": [
+        "军工",
+        "黄金"
+      ],
+      "bullConcepts": [
+        "军工",
+        "避险资产"
+      ],
+      "bearConcepts": [
+        "风险资产"
+      ],
+      "bullIndustries": [
+        "军工",
+        "黄金"
+      ],
+      "bearIndustries": [
+        "航空",
+        "旅游"
+      ],
+      "heat": 24,
+      "momentum": 26,
+      "_auto": true
+    },
+    {
+      "id": "ab15hq2m6",
+      "title": "11月19日收盘：三大股指涨跌不一 标普500连跌五日 英伟达财报后高开低走 市场关注Anthropic重磅IPO",
+      "tag": "科技/AI",
+      "region": "美国",
+      "concept": "aiCapex",
+      "time": "2026-11-19 05:31",
+      "datetime": "2026-11-19 05:31",
+      "source": "环球市场播报",
+      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-19/doc-inizfcqp4448507.shtml",
+      "summary": "美东时间周三，美股三大股指收盘涨跌不一。尽管人工智能龙头英伟达交出超预期的第三财季业绩，但受领导层更迭及出口管制不确定性影响，该股高开低走收跌近3%；与此同时...",
+      "relatedStocks": [
+        "英伟达",
+        "微软",
+        "台积电"
+      ],
+      "bullConcepts": [
+        "AI算力",
+        "半导体",
+        "国产替代"
+      ],
+      "bearConcepts": [
+        "传统软件"
+      ],
+      "bullIndustries": [
+        "半导体",
+        "AI应用",
+        "算力基础设施"
+      ],
+      "bearIndustries": [
+        "传统IT服务"
+      ],
+      "heat": 64,
+      "momentum": 18,
+      "_auto": true
+    },
+    {
+      "id": "abn11pgs",
+      "title": "黄仁勋辞职后英伟达首开全员大会：临时CEO喊话“向前看”，并承诺加薪稳军心",
+      "tag": "科技/AI",
+      "region": "全球",
+      "concept": "ai",
+      "time": "2026-11-19 04:47",
+      "datetime": "2026-11-19 04:47",
+      "source": "环球市场播报",
+      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-19/doc-inizfcqp4439733.shtml",
+      "summary": "据一位匿名的与会人士透露，英伟达临时首席执行官科莱特·克雷斯周三在公司自创始人黄仁勋辞职后的首次全员大会上，对员工表示“让我们向前看”。",
+      "relatedStocks": [
+        "英伟达",
+        "微软",
+        "台积电"
+      ],
+      "bullConcepts": [
+        "AI算力",
+        "半导体",
+        "国产替代"
+      ],
+      "bearConcepts": [
+        "传统软件"
+      ],
+      "bullIndustries": [
+        "半导体",
+        "AI应用",
+        "算力基础设施"
+      ],
+      "bearIndustries": [
+        "传统IT服务"
+      ],
+      "heat": 33,
+      "momentum": 18,
+      "_auto": true
+    },
+    {
+      "id": "ab1c415te",
+      "title": "微软首席执行官萨提亚·纳德拉就英伟达前首席执行官黄仁勋辞职一事表示，希望给予其空间以解决问题，后续步骤将由英伟达董事会决定。",
+      "tag": "科技/AI",
+      "region": "全球",
+      "concept": "ai",
+      "time": "2026-11-19 06:18",
+      "datetime": "2026-11-19 06:18",
+      "source": "华尔街见闻",
+      "url": "https://wallstreetcn.com/livenews/3202207",
+      "summary": "微软首席执行官萨提亚·纳德拉就英伟达前首席执行官黄仁勋辞职一事表示，希望给予其空间以解决问题，后续步骤将由英伟达董事会决定。",
+      "relatedStocks": [
+        "英伟达",
+        "微软",
+        "台积电"
+      ],
+      "bullConcepts": [
+        "AI算力",
+        "半导体",
+        "国产替代"
+      ],
+      "bearConcepts": [
+        "传统软件"
+      ],
+      "bullIndustries": [
+        "半导体",
+        "AI应用",
+        "算力基础设施"
+      ],
+      "bearIndustries": [
+        "传统IT服务"
+      ],
+      "heat": 29,
+      "momentum": 26,
+      "_auto": true
+    },
+    {
+      "id": "ab1gwhd4b",
+      "title": "穆迪：下调整英伟达评级展望至稳定（之前为正面），确认Aa1评级。 该评级反映了英伟达卓越的财务实力及其在人工智能数据中心计算和网络技术领域的市场领先地位。 英伟达的市场领导地位和…",
+      "tag": "科技/AI",
+      "region": "全球",
+      "concept": "ai",
+      "time": "2026-11-19 06:11",
+      "datetime": "2026-11-19 06:11",
+      "source": "华尔街见闻",
+      "url": "https://wallstreetcn.com/livenews/3202205",
+      "summary": "穆迪：下调整英伟达评级展望至稳定（之前为正面），确认Aa1评级。 该评级反映了英伟达卓越的财务实力及其在人工智能数据中心计算和网络技术领域的市场领先地位。 英伟达的市场领导地位和财务状况依然异常强劲，但未来12至18个月内不太可能上调评级。 与黄仁勋辞职前事件相关的政府调查可能分散管理层注意力。",
+      "relatedStocks": [
+        "英伟达",
+        "微软",
+        "台积电"
+      ],
+      "bullConcepts": [
+        "AI算力",
+        "半导体",
+        "国产替代"
+      ],
+      "bearConcepts": [
+        "传统软件"
+      ],
+      "bullIndustries": [
+        "半导体",
+        "AI应用",
+        "算力基础设施"
+      ],
+      "bearIndustries": [
+        "传统IT服务"
+      ],
+      "heat": 29,
+      "momentum": 18,
+      "_auto": true
+    },
+    {
+      "id": "abwbk3tu",
+      "title": "马斯克在美国纽约时报Dealbook Summit上表示：并不认为黄仁勋对美国不忠。 黄仁勋并非在找工作，但谁不想聘用他呢？ 他是历史上最有才华的企业家和首席执行官之一。",
       "tag": "宏观/综合",
       "region": "美国",
       "concept": "usMacro",
-      "time": "2026-11-18 23:36",
-      "datetime": "2026-11-18 23:36",
+      "time": "2026-11-19 06:46",
+      "datetime": "2026-11-19 06:46",
       "source": "华尔街见闻",
-      "url": "https://wallstreetcn.com/livenews/3202050",
-      "summary": "美国国家情报总监克莱顿：美国境内的服务中断并非协调一致或由国家支持的网络攻击。 美国面临日益严峻的威胁环境。",
+      "url": "https://wallstreetcn.com/livenews/3202218",
+      "summary": "马斯克在美国纽约时报Dealbook Summit上表示：并不认为黄仁勋对美国不忠。 黄仁勋并非在找工作，但谁不想聘用他呢？ 他是历史上最有才华的企业家和首席执行官之一。",
       "relatedStocks": [
         "宽基指数"
       ],
@@ -136,16 +285,16 @@
       "_auto": true
     },
     {
-      "id": "ab1mnjchp",
-      "title": "提名听证会上，参议员就伊朗战争开销、水兵健康问题质询美国代理海军部长",
+      "id": "ab1yakucr",
+      "title": "以色列国防军和国家安全总局（辛贝特）18日发表联合声明说，以安全部队当天在加沙地带“黄线”以西开展针对性军事行动，拆除一条据称对以军构成直接且紧迫威胁的地道。（新华社）",
       "tag": "地缘/政治",
-      "region": "美国",
-      "concept": "defense",
-      "time": "2026-11-18 16:57",
-      "datetime": "2026-11-18 16:57",
-      "source": "环球市场播报",
-      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-18/doc-inizeaax1008290.shtml",
-      "summary": "核心要点代理海军部长洪・曹（Hung Cao）承认，伊朗战争期间，海军修改弹药状态编码，启用了一批他口中已经过期的弹药。议员就武器库存、舰艇部署以及水兵福利展开质询...",
+      "region": "全球",
+      "concept": "macro",
+      "time": "2026-11-19 05:52",
+      "datetime": "2026-11-19 05:52",
+      "source": "华尔街见闻",
+      "url": "https://wallstreetcn.com/livenews/3202199",
+      "summary": "以色列国防军和国家安全总局（辛贝特）18日发表联合声明说，以安全部队当天在加沙地带“黄线”以西开展针对性军事行动，拆除一条据称对以军构成直接且紧迫威胁的地道。（新华社）",
       "relatedStocks": [
         "军工",
         "黄金"
@@ -167,6 +316,75 @@
       ],
       "heat": 24,
       "momentum": 18,
+      "_auto": true
+    },
+    {
+      "id": "ab1c5nmel",
+      "title": "CoreWeave淡化黄仁勋离任影响 称英伟达仍是关键合作伙伴",
+      "tag": "科技/AI",
+      "region": "全球",
+      "concept": "ai",
+      "time": "2026-11-19 02:16",
+      "datetime": "2026-11-19 02:16",
+      "source": "环球市场播报",
+      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-19/doc-inizexht6624979.shtml",
+      "summary": "CoreWeave Inc．试图打消市场对于黄仁勋离开英伟达可能影响这家芯片制造商支持新型云服务商的担忧。该公司战略负责人Ben Richardson表示...",
+      "relatedStocks": [
+        "英伟达",
+        "微软",
+        "台积电"
+      ],
+      "bullConcepts": [
+        "AI算力",
+        "半导体",
+        "国产替代"
+      ],
+      "bearConcepts": [
+        "传统软件"
+      ],
+      "bullIndustries": [
+        "半导体",
+        "AI应用",
+        "算力基础设施"
+      ],
+      "bearIndustries": [
+        "传统IT服务"
+      ],
+      "heat": 33,
+      "momentum": 18,
+      "_auto": true
+    },
+    {
+      "id": "abjdqyoq",
+      "title": "原油日内反弹遇挫继续收跌，金银铜更是全线暴跌，商品市场大降温",
+      "tag": "金融/宏观",
+      "region": "美国",
+      "concept": "usFinance",
+      "time": "2026-11-19 06:39",
+      "datetime": "2026-11-19 06:39",
+      "source": "市场资讯",
+      "url": "https://finance.sina.com.cn/money/future/fmnews/2026-11-19/doc-inizfiwp1143301.shtml",
+      "summary": "来源：能源研发中心 后市观点 周三油价再次大跌，日内反弹再次遇挫。美联储会议纪要显示几乎所有官员都预计将进一步加息，金银铜等商品整体再次全线大幅下挫...",
+      "relatedStocks": [
+        "美股科技",
+        "黄金"
+      ],
+      "bullConcepts": [
+        "黄金",
+        "防御板块"
+      ],
+      "bearConcepts": [
+        "高估值成长股"
+      ],
+      "bullIndustries": [
+        "银行",
+        "黄金"
+      ],
+      "bearIndustries": [
+        "高杠杆地产"
+      ],
+      "heat": 24,
+      "momentum": 26,
       "_auto": true
     },
     {
@@ -196,7 +414,7 @@
         "顺周期"
       ],
       "heat": 24,
-      "momentum": 26,
+      "momentum": 18,
       "_auto": true
     },
     {
@@ -236,151 +454,16 @@
       "_auto": true
     },
     {
-      "id": "abgb7t3o",
-      "title": "欧洲天然气价格小幅下跌，充足库存缓解中东局势升级带来的供应担忧",
-      "tag": "能源/资源",
-      "region": "欧洲",
-      "concept": "energy",
-      "time": "2026-11-18 18:03",
-      "datetime": "2026-11-18 18:03",
-      "source": "环球市场播报",
-      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-18/doc-inizeaax1046972.shtml",
-      "summary": "11月18日，欧洲天然气价格小幅下跌，充足的天然气库存缓解了市场对中东冲突升级及能源供应中断的担忧。 欧洲基准荷兰TTF天然气近月期货下跌0.6%至84.71欧元/兆瓦时...",
-      "relatedStocks": [
-        "中国石油",
-        "紫金矿业"
-      ],
-      "bullConcepts": [
-        "油气",
-        "贵金属"
-      ],
-      "bearConcepts": [
-        "高耗能制造"
-      ],
-      "bullIndustries": [
-        "石油开采",
-        "贵金属"
-      ],
-      "bearIndustries": [
-        "航空运输",
-        "化工"
-      ],
-      "heat": 24,
-      "momentum": 18,
-      "_auto": true
-    },
-    {
-      "id": "abrd5rff",
-      "title": "海湾地区袭击持续增多，伊朗称军方打击科威特境内美军无人机及导弹设施",
-      "tag": "地缘/政治",
-      "region": "全球",
-      "concept": "macro",
-      "time": "2026-11-18 16:52",
-      "datetime": "2026-11-18 16:52",
-      "source": "环球市场播报",
-      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-18/doc-inizeacc1564903.shtml",
-      "summary": "核心要点伊朗表示，其军队打击了科威特阿里・萨利姆空军基地内的美军无人机与导弹设施。随着中东地区交火再度爆发，美伊双方紧张局势近日急剧升级，外交谈判仍在进行。",
-      "relatedStocks": [
-        "军工",
-        "黄金"
-      ],
-      "bullConcepts": [
-        "军工",
-        "避险资产"
-      ],
-      "bearConcepts": [
-        "风险资产"
-      ],
-      "bullIndustries": [
-        "军工",
-        "黄金"
-      ],
-      "bearIndustries": [
-        "航空",
-        "旅游"
-      ],
-      "heat": 24,
-      "momentum": 18,
-      "_auto": true
-    },
-    {
-      "id": "aba8ohs2",
-      "title": "受乌克兰无人机袭击影响，俄罗斯炼油量较10月下旬下降45%。",
-      "tag": "地缘/政治",
-      "region": "全球",
-      "concept": "macro",
-      "time": "2026-11-18 22:56",
-      "datetime": "2026-11-18 22:56",
-      "source": "财联社",
-      "url": "https://www.cls.cn/detail/2538328",
-      "summary": "受乌克兰无人机袭击影响，俄罗斯炼油量较10月下旬下降45%。",
-      "relatedStocks": [
-        "军工",
-        "黄金"
-      ],
-      "bullConcepts": [
-        "军工",
-        "避险资产"
-      ],
-      "bearConcepts": [
-        "风险资产"
-      ],
-      "bullIndustries": [
-        "军工",
-        "黄金"
-      ],
-      "bearIndustries": [
-        "航空",
-        "旅游"
-      ],
-      "heat": 24,
-      "momentum": 18,
-      "_auto": true
-    },
-    {
-      "id": "ab1vamfdj",
-      "title": "高盛预测：金价2年后才能重回高位",
-      "tag": "金融/宏观",
-      "region": "美国",
-      "concept": "usFinance",
-      "time": "2026-11-18 16:27",
-      "datetime": "2026-11-18 16:27",
-      "source": "市场资讯",
-      "url": "https://finance.sina.com.cn/jjxw/2026-11-18/doc-inizeacc1554381.shtml",
-      "summary": "#黄金彻底崩盘# 【高盛预测：#金价2年后才能重回高位#】#50克大金镯亏掉近3台iPhone18Pro#据财联社消息，随着美联储鹰派立场不断强化...",
-      "relatedStocks": [
-        "美股科技",
-        "黄金"
-      ],
-      "bullConcepts": [
-        "黄金",
-        "防御板块"
-      ],
-      "bearConcepts": [
-        "高估值成长股"
-      ],
-      "bullIndustries": [
-        "银行",
-        "黄金"
-      ],
-      "bearIndustries": [
-        "高杠杆地产"
-      ],
-      "heat": 24,
-      "momentum": 18,
-      "_auto": true
-    },
-    {
-      "id": "ablrjjbm",
-      "title": "CoreWeave首席执行官：没有黄仁勋英伟达不会受影响",
+      "id": "abnkpmzf",
+      "title": "英伟达向员工传递稳定信号 明确黄仁勋不会回归",
       "tag": "科技/AI",
-      "region": "美国",
-      "concept": "aiCapex",
-      "time": "2026-11-18 16:06",
-      "datetime": "2026-11-18 16:06",
+      "region": "全球",
+      "concept": "ai",
+      "time": "2026-11-19 06:35",
+      "datetime": "2026-11-19 06:35",
       "source": "环球市场播报",
-      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-18/doc-inizcvuz1106882.shtml",
-      "summary": "周二，“硅谷与世界”大会上，CoreWeave首席执行官迈克尔·因特拉托（Michael Intrator）暗示，他并不特别担心黄仁勋离职会对CoreWeave的业务造成影响。",
+      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-19/doc-inizfiwp1120365.shtml",
+      "summary": "在长期执掌英伟达的黄仁勋离职后，这家芯片巨头的临时首席执行官Colette Kress周三在员工大会上重申了对公司的信心。 据一名与会人士透露...",
       "relatedStocks": [
         "英伟达",
         "微软",
@@ -403,37 +486,40 @@
         "传统IT服务"
       ],
       "heat": 24,
-      "momentum": 18,
+      "momentum": 26,
       "_auto": true
     },
     {
-      "id": "abi3p4mt",
-      "title": "加息升温\"浇冷水\" 沪铜期货价格创4月份以来新低",
-      "tag": "金融/宏观",
-      "region": "美国",
-      "concept": "usFinance",
-      "time": "2026-11-18 16:02",
-      "datetime": "2026-11-18 16:02",
-      "source": "新浪财经",
-      "url": "https://finance.sina.com.cn/money/future/fmnews/2026-11-18/doc-inizeacc6873689.shtml",
-      "summary": "（来源：市场资讯） 宏观方面，据正信期货介绍，美国10月CPI超预期后，12月加息25bp已被完全定价，美元指数站稳高位，美债实际利率高企；关税延期预期削弱了“虹吸溢价”。",
+      "id": "abjfcv06",
+      "title": "欧洲股市连续第三日走低 铜价暴跌拖累矿业股",
+      "tag": "科技/AI",
+      "region": "欧洲",
+      "concept": "ai",
+      "time": "2026-11-19 01:17",
+      "datetime": "2026-11-19 01:17",
+      "source": "环球市场播报",
+      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-19/doc-inizesyv1440904.shtml",
+      "summary": "欧洲股市连续第三天下跌，矿业股指数创六个月最大跌幅，因围绕人工智能交易的忧虑导致铜价重挫近6%。 斯托克欧洲600指数收盘下跌1%，至三周以来的最低水平。",
       "relatedStocks": [
-        "美股科技",
-        "黄金"
+        "英伟达",
+        "微软",
+        "台积电"
       ],
       "bullConcepts": [
-        "黄金",
-        "防御板块"
+        "AI算力",
+        "半导体",
+        "国产替代"
       ],
       "bearConcepts": [
-        "高估值成长股"
+        "传统软件"
       ],
       "bullIndustries": [
-        "银行",
-        "黄金"
+        "半导体",
+        "AI应用",
+        "算力基础设施"
       ],
       "bearIndustries": [
-        "高杠杆地产"
+        "传统IT服务"
       ],
       "heat": 24,
       "momentum": 18,
@@ -466,41 +552,7 @@
         "顺周期"
       ],
       "heat": 24,
-      "momentum": 26,
-      "_auto": true
-    },
-    {
-      "id": "ab39oiss",
-      "title": "印尼中爪哇省布洛拉县切普地区一处隶属于石油和天然气人力资源开发中心的炼油厂周三发生爆炸。",
-      "tag": "能源/资源",
-      "region": "全球",
-      "concept": "energy",
-      "time": "2026-11-18 23:12",
-      "datetime": "2026-11-18 23:12",
-      "source": "财联社",
-      "url": "https://www.cls.cn/detail/2538334",
-      "summary": "印尼中爪哇省布洛拉县切普地区一处隶属于石油和天然气人力资源开发中心的炼油厂周三发生爆炸。",
-      "relatedStocks": [
-        "中国石油",
-        "紫金矿业"
-      ],
-      "bullConcepts": [
-        "油气",
-        "贵金属"
-      ],
-      "bearConcepts": [
-        "高耗能制造"
-      ],
-      "bullIndustries": [
-        "石油开采",
-        "贵金属"
-      ],
-      "bearIndustries": [
-        "航空运输",
-        "化工"
-      ],
-      "heat": 24,
-      "momentum": 26,
+      "momentum": 18,
       "_auto": true
     },
     {
@@ -558,42 +610,6 @@
       ],
       "bearIndustries": [
         "顺周期"
-      ],
-      "heat": 24,
-      "momentum": 18,
-      "_auto": true
-    },
-    {
-      "id": "abclniah",
-      "title": "谷歌发现可自主运行的俄语注释AI黑客工具",
-      "tag": "科技/AI",
-      "region": "全球",
-      "concept": "ai",
-      "time": "2026-11-18 15:44",
-      "datetime": "2026-11-18 15:44",
-      "source": "环球市场播报",
-      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-18/doc-inizcvvc4868053.shtml",
-      "summary": "谷歌周一表示，该公司发现一款能够在无人类协助的情况下自主识别并利用软件漏洞的黑客工具，凸显了人工智能（AI）智能体带来的风险。",
-      "relatedStocks": [
-        "英伟达",
-        "微软",
-        "台积电"
-      ],
-      "bullConcepts": [
-        "AI算力",
-        "半导体",
-        "国产替代"
-      ],
-      "bearConcepts": [
-        "传统软件"
-      ],
-      "bullIndustries": [
-        "半导体",
-        "AI应用",
-        "算力基础设施"
-      ],
-      "bearIndustries": [
-        "传统IT服务"
       ],
       "heat": 24,
       "momentum": 18,
@@ -909,35 +925,6 @@
       ],
       "heat": 82,
       "momentum": 80
-    },
-    {
-      "id": "b10",
-      "title": "Anthropic 拟11月16日当周登陆纳斯达克IPO",
-      "tag": "企业活动/AI",
-      "region": "美国",
-      "concept": "aiCapex",
-      "time": "2026-11-16（预计）",
-      "datetime": "2026-11-08 09:00",
-      "source": "路透/SEC S-1",
-      "summary": "Anthropic已公开递交S-1，潜在买家讨论1.2万亿至1.3万亿美元估值区间；三季度营收约169.6亿美元、环比增45%，但算力支出承诺已近8954亿美元。IPO为美股AI链重要风向标。",
-      "relatedStocks": [
-        "AI",
-        "美股"
-      ],
-      "bullConcepts": [
-        "AI算力",
-        "云计算",
-        "AI应用"
-      ],
-      "bearConcepts": [],
-      "bullIndustries": [
-        "AI",
-        "云计算",
-        "算力"
-      ],
-      "bearIndustries": [],
-      "heat": 75,
-      "momentum": 58
     },
     {
       "id": "b11",
