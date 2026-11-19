@@ -1,50 +1,192 @@
 {
-  "generatedAt": "2026-11-19 18:10",
+  "generatedAt": "2026-11-20 04:26",
   "generatedBy": "GitHub Actions · 多源实时聚合",
   "sourceCount": 5,
   "autoCount": 18,
   "events": [
     {
-      "id": "ab90j64i",
-      "title": "纳指ETF汇添富(159660)将于2026年11月20日开市起停牌，自2026年11月20日10:30起复牌，停牌期间赎回业务照常办理。",
-      "tag": "宏观/综合",
+      "id": "abg75353",
+      "title": "俄罗斯总统普京19日表示，在克里米亚大桥遭袭后，俄方不会就海上停火或停止攻击能源设施与有关方面进行谈判。 普京当天在回应记者关于克里米亚大桥近日多次遭袭及受损情况的提问时表示，克…",
+      "tag": "能源/资源",
       "region": "全球",
-      "concept": "macro",
-      "time": "2026-11-19 17:25",
-      "datetime": "2026-11-19 17:25",
-      "source": "财联社",
-      "url": "https://www.cls.cn/detail/2539105",
-      "summary": "纳指ETF汇添富(159660)将于2026年11月20日开市起停牌，自2026年11月20日10:30起复牌，停牌期间赎回业务照常办理。",
+      "concept": "energy",
+      "time": "2026-11-20 03:38",
+      "datetime": "2026-11-20 03:38",
+      "source": "华尔街见闻",
+      "url": "https://wallstreetcn.com/livenews/3202785",
+      "summary": "俄罗斯总统普京19日表示，在克里米亚大桥遭袭后，俄方不会就海上停火或停止攻击能源设施与有关方面进行谈判。 普京当天在回应记者关于克里米亚大桥近日多次遭袭及受损情况的提问时表示，克里米亚大桥是民用设施，俄方从未通过该桥运输军事装备和弹药，也没有通过该桥运输石油及石油制品。",
       "relatedStocks": [
-        "宽基指数"
+        "中国石油",
+        "紫金矿业"
       ],
       "bullConcepts": [
-        "防御板块"
+        "油气",
+        "贵金属"
       ],
       "bearConcepts": [
-        "周期股"
+        "高耗能制造"
       ],
       "bullIndustries": [
-        "公用事业"
+        "石油开采",
+        "贵金属"
       ],
       "bearIndustries": [
-        "顺周期"
+        "航空运输",
+        "化工"
       ],
-      "heat": 87,
-      "momentum": 86,
+      "heat": 51,
+      "momentum": 31,
       "_auto": true
     },
     {
-      "id": "abvl0uyj",
-      "title": "大晟文化：股票交易异常波动 或被实施退市风险警示",
-      "tag": "宏观/综合",
-      "region": "全球",
-      "concept": "macro",
-      "time": "2026-11-19 18:09",
-      "datetime": "2026-11-19 18:09",
+      "id": "ab1o7kagj",
+      "title": "美国参议院多数议员反对限制美国总统特朗普对伊朗战争权力的决议，投票仍在进行中。",
+      "tag": "地缘/政治",
+      "region": "美国",
+      "concept": "defense",
+      "time": "2026-11-20 03:44",
+      "datetime": "2026-11-20 03:44",
       "source": "新浪7×24",
-      "url": "https://finance.sina.cn/7x24/2026-11-19/detail-inizhmka7716788.d.html",
-      "summary": "【大晟文化：股票交易异常波动 或被实施退市风险警示】大晟文化公告称，公司股票于2026年11月17日、11月18日、11月19日连续三个交易日收盘价格跌幅偏离值累计超过20%，属于股票交易异常波动。经自查并向控股股东核实，不存在应披露而未披露的重大信息，控股股东、董监高在异常波动期间未买卖公司股票。公司2026年前三季度营收2.95亿元，归母净亏损5528.90万元，归母净资…",
+      "url": "https://finance.sina.cn/7x24/2026-11-20/detail-inizihps7455153.d.html",
+      "summary": "美国参议院多数议员反对限制美国总统特朗普对伊朗战争权力的决议，投票仍在进行中。",
+      "relatedStocks": [
+        "军工",
+        "黄金"
+      ],
+      "bullConcepts": [
+        "军工",
+        "避险资产"
+      ],
+      "bearConcepts": [
+        "风险资产"
+      ],
+      "bullIndustries": [
+        "军工",
+        "黄金"
+      ],
+      "bearIndustries": [
+        "航空",
+        "旅游"
+      ],
+      "heat": 46,
+      "momentum": 26,
+      "_auto": true
+    },
+    {
+      "id": "abux0fvl",
+      "title": "刚刚上市交易的Anthropic股价回落至100美元以内，现报97.2美元/股，涨幅收窄至17%。",
+      "tag": "科技/AI",
+      "region": "美国",
+      "concept": "aiCapex",
+      "time": "2026-11-20 01:18",
+      "datetime": "2026-11-20 01:18",
+      "source": "财联社",
+      "url": "https://www.cls.cn/detail/2539494",
+      "summary": "刚刚上市交易的Anthropic股价回落至100美元以内，现报97.2美元/股，涨幅收窄至17%。",
+      "relatedStocks": [
+        "英伟达",
+        "微软",
+        "台积电"
+      ],
+      "bullConcepts": [
+        "AI算力",
+        "半导体",
+        "国产替代"
+      ],
+      "bearConcepts": [
+        "传统软件"
+      ],
+      "bullIndustries": [
+        "半导体",
+        "AI应用",
+        "算力基础设施"
+      ],
+      "bearIndustries": [
+        "传统IT服务"
+      ],
+      "heat": 87,
+      "momentum": 33,
+      "_auto": true
+    },
+    {
+      "id": "ab9d9f3v",
+      "title": "据消息人士透露，加拿大不寻求签署完整贸易协定，而是希望在年底前同特朗普政府达成一份临时关税安排。加美贸易部长勒布朗周四与加拿大联邦政府的加美经济顾问委员会举行会谈。了解此次会议的…",
+      "tag": "贸易/供应链",
+      "region": "美国",
+      "concept": "antitrust",
+      "time": "2026-11-20 03:09",
+      "datetime": "2026-11-20 03:09",
+      "source": "华尔街见闻",
+      "url": "https://wallstreetcn.com/livenews/3202769",
+      "summary": "据消息人士透露，加拿大不寻求签署完整贸易协定，而是希望在年底前同特朗普政府达成一份临时关税安排。加美贸易部长勒布朗周四与加拿大联邦政府的加美经济顾问委员会举行会谈。了解此次会议的消息人士称，加政府目标是达成临时协议而非全新永久性协定。这份临时协议将覆盖232 条款关税下的钢铁、铝、汽车、木材，还包含今年 8 月上一轮谈判破裂后美国依据338 条款对加拿大商品加征的关税。（CB…",
+      "relatedStocks": [
+        "跨境电商",
+        "航运"
+      ],
+      "bullConcepts": [
+        "内需",
+        "国产替代"
+      ],
+      "bearConcepts": [
+        "出口链"
+      ],
+      "bullIndustries": [
+        "跨境电商",
+        "内需消费"
+      ],
+      "bearIndustries": [
+        "出口制造",
+        "航运"
+      ],
+      "heat": 46,
+      "momentum": 26,
+      "_auto": true
+    },
+    {
+      "id": "abz04rei",
+      "title": "胡塞武装：今日凌晨对沙特首都利雅得阿卜杜拉国王经济城金融中心发动首次袭击，并于当晚再次打击该目标。袭击精准直接，造成目标设施严重损毁。 第二次行动针对东部省朱拜勒的萨达拉石化公司…",
+      "tag": "地缘/政治",
+      "region": "欧洲",
+      "concept": "macro",
+      "time": "2026-11-20 02:34",
+      "datetime": "2026-11-20 02:34",
+      "source": "华尔街见闻",
+      "url": "https://wallstreetcn.com/livenews/3202758",
+      "summary": "胡塞武装：今日凌晨对沙特首都利雅得阿卜杜拉国王经济城金融中心发动首次袭击，并于当晚再次打击该目标。袭击精准直接，造成目标设施严重损毁。 第二次行动针对东部省朱拜勒的萨达拉石化公司，据称袭击直接命中。 第三次行动针对哈米斯穆谢特空军基地，造成目标设施严重损毁。 第四次行动针对利雅得哈立德国王国际机场，据称袭击直接命中。",
+      "relatedStocks": [
+        "军工",
+        "黄金"
+      ],
+      "bullConcepts": [
+        "军工",
+        "避险资产"
+      ],
+      "bearConcepts": [
+        "风险资产"
+      ],
+      "bullIndustries": [
+        "军工",
+        "黄金"
+      ],
+      "bearIndustries": [
+        "航空",
+        "旅游"
+      ],
+      "heat": 24,
+      "momentum": 26,
+      "_auto": true
+    },
+    {
+      "id": "ab1ihjt50",
+      "title": "捷荣技术证券虚假陈述索赔已提起诉讼！赵敬国律师团队提醒，受损投资者可进行预登记索赔",
+      "tag": "宏观/综合",
+      "region": "中国",
+      "concept": "broker",
+      "time": "2026-11-19 17:05",
+      "datetime": "2026-11-19 17:05",
+      "source": "市场资讯",
+      "url": "https://finance.sina.com.cn/stock/gmwq/rightscase/2026-11-19/doc-inizhfae7805772.shtml",
+      "summary": "根据最新消息，赵敬国律师团队近期向法院递交了一批捷荣技术证券虚假陈述案件的起诉材料。上海市信本律师事务所赵敬国律师（执业证号：13101200410820485）提示...",
       "relatedStocks": [
         "宽基指数"
       ],
@@ -60,8 +202,76 @@
       "bearIndustries": [
         "顺周期"
       ],
-      "heat": 42,
-      "momentum": 56,
+      "heat": 24,
+      "momentum": 18,
+      "_auto": true
+    },
+    {
+      "id": "ab102wlmy",
+      "title": "伊朗加大对油轮的袭击 霍尔木兹海峡石油运输风险上升",
+      "tag": "能源/资源",
+      "region": "全球",
+      "concept": "energy",
+      "time": "2026-11-20 02:51",
+      "datetime": "2026-11-20 02:51",
+      "source": "环球市场播报",
+      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-20/doc-inizihpr5875826.shtml",
+      "summary": "伊朗对途经霍尔木兹海峡的油轮袭击日益加剧，而与此同时，中东石油供应激增正推动油价下挫。 据汇编的数据，在经历一段时间的低强度冲突后，袭击事件从10月开始增多...",
+      "relatedStocks": [
+        "中国石油",
+        "紫金矿业"
+      ],
+      "bullConcepts": [
+        "油气",
+        "贵金属"
+      ],
+      "bearConcepts": [
+        "高耗能制造"
+      ],
+      "bullIndustries": [
+        "石油开采",
+        "贵金属"
+      ],
+      "bearIndustries": [
+        "航空运输",
+        "化工"
+      ],
+      "heat": 29,
+      "momentum": 26,
+      "_auto": true
+    },
+    {
+      "id": "ab1gmevt9",
+      "title": "胡塞武装袭击利雅得，沙特主权财富基金总部大楼受损",
+      "tag": "地缘/政治",
+      "region": "全球",
+      "concept": "macro",
+      "time": "2026-11-19 20:34",
+      "datetime": "2026-11-19 20:34",
+      "source": "环球市场播报",
+      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-19/doc-inizhrry7671686.shtml",
+      "summary": "周四，沙特阿拉伯主权财富基金办公地点所在的一栋摩天大楼在疑似胡塞武装导弹袭击中受损。这凸显出，在沙特与伊朗支持的也门胡塞武装重新爆发冲突之际...",
+      "relatedStocks": [
+        "军工",
+        "黄金"
+      ],
+      "bullConcepts": [
+        "军工",
+        "避险资产"
+      ],
+      "bearConcepts": [
+        "风险资产"
+      ],
+      "bullIndustries": [
+        "军工",
+        "黄金"
+      ],
+      "bearIndustries": [
+        "航空",
+        "旅游"
+      ],
+      "heat": 29,
+      "momentum": 18,
       "_auto": true
     },
     {
@@ -96,8 +306,166 @@
       "bearIndustries": [
         "传统IT服务"
       ],
-      "heat": 38,
-      "momentum": 41,
+      "heat": 29,
+      "momentum": 18,
+      "_auto": true
+    },
+    {
+      "id": "abgl7iex",
+      "title": "沙通社：胡塞武装袭击导致利雅得金融区建筑物受损",
+      "tag": "地缘/政治",
+      "region": "全球",
+      "concept": "macro",
+      "time": "2026-11-19 23:54",
+      "datetime": "2026-11-19 23:54",
+      "source": "环球市场播报",
+      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-19/doc-inizhvxw7656598.shtml",
+      "summary": "沙特通讯社（SPA）援引民防部门发言人的话报道称，也门胡塞武装周四袭击了利雅得金融区的一座大楼，造成该楼多个楼层以及附近建筑受损。",
+      "relatedStocks": [
+        "军工",
+        "黄金"
+      ],
+      "bullConcepts": [
+        "军工",
+        "避险资产"
+      ],
+      "bearConcepts": [
+        "风险资产"
+      ],
+      "bullIndustries": [
+        "军工",
+        "黄金"
+      ],
+      "bearIndustries": [
+        "航空",
+        "旅游"
+      ],
+      "heat": 29,
+      "momentum": 18,
+      "_auto": true
+    },
+    {
+      "id": "abxl4zkv",
+      "title": "四川凉山州西昌市附近发生3.9级左右地震。（央视）",
+      "tag": "宏观/综合",
+      "region": "全球",
+      "concept": "macro",
+      "time": "2026-11-20 02:55",
+      "datetime": "2026-11-20 02:55",
+      "source": "华尔街见闻",
+      "url": "https://wallstreetcn.com/livenews/3202760",
+      "summary": "四川凉山州西昌市附近发生3.9级左右地震。（央视）",
+      "relatedStocks": [
+        "宽基指数"
+      ],
+      "bullConcepts": [
+        "防御板块"
+      ],
+      "bearConcepts": [
+        "周期股"
+      ],
+      "bullIndustries": [
+        "公用事业"
+      ],
+      "bearIndustries": [
+        "顺周期"
+      ],
+      "heat": 24,
+      "momentum": 26,
+      "_auto": true
+    },
+    {
+      "id": "ab1aujk77",
+      "title": "也门胡塞武装称，袭击了沙特利雅得的哈立德国王机场和哈米斯穆谢特的IR基地。",
+      "tag": "地缘/政治",
+      "region": "欧洲",
+      "concept": "macro",
+      "time": "2026-11-20 02:37",
+      "datetime": "2026-11-20 02:37",
+      "source": "财联社",
+      "url": "https://www.cls.cn/detail/2539515",
+      "summary": "也门胡塞武装称，袭击了沙特利雅得的哈立德国王机场和哈米斯穆谢特的IR基地。",
+      "relatedStocks": [
+        "军工",
+        "黄金"
+      ],
+      "bullConcepts": [
+        "军工",
+        "避险资产"
+      ],
+      "bearConcepts": [
+        "风险资产"
+      ],
+      "bullIndustries": [
+        "军工",
+        "黄金"
+      ],
+      "bearIndustries": [
+        "航空",
+        "旅游"
+      ],
+      "heat": 24,
+      "momentum": 26,
+      "_auto": true
+    },
+    {
+      "id": "ab1utz5ez",
+      "title": "撤销其他风险警示！ST汇洲，停牌一天！",
+      "tag": "宏观/综合",
+      "region": "全球",
+      "concept": "macro",
+      "time": "2026-11-19 20:05",
+      "datetime": "2026-11-19 20:05",
+      "source": "市场资讯",
+      "url": "https://finance.sina.com.cn/stock/s/2026-11-19/doc-inizhrsa4433013.shtml",
+      "summary": "来源：资本秘闻 11月19日晚间，ST汇洲（002122）披露公告称，公司关于撤销股票交易其他风险警示的申请已获得深交所审核同意。 公司股票交易将于11月20日起停牌一天...",
+      "relatedStocks": [
+        "宽基指数"
+      ],
+      "bullConcepts": [
+        "防御板块"
+      ],
+      "bearConcepts": [
+        "周期股"
+      ],
+      "bullIndustries": [
+        "公用事业"
+      ],
+      "bearIndustries": [
+        "顺周期"
+      ],
+      "heat": 24,
+      "momentum": 18,
+      "_auto": true
+    },
+    {
+      "id": "aba3h0al",
+      "title": "女儿进董事会、老婆上原告席！高澜股份创始人有点烦",
+      "tag": "宏观/综合",
+      "region": "中国",
+      "concept": "broker",
+      "time": "2026-11-19 20:00",
+      "datetime": "2026-11-19 20:00",
+      "source": "市场资讯",
+      "url": "https://finance.sina.com.cn/stock/s/2026-11-19/doc-inizhrsf0889053.shtml",
+      "summary": "来源 | 野马财经 “00后”女儿刚升副总，“老妈”就起诉了“老爸” 作者 | 高岩编辑 | 贾紫聪 最近几年，A股液冷赛道上的“三剑客”之一——高澜股份，创始人...",
+      "relatedStocks": [
+        "宽基指数"
+      ],
+      "bullConcepts": [
+        "防御板块"
+      ],
+      "bearConcepts": [
+        "周期股"
+      ],
+      "bullIndustries": [
+        "公用事业"
+      ],
+      "bearIndustries": [
+        "顺周期"
+      ],
+      "heat": 24,
+      "momentum": 18,
       "_auto": true
     },
     {
@@ -127,7 +495,7 @@
         "顺周期"
       ],
       "heat": 24,
-      "momentum": 26,
+      "momentum": 18,
       "_auto": true
     },
     {
@@ -159,262 +527,6 @@
       "bearIndustries": [
         "航空运输",
         "化工"
-      ],
-      "heat": 24,
-      "momentum": 26,
-      "_auto": true
-    },
-    {
-      "id": "ab1ihjt50",
-      "title": "捷荣技术证券虚假陈述索赔已提起诉讼！赵敬国律师团队提醒，受损投资者可进行预登记索赔",
-      "tag": "宏观/综合",
-      "region": "中国",
-      "concept": "broker",
-      "time": "2026-11-19 17:05",
-      "datetime": "2026-11-19 17:05",
-      "source": "市场资讯",
-      "url": "https://finance.sina.com.cn/stock/gmwq/rightscase/2026-11-19/doc-inizhfae7805772.shtml",
-      "summary": "根据最新消息，赵敬国律师团队近期向法院递交了一批捷荣技术证券虚假陈述案件的起诉材料。上海市信本律师事务所赵敬国律师（执业证号：13101200410820485）提示...",
-      "relatedStocks": [
-        "宽基指数"
-      ],
-      "bullConcepts": [
-        "防御板块"
-      ],
-      "bearConcepts": [
-        "周期股"
-      ],
-      "bullIndustries": [
-        "公用事业"
-      ],
-      "bearIndustries": [
-        "顺周期"
-      ],
-      "heat": 29,
-      "momentum": 26,
-      "_auto": true
-    },
-    {
-      "id": "ab1aab5au",
-      "title": "克里米亚地区领导人阿克肖诺夫当地时间11月19日凌晨在社交媒体上表示，克里米亚大桥再次遭到袭击，目前大桥交通已暂时中断。阿克肖诺夫没有透露袭击造成的具体损失情况。他表示，相关部门…",
-      "tag": "地缘/政治",
-      "region": "全球",
-      "concept": "macro",
-      "time": "2026-11-19 15:52",
-      "datetime": "2026-11-19 15:52",
-      "source": "华尔街见闻",
-      "url": "https://wallstreetcn.com/livenews/3202421",
-      "summary": "克里米亚地区领导人阿克肖诺夫当地时间11月19日凌晨在社交媒体上表示，克里米亚大桥再次遭到袭击，目前大桥交通已暂时中断。阿克肖诺夫没有透露袭击造成的具体损失情况。他表示，相关部门正在评估袭击造成的损失，后续将及时公布更多信息。他同时呼吁民众以官方发布的信息为准，不要传播未经核实的消息。（央视新闻）",
-      "relatedStocks": [
-        "军工",
-        "黄金"
-      ],
-      "bullConcepts": [
-        "军工",
-        "避险资产"
-      ],
-      "bearConcepts": [
-        "风险资产"
-      ],
-      "bullIndustries": [
-        "军工",
-        "黄金"
-      ],
-      "bearIndustries": [
-        "航空",
-        "旅游"
-      ],
-      "heat": 24,
-      "momentum": 18,
-      "_auto": true
-    },
-    {
-      "id": "ab1os00bv",
-      "title": "德意志银行意大利分部被曝长期隐瞒亏损，涉及金额最高达8亿欧元",
-      "tag": "宏观/综合",
-      "region": "欧洲",
-      "concept": "macro",
-      "time": "2026-11-19 14:15",
-      "datetime": "2026-11-19 14:15",
-      "source": "环球市场播报",
-      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-19/doc-inizfytz0405398.shtml",
-      "summary": "11月19日，据泄露的内部文件显示，德意志银行意大利分部在逾十年的时间内，通过衍生品交易及账外记账等方式隐瞒最高约8亿欧元的亏损。",
-      "relatedStocks": [
-        "宽基指数"
-      ],
-      "bullConcepts": [
-        "防御板块"
-      ],
-      "bearConcepts": [
-        "周期股"
-      ],
-      "bullIndustries": [
-        "公用事业"
-      ],
-      "bearIndustries": [
-        "顺周期"
-      ],
-      "heat": 29,
-      "momentum": 18,
-      "_auto": true
-    },
-    {
-      "id": "ab16kzul",
-      "title": "Alphabet董事长：找到黄仁勋接班人“并非不可能”",
-      "tag": "科技/AI",
-      "region": "全球",
-      "concept": "ai",
-      "time": "2026-11-19 15:15",
-      "datetime": "2026-11-19 15:15",
-      "source": "环球市场播报",
-      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-19/doc-inizhfac6197934.shtml",
-      "summary": "谷歌母公司Alphabet董事长约翰・亨尼斯表示，为前英伟达CEO黄仁勋寻找继任者难度很大，但合适的人选最终会出现。 17日，亨尼斯在加州帕洛阿尔托的斯坦福大学接受采访。",
-      "relatedStocks": [
-        "英伟达",
-        "微软",
-        "台积电"
-      ],
-      "bullConcepts": [
-        "AI算力",
-        "半导体",
-        "国产替代"
-      ],
-      "bearConcepts": [
-        "传统软件"
-      ],
-      "bullIndustries": [
-        "半导体",
-        "AI应用",
-        "算力基础设施"
-      ],
-      "bearIndustries": [
-        "传统IT服务"
-      ],
-      "heat": 24,
-      "momentum": 18,
-      "_auto": true
-    },
-    {
-      "id": "ab7eew5n",
-      "title": "天普股份复牌跌停，立案调查仍在进行中",
-      "tag": "宏观/综合",
-      "region": "全球",
-      "concept": "macro",
-      "time": "2026-11-19 14:50",
-      "datetime": "2026-11-19 14:50",
-      "source": "市场资讯",
-      "url": "https://finance.sina.com.cn/stock/gmwq/rightscase/2026-11-19/doc-inizfytz0425289.shtml",
-      "summary": "2026年11月19日，天普股份（605255）复牌交易，当日跌停。公司于11月18日晚披露停牌核查结果，股票自11月19日开市起恢复交易。",
-      "relatedStocks": [
-        "宽基指数"
-      ],
-      "bullConcepts": [
-        "防御板块"
-      ],
-      "bearConcepts": [
-        "周期股"
-      ],
-      "bullIndustries": [
-        "公用事业"
-      ],
-      "bearIndustries": [
-        "顺周期"
-      ],
-      "heat": 29,
-      "momentum": 18,
-      "_auto": true
-    },
-    {
-      "id": "ab5oue2d",
-      "title": "复牌第一天就跌停，天普的立案还没有结论",
-      "tag": "宏观/综合",
-      "region": "全球",
-      "concept": "macro",
-      "time": "2026-11-19 14:50",
-      "datetime": "2026-11-19 14:50",
-      "source": "市场资讯",
-      "url": "https://finance.sina.com.cn/stock/gmwq/rightscase/2026-11-19/doc-inizfytz0426750.shtml",
-      "summary": "11月19日，天普股份（605255）复牌，开盘后封死跌停。前一晚公司披露股票交易停牌核查结果，经向上交所申请，股票自11月19日开市起复牌。",
-      "relatedStocks": [
-        "宽基指数"
-      ],
-      "bullConcepts": [
-        "防御板块"
-      ],
-      "bearConcepts": [
-        "周期股"
-      ],
-      "bullIndustries": [
-        "公用事业"
-      ],
-      "bearIndustries": [
-        "顺周期"
-      ],
-      "heat": 29,
-      "momentum": 18,
-      "_auto": true
-    },
-    {
-      "id": "abf8e3wt",
-      "title": "一只暴跌的债基刷屏了，今年亏损37%，公司这回应打几分？",
-      "tag": "宏观/综合",
-      "region": "全球",
-      "concept": "macro",
-      "time": "2026-11-19 14:00",
-      "datetime": "2026-11-19 14:00",
-      "source": "市场资讯",
-      "url": "https://finance.sina.com.cn/roll/2026-11-19/doc-inizfyuk4574980.shtml",
-      "summary": "转自：财联社 财联社11月19日讯（记者 李迪）近日，一只二级债基的净值表现引发市场热议：民生加银增强收益债券A今年以来亏损幅度达36.92%，近一年亏损幅度达34.50%。",
-      "relatedStocks": [
-        "宽基指数"
-      ],
-      "bullConcepts": [
-        "防御板块"
-      ],
-      "bearConcepts": [
-        "周期股"
-      ],
-      "bullIndustries": [
-        "公用事业"
-      ],
-      "bearIndustries": [
-        "顺周期"
-      ],
-      "heat": 24,
-      "momentum": 18,
-      "_auto": true
-    },
-    {
-      "id": "ab19ayh2i",
-      "title": "要求黄仁勋回归的呼声持续，优步创始人扬言要去英伟达抗议",
-      "tag": "科技/AI",
-      "region": "全球",
-      "concept": "ai",
-      "time": "2026-11-19 11:44",
-      "datetime": "2026-11-19 11:44",
-      "source": "环球市场播报",
-      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-19/doc-inizfunk7850910.shtml",
-      "summary": "在得克萨斯州奥斯汀举行的一场投资者大会上，优步（Uber）联合创始人特拉维斯．卡兰尼克（Travis Kalanick）身穿黑色皮夹克走上台。",
-      "relatedStocks": [
-        "英伟达",
-        "微软",
-        "台积电"
-      ],
-      "bullConcepts": [
-        "AI算力",
-        "半导体",
-        "国产替代"
-      ],
-      "bearConcepts": [
-        "传统软件"
-      ],
-      "bullIndustries": [
-        "半导体",
-        "AI应用",
-        "算力基础设施"
-      ],
-      "bearIndustries": [
-        "传统IT服务"
       ],
       "heat": 24,
       "momentum": 18,
@@ -453,56 +565,20 @@
         "传统IT服务"
       ],
       "heat": 24,
-      "momentum": 26,
-      "_auto": true
-    },
-    {
-      "id": "ab710vln",
-      "title": "黄仁勋是否回归？英伟达董事会内部被曝出现分歧",
-      "tag": "科技/AI",
-      "region": "全球",
-      "concept": "ai",
-      "time": "2026-11-19 14:46",
-      "datetime": "2026-11-19 14:46",
-      "source": "环球市场播报",
-      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-19/doc-inizfytz0421433.shtml",
-      "summary": "据知情人士透露，尽管英伟达周二宣布无意让被迫离职的首席执行官黄仁勋重返公司，但董事会内部仍有部分成员正在推动其回归。",
-      "relatedStocks": [
-        "英伟达",
-        "微软",
-        "台积电"
-      ],
-      "bullConcepts": [
-        "AI算力",
-        "半导体",
-        "国产替代"
-      ],
-      "bearConcepts": [
-        "传统软件"
-      ],
-      "bullIndustries": [
-        "半导体",
-        "AI应用",
-        "算力基础设施"
-      ],
-      "bearIndustries": [
-        "传统IT服务"
-      ],
-      "heat": 24,
       "momentum": 18,
       "_auto": true
     },
     {
-      "id": "ab7d765a",
-      "title": "澳元抹去今年以来对美元的涨幅 就业数据疲弱",
+      "id": "ab1c9bxak",
+      "title": "交易员押注三大央行利率将在数年内保持高位",
       "tag": "金融/宏观",
       "region": "美国",
       "concept": "usFinance",
-      "time": "2026-11-19 10:25",
-      "datetime": "2026-11-19 10:25",
+      "time": "2026-11-20 02:51",
+      "datetime": "2026-11-20 02:51",
       "source": "环球市场播报",
-      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-19/doc-inizfqei4367321.shtml",
-      "summary": "随着澳洲失业率意外上升，促使交易员加大对澳洲央行降息的押注，澳元抹去了今年以来的涨幅。 周四早盘，澳元兑美元一度下跌0.7%至0.6667。",
+      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-20/doc-inizihpu4221462.shtml",
+      "summary": "交易员押注，主要央行在2027年底结束加息后，将在数年内基本维持利率不变。 2026年初，货币市场原本计价美联储、欧洲央行和英国央行将降息，但伊朗战争导致石油供应受阻...",
       "relatedStocks": [
         "美股科技",
         "黄金"
@@ -522,67 +598,7 @@
         "高杠杆地产"
       ],
       "heat": 24,
-      "momentum": 18,
-      "_auto": true
-    },
-    {
-      "id": "abp16qr2",
-      "title": "卓然退市程序已启动，投资者索赔已递交立案",
-      "tag": "宏观/综合",
-      "region": "全球",
-      "concept": "macro",
-      "time": "2026-11-19 10:12",
-      "datetime": "2026-11-19 10:12",
-      "source": "市场资讯",
-      "url": "https://finance.sina.com.cn/stock/gmwq/rightscase/2026-11-19/doc-inizfqem6415382.shtml",
-      "summary": "10月29日，*ST卓然（688121）公告收到上交所《终止上市事先告知书》，同日披露公司股票触及交易类强制退市情形并停牌，停牌前股价0.40元。",
-      "relatedStocks": [
-        "宽基指数"
-      ],
-      "bullConcepts": [
-        "防御板块"
-      ],
-      "bearConcepts": [
-        "周期股"
-      ],
-      "bullIndustries": [
-        "公用事业"
-      ],
-      "bearIndustries": [
-        "顺周期"
-      ],
-      "heat": 24,
-      "momentum": 18,
-      "_auto": true
-    },
-    {
-      "id": "abaosf7i",
-      "title": "卓然股份退市不影响维权，已有案件递交立案",
-      "tag": "宏观/综合",
-      "region": "中国",
-      "concept": "broker",
-      "time": "2026-11-19 10:12",
-      "datetime": "2026-11-19 10:12",
-      "source": "市场资讯",
-      "url": "https://finance.sina.com.cn/stock/gmwq/rightscase/2026-11-19/doc-inizfqef0530170.shtml",
-      "summary": "2026年10月29日，上海，*ST卓然（688121）发布公告称，公司收到上海证券交易所《终止上市事先告知书》，公司股票触及交易类强制退市情形，自当日起停牌。",
-      "relatedStocks": [
-        "宽基指数"
-      ],
-      "bullConcepts": [
-        "防御板块"
-      ],
-      "bearConcepts": [
-        "周期股"
-      ],
-      "bullIndustries": [
-        "公用事业"
-      ],
-      "bearIndustries": [
-        "顺周期"
-      ],
-      "heat": 24,
-      "momentum": 18,
+      "momentum": 26,
       "_auto": true
     },
     {

@@ -1,9 +1,211 @@
 {
-  "generatedAt": "2026-11-19 18:10",
+  "generatedAt": "2026-11-20 04:26",
   "generatedBy": "GitHub Actions · 多源实时聚合",
   "sourceCount": 5,
-  "autoCount": 11,
+  "autoCount": 8,
   "events": [
+    {
+      "id": "ap1qwhv0a",
+      "title": "市场消息：美国总统特朗普表示，俄罗斯总统普京希望达成协议，并期待乌克兰总统泽连斯基也有此意愿。",
+      "tag": "人物/特朗普",
+      "region": "美国",
+      "concept": "usMacro",
+      "time": "2026-11-20 03:37",
+      "datetime": "2026-11-20 03:37",
+      "source": "新浪7×24",
+      "url": "https://finance.sina.cn/7x24/2026-11-20/detail-inizihpu4230530.d.html",
+      "summary": "市场消息：美国总统特朗普表示，俄罗斯总统普京希望达成协议，并期待乌克兰总统泽连斯基也有此意愿。",
+      "relatedStocks": [
+        "宽基指数"
+      ],
+      "bullConcepts": [
+        "防御板块"
+      ],
+      "bearConcepts": [
+        "周期股"
+      ],
+      "bullIndustries": [
+        "公用事业"
+      ],
+      "bearIndustries": [
+        "顺周期"
+      ],
+      "heat": 100,
+      "momentum": 66,
+      "_auto": true
+    },
+    {
+      "id": "apzg0dg4",
+      "title": "美国总统特朗普表示，如果相关措施合理，他不会否决所有针对人工智能的监管限制。",
+      "tag": "人物/特朗普",
+      "region": "美国",
+      "concept": "aiCapex",
+      "time": "2026-11-20 03:52",
+      "datetime": "2026-11-20 03:52",
+      "source": "新浪7×24",
+      "url": "https://finance.sina.cn/7x24/2026-11-20/detail-inizihps7456422.d.html",
+      "summary": "美国总统特朗普表示，如果相关措施合理，他不会否决所有针对人工智能的监管限制。",
+      "relatedStocks": [
+        "英伟达",
+        "微软",
+        "台积电"
+      ],
+      "bullConcepts": [
+        "AI算力",
+        "半导体",
+        "国产替代"
+      ],
+      "bearConcepts": [
+        "传统软件"
+      ],
+      "bullIndustries": [
+        "半导体",
+        "AI应用",
+        "算力基础设施"
+      ],
+      "bearIndustries": [
+        "传统IT服务"
+      ],
+      "heat": 87,
+      "momentum": 56,
+      "_auto": true
+    },
+    {
+      "id": "apfskcsd",
+      "title": "特朗普9月交易记录曝光：加仓英伟达、SpaceX、帕兰提尔，多家企业斩获联邦大单",
+      "tag": "人物/马斯克",
+      "region": "美国",
+      "concept": "aiCapex",
+      "time": "2026-11-20 04:13",
+      "datetime": "2026-11-20 04:13",
+      "source": "环球市场播报",
+      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-20/doc-inizihpu4238779.shtml",
+      "summary": "根据一份新近披露的财务申报文件，美国总统唐纳德·特朗普名下投资账户在9月买入了英伟达、帕兰提尔以及埃隆·马斯克旗下SpaceX的股份...",
+      "relatedStocks": [
+        "英伟达",
+        "微软",
+        "台积电"
+      ],
+      "bullConcepts": [
+        "AI算力",
+        "半导体",
+        "国产替代"
+      ],
+      "bearConcepts": [
+        "传统软件"
+      ],
+      "bullIndustries": [
+        "半导体",
+        "AI应用",
+        "算力基础设施"
+      ],
+      "bearIndustries": [
+        "传统IT服务"
+      ],
+      "heat": 69,
+      "momentum": 41,
+      "_auto": true
+    },
+    {
+      "id": "apg75353",
+      "title": "俄罗斯总统普京19日表示，在克里米亚大桥遭袭后，俄方不会就海上停火或停止攻击能源设施与有关方面进行谈判。 普京当天在回应记者关于克里米亚大桥近日多次遭袭及受损情况的提问时表示，克…",
+      "tag": "人物/普京",
+      "region": "全球",
+      "concept": "energy",
+      "time": "2026-11-20 03:38",
+      "datetime": "2026-11-20 03:38",
+      "source": "华尔街见闻",
+      "url": "https://wallstreetcn.com/livenews/3202785",
+      "summary": "俄罗斯总统普京19日表示，在克里米亚大桥遭袭后，俄方不会就海上停火或停止攻击能源设施与有关方面进行谈判。 普京当天在回应记者关于克里米亚大桥近日多次遭袭及受损情况的提问时表示，克里米亚大桥是民用设施，俄方从未通过该桥运输军事装备和弹药，也没有通过该桥运输石油及石油制品。",
+      "relatedStocks": [
+        "中国石油",
+        "紫金矿业"
+      ],
+      "bullConcepts": [
+        "油气",
+        "贵金属"
+      ],
+      "bearConcepts": [
+        "高耗能制造"
+      ],
+      "bullIndustries": [
+        "石油开采",
+        "贵金属"
+      ],
+      "bearIndustries": [
+        "航空运输",
+        "化工"
+      ],
+      "heat": 51,
+      "momentum": 31,
+      "_auto": true
+    },
+    {
+      "id": "apiexq47",
+      "title": "美联储理事巴尔：丽莎·库克是一位优秀的美联储理事。",
+      "tag": "人物/库克",
+      "region": "美国",
+      "concept": "usFinance",
+      "time": "2026-11-20 03:45",
+      "datetime": "2026-11-20 03:45",
+      "source": "新浪7×24",
+      "url": "https://finance.sina.cn/7x24/2026-11-20/detail-inizihps7455532.d.html",
+      "summary": "美联储理事巴尔：丽莎·库克是一位优秀的美联储理事。",
+      "relatedStocks": [
+        "美股科技",
+        "黄金"
+      ],
+      "bullConcepts": [
+        "黄金",
+        "防御板块"
+      ],
+      "bearConcepts": [
+        "高估值成长股"
+      ],
+      "bullIndustries": [
+        "银行",
+        "黄金"
+      ],
+      "bearIndustries": [
+        "高杠杆地产"
+      ],
+      "heat": 87,
+      "momentum": 81,
+      "_auto": true
+    },
+    {
+      "id": "apfjatp5",
+      "title": "特斯拉表示，将Cybercab扩展至美国达拉斯。",
+      "tag": "人物/马斯克",
+      "region": "美国",
+      "concept": "evTax",
+      "time": "2026-11-20 04:05",
+      "datetime": "2026-11-20 04:05",
+      "source": "财联社",
+      "url": "https://www.cls.cn/detail/2539528",
+      "summary": "特斯拉表示，将Cybercab扩展至美国达拉斯。",
+      "relatedStocks": [
+        "特斯拉",
+        "比亚迪"
+      ],
+      "bullConcepts": [
+        "智能驾驶",
+        "动力电池"
+      ],
+      "bearConcepts": [
+        "传统车企"
+      ],
+      "bullIndustries": [
+        "智能驾驶",
+        "锂电池"
+      ],
+      "bearIndustries": [
+        "传统汽车制造"
+      ],
+      "heat": 29,
+      "momentum": 41,
+      "_auto": true
+    },
     {
       "id": "ap1t1smx",
       "title": "OpenAI称旗下模型加速AMD“哈拉佩尼奥” 芯片设计",
@@ -36,324 +238,21 @@
       "bearIndustries": [
         "传统IT服务"
       ],
-      "heat": 47,
-      "momentum": 36,
-      "_auto": true
-    },
-    {
-      "id": "ap1sl62r5",
-      "title": "11月18日，以色列议会反对党阵营多个政党领导人举行会晤并发表联合声明，重申组建新政府并取代现任总理内塔尼亚胡是其当前的首要任务。声明称，所有与会政党领导人一致同意，目前的最高优…",
-      "tag": "人物/内塔尼亚胡",
-      "region": "全球",
-      "concept": "macro",
-      "time": "2026-11-19 17:52",
-      "datetime": "2026-11-19 17:52",
-      "source": "新浪7×24",
-      "url": "https://finance.sina.cn/7x24/2026-11-19/detail-inizhmka7704973.d.html",
-      "summary": "11月18日，以色列议会反对党阵营多个政党领导人举行会晤并发表联合声明，重申组建新政府并取代现任总理内塔尼亚胡是其当前的首要任务。声明称，所有与会政党领导人一致同意，目前的最高优先事项是组建一个由正直党领导人埃森科特领导的“国家紧急政府”，尽快取代内塔尼亚胡的总理职务。声明还称，各方讨论了以色列当前在安全、社会及国际事务方面面临的紧急情况，以及未来数日的敏感局势，承诺将继续保…",
-      "relatedStocks": [
-        "宽基指数"
-      ],
-      "bullConcepts": [
-        "防御板块"
-      ],
-      "bearConcepts": [
-        "周期股"
-      ],
-      "bullIndustries": [
-        "公用事业"
-      ],
-      "bearIndustries": [
-        "顺周期"
-      ],
-      "heat": 24,
-      "momentum": 36,
-      "_auto": true
-    },
-    {
-      "id": "apx05iny",
-      "title": "中国国际贸易促进委员会会长任鸿斌11月19日在深圳与美国特斯拉公司首席执行官埃隆·马斯克会面。2027年是中国国际供应链促进博览会（链博会）五周年，中国贸促会会长任鸿斌表示，特斯…",
-      "tag": "人物/马斯克",
-      "region": "美国",
-      "concept": "antitrust",
-      "time": "2026-11-19 17:18",
-      "datetime": "2026-11-19 17:18",
-      "source": "华尔街见闻",
-      "url": "https://wallstreetcn.com/livenews/3202481",
-      "summary": "中国国际贸易促进委员会会长任鸿斌11月19日在深圳与美国特斯拉公司首席执行官埃隆·马斯克会面。2027年是中国国际供应链促进博览会（链博会）五周年，中国贸促会会长任鸿斌表示，特斯拉展台每次都能吸引很多中国客户，大家对特斯拉的产品、技术，尤其是前沿技术非常感兴趣。任鸿斌邀请马斯克前往参加开幕式，欢迎特斯拉明年能带来最新技术参展，不仅展示给中国，也展示给全世界。对此，马斯克回应：…",
-      "relatedStocks": [
-        "跨境电商",
-        "航运"
-      ],
-      "bullConcepts": [
-        "内需",
-        "国产替代"
-      ],
-      "bearConcepts": [
-        "出口链"
-      ],
-      "bullIndustries": [
-        "跨境电商",
-        "内需消费"
-      ],
-      "bearIndustries": [
-        "出口制造",
-        "航运"
-      ],
-      "heat": 46,
-      "momentum": 26,
-      "_auto": true
-    },
-    {
-      "id": "ap1ljo50u",
-      "title": "中俄美元首会晤结束 特朗普离开会晤现场",
-      "tag": "人物/特朗普",
-      "region": "美国",
-      "concept": "usFinance",
-      "time": "2026-11-19 17:56",
-      "datetime": "2026-11-19 17:56",
-      "source": "央视新闻客户端",
-      "url": "https://finance.sina.com.cn/china/2026-11-19/doc-inizhmka7707836.shtml",
-      "summary": "11月19日下午，国家主席习近平在深圳同俄罗斯总统普京、美国总统特朗普举行中俄美元首会晤。会晤结束后，特朗普离开会晤现场。",
-      "relatedStocks": [
-        "美股科技",
-        "黄金"
-      ],
-      "bullConcepts": [
-        "黄金",
-        "防御板块"
-      ],
-      "bearConcepts": [
-        "高估值成长股"
-      ],
-      "bullIndustries": [
-        "银行",
-        "黄金"
-      ],
-      "bearIndustries": [
-        "高杠杆地产"
-      ],
-      "heat": 60,
-      "momentum": 46,
-      "_auto": true
-    },
-    {
-      "id": "ap1hth8xm",
-      "title": "马斯克：预计未来12-18个月Optimus机器人能做家务劳动",
-      "tag": "人物/马斯克",
-      "region": "全球",
-      "concept": "macro",
-      "time": "2026-11-19 17:36",
-      "datetime": "2026-11-19 17:36",
-      "source": "财联社",
-      "url": "https://www.cls.cn/detail/2539130",
-      "summary": "【马斯克：预计未来12-18个月Optimus机器人能做家务劳动】《科创板日报》19日讯，马斯克今日在视频连线采访中表示，预计未来12-18个月，Optimus（擎天柱）机器人就能做到倒垃圾、洗碗并将碗碟收进橱柜等家务劳动。",
-      "relatedStocks": [
-        "宽基指数"
-      ],
-      "bullConcepts": [
-        "防御板块"
-      ],
-      "bearConcepts": [
-        "周期股"
-      ],
-      "bullIndustries": [
-        "公用事业"
-      ],
-      "bearIndustries": [
-        "顺周期"
-      ],
-      "heat": 55,
-      "momentum": 31,
-      "_auto": true
-    },
-    {
-      "id": "ap6qwdw0",
-      "title": "苏姿丰出售AMD股份套现逾3500万美元，仍直接持股约15亿美元",
-      "tag": "人物/苏姿丰",
-      "region": "美国",
-      "concept": "aiCapex",
-      "time": "2026-11-19 13:18",
-      "datetime": "2026-11-19 13:18",
-      "source": "环球市场播报",
-      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-19/doc-inizfyuh7776821.shtml",
-      "summary": "根据周三披露的一份文件，AMD首席执行官苏姿丰出售了该公司7万股股票，套现约3549万美元。 根据提交给美国证券交易委员会（SEC）的Form 4表格文件...",
-      "relatedStocks": [
-        "英伟达",
-        "微软",
-        "台积电"
-      ],
-      "bullConcepts": [
-        "AI算力",
-        "半导体",
-        "国产替代"
-      ],
-      "bearConcepts": [
-        "传统软件"
-      ],
-      "bullIndustries": [
-        "半导体",
-        "AI应用",
-        "算力基础设施"
-      ],
-      "bearIndustries": [
-        "传统IT服务"
-      ],
-      "heat": 56,
+      "heat": 33,
       "momentum": 18,
       "_auto": true
     },
     {
-      "id": "apjfbjr7",
-      "title": "OpenAI总裁称其模型助力AMD在5个月内实现相当于一年的芯片研发进展",
-      "tag": "人物/奥尔特曼",
-      "region": "全球",
-      "concept": "ai",
-      "time": "2026-11-19 14:37",
-      "datetime": "2026-11-19 14:37",
-      "source": "环球市场播报",
-      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-19/doc-inizfyuf6299953.shtml",
-      "summary": "OpenAI总裁格雷格·布罗克曼表示，该公司的人工智能模型帮助AMD在不到五个月的时间里，在芯片研发方面实现了“相当于额外一年”的进展；部分优化成果已经落实到可以投产的芯片...",
-      "relatedStocks": [
-        "英伟达",
-        "微软",
-        "台积电"
-      ],
-      "bullConcepts": [
-        "AI算力",
-        "半导体",
-        "国产替代"
-      ],
-      "bearConcepts": [
-        "传统软件"
-      ],
-      "bullIndustries": [
-        "半导体",
-        "AI应用",
-        "算力基础设施"
-      ],
-      "bearIndustries": [
-        "传统IT服务"
-      ],
-      "heat": 47,
-      "momentum": 18,
-      "_auto": true
-    },
-    {
-      "id": "ap1c6jxzr",
-      "title": "特朗普：我们有责任保持公开对话。 在讨论削减核武器方面具有独特的优势。 在核扩散威胁问题上合作至关重要。 将讨论俄罗斯和乌克兰冲突问题。 国际刑事法院已经失控了。 看看我们能不能…",
-      "tag": "人物/特朗普",
-      "region": "美国",
-      "concept": "defense",
-      "time": "2026-11-19 16:42",
-      "datetime": "2026-11-19 16:42",
-      "source": "华尔街见闻",
-      "url": "https://wallstreetcn.com/livenews/3202460",
-      "summary": "特朗普：我们有责任保持公开对话。 在讨论削减核武器方面具有独特的优势。 在核扩散威胁问题上合作至关重要。 将讨论俄罗斯和乌克兰冲突问题。 国际刑事法院已经失控了。 看看我们能不能做成点什么。",
-      "relatedStocks": [
-        "军工",
-        "黄金"
-      ],
-      "bullConcepts": [
-        "军工",
-        "避险资产"
-      ],
-      "bearConcepts": [
-        "风险资产"
-      ],
-      "bullIndustries": [
-        "军工",
-        "黄金"
-      ],
-      "bearIndustries": [
-        "航空",
-        "旅游"
-      ],
-      "heat": 51,
-      "momentum": 26,
-      "_auto": true
-    },
-    {
-      "id": "ap16blzv8",
-      "title": "普京提议讨论全球、地区事务和能源问题。（塔斯社）",
-      "tag": "人物/普京",
-      "region": "全球",
-      "concept": "energy",
-      "time": "2026-11-19 16:42",
-      "datetime": "2026-11-19 16:42",
-      "source": "华尔街见闻",
-      "url": "https://wallstreetcn.com/livenews/3202459",
-      "summary": "普京提议讨论全球、地区事务和能源问题。（塔斯社）",
-      "relatedStocks": [
-        "中国石油",
-        "紫金矿业"
-      ],
-      "bullConcepts": [
-        "油气",
-        "贵金属"
-      ],
-      "bearConcepts": [
-        "高耗能制造"
-      ],
-      "bullIndustries": [
-        "石油开采",
-        "贵金属"
-      ],
-      "bearIndustries": [
-        "航空运输",
-        "化工"
-      ],
-      "heat": 24,
-      "momentum": 26,
-      "_auto": true
-    },
-    {
-      "id": "ap16kzul",
-      "title": "Alphabet董事长：找到黄仁勋接班人“并非不可能”",
+      "id": "ap16j4u2j",
+      "title": "阿莫代伊拒评黄仁勋是否应当重返英伟达担任首席执行官",
       "tag": "人物/黄仁勋",
       "region": "全球",
       "concept": "ai",
-      "time": "2026-11-19 15:15",
-      "datetime": "2026-11-19 15:15",
+      "time": "2026-11-19 23:39",
+      "datetime": "2026-11-19 23:39",
       "source": "环球市场播报",
-      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-19/doc-inizhfac6197934.shtml",
-      "summary": "谷歌母公司Alphabet董事长约翰・亨尼斯表示，为前英伟达CEO黄仁勋寻找继任者难度很大，但合适的人选最终会出现。 17日，亨尼斯在加州帕洛阿尔托的斯坦福大学接受采访。",
-      "relatedStocks": [
-        "英伟达",
-        "微软",
-        "台积电"
-      ],
-      "bullConcepts": [
-        "AI算力",
-        "半导体",
-        "国产替代"
-      ],
-      "bearConcepts": [
-        "传统软件"
-      ],
-      "bullIndustries": [
-        "半导体",
-        "AI应用",
-        "算力基础设施"
-      ],
-      "bearIndustries": [
-        "传统IT服务"
-      ],
-      "heat": 24,
-      "momentum": 18,
-      "_auto": true
-    },
-    {
-      "id": "ap19ayh2i",
-      "title": "要求黄仁勋回归的呼声持续，优步创始人扬言要去英伟达抗议",
-      "tag": "人物/黄仁勋",
-      "region": "全球",
-      "concept": "ai",
-      "time": "2026-11-19 11:44",
-      "datetime": "2026-11-19 11:44",
-      "source": "环球市场播报",
-      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-19/doc-inizfunk7850910.shtml",
-      "summary": "在得克萨斯州奥斯汀举行的一场投资者大会上，优步（Uber）联合创始人特拉维斯．卡兰尼克（Travis Kalanick）身穿黑色皮夹克走上台。",
+      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-19/doc-inizhvxw7651731.shtml",
+      "summary": "阿莫代伊拒评黄仁勋是否应当重返英伟达出任 CEO：“这由英伟达方面决定”。 达里奥・阿莫代伊表示，Anthropic 与英伟达之间保持着 “长期且富有成效的合作关系”...",
       "relatedStocks": [
         "英伟达",
         "微软",
