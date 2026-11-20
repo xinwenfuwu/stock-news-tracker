@@ -1,88 +1,53 @@
 {
-  "generatedAt": "2026-11-20 04:26",
+  "generatedAt": "2026-11-20 10:59",
   "generatedBy": "GitHub Actions · 多源实时聚合",
-  "sourceCount": 5,
-  "autoCount": 18,
+  "sourceCount": 4,
+  "autoCount": 13,
   "events": [
     {
-      "id": "abg75353",
-      "title": "俄罗斯总统普京19日表示，在克里米亚大桥遭袭后，俄方不会就海上停火或停止攻击能源设施与有关方面进行谈判。 普京当天在回应记者关于克里米亚大桥近日多次遭袭及受损情况的提问时表示，克…",
-      "tag": "能源/资源",
-      "region": "全球",
-      "concept": "energy",
-      "time": "2026-11-20 03:38",
-      "datetime": "2026-11-20 03:38",
-      "source": "华尔街见闻",
-      "url": "https://wallstreetcn.com/livenews/3202785",
-      "summary": "俄罗斯总统普京19日表示，在克里米亚大桥遭袭后，俄方不会就海上停火或停止攻击能源设施与有关方面进行谈判。 普京当天在回应记者关于克里米亚大桥近日多次遭袭及受损情况的提问时表示，克里米亚大桥是民用设施，俄方从未通过该桥运输军事装备和弹药，也没有通过该桥运输石油及石油制品。",
-      "relatedStocks": [
-        "中国石油",
-        "紫金矿业"
-      ],
-      "bullConcepts": [
-        "油气",
-        "贵金属"
-      ],
-      "bearConcepts": [
-        "高耗能制造"
-      ],
-      "bullIndustries": [
-        "石油开采",
-        "贵金属"
-      ],
-      "bearIndustries": [
-        "航空运输",
-        "化工"
-      ],
-      "heat": 51,
-      "momentum": 31,
-      "_auto": true
-    },
-    {
-      "id": "ab1o7kagj",
-      "title": "美国参议院多数议员反对限制美国总统特朗普对伊朗战争权力的决议，投票仍在进行中。",
-      "tag": "地缘/政治",
+      "id": "ab1dwjvol",
+      "title": "美国国防部官员19日在国会听证会上说，截至11月13日的评估显示，美国已为伊朗战事花费483亿美元，且不包含中东地区美军基地遇袭的损失。多名国会议员敦促国防部尽快提供相关数据。",
+      "tag": "金融/宏观",
       "region": "美国",
-      "concept": "defense",
-      "time": "2026-11-20 03:44",
-      "datetime": "2026-11-20 03:44",
-      "source": "新浪7×24",
-      "url": "https://finance.sina.cn/7x24/2026-11-20/detail-inizihps7455153.d.html",
-      "summary": "美国参议院多数议员反对限制美国总统特朗普对伊朗战争权力的决议，投票仍在进行中。",
+      "concept": "usFinance",
+      "time": "2026-11-20 10:56",
+      "datetime": "2026-11-20 10:56",
+      "source": "华尔街见闻",
+      "url": "https://wallstreetcn.com/livenews/3202977",
+      "summary": "美国国防部官员19日在国会听证会上说，截至11月13日的评估显示，美国已为伊朗战事花费483亿美元，且不包含中东地区美军基地遇袭的损失。多名国会议员敦促国防部尽快提供相关数据。",
       "relatedStocks": [
-        "军工",
+        "美股科技",
         "黄金"
       ],
       "bullConcepts": [
-        "军工",
-        "避险资产"
+        "黄金",
+        "防御板块"
       ],
       "bearConcepts": [
-        "风险资产"
+        "高估值成长股"
       ],
       "bullIndustries": [
-        "军工",
+        "银行",
         "黄金"
       ],
       "bearIndustries": [
-        "航空",
-        "旅游"
+        "高杠杆地产"
       ],
-      "heat": 46,
-      "momentum": 26,
+      "heat": 42,
+      "momentum": 36,
       "_auto": true
     },
     {
-      "id": "abux0fvl",
-      "title": "刚刚上市交易的Anthropic股价回落至100美元以内，现报97.2美元/股，涨幅收窄至17%。",
+      "id": "abmccnq1",
+      "title": "11月20日隔夜要闻：油价震荡 标普500指数六连跌 Anthropic首秀大涨难提振美股 伊朗加大对油轮的袭击",
       "tag": "科技/AI",
       "region": "美国",
       "concept": "aiCapex",
-      "time": "2026-11-20 01:18",
-      "datetime": "2026-11-20 01:18",
-      "source": "财联社",
-      "url": "https://www.cls.cn/detail/2539494",
-      "summary": "刚刚上市交易的Anthropic股价回落至100美元以内，现报97.2美元/股，涨幅收窄至17%。",
+      "time": "2026-11-20 06:55",
+      "datetime": "2026-11-20 06:55",
+      "source": "环球市场播报",
+      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-20/doc-inizinvq7375587.shtml",
+      "summary": "市场 11月20日收盘：三大股指均跌超2% 道指跌破5万点大关 Anthropic首秀收涨17% 11月20日美股成交额前20：Anthropic首秀收涨17% 成交额869...",
       "relatedStocks": [
         "英伟达",
         "微软",
@@ -104,105 +69,74 @@
       "bearIndustries": [
         "传统IT服务"
       ],
-      "heat": 87,
-      "momentum": 33,
+      "heat": 100,
+      "momentum": 18,
       "_auto": true
     },
     {
-      "id": "ab9d9f3v",
-      "title": "据消息人士透露，加拿大不寻求签署完整贸易协定，而是希望在年底前同特朗普政府达成一份临时关税安排。加美贸易部长勒布朗周四与加拿大联邦政府的加美经济顾问委员会举行会谈。了解此次会议的…",
-      "tag": "贸易/供应链",
+      "id": "ab1wrj6sc",
+      "title": "突发！克里米亚大桥遭袭，普京：不再讨论海上停火！深夜，一则利空突袭！美股、金银价格大“跳水”",
+      "tag": "金融/宏观",
       "region": "美国",
-      "concept": "antitrust",
-      "time": "2026-11-20 03:09",
-      "datetime": "2026-11-20 03:09",
-      "source": "华尔街见闻",
-      "url": "https://wallstreetcn.com/livenews/3202769",
-      "summary": "据消息人士透露，加拿大不寻求签署完整贸易协定，而是希望在年底前同特朗普政府达成一份临时关税安排。加美贸易部长勒布朗周四与加拿大联邦政府的加美经济顾问委员会举行会谈。了解此次会议的消息人士称，加政府目标是达成临时协议而非全新永久性协定。这份临时协议将覆盖232 条款关税下的钢铁、铝、汽车、木材，还包含今年 8 月上一轮谈判破裂后美国依据338 条款对加拿大商品加征的关税。（CB…",
-      "relatedStocks": [
-        "跨境电商",
-        "航运"
-      ],
-      "bullConcepts": [
-        "内需",
-        "国产替代"
-      ],
-      "bearConcepts": [
-        "出口链"
-      ],
-      "bullIndustries": [
-        "跨境电商",
-        "内需消费"
-      ],
-      "bearIndustries": [
-        "出口制造",
-        "航运"
-      ],
-      "heat": 46,
-      "momentum": 26,
-      "_auto": true
-    },
-    {
-      "id": "abz04rei",
-      "title": "胡塞武装：今日凌晨对沙特首都利雅得阿卜杜拉国王经济城金融中心发动首次袭击，并于当晚再次打击该目标。袭击精准直接，造成目标设施严重损毁。 第二次行动针对东部省朱拜勒的萨达拉石化公司…",
-      "tag": "地缘/政治",
-      "region": "欧洲",
-      "concept": "macro",
-      "time": "2026-11-20 02:34",
-      "datetime": "2026-11-20 02:34",
-      "source": "华尔街见闻",
-      "url": "https://wallstreetcn.com/livenews/3202758",
-      "summary": "胡塞武装：今日凌晨对沙特首都利雅得阿卜杜拉国王经济城金融中心发动首次袭击，并于当晚再次打击该目标。袭击精准直接，造成目标设施严重损毁。 第二次行动针对东部省朱拜勒的萨达拉石化公司，据称袭击直接命中。 第三次行动针对哈米斯穆谢特空军基地，造成目标设施严重损毁。 第四次行动针对利雅得哈立德国王国际机场，据称袭击直接命中。",
-      "relatedStocks": [
-        "军工",
-        "黄金"
-      ],
-      "bullConcepts": [
-        "军工",
-        "避险资产"
-      ],
-      "bearConcepts": [
-        "风险资产"
-      ],
-      "bullIndustries": [
-        "军工",
-        "黄金"
-      ],
-      "bearIndustries": [
-        "航空",
-        "旅游"
-      ],
-      "heat": 24,
-      "momentum": 26,
-      "_auto": true
-    },
-    {
-      "id": "ab1ihjt50",
-      "title": "捷荣技术证券虚假陈述索赔已提起诉讼！赵敬国律师团队提醒，受损投资者可进行预登记索赔",
-      "tag": "宏观/综合",
-      "region": "中国",
-      "concept": "broker",
-      "time": "2026-11-19 17:05",
-      "datetime": "2026-11-19 17:05",
+      "concept": "usFinance",
+      "time": "2026-11-20 07:33",
+      "datetime": "2026-11-20 07:33",
       "source": "市场资讯",
-      "url": "https://finance.sina.com.cn/stock/gmwq/rightscase/2026-11-19/doc-inizhfae7805772.shtml",
-      "summary": "根据最新消息，赵敬国律师团队近期向法院递交了一批捷荣技术证券虚假陈述案件的起诉材料。上海市信本律师事务所赵敬国律师（执业证号：13101200410820485）提示...",
+      "url": "https://finance.sina.com.cn/money/nmetal/gjshz/2026-11-20/doc-inizitcm5711223.shtml",
+      "summary": "来源：期货日报 早上好，先来关注下美股。 昨夜，美三大股指集体高开，随后全部“跳水”。截至收盘，道琼斯指数跌2.19%，标普500指数跌2.02%，纳斯达克综合指数跌2.25%。",
       "relatedStocks": [
-        "宽基指数"
+        "美股科技",
+        "黄金"
       ],
       "bullConcepts": [
+        "黄金",
         "防御板块"
       ],
       "bearConcepts": [
-        "周期股"
+        "高估值成长股"
       ],
       "bullIndustries": [
-        "公用事业"
+        "银行",
+        "黄金"
       ],
       "bearIndustries": [
-        "顺周期"
+        "高杠杆地产"
       ],
-      "heat": 24,
+      "heat": 46,
+      "momentum": 18,
+      "_auto": true
+    },
+    {
+      "id": "ab2yaji",
+      "title": "大宗商品综述：油价震荡 伦铜反弹 金价迈向5月份以来最长连跌",
+      "tag": "能源/资源",
+      "region": "美国",
+      "concept": "shale",
+      "time": "2026-11-20 07:00",
+      "datetime": "2026-11-20 07:00",
+      "source": "环球市场播报",
+      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-20/doc-inizinvq7382801.shtml",
+      "summary": "原油价格周四走势震荡，因为尽管美国总统特朗普面临通过外交途径解决已经持续九个月的伊朗战争的压力，但市场担忧中东冲突将再度升级。",
+      "relatedStocks": [
+        "中国石油",
+        "紫金矿业"
+      ],
+      "bullConcepts": [
+        "油气",
+        "贵金属"
+      ],
+      "bearConcepts": [
+        "高耗能制造"
+      ],
+      "bullIndustries": [
+        "石油开采",
+        "贵金属"
+      ],
+      "bearIndustries": [
+        "航空运输",
+        "化工"
+      ],
+      "heat": 33,
       "momentum": 18,
       "_auto": true
     },
@@ -236,219 +170,21 @@
         "航空运输",
         "化工"
       ],
-      "heat": 29,
-      "momentum": 26,
-      "_auto": true
-    },
-    {
-      "id": "ab1gmevt9",
-      "title": "胡塞武装袭击利雅得，沙特主权财富基金总部大楼受损",
-      "tag": "地缘/政治",
-      "region": "全球",
-      "concept": "macro",
-      "time": "2026-11-19 20:34",
-      "datetime": "2026-11-19 20:34",
-      "source": "环球市场播报",
-      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-19/doc-inizhrry7671686.shtml",
-      "summary": "周四，沙特阿拉伯主权财富基金办公地点所在的一栋摩天大楼在疑似胡塞武装导弹袭击中受损。这凸显出，在沙特与伊朗支持的也门胡塞武装重新爆发冲突之际...",
-      "relatedStocks": [
-        "军工",
-        "黄金"
-      ],
-      "bullConcepts": [
-        "军工",
-        "避险资产"
-      ],
-      "bearConcepts": [
-        "风险资产"
-      ],
-      "bullIndustries": [
-        "军工",
-        "黄金"
-      ],
-      "bearIndustries": [
-        "航空",
-        "旅游"
-      ],
-      "heat": 29,
+      "heat": 33,
       "momentum": 18,
       "_auto": true
     },
     {
-      "id": "absoldef",
-      "title": "全员大会上，英伟达临时CEO力求安抚员工、防范人才流失",
-      "tag": "科技/AI",
-      "region": "全球",
-      "concept": "ai",
-      "time": "2026-11-19 17:51",
-      "datetime": "2026-11-19 17:51",
-      "source": "环球市场播报",
-      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-19/doc-inizhmiz6163531.shtml",
-      "summary": "这是黄仁勋辞职之后公司召开的首场全员大会。 据参会人员透露，英伟达于周三召开黄仁勋离职后的首次全员大会，临时首席执行官科莱特・克雷斯在会上安抚员工情绪...",
-      "relatedStocks": [
-        "英伟达",
-        "微软",
-        "台积电"
-      ],
-      "bullConcepts": [
-        "AI算力",
-        "半导体",
-        "国产替代"
-      ],
-      "bearConcepts": [
-        "传统软件"
-      ],
-      "bullIndustries": [
-        "半导体",
-        "AI应用",
-        "算力基础设施"
-      ],
-      "bearIndustries": [
-        "传统IT服务"
-      ],
-      "heat": 29,
-      "momentum": 18,
-      "_auto": true
-    },
-    {
-      "id": "abgl7iex",
-      "title": "沙通社：胡塞武装袭击导致利雅得金融区建筑物受损",
-      "tag": "地缘/政治",
-      "region": "全球",
-      "concept": "macro",
-      "time": "2026-11-19 23:54",
-      "datetime": "2026-11-19 23:54",
-      "source": "环球市场播报",
-      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-19/doc-inizhvxw7656598.shtml",
-      "summary": "沙特通讯社（SPA）援引民防部门发言人的话报道称，也门胡塞武装周四袭击了利雅得金融区的一座大楼，造成该楼多个楼层以及附近建筑受损。",
-      "relatedStocks": [
-        "军工",
-        "黄金"
-      ],
-      "bullConcepts": [
-        "军工",
-        "避险资产"
-      ],
-      "bearConcepts": [
-        "风险资产"
-      ],
-      "bullIndustries": [
-        "军工",
-        "黄金"
-      ],
-      "bearIndustries": [
-        "航空",
-        "旅游"
-      ],
-      "heat": 29,
-      "momentum": 18,
-      "_auto": true
-    },
-    {
-      "id": "abxl4zkv",
-      "title": "四川凉山州西昌市附近发生3.9级左右地震。（央视）",
-      "tag": "宏观/综合",
-      "region": "全球",
-      "concept": "macro",
-      "time": "2026-11-20 02:55",
-      "datetime": "2026-11-20 02:55",
-      "source": "华尔街见闻",
-      "url": "https://wallstreetcn.com/livenews/3202760",
-      "summary": "四川凉山州西昌市附近发生3.9级左右地震。（央视）",
-      "relatedStocks": [
-        "宽基指数"
-      ],
-      "bullConcepts": [
-        "防御板块"
-      ],
-      "bearConcepts": [
-        "周期股"
-      ],
-      "bullIndustries": [
-        "公用事业"
-      ],
-      "bearIndustries": [
-        "顺周期"
-      ],
-      "heat": 24,
-      "momentum": 26,
-      "_auto": true
-    },
-    {
-      "id": "ab1aujk77",
-      "title": "也门胡塞武装称，袭击了沙特利雅得的哈立德国王机场和哈米斯穆谢特的IR基地。",
-      "tag": "地缘/政治",
-      "region": "欧洲",
-      "concept": "macro",
-      "time": "2026-11-20 02:37",
-      "datetime": "2026-11-20 02:37",
-      "source": "财联社",
-      "url": "https://www.cls.cn/detail/2539515",
-      "summary": "也门胡塞武装称，袭击了沙特利雅得的哈立德国王机场和哈米斯穆谢特的IR基地。",
-      "relatedStocks": [
-        "军工",
-        "黄金"
-      ],
-      "bullConcepts": [
-        "军工",
-        "避险资产"
-      ],
-      "bearConcepts": [
-        "风险资产"
-      ],
-      "bullIndustries": [
-        "军工",
-        "黄金"
-      ],
-      "bearIndustries": [
-        "航空",
-        "旅游"
-      ],
-      "heat": 24,
-      "momentum": 26,
-      "_auto": true
-    },
-    {
-      "id": "ab1utz5ez",
-      "title": "撤销其他风险警示！ST汇洲，停牌一天！",
-      "tag": "宏观/综合",
-      "region": "全球",
-      "concept": "macro",
-      "time": "2026-11-19 20:05",
-      "datetime": "2026-11-19 20:05",
-      "source": "市场资讯",
-      "url": "https://finance.sina.com.cn/stock/s/2026-11-19/doc-inizhrsa4433013.shtml",
-      "summary": "来源：资本秘闻 11月19日晚间，ST汇洲（002122）披露公告称，公司关于撤销股票交易其他风险警示的申请已获得深交所审核同意。 公司股票交易将于11月20日起停牌一天...",
-      "relatedStocks": [
-        "宽基指数"
-      ],
-      "bullConcepts": [
-        "防御板块"
-      ],
-      "bearConcepts": [
-        "周期股"
-      ],
-      "bullIndustries": [
-        "公用事业"
-      ],
-      "bearIndustries": [
-        "顺周期"
-      ],
-      "heat": 24,
-      "momentum": 18,
-      "_auto": true
-    },
-    {
-      "id": "aba3h0al",
-      "title": "女儿进董事会、老婆上原告席！高澜股份创始人有点烦",
+      "id": "abpwaao6",
+      "title": "联康生物科技集团于11月20日上午起短暂停牌 以待刊发内幕消息",
       "tag": "宏观/综合",
       "region": "中国",
       "concept": "broker",
-      "time": "2026-11-19 20:00",
-      "datetime": "2026-11-19 20:00",
-      "source": "市场资讯",
-      "url": "https://finance.sina.com.cn/stock/s/2026-11-19/doc-inizhrsf0889053.shtml",
-      "summary": "来源 | 野马财经 “00后”女儿刚升副总，“老妈”就起诉了“老爸” 作者 | 高岩编辑 | 贾紫聪 最近几年，A股液冷赛道上的“三剑客”之一——高澜股份，创始人...",
+      "time": "2026-11-20 08:56",
+      "datetime": "2026-11-20 08:56",
+      "source": "新浪港股",
+      "url": "https://finance.sina.com.cn/stock/hkstock/ggscyd/2026-11-20/doc-inizitct0520249.shtml",
+      "summary": "联康生物科技集团（00690）发布公告，应联康生物科技集团有限公司（本公司）的要求，本公司的股份将于2026年11月20日（星期五）上午九时正起在香港联合交易所有限公司（联...",
       "relatedStocks": [
         "宽基指数"
       ],
@@ -464,21 +200,81 @@
       "bearIndustries": [
         "顺周期"
       ],
-      "heat": 24,
+      "heat": 29,
       "momentum": 18,
       "_auto": true
     },
     {
-      "id": "ab1v4ad9y",
-      "title": "恒润股份索赔持续推进 部分股民提交起诉",
+      "id": "ab1eb09t5",
+      "title": "志道国际接获联交所额外复牌指引 继续停牌",
       "tag": "宏观/综合",
       "region": "全球",
       "concept": "macro",
-      "time": "2026-11-19 17:32",
-      "datetime": "2026-11-19 17:32",
-      "source": "市场资讯",
-      "url": "https://finance.sina.com.cn/stock/gmwq/rightscase/2026-11-19/doc-inizhmiz6156831.shtml",
-      "summary": "近日，曾代理股民告赢150余家上市公司并获赔的浙江裕丰律师事务所厉健律师表示，关于被告承某等三人涉嫌操纵证券市场事宜，我们又代理部分恒润股份（代码：603985）股民向...",
+      "time": "2026-11-20 08:56",
+      "datetime": "2026-11-20 08:56",
+      "source": "新浪港股",
+      "url": "https://finance.sina.com.cn/stock/hkstock/ggscyd/2026-11-20/doc-inizitcn7326705.shtml",
+      "summary": "志道国际（01220）发布公告，于2026年11月17日，本公司接获联交所的函件，该函件载列股份于联交所恢复买卖的额外指引（额外复牌指引，连同初步复牌指引...",
+      "relatedStocks": [
+        "宽基指数"
+      ],
+      "bullConcepts": [
+        "防御板块"
+      ],
+      "bearConcepts": [
+        "周期股"
+      ],
+      "bullIndustries": [
+        "公用事业"
+      ],
+      "bearIndustries": [
+        "顺周期"
+      ],
+      "heat": 29,
+      "momentum": 18,
+      "_auto": true
+    },
+    {
+      "id": "abdg5x1i",
+      "title": "软银集团股价暴跌16% 创两年来最大跌幅",
+      "tag": "宏观/综合",
+      "region": "全球",
+      "concept": "macro",
+      "time": "2026-11-20 08:46",
+      "datetime": "2026-11-20 08:46",
+      "source": "环球市场播报",
+      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-20/doc-inizitcm5735363.shtml",
+      "summary": "软银集团股价一度暴跌16%，成交量达到该时段平均水平的两倍。股价跌至 2980 日元，低于 2025 年 8 月 5 日以来的任何收盘价；前一个交易日的收盘价为 3537 日元。",
+      "relatedStocks": [
+        "宽基指数"
+      ],
+      "bullConcepts": [
+        "防御板块"
+      ],
+      "bearConcepts": [
+        "周期股"
+      ],
+      "bullIndustries": [
+        "公用事业"
+      ],
+      "bearIndustries": [
+        "顺周期"
+      ],
+      "heat": 29,
+      "momentum": 18,
+      "_auto": true
+    },
+    {
+      "id": "abrcy6xd",
+      "title": "摩根大通、万事达卡同日宣布第三方服务商遭黑客入侵 发生数据泄露",
+      "tag": "宏观/综合",
+      "region": "全球",
+      "concept": "macro",
+      "time": "2026-11-20 06:45",
+      "datetime": "2026-11-20 06:45",
+      "source": "环球市场播报",
+      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-20/doc-inizinvv0585070.shtml",
+      "summary": "摩根大通当地时间周四早间通报：为这家银行业巨头提供服务的第三方服务商遭到网络攻击。 公告称：“根据目前调查，我们认为攻击者获取了这些服务商存储的部分营销数据...",
       "relatedStocks": [
         "宽基指数"
       ],
@@ -499,16 +295,83 @@
       "_auto": true
     },
     {
-      "id": "abeuhxkm",
-      "title": "中东紧张局势威胁供应 欧洲天然气价格上涨",
+      "id": "ab1o4sx2e",
+      "title": "特朗普告诉欧洲，普京希望结束战争。（AXIOS）",
+      "tag": "地缘/政治",
+      "region": "美国",
+      "concept": "defense",
+      "time": "2026-11-20 09:33",
+      "datetime": "2026-11-20 09:33",
+      "source": "华尔街见闻",
+      "url": "https://wallstreetcn.com/livenews/3202931",
+      "summary": "特朗普告诉欧洲，普京希望结束战争。（AXIOS）",
+      "relatedStocks": [
+        "军工",
+        "黄金"
+      ],
+      "bullConcepts": [
+        "军工",
+        "避险资产"
+      ],
+      "bearConcepts": [
+        "风险资产"
+      ],
+      "bullIndustries": [
+        "军工",
+        "黄金"
+      ],
+      "bearIndustries": [
+        "航空",
+        "旅游"
+      ],
+      "heat": 24,
+      "momentum": 26,
+      "_auto": true
+    },
+    {
+      "id": "ab1ijfl81",
+      "title": "原油收平，但美股金银铜继续大跌显示大环境并不平静",
+      "tag": "金融/宏观",
+      "region": "美国",
+      "concept": "usFinance",
+      "time": "2026-11-20 06:37",
+      "datetime": "2026-11-20 06:37",
+      "source": "市场资讯",
+      "url": "https://finance.sina.com.cn/money/future/fmnews/2026-11-20/doc-inizitcn7261671.shtml",
+      "summary": "来源：能源研发中心 后市观点 周四油价拉锯后几乎收平，虽然未能守住日内高点，但考虑到夜盘美股、金银铜继续暴跌，原油能够在这样的氛围中走出这样的表现相当不易。",
+      "relatedStocks": [
+        "美股科技",
+        "黄金"
+      ],
+      "bullConcepts": [
+        "黄金",
+        "防御板块"
+      ],
+      "bearConcepts": [
+        "高估值成长股"
+      ],
+      "bullIndustries": [
+        "银行",
+        "黄金"
+      ],
+      "bearIndustries": [
+        "高杠杆地产"
+      ],
+      "heat": 24,
+      "momentum": 18,
+      "_auto": true
+    },
+    {
+      "id": "ab1b4cr3q",
+      "title": "原油：油价走势震荡 市场担忧伊朗战争升级",
       "tag": "能源/资源",
       "region": "美国",
       "concept": "shale",
-      "time": "2026-11-19 17:13",
-      "datetime": "2026-11-19 17:13",
+      "time": "2026-11-20 06:35",
+      "datetime": "2026-11-20 06:35",
       "source": "环球市场播报",
-      "url": "https://finance.sina.com.cn/world/2026-11-19/doc-inizhfam1053759.shtml",
-      "summary": "伊朗战事袭击不断升级，叠加美国或发起新一轮打击的预期，市场担忧中东能源供应中断将延续，欧洲天然气价格上行。 基准期货周四盘中最高上涨3%...",
+      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-20/doc-inizinvs4151154.shtml",
+      "summary": "原油价格周四走势震荡，因为尽管美国总统特朗普面临通过外交途径解决已经持续九个月的伊朗战争的压力，但市场担忧中东冲突将再度升级。",
       "relatedStocks": [
         "中国石油",
         "紫金矿业"
@@ -527,42 +390,6 @@
       "bearIndustries": [
         "航空运输",
         "化工"
-      ],
-      "heat": 24,
-      "momentum": 18,
-      "_auto": true
-    },
-    {
-      "id": "abr8xmv4",
-      "title": "华尔街承诺为英伟达筹措5000亿美元资金，但至今一分未投",
-      "tag": "科技/AI",
-      "region": "美国",
-      "concept": "aiCapex",
-      "time": "2026-11-19 16:43",
-      "datetime": "2026-11-19 16:43",
-      "source": "环球市场播报",
-      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-19/doc-inizhfae7789064.shtml",
-      "summary": "今年春季，黄仁勋察觉到风向开始对英伟达不利。 知情人士透露，6月，华尔街巨头阿波罗全球管理、黑石集团宣布一笔重磅交易，帮助英伟达的主要竞争对手博通为Anthropic落实3...",
-      "relatedStocks": [
-        "英伟达",
-        "微软",
-        "台积电"
-      ],
-      "bullConcepts": [
-        "AI算力",
-        "半导体",
-        "国产替代"
-      ],
-      "bearConcepts": [
-        "传统软件"
-      ],
-      "bullIndustries": [
-        "半导体",
-        "AI应用",
-        "算力基础设施"
-      ],
-      "bearIndustries": [
-        "传统IT服务"
       ],
       "heat": 24,
       "momentum": 18,
@@ -598,7 +425,7 @@
         "高杠杆地产"
       ],
       "heat": 24,
-      "momentum": 26,
+      "momentum": 18,
       "_auto": true
     },
     {
