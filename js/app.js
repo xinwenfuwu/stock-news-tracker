@@ -11893,22 +11893,50 @@ const app = createApp({
       [/财政|基建|专项债|城轨|国债/, 'metro']
     ];
     const INFL_AUTO_REGION_HINTS = {
-      cn: /中国|央行|A股|沪深|证监会|人民币|国务院|发改委|财政部|国内|北向资金|港股|京市|深市|沪市|可转债/,
+      // 20261120c：移除「可转债」——它是通用融资工具，SK海力士(韩)/铠侠(日)的可转债新闻
+      //   曾因这个词被误判为「中国境内」。中国归属只认境内主体/政策/市场信号。
+      cn: /中国|央行|A股|沪深|证监会|人民币|国务院|发改委|财政部|国内|北向资金|港股|京市|深市|沪市/,
       us: /美国|美联储|美股|白宫|美元|纳斯达克|华尔街|五角大楼|硅谷|特朗普政府|华盛顿/
     };
+    // 20261120c：境外企业/机构主体——其商业行为（发债/股价/目标价/财报等）不属于「发生在中国境内」的事件。
+    //   即使正文偶带「A股/沪指」等市场词，只要主体是境外企业且无中国政策/部门/企业动作，就归境外(-us/world)。
+    const INFL_FOREIGN_SUBJECT_RE = /SK海力士|海力士|铠侠|三星电子|三星|Samsung|英伟达|NVIDIA|苹果公司|苹果|Apple|特斯拉|Tesla|台积电|TSMC|美光|Micron|英特尔|Intel|AMD|微软|微软公司|谷歌|亚马逊|Meta|OpenAI|Anthropic|阿斯麦|ASML|丰田|本田|索尼|松下|现代汽车|摩根士丹利|高盛集团|花旗集团|瑞银集团/;
+    // 中国境内「强主体」信号：政府部门/国家主体直接作为动作主体时才允许压过「境外企业主体」规则。
+    //   市场板块词（A股/沪指/港股等）只是被动提及（如「SK海力士跌，A股存储跟跌」），不放进强主体。
+    const INFL_CN_STRONG_RE = /国务院|发改委|财政部|央行|人民银行|证监会|工信部|商务部|国家|国内|中国|我国/;
+    // 美国主体信号（用于境外企业内部再分 us / world）
+    const INFL_US_STRONG_RE = /美国|美联储|美股|白宫|美元|纳斯达克|华尔街|五角大楼|硅谷|特朗普|华盛顿|英伟达|苹果|特斯拉|微软|谷歌|亚马逊|美光|英特尔|AMD|Meta|OpenAI/;
     /** 簇文本 → 概念 key（映射不到用区域默认） */
     function inflAutoConceptOf(text, region) {
       for (const [re, key] of INFL_AUTO_CONCEPT_HINTS) { if (re.test(text)) return key; }
       return region === 'cn' ? 'broker' : (region === 'us' ? 'usMacro' : 'macro');
     }
-    /** 簇文本 → 区域：cn/us 关键词互斥命中各自区域；中美同时出现（如中美贸易）归 world */
+    /** 簇文本 → 区域：境外企业主体优先归境外；cn/us 关键词互斥命中各自区域；中美同时出现归 world */
     function inflAutoRegionOf(text) {
-      const cn = INFL_AUTO_REGION_HINTS.cn.test(text);
-      const us = INFL_AUTO_REGION_HINTS.us.test(text);
+      const t = String(text || '');
+      // 20261120c：主体是境外企业（SK海力士/铠侠/英伟达…）且无中国强主体动作 → 不进中国板块
+      if (INFL_FOREIGN_SUBJECT_RE.test(t) && !INFL_CN_STRONG_RE.test(t)) {
+        return INFL_US_STRONG_RE.test(t) ? 'us' : 'world';
+      }
+      const cn = INFL_AUTO_REGION_HINTS.cn.test(t);
+      const us = INFL_AUTO_REGION_HINTS.us.test(t);
       if (cn && us) return 'world';
       if (cn) return 'cn';
       if (us) return 'us';
       return 'world';
+    }
+    // 20261120c：行情播报噪声过滤——股指开盘/收盘、概念涨跌、涨停连板、指数点位等
+    //   属于「盘面播报」而非「具体大事件」，不进入影响力事件板块。
+    //   白名单（实质事件信号）优先：政策/部门/印发/批复/并购/召回/立案/事故/社会热点等命中即保留。
+    const INFL_QUOTE_NOISE_RE = /(开盘|收盘|午盘|尾盘|早盘|盘前|盘后|三大指数|股指|沪指|深成指|创业板指|科创50|北证50|涨停|跌停|连板|封板|炸板|低开|高开|平开|收涨|收跌|涨逾|跌逾|集体低开|集体高开|概念.*(走强|走弱|拉升|低开|高开|调整|异动)|低开回开|概念股|复盘|涨跌家数|两市成交|成交额.*亿|北向资金.*(流入|流出))/;
+    const INFL_SUBSTANTIVE_RE = /(印发|发布|出台|实施|批复|批准|核准|国务院|发改委|财政部|央行|人民银行|证监会|工信部|商务部|部委|召开|会议|政策|规划|方案|意见|通知|部署|签署|签约|收购|重组|破产|立案|调查|处罚|罚款|事故|爆炸|地震|洪水|抗议|罢工|访华|会谈|降息|加息|降准|LPR|GDP|CPI|PMI|社融|财报|业绩预告|重大合同|中标|召回|上市|退市|监管|禁令|制裁|关税|反垄断|裁员|关闭|停产|交付|新品发布)/;
+    /** 是否纯行情播报噪声（是→不进影响力事件板块）。实质事件白名单命中即保留。 */
+    function inflIsQuoteNoise(text) {
+      const t = String(text || '');
+      if (!INFL_QUOTE_NOISE_RE.test(t)) return false;      // 无盘面特征，非噪声
+      if (INFL_SUBSTANTIVE_RE.test(t)) return false;       // 有实质事件信号，保留
+      // 纯「XX股/概念 + 涨跌%」的短播报（多为盘中快讯，无事件主体动作）→ 噪声
+      return true;
     }
     let _inflAutoCache = { key: null, list: [] };
     /** 对近 N 交易日窗口内的全网新闻做语义聚类，生成自动新鲜事件（首报锚定）。 */
@@ -11917,7 +11945,10 @@ const app = createApp({
       const key = inflDays();
       if (_inflAutoCache.key === key) return _inflAutoCache.list;
       const startISO = rangeStartISO(key);
-      const news = _inflNewsFlat.filter(it => String(it.time).slice(0, 10) >= startISO);  // 已按 time 升序
+      // 20261120c：先剔除纯行情播报（股指/概念涨跌/涨停连板），只让「具体大事件」进入聚类
+      const news = _inflNewsFlat.filter(it =>
+        String(it.time).slice(0, 10) >= startISO && !inflIsQuoteNoise(it.text)
+      );  // 已按 time 升序
       const clusters = [];
       const inverted = new Map();     // 2-gram → 簇下标列表（倒排索引，避免两两比对）
       const AUTO_THRESHOLD = 0.35;
