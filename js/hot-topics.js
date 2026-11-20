@@ -1331,7 +1331,29 @@
   //   故加息/收益率上行/鹰派/紧缩 计为利好(红)，降息/收益率下行/鸽派/宽松 计为利空(绿)。
   const RATE_HIKE_BULL = ['加息','暴力加息','大幅加息','美债收益率上行','美债收益率攀升','美债收益率走高','国债收益率上行','收益率上行','利率上行','美联储加息','鹰派','紧缩','点阵图上移','加息预期','加息预期升温','加息概率上升','鲍威尔鹰派','缩表','缩减购债','联邦基金利率上调'];
   const RATE_HIKE_BEAR = ['降息','大幅降息','美债收益率下行','美债收益率回落','国债收益率下行','收益率下行','利率下行','美联储降息','鸽派','宽松','暂停加息','降息预期','降息预期升温','鲍威尔鸽派','边际转鸽','停止加息','加息周期结束'];
-  function isRateHikeTheme(name) { return /美债/.test(name || ''); }
+  // 20261120b：「结束加息 / 停止加息」等反向语境里字面含「加息」，会被 RATE_HIKE_BULL 误计为加强。
+  // 命中这些句式时，将 bull 计数的「加息」字面贡献剔除，避免把「加息周期结束」染成红色。
+  const RATE_HIKE_END_RE = /(结束加息|停止加息|暂停加息|加息周期结束|加息结束|终止加息|取消加息|不再加息|加息见顶|结束紧缩|降息周期)/;
+  function rateHikeCounts(t) {
+    let bull = 0, bear = 0;
+    for (let i = 0; i < RATE_HIKE_BULL.length; i++) if (t.indexOf(RATE_HIKE_BULL[i]) >= 0) bull++;
+    for (let i = 0; i < RATE_HIKE_BEAR.length; i++) if (t.indexOf(RATE_HIKE_BEAR[i]) >= 0) bear++;
+    if (RATE_HIKE_END_RE.test(t)) { // 反向语境：字面「加息」不计利好，并计一次利空
+      if (t.indexOf('加息') >= 0) bull--;
+      if (bull < 0) bull = 0;
+      bear++;
+    }
+    return { bull, bear };
+  }
+  // 20261120b：加息视角识别范围扩展。
+  // 根因：旧逻辑只认「美债」二字，而界面上的子类可能叫「美联储加息 / 加息 / 降息 / 利率 / 货币政策」
+  // （词表内名 t_美债加息、界面显示名或用户自定义名为「美联储加息」），一律漏判 →
+  // 走通用财报词典 → 中性 → 数字显示黑色。用户语义：加息子版块的新闻若「加强」该方向必须红色。
+  // 现在凡名称含 美债 / 美联储 / 加息 / 降息 / 利率 / 议息 / 联邦基金 / 货币政策 / 缩表 / 鲍威尔 / FOMC
+  // 均走加息视角（偏加息=红、偏降息=绿），与新闻正文是否出现「美债」无关。
+  function isRateHikeTheme(name) {
+    return /美债|美联储|加息|降息|利率|议息|联邦基金|货币政策|缩表|鲍威尔|FOMC|非农|国债收益率/.test(name || '');
+  }
 
   /* ============================================================
    * 20261112b：石油 / 原油 / 成品油 —— 「油价方向 + 未来供需预期」视角
@@ -1449,18 +1471,15 @@
       return 'neutral';
     }
     if (isRateHikeTheme(nm)) {
-      // 美债加息视角：偏加息/紧缩(红) / 偏降息/宽松(绿)
+      // 加息视角（20261120b 二值化）：用户口径「市场新闻加强子版块→红，否则→绿」。
+      //   偏加息/紧缩信号占优 = 该方向被加强 → bull(红)；
+      //   偏降息/宽松占优、或无加息信号、或多空平局 → bear(绿)，不再出现黑色中性。
       let bull = 0, bear = 0;
       for (const it of (newsArr || [])) {
-        const t = String((it && it.text) || '');
-        for (let i = 0; i < RATE_HIKE_BULL.length; i++) if (t.indexOf(RATE_HIKE_BULL[i]) >= 0) bull++;
-        for (let i = 0; i < RATE_HIKE_BEAR.length; i++) if (t.indexOf(RATE_HIKE_BEAR[i]) >= 0) bear++;
+        const c = rateHikeCounts(String((it && it.text) || ''));
+        bull += c.bull; bear += c.bear;
       }
-      const total = bull + bear;
-      if (total === 0) return 'neutral';
-      if (bear / total > 0.5) return 'bear';
-      if (bull / total > 0.5) return 'bull';
-      return 'neutral';
+      return bull > bear ? 'bull' : 'bear';
     }
     // 20261112b：石油/原油类按「油价方向 + 未来供需预期」裁决，修掉通用财报词典把
     // 「上涨/上调/新高」当利好、却漏判「预计降价/需求下调/供应恢复」的系统性误判。
@@ -1529,12 +1548,9 @@
       return ai || 'neutral';
     }
     if (isRateHikeTheme(nm)) {
-      const bull = countHits(RATE_HIKE_BULL);
-      const bear = countHits(RATE_HIKE_BEAR);
-      if (bull === 0 && bear === 0) return ai || 'neutral';
-      if (bear > bull) return 'bear';
-      if (bull > bear) return 'bull';
-      return ai || 'neutral';
+      // 20261120b 二值化：与 conceptSentiment 同口径——加息信号占优=红，否则=绿（含零命中/平局）。
+      const c = rateHikeCounts(t);
+      return c.bull > c.bear ? 'bull' : 'bear';
     }
     if (isOilTheme(nm) && !ai) return oilNewsSentiment(t);
     return newsSentiment(t);
