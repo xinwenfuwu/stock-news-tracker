@@ -16715,6 +16715,92 @@ const app = createApp({
       const q = [row.prov, row.proj, row.docNo, row.name, '投资 进度'].filter(Boolean).join(' ');
       doubaoSearch(q);
     }
+
+    // ========================================================================
+    // 20261120i：右侧「各省代号项目」——各省以代号 / 专名命名的公开重大专项工程
+    //   口径：全国公开可查的代号命名工程（人造太阳、中国天眼、华龙一号、深海一号、
+    //         吉林一号、东数西算八大枢纽等国家级专项），按省整理，与左侧
+    //         「各省发改委投资大项目清单」并排展示（独立「各省项目」板块内右栏）。
+    //   字段：[prov(省), name(代号/俗称), proj(工程全称), field(领域), loc(落点),
+    //          subject(实施主体), company(关联上市公司), stage(进展), note(说明)]
+    //   数据为公开资料整理（2026-11 核对），进展以官方发布为准；卡片可展开详情、
+    //   可「核实」跳豆包搜索联网核对。
+    // ========================================================================
+    const DHP_SEED = [
+      ['安徽','人造太阳','全超导托卡马克核聚变实验装置（EAST）','可控核聚变','合肥·科学岛','中科院合肥物质科学研究院','','运行中','1亿摄氏度千秒级等离子体运行世界纪录'],
+      ['安徽','夸父','聚变堆主机关键系统综合研究设施（CRAFT）','可控核聚变','合肥','中科院合肥物质科学研究院','','部分投用','聚变堆主机关键系统综合研究设施，支撑紧凑型聚变实验装置（BEST）建设'],
+      ['安徽','东数西算·芜湖','长三角枢纽芜湖数据中心集群','算力基础设施','芜湖','安徽省','','建设中','全国一体化算力网八大枢纽节点之一'],
+      ['贵州','中国天眼','500米口径球面射电望远镜（FAST）','大科学装置','黔南·平塘','中科院国家天文台','','运行中','世界最大单口径射电望远镜，已发现脉冲星超千颗'],
+      ['贵州','东数西算·贵安','贵州枢纽贵安数据中心集群','算力基础设施','贵安新区','贵州省','','运行中','华为云、腾讯等超大型数据中心落地'],
+      ['海南','深海一号','超深水大气田开发工程','深海工程','陵水海域','中国海油','中国海油（600938）','已投产','我国首个自营1500米超深水大气田'],
+      ['海南','玲龙一号','陆上商用模块化小堆示范工程（ACP100）','核电','昌江','中核集团·海南核电','中国核电（601985）','在建','全球首个通过IAEA通用安全审查的小型堆'],
+      ['海南','奋斗者号','全海深载人潜水器','深海工程','三亚·中科院深海所','中科院深海科学与工程研究所','中国船舶（600150）参与研制','试验应用','10909米马里亚纳海沟坐底'],
+      ['山东','国和一号','CAP1400大型先进压水堆示范工程','核电','荣成·石岛湾','国家电投','','在建','我国自主知识产权三代核电技术品牌'],
+      ['福建','华龙一号','华龙一号全球首堆示范工程（福清5/6号机组）','核电','福清','中核集团·福清核电','中国核电（601985）','已商运','我国自主三代核电全球首堆'],
+      ['四川','中国环流三号','新一代磁约束核聚变实验装置（HL-2M）','可控核聚变','成都','中核集团·核工业西南物理研究院','','运行中','我国当前参数最高的托卡马克装置'],
+      ['四川','白鹤滩','白鹤滩水电站','水电','金沙江下游（川滇界河）','三峡集团','长江电力（600900）','已全面投产','全球单机容量最大百万千瓦水电机组首批投产'],
+      ['四川','东数西算·天府','成渝枢纽天府数据中心集群','算力基础设施','成都','四川省','','建设中','全国一体化算力网八大枢纽节点之一'],
+      ['广东','散裂中子源','中国散裂中子源（CSNS）','大科学装置','东莞·松山湖','中科院高能物理研究所','','运行中','粤港澳大湾区首个国家重大科技基础设施'],
+      ['广东','东数西算·韶关','粤港澳枢纽韶关数据中心集群','算力基础设施','韶关','广东省','','建设中','承接粤港澳大湾区实时算力需求'],
+      ['河北','东数西算·张家口','京津冀枢纽张家口数据中心集群','算力基础设施','张家口','河北省','','建设中','承接北京实时算力与后台加工类需求'],
+      ['内蒙古','东数西算·和林格尔','内蒙古枢纽和林格尔数据中心集群','算力基础设施','呼和浩特','内蒙古自治区','','建设中','运营商与云厂商大型数据中心聚集地'],
+      ['甘肃','东数西算·庆阳','甘肃枢纽庆阳数据中心集群','算力基础设施','庆阳','甘肃省','','建设中','全国一体化算力网八大枢纽节点之一'],
+      ['宁夏','东数西算·中卫','宁夏枢纽中卫数据中心集群','算力基础设施','中卫','宁夏','美利云（000815）在中卫运营数据中心','建设/运行','西部云基地，超大型数据中心集群'],
+      ['重庆','东数西算·水土','成渝枢纽重庆水土数据中心集群','算力基础设施','两江新区','重庆市','','建设中','承接成渝地区算力调度'],
+      ['北京','北斗','北斗卫星导航系统','航天与深空','北京（卫星研制：航天科技五院）','中国卫星导航系统管理办公室','北斗星通（002151）/ 中国卫通（601698）','全球组网完成','2020年完成全球组网并开通服务'],
+      ['北京','怀柔·极端条件','综合极端条件实验装置','大科学装置','怀柔科学城','中科院物理研究所','','运行中','怀柔科学城首个国家重大科技基础设施'],
+      ['上海','羲和激光','超强超短激光实验装置（SULF）','大科学装置','浦东·张江','中科院上海光学精密机械研究所','','运行中','国际领先10拍瓦级峰值功率激光装置'],
+      ['上海','羲和号','太阳探测科学技术试验卫星','航天与深空','上海（研制：航天科技八院）','中国航天科技集团八院','航天机电（600151）','在轨运行','国际首个太阳Hα波段光谱探测卫星'],
+      ['江苏','悟空号','暗物质粒子探测卫星（DAMPE）','航天与深空','南京（研制：紫金山天文台）','中科院紫金山天文台','','在轨运行','观测能段范围最宽、能量分辨率最优的暗物质探测卫星'],
+      ['吉林','吉林一号','高分辨率商业遥感卫星星座','航天与深空','长春','长光卫星技术股份有限公司','','组网运行','我国最大商业遥感卫星星座，在轨百余颗'],
+      ['湖南','天河','天河系列超级计算机','超算','长沙（研制：国防科技大学）','国防科技大学','','运行中','天河系列曾登顶全球超算TOP500'],
+      ['天津','天河一号','国家超级计算天津中心','超算','滨海新区','国防科技大学/滨海新区共建','','运行中','首台登顶TOP500的国产超算所在地'],
+      ['浙江','之江','之江实验室智能计算设施','人工智能','杭州','浙江省政府与中科院共建','','运行中','聚焦智能计算，混合增强智能全国重点实验室依托'],
+      ['黑龙江','空间环境模拟','空间环境地面模拟装置','大科学装置','哈尔滨','哈尔滨工业大学/中国航天科技集团','','已投用','我国首个空间环境全要素地面模拟装置'],
+      ['青海','墨子巡天','墨子巡天望远镜（WFST）','大科学装置','海西·冷湖天文观测基地','中科院紫金山天文台/中国科学技术大学','','运行中','北半球时域巡天能力最强的巡天望远镜之一']
+    ];
+    const DHP_FIELD_OPTS = (() => { const s = {}; DHP_SEED.forEach(r => { if (r[3]) s[r[3]] = 1; }); return Object.keys(s); })();
+    const dhpQ = ref('');
+    const dhpField = ref('');
+    const dhpExpanded = ref({});
+    const dhpList = DHP_SEED.map((r, i) => ({
+      id: 'dhp' + i, prov: r[0], name: r[1], proj: r[2], field: r[3], loc: r[4],
+      subject: r[5], company: r[6], stage: r[7], note: r[8]
+    }));
+    dhpList.forEach(r => { dhpExpanded.value['dhp|' + r.prov] = true; });   // 省分组默认展开
+    const dhpProvs = computed(() => {
+      const s = {}; dhpList.forEach(r => { if (r.prov) s[r.prov] = 1; });
+      return Object.keys(s).sort();
+    });
+    /** 省 → 项目二级树（应用 搜索 + 领域 筛选；保持 seed 省份出现顺序） */
+    const dhpTree = computed(() => {
+      const q = String(dhpQ.value || '').trim().toLowerCase();
+      const f = dhpField.value;
+      const rows = dhpList.filter(r => {
+        if (f && r.field !== f) return false;
+        if (q) {
+          const hay = [r.prov, r.name, r.proj, r.field, r.loc, r.subject, r.company, r.stage, r.note].join(' ').toLowerCase();
+          if (hay.indexOf(q) === -1) return false;
+        }
+        return true;
+      });
+      const order = []; const byProv = {};
+      rows.forEach(r => {
+        if (!byProv[r.prov]) { byProv[r.prov] = []; order.push(r.prov); }
+        byProv[r.prov].push(r);
+      });
+      return order.map(pv => ({ key: 'dhp|' + pv, label: pv, rows: byProv[pv] }));
+    });
+    const dhpCount = computed(() => dhpTree.value.reduce((n, pv) => n + pv.rows.length, 0));
+    function dhpToggle(key) { dhpExpanded.value[key] = !dhpExpanded.value[key]; }
+    function dhpExpandAll(on) {
+      dhpList.forEach(r => { dhpExpanded.value['dhp|' + r.prov] = !!on; dhpExpanded.value[r.id] = false; });
+    }
+    /** 联网核实代号项目（豆包搜索：省 + 代号 + 工程全称） */
+    function dhpVerify(row) {
+      if (!row) return;
+      doubaoSearch([row.prov, row.name, row.proj, '工程 进展'].filter(Boolean).join(' '));
+    }
     const fgwForm = reactive({
       open: false, editId: null,
       prov: '', city: '', pub: Store.today(), proj: '', code: '', name: '', subject: '', nature: '自建',
@@ -17639,6 +17725,8 @@ const app = createApp({
       FGW_CATEGORY_OPTS, FGW_YEAR_OPTS, FGW_LEADER_OPTS, FGW_VIEW_OPTS, fgwView, fgwNode, fgwDays, fgwDayRange, fgwCompanies, fgwAmtText, fgwList, fgwProvs, fgwcitiesOfProv, fgwFiltered, fgwTree, fgwExpanded,
       fgwQ, fgwProv, fgwCategory, fgwYear, fgwLeader, fgwToggle, fgwGroupToggle, fgwExpandAll, fgwToInd, fgwResetSeed, fgwVerify,
       fgwForm, openFgwForm, closeFgwForm, saveFgwRow, delFgwRow,
+      // 20261120i：右侧「各省代号项目」（公开代号专项工程，按省整理）
+      DHP_FIELD_OPTS, dhpQ, dhpField, dhpExpanded, dhpProvs, dhpTree, dhpCount, dhpToggle, dhpExpandAll, dhpVerify,
       // 量化板块：数据端口 / 自动打分 / 共振选股
       quantData, quantFetchedAt, quantFetching, quantSearching, quantMsg, quantAiReport, quantAiBusy, quantAiDrafts,
       quantAiPredictionsView, saveAiPrediction, deleteAiPrediction, openAiConceptInSector, fmtTime,
