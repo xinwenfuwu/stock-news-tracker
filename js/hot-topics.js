@@ -1447,11 +1447,16 @@
 
   function conceptSentiment(name, newsArr) {
     const nm = name || '';
-    // 20261112d：概念级 AI 裁决优先级最高——「这批新闻对【该概念】整体是利好还是利空」。
-    // 有标签时连战争 / 美债加息 / 石油三套硬编码特例也让位，保证「🤖 大模型」按钮语义一致，
-    // 且同名概念在任何维度、任何模块都只有一个方向（不会出现半导体一会儿红一会儿绿）。
-    const aiConcept = getEffectiveAiConceptSenti(nm);
-    if (aiConcept) return aiConcept;
+    // 20261120d：加息主题（美联储加息/美债加息/降息/利率...）是用户明确定义的「方向视角」——
+    //   加息信号多=该方向被强化=红，否则=绿，二值化不允许中性黑色。
+    //   但 20261112d 的 AI 概念标签在此之上无条件 return，一旦 AI 标 neutral 就把加息新闻染黑，
+    //   导致上一轮(20261120b)的加息二值化对「已配置 AI」的用户完全失效（实测：无标签=bull，标 neutral=neutral）。
+    //   修复：加息主题跳过 AI 概念标签覆盖，始终用加息方向词典裁决，保证红/绿二值、杜绝黑色。
+    //   其余主题（半导体/战争/石油...）仍保持 AI 标签最高优先级，语义不变。
+    if (!isRateHikeTheme(nm)) {
+      const aiConcept = getEffectiveAiConceptSenti(nm);
+      if (aiConcept) return aiConcept;
+    }
     // AI 全覆盖开关：所有子类统一走 AI 多数主导（军事战争 / 美债加息 也不例外）
     if (aiSentiOverrideSpecial && aiSentiCovered(newsArr) > 0) return computeCategorySentiment(newsArr);
     if (isWarTheme(nm)) {
