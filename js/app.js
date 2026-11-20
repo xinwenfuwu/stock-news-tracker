@@ -11499,7 +11499,9 @@ const app = createApp({
       let allUpcoming = null;
       if (reg === 'breaking') {
         const remote = await fetchBreakingEvents(seq);
-        const raw = (remote && remote.length) ? remote : BREAKING_EVENTS_SEED;
+        // 20261120g：突发子版块剔除指数类新闻（ETF/涨跌停连板/股指播报）
+        const rawAll = (remote && remote.length) ? remote : BREAKING_EVENTS_SEED;
+        const raw = rawAll.filter(e => !inflIsEvtIndexNews(e));
         // 20261119a：先按语义首报锚定（同义新闻取最早报道时间、排除一个月外旧闻），
         // 再用首报时间参与本面板自己的「近 N 日」范围筛选（不影响左侧影响力事件）
         const src0 = futureAnchorFirstReport(raw);
@@ -11514,7 +11516,9 @@ const app = createApp({
         }
       } else if (reg === 'people') {
         const remote = await fetchCelebrityNews(seq);
-        const raw = (remote && remote.length) ? remote : CELEBRITY_EVENTS_SEED;
+        // 20261120g：人物子版块同样剔除指数类新闻
+        const rawAll = (remote && remote.length) ? remote : CELEBRITY_EVENTS_SEED;
+        const raw = rawAll.filter(e => !inflIsEvtIndexNews(e));
         const src0 = futureAnchorFirstReport(raw);
         const src = Number(futureRangeDays.value) ? src0.filter(e => newsInRange(e, futureRangeDays.value)) : src0;
         list = src.map(e => withCnImp(resolveFutureImpact(e)));
@@ -11523,7 +11527,9 @@ const app = createApp({
       } else {
         // 20261109e：优先用多源聚合快照；失败回退内嵌精选底库（同样覆盖中美及全球重大事件）
         const remote = await fetchUpcomingEvents(seq);
-        const src = (remote && remote.length) ? remote : UPCOMING_EVENTS;
+        // 20261120g：未来子版块剔除指数类新闻（宏观数据「成屋签约销售指数/PCE物价指数」豁免保留）
+        const srcAll = (remote && remote.length) ? remote : UPCOMING_EVENTS;
+        const src = srcAll.filter(e => !inflIsEvtIndexNews(e));
         // 统一按「今天」过滤：已结束剔除，今日举行与会期进行中的一律保留
         // 20261110k：若设置了「近 N 日」范围，「未来」子版块只保留距今不超过 N 天的事件
         const all = src.filter(isUpcoming).filter(e => futureWithinDays(e, futureRangeDays.value)).map(e => withCnImp(resolveFutureImpact(e)));
@@ -11908,6 +11914,10 @@ const app = createApp({
     // 20261120c：境外企业/机构主体——其商业行为（发债/股价/目标价/财报等）不属于「发生在中国境内」的事件。
     //   即使正文偶带「A股/沪指」等市场词，只要主体是境外企业且无中国政策/部门/企业动作，就归境外(-us/world)。
     const INFL_FOREIGN_SUBJECT_RE = /SK海力士|海力士|铠侠|三星电子|三星|Samsung|英伟达|NVIDIA|苹果公司|苹果|Apple|特斯拉|Tesla|台积电|TSMC|美光|Micron|英特尔|Intel|AMD|微软|微软公司|谷歌|亚马逊|Meta|OpenAI|Anthropic|阿斯麦|ASML|丰田|本田|索尼|松下|现代汽车|摩根士丹利|高盛集团|花旗集团|瑞银集团/;
+    // 20261120g：非美外资企业主体——SK海力士(韩)/铠侠(日)/三星/台积电/丰田/索尼等
+    //   即使同文提及英伟达/美股（如「英伟达财报带动美股AI硬件走高，SK海力士、铠侠涨近2%」），
+    //   只要命中非美外资主体且无中国强主体，就归「全世界」而非「美国」（用户口径：海力士类新闻归境外非美板块）。
+    const INFL_WORLD_SUBJECT_RE = /SK海力士|海力士|铠侠|三星电子|三星|Samsung|台积电|TSMC|阿斯麦|ASML|丰田|本田|索尼|松下|现代汽车/;
     // 中国境内「强主体」信号：政府部门/国家主体直接作为动作主体时才允许压过「境外企业主体」规则。
     //   市场板块词（A股/沪指/港股等）只是被动提及（如「SK海力士跌，A股存储跟跌」），不放进强主体。
     const INFL_CN_STRONG_RE = /国务院|发改委|财政部|央行|人民银行|证监会|工信部|商务部|国家|国内|中国|我国/;
@@ -11923,6 +11933,8 @@ const app = createApp({
       const t = String(text || '');
       // 20261120c：主体是境外企业（SK海力士/铠侠/英伟达…）且无中国强主体动作 → 不进中国板块
       if (INFL_FOREIGN_SUBJECT_RE.test(t) && !INFL_CN_STRONG_RE.test(t)) {
+        // 20261120g：非美外资主体优先归全世界
+        if (INFL_WORLD_SUBJECT_RE.test(t)) return 'world';
         return INFL_US_STRONG_RE.test(t) ? 'us' : 'world';
       }
       const cn = INFL_AUTO_REGION_HINTS.cn.test(t);
@@ -11937,9 +11949,43 @@ const app = createApp({
     //   白名单（实质事件信号）优先：政策/部门/印发/批复/并购/召回/立案/事故/社会热点等命中即保留。
     const INFL_QUOTE_NOISE_RE = /(开盘|收盘|午盘|尾盘|早盘|盘前|盘后|三大指数|股指|沪指|深成指|创业板指|科创50|北证50|涨停|跌停|连板|封板|炸板|低开|高开|平开|收涨|收跌|涨逾|跌逾|集体低开|集体高开|概念.*(走强|走弱|拉升|低开|高开|调整|异动)|低开回开|概念股|复盘|涨跌家数|两市成交|成交额.*亿|北向资金.*(流入|流出))/;
     const INFL_SUBSTANTIVE_RE = /(印发|发布|出台|实施|批复|批准|核准|国务院|发改委|财政部|央行|人民银行|证监会|工信部|商务部|部委|召开|会议|政策|规划|方案|意见|通知|部署|签署|签约|收购|重组|破产|立案|调查|处罚|罚款|事故|爆炸|地震|洪水|抗议|罢工|访华|会谈|降息|加息|降准|LPR|GDP|CPI|PMI|社融|财报|业绩预告|重大合同|中标|召回|上市|退市|监管|禁令|制裁|关税|反垄断|裁员|关闭|停产|交付|新品发布)/;
+    // 20261120g：指数类新闻统一剔除——六个子版块（影响力事件 中国/美国/全世界 + 未来事件 突发/未来/人物）
+    //   都不允许出现「XX指数涨/跌」「ETF 资金」「涨停连板牛股」等盘面/指数播报。
+    // ① 宏观经济指数豁免：成屋签约销售指数/PCE物价指数/PMI 等是经济数据事件，不是盘面播报，保留。
+    const INFL_ECON_INDEX_RE = /(成屋|物价指数|通胀|景气|信心指数|消费者|消费指数|采购经理|制造业指数|非制造业|PMI|CPI|PPI|PCE|领先指标)/;
+    // ② 中外主要股指名——命中后只要带行情动作词即判指数播报。
+    const INFL_IDX_NAME_RE = /(纳斯达克|标普|道琼斯|道指|罗素|恒生指数|恒指|日经|富时|A50|DAX|斯托克|VIX|恐慌指数|美元指数|金龙指数|三大指数|股指|沪指|上证|沪证|深成指|深证|沪深|创业板指|中证[0-9A-Za-z]|科创50|科创综指|北证50|万得全A|指数期货|龙头指数|综合指数)/;
+    // ③ 行情动作词（配合股指名判定）。
+    const INFL_IDX_MOVE_RE = /(跌幅|涨幅|扩大|收窄|触及|下挫|回落|上升|上涨|下跌|升[至达]|降[至达]|创(新高|新低)|涨超|跌超|涨|跌|走强|走弱|翻红|翻绿|低开|高开|平开|收涨|收跌|涨逾|跌逾|报\s*[0-9])/;
+    // ④ 指数结构类——ETF 资金/涨跌停连板/成分股权重/纳入指数等，无论有无动作词都算指数类。
+    const INFL_IDX_STRUCT_RE = /(ETF|涨停|跌停|连板|封板|炸板|停牌核查|牛股|成分股|权重股|纳入.{0,8}指数|指数.{0,6}纳入|指数编制|指数调样|资金净(流入|流出))/;
+    /** 是否指数类新闻（是→六个子版块统一剔除）。宏观指数豁免优先于泛化「指数」判定。 */
+    function inflIsIndexNews(text) {
+      const t = String(text || '');
+      if (!t) return false;
+      if (INFL_IDX_STRUCT_RE.test(t)) return true;            // ETF/涨跌停/连板/成分股/纳入指数等结构类
+      if (INFL_IDX_NAME_RE.test(t)) {                         // 股指名 + 行情动作 → 播报
+        // 「标普下调评级」「恒生银行公告」等非行情用法不带行情动作词 → 不误杀
+        return INFL_IDX_MOVE_RE.test(t);
+      }
+      if (/指数/.test(t)) {
+        if (INFL_ECON_INDEX_RE.test(t)) return false;         // 宏观数据指数（成屋/PCE/PMI…）豁免
+        return INFL_IDX_MOVE_RE.test(t);                      // 其他「XX指数」+动作 → 同样剔除
+      }
+      return false;
+    }
+    /** 事件对象（title + summary/text）是否指数类——六个子版块统一入口。 */
+    function inflIsEvtIndexNews(e) {
+      if (!e) return false;
+      const t = [e.title, e.summary || e.text || e.description || e.name || ''].filter(Boolean).join(' ');
+      return inflIsIndexNews(t);
+    }
     /** 是否纯行情播报噪声（是→不进影响力事件板块）。实质事件白名单命中即保留。 */
     function inflIsQuoteNoise(text) {
       const t = String(text || '');
+      // 20261120g：指数类优先剔除，且不受实质白名单豁免——
+      //   否则「美联储会议纪要公布后，标普500指数下跌0.1%」会因「会议」命中白名单而漏网。
+      if (inflIsIndexNews(t)) return true;
       if (!INFL_QUOTE_NOISE_RE.test(t)) return false;      // 无盘面特征，非噪声
       if (INFL_SUBSTANTIVE_RE.test(t)) return false;       // 有实质事件信号，保留
       // 纯「XX股/概念 + 涨跌%」的短播报（多为盘中快讯，无事件主体动作）→ 噪声
@@ -12231,7 +12277,9 @@ const app = createApp({
           e._tooOld = firstISO < oneMonthAgo;
           return e;
         })
-        .filter(e => e.region === reg && !e._tooOld && inflInWindow(e));
+        .filter(e => e.region === reg && !e._tooOld && inflInWindow(e)
+          // 20261120g：seed 精选事件同样不允许指数类混入（保险层）
+          && !inflIsEvtIndexNews(e));
       // 20261119b：自动新鲜事件轨——窗口内全网新闻语义聚合，保证「中国/美国/全世界不可能没有新闻」。
       //   与 seed 语义重复（标题包含度 ≥0.5）时保留 seed（字段更全），丢弃自动事件。
       //   20261120a：自动事件按报道数降序截 Top 60——千条级簇列表会卡 UI 且不可读。
