@@ -11812,9 +11812,13 @@ const app = createApp({
           }));
           snaps.forEach(s => {
             if (!s || !s.sources) return;
-            s.sources.forEach(src => (src.items || []).forEach(it => {
-              if (it && it.text && it.time) flat.push({ text: String(it.text), time: String(it.time) });
-            }));
+            // 20261119b：带上来源平台名（src.name），供自动聚合事件展示「来源」用
+            s.sources.forEach(src => {
+              const srcName = String(src.name || '');
+              (src.items || []).forEach(it => {
+                if (it && it.text && it.time) flat.push({ text: String(it.text), time: String(it.time), src: srcName });
+              });
+            });
           });
         }
         flat.sort((a, b) => String(a.time).localeCompare(String(b.time)));  // 升序：最早在前
@@ -11833,6 +11837,146 @@ const app = createApp({
     function inflEarliestOf(e) {
       if (!e) return null;
       return semEarliestReport(e.title || e.originTitle, _inflNewsFlat, true);
+    }
+    // ===== 20261119b：自动新鲜事件轨（修复「刷新后无新闻」） =====
+    // 根因：20261119a 起 seed 精选事件按「真实首报 + 一个月新鲜(_tooOld) + 近 N 交易日窗口」
+    //       三重过滤，而 seed 真实日期最晚只到 2026-11-05；窗口起点随交易日滚动前移，
+    //       到 11-19 时窗口起点已是 11-06，seed 全部落在窗口外 → 列表必然为空。
+    // 修复：窗口内的「新鲜事件」必须直接从最近一个月全网快照自动聚合而来（首报锚定口径不变）：
+    //       对近 N 交易日窗口内的全网新闻做语义聚类（2-gram 词集 + 倒排索引加速），
+    //       ≥2 条报道的语义簇视为一个「事件」，首报时间 = 簇内最早 time，标题取簇内最长报道。
+    //       seed 与自动事件语义重复时保留 seed（字段更全）。中国/美国/全世界按关键词分区，
+    //       概念映射到 CONCEPT_INDEX 词表，保证双指标（影响人数/股民数）照常计算。
+    const _semTokCache = new Map();
+    function semTokensMemo(text) {
+      const k = String(text || '');
+      let t = _semTokCache.get(k);
+      if (!t) { t = semTokens(k); if (_semTokCache.size < 20000) _semTokCache.set(k, t); }
+      return t;
+    }
+    // 自动事件概念映射：按特异性从高到低排列，第一个命中的生效；未命中用区域默认概念
+    const INFL_AUTO_CONCEPT_HINTS = [
+      [/稳定币|比特币|数字货币|加密|区块链/, 'crypto'],
+      [/稀土|锂矿|关键矿产|钨|钴/, 'rare'],
+      [/网络安全|数据泄露|黑客攻击/, 'cyber'],
+      [/卫星互联网|低轨卫星|星链/, 'sat'],
+      [/跨境电商|小额包裹|海外仓/, 'ecom'],
+      [/奢侈品|名表|名牌包/, 'luxury'],
+      [/奥运会|世界杯|亚运会|赛事/, 'sports'],
+      [/航运|集运|运价|港口|红海/, 'ship'],
+      [/粮食|种业|农产品|转基因|玉米|大豆/, 'seed'],
+      [/光伏|组件|硅片|风电|新能源装机/, 'green'],
+      [/数据中心|IDC|智算|算力中心/, 'idc'],
+      [/半导体|晶圆|光刻|芯片|存储|封测/, 'semi'],
+      [/医保|集采|创新药|仿制药|药监|疫苗/, 'vbp'],
+      [/原油|石油|OPEC|天然气|黄金|贵金属/, 'energy'],
+      [/大模型|AI应用|生成式|ChatGPT|智能体/, 'llm'],
+      [/AI|算力|英伟达|GPU|人工智能/, 'ai'],
+      [/关税|贸易|出口管制|进口|外贸|WTO/, 'trade'],
+      [/房地产|楼市|房贷|房企|住房/, 'property'],
+      [/机器人|人形|具身智能/, 'robot'],
+      [/低空|无人机|通航|eVTOL/, 'lowAlt'],
+      [/电网|电力|电价|特高压/, 'elec'],
+      [/短剧|微短剧/, 'shortDrama'],
+      [/养老|银发|养老金/, 'silver'],
+      [/数据要素|数据确权|数据交易/, 'dataEl'],
+      [/降息|加息|LPR|利率|美债|国债收益率/, 'usFinance'],
+      [/美联储|非农|CPI|PPI|通胀|FOMC/, 'usMacro'],
+      [/美股|纳斯达克|标普|道琼斯|华尔街/, 'usMacro'],
+      [/券商|A股|沪深|IPO|资本市场|股市/, 'broker'],
+      [/央行|降准|信贷|社融|流动性|M2/, 'bank'],
+      [/消费|零售|首发经济|免税/, 'consume'],
+      [/中概|金龙指数|港股互联网/, 'adr'],
+      [/页岩油|EIA|原油产量/, 'shale'],
+      [/医保改革|FDA|美国医疗/, 'medicare'],
+      [/资本开支|数据中心投资|云厂商资本/, 'aiCapex'],
+      [/财政|基建|专项债|城轨|国债/, 'metro']
+    ];
+    const INFL_AUTO_REGION_HINTS = {
+      cn: /中国|央行|A股|沪深|证监会|人民币|国务院|发改委|财政部|国内|北向资金|港股|京市|深市|沪市|可转债/,
+      us: /美国|美联储|美股|白宫|美元|纳斯达克|华尔街|五角大楼|硅谷|特朗普政府|华盛顿/
+    };
+    /** 簇文本 → 概念 key（映射不到用区域默认） */
+    function inflAutoConceptOf(text, region) {
+      for (const [re, key] of INFL_AUTO_CONCEPT_HINTS) { if (re.test(text)) return key; }
+      return region === 'cn' ? 'broker' : (region === 'us' ? 'usMacro' : 'macro');
+    }
+    /** 簇文本 → 区域：cn/us 关键词互斥命中各自区域；中美同时出现（如中美贸易）归 world */
+    function inflAutoRegionOf(text) {
+      const cn = INFL_AUTO_REGION_HINTS.cn.test(text);
+      const us = INFL_AUTO_REGION_HINTS.us.test(text);
+      if (cn && us) return 'world';
+      if (cn) return 'cn';
+      if (us) return 'us';
+      return 'world';
+    }
+    let _inflAutoCache = { key: null, list: [] };
+    /** 对近 N 交易日窗口内的全网新闻做语义聚类，生成自动新鲜事件（首报锚定）。 */
+    function buildAutoInflEvents() {
+      if (!_inflNewsAllLoaded || !_inflNewsFlat.length) return [];
+      const key = inflDays();
+      if (_inflAutoCache.key === key) return _inflAutoCache.list;
+      const startISO = rangeStartISO(key);
+      const news = _inflNewsFlat.filter(it => String(it.time).slice(0, 10) >= startISO);  // 已按 time 升序
+      const clusters = [];
+      const inverted = new Map();     // 2-gram → 簇下标列表（倒排索引，避免两两比对）
+      const AUTO_THRESHOLD = 0.35;
+      for (const it of news) {
+        const toks = semTokensMemo(it.text);
+        if (!toks.size) continue;
+        // 候选簇：与该新闻共享任一 2-gram 的簇（中文 2-gram 区分度高，候选通常极少）
+        const cand = new Map();
+        toks.forEach(g => {
+          const arr = inverted.get(g);
+          if (arr) arr.forEach(i => cand.set(i, (cand.get(i) || 0) + 1));
+        });
+        let best = -1, bestSim = 0;
+        cand.forEach((_, i) => {
+          const c = clusters[i];
+          const B = c.tokens;
+          let inter = 0; toks.forEach(x => { if (B.has(x)) inter++; });
+          const sim = inter / Math.min(toks.size, B.size);
+          if (sim >= AUTO_THRESHOLD && sim > bestSim) { best = i; bestSim = sim; }
+        });
+        if (best >= 0) {
+          const c = clusters[best];
+          c.count++; c.sources.add(String(it.src || ''));
+          if (it.text.length > c.repText.length) c.repText = it.text;
+          c.lastTime = it.time;
+        } else {
+          clusters.push({ tokens: new Set(toks), repText: it.text, firstTime: it.time, lastTime: it.time, count: 1, sources: new Set([String(it.src || '')]) });
+          const idx = clusters.length - 1;
+          toks.forEach(g => {
+            if (!inverted.has(g)) inverted.set(g, []);
+            inverted.get(g).push(idx);
+          });
+        }
+      }
+      // ≥2 条报道才算「事件」；按首报时间升序输出
+      const out = clusters
+        .filter(c => c.count >= 2 && c.repText.length >= 8)
+        .map((c, i) => {
+          const rep = c.firstTime;
+          const region = inflAutoRegionOf(c.repText);
+          return {
+            id: 'auto-' + String(rep).replace(/[^0-9]/g, '') + '-' + i,
+            region,
+            concept: inflAutoConceptOf(c.repText, region),
+            title: c.repText.slice(0, 60),
+            date: String(rep).slice(0, 10),
+            source: [...c.sources].filter(Boolean).slice(0, 3).join('·') || '全网聚合',
+            summary: c.repText.length > 120 ? c.repText.slice(0, 117) + '…' : c.repText,
+            relatedStocks: [],
+            reportTime: rep,
+            dateSource: 'report',
+            _timeKey: rep,
+            auto: true,
+            autoReports: c.count
+          };
+        })
+        .sort((a, b) => String(a._timeKey).localeCompare(String(b._timeKey)));
+      _inflAutoCache = { key, list: out };
+      return out;
     }
     // 样例数据的事件原始日期跨度数月（最早 2026-02），若直接按窗口过滤会只剩 1~2 条。
     // 故加载时把「同一区域」的事件按原时间先后重锚到最近 N 个自然日内（每天约 2 条），
@@ -11952,7 +12096,7 @@ const app = createApp({
       // 20261117n：用全网最早报道时间覆盖占位日期，再按该时间做窗口筛选与排序。
       // 若全网新闻尚未加载完成（异步），先按占位日期渲染，加载完成后由回调再刷一次（见 loadInfluenceAsync）。
       const oneMonthAgo = dateOffsetISO(30);
-      const filtered = inflAnchoredSeed()
+      const seedFiltered = inflAnchoredSeed()
         .map(e => {
           // 20261119a：首报时间 = 最近一个月内语义最早报道 vs seed 原始日期，取更早者。
           // 口径：新闻一定符合「最近一个月发生」；很多年前的同类旧闻不参与锚定。
@@ -11979,11 +12123,23 @@ const app = createApp({
           e._tooOld = firstISO < oneMonthAgo;
           return e;
         })
-        .filter(e => e.region === reg && !e._tooOld && inflInWindow(e))
+        .filter(e => e.region === reg && !e._tooOld && inflInWindow(e));
+      // 20261119b：自动新鲜事件轨——窗口内全网新闻语义聚合，保证「中国/美国/全世界不可能没有新闻」。
+      //   与 seed 语义重复（标题包含度 ≥0.5）时保留 seed（字段更全），丢弃自动事件。
+      //   20261120a：自动事件按报道数降序截 Top 60——千条级簇列表会卡 UI 且不可读。
+      const AUTO_MAX = 60;
+      const autoAll = buildAutoInflEvents().filter(e => inflInWindow(e));
+      const autoForReg = autoAll
+        .filter(e => e.region === reg && !seedFiltered.some(s => semSimilarity(s.title || s.originTitle || s.title, e.title) >= 0.5))
+        .sort((a, b) => (Number(b.autoReports) || 0) - (Number(a.autoReports) || 0))
+        .slice(0, AUTO_MAX);
+      const filtered = [...seedFiltered, ...autoForReg]
         .map(e => inflWithBullBear(withCnImp(resolveInfluence(e))));
       inflEvents.value = sortInfluence(filtered);
       const _repN = filtered.filter(e => e.dateSource === 'report').length;
-      inflDate.value = '全网首报时间（真实首次出现）· 近 ' + inflDays() + ' 交易日窗口（' + _repN + '/' + filtered.length + ' 条匹配全网报道）';
+      const _autoN = autoForReg.length;
+      inflDate.value = '全网首报时间（真实首次出现）· 近 ' + inflDays() + ' 交易日窗口（'
+        + _repN + '/' + filtered.length + ' 条匹配全网报道，其中自动聚合新鲜事件 ' + _autoN + ' 条）';
       inflError.value = '';
     }
     /** 异步加载全网新闻后重算影响力事件（保证首报口径生效），加载前后各渲染一次避免空白 */
@@ -12007,6 +12163,7 @@ const app = createApp({
         // 20261118f：强制重新拉取全历史全网快照后按真实首报时间重算
         _inflNewsAllLoaded = false;
         _inflNewsFlat = [];
+        _inflAutoCache = { key: null, list: [] };   // 20261119b：快照重建后自动聚合缓存一并失效
         await loadInfluenceAsync();
         showToast(`已刷新影响力事件（${inflEvents.value.length} 条，按${sortLabel()}从大到小排序）`, 'success');
       } catch (e) {
