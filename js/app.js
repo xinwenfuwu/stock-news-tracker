@@ -11727,10 +11727,19 @@ const app = createApp({
     function semEarliestReport(title, newsFlat, withinOneMonth, threshold) {
       if (!title || !Array.isArray(newsFlat) || !newsFlat.length) return null;
       const cutoff = withinOneMonth ? dateOffsetISO(30) : '0000-00-00';
+      // 20261120h：性能优化——标题 token 只算一次，新闻 token 走 semTokensMemo 缓存复用。
+      //   旧实现每条新闻都重算两侧 semTokens（60 seed × 近万条新闻 ≈ 58 万次正则归一化，
+      //   实测 Node 1663ms，手机端 3~5 倍更慢，是刷新卡顿的主因之一），比对逻辑与结果完全不变。
+      const A = semTokensMemo(title);
+      if (!A.size) return null;                        // 词集为空 → 不可能与任何新闻同义（与旧逻辑一致）
+      const th = Number(threshold) || SEM_SAME_THRESHOLD;
       for (const it of newsFlat) {                       // newsFlat 已按 time 升序
         const t = String(it.time || '');
         if (t.slice(0, 10) < cutoff) continue;           // 一个月外旧报道不参与锚定
-        if (semIsSameNews(title, it.text, threshold)) return t;
+        const B = semTokensMemo(it.text);
+        if (!B.size) continue;                           // 空词集 → 语义包含度为 0，不同义
+        let inter = 0; A.forEach(x => { if (B.has(x)) inter++; });
+        if (inter / Math.min(A.size, B.size) >= th) return t;
       }
       return null;
     }
@@ -11800,6 +11809,11 @@ const app = createApp({
      *  很多年前的同类旧闻不参与锚定。加载最近 30 天快照一次，缓存复用；按 time 升序排列，
      *  便于 semEarliestReport 取「语义命中的最早一条」。与「近 N 交易日」筛选窗口无关。 */
     let _inflNewsAllLoaded = false;
+    // 20261120h：seed 首报锚定结果缓存——loadInfluence 每次调用都对全部 seed 全量跑语义匹配
+    //   （切区域/切排序/刷新前后各渲染一次都会重算），实测单次 1.6s+。按标题缓存结果，
+    //   全网新闻重建（强制刷新）时 bump 版本号使缓存失效，比对口径不变。
+    let _inflSeedRepVer = 0;
+    const _inflSeedRepCache = new Map();
     // 20261120e：修复「刷新数据无响应」竞态——旧实现用布尔锁，加载期间并发调用直接 return，
     //   导致 loadInfluenceAsync 的第二次 loadInfluence 仍拿到空快照 → 面板显示「暂无影响力事件」，
     //   而后台加载完成后不再重算，列表永远空。改为 Promise 复用：并发调用 await 同一个加载任务。
@@ -11812,29 +11826,36 @@ const app = createApp({
       try {
         // 只加载最近一个月（30 天自然日）的快照，越界即旧闻，不参与锚定
         const dates = inflDateRangeISO(dateOffsetISO(30), todayISO()).reverse();
+        const todayKey = todayISO();
         const flat = [];
-        for (let i = 0; i < dates.length; i += 15) {
-          const batch = dates.slice(i, i + 15);
-          const snaps = await Promise.all(batch.map(async d => {
-            try {
-              const r = await fetch('./data/hot-topics/' + d + '.json', { cache: 'no-store' });
-              return r.ok ? await r.json() : null;
-            } catch (e) { return null; }
-          }));
-          snaps.forEach(s => {
-            if (!s || !s.sources) return;
-            // 20261119b：带上来源平台名（src.name），供自动聚合事件展示「来源」用
-            s.sources.forEach(src => {
-              const srcName = String(src.name || '');
-              (src.items || []).forEach(it => {
-                if (it && it.text && it.time) flat.push({ text: String(it.text), time: String(it.time), src: srcName });
-              });
+        // 20261120h：性能优化（口径不变）——
+        //   ① 30 个快照请求一次并发（HTTP/2 多路复用；旧实现 15 个一批串行两轮，多等一个 RTT）；
+        //   ② 历史日快照（< 今天）改用浏览器 HTTP 缓存（cache:'default'，GitHub Pages
+        //      max-age=600 + ETag，10 分钟内零请求、过期后 304 协商）。历史文件由抓取脚本
+        //      「只写当天、永不回写」（fetch-hot-topics.mjs main() 仅 isToday 才落盘），缓存安全；
+        //      只有当天文件继续 no-store 强制拉新。重复刷新下载量从 ~4.7MB 降到当天 ~150KB。
+        const snaps = await Promise.all(dates.map(async d => {
+          try {
+            const r = await fetch('./data/hot-topics/' + d + '.json',
+              { cache: d === todayKey ? 'no-store' : 'default' });
+            return r.ok ? await r.json() : null;
+          } catch (e) { return null; }
+        }));
+        snaps.forEach(s => {
+          if (!s || !s.sources) return;
+          // 20261119b：带上来源平台名（src.name），供自动聚合事件展示「来源」用
+          s.sources.forEach(src => {
+            const srcName = String(src.name || '');
+            (src.items || []).forEach(it => {
+              if (it && it.text && it.time) flat.push({ text: String(it.text), time: String(it.time), src: srcName });
             });
           });
-        }
+        });
         flat.sort((a, b) => String(a.time).localeCompare(String(b.time)));  // 升序：最早在前
         _inflNewsFlat = flat;
         _inflNewsAllLoaded = true;
+        _inflSeedRepVer++;                       // 20261120h：新闻重建 → seed 首报缓存全部失效
+        _inflSeedRepCache.clear();
       } catch (e) {
         _inflNewsFlat = [];   // 加载失败 → 全部回退 seed 真实日期
       } finally {
@@ -11849,7 +11870,12 @@ const app = createApp({
      *  不再用相关股票名单匹配——否则股票异动新闻会被误当成事件首报。 */
     function inflEarliestOf(e) {
       if (!e) return null;
-      return semEarliestReport(e.title || e.originTitle, _inflNewsFlat, true);
+      const key = String(e.title || e.originTitle || '');
+      const hit = _inflSeedRepCache.get(key);
+      if (hit && hit.ver === _inflSeedRepVer) return hit.val;   // 20261120h：缓存命中直接返回
+      const val = semEarliestReport(e.title || e.originTitle, _inflNewsFlat, true);
+      _inflSeedRepCache.set(key, { ver: _inflSeedRepVer, val });
+      return val;
     }
     // ===== 20261119b：自动新鲜事件轨（修复「刷新后无新闻」） =====
     // 根因：20261119a 起 seed 精选事件按「真实首报 + 一个月新鲜(_tooOld) + 近 N 交易日窗口」
@@ -12321,6 +12347,7 @@ const app = createApp({
         _inflNewsFlat = [];
         _inflNewsPromise = null;                     // 20261120e：清空旧加载Promise，确保强制重载真正发起新请求
         _inflAutoCache = { key: null, list: [] };   // 20261119b：快照重建后自动聚合缓存一并失效
+        _inflSeedRepVer++;                          // 20261120h：强制刷新 → seed 首报缓存一并失效
         await loadInfluenceAsync();
         showToast(`已刷新影响力事件（${inflEvents.value.length} 条，按${sortLabel()}从大到小排序）`, 'success');
       } catch (e) {
