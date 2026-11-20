@@ -15926,6 +15926,252 @@ const app = createApp({
     });
     const indWarn100Count = computed(() => indFiltered.value.filter(p => indWarnLevel(p) === '100d').length);
 
+    // ========================================================================
+    // 20261120k：投产前股价「启动天数」量化回测
+    //   命题：新建项目正式投产（试产 / 小批量 / 量产 / 并网）前，股价通常提前多少天启动一波上涨？
+    //   口径（可复现、不含主观判断）：
+    //     ① 拉近 600 根日K（腾讯日线，不复权真实价）；
+    //     ② 以投产节点日 D 为终点、D 前 120 个交易日为观察窗（不足则从上市起点算）；
+    //     ③ 定位窗口内波段低点 L，再从 L 向后找「启动确认日 S」，需同时满足 ≥2 条：
+    //        · 收盘站上 MA5 且 MA5 > MA10（短均线金叉，趋势转向）
+    //        · 当日成交量 ≥ 前 20 日均量 × 1.5（量能确认，非缩量反抽）
+    //        · 自 L 起累计涨幅 ≥ 5%（已有启动实质）
+    //        且 L → 窗口最高收盘涨幅 ≥ 8%，才认定为「一波上涨」，否则视为未启动；
+    //     ④ 提前天数 = D − S（自然日）；同时给启动波涨幅、同期沪深300 涨幅、超额收益；
+    //     ⑤ 跨项目汇总中位数 / 均值 / P25 / P75，并按产业分组；
+    //     ⑥ 对未来节点：预计启动窗口 = D − 同产业（样本 < 3 时用全样本）中位提前天数。
+    //   为什么这么算：投产属于「产能兑现」预期事件，市场按预期提前定价，启动点通常落在
+    //   预期开始发酵时（均线转向 + 放量），而不是投产当天；三重确认可过滤下跌中继的反抽。
+    // ========================================================================
+    const IND_PR_WIN = 120;         // 观察窗（交易日）
+    const IND_PR_MIN_GAIN = 0.08;   // 启动波最小涨幅（低点→窗口最高收盘）
+    const IND_PR_MAX_LEAD = 300;    // 有效提前天数上限（超过视为与本次投产无因果）
+    const IND_PR_PROD_RE = /试产|小批量|量产|并网/;   // 产能兑现类节点 = 投产
+
+    const indPrOpen = ref(false);
+    const indPrBusy = ref(false);
+    const indPrErr = ref('');
+    const indPrRows = ref([]);
+    const indPrStats = ref(null);
+    const indPrInds = ref([]);
+    const indPrDoneAt = ref('');
+    const indPrOnlyHit = ref(false);
+    const _indPrCache = new Map();   // 股票代码 → 日K（同一家公司多个项目只拉一次）
+
+    /** i 处往前 n 根收盘均线（含当日；不足返回 null） */
+    function indPrMa(bars, i, n) {
+      if (i - n + 1 < 0) return null;
+      let s = 0;
+      for (let k = i - n + 1; k <= i; k++) s += bars[k].close;
+      return s / n;
+    }
+    /** i 处往前 n 根均量（不含当日） */
+    function indPrVolAvg(bars, i, n) {
+      if (i - n < 0) return null;
+      let s = 0;
+      for (let k = i - n; k < i; k++) s += (Number(bars[k].volume) || 0);
+      return s / n;
+    }
+
+    /**
+     * 单只股票 × 单个投产节点 → 启动点回测（纯函数，便于单测）。
+     * @param {Array<{date,close,volume}>} bars 日K（按日期升序）
+     * @param {string} nodeDate 投产节点日 'YYYY-MM-DD'
+     * @param {Array} idxBars 沪深300 日K（可选，算超额收益）
+     * @returns {{ok:boolean,status:string,startDate:string,leadDays:?number,leadBars:?number,
+     *            lowDate:string,lowClose:?number,peakClose:?number,gainPct:?number,
+     *            idxGainPct:?number,alphaPct:?number,note:string}}
+     */
+    function indPrAnalyze(bars, nodeDate, idxBars) {
+      const out = {
+        ok: false, status: 'nodata', startDate: '', leadDays: null, leadBars: null,
+        lowDate: '', lowClose: null, peakClose: null, gainPct: null,
+        idxGainPct: null, alphaPct: null, note: ''
+      };
+      if (!Array.isArray(bars) || bars.length < 60) { out.note = '日K不足 60 根'; return out; }
+      // 观测终点：节点日（含）之前最后一个交易日；节点在未来时即最新交易日
+      let cut = -1;
+      for (let i = 0; i < bars.length; i++) {
+        if (String(bars[i].date) <= nodeDate) cut = i; else break;
+      }
+      if (cut < 40) { out.note = '节点日前日K不足 40 根'; return out; }
+      const from = Math.max(0, cut - IND_PR_WIN + 1);
+      // ① 窗口内波段低点 L
+      let lowIdx = from;
+      for (let i = from; i <= cut; i++) if (bars[i].close < bars[lowIdx].close) lowIdx = i;
+      out.lowDate = bars[lowIdx].date;
+      out.lowClose = bars[lowIdx].close;
+      // ② 启动确认日 S（L 之后首个满足 ≥2 条条件者）
+      let start = -1;
+      for (let i = lowIdx + 1; i <= cut; i++) {
+        const c = bars[i].close;
+        const ma5 = indPrMa(bars, i, 5), ma10 = indPrMa(bars, i, 10);
+        const vavg = indPrVolAvg(bars, i, 20);
+        let hits = 0;
+        if (ma5 != null && ma10 != null && c > ma5 && ma5 > ma10) hits++;
+        if (vavg != null && Number(bars[i].volume) >= vavg * 1.5) hits++;
+        if (bars[lowIdx].close > 0 && c / bars[lowIdx].close - 1 >= 0.05) hits++;
+        if (hits >= 2) { start = i; break; }
+      }
+      // ③ 窗口内波段高点
+      let peakIdx = lowIdx;
+      for (let i = lowIdx; i <= cut; i++) if (bars[i].close > bars[peakIdx].close) peakIdx = i;
+      out.peakClose = bars[peakIdx].close;
+      out.gainPct = bars[lowIdx].close > 0 ? (bars[peakIdx].close / bars[lowIdx].close - 1) * 100 : null;
+      if (start < 0 || out.gainPct == null || out.gainPct < IND_PR_MIN_GAIN * 100) {
+        out.status = 'cold';
+        out.note = start < 0 ? '窗口内未出现启动信号' : ('最大波段仅 ' + out.gainPct.toFixed(1) + '%，不足 8%');
+        return out;
+      }
+      // ④ 提前天数 = 节点日 − 启动日
+      out.ok = true;
+      out.status = 'live';
+      out.startDate = bars[start].date;
+      const dS = Date.parse(out.startDate + 'T00:00:00Z');
+      const dD = Date.parse(String(nodeDate) + 'T00:00:00Z');
+      out.leadDays = Math.round((dD - dS) / 86400000);
+      out.leadBars = cut - start;
+      // ⑤ 同期沪深300 涨幅 → 超额
+      if (Array.isArray(idxBars) && idxBars.length) {
+        const pick = (d) => { let r = null; for (const b of idxBars) { if (String(b.date) <= d) r = b; else break; } return r; };
+        const a = pick(out.startDate), b2 = pick(bars[cut].date);
+        if (a && b2 && a.close > 0) {
+          out.idxGainPct = (b2.close / a.close - 1) * 100;
+          out.alphaPct = out.gainPct - out.idxGainPct;
+        }
+      }
+      return out;
+    }
+
+    /** 分位数（p=0.5 即中位数） */
+    function indPrPct(arr, p) {
+      if (!Array.isArray(arr) || !arr.length) return null;
+      const a = arr.slice().sort((x, y) => x - y);
+      const i = Math.min(a.length - 1, Math.max(0, Math.round((a.length - 1) * p)));
+      return a[i];
+    }
+
+    /** 执行回测：拉K线（按代码去重、并发 4）+ 逐项计算 + 汇总 */
+    async function indPrRun() {
+      if (indPrBusy.value) return;
+      const src = indFiltered.value.filter(p => p.code && p.next && IND_PR_PROD_RE.test(String(p.nextStage || '')));
+      if (!src.length) {
+        indPrRows.value = []; indPrStats.value = null; indPrInds.value = [];
+        indPrErr.value = '当前筛选范围内没有「试产 / 小批量 / 量产 / 并网」类投产节点，请放宽筛选后再算。';
+        return;
+      }
+      indPrBusy.value = true; indPrErr.value = '';
+      try {
+        // 沪深300 一次（用于超额收益）
+        let idxBars = [];
+        try { idxBars = await StockAPI.getKline('sh000300', '', '', 600) || []; } catch (e) { idxBars = []; }
+        // 同代码去重拉K线，并发 4
+        const codes = Array.from(new Set(src.map(p => String(p.code))));
+        let cursor = 0;
+        const worker = async () => {
+          while (cursor < codes.length) {
+            const c = codes[cursor++];
+            if (_indPrCache.has(c)) continue;
+            try { _indPrCache.set(c, (await StockAPI.getKline(c, '', '', 600)) || []); }
+            catch (e) { _indPrCache.set(c, []); }
+          }
+        };
+        await Promise.all(Array.from({ length: Math.min(4, codes.length) }, worker));
+        // 逐项目计算
+        const rows = src.map(p => {
+          const bars = _indPrCache.get(String(p.code)) || [];
+          const pr = indPrAnalyze(bars, String(p.next), idxBars);
+          return Object.assign({}, p, { pr: pr, days: indDays(p.next) });
+        }).sort((a, b) => {
+          const x = String(a.next || '9999'), y = String(b.next || '9999');
+          return x < y ? -1 : x > y ? 1 : 0;
+        });
+        indPrRows.value = rows;
+        // 汇总：仅统计有效样本（已启动 + 提前天数在 0~300 天内）
+        const okRows = rows.filter(r => r.pr.ok && r.pr.leadDays != null && r.pr.leadDays >= 0 && r.pr.leadDays <= IND_PR_MAX_LEAD);
+        const leads = okRows.map(r => r.pr.leadDays);
+        const gains = okRows.map(r => r.pr.gainPct).filter(v => v != null);
+        const alphas = okRows.map(r => r.pr.alphaPct).filter(v => v != null);
+        indPrStats.value = {
+          total: rows.length,
+          hit: okRows.length,
+          med: indPrPct(leads, 0.5),
+          avg: leads.length ? leads.reduce((s, v) => s + v, 0) / leads.length : null,
+          p25: indPrPct(leads, 0.25),
+          p75: indPrPct(leads, 0.75),
+          gainMed: indPrPct(gains, 0.5),
+          alphaMed: indPrPct(alphas, 0.5),
+          cold: rows.filter(r => r.pr.status === 'cold').length,
+          nodata: rows.filter(r => r.pr.status === 'nodata').length,
+          codes: Object.keys(okRows.reduce((m, r) => { m[r.code] = 1; return m; }, {})).length
+        };
+        // 按产业分组（样本数 ≥1 才展示）
+        const g = {};
+        okRows.forEach(r => {
+          const k = r.ind || '其他';
+          if (!g[k]) g[k] = { name: k, leads: [], gains: [] };
+          g[k].leads.push(r.pr.leadDays);
+          if (r.pr.gainPct != null) g[k].gains.push(r.pr.gainPct);
+        });
+        indPrInds.value = Object.keys(g).map(k => ({
+          name: k, n: g[k].leads.length,
+          med: indPrPct(g[k].leads, 0.5),
+          gainMed: indPrPct(g[k].gains, 0.5)
+        })).filter(x => x.n).sort((a, b) => b.n - a.n || (a.med - b.med));
+        indPrDoneAt.value = new Date().toLocaleTimeString('zh-CN', { hour12: false });
+      } catch (e) {
+        indPrErr.value = '计算失败：' + (e && e.message ? e.message : e);
+      } finally {
+        indPrBusy.value = false;
+      }
+    }
+
+    function indPrToggle() {
+      indPrOpen.value = !indPrOpen.value;
+      if (indPrOpen.value && !indPrRows.value.length && !indPrBusy.value) indPrRun();
+    }
+
+    /** 明细展示用：未启动的未来节点 → 用同产业（样本 < 3 用全样本）中位提前天数回推「预计启动日」 */
+    function indPrForecast(row) {
+      if (!row || !row.pr || row.pr.ok) return null;
+      const days = row.days;
+      if (days == null || days <= 0) return null;
+      const s = indPrStats.value;
+      if (!s || s.med == null) return null;
+      const g = indPrInds.value.find(x => x.name === (row.ind || '其他'));
+      const med = (g && g.n >= 3) ? g.med : s.med;
+      if (med == null) return null;
+      const dD = indParse(row.next);
+      if (dD == null) return null;
+      const t = dD - med * 86400000;
+      const dt = new Date(t);
+      const startDate = dt.getUTCFullYear() + '-' + String(dt.getUTCMonth() + 1).padStart(2, '0') + '-' + String(dt.getUTCDate()).padStart(2, '0');
+      return {
+        med: Math.round(med),
+        startDate: startDate,
+        left: Math.round((t - indTodayUTC()) / 86400000),
+        sample: (g && g.n >= 3) ? g.n : (s.hit || 0)
+      };
+    }
+
+    /** 状态文案 + CSS 类 */
+    function indPrStatus(row) {
+      const pr = row && row.pr;
+      if (!pr) return { text: '—', cls: 'no' };
+      if (pr.status === 'nodata') return { text: '数据不足', cls: 'no' };
+      if (pr.status === 'cold') {
+        const f = indPrForecast(row);
+        if (f) {
+          return f.left > 0
+            ? { text: '未启动 · 预计 ' + f.startDate.slice(5) + ' 启动（' + f.left + ' 天后）', cls: 'cold' }
+            : { text: '未启动 · 启动窗口已过 ' + Math.abs(f.left) + ' 天', cls: 'warm' };
+        }
+        return { text: '未启动', cls: 'cold' };
+      }
+      if (pr.leadDays != null && pr.leadDays > IND_PR_MAX_LEAD) return { text: '已启动 · 提前 ' + pr.leadDays + ' 天（过早）', cls: 'early' };
+      return { text: (row.days != null && row.days < 0 ? '已投产 · ' : '已启动 · ') + '提前 ' + pr.leadDays + ' 天', cls: 'live' };
+    }
+
     // ---- 20261117j：屏幕底部固定横向滚动条 ----
     // 表格列多，原生横向滚动条在表格底部；当表格很长时纵向滚动后看不到它。
     // 这里在屏幕底部放一条固定滚动条，宽度与最宽的表格一致，和所有 ind 表格的
@@ -17744,6 +17990,9 @@ const app = createApp({
       indClearMonth, indPickMonth,
       indDays, indDayText, indPct, indNatCls, indStageCls, indConfCls,
       indIsProdNode, indWarnLevel, indWarnText, indWarnBoards, indWarn100Count,
+      // 20261120k：投产前股价启动天数量化回测
+      indPrOpen, indPrBusy, indPrErr, indPrRows, indPrStats, indPrInds, indPrDoneAt, indPrOnlyHit,
+      indPrRun, indPrToggle, indPrForecast, indPrStatus, indPrAnalyze,
       indDockBar, indDockInnerW, onIndDockScroll, onIndTableScroll, indRecalcDock,
       indForm, openIndForm, closeIndForm, saveIndRow, delIndRow, resetIndSeed, indExportCsv,
       indSearching, indSearchErr, indSearchResults, indSearchPicked, indSearchQuery,

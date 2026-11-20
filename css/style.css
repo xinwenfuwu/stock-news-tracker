@@ -4697,15 +4697,73 @@ body.guest-mode #app { display: none; }
 .ind-filter2 input.ind-place { flex: 1 1 160px; width: auto; min-width: 130px; }
 
 /* 月份条：按年分组 */
-.ind-month-wrap { border: 1px solid var(--border); border-radius: 10px; padding: 8px 10px; margin: 8px 0; background: var(--surface-alt); }
-.ind-month-title { font-size: 12px; font-weight: 700; color: var(--text); margin-bottom: 6px; }
-.ind-month-tabs { display: flex; flex-wrap: wrap; gap: 6px; margin: 0; }
+/* 20261120k：改为横向一行排布（标题 + 年/月下拉 + 全部展示 + 投产前启动天数），窄屏自动换行 */
+.ind-month-wrap { border: 1px solid var(--border); border-radius: 10px; padding: 8px 10px; margin: 8px 0; background: var(--surface-alt); display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.ind-month-title { font-size: 12px; font-weight: 700; color: var(--text); margin-bottom: 0; flex: 0 0 auto; }
+.ind-month-tabs { display: flex; flex-wrap: wrap; gap: 6px; margin: 0; flex: 1 1 auto; align-items: center; }
 .ind-year-label {
   flex: 0 0 auto; align-self: center; font-size: 11px; font-weight: 700;
   color: var(--primary); padding: 0 4px 0 8px; border-left: 2px solid var(--primary); margin-left: 2px;
 }
 .ind-month-tab.ind-tab-all { font-weight: 700; }
 .ind-month-tab.active { background: var(--primary); border-color: var(--primary); color: #fff; }
+
+/* ===== 20261120k：投产前股价「启动天数」量化回测面板 ===== */
+.ind-pr-sep { width: 1px; align-self: stretch; background: var(--border); margin: 0 2px; }
+.ind-pr-btn { white-space: nowrap; }
+
+.ind-pr {
+  border: 1px solid var(--border); border-radius: 10px; padding: 10px 12px;
+  margin: 10px 0; background: var(--surface);
+}
+.ind-pr-head { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-bottom: 8px; }
+.ind-pr-title { font-size: 13px; font-weight: 700; color: var(--text); }
+.ind-pr-head .muted { margin-right: auto; }
+
+.ind-pr-tip {
+  font-size: 12px; color: var(--text-secondary); background: var(--surface-alt);
+  border: 1px dashed var(--border); border-radius: 8px; padding: 10px 12px; margin-bottom: 8px;
+}
+.ind-pr-tip.is-err { color: #b45309; background: #fffbeb; border-color: #fcd34d; }
+
+.ind-pr-sum { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 8px; margin-bottom: 10px; }
+.ind-pr-k { background: var(--surface-alt); border: 1px solid var(--border); border-radius: 8px; padding: 8px 6px; text-align: center; }
+.ind-pr-k b { display: block; font-size: 17px; line-height: 1.2; color: var(--up); }
+.ind-pr-k span { display: block; font-size: 11px; color: var(--text-secondary); margin-top: 3px; }
+
+.ind-pr-concl {
+  font-size: 12.5px; line-height: 1.75; color: var(--text);
+  background: var(--surface-alt); border-left: 3px solid var(--up);
+  border-radius: 6px; padding: 8px 10px; margin-bottom: 10px;
+}
+.ind-pr-concl b { color: var(--up); }
+.ind-pr-concl.is-warn { border-left-color: #f59e0b; background: #fffbeb; color: #92400e; }
+.ind-pr-concl.is-warn b { color: #92400e; }
+
+.ind-pr-sub { font-size: 12px; font-weight: 700; color: var(--text); margin: 12px 0 6px; display: flex; align-items: center; gap: 10px; }
+.ind-pr-only { font-size: 11px; font-weight: 400; color: var(--text-secondary); display: inline-flex; align-items: center; gap: 4px; }
+
+.ind-pr-hot { color: var(--up); }
+.ind-pr-up { color: var(--up); }
+.ind-pr-dn { color: var(--down); }
+.ind-table tbody td.ind-pr-proj, .ind-pr-proj { max-width: 220px; }
+
+.ind-pr-st { display: inline-block; font-size: 11px; font-weight: 700; border-radius: 5px; padding: 2px 6px; white-space: nowrap; }
+.ind-pr-st.live { color: #fff; background: var(--up); }
+.ind-pr-st.warm { color: #9a3412; background: #ffedd5; }
+.ind-pr-st.cold { color: var(--text-secondary); background: var(--surface-alt); border: 1px solid var(--border); }
+.ind-pr-st.early { color: #1d4ed8; background: var(--primary-light); }
+.ind-pr-st.no { color: var(--muted); }
+.ind-pr-foot { margin-top: 8px; line-height: 1.75; }
+
+@media (max-width: 980px) {
+  .ind-pr-sum { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+@media (max-width: 560px) {
+  .ind-pr-sum { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .ind-pr-k b { font-size: 15px; }
+  .ind-month-wrap { gap: 6px; }
+}
 
 /* 预警标签（表格内） */
 .ind-warn-tag {

@@ -10,12 +10,12 @@
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
   <title>股市信息分析系统</title>
-  <link rel="stylesheet" href="css/style.css?v=20261120j">
+  <link rel="stylesheet" href="css/style.css?v=20261120k">
   <!-- Vue 3 全局构建版（v3.4.21 · 自托管）
        原先走 unpkg.com CDN：国内网络对 unpkg 的连通性不稳定，一旦该请求长时间挂起，
        <head> 里的阻塞脚本会让整页停在白屏、后续 auth-boot.js 根本不会执行。
        改为同源托管后，启动链路不再依赖任何第三方 CDN。 -->
-  <script src="js/vue.global.prod.js?v=20261120j"></script>
+  <script src="js/vue.global.prod.js?v=20261120k"></script>
 </head>
 <body class="auth-locked">
   <!-- ===== 登录关卡：登录通过前业务脚本不会被加载 ===== -->
@@ -101,7 +101,7 @@
         <input class="auth-input" type="text" id="auth-renew-user" placeholder="用户名（你注册时用的）" maxlength="20" autocomplete="off">
         <div class="auth-renew-plans" id="auth-renew-plans"></div>
         <div class="auth-renew-qr" id="auth-renew-qr">
-          <div class="auth-renew-qrbox"><img id="auth-renew-wx" src="assets/wechat-pay-qr.jpg?v=20261120j" alt="微信支付收款码"><span>微信支付（扫码支付）</span></div>
+          <div class="auth-renew-qrbox"><img id="auth-renew-wx" src="assets/wechat-pay-qr.jpg?v=20261120k" alt="微信支付收款码"><span>微信支付（扫码支付）</span></div>
           <div class="muted small" style="margin-top:6px;color:#c2410c;font-weight:600">支付时请添加会员备注，付款成功截图保存</div>
         </div>
         <input class="auth-input" type="text" id="auth-renew-amount" inputmode="decimal" placeholder="支付金额（必填，如 1000）" autocomplete="off">
@@ -1326,7 +1326,7 @@
                   <div class="qr-row">
                     <div class="qr-box">
                       <div class="qr-cap">推荐使用微信支付</div>
-                      <img src="assets/wechat-pay-qr.jpg?v=20261120j" alt="微信支付收款码" class="qr-pay-img">
+                      <img src="assets/wechat-pay-qr.jpg?v=20261120k" alt="微信支付收款码" class="qr-pay-img">
                       <div class="qr-cap" style="margin-top:6px;color:#c2410c;font-weight:600">支付时请添加会员备注，付款成功截图保存</div>
                       <div class="qr-cap muted small">火柴盒网络服务</div>
                     </div>
@@ -2904,8 +2904,86 @@
                     <option v-for="mo in indMonOpts" :key="mo" :value="mo">{{ Number(mo) }} 月</option>
                   </select>
                   <button type="button" class="btn btn-xs" @click="indClearMonth()" title="清除年月筛选，展示全部节点">全部展示</button>
+                  <!-- 20261120k：投产前股价启动天数（量化回测）——入口与「节点月份」同一行 -->
+                  <span class="ind-pr-sep"></span>
+                  <button type="button" class="btn btn-xs ind-pr-btn" :class="{ 'btn-primary': indPrOpen }" @click="indPrToggle()" :disabled="indPrBusy" title="量化回测：统计这些公司在投产节点（试产/小批量/量产/并网）前多少天出现股价启动（MA5上穿MA10 + 放量1.5倍 + 相对低点涨幅≥5% 三重确认）">{{ indPrBusy ? '⏳ 计算中…' : '📈 投产前启动天数' }}</button>
                 </div>
               </div>
+
+              <!-- 20261120k：投产前股价「启动天数」回测面板 -->
+              <section class="ind-pr" v-if="indPrOpen">
+                <div class="ind-pr-head">
+                  <span class="ind-pr-title">📈 投产前股价启动天数（量化回测）</span>
+                  <span class="muted small" v-if="indPrStats">有效样本 {{ indPrStats.hit }} / {{ indPrStats.total }} 个项目 · {{ indPrStats.codes }} 家公司<span v-if="indPrDoneAt"> · 更新 {{ indPrDoneAt }}</span></span>
+                  <button type="button" class="btn btn-xs" @click="indPrRun()" :disabled="indPrBusy">↻ 重算</button>
+                  <button type="button" class="btn btn-xs" @click="indPrOpen = false">✕ 收起</button>
+                </div>
+                <div class="ind-pr-tip" v-if="indPrBusy">⏳ 正在拉取各公司近 600 根日K并定位启动点，稍等…</div>
+                <div class="ind-pr-tip is-err" v-if="indPrErr && !indPrBusy">{{ indPrErr }}</div>
+                <template v-if="indPrStats && !indPrBusy">
+                  <div class="ind-pr-sum">
+                    <div class="ind-pr-k"><b>{{ indPrStats.med != null ? indPrStats.med : '—' }}</b><span>中位提前天数</span></div>
+                    <div class="ind-pr-k"><b>{{ indPrStats.avg != null ? indPrStats.avg.toFixed(0) : '—' }}</b><span>平均提前天数</span></div>
+                    <div class="ind-pr-k"><b>{{ indPrStats.p25 != null ? indPrStats.p25 + '~' + indPrStats.p75 : '—' }}</b><span>P25~P75 区间</span></div>
+                    <div class="ind-pr-k"><b>{{ indPrStats.gainMed != null ? indPrStats.gainMed.toFixed(1) + '%' : '—' }}</b><span>启动波涨幅中位</span></div>
+                    <div class="ind-pr-k"><b>{{ indPrStats.alphaMed != null ? (indPrStats.alphaMed > 0 ? '+' : '') + indPrStats.alphaMed.toFixed(1) + '%' : '—' }}</b><span>超额收益中位</span></div>
+                    <div class="ind-pr-k"><b>{{ indPrStats.cold }}</b><span>尚未启动</span></div>
+                  </div>
+                  <div class="ind-pr-concl" v-if="indPrStats.med != null">
+                    按当前 {{ indPrStats.total }} 个投产节点回测：股价通常在<b>投产日前 {{ indPrStats.med }} 天</b>（约 {{ Math.round(indPrStats.med / 7) }} 周）启动一波上涨，25%~75% 的样本落在 <b>{{ indPrStats.p25 }}~{{ indPrStats.p75 }} 天</b>之间；启动波涨幅中位 <b>{{ indPrStats.gainMed != null ? indPrStats.gainMed.toFixed(1) + '%' : '—' }}</b>，相对沪深300 超额 <b>{{ indPrStats.alphaMed != null ? indPrStats.alphaMed.toFixed(1) + '%' : '—' }}</b>。{{ indPrStats.cold }} 个项目尚未出现启动信号，见下表「预计启动」列。
+                  </div>
+                  <div class="ind-pr-concl is-warn" v-else>
+                    暂无可统计的有效样本（需要节点日前有 ≥60 根日K，且窗口内出现 ≥8% 的启动波段）。可点「↻ 重算」或放宽上方筛选。
+                  </div>
+
+                  <div class="ind-pr-sub">按产业分布</div>
+                  <div class="table-wrap table-scroll-x">
+                    <table class="data-table ind-pr-indtable">
+                      <thead><tr><th>产业</th><th class="num-col">有效样本</th><th class="num-col">中位提前天数</th><th class="num-col">启动波涨幅中位</th></tr></thead>
+                      <tbody>
+                        <tr v-for="it in indPrInds" :key="'pri'+it.name">
+                          <td data-label="产业">{{ it.name }}</td>
+                          <td class="num-col" data-label="样本">{{ it.n }}</td>
+                          <td class="num-col" data-label="中位提前"><b class="ind-pr-hot">{{ it.med }} 天</b></td>
+                          <td class="num-col" data-label="涨幅">{{ it.gainMed != null ? it.gainMed.toFixed(1) + '%' : '—' }}</td>
+                        </tr>
+                        <tr v-if="!indPrInds.length"><td colspan="4" class="muted small">—</td></tr>
+                      </tbody>
+                    </table>
+                  </div>
+
+                  <div class="ind-pr-sub">
+                    逐个节点明细
+                    <label class="ind-pr-only"><input type="checkbox" v-model="indPrOnlyHit"> 只看已启动</label>
+                  </div>
+                  <div class="table-wrap table-scroll-x">
+                    <table class="data-table ind-pr-table">
+                      <thead><tr>
+                        <th>上市公司</th><th>项目</th><th>投产节点</th><th class="num-col">节点日</th><th class="num-col">距今</th>
+                        <th class="num-col">低点日</th><th class="num-col">启动日</th><th class="num-col">提前天数</th>
+                        <th class="num-col">启动波涨幅</th><th class="num-col">超额</th><th>状态</th>
+                      </tr></thead>
+                      <tbody>
+                        <tr v-for="r in indPrRows" :key="'pr'+r.id" v-show="!indPrOnlyHit || r.pr.ok">
+                          <td data-label="上市公司"><b>{{ r.name }}</b><span class="ind-net-code">{{ r.code }}</span></td>
+                          <td class="ind-pr-proj" data-label="项目">{{ r.proj }}</td>
+                          <td data-label="投产节点"><span class="ind-stage" :class="indStageCls(r.nextStage)">{{ r.nextStage }}</span></td>
+                          <td class="num-col" data-label="节点日">{{ r.next }}</td>
+                          <td class="num-col" data-label="距今">{{ indDayText(r.next) }}</td>
+                          <td class="num-col" data-label="低点日">{{ r.pr.lowDate || '—' }}</td>
+                          <td class="num-col" data-label="启动日"><b v-if="r.pr.ok">{{ r.pr.startDate }}</b><span v-else class="muted">—</span></td>
+                          <td class="num-col" data-label="提前天数"><b class="ind-pr-hot" v-if="r.pr.ok">{{ r.pr.leadDays }} 天</b><span v-else class="muted">—</span></td>
+                          <td class="num-col" data-label="启动波涨幅">{{ r.pr.gainPct != null ? (r.pr.gainPct > 0 ? '+' : '') + r.pr.gainPct.toFixed(1) + '%' : '—' }}</td>
+                          <td class="num-col" data-label="超额" :class="r.pr.alphaPct != null ? (r.pr.alphaPct >= 0 ? 'ind-pr-up' : 'ind-pr-dn') : ''">{{ r.pr.alphaPct != null ? (r.pr.alphaPct > 0 ? '+' : '') + r.pr.alphaPct.toFixed(1) + '%' : '—' }}</td>
+                          <td data-label="状态"><span class="ind-pr-st" :class="indPrStatus(r).cls">{{ indPrStatus(r).text }}</span></td>
+                        </tr>
+                        <tr v-if="!indPrRows.length"><td colspan="11" class="muted small">—</td></tr>
+                      </tbody>
+                    </table>
+                  </div>
+                  <p class="muted small ind-pr-foot">口径说明：① 只统计「试产 / 小批量 / 量产 / 并网」类产能兑现节点；② 观察窗 = 节点日前 120 个交易日；③ 启动确认 = MA5 上穿 MA10（收盘价站上 MA5 且 MA5&gt;MA10）、当日量能 ≥ 前 20 日均量 1.5 倍、自窗口低点涨幅 ≥5%，三者满足 ≥2 条；④ 启动波涨幅 &lt;8% 视为未启动；⑤ 提前天数 = 节点日 − 启动日（自然日），超过 300 天不计入统计（视为与本次投产无因果）；⑥ 「超额」= 启动波涨幅 − 同期沪深300 涨幅，用来剔除大盘普涨的干扰。<b>⑦ 样本口径</b>：统计对象是<b>当前跟踪表内各项目的「本轮」启动情况</b>（横截面），不是历史案例库回溯；若把已投产的历史项目也录入跟踪表（节点日填过去的日期），会一并纳入统计，样本越多、中位数越稳。数据源：腾讯日线（不复权），仅作规律参考，不构成投资建议。</p>
+                </template>
+              </section>
 
               <!-- 新增 / 编辑表单 -->
               <div class="ind-form" v-if="indForm.open">
@@ -3036,7 +3114,7 @@
             </section>
 
             <!-- ===== 20261117m：独立「各省项目」板块——各省发改委投资大项目清单（全宽展示，功能同右侧面板、共享状态） ===== -->
-            <!-- 20261120j：改为左右双栏——左：各省发改委投资大项目清单；右：各省代号项目（公开代号专项工程） -->
+            <!-- 20261120k：改为左右双栏——左：各省发改委投资大项目清单；右：各省代号项目（公开代号专项工程） -->
             <section class="q-block fgw-page" v-if="quantTab === 'fgw'">
               <div class="fgw-cols">
               <div class="fgw-panel">
@@ -3234,7 +3312,7 @@
                 <div class="fgw-foot muted small">按「年度 + 主导方 + 省 → 市 → 项目」三级展开：安徽（1806项）、上海（184+14项）为官方清单完整真实明细，逐市展开即可查看、已去重；其余省份卡片显示官方公布的总投资与项目数口径，点「📋 完整清单」直达官方公告下载完整名单。「主导方」按项目名称/主体智能归类（上市公司 / 有限公司 / 国企央企 / 政府事业）。</div>
               </div>
 
-              <!-- 20261120j：右栏「各省代号项目」——各省以代号/专名命名的公开重大专项工程 -->
+              <!-- 20261120k：右栏「各省代号项目」——各省以代号/专名命名的公开重大专项工程 -->
               <div class="dh-panel">
                 <div class="fgw-head">
                   <span class="fgw-title">🛰️ 各省代号项目</span>
@@ -6232,14 +6310,14 @@
     </transition>
   </div>
 
-  <script src="js/auth.js?v=20261120j"></script>
-  <script src="js/auth-sync.js?v=20261120j"></script>
+  <script src="js/auth.js?v=20261120k"></script>
+  <script src="js/auth-sync.js?v=20261120k"></script>
   <!-- 边缘加速默认站点（batch37 治本：Cloudflare Worker 代理东财/腾讯，缓解 JSONP 限流误报）。
        若你所在地区 workers.dev 访问慢，可在「设置 → 行情加速地址」清空即恢复纯直连。 -->
   <script>window.__SNT_ACCEL__ = 'https://sichina.dpdns.org';</script>
   <!-- 扫码支付二维码渲染库（第三方 qrcodejs，本地托管避免外链失效）。renderQr 会先检测全局 QRCode 是否存在。 -->
-  <script src="assets/qrcode.min.js?v=20261120j"></script>
-  <script src="js/auth-boot.js?v=20261120j"></script>
+  <script src="assets/qrcode.min.js?v=20261120k"></script>
+  <script src="js/auth-boot.js?v=20261120k"></script>
   <!-- store / stock-api / hot-topics / app 由 auth-boot.js 在登录通过后动态装载，
        未登录时它们不会被下载，业务数据也不会进入内存 -->
 </body>
