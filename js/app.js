@@ -11794,9 +11794,14 @@ const app = createApp({
      *  很多年前的同类旧闻不参与锚定。加载最近 30 天快照一次，缓存复用；按 time 升序排列，
      *  便于 semEarliestReport 取「语义命中的最早一条」。与「近 N 交易日」筛选窗口无关。 */
     let _inflNewsAllLoaded = false;
+    // 20261120e：修复「刷新数据无响应」竞态——旧实现用布尔锁，加载期间并发调用直接 return，
+    //   导致 loadInfluenceAsync 的第二次 loadInfluence 仍拿到空快照 → 面板显示「暂无影响力事件」，
+    //   而后台加载完成后不再重算，列表永远空。改为 Promise 复用：并发调用 await 同一个加载任务。
+    let _inflNewsPromise = null;
     async function inflEnsureNews() {
       if (_inflNewsAllLoaded) return;
-      if (_inflNewsLoading) return;
+      if (_inflNewsPromise) { await _inflNewsPromise; return; }   // 已有加载在跑 → 等它完成
+      _inflNewsPromise = (async () => {
       _inflNewsLoading = true;
       try {
         // 只加载最近一个月（30 天自然日）的快照，越界即旧闻，不参与锚定
@@ -11829,6 +11834,8 @@ const app = createApp({
       } finally {
         _inflNewsLoading = false;
       }
+      })();
+      await _inflNewsPromise;
     }
     /** 20261119a：语义首报匹配——「含义相同（非字面百分比相同）即为同一新闻」。
      *  用语义引擎（2-gram 词集 + 同义词归一键 + 包含度）匹配该事件标题，
@@ -12194,6 +12201,7 @@ const app = createApp({
         // 20261118f：强制重新拉取全历史全网快照后按真实首报时间重算
         _inflNewsAllLoaded = false;
         _inflNewsFlat = [];
+        _inflNewsPromise = null;                     // 20261120e：清空旧加载Promise，确保强制重载真正发起新请求
         _inflAutoCache = { key: null, list: [] };   // 20261119b：快照重建后自动聚合缓存一并失效
         await loadInfluenceAsync();
         showToast(`已刷新影响力事件（${inflEvents.value.length} 条，按${sortLabel()}从大到小排序）`, 'success');
