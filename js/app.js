@@ -11944,6 +11944,20 @@ const app = createApp({
     //   即使同文提及英伟达/美股（如「英伟达财报带动美股AI硬件走高，SK海力士、铠侠涨近2%」），
     //   只要命中非美外资主体且无中国强主体，就归「全世界」而非「美国」（用户口径：海力士类新闻归境外非美板块）。
     const INFL_WORLD_SUBJECT_RE = /SK海力士|海力士|铠侠|三星电子|三星|Samsung|台积电|TSMC|阿斯麦|ASML|丰田|本田|索尼|松下|现代汽车/;
+    // 20261120j：严格三区域互斥口径——
+    //   cn 中国 = 仅中国境内主体/政策/市场的新闻，与他国无关；
+    //   us 美国 = 仅美国主体/政策/市场的新闻；
+    //   world 全世界 = 排除中国、美国之外的其他国家新闻 + 中美混合的全球性新闻。
+    // 旧实现把裸「央行」当作中国专属信号，导致「日本央行加息」「欧洲央行加息」误入 cn；
+    //   现在外国央行/政府主体优先判 world，只有无外国修饰的裸「央行」才按中国央行处理。
+    // ① 外国（非中美）央行 / 政府 / 机构主体——命中即归 world，杜绝进 cn/us
+    const INFL_WORLD_GOV_RE = /日本央行|欧洲央行|英国央行|韩国央行|印度央行|俄罗斯央行|澳洲联储|澳联储|加拿大央行|瑞士央行|新西兰联储|日本政府|日本财务省|欧洲议会|欧盟委员会|欧委会|欧洲理事会|德国政府|法国政府|英国政府|韩国政府|欧元区|欧盟/;
+    // ② 外国（非中美）国家/地区词——兜底识别第三国新闻（无中美主体时归 world）
+    const INFL_WORLD_COUNTRY_RE = /日本|欧洲|英国|韩国|朝鲜|印度|俄罗斯|乌克兰|德国|法国|意大利|西班牙|荷兰|瑞士|瑞典|挪威|加拿大|澳大利亚|澳洲|巴西|阿根廷|墨西哥|中东|以色列|伊朗|伊拉克|沙特|土耳其|埃及|南非|越南|泰国|新加坡|马来西亚|印尼|菲律宾|巴基斯坦|孟加拉|尼日利亚|哈萨克斯坦|白俄罗斯|波兰|捷克|匈牙利|希腊|葡萄牙|奥地利|比利时|丹麦|芬兰|爱尔兰|新西兰/;
+    // ③ 中国政府部门/机构作为动作主体的严格信号（不含泛化「中国/国家/国内」）——
+    //   只有政府部门直接出手（发改委印发/央行降准/证监会新规）才能压过外国词判 cn；
+    //   「中国与日本会谈」「日本加息A股承压」这类被动提及不算中国主体，仍归 world。
+    const INFL_CN_GOV_RE = /国务院|发改委|国家发展改革委|财政部|央行|人民银行|中国人民银行|证监会|工信部|商务部|科技部|自然资源部|住建部|交通运输部|农业农村部|国家能源局|国家医保局|广电总局|民航局|税务总局|海关总署|银保监会|金融监管总局|中央政治局|中共中央|部委/;
     // 中国境内「强主体」信号：政府部门/国家主体直接作为动作主体时才允许压过「境外企业主体」规则。
     //   市场板块词（A股/沪指/港股等）只是被动提及（如「SK海力士跌，A股存储跟跌」），不放进强主体。
     const INFL_CN_STRONG_RE = /国务院|发改委|财政部|央行|人民银行|证监会|工信部|商务部|国家|国内|中国|我国/;
@@ -11954,19 +11968,32 @@ const app = createApp({
       for (const [re, key] of INFL_AUTO_CONCEPT_HINTS) { if (re.test(text)) return key; }
       return region === 'cn' ? 'broker' : (region === 'us' ? 'usMacro' : 'macro');
     }
-    /** 簇文本 → 区域：境外企业主体优先归境外；cn/us 关键词互斥命中各自区域；中美同时出现归 world */
+    /** 簇文本 → 区域（20261120j 严格三区域互斥）：
+     *   cn=仅中国境内主体；us=仅美国主体；world=排除中美之外的其他国家 + 中美混合全球事件。
+     *   优先级：①外国央行/政府/非美外资企业 → world（杜绝境外主体混入 cn/us）
+     *           ②中国政府部门「强主体」直接作为动作主体（如央行降准/发改委印发）→ cn
+     *           ③中美信号同时出现 → world；仅中国 → cn；仅美国 → us；无明确主体 → world。
+     */
     function inflAutoRegionOf(text) {
       const t = String(text || '');
-      // 20261120c：主体是境外企业（SK海力士/铠侠/英伟达…）且无中国强主体动作 → 不进中国板块
-      if (INFL_FOREIGN_SUBJECT_RE.test(t) && !INFL_CN_STRONG_RE.test(t)) {
-        // 20261120g：非美外资主体优先归全世界
-        if (INFL_WORLD_SUBJECT_RE.test(t)) return 'world';
-        return INFL_US_STRONG_RE.test(t) ? 'us' : 'world';
-      }
-      const cn = INFL_AUTO_REGION_HINTS.cn.test(t);
-      const us = INFL_AUTO_REGION_HINTS.us.test(t);
+      // ① 外国政府/央行主体（日本央行/欧洲央行/欧盟…）或非美外资企业（SK海力士/三星/台积电…）→ world
+      //    核心修复：这些主体即使带「加息/降息/央行/A股」等词也绝不进 cn/us。
+      if (INFL_WORLD_GOV_RE.test(t) || INFL_WORLD_SUBJECT_RE.test(t)) return 'world';
+      const cnGov = INFL_CN_GOV_RE.test(t);          // 中国政府部门作为动作主体（严格）
+      const cn = INFL_AUTO_REGION_HINTS.cn.test(t); // 中国关键词（含裸「央行」）
+      const us = INFL_US_STRONG_RE.test(t);          // 美国信号（含美企：英伟达/苹果/特斯拉…）
+      const foreign = INFL_WORLD_COUNTRY_RE.test(t);// 第三国国家词
+      // ② 中美同时出现 → 全球事件
       if (cn && us) return 'world';
-      if (cn) return 'cn';
+      // ③ 纯美国信号（无中国词、无第三国词）→ us
+      //    必须早于 cnGov：否则「美国商务部」「美国财政部」会因含「商务部/财政部」被误判 cn
+      if (us && !cn && !foreign) return 'us';
+      // ④ 出现第三国国家词：只有中国政府部门直接出手才判 cn，否则归 world
+      //    （「日本加息，A股承压」「中国与日本会谈」都不是纯中国境内事件）
+      if (foreign && !cnGov) return 'world';
+      // ⑤ 中国信号（政府部门/裸央行/A股等）→ cn
+      if (cn || cnGov) return 'cn';
+      // ⑥ 兜底：美国 / 未知 → us / world
       if (us) return 'us';
       return 'world';
     }
