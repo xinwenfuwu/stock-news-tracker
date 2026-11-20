@@ -1,188 +1,125 @@
 {
-  "generatedAt": "2026-11-20 10:59",
+  "generatedAt": "2026-11-20 20:44",
   "generatedBy": "GitHub Actions · 多源实时聚合",
-  "sourceCount": 4,
+  "sourceCount": 5,
   "autoCount": 6,
   "events": [
     {
-      "id": "apgcrko6",
-      "title": "11月20日外盘头条：Anthropic首秀市值达1.3万亿美元 特朗普9月交易记录曝光 美联储官员未排除更大幅度加息",
-      "tag": "人物/特朗普",
-      "region": "美国",
-      "concept": "aiCapex",
-      "time": "2026-11-20 05:48",
-      "datetime": "2026-11-20 05:48",
-      "source": "环球市场播报",
-      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-20/doc-inizinvp5784689.shtml",
-      "summary": "全球财经媒体昨夜今晨共同关注的头条新闻主要有： 1、Anthropic首秀市值达1.3万亿美元 又一巨型AI公司登陆纳斯达克 2、特朗普9月交易记录曝光：加仓英伟达、SpaceX...",
-      "relatedStocks": [
-        "英伟达",
-        "微软",
-        "台积电"
-      ],
-      "bullConcepts": [
-        "AI算力",
-        "半导体",
-        "国产替代"
-      ],
-      "bearConcepts": [
-        "传统软件"
-      ],
-      "bullIndustries": [
-        "半导体",
-        "AI应用",
-        "算力基础设施"
-      ],
-      "bearIndustries": [
-        "传统IT服务"
-      ],
-      "heat": 100,
-      "momentum": 18,
-      "_auto": true
-    },
-    {
-      "id": "apfskcsd",
-      "title": "特朗普9月交易记录曝光：加仓英伟达、SpaceX、帕兰提尔，多家企业斩获联邦大单",
-      "tag": "人物/马斯克",
-      "region": "美国",
-      "concept": "aiCapex",
-      "time": "2026-11-20 04:13",
-      "datetime": "2026-11-20 04:13",
-      "source": "环球市场播报",
-      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-20/doc-inizihpu4238779.shtml",
-      "summary": "根据一份新近披露的财务申报文件，美国总统唐纳德·特朗普名下投资账户在9月买入了英伟达、帕兰提尔以及埃隆·马斯克旗下SpaceX的股份...",
-      "relatedStocks": [
-        "英伟达",
-        "微软",
-        "台积电"
-      ],
-      "bullConcepts": [
-        "AI算力",
-        "半导体",
-        "国产替代"
-      ],
-      "bearConcepts": [
-        "传统软件"
-      ],
-      "bullIndustries": [
-        "半导体",
-        "AI应用",
-        "算力基础设施"
-      ],
-      "bearIndustries": [
-        "传统IT服务"
-      ],
-      "heat": 38,
-      "momentum": 18,
-      "_auto": true
-    },
-    {
-      "id": "apli1p3q",
-      "title": "当地时间11月19日，美国总统特朗普从中国返美途中发帖：“这是一次伟大且意义深远的访问。”（中新社）",
-      "tag": "人物/特朗普",
-      "region": "美国",
-      "concept": "usMacro",
-      "time": "2026-11-20 09:33",
-      "datetime": "2026-11-20 09:33",
+      "id": "apc3vkfc",
+      "title": "11月20日晚，华为常务董事、产品投资评审委员会主任、终端BG董事长余承东发文透露，享界V8上市2小时，大定达2216台。享界V8售价31.98万元起。配置方面，新车全系搭载华为…",
+      "tag": "人物/余承东",
+      "region": "全球",
+      "concept": "green",
+      "time": "2026-11-20 19:53",
+      "datetime": "2026-11-20 19:53",
       "source": "华尔街见闻",
-      "url": "https://wallstreetcn.com/livenews/3202930",
-      "summary": "当地时间11月19日，美国总统特朗普从中国返美途中发帖：“这是一次伟大且意义深远的访问。”（中新社）",
+      "url": "https://wallstreetcn.com/livenews/3203365",
+      "summary": "11月20日晚，华为常务董事、产品投资评审委员会主任、终端BG董事长余承东发文透露，享界V8上市2小时，大定达2216台。享界V8售价31.98万元起。配置方面，新车全系搭载华为干昆智驾ADS 5，标配800V高压纯电/增程双平台，纯电版标配120kWh电池包，CLTC纯电续航最高可达830km，增程版可选75.4kWh电池包，最大四驱CLTC综合续航1465km；标配4个零…",
       "relatedStocks": [
-        "宽基指数"
+        "特斯拉",
+        "比亚迪"
       ],
       "bullConcepts": [
-        "防御板块"
+        "智能驾驶",
+        "动力电池"
       ],
       "bearConcepts": [
-        "周期股"
+        "传统车企"
       ],
       "bullIndustries": [
-        "公用事业"
+        "智能驾驶",
+        "锂电池"
       ],
       "bearIndustries": [
-        "顺周期"
+        "传统汽车制造"
       ],
-      "heat": 46,
+      "heat": 24,
       "momentum": 26,
       "_auto": true
     },
     {
-      "id": "ap1wrj6sc",
-      "title": "突发！克里米亚大桥遭袭，普京：不再讨论海上停火！深夜，一则利空突袭！美股、金银价格大“跳水”",
-      "tag": "人物/普京",
-      "region": "美国",
-      "concept": "usFinance",
-      "time": "2026-11-20 07:33",
-      "datetime": "2026-11-20 07:33",
-      "source": "市场资讯",
-      "url": "https://finance.sina.com.cn/money/nmetal/gjshz/2026-11-20/doc-inizitcm5711223.shtml",
-      "summary": "来源：期货日报 早上好，先来关注下美股。 昨夜，美三大股指集体高开，随后全部“跳水”。截至收盘，道琼斯指数跌2.19%，标普500指数跌2.02%，纳斯达克综合指数跌2.25%。",
-      "relatedStocks": [
-        "美股科技",
-        "黄金"
-      ],
-      "bullConcepts": [
-        "黄金",
-        "防御板块"
-      ],
-      "bearConcepts": [
-        "高估值成长股"
-      ],
-      "bullIndustries": [
-        "银行",
-        "黄金"
-      ],
-      "bearIndustries": [
-        "高杠杆地产"
-      ],
-      "heat": 46,
-      "momentum": 18,
-      "_auto": true
-    },
-    {
-      "id": "apf00h6p",
-      "title": "威瑞森CEO：马斯克的星链进军移动通信领域或将花费超3000亿美元",
-      "tag": "人物/马斯克",
-      "region": "美国",
-      "concept": "usFinance",
-      "time": "2026-11-20 07:48",
-      "datetime": "2026-11-20 07:48",
+      "id": "ap1dd2xa",
+      "title": "AMD首席执行官苏姿丰评黄仁勋离职：保持距离",
+      "tag": "人物/黄仁勋",
+      "region": "全球",
+      "concept": "ai",
+      "time": "2026-11-20 15:57",
+      "datetime": "2026-11-20 15:57",
       "source": "环球市场播报",
-      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-20/doc-inizitcn7279894.shtml",
-      "summary": "美国科技富豪埃隆·马斯克希望“星链”（Starlink）能成为美国的一家主流移动运营商。美国电信巨头威瑞森（Verizon）首席执行官丹・舒尔曼表示，如果马斯克真能做成这件事...",
+      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-20/doc-inizkizh4020471.shtml",
+      "summary": "芯片制造商AMD首席执行官、英伟达前首席执行官黄仁勋的远房表亲苏姿丰称赞黄仁勋是一位“杰出的领导者”，但表示AMD需要远离围绕其最大AI芯片竞争对手的“纷扰”。",
       "relatedStocks": [
-        "美股科技",
-        "黄金"
+        "英伟达",
+        "微软",
+        "台积电"
       ],
       "bullConcepts": [
-        "黄金",
-        "防御板块"
+        "AI算力",
+        "半导体",
+        "国产替代"
       ],
       "bearConcepts": [
-        "高估值成长股"
+        "传统软件"
       ],
       "bullIndustries": [
-        "银行",
-        "黄金"
+        "半导体",
+        "AI应用",
+        "算力基础设施"
       ],
       "bearIndustries": [
-        "高杠杆地产"
+        "传统IT服务"
       ],
       "heat": 29,
       "momentum": 18,
       "_auto": true
     },
     {
-      "id": "apr9bti2",
-      "title": "“腾讯到了生死存亡”，马化腾亮牌",
-      "tag": "人物/马化腾",
-      "region": "中国",
-      "concept": "broker",
-      "time": "2026-11-20 07:56",
-      "datetime": "2026-11-20 07:56",
-      "source": "中国企业家",
-      "url": "https://finance.sina.com.cn/stock/s/2026-11-20/doc-inizitct0484837.shtml",
-      "summary": "来源：中国企业家杂志 自由现金流转负，“字节时间”压顶，腾讯组织变革箭在弦上。 文|《中国企业家》记者闫俊文 编辑|李原 头图来源|视觉中国 11月11日...",
+      "id": "ap1p7o7v6",
+      "title": "美国德克萨斯州候任州长称愿与马斯克合作：“我不讨厌数据中心”",
+      "tag": "人物/马斯克",
+      "region": "美国",
+      "concept": "aiCapex",
+      "time": "2026-11-20 13:06",
+      "datetime": "2026-11-20 13:06",
+      "source": "环球市场播报",
+      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-20/doc-inizkctk4032424.shtml",
+      "summary": "美国德克萨斯州候任州长吉娜·希诺霍萨周四表示，她愿意就该州内的数据中心事宜与SpaceX首席执行官埃隆·马斯克展开合作，但同时也重申了她关于实施暂停措施以及将民众利益置...",
+      "relatedStocks": [
+        "英伟达",
+        "微软",
+        "台积电"
+      ],
+      "bullConcepts": [
+        "AI算力",
+        "半导体",
+        "国产替代"
+      ],
+      "bearConcepts": [
+        "传统软件"
+      ],
+      "bullIndustries": [
+        "半导体",
+        "AI应用",
+        "算力基础设施"
+      ],
+      "bearIndustries": [
+        "传统IT服务"
+      ],
+      "heat": 24,
+      "momentum": 18,
+      "_auto": true
+    },
+    {
+      "id": "ap1dffj65",
+      "title": "特朗普将举办晚宴，招待特朗普币持有者",
+      "tag": "人物/特朗普",
+      "region": "美国",
+      "concept": "usMacro",
+      "time": "2026-11-20 15:20",
+      "datetime": "2026-11-20 15:20",
+      "source": "环球市场播报",
+      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-20/doc-inizkizc5591408.shtml",
+      "summary": "美国总统唐纳德·特朗普将于本周末举办一场晚宴，允许其个人迷因币的最大持有者与总统接触。与此同时，民主党誓言调查特朗普政府涉嫌存在的“大规模腐败”问题...",
       "relatedStocks": [
         "宽基指数"
       ],
@@ -197,6 +134,75 @@
       ],
       "bearIndustries": [
         "顺周期"
+      ],
+      "heat": 24,
+      "momentum": 18,
+      "_auto": true
+    },
+    {
+      "id": "ap191rbj3",
+      "title": "马斯克24小时中国行，专程从深圳赶往上海",
+      "tag": "人物/马斯克",
+      "region": "中国",
+      "concept": "nev",
+      "time": "2026-11-20 12:46",
+      "datetime": "2026-11-20 12:46",
+      "source": "21世纪经济报道",
+      "url": "https://finance.sina.com.cn/world/2026-11-20/doc-inizkctk4025371.shtml",
+      "summary": "据中国新闻网20日消息，马斯克现身上海特斯拉超级工厂。他专程从深圳赶往上海：“我想来上海，感谢中国团队。” 11月19日晚，特斯拉副总裁陶琳发微博称：...",
+      "relatedStocks": [
+        "特斯拉",
+        "比亚迪"
+      ],
+      "bullConcepts": [
+        "智能驾驶",
+        "动力电池"
+      ],
+      "bearConcepts": [
+        "传统车企"
+      ],
+      "bullIndustries": [
+        "智能驾驶",
+        "锂电池"
+      ],
+      "bearIndustries": [
+        "传统汽车制造"
+      ],
+      "heat": 24,
+      "momentum": 18,
+      "_auto": true
+    },
+    {
+      "id": "apskfauz",
+      "title": "据称前英伟达首席执行官黄仁勋或准备与亲手创立的公司同台竞争",
+      "tag": "人物/黄仁勋",
+      "region": "美国",
+      "concept": "aiCapex",
+      "time": "2026-11-20 16:22",
+      "datetime": "2026-11-20 16:22",
+      "source": "环球市场播报",
+      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-20/doc-inizkqii0284644.shtml",
+      "summary": "黄仁勋的下一步会不会打造一家英伟达的对手？有一项预测称，这位前首席执行官或将依托自己在投资方、客户及其他圈子里的人脉，募资 500 亿美元，创立一家新半导体企业。",
+      "relatedStocks": [
+        "英伟达",
+        "微软",
+        "台积电"
+      ],
+      "bullConcepts": [
+        "AI算力",
+        "半导体",
+        "国产替代"
+      ],
+      "bearConcepts": [
+        "传统软件"
+      ],
+      "bullIndustries": [
+        "半导体",
+        "AI应用",
+        "算力基础设施"
+      ],
+      "bearIndustries": [
+        "传统IT服务"
       ],
       "heat": 24,
       "momentum": 18,
