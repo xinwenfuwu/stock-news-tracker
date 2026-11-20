@@ -1,53 +1,191 @@
 {
-  "generatedAt": "2026-11-20 20:44",
+  "generatedAt": "2026-11-21 05:46",
   "generatedBy": "GitHub Actions · 多源实时聚合",
   "sourceCount": 5,
-  "autoCount": 6,
+  "autoCount": 12,
   "events": [
     {
-      "id": "apc3vkfc",
-      "title": "11月20日晚，华为常务董事、产品投资评审委员会主任、终端BG董事长余承东发文透露，享界V8上市2小时，大定达2216台。享界V8售价31.98万元起。配置方面，新车全系搭载华为…",
-      "tag": "人物/余承东",
+      "id": "apa8zuok",
+      "title": "甲骨文：OpenAI合同获得全面资金支持。 为全面履行OpenAI合同锁定所有资金。 仍然预计本公司2028财年下半年自由现金流（FCF）将为正。",
+      "tag": "人物/奥尔特曼",
       "region": "全球",
-      "concept": "green",
-      "time": "2026-11-20 19:53",
-      "datetime": "2026-11-20 19:53",
+      "concept": "ai",
+      "time": "2026-11-21 05:24",
+      "datetime": "2026-11-21 05:24",
       "source": "华尔街见闻",
-      "url": "https://wallstreetcn.com/livenews/3203365",
-      "summary": "11月20日晚，华为常务董事、产品投资评审委员会主任、终端BG董事长余承东发文透露，享界V8上市2小时，大定达2216台。享界V8售价31.98万元起。配置方面，新车全系搭载华为干昆智驾ADS 5，标配800V高压纯电/增程双平台，纯电版标配120kWh电池包，CLTC纯电续航最高可达830km，增程版可选75.4kWh电池包，最大四驱CLTC综合续航1465km；标配4个零…",
+      "url": "https://wallstreetcn.com/livenews/3203590",
+      "summary": "甲骨文：OpenAI合同获得全面资金支持。 为全面履行OpenAI合同锁定所有资金。 仍然预计本公司2028财年下半年自由现金流（FCF）将为正。",
       "relatedStocks": [
-        "特斯拉",
-        "比亚迪"
+        "英伟达",
+        "微软",
+        "台积电"
       ],
       "bullConcepts": [
-        "智能驾驶",
-        "动力电池"
+        "AI算力",
+        "半导体",
+        "国产替代"
       ],
       "bearConcepts": [
-        "传统车企"
+        "传统软件"
       ],
       "bullIndustries": [
-        "智能驾驶",
-        "锂电池"
+        "半导体",
+        "AI应用",
+        "算力基础设施"
       ],
       "bearIndustries": [
-        "传统汽车制造"
+        "传统IT服务"
       ],
-      "heat": 24,
+      "heat": 51,
+      "momentum": 51,
+      "_auto": true
+    },
+    {
+      "id": "ap19cqfxa",
+      "title": "甲骨文：已筹足OpenAI合同所需资金，相关负面报道不实",
+      "tag": "人物/奥尔特曼",
+      "region": "美国",
+      "concept": "aiCapex",
+      "time": "2026-11-21 05:33",
+      "datetime": "2026-11-21 05:33",
+      "source": "新浪7×24",
+      "url": "https://finance.sina.cn/7x24/2026-11-21/detail-inizmruq6943459.d.html",
+      "summary": "【甲骨文：已筹足OpenAI合同所需资金，相关负面报道不实】甲骨文表示，已足额落实履行与OpenAI合同所需的全部资金，后续和供应商开展的私下磋商仅作为备选方案。 该公司称，履行这份OpenAI相关合同的能力并不依赖上述磋商。 甲骨文表示，任何与此说法相悖的媒体报道均不实。 公司目标在2029财年实现逾300亿美元自由现金流，并计划自该财年起依靠自有资金支撑后续扩张。 甲骨文…",
+      "relatedStocks": [
+        "英伟达",
+        "微软",
+        "台积电"
+      ],
+      "bullConcepts": [
+        "AI算力",
+        "半导体",
+        "国产替代"
+      ],
+      "bearConcepts": [
+        "传统软件"
+      ],
+      "bullIndustries": [
+        "半导体",
+        "AI应用",
+        "算力基础设施"
+      ],
+      "bearIndustries": [
+        "传统IT服务"
+      ],
+      "heat": 56,
+      "momentum": 56,
+      "_auto": true
+    },
+    {
+      "id": "apu2p9iw",
+      "title": "美国总统特朗普20日在白宫举行的新闻发布会上表示，日前在中国深圳举行的亚太经合组织领导人非正式会议是一场非常成功的经济会议，美国、中国和俄罗斯三国领导人还举行了首次三方会晤，这是…",
+      "tag": "人物/特朗普",
+      "region": "美国",
+      "concept": "usFinance",
+      "time": "2026-11-21 05:02",
+      "datetime": "2026-11-21 05:02",
+      "source": "华尔街见闻",
+      "url": "https://wallstreetcn.com/livenews/3203580",
+      "summary": "美国总统特朗普20日在白宫举行的新闻发布会上表示，日前在中国深圳举行的亚太经合组织领导人非正式会议是一场非常成功的经济会议，美国、中国和俄罗斯三国领导人还举行了首次三方会晤，这是“多年来最具重大意义的国际峰会之一”。 特朗普说，中俄美元首会晤“史无前例”，“意义非常重大”，会晤期间“气氛极其热烈，令人难以置信”，“我们三人之间的关系非常融洽”。特朗普还说，这次历史性峰会的成果…",
+      "relatedStocks": [
+        "美股科技",
+        "黄金"
+      ],
+      "bullConcepts": [
+        "黄金",
+        "防御板块"
+      ],
+      "bearConcepts": [
+        "高估值成长股"
+      ],
+      "bullIndustries": [
+        "银行",
+        "黄金"
+      ],
+      "bearIndustries": [
+        "高杠杆地产"
+      ],
+      "heat": 55,
       "momentum": 26,
       "_auto": true
     },
     {
-      "id": "ap1dd2xa",
-      "title": "AMD首席执行官苏姿丰评黄仁勋离职：保持距离",
+      "id": "ap1avrbkz",
+      "title": "伊朗外长：特朗普每天都有新立场，甚至推翻前一天的声明，这并不令人惊讶。伊朗的首要要求是特朗普明确表示他想要达成协议。",
+      "tag": "人物/特朗普",
+      "region": "美国",
+      "concept": "usMacro",
+      "time": "2026-11-21 05:45",
+      "datetime": "2026-11-21 05:45",
+      "source": "新浪7×24",
+      "url": "https://finance.sina.cn/7x24/2026-11-21/detail-inizmruv0037321.d.html",
+      "summary": "伊朗外长：特朗普每天都有新立场，甚至推翻前一天的声明，这并不令人惊讶。伊朗的首要要求是特朗普明确表示他想要达成协议。",
+      "relatedStocks": [
+        "宽基指数"
+      ],
+      "bullConcepts": [
+        "防御板块"
+      ],
+      "bearConcepts": [
+        "周期股"
+      ],
+      "bullIndustries": [
+        "公用事业"
+      ],
+      "bearIndustries": [
+        "顺周期"
+      ],
+      "heat": 24,
+      "momentum": 36,
+      "_auto": true
+    },
+    {
+      "id": "ap1kf06fq",
+      "title": "据知情人士透露，Anthropic PBC首次公开募股(IPO)吸引了散户投资者约1150亿至1200亿美元的认购需求，超过SpaceX上市时散户的认购金额。这家前沿AI实验室的…",
+      "tag": "人物/马斯克",
+      "region": "美国",
+      "concept": "aiCapex",
+      "time": "2026-11-21 04:17",
+      "datetime": "2026-11-21 04:17",
+      "source": "华尔街见闻",
+      "url": "https://wallstreetcn.com/livenews/3203558",
+      "summary": "据知情人士透露，Anthropic PBC首次公开募股(IPO)吸引了散户投资者约1150亿至1200亿美元的认购需求，超过SpaceX上市时散户的认购金额。这家前沿AI实验室的IPO吸引了机构投资者超过5000亿美元的认购需求，是SpaceX机构认购金额的两倍多。Anthropic此次IPO规模创下历史纪录，公司及其七名联合创始人通过IPO筹集935亿美元，包括超额配售部分…",
+      "relatedStocks": [
+        "英伟达",
+        "微软",
+        "台积电"
+      ],
+      "bullConcepts": [
+        "AI算力",
+        "半导体",
+        "国产替代"
+      ],
+      "bearConcepts": [
+        "传统软件"
+      ],
+      "bullIndustries": [
+        "半导体",
+        "AI应用",
+        "算力基础设施"
+      ],
+      "bearIndustries": [
+        "传统IT服务"
+      ],
+      "heat": 87,
+      "momentum": 26,
+      "_auto": true
+    },
+    {
+      "id": "ap1thfhrf",
+      "title": "特朗普希望黄仁勋道歉后重掌英伟达",
       "tag": "人物/黄仁勋",
-      "region": "全球",
-      "concept": "ai",
-      "time": "2026-11-20 15:57",
-      "datetime": "2026-11-20 15:57",
+      "region": "美国",
+      "concept": "aiCapex",
+      "time": "2026-11-21 04:51",
+      "datetime": "2026-11-21 04:51",
       "source": "环球市场播报",
-      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-20/doc-inizkizh4020471.shtml",
-      "summary": "芯片制造商AMD首席执行官、英伟达前首席执行官黄仁勋的远房表亲苏姿丰称赞黄仁勋是一位“杰出的领导者”，但表示AMD需要远离围绕其最大AI芯片竞争对手的“纷扰”。",
+      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-21/doc-inizmruv0014971.shtml",
+      "summary": "美国总统唐纳德·特朗普呼吁英伟达在黄仁勋郑重道歉后接受他重掌公司，尽管这种可能性依然看起来极低。 英伟达董事会已明确表示不打算重新接纳这位身陷危机的前首席执行官...",
       "relatedStocks": [
         "英伟达",
         "微软",
@@ -70,20 +208,53 @@
         "传统IT服务"
       ],
       "heat": 29,
+      "momentum": 26,
+      "_auto": true
+    },
+    {
+      "id": "apzsitov",
+      "title": "威瑞森CEO深知马斯克要来抢占自家业务，他称SpaceX要参与竞争将耗资超3000亿美元",
+      "tag": "人物/马斯克",
+      "region": "美国",
+      "concept": "usFinance",
+      "time": "2026-11-21 01:01",
+      "datetime": "2026-11-21 01:01",
+      "source": "环球市场播报",
+      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-21/doc-inizmfeu7093765.shtml",
+      "summary": "威瑞森 CEO 丹・舒尔曼表示，公司高度重视 SpaceX 进军电信行业的动向，但并未陷入恐慌。 埃隆・马斯克希望星链（Starlink）成长为美国主流移动运营商。",
+      "relatedStocks": [
+        "美股科技",
+        "黄金"
+      ],
+      "bullConcepts": [
+        "黄金",
+        "防御板块"
+      ],
+      "bearConcepts": [
+        "高估值成长股"
+      ],
+      "bullIndustries": [
+        "银行",
+        "黄金"
+      ],
+      "bearIndustries": [
+        "高杠杆地产"
+      ],
+      "heat": 60,
       "momentum": 18,
       "_auto": true
     },
     {
-      "id": "ap1p7o7v6",
-      "title": "美国德克萨斯州候任州长称愿与马斯克合作：“我不讨厌数据中心”",
-      "tag": "人物/马斯克",
+      "id": "apu8my2y",
+      "title": "美国参议员蒂姆·斯科特表示，英伟达前CEO黄仁勋将在公开听证会上作证。",
+      "tag": "人物/黄仁勋",
       "region": "美国",
       "concept": "aiCapex",
-      "time": "2026-11-20 13:06",
-      "datetime": "2026-11-20 13:06",
-      "source": "环球市场播报",
-      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-20/doc-inizkctk4032424.shtml",
-      "summary": "美国德克萨斯州候任州长吉娜·希诺霍萨周四表示，她愿意就该州内的数据中心事宜与SpaceX首席执行官埃隆·马斯克展开合作，但同时也重申了她关于实施暂停措施以及将民众利益置...",
+      "time": "2026-11-21 02:43",
+      "datetime": "2026-11-21 02:43",
+      "source": "财联社",
+      "url": "https://www.cls.cn/detail/2540665",
+      "summary": "美国参议员蒂姆·斯科特表示，英伟达前CEO黄仁勋将在公开听证会上作证。",
       "relatedStocks": [
         "英伟达",
         "微软",
@@ -105,21 +276,21 @@
       "bearIndustries": [
         "传统IT服务"
       ],
-      "heat": 24,
+      "heat": 47,
       "momentum": 18,
       "_auto": true
     },
     {
-      "id": "ap1dffj65",
-      "title": "特朗普将举办晚宴，招待特朗普币持有者",
-      "tag": "人物/特朗普",
-      "region": "美国",
-      "concept": "usMacro",
-      "time": "2026-11-20 15:20",
-      "datetime": "2026-11-20 15:20",
-      "source": "环球市场播报",
-      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-20/doc-inizkizc5591408.shtml",
-      "summary": "美国总统唐纳德·特朗普将于本周末举办一场晚宴，允许其个人迷因币的最大持有者与总统接触。与此同时，民主党誓言调查特朗普政府涉嫌存在的“大规模腐败”问题...",
+      "id": "apd4etht",
+      "title": "据英国金融时报援引参加周四非公开活动的人士消息，摩根大通首席执行官杰米·戴蒙（Jamie Dimon）表示，他计划寻找方法来追回（offset）英国政府上月推出的银行税上调部分。…",
+      "tag": "人物/戴蒙",
+      "region": "欧洲",
+      "concept": "macro",
+      "time": "2026-11-21 03:35",
+      "datetime": "2026-11-21 03:35",
+      "source": "华尔街见闻",
+      "url": "https://wallstreetcn.com/livenews/3203494",
+      "summary": "据英国金融时报援引参加周四非公开活动的人士消息，摩根大通首席执行官杰米·戴蒙（Jamie Dimon）表示，他计划寻找方法来追回（offset）英国政府上月推出的银行税上调部分。 戴蒙在摩根大通欧洲金融大会上表示，此举是为了“树立一个范例，让[政府]明白这些不公平惩罚背后的取舍代价”。 他补充说，这一举动“更多是出于遗憾”而非愤怒，但并未具体说明该行将如何抵消这项税收的增加。…",
       "relatedStocks": [
         "宽基指数"
       ],
@@ -140,49 +311,79 @@
       "_auto": true
     },
     {
-      "id": "ap191rbj3",
-      "title": "马斯克24小时中国行，专程从深圳赶往上海",
-      "tag": "人物/马斯克",
-      "region": "中国",
-      "concept": "nev",
-      "time": "2026-11-20 12:46",
-      "datetime": "2026-11-20 12:46",
-      "source": "21世纪经济报道",
-      "url": "https://finance.sina.com.cn/world/2026-11-20/doc-inizkctk4025371.shtml",
-      "summary": "据中国新闻网20日消息，马斯克现身上海特斯拉超级工厂。他专程从深圳赶往上海：“我想来上海，感谢中国团队。” 11月19日晚，特斯拉副总裁陶琳发微博称：...",
+      "id": "ap1ct54l4",
+      "title": "美联储理事库克表示，当前金融条件过于宽松，而通胀水平\"令人高度担忧\"。",
+      "tag": "人物/库克",
+      "region": "美国",
+      "concept": "usFinance",
+      "time": "2026-11-21 01:19",
+      "datetime": "2026-11-21 01:19",
+      "source": "财联社",
+      "url": "https://www.cls.cn/detail/2540647",
+      "summary": "美联储理事库克表示，当前金融条件过于宽松，而通胀水平\"令人高度担忧\"。",
       "relatedStocks": [
-        "特斯拉",
-        "比亚迪"
+        "美股科技",
+        "黄金"
       ],
       "bullConcepts": [
-        "智能驾驶",
-        "动力电池"
+        "黄金",
+        "防御板块"
       ],
       "bearConcepts": [
-        "传统车企"
+        "高估值成长股"
       ],
       "bullIndustries": [
-        "智能驾驶",
-        "锂电池"
+        "银行",
+        "黄金"
       ],
       "bearIndustries": [
-        "传统汽车制造"
+        "高杠杆地产"
       ],
-      "heat": 24,
+      "heat": 29,
       "momentum": 18,
       "_auto": true
     },
     {
-      "id": "apskfauz",
-      "title": "据称前英伟达首席执行官黄仁勋或准备与亲手创立的公司同台竞争",
-      "tag": "人物/黄仁勋",
-      "region": "美国",
-      "concept": "aiCapex",
-      "time": "2026-11-20 16:22",
-      "datetime": "2026-11-20 16:22",
+      "id": "apbmwni1",
+      "title": "消息人士称，若向软银出售失败，ABB正考虑将机器人业务部门上市。",
+      "tag": "人物/孙正义",
+      "region": "全球",
+      "concept": "macro",
+      "time": "2026-11-21 03:55",
+      "datetime": "2026-11-21 03:55",
+      "source": "财联社",
+      "url": "https://www.cls.cn/detail/2540635",
+      "summary": "消息人士称，若向软银出售失败，ABB正考虑将机器人业务部门上市。",
+      "relatedStocks": [
+        "宽基指数"
+      ],
+      "bullConcepts": [
+        "防御板块"
+      ],
+      "bearConcepts": [
+        "周期股"
+      ],
+      "bullIndustries": [
+        "公用事业"
+      ],
+      "bearIndustries": [
+        "顺周期"
+      ],
+      "heat": 24,
+      "momentum": 26,
+      "_auto": true
+    },
+    {
+      "id": "aphipxqh",
+      "title": "拉加德：欧盟基金应为芯片工厂、数据中心项目承担首轮损失",
+      "tag": "人物/拉加德",
+      "region": "中国",
+      "concept": "llm",
+      "time": "2026-11-20 22:45",
+      "datetime": "2026-11-20 22:45",
       "source": "环球市场播报",
-      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-20/doc-inizkqii0284644.shtml",
-      "summary": "黄仁勋的下一步会不会打造一家英伟达的对手？有一项预测称，这位前首席执行官或将依托自己在投资方、客户及其他圈子里的人脉，募资 500 亿美元，创立一家新半导体企业。",
+      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-20/doc-inizkywy3928249.shtml",
+      "summary": "核心要点欧洲央行行长克里斯蒂娜・拉加德表示，欧盟公共资金应当为大型芯片工厂、数据中心项目承担首轮损失，以此吸引私人资本入局。",
       "relatedStocks": [
         "英伟达",
         "微软",
