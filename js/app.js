@@ -12112,15 +12112,85 @@ const app = createApp({
       c19: { good: { c: ['城轨', '基建'], i: ['轨交设备', '建筑施工'] }, bad: { c: [], i: [] } },
       c20: { good: { c: ['短剧出海', '传媒'], i: ['短剧平台', '出海服务'] }, bad: { c: [], i: [] } }
     };
-    /** 给影响力事件补齐「利好/利空 概念与行业」标签：事件自带字段优先 → 按事件id查表 → 按概念键查表 */
+    /** 20261120f：按事件新闻内容动态计算「利好/利空 概念与行业」——
+     *   用 hot-topics 的概念/行业词表扫描事件文本，命中即候选；方向用 conceptSentiment 裁决
+     *   （含战争/加息/石油特例视角 + 通用多空词典），bull→利好、bear→利空、neutral→不计。
+     *   自动聚合事件（auto-）没有静态标签，必须走这里才能在卡片下显示四行利好/利空。 */
+    function inflDynBullBear(e) {
+      const text = String(e.title || '') + ' ' + String(e.summary || '');
+      if (!text || text.trim().length < 6) return null;
+      const HT = ht_();
+      if (!HT || !HT.BRIEF_CONCEPT_DIMS || !HT.BRIEF_CONCEPT_KEYWORDS) return null;
+      // 噪声控制：排除「指数指标/各市股指」行情指标类；过泛短词（品牌/内容/出海等）须 ≥3 字才认
+      const GENERIC_SHORT = new Set(['品牌', '内容', '出海', '跨境', '投放', '营销', '直播', '购物', 'IP', '供应链', '出口', '零售', '商业', '集团', '综合', '概念', '平台', '标的', '概念股']);
+      const SKIP_NAME = /指数指标|各市股指|军事战争/;
+      // 并购语境下「重组」专指资产重组——跳过生物类概念（重组蛋白）误命中
+      const MNA_RE = /资产重组|并购重组|重大资产重组|国企重组/;
+      const MNA_SKIP_KEY = /^c_086$/;
+      // 事件级补充词典（仅本功能使用）：公告/监管类文本通用词典覆盖不足时的方向兜底
+      const EV_BULL = ['重大资产重组','重组','并购','收购','中标','签约','签订','战略合作','获批','核准','批复','涨价','提价','提价函','订单','预增','预盈','扭亏','扩产','供不应求','增持','回购','出口订单','满产','印发','出台','全面实施','试点','扩围','准入','放开','补贴','减税','降准','支持','联合研发','研发成功','新一代','量产','技术突破','首发','交付','国产替代'];
+      const EV_BEAR = ['立案','处罚','罚款','减持','质押爆仓','退市','警示','亏损','下滑','召回','破产','重整失败','诉讼','仲裁','降价','库存积压','关停','停产','裁减','欠薪','资金链','爆雷','违约','下跌','大跌','收紧','限制','整顿','暂停','叫停','约谈'];
+      // 歧义关键词：短词在特定长语境下含义不同——长语境命中时跳过该词（避免「重大资产重组」误命中「疫苗(重组蛋白)」）
+      const AMBIG_KW = { '重组': /重组蛋白|基因重组/, '注射': /注射美容/, '整合': /三网整合|积分整合/ };
+      const arr = [{ text }];
+      const dirOf = (nm) => {
+        const s = HT.conceptSentiment(nm, arr);
+        if (s === 'bull' || s === 'bear') return s;
+        for (const w of EV_BEAR) if (text.indexOf(w) >= 0) return 'bear';
+        for (const w of EV_BULL) if (text.indexOf(w) >= 0) return 'bull';
+        return 'neutral';
+      };
+      const scan = (dims, dict, max) => {
+        const bull = [], bear = [];
+        for (const d of dims) {
+          if (SKIP_NAME.test(d.name || '')) continue;
+          const kws = dict[d.key];
+          if (!kws) continue;
+          for (const kw of kws) {
+            if (kw.length >= 2 && text.indexOf(kw) >= 0 && !(GENERIC_SHORT.has(kw) && kw.length < 3)) {
+              const amb = AMBIG_KW[kw];
+              if (amb && amb.test(text)) continue;   // 歧义语境：该词在此处含义不同，不认定命中
+              if (kw === '重组' && MNA_RE.test(text) && MNA_SKIP_KEY.test(d.key)) continue;
+              const s = dirOf(d.name);
+              if (s === 'bull') bull.push(String(d.name || '').replace(/[ⅡⅢ]+$/, ''));
+              else if (s === 'bear') bear.push(String(d.name || '').replace(/[ⅡⅢ]+$/, ''));
+              break;   // 该概念/行业命中任一关键词即可，方向统一按整条事件文本裁决
+            }
+          }
+        }
+        return { bull: bull.slice(0, max), bear: bear.slice(0, max) };
+      };
+      const C = scan(HT.BRIEF_CONCEPT_DIMS, HT.BRIEF_CONCEPT_KEYWORDS, 6);
+      const I = scan(HT.BRIEF_INDUSTRY_DIMS, HT.BRIEF_INDUSTRY_KEYWORDS, 6);
+      if (!C.bull.length && !C.bear.length && !I.bull.length && !I.bear.length) return null;
+      return {
+        bullConcepts: C.bull, bearConcepts: C.bear,
+        bullIndustries: I.bull, bearIndustries: I.bear
+      };
+    }
+    /** 给影响力事件补齐「利好/利空 概念与行业」标签：seed 用静态表（人工校准）→ 动态内容判定兜底；
+     *  自动聚合事件（auto）动态内容判定优先 → 静态概念键兜底。 */
     function inflWithBullBear(e) {
       const has = (e.bullConcepts && e.bullConcepts.length) || (e.bearConcepts && e.bearConcepts.length)
         || (e.bullIndustries && e.bullIndustries.length) || (e.bearIndustries && e.bearIndustries.length);
       if (!has) {
-        const t = INFL_BB_TAGS[e.id] || INFL_BB_TAGS[e.concept] || null;
-        if (t) {
-          e.bullConcepts = [...t.good.c]; e.bearConcepts = [...t.bad.c];
-          e.bullIndustries = [...t.good.i]; e.bearIndustries = [...t.bad.i];
+        if (e.auto) {
+          const dyn = inflDynBullBear(e);
+          if (dyn) { Object.assign(e, dyn); return e; }
+          const t = INFL_BB_TAGS[e.concept] || null;
+          if (t) {
+            e.bullConcepts = [...t.good.c]; e.bearConcepts = [...t.bad.c];
+            e.bullIndustries = [...t.good.i]; e.bearIndustries = [...t.bad.i];
+          }
+        } else {
+          const t = INFL_BB_TAGS[e.id] || INFL_BB_TAGS[e.concept] || null;
+          if (t) {
+            e.bullConcepts = [...t.good.c]; e.bearConcepts = [...t.bad.c];
+            e.bullIndustries = [...t.good.i]; e.bearIndustries = [...t.bad.i];
+          } else {
+            const dyn = inflDynBullBear(e);
+            if (dyn) Object.assign(e, dyn);
+          }
         }
       }
       return e;
