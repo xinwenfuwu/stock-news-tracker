@@ -1,9 +1,111 @@
 {
-  "generatedAt": "2026-11-21 20:26",
+  "generatedAt": "2026-11-22 04:28",
   "generatedBy": "GitHub Actions · 多源实时聚合",
   "sourceCount": 5,
   "autoCount": 18,
   "events": [
+    {
+      "id": "ab193opiq",
+      "title": "伊朗革命卫队周六袭击了美国在巴林的两个军事基地，以报复德黑兰所称的美方敌对行动。袭击目标是谢赫伊萨空军基地和朱法尔的美国海军设施。目前尚不清楚损失或伤亡情况。巴林内政部报告称，伊…",
+      "tag": "地缘/政治",
+      "region": "美国",
+      "concept": "defense",
+      "time": "2026-11-22 03:40",
+      "datetime": "2026-11-22 03:40",
+      "source": "新浪7×24",
+      "url": "https://finance.sina.cn/7x24/2026-11-22/detail-inizputq6324483.d.html",
+      "summary": "伊朗革命卫队周六袭击了美国在巴林的两个军事基地，以报复德黑兰所称的美方敌对行动。袭击目标是谢赫伊萨空军基地和朱法尔的美国海军设施。目前尚不清楚损失或伤亡情况。巴林内政部报告称，伊朗的一次袭击击中了一处民用工业设施，引发火灾并造成财产损失，但无人员受伤。目前尚不清楚这些事件是否有关联。",
+      "relatedStocks": [
+        "军工",
+        "黄金"
+      ],
+      "bullConcepts": [
+        "军工",
+        "避险资产"
+      ],
+      "bearConcepts": [
+        "风险资产"
+      ],
+      "bullIndustries": [
+        "军工",
+        "黄金"
+      ],
+      "bearIndustries": [
+        "航空",
+        "旅游"
+      ],
+      "heat": 38,
+      "momentum": 36,
+      "_auto": true
+    },
+    {
+      "id": "abtxfp2d",
+      "title": "巴林内政部21日晚在社交媒体上说，该国一处民用工业设施当天遭伊朗袭击，引发火灾。初步信息显示，袭击造成财产损失，暂无人员伤亡报告。 巴林内政部说，当地民防部门正在采取措施控制火势…",
+      "tag": "地缘/政治",
+      "region": "全球",
+      "concept": "macro",
+      "time": "2026-11-22 04:06",
+      "datetime": "2026-11-22 04:06",
+      "source": "新浪7×24",
+      "url": "https://finance.sina.cn/7x24/2026-11-22/detail-inizputu9320366.d.html",
+      "summary": "巴林内政部21日晚在社交媒体上说，该国一处民用工业设施当天遭伊朗袭击，引发火灾。初步信息显示，袭击造成财产损失，暂无人员伤亡报告。 巴林内政部说，当地民防部门正在采取措施控制火势。（新华社）",
+      "relatedStocks": [
+        "军工",
+        "黄金"
+      ],
+      "bullConcepts": [
+        "军工",
+        "避险资产"
+      ],
+      "bearConcepts": [
+        "风险资产"
+      ],
+      "bullIndustries": [
+        "军工",
+        "黄金"
+      ],
+      "bearIndustries": [
+        "航空",
+        "旅游"
+      ],
+      "heat": 29,
+      "momentum": 41,
+      "_auto": true
+    },
+    {
+      "id": "aboqqk66",
+      "title": "当地时间21日晚，总台报道员在也门荷台达市听到爆炸声，该地区疑似遭沙特主导的多国联军空袭，但具体遭袭地点尚不明确。（央视新闻）",
+      "tag": "地缘/政治",
+      "region": "全球",
+      "concept": "macro",
+      "time": "2026-11-22 01:07",
+      "datetime": "2026-11-22 01:07",
+      "source": "新浪7×24",
+      "url": "https://finance.sina.cn/7x24/2026-11-22/detail-inizpqmu3164379.d.html",
+      "summary": "当地时间21日晚，总台报道员在也门荷台达市听到爆炸声，该地区疑似遭沙特主导的多国联军空袭，但具体遭袭地点尚不明确。（央视新闻）",
+      "relatedStocks": [
+        "军工",
+        "黄金"
+      ],
+      "bullConcepts": [
+        "军工",
+        "避险资产"
+      ],
+      "bearConcepts": [
+        "风险资产"
+      ],
+      "bullIndustries": [
+        "军工",
+        "黄金"
+      ],
+      "bearIndustries": [
+        "航空",
+        "旅游"
+      ],
+      "heat": 65,
+      "momentum": 18,
+      "_auto": true
+    },
     {
       "id": "ab9zs0qx",
       "title": "当地时间21日，伊朗伊斯兰革命卫队海军发表声明称，自20日晚，多艘油轮在霍尔木兹海峡南部海域发生事故。伊朗方面表示，20日晚，美军动用了包括空中加油机、F-16、F/A-18和 …",
@@ -34,165 +136,7 @@
         "航空",
         "旅游"
       ],
-      "heat": 74,
-      "momentum": 46,
-      "_auto": true
-    },
-    {
-      "id": "abbjkofr",
-      "title": "中国地震台网自动测定：11月21日18时45分在青海海西州德令哈市附近（北纬37.14度，东经96.59度）发生5.7级左右地震，最终结果以正式速报为准。",
-      "tag": "宏观/综合",
-      "region": "中国",
-      "concept": "broker",
-      "time": "2026-11-21 18:48",
-      "datetime": "2026-11-21 18:48",
-      "source": "新浪7×24",
-      "url": "https://finance.sina.cn/7x24/2026-11-21/detail-iniznxpy6613072.d.html",
-      "summary": "中国地震台网自动测定：11月21日18时45分在青海海西州德令哈市附近（北纬37.14度，东经96.59度）发生5.7级左右地震，最终结果以正式速报为准。",
-      "relatedStocks": [
-        "宽基指数"
-      ],
-      "bullConcepts": [
-        "防御板块"
-      ],
-      "bearConcepts": [
-        "周期股"
-      ],
-      "bullIndustries": [
-        "公用事业"
-      ],
-      "bearIndustries": [
-        "顺周期"
-      ],
-      "heat": 100,
-      "momentum": 26,
-      "_auto": true
-    },
-    {
-      "id": "abvqq2t4",
-      "title": "泽连斯基：打击克里米亚大桥是对俄军袭击乌桥梁的回应",
-      "tag": "地缘/政治",
-      "region": "欧洲",
-      "concept": "macro",
-      "time": "2026-11-21 19:56",
-      "datetime": "2026-11-21 19:56",
-      "source": "财联社",
-      "url": "https://www.cls.cn/detail/2540827",
-      "summary": "【泽连斯基：打击克里米亚大桥是对俄军袭击乌桥梁的回应】财联社11月21日电，当地时间21日，乌克兰总统泽连斯基在会晤英国国防大臣斯特里廷时表示，在乌方对克里米亚大桥实施打击之前，俄军已经使用导弹和无人机对乌克兰境内桥梁发动109次袭击。泽连斯基强调，乌方针对克里米亚大桥的行动，是在俄军多次袭击乌克兰桥梁之后作出的回应。他指出，克里米亚大桥长期被俄方用作军事后勤通道，俄军经由该…",
-      "relatedStocks": [
-        "军工",
-        "黄金"
-      ],
-      "bullConcepts": [
-        "军工",
-        "避险资产"
-      ],
-      "bearConcepts": [
-        "风险资产"
-      ],
-      "bullIndustries": [
-        "军工",
-        "黄金"
-      ],
-      "bearIndustries": [
-        "航空",
-        "旅游"
-      ],
-      "heat": 24,
-      "momentum": 36,
-      "_auto": true
-    },
-    {
-      "id": "ab12zah87",
-      "title": "11月21日，从俄罗斯方面获悉，俄罗斯副总理尼基京称，克里米亚大桥铁路运输已全面恢复。11月19日夜间，克里米亚大桥遭无人机袭击，列车通行暂停。（央视新闻）",
-      "tag": "地缘/政治",
-      "region": "全球",
-      "concept": "macro",
-      "time": "2026-11-21 18:53",
-      "datetime": "2026-11-21 18:53",
-      "source": "华尔街见闻",
-      "url": "https://wallstreetcn.com/livenews/3203662",
-      "summary": "11月21日，从俄罗斯方面获悉，俄罗斯副总理尼基京称，克里米亚大桥铁路运输已全面恢复。11月19日夜间，克里米亚大桥遭无人机袭击，列车通行暂停。（央视新闻）",
-      "relatedStocks": [
-        "军工",
-        "黄金"
-      ],
-      "bullConcepts": [
-        "军工",
-        "避险资产"
-      ],
-      "bearConcepts": [
-        "风险资产"
-      ],
-      "bullIndustries": [
-        "军工",
-        "黄金"
-      ],
-      "bearIndustries": [
-        "航空",
-        "旅游"
-      ],
-      "heat": 60,
-      "momentum": 26,
-      "_auto": true
-    },
-    {
-      "id": "ab1fq74jy",
-      "title": "青海德令哈市发生5.6级地震 中国地震局启动四级应急响应",
-      "tag": "宏观/综合",
-      "region": "中国",
-      "concept": "broker",
-      "time": "2026-11-21 19:15",
-      "datetime": "2026-11-21 19:15",
-      "source": "新浪7×24",
-      "url": "https://finance.sina.cn/7x24/2026-11-21/detail-iniznxpx4859786.d.html",
-      "summary": "【青海德令哈市发生5.6级地震 中国地震局启动四级应急响应】据中国地震台网正式测定，2026年11月21日18时45分，在青海海西州德令哈市（北纬37.14度，东经96.62度）发生5.6级地震，震源深度10公里。中国地震局启动四级应急响应。",
-      "relatedStocks": [
-        "宽基指数"
-      ],
-      "bullConcepts": [
-        "防御板块"
-      ],
-      "bearConcepts": [
-        "周期股"
-      ],
-      "bullIndustries": [
-        "公用事业"
-      ],
-      "bearIndustries": [
-        "顺周期"
-      ],
-      "heat": 100,
-      "momentum": 26,
-      "_auto": true
-    },
-    {
-      "id": "abi4blp8",
-      "title": "德国地质学研究中心：印尼班达海发生6.78级地震。",
-      "tag": "宏观/综合",
-      "region": "欧洲",
-      "concept": "macro",
-      "time": "2026-11-21 18:04",
-      "datetime": "2026-11-21 18:04",
-      "source": "新浪7×24",
-      "url": "https://finance.sina.cn/7x24/2026-11-21/detail-iniznxpy6589607.d.html",
-      "summary": "德国地质学研究中心：印尼班达海发生6.78级地震。",
-      "relatedStocks": [
-        "宽基指数"
-      ],
-      "bullConcepts": [
-        "防御板块"
-      ],
-      "bearConcepts": [
-        "周期股"
-      ],
-      "bullIndustries": [
-        "公用事业"
-      ],
-      "bearIndustries": [
-        "顺周期"
-      ],
-      "heat": 87,
+      "heat": 69,
       "momentum": 18,
       "_auto": true
     },
@@ -207,6 +151,110 @@
       "source": "环球市场播报",
       "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-20/doc-inizmfew3808800.shtml",
       "summary": "Anthropic PBC股价周五回吐上市首日的大部分涨幅。这家AI实验室刚刚完成史上规模最大的首次公开募股，其股价表现正在考验投资者的信心。",
+      "relatedStocks": [
+        "英伟达",
+        "微软",
+        "台积电"
+      ],
+      "bullConcepts": [
+        "AI算力",
+        "半导体",
+        "国产替代"
+      ],
+      "bearConcepts": [
+        "传统软件"
+      ],
+      "bullIndustries": [
+        "半导体",
+        "AI应用",
+        "算力基础设施"
+      ],
+      "bearIndustries": [
+        "传统IT服务"
+      ],
+      "heat": 87,
+      "momentum": 18,
+      "_auto": true
+    },
+    {
+      "id": "abbgnmyj",
+      "title": "当地时间21日，伊朗方面消息称，位于霍尔木兹甘省东部的锡里克居民报告，几分钟前听到从海面方向传来巨大的爆炸声。爆炸的具体原因尚不明确，但可能与向未经授权的船只发射警告性射击或引爆…",
+      "tag": "地缘/政治",
+      "region": "全球",
+      "concept": "macro",
+      "time": "2026-11-22 02:30",
+      "datetime": "2026-11-22 02:30",
+      "source": "新浪7×24",
+      "url": "https://finance.sina.cn/7x24/2026-11-22/detail-inizputs3071691.d.html",
+      "summary": "当地时间21日，伊朗方面消息称，位于霍尔木兹甘省东部的锡里克居民报告，几分钟前听到从海面方向传来巨大的爆炸声。爆炸的具体原因尚不明确，但可能与向未经授权的船只发射警告性射击或引爆水雷有关。据悉，在过去三天里，霍尔木兹海峡内至少有12艘未经授权的船只触雷爆炸，并引发了火灾。（央视新闻）",
+      "relatedStocks": [
+        "军工",
+        "黄金"
+      ],
+      "bullConcepts": [
+        "军工",
+        "避险资产"
+      ],
+      "bearConcepts": [
+        "风险资产"
+      ],
+      "bullIndustries": [
+        "军工",
+        "黄金"
+      ],
+      "bearIndustries": [
+        "航空",
+        "旅游"
+      ],
+      "heat": 42,
+      "momentum": 26,
+      "_auto": true
+    },
+    {
+      "id": "abf7ssqb",
+      "title": "卡塔尔-德国声明：谴责胡塞武装在也门以及针对沙特的袭击，并呼吁该组织立即停止一切军事行动。",
+      "tag": "地缘/政治",
+      "region": "欧洲",
+      "concept": "macro",
+      "time": "2026-11-22 00:26",
+      "datetime": "2026-11-22 00:26",
+      "source": "新浪7×24",
+      "url": "https://finance.sina.cn/7x24/2026-11-22/detail-inizpqmu3148966.d.html",
+      "summary": "卡塔尔-德国声明：谴责胡塞武装在也门以及针对沙特的袭击，并呼吁该组织立即停止一切军事行动。",
+      "relatedStocks": [
+        "军工",
+        "黄金"
+      ],
+      "bullConcepts": [
+        "军工",
+        "避险资产"
+      ],
+      "bearConcepts": [
+        "风险资产"
+      ],
+      "bullIndustries": [
+        "军工",
+        "黄金"
+      ],
+      "bearIndustries": [
+        "航空",
+        "旅游"
+      ],
+      "heat": 33,
+      "momentum": 18,
+      "_auto": true
+    },
+    {
+      "id": "abwdqp6y",
+      "title": "Anthropic上市未能止住美股暴跌 华尔街追问什么能拯救AI交易",
+      "tag": "科技/AI",
+      "region": "美国",
+      "concept": "aiCapex",
+      "time": "2026-11-22 00:12",
+      "datetime": "2026-11-22 00:12",
+      "source": "环球市场播报",
+      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-22/doc-inizpqms6366294.shtml",
+      "summary": "本月美股走势艰难，民主党在中期选举中取得胜利，英伟达公司黄仁勋突然遭罢免，接连给市场带来冲击。 Anthropic创纪录的首次公开募股原本被寄望能给市场带来喘息之机...",
       "relatedStocks": [
         "英伟达",
         "微软",
@@ -262,37 +310,7 @@
         "航空",
         "旅游"
       ],
-      "heat": 42,
-      "momentum": 18,
-      "_auto": true
-    },
-    {
-      "id": "ab14mw6g4",
-      "title": "被解职CEO仍恋旧头衔 领英上迟迟不肯“卸任”",
-      "tag": "宏观/综合",
-      "region": "美国",
-      "concept": "usMacro",
-      "time": "2026-11-20 19:13",
-      "datetime": "2026-11-20 19:13",
-      "source": "环球市场播报",
-      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-20/doc-inizkuqy7133689.shtml",
-      "summary": "在这个冷热不均的劳动力市场，许多美国人都紧紧抓住现有工作不放，这种现象被称为“抱紧饭碗”（job hugging）。这种“抱紧”甚至也延伸到了首席执行官群体。",
-      "relatedStocks": [
-        "宽基指数"
-      ],
-      "bullConcepts": [
-        "防御板块"
-      ],
-      "bearConcepts": [
-        "周期股"
-      ],
-      "bullIndustries": [
-        "公用事业"
-      ],
-      "bearIndustries": [
-        "顺周期"
-      ],
-      "heat": 60,
+      "heat": 33,
       "momentum": 18,
       "_auto": true
     },
@@ -333,33 +351,175 @@
       "_auto": true
     },
     {
-      "id": "abc00a46",
-      "title": "伊拉克安全媒体中心21日发布声明说，伊拉克南部巴士拉省一座发电站当日发生火灾。据初步统计，火灾导致4人死亡、35人受伤。伤者已被送往医院接受治疗，火灾原因正在调查中。（新华社）",
-      "tag": "宏观/综合",
-      "region": "全球",
-      "concept": "macro",
-      "time": "2026-11-21 18:38",
-      "datetime": "2026-11-21 18:38",
+      "id": "abf479og",
+      "title": "美国加州针对英伟达芯片销售、并就此误导投资者的调查，同时在核查是否存在州法下的刑事违规行为，令这家芯片企业面临更高风险。该州总检察长罗布·邦塔周五称，倘若英伟达或前首席执行官黄仁…",
+      "tag": "科技/AI",
+      "region": "美国",
+      "concept": "aiCapex",
+      "time": "2026-11-22 01:15",
+      "datetime": "2026-11-22 01:15",
       "source": "新浪7×24",
-      "url": "https://finance.sina.cn/7x24/2026-11-21/detail-iniznxqa3384195.d.html",
-      "summary": "伊拉克安全媒体中心21日发布声明说，伊拉克南部巴士拉省一座发电站当日发生火灾。据初步统计，火灾导致4人死亡、35人受伤。伤者已被送往医院接受治疗，火灾原因正在调查中。（新华社）",
+      "url": "https://finance.sina.cn/7x24/2026-11-22/detail-inizpqmu3168387.d.html",
+      "summary": "美国加州针对英伟达芯片销售、并就此误导投资者的调查，同时在核查是否存在州法下的刑事违规行为，令这家芯片企业面临更高风险。该州总检察长罗布·邦塔周五称，倘若英伟达或前首席执行官黄仁勋就相关芯片销售情况向公众提供虚假信息，有可能触犯多项加州法律。邦塔前一日刚宣布启动这项调查，调查目前仍处于初步阶段，尚未形成任何结论。邦塔在采访中表示：“我们参考的基本法律框架，是加州法律中禁止误导…",
       "relatedStocks": [
-        "宽基指数"
+        "英伟达",
+        "微软",
+        "台积电"
       ],
       "bullConcepts": [
-        "防御板块"
+        "AI算力",
+        "半导体",
+        "国产替代"
       ],
       "bearConcepts": [
-        "周期股"
+        "传统软件"
       ],
       "bullIndustries": [
-        "公用事业"
+        "半导体",
+        "AI应用",
+        "算力基础设施"
       ],
       "bearIndustries": [
-        "顺周期"
+        "传统IT服务"
       ],
       "heat": 24,
-      "momentum": 26,
+      "momentum": 18,
+      "_auto": true
+    },
+    {
+      "id": "ab12vlk9t",
+      "title": "众议院民主党领袖杰弗里斯接受访谈：拒绝与斯蒂芬·米勒会面，上任首要务是终止伊朗战争，推动两国方案",
+      "tag": "地缘/政治",
+      "region": "美国",
+      "concept": "defense",
+      "time": "2026-11-22 00:28",
+      "datetime": "2026-11-22 00:28",
+      "source": "环球市场播报",
+      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-22/doc-inizpqmw9372978.shtml",
+      "summary": "周三，美国众议院民主党人以压倒性票数提名哈基姆·杰弗里斯担任下一任众议院议长，这几乎意味着，明年1月他将成为美国历史上首位黑人议长。",
+      "relatedStocks": [
+        "军工",
+        "黄金"
+      ],
+      "bullConcepts": [
+        "军工",
+        "避险资产"
+      ],
+      "bearConcepts": [
+        "风险资产"
+      ],
+      "bullIndustries": [
+        "军工",
+        "黄金"
+      ],
+      "bearIndustries": [
+        "航空",
+        "旅游"
+      ],
+      "heat": 24,
+      "momentum": 18,
+      "_auto": true
+    },
+    {
+      "id": "abidwz07",
+      "title": "据巴勒斯坦方面当地时间21日消息，以色列军方战机当天中午袭击了加沙地带加沙城西南部的一辆汽车，造成3名巴勒斯坦人死亡、另有数人受伤。据目击者称，遭袭车辆当时正在向加沙城内的一处流…",
+      "tag": "地缘/政治",
+      "region": "全球",
+      "concept": "macro",
+      "time": "2026-11-21 21:07",
+      "datetime": "2026-11-21 21:07",
+      "source": "华尔街见闻",
+      "url": "https://wallstreetcn.com/livenews/3203680",
+      "summary": "据巴勒斯坦方面当地时间21日消息，以色列军方战机当天中午袭击了加沙地带加沙城西南部的一辆汽车，造成3名巴勒斯坦人死亡、另有数人受伤。据目击者称，遭袭车辆当时正在向加沙城内的一处流离失所民众营地运送慈善组织提供的食物。（央视）",
+      "relatedStocks": [
+        "军工",
+        "黄金"
+      ],
+      "bullConcepts": [
+        "军工",
+        "避险资产"
+      ],
+      "bearConcepts": [
+        "风险资产"
+      ],
+      "bullIndustries": [
+        "军工",
+        "黄金"
+      ],
+      "bearIndustries": [
+        "航空",
+        "旅游"
+      ],
+      "heat": 24,
+      "momentum": 18,
+      "_auto": true
+    },
+    {
+      "id": "abg87xpw",
+      "title": "乌克兰预计，连接俄罗斯本土与克里米亚半岛的大桥在本周一系列袭击中受损后，俄方清理桥梁残骸将耗时数月。乌克兰国防部长Yevheniy Khmara表示：“他们正在进行勘察——他们已…",
+      "tag": "地缘/政治",
+      "region": "全球",
+      "concept": "macro",
+      "time": "2026-11-21 21:06",
+      "datetime": "2026-11-21 21:06",
+      "source": "华尔街见闻",
+      "url": "https://wallstreetcn.com/livenews/3203679",
+      "summary": "乌克兰预计，连接俄罗斯本土与克里米亚半岛的大桥在本周一系列袭击中受损后，俄方清理桥梁残骸将耗时数月。乌克兰国防部长Yevheniy Khmara表示：“他们正在进行勘察——他们已经派潜水员下水，正在拆解并研究将大桥受损部分打捞出来的方法。我们估计，他们将这一结构吊起并清理到一旁至少需要几个月的时间。” 在周一至周四的一系列无人机和导弹袭击中，乌克兰瞄准了大桥上一对被证明是薄弱…",
+      "relatedStocks": [
+        "军工",
+        "黄金"
+      ],
+      "bullConcepts": [
+        "军工",
+        "避险资产"
+      ],
+      "bearConcepts": [
+        "风险资产"
+      ],
+      "bullIndustries": [
+        "军工",
+        "黄金"
+      ],
+      "bearIndustries": [
+        "航空",
+        "旅游"
+      ],
+      "heat": 24,
+      "momentum": 18,
+      "_auto": true
+    },
+    {
+      "id": "ab12zah87",
+      "title": "11月21日，从俄罗斯方面获悉，俄罗斯副总理尼基京称，克里米亚大桥铁路运输已全面恢复。11月19日夜间，克里米亚大桥遭无人机袭击，列车通行暂停。（央视新闻）",
+      "tag": "地缘/政治",
+      "region": "全球",
+      "concept": "macro",
+      "time": "2026-11-21 18:53",
+      "datetime": "2026-11-21 18:53",
+      "source": "华尔街见闻",
+      "url": "https://wallstreetcn.com/livenews/3203662",
+      "summary": "11月21日，从俄罗斯方面获悉，俄罗斯副总理尼基京称，克里米亚大桥铁路运输已全面恢复。11月19日夜间，克里米亚大桥遭无人机袭击，列车通行暂停。（央视新闻）",
+      "relatedStocks": [
+        "军工",
+        "黄金"
+      ],
+      "bullConcepts": [
+        "军工",
+        "避险资产"
+      ],
+      "bearConcepts": [
+        "风险资产"
+      ],
+      "bullIndustries": [
+        "军工",
+        "黄金"
+      ],
+      "bearIndustries": [
+        "航空",
+        "旅游"
+      ],
+      "heat": 24,
+      "momentum": 18,
       "_auto": true
     },
     {
@@ -397,36 +557,6 @@
       "_auto": true
     },
     {
-      "id": "abje2gs3",
-      "title": "印尼马鲁古省附近海域发生7.2级地震",
-      "tag": "宏观/综合",
-      "region": "全球",
-      "concept": "macro",
-      "time": "2026-11-21 17:55",
-      "datetime": "2026-11-21 17:55",
-      "source": "财联社",
-      "url": "https://www.cls.cn/detail/2540808",
-      "summary": "财联社11月21日电，据印尼气象、气候和地球物理局发布的报告，当地时间11月21日16时42分，印尼马鲁古省东北43公里海域发生7.2级地震，震源深度125公里。",
-      "relatedStocks": [
-        "宽基指数"
-      ],
-      "bullConcepts": [
-        "防御板块"
-      ],
-      "bearConcepts": [
-        "周期股"
-      ],
-      "bullIndustries": [
-        "公用事业"
-      ],
-      "bearIndustries": [
-        "顺周期"
-      ],
-      "heat": 74,
-      "momentum": 18,
-      "_auto": true
-    },
-    {
       "id": "ab34prkd",
       "title": "比特币自2025年10月升至超过126,000美元的峰值以来，已下跌超过一半，目前价格甚至低于支持加密货币的特朗普重返白宫时的水平。过去几周，比特币受到多重压力夹击。全球最大的加…",
       "tag": "金融/宏观",
@@ -460,115 +590,16 @@
       "_auto": true
     },
     {
-      "id": "ab10ugkz7",
-      "title": "据美国地质调查局（USGS），秘鲁Carhuamayo东北方向9公里发生6.7级地震。 秘鲁中部发生地震，首都利马有震感。",
+      "id": "ab1s8017h",
+      "title": "被解职CEO领英上迟迟不肯“卸任”",
       "tag": "宏观/综合",
       "region": "美国",
       "concept": "usMacro",
-      "time": "2026-11-21 08:28",
-      "datetime": "2026-11-21 08:28",
-      "source": "华尔街见闻",
-      "url": "https://wallstreetcn.com/livenews/3203623",
-      "summary": "据美国地质调查局（USGS），秘鲁Carhuamayo东北方向9公里发生6.7级地震。 秘鲁中部发生地震，首都利马有震感。",
-      "relatedStocks": [
-        "宽基指数"
-      ],
-      "bullConcepts": [
-        "防御板块"
-      ],
-      "bearConcepts": [
-        "周期股"
-      ],
-      "bullIndustries": [
-        "公用事业"
-      ],
-      "bearIndustries": [
-        "顺周期"
-      ],
-      "heat": 24,
-      "momentum": 18,
-      "_auto": true
-    },
-    {
-      "id": "absudmnh",
-      "title": "Anthropic上市次日重挫 AI交易热潮急速降温",
-      "tag": "科技/AI",
-      "region": "全球",
-      "concept": "ai",
-      "time": "2026-11-21 07:00",
-      "datetime": "2026-11-21 07:00",
+      "time": "2026-11-21 02:56",
+      "datetime": "2026-11-21 02:56",
       "source": "环球市场播报",
-      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-21/doc-inizmwas9935665.shtml",
-      "summary": "Anthropic PBC股价周五回吐上市首日的部分涨幅。这家AI实验室刚刚完成史上规模最大的首次公开募股，其股价表现正在考验投资者的信心。",
-      "relatedStocks": [
-        "英伟达",
-        "微软",
-        "台积电"
-      ],
-      "bullConcepts": [
-        "AI算力",
-        "半导体",
-        "国产替代"
-      ],
-      "bearConcepts": [
-        "传统软件"
-      ],
-      "bullIndustries": [
-        "半导体",
-        "AI应用",
-        "算力基础设施"
-      ],
-      "bearIndustries": [
-        "传统IT服务"
-      ],
-      "heat": 87,
-      "momentum": 18,
-      "_auto": true
-    },
-    {
-      "id": "abyvfdjc",
-      "title": "加拿大帝国商业银行（CIBC）策略师Michael Cloherty、Ian Pollick和Arjun Ananth在一份报告中表示，债务上限可能在8月中下旬触及所谓的“最后期…",
-      "tag": "金融/宏观",
-      "region": "美国",
-      "concept": "usFinance",
-      "time": "2026-11-21 07:00",
-      "datetime": "2026-11-21 07:00",
-      "source": "华尔街见闻",
-      "url": "https://wallstreetcn.com/livenews/3203619",
-      "summary": "加拿大帝国商业银行（CIBC）策略师Michael Cloherty、Ian Pollick和Arjun Ananth在一份报告中表示，债务上限可能在8月中下旬触及所谓的“最后期限”（drop-dead date，即X日）。这将是一个棘手的问题，因为它不仅会对约850亿美元的息票支付构成理论上的违约风险，还会迫使投资者必须持有更多现金或抵押品作为缓冲。他们写道：“我们认为，美…",
-      "relatedStocks": [
-        "美股科技",
-        "黄金"
-      ],
-      "bullConcepts": [
-        "黄金",
-        "防御板块"
-      ],
-      "bearConcepts": [
-        "高估值成长股"
-      ],
-      "bullIndustries": [
-        "银行",
-        "黄金"
-      ],
-      "bearIndustries": [
-        "高杠杆地产"
-      ],
-      "heat": 24,
-      "momentum": 18,
-      "_auto": true
-    },
-    {
-      "id": "ab1rb66xo",
-      "title": "印尼西南群岛附近发生6.6级左右地震",
-      "tag": "宏观/综合",
-      "region": "中国",
-      "concept": "broker",
-      "time": "2026-11-21 17:57",
-      "datetime": "2026-11-21 17:57",
-      "source": "财联社",
-      "url": "https://www.cls.cn/detail/2540809",
-      "summary": "财联社11月21日电，中国地震台网自动测定：11月21日17时42分在印尼西南群岛附近（南纬7.51度，东经127.50度）发生6.6级左右地震，最终结果以正式速报为准。",
+      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-21/doc-inizmmnr5326593.shtml",
+      "summary": "在这个冷热不均的劳动力市场，许多美国人都紧紧抓住现有工作不放，这种现象被称为“抱紧饭碗”（job hugging）。这种“抱紧”甚至也延伸到了首席执行官群体。",
       "relatedStocks": [
         "宽基指数"
       ],

@@ -1,8 +1,8 @@
 {
-  "generatedAt": "2026-11-21 20:26",
+  "generatedAt": "2026-11-22 04:28",
   "generatedBy": "GitHub Actions · 多源实时聚合",
   "sourceCount": 5,
-  "autoCount": 12,
+  "autoCount": 13,
   "events": [
     {
       "id": "ap3tndsb",
@@ -30,42 +30,8 @@
       "bearIndustries": [
         "顺周期"
       ],
-      "heat": 56,
-      "momentum": 46,
-      "_auto": true
-    },
-    {
-      "id": "apvqq2t4",
-      "title": "泽连斯基：打击克里米亚大桥是对俄军袭击乌桥梁的回应",
-      "tag": "人物/泽连斯基",
-      "region": "欧洲",
-      "concept": "macro",
-      "time": "2026-11-21 19:56",
-      "datetime": "2026-11-21 19:56",
-      "source": "财联社",
-      "url": "https://www.cls.cn/detail/2540827",
-      "summary": "【泽连斯基：打击克里米亚大桥是对俄军袭击乌桥梁的回应】财联社11月21日电，当地时间21日，乌克兰总统泽连斯基在会晤英国国防大臣斯特里廷时表示，在乌方对克里米亚大桥实施打击之前，俄军已经使用导弹和无人机对乌克兰境内桥梁发动109次袭击。泽连斯基强调，乌方针对克里米亚大桥的行动，是在俄军多次袭击乌克兰桥梁之后作出的回应。他指出，克里米亚大桥长期被俄方用作军事后勤通道，俄军经由该…",
-      "relatedStocks": [
-        "军工",
-        "黄金"
-      ],
-      "bullConcepts": [
-        "军工",
-        "避险资产"
-      ],
-      "bearConcepts": [
-        "风险资产"
-      ],
-      "bullIndustries": [
-        "军工",
-        "黄金"
-      ],
-      "bearIndustries": [
-        "航空",
-        "旅游"
-      ],
-      "heat": 24,
-      "momentum": 36,
+      "heat": 65,
+      "momentum": 18,
       "_auto": true
     },
     {
@@ -97,41 +63,68 @@
       "bearIndustries": [
         "高杠杆地产"
       ],
-      "heat": 60,
+      "heat": 56,
       "momentum": 18,
       "_auto": true
     },
     {
-      "id": "ap1msz44e",
-      "title": "当地时间20日，美国总统特朗普再度批评美联储，称当前利率水平过高，美联储的决策带有“政治属性”。不过，他说自己的这一表态并不是在责怪美联储主席凯文·沃什。分析认为，沃什由特朗普提…",
+      "id": "ap1kcbllo",
+      "title": "11月21日外盘头条：美以考虑短期内对伊发动新一轮打击 特朗普否认对万斯不满 高盛警示下周或再现大额抛压",
       "tag": "人物/特朗普",
       "region": "美国",
-      "concept": "usFinance",
-      "time": "2026-11-21 18:46",
-      "datetime": "2026-11-21 18:46",
-      "source": "新浪7×24",
-      "url": "https://finance.sina.cn/7x24/2026-11-21/detail-iniznxpy6612144.d.html",
-      "summary": "当地时间20日，美国总统特朗普再度批评美联储，称当前利率水平过高，美联储的决策带有“政治属性”。不过，他说自己的这一表态并不是在责怪美联储主席凯文·沃什。分析认为，沃什由特朗普提名，如今正陷入现实两难，一方面，特朗普希望压低利率以提振市场、减轻偿债压力；另一方面，通胀维持在高位导致美联储不敢贸然降息，沃什需要在白宫的政治诉求与央行货币政策独立性之间寻找平衡。（央视财经）",
+      "concept": "usMacro",
+      "time": "2026-11-21 06:04",
+      "datetime": "2026-11-21 06:04",
+      "source": "环球市场播报",
+      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-21/doc-inizmwaq3604347.shtml",
+      "summary": "全球财经媒体昨夜今晨共同关注的头条新闻主要有： 1、打还是拖？美军陷入“战备消耗”焦虑，美以鹰派施压特朗普新年之前“彻底解决”伊朗 2...",
       "relatedStocks": [
-        "美股科技",
-        "黄金"
+        "宽基指数"
       ],
       "bullConcepts": [
-        "黄金",
         "防御板块"
       ],
       "bearConcepts": [
-        "高估值成长股"
+        "周期股"
       ],
       "bullIndustries": [
-        "银行",
-        "黄金"
+        "公用事业"
       ],
       "bearIndustries": [
-        "高杠杆地产"
+        "顺周期"
       ],
-      "heat": 51,
-      "momentum": 26,
+      "heat": 38,
+      "momentum": 18,
+      "_auto": true
+    },
+    {
+      "id": "ap4366x2",
+      "title": "英国国防大臣斯特里廷对泽连斯基表示：我认为自温斯顿·丘吉尔以来，没有哪位欧洲领导人像您这样，不仅为本国人民和国家的尊严与自由，也为整个欧洲大陆的尊严与自由做出了如此巨大的贡献。我…",
+      "tag": "人物/泽连斯基",
+      "region": "欧洲",
+      "concept": "macro",
+      "time": "2026-11-22 00:42",
+      "datetime": "2026-11-22 00:42",
+      "source": "新浪7×24",
+      "url": "https://finance.sina.cn/7x24/2026-11-22/detail-inizpqmu3155504.d.html",
+      "summary": "英国国防大臣斯特里廷对泽连斯基表示：我认为自温斯顿·丘吉尔以来，没有哪位欧洲领导人像您这样，不仅为本国人民和国家的尊严与自由，也为整个欧洲大陆的尊严与自由做出了如此巨大的贡献。我们对您的领导力深感敬佩，也对乌克兰人民的坚韧与勇气深感敬佩。",
+      "relatedStocks": [
+        "宽基指数"
+      ],
+      "bullConcepts": [
+        "防御板块"
+      ],
+      "bearConcepts": [
+        "周期股"
+      ],
+      "bullIndustries": [
+        "公用事业"
+      ],
+      "bearIndustries": [
+        "顺周期"
+      ],
+      "heat": 33,
+      "momentum": 18,
       "_auto": true
     },
     {
@@ -164,8 +157,38 @@
         "航空",
         "旅游"
       ],
-      "heat": 42,
+      "heat": 33,
       "momentum": 18,
+      "_auto": true
+    },
+    {
+      "id": "ap1uv8zaf",
+      "title": "马斯克：对黎曼证明（迄今为止）实用性的简单解释是，它消除了其他依赖该证明的数学定理的条件性。当然，这也是超级智能实现的又一件令人惊叹的事。",
+      "tag": "人物/马斯克",
+      "region": "全球",
+      "concept": "macro",
+      "time": "2026-11-22 02:50",
+      "datetime": "2026-11-22 02:50",
+      "source": "新浪7×24",
+      "url": "https://finance.sina.cn/7x24/2026-11-22/detail-inizputs3080891.d.html",
+      "summary": "马斯克：对黎曼证明（迄今为止）实用性的简单解释是，它消除了其他依赖该证明的数学定理的条件性。当然，这也是超级智能实现的又一件令人惊叹的事。",
+      "relatedStocks": [
+        "宽基指数"
+      ],
+      "bullConcepts": [
+        "防御板块"
+      ],
+      "bearConcepts": [
+        "周期股"
+      ],
+      "bullIndustries": [
+        "公用事业"
+      ],
+      "bearIndustries": [
+        "顺周期"
+      ],
+      "heat": 24,
+      "momentum": 26,
       "_auto": true
     },
     {
@@ -277,33 +300,33 @@
       "_auto": true
     },
     {
-      "id": "ap4l6fje",
-      "title": "马斯克称FSD V15下个月将全面推送",
-      "tag": "人物/马斯克",
-      "region": "全球",
-      "concept": "green",
-      "time": "2026-11-21 15:40",
-      "datetime": "2026-11-21 15:40",
+      "id": "aphe41qv",
+      "title": "巴菲特将感恩节礼物提高三倍 捐赠财富详细分析",
+      "tag": "人物/巴菲特",
+      "region": "美国",
+      "concept": "usFinance",
+      "time": "2026-11-21 22:19",
+      "datetime": "2026-11-21 22:19",
       "source": "环球市场播报",
-      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-21/doc-iniznthh9675725.shtml",
-      "summary": "特斯拉CEO埃隆·马斯克在X平台上发帖称，FSD V15版本下个月将全面推送。 他写道：“SFT（有监督微调）与其说是“微调”，倒不如说是“用电锯理发”！",
+      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-21/doc-inizpkcw3230385.shtml",
+      "summary": "巴菲特称善良会“复利”，其感恩节礼物大幅增加。 96岁的沃伦·巴菲特今年将向四家家族基金会的感恩节捐赠额提高了三倍多，达到55亿美元。",
       "relatedStocks": [
-        "特斯拉",
-        "比亚迪"
+        "美股科技",
+        "黄金"
       ],
       "bullConcepts": [
-        "智能驾驶",
-        "动力电池"
+        "黄金",
+        "防御板块"
       ],
       "bearConcepts": [
-        "传统车企"
+        "高估值成长股"
       ],
       "bullIndustries": [
-        "智能驾驶",
-        "锂电池"
+        "银行",
+        "黄金"
       ],
       "bearIndustries": [
-        "传统汽车制造"
+        "高杠杆地产"
       ],
       "heat": 24,
       "momentum": 18,
