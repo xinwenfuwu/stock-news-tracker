@@ -1,89 +1,20 @@
 {
-  "generatedAt": "2026-11-21 05:46",
+  "generatedAt": "2026-11-21 11:06",
   "generatedBy": "GitHub Actions · 多源实时聚合",
   "sourceCount": 5,
   "autoCount": 18,
   "events": [
     {
-      "id": "ab9lhhr4",
-      "title": "拉美股市跌至一年多来的低点。此前，Anthropic公司IPO未能提振市场对人工智能行业的信心，导致全球股市抛售加剧；同时，美国加息预期持续给该地区货币带来压力。尽管拉美市场对科…",
-      "tag": "科技/AI",
-      "region": "美国",
-      "concept": "aiCapex",
-      "time": "2026-11-21 04:49",
-      "datetime": "2026-11-21 04:49",
-      "source": "华尔街见闻",
-      "url": "https://wallstreetcn.com/livenews/3203571",
-      "summary": "拉美股市跌至一年多来的低点。此前，Anthropic公司IPO未能提振市场对人工智能行业的信心，导致全球股市抛售加剧；同时，美国加息预期持续给该地区货币带来压力。尽管拉美市场对科技板块的直接敞口有限，但全球风险偏好的恶化仍波及该地区。MSCI拉丁美洲股票指数下跌0.86%，相应的货币指数下跌1.5%，恐将连续第四周收跌。 在成交量极低的情况下，巴西雷亚尔兑美元下跌0.24%。…",
-      "relatedStocks": [
-        "英伟达",
-        "微软",
-        "台积电"
-      ],
-      "bullConcepts": [
-        "AI算力",
-        "半导体",
-        "国产替代"
-      ],
-      "bearConcepts": [
-        "传统软件"
-      ],
-      "bullIndustries": [
-        "半导体",
-        "AI应用",
-        "算力基础设施"
-      ],
-      "bearIndustries": [
-        "传统IT服务"
-      ],
-      "heat": 87,
-      "momentum": 31,
-      "_auto": true
-    },
-    {
-      "id": "ab17v5ruo",
-      "title": "纳斯达克100指数收盘暴跌5.6% 市值蒸发2.1万亿美元 抹去今年以来的涨幅",
-      "tag": "金融/宏观",
-      "region": "美国",
-      "concept": "usFinance",
-      "time": "2026-11-21 05:03",
-      "datetime": "2026-11-21 05:03",
-      "source": "财联社",
-      "url": "https://www.cls.cn/detail/2540691",
-      "summary": "【纳斯达克100指数收盘暴跌5.6%：市值蒸发2.1万亿美元 抹去今年以来的涨幅】财联社11月21日电，纳斯达克100指数收盘暴跌5.6%，市值蒸发2.1万亿美元，本周收盘较10月纪录高点下跌19.8%。该指数抹去今年以来的涨幅，年迄今表现转为下跌0.9%。",
-      "relatedStocks": [
-        "美股科技",
-        "黄金"
-      ],
-      "bullConcepts": [
-        "黄金",
-        "防御板块"
-      ],
-      "bearConcepts": [
-        "高估值成长股"
-      ],
-      "bullIndustries": [
-        "银行",
-        "黄金"
-      ],
-      "bearIndustries": [
-        "高杠杆地产"
-      ],
-      "heat": 69,
-      "momentum": 51,
-      "_auto": true
-    },
-    {
-      "id": "ab1sc9ur6",
-      "title": "伊朗外长阿拉格齐表示，我们正寻求与美国达成一项协议，以确保此后不再发生战争。",
+      "id": "ab3a3gct",
+      "title": "两位知情人士表示，美国总统特朗普特使威特科夫和特朗普的女婿库什纳19日在柏林与卡塔尔高级官员举行会晤，就美国与伊朗之间的斡旋工作进行讨论。卡塔尔首相兼外交大臣穆罕默德及其特使出席…",
       "tag": "地缘/政治",
       "region": "美国",
       "concept": "defense",
-      "time": "2026-11-21 05:40",
-      "datetime": "2026-11-21 05:40",
-      "source": "新浪7×24",
-      "url": "https://finance.sina.cn/7x24/2026-11-21/detail-inizmruq6947731.d.html",
-      "summary": "伊朗外长阿拉格齐表示，我们正寻求与美国达成一项协议，以确保此后不再发生战争。",
+      "time": "2026-11-21 10:28",
+      "datetime": "2026-11-21 10:28",
+      "source": "华尔街见闻",
+      "url": "https://wallstreetcn.com/livenews/3203634",
+      "summary": "两位知情人士表示，美国总统特朗普特使威特科夫和特朗普的女婿库什纳19日在柏林与卡塔尔高级官员举行会晤，就美国与伊朗之间的斡旋工作进行讨论。卡塔尔首相兼外交大臣穆罕默德及其特使出席。作为美伊之间的关键斡旋方，卡塔尔数周来一直致力于促成一项协议，旨在恢复停火、重启核谈判，并防止战火重燃。特朗普20日在新闻发布会上表示，伊朗想要达成协议，但伊方提出的协议他无法接受。 (央视新闻)",
       "relatedStocks": [
         "军工",
         "黄金"
@@ -103,21 +34,21 @@
         "航空",
         "旅游"
       ],
-      "heat": 33,
-      "momentum": 46,
+      "heat": 29,
+      "momentum": 31,
       "_auto": true
     },
     {
-      "id": "ab7zlc2e",
-      "title": "标普500指数连续第7个交易日下跌 创2020年以来最长连跌纪录",
+      "id": "ab1l77r31",
+      "title": "美国FBI再度遭黑客入侵 目标为其犯罪数据库",
       "tag": "宏观/综合",
       "region": "美国",
       "concept": "usMacro",
-      "time": "2026-11-21 05:16",
-      "datetime": "2026-11-21 05:16",
-      "source": "财联社",
-      "url": "https://www.cls.cn/detail/2540695",
-      "summary": "【标普500指数连续第7个交易日下跌 创2020年以来最长连跌纪录】财联社11月21日电，标普500指数连续第七个交易日下跌，创2020年以来最长连跌纪录。本周标普500指数重挫8.6%，道指下跌8.0%，纳斯达克指数暴跌10.0%。标普500指数和道指均创2025年4月以来最大单周跌幅。",
+      "time": "2026-11-21 10:20",
+      "datetime": "2026-11-21 10:20",
+      "source": "环球市场播报",
+      "url": "https://finance.sina.com.cn/world/2026-11-21/doc-iniznakk6859982.shtml",
+      "summary": "据报道，美国联邦调查局（FBI）国家犯罪信息中心遭黑客攻击。 近日这起入侵事件被曝光之际，特朗普政府正试图缓解公众对美国网络安全的担忧。",
       "relatedStocks": [
         "宽基指数"
       ],
@@ -133,21 +64,21 @@
       "bearIndustries": [
         "顺周期"
       ],
-      "heat": 65,
-      "momentum": 66,
+      "heat": 42,
+      "momentum": 36,
       "_auto": true
     },
     {
-      "id": "abgwjf1g",
-      "title": "伊朗外长阿拉格齐对伊朗《伊朗报》表示：德黑兰仍对通过外交途径结束与美国的战争抱有希望。",
+      "id": "ab1snkli5",
+      "title": "当地时间20日，联合国秘书长副发言人法尔汉·哈克在纽约联合国总部举行的例行记者会上表示，联合国正密切关注有关沙特主导的联军当天空袭也门荷台达港的报道，并对也门及周边地区军事局势持…",
       "tag": "地缘/政治",
       "region": "美国",
       "concept": "defense",
-      "time": "2026-11-21 05:35",
-      "datetime": "2026-11-21 05:35",
+      "time": "2026-11-21 10:20",
+      "datetime": "2026-11-21 10:20",
       "source": "新浪7×24",
-      "url": "https://finance.sina.cn/7x24/2026-11-21/detail-inizmruv0033410.d.html",
-      "summary": "伊朗外长阿拉格齐对伊朗《伊朗报》表示：德黑兰仍对通过外交途径结束与美国的战争抱有希望。",
+      "url": "https://finance.sina.cn/7x24/2026-11-21/detail-iniznhsf5004891.d.html",
+      "summary": "当地时间20日，联合国秘书长副发言人法尔汉·哈克在纽约联合国总部举行的例行记者会上表示，联合国正密切关注有关沙特主导的联军当天空袭也门荷台达港的报道，并对也门及周边地区军事局势持续升级深表关切。联合国方面强调，也门冲突不存在军事解决办法，敦促各方重返政治谈判。（央视新闻）",
       "relatedStocks": [
         "军工",
         "黄金"
@@ -167,230 +98,57 @@
         "航空",
         "旅游"
       ],
-      "heat": 33,
-      "momentum": 46,
+      "heat": 29,
+      "momentum": 26,
       "_auto": true
     },
     {
-      "id": "abnbmzqs",
-      "title": "美国副总统万斯周五在白宫记者会上拒绝明确表示，若伊朗继续推进核计划，他是否会授权再次发动军事打击。今年2月袭击伊朗的决定由总统特朗普作出，自己的职责是支持总统。",
+      "id": "ab1s7o731",
+      "title": "黄仁勋遭董事会罢免主要原因曝光：缺乏坦诚",
+      "tag": "科技/AI",
+      "region": "全球",
+      "concept": "ai",
+      "time": "2026-11-21 10:13",
+      "datetime": "2026-11-21 10:13",
+      "source": "环球市场播报",
+      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-21/doc-iniznaki5130702.shtml",
+      "summary": "两名熟悉英伟达董事长及其他董事私下讨论情况的人士透露，最终促使董事会做出决定的，是和黄仁勋“缺乏坦诚”、“撒谎”有关的多项问题。",
+      "relatedStocks": [
+        "英伟达",
+        "微软",
+        "台积电"
+      ],
+      "bullConcepts": [
+        "AI算力",
+        "半导体",
+        "国产替代"
+      ],
+      "bearConcepts": [
+        "传统软件"
+      ],
+      "bullIndustries": [
+        "半导体",
+        "AI应用",
+        "算力基础设施"
+      ],
+      "bearIndustries": [
+        "传统IT服务"
+      ],
+      "heat": 24,
+      "momentum": 26,
+      "_auto": true
+    },
+    {
+      "id": "ab2n82bj",
+      "title": "联合国呼吁也门冲突各方重返谈判",
       "tag": "地缘/政治",
       "region": "美国",
       "concept": "defense",
-      "time": "2026-11-21 05:02",
-      "datetime": "2026-11-21 05:02",
-      "source": "华尔街见闻",
-      "url": "https://wallstreetcn.com/livenews/3203581",
-      "summary": "美国副总统万斯周五在白宫记者会上拒绝明确表示，若伊朗继续推进核计划，他是否会授权再次发动军事打击。今年2月袭击伊朗的决定由总统特朗普作出，自己的职责是支持总统。",
-      "relatedStocks": [
-        "军工",
-        "黄金"
-      ],
-      "bullConcepts": [
-        "军工",
-        "避险资产"
-      ],
-      "bearConcepts": [
-        "风险资产"
-      ],
-      "bullIndustries": [
-        "军工",
-        "黄金"
-      ],
-      "bearIndustries": [
-        "航空",
-        "旅游"
-      ],
-      "heat": 24,
-      "momentum": 26,
-      "_auto": true
-    },
-    {
-      "id": "abddvy14",
-      "title": "原油：油价连续第三周下跌 供应充足抵消了战争风险",
-      "tag": "金融/宏观",
-      "region": "美国",
-      "concept": "usFinance",
-      "time": "2026-11-21 05:05",
-      "datetime": "2026-11-21 05:05",
-      "source": "环球市场播报",
-      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-21/doc-inizmruv0018676.shtml",
-      "summary": "油价连续第三周下跌，交易员在美国再次打击伊朗的风险与充裕的原油供应之间进行权衡。 布伦特原油周五小幅上涨，收于每桶92美元上方，此前一日交易剧烈震荡。",
-      "relatedStocks": [
-        "美股科技",
-        "黄金"
-      ],
-      "bullConcepts": [
-        "黄金",
-        "防御板块"
-      ],
-      "bearConcepts": [
-        "高估值成长股"
-      ],
-      "bullIndustries": [
-        "银行",
-        "黄金"
-      ],
-      "bearIndustries": [
-        "高杠杆地产"
-      ],
-      "heat": 24,
-      "momentum": 26,
-      "_auto": true
-    },
-    {
-      "id": "ab1tu8tx7",
-      "title": "英伟达暴跌14% “AI交易”抛售加剧使得美股进入回调区间",
-      "tag": "科技/AI",
-      "region": "美国",
-      "concept": "aiCapex",
-      "time": "2026-11-21 05:01",
-      "datetime": "2026-11-21 05:01",
+      "time": "2026-11-21 10:26",
+      "datetime": "2026-11-21 10:26",
       "source": "财联社",
-      "url": "https://www.cls.cn/detail/2540690",
-      "summary": "【英伟达暴跌近14% “AI交易”抛售加剧使得美股进入回调区间】财联社11月21日电，美三大股指大幅收跌，道琼斯指数跌1.94%，标普500指数跌3.70%，纳斯达克综合指数跌5.28%。道指、标普500指数均较此前高点回撤10%，进入回调区间。“AI交易”遭遇大幅抛售，费城半导体指数重挫近11%。其中英伟达暴跌近14%，为连续第7天下跌，本周累跌超20%，创2008年10月…",
-      "relatedStocks": [
-        "英伟达",
-        "微软",
-        "台积电"
-      ],
-      "bullConcepts": [
-        "AI算力",
-        "半导体",
-        "国产替代"
-      ],
-      "bearConcepts": [
-        "传统软件"
-      ],
-      "bullIndustries": [
-        "半导体",
-        "AI应用",
-        "算力基础设施"
-      ],
-      "bearIndustries": [
-        "传统IT服务"
-      ],
-      "heat": 29,
-      "momentum": 26,
-      "_auto": true
-    },
-    {
-      "id": "ab1cqixha",
-      "title": "特朗普为其与普京的关系辩护 坚称俄总统希望结束俄乌冲突",
-      "tag": "地缘/政治",
-      "region": "美国",
-      "concept": "defense",
-      "time": "2026-11-21 05:08",
-      "datetime": "2026-11-21 05:08",
-      "source": "环球市场播报",
-      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-21/doc-inizmrus3704548.shtml",
-      "summary": "尽管俄罗斯发动了最新一轮致命袭击，美国总统唐纳德·特朗普仍为自己与弗拉基米尔·普京的关系辩护，一再坚称这位俄罗斯领导人希望结束在乌克兰的战争。",
-      "relatedStocks": [
-        "军工",
-        "黄金"
-      ],
-      "bullConcepts": [
-        "军工",
-        "避险资产"
-      ],
-      "bearConcepts": [
-        "风险资产"
-      ],
-      "bullIndustries": [
-        "军工",
-        "黄金"
-      ],
-      "bearIndustries": [
-        "航空",
-        "旅游"
-      ],
-      "heat": 46,
-      "momentum": 26,
-      "_auto": true
-    },
-    {
-      "id": "ab13iy0ga",
-      "title": "英伟达重挫 报道称美国监管机构正调查该公司的会计操作",
-      "tag": "科技/AI",
-      "region": "美国",
-      "concept": "aiCapex",
-      "time": "2026-11-21 05:00",
-      "datetime": "2026-11-21 05:00",
-      "source": "环球市场播报",
-      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-21/doc-inizmrup5236680.shtml",
-      "summary": "英伟达在黄仁勋被迫离开后面临的挑战有增无减，这家芯片制造商被曝出美国证券交易委员会正调查其会计操作后股价进一步重挫。",
-      "relatedStocks": [
-        "英伟达",
-        "微软",
-        "台积电"
-      ],
-      "bullConcepts": [
-        "AI算力",
-        "半导体",
-        "国产替代"
-      ],
-      "bearConcepts": [
-        "传统软件"
-      ],
-      "bullIndustries": [
-        "半导体",
-        "AI应用",
-        "算力基础设施"
-      ],
-      "bearIndustries": [
-        "传统IT服务"
-      ],
-      "heat": 24,
-      "momentum": 26,
-      "_auto": true
-    },
-    {
-      "id": "ab1thfhrf",
-      "title": "特朗普希望黄仁勋道歉后重掌英伟达",
-      "tag": "科技/AI",
-      "region": "美国",
-      "concept": "aiCapex",
-      "time": "2026-11-21 04:51",
-      "datetime": "2026-11-21 04:51",
-      "source": "环球市场播报",
-      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-21/doc-inizmruv0014971.shtml",
-      "summary": "美国总统唐纳德·特朗普呼吁英伟达在黄仁勋郑重道歉后接受他重掌公司，尽管这种可能性依然看起来极低。 英伟达董事会已明确表示不打算重新接纳这位身陷危机的前首席执行官...",
-      "relatedStocks": [
-        "英伟达",
-        "微软",
-        "台积电"
-      ],
-      "bullConcepts": [
-        "AI算力",
-        "半导体",
-        "国产替代"
-      ],
-      "bearConcepts": [
-        "传统软件"
-      ],
-      "bullIndustries": [
-        "半导体",
-        "AI应用",
-        "算力基础设施"
-      ],
-      "bearIndustries": [
-        "传统IT服务"
-      ],
-      "heat": 29,
-      "momentum": 26,
-      "_auto": true
-    },
-    {
-      "id": "ab1fyh6ot",
-      "title": "特朗普否认对万斯不满 淡化两人围绕伊朗战争的摩擦",
-      "tag": "地缘/政治",
-      "region": "美国",
-      "concept": "defense",
-      "time": "2026-11-21 04:49",
-      "datetime": "2026-11-21 04:49",
-      "source": "环球市场播报",
-      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-21/doc-inizmruq6920985.shtml",
-      "summary": "美国总统唐纳德·特朗普否认他因副总统JD·万斯将共和党中期选举失利归咎于伊朗战争而对其不满的报道。 特朗普周五在记者会上表示，万斯选后在社交媒体上称伊朗战争引发选民...",
+      "url": "https://www.cls.cn/detail/2540751",
+      "summary": "财联社11月21日电，联合国秘书长副发言人法尔汉·哈克在纽约联合国总部举行的例行记者会上表示，联合国正密切关注有关沙特主导的联军当天空袭也门荷台达港的报道，并对也门及周边地区军事局势持续升级深表关切。联合国方面强调，也门冲突不存在军事解决办法，敦促各方重返政治谈判。",
       "relatedStocks": [
         "军工",
         "黄金"
@@ -412,6 +170,42 @@
       ],
       "heat": 24,
       "momentum": 26,
+      "_auto": true
+    },
+    {
+      "id": "ab1ur8c4m",
+      "title": "11月20日，MSCI新兴市场股票指数跌入熊市，七连跌创2024年以来最长连跌纪录，全球科技股遭遇抛售。明晟公司MSCI新兴市场股票指数跌3.1%，较6月峰值累计回撤21%；单周…",
+      "tag": "科技/AI",
+      "region": "中国",
+      "concept": "llm",
+      "time": "2026-11-21 05:29",
+      "datetime": "2026-11-21 05:29",
+      "source": "华尔街见闻",
+      "url": "https://wallstreetcn.com/livenews/3203591",
+      "summary": "11月20日，MSCI新兴市场股票指数跌入熊市，七连跌创2024年以来最长连跌纪录，全球科技股遭遇抛售。明晟公司MSCI新兴市场股票指数跌3.1%，较6月峰值累计回撤21%；单周跌幅创2020年3月以来最大，随着Anthropic PBC上市不久下跌，加上英伟达再曝丑闻，对人工智能（AI）交易的疑虑演变成全面抛售。 MSCI发展中国家外汇指数跌0.05%。",
+      "relatedStocks": [
+        "英伟达",
+        "微软",
+        "台积电"
+      ],
+      "bullConcepts": [
+        "AI算力",
+        "半导体",
+        "国产替代"
+      ],
+      "bearConcepts": [
+        "传统软件"
+      ],
+      "bullIndustries": [
+        "半导体",
+        "AI应用",
+        "算力基础设施"
+      ],
+      "bearIndustries": [
+        "传统IT服务"
+      ],
+      "heat": 78,
+      "momentum": 18,
       "_auto": true
     },
     {
@@ -451,42 +245,6 @@
       "_auto": true
     },
     {
-      "id": "abnh3te3",
-      "title": "据知情人士透露，美国证券交易委员会（SEC）正在调查英伟达的会计处理方式，这给这家深陷丑闻的芯片巨头面临的法律困境雪上加霜。 尚无法立即确定SEC何时启动调查，也无法确切得知该监…",
-      "tag": "科技/AI",
-      "region": "美国",
-      "concept": "aiCapex",
-      "time": "2026-11-21 03:19",
-      "datetime": "2026-11-21 03:19",
-      "source": "华尔街见闻",
-      "url": "https://wallstreetcn.com/livenews/3203545",
-      "summary": "据知情人士透露，美国证券交易委员会（SEC）正在调查英伟达的会计处理方式，这给这家深陷丑闻的芯片巨头面临的法律困境雪上加霜。 尚无法立即确定SEC何时启动调查，也无法确切得知该监管机构正在审查哪些潜在的会计问题。调查并不等同于存在不当行为，许多调查最终都会以未采取执法行动而告终。 此前，华尔街日报称，美国证券交易委员会正在调查英伟达，但表示无法确定调查的具体重点。（路透）",
-      "relatedStocks": [
-        "英伟达",
-        "微软",
-        "台积电"
-      ],
-      "bullConcepts": [
-        "AI算力",
-        "半导体",
-        "国产替代"
-      ],
-      "bearConcepts": [
-        "传统软件"
-      ],
-      "bullIndustries": [
-        "半导体",
-        "AI应用",
-        "算力基础设施"
-      ],
-      "bearIndustries": [
-        "传统IT服务"
-      ],
-      "heat": 42,
-      "momentum": 18,
-      "_auto": true
-    },
-    {
       "id": "ab14mw6g4",
       "title": "被解职CEO仍恋旧头衔 领英上迟迟不肯“卸任”",
       "tag": "宏观/综合",
@@ -512,21 +270,121 @@
       "bearIndustries": [
         "顺周期"
       ],
-      "heat": 60,
+      "heat": 56,
       "momentum": 18,
       "_auto": true
     },
     {
-      "id": "abu8my2y",
-      "title": "美国参议员蒂姆·斯科特表示，英伟达前CEO黄仁勋将在公开听证会上作证。",
+      "id": "ab1atad15",
+      "title": "伊朗：霍尔木兹海峡两日方案仍在考虑之中。 需要采取“建立信任”措施，美国不会恢复空袭。 若美方提出有条件的方案，伊朗“愿意谈判”。",
+      "tag": "地缘/政治",
+      "region": "美国",
+      "concept": "defense",
+      "time": "2026-11-21 05:49",
+      "datetime": "2026-11-21 05:49",
+      "source": "华尔街见闻",
+      "url": "https://wallstreetcn.com/livenews/3203599",
+      "summary": "伊朗：霍尔木兹海峡两日方案仍在考虑之中。 需要采取“建立信任”措施，美国不会恢复空袭。 若美方提出有条件的方案，伊朗“愿意谈判”。",
+      "relatedStocks": [
+        "军工",
+        "黄金"
+      ],
+      "bullConcepts": [
+        "军工",
+        "避险资产"
+      ],
+      "bearConcepts": [
+        "风险资产"
+      ],
+      "bullIndustries": [
+        "军工",
+        "黄金"
+      ],
+      "bearIndustries": [
+        "航空",
+        "旅游"
+      ],
+      "heat": 38,
+      "momentum": 18,
+      "_auto": true
+    },
+    {
+      "id": "ab17v5ruo",
+      "title": "纳斯达克100指数收盘暴跌5.6% 市值蒸发2.1万亿美元 抹去今年以来的涨幅",
+      "tag": "金融/宏观",
+      "region": "美国",
+      "concept": "usFinance",
+      "time": "2026-11-21 05:03",
+      "datetime": "2026-11-21 05:03",
+      "source": "财联社",
+      "url": "https://www.cls.cn/detail/2540691",
+      "summary": "【纳斯达克100指数收盘暴跌5.6%：市值蒸发2.1万亿美元 抹去今年以来的涨幅】财联社11月21日电，纳斯达克100指数收盘暴跌5.6%，市值蒸发2.1万亿美元，本周收盘较10月纪录高点下跌19.8%。该指数抹去今年以来的涨幅，年迄今表现转为下跌0.9%。",
+      "relatedStocks": [
+        "美股科技",
+        "黄金"
+      ],
+      "bullConcepts": [
+        "黄金",
+        "防御板块"
+      ],
+      "bearConcepts": [
+        "高估值成长股"
+      ],
+      "bullIndustries": [
+        "银行",
+        "黄金"
+      ],
+      "bearIndustries": [
+        "高杠杆地产"
+      ],
+      "heat": 56,
+      "momentum": 18,
+      "_auto": true
+    },
+    {
+      "id": "ab1svnch6",
+      "title": "高盛集团的交易员表示，美国股市周五暴跌，“恐慌指数”升至最大值附近，这预示着未来一周还将出现一波大规模抛售。 高盛交易部门表示，抛售已经蔓延至所谓的系统性投资者，该行的“恐慌指数…",
+      "tag": "金融/宏观",
+      "region": "美国",
+      "concept": "usFinance",
+      "time": "2026-11-21 06:55",
+      "datetime": "2026-11-21 06:55",
+      "source": "华尔街见闻",
+      "url": "https://wallstreetcn.com/livenews/3203617",
+      "summary": "高盛集团的交易员表示，美国股市周五暴跌，“恐慌指数”升至最大值附近，这预示着未来一周还将出现一波大规模抛售。 高盛交易部门表示，抛售已经蔓延至所谓的系统性投资者，该行的“恐慌指数”升至9，最大值为10。高盛估算，包括商品交易顾问(CTA)在内的动量交易员过去一个月卖出了570亿美元股票，其在美股的头寸已转为净空头190亿美元。",
+      "relatedStocks": [
+        "美股科技",
+        "黄金"
+      ],
+      "bullConcepts": [
+        "黄金",
+        "防御板块"
+      ],
+      "bearConcepts": [
+        "高估值成长股"
+      ],
+      "bullIndustries": [
+        "银行",
+        "黄金"
+      ],
+      "bearIndustries": [
+        "高杠杆地产"
+      ],
+      "heat": 33,
+      "momentum": 18,
+      "_auto": true
+    },
+    {
+      "id": "abi4uplb",
+      "title": "周六你需要知道的隔夜全球要闻：英伟达暴跌14%、美股进入回调区间；交易员不再完全消化美联储12月加息预期；“大空头”卖掉了半数英伟达和半导体ETF看跌期权",
       "tag": "科技/AI",
       "region": "美国",
       "concept": "aiCapex",
-      "time": "2026-11-21 02:43",
-      "datetime": "2026-11-21 02:43",
+      "time": "2026-11-21 06:34",
+      "datetime": "2026-11-21 06:34",
       "source": "财联社",
-      "url": "https://www.cls.cn/detail/2540665",
-      "summary": "美国参议员蒂姆·斯科特表示，英伟达前CEO黄仁勋将在公开听证会上作证。",
+      "url": "https://www.cls.cn/detail/2540701",
+      "summary": "【周六你需要知道的隔夜全球要闻：英伟达暴跌14%、美股进入回调区间；交易员不再完全消化美联储12月加息预期；“大空头”卖掉了半数英伟达和半导体ETF看跌期权】 1、美三大股指大幅收跌，道指跌1.94%，纳指跌5.28%，标普500指数跌3.70%，为连续第7个交易日下跌，创2020年以来最长连跌纪录。道指、标普500指数均较此前高点回撤10%，进入回调区间。美股恐慌指数VIX…",
       "relatedStocks": [
         "英伟达",
         "微软",
@@ -548,7 +406,7 @@
       "bearIndustries": [
         "传统IT服务"
       ],
-      "heat": 47,
+      "heat": 55,
       "momentum": 18,
       "_auto": true
     },
@@ -589,16 +447,158 @@
       "_auto": true
     },
     {
-      "id": "ab9tpfv3",
-      "title": "新智认知（603869）投资者索赔案继续推进，已有胜诉还可起诉",
+      "id": "ab1vbsp06",
+      "title": "当地时间20日，也门胡塞武装称打击沙特吉赞省发电站和港口设施，沙特联军称袭击胡塞武装多个军事目标。胡塞武装与沙特联军持续互袭。根据胡塞武装方面发布的消息，自新一轮军事升级以来，沙…",
+      "tag": "贸易/供应链",
+      "region": "全球",
+      "concept": "trade",
+      "time": "2026-11-21 06:18",
+      "datetime": "2026-11-21 06:18",
+      "source": "华尔街见闻",
+      "url": "https://wallstreetcn.com/livenews/3203607",
+      "summary": "当地时间20日，也门胡塞武装称打击沙特吉赞省发电站和港口设施，沙特联军称袭击胡塞武装多个军事目标。胡塞武装与沙特联军持续互袭。根据胡塞武装方面发布的消息，自新一轮军事升级以来，沙特联军发动的袭击总数已达5429次，总死亡人数已达到438人。19日，沙特首都最高建筑遭袭受损，阿拉伯国家联盟随后强烈谴责胡塞武装持续袭击沙特并重申对沙特的支持。（央视）",
+      "relatedStocks": [
+        "跨境电商",
+        "航运"
+      ],
+      "bullConcepts": [
+        "内需",
+        "国产替代"
+      ],
+      "bearConcepts": [
+        "出口链"
+      ],
+      "bullIndustries": [
+        "跨境电商",
+        "内需消费"
+      ],
+      "bearIndustries": [
+        "出口制造",
+        "航运"
+      ],
+      "heat": 29,
+      "momentum": 18,
+      "_auto": true
+    },
+    {
+      "id": "abvoqa19",
+      "title": "新云厂商（Neocloud）暴跌： 算力租赁与数据中心概念股本周遭血洗，Nebius (NBIS) 收跌16.11%、本周累计下跌29.83%——连续第七周下跌，IREN收跌17…",
+      "tag": "科技/AI",
+      "region": "美国",
+      "concept": "aiCapex",
+      "time": "2026-11-21 06:11",
+      "datetime": "2026-11-21 06:11",
+      "source": "华尔街见闻",
+      "url": "https://wallstreetcn.com/livenews/3203622",
+      "summary": "新云厂商（Neocloud）暴跌： 算力租赁与数据中心概念股本周遭血洗，Nebius (NBIS) 收跌16.11%、本周累计下跌29.83%——连续第七周下跌，IREN收跌17.97%、本周累跌34.95%——连跌九周。 人工智能（AI）硬件与基建承压： 戴尔科技（DELL）、Bloom Energy（BE）美股早盘分别跌6%和8%；受数据中心建设放缓担忧拖累，重型机械巨头…",
+      "relatedStocks": [
+        "英伟达",
+        "微软",
+        "台积电"
+      ],
+      "bullConcepts": [
+        "AI算力",
+        "半导体",
+        "国产替代"
+      ],
+      "bearConcepts": [
+        "传统软件"
+      ],
+      "bullIndustries": [
+        "半导体",
+        "AI应用",
+        "算力基础设施"
+      ],
+      "bearIndustries": [
+        "传统IT服务"
+      ],
+      "heat": 29,
+      "momentum": 18,
+      "_auto": true
+    },
+    {
+      "id": "abqfoay0",
+      "title": "据两名了解英伟达董事长及其他董事私下讨论情况的人士透露，最终促使董事会采取（罢免）行动的，是与黄仁勋“不够坦诚”和“撒谎”相关的“多个问题”。",
+      "tag": "科技/AI",
+      "region": "全球",
+      "concept": "ai",
+      "time": "2026-11-21 10:05",
+      "datetime": "2026-11-21 10:05",
+      "source": "新浪7×24",
+      "url": "https://finance.sina.cn/7x24/2026-11-21/detail-iniznakk6851146.d.html",
+      "summary": "据两名了解英伟达董事长及其他董事私下讨论情况的人士透露，最终促使董事会采取（罢免）行动的，是与黄仁勋“不够坦诚”和“撒谎”相关的“多个问题”。",
+      "relatedStocks": [
+        "英伟达",
+        "微软",
+        "台积电"
+      ],
+      "bullConcepts": [
+        "AI算力",
+        "半导体",
+        "国产替代"
+      ],
+      "bearConcepts": [
+        "传统软件"
+      ],
+      "bullIndustries": [
+        "半导体",
+        "AI应用",
+        "算力基础设施"
+      ],
+      "bearIndustries": [
+        "传统IT服务"
+      ],
+      "heat": 24,
+      "momentum": 26,
+      "_auto": true
+    },
+    {
+      "id": "ab5ubjky",
+      "title": "黄仁勋20年前诉讼被翻出：被指辱骂恐吓员工 律师因提担忧遭解雇",
+      "tag": "科技/AI",
+      "region": "全球",
+      "concept": "ai",
+      "time": "2026-11-21 09:17",
+      "datetime": "2026-11-21 09:17",
+      "source": "新浪7×24",
+      "url": "https://finance.sina.cn/7x24/2026-11-21/detail-iniznaki5101825.d.html",
+      "summary": "【黄仁勋20年前诉讼被翻出：被指辱骂恐吓员工 律师因提担忧遭解雇】一份2007年在加州提起的诉讼材料显示，英伟达两名员工曾投诉时任首席执行官黄仁勋对待员工的方式，指控内容包括黄仁勋威胁他们、发表露骨色情言论。 法庭文件显示，英伟达首任内部法律顾问斯蒂芬·佩蒂格鲁称，自己因提出对公司高管行为的担忧而遭到解雇；而英伟达方面给出的解雇理由是绩效问题。佩蒂格鲁案卷宗收录了另一份投诉细…",
+      "relatedStocks": [
+        "英伟达",
+        "微软",
+        "台积电"
+      ],
+      "bullConcepts": [
+        "AI算力",
+        "半导体",
+        "国产替代"
+      ],
+      "bearConcepts": [
+        "传统软件"
+      ],
+      "bullIndustries": [
+        "半导体",
+        "AI应用",
+        "算力基础设施"
+      ],
+      "bearIndustries": [
+        "传统IT服务"
+      ],
+      "heat": 33,
+      "momentum": 26,
+      "_auto": true
+    },
+    {
+      "id": "ab10ugkz7",
+      "title": "据美国地质调查局（USGS），秘鲁Carhuamayo东北方向9公里发生6.7级地震。 秘鲁中部发生地震，首都利马有震感。",
       "tag": "宏观/综合",
-      "region": "中国",
-      "concept": "broker",
-      "time": "2026-11-20 17:30",
-      "datetime": "2026-11-20 17:30",
-      "source": "市场资讯",
-      "url": "https://finance.sina.com.cn/stock/gmwq/rightscase/2026-11-20/doc-inizkqia7183053.shtml",
-      "summary": "上海久诚律师事务所股票索赔律师许峰律师提示，新智认知（603869）虚假陈述引发的投资者索赔案案还在继续推进。（许峰律师专栏）",
+      "region": "美国",
+      "concept": "usMacro",
+      "time": "2026-11-21 08:28",
+      "datetime": "2026-11-21 08:28",
+      "source": "华尔街见闻",
+      "url": "https://wallstreetcn.com/livenews/3203623",
+      "summary": "据美国地质调查局（USGS），秘鲁Carhuamayo东北方向9公里发生6.7级地震。 秘鲁中部发生地震，首都利马有震感。",
       "relatedStocks": [
         "宽基指数"
       ],
@@ -614,7 +614,7 @@
       "bearIndustries": [
         "顺周期"
       ],
-      "heat": 47,
+      "heat": 24,
       "momentum": 18,
       "_auto": true
     },

@@ -1,125 +1,54 @@
 {
-  "generatedAt": "2026-11-21 05:46",
+  "generatedAt": "2026-11-21 11:06",
   "generatedBy": "GitHub Actions · 多源实时聚合",
   "sourceCount": 5,
-  "autoCount": 12,
+  "autoCount": 10,
   "events": [
     {
-      "id": "apa8zuok",
-      "title": "甲骨文：OpenAI合同获得全面资金支持。 为全面履行OpenAI合同锁定所有资金。 仍然预计本公司2028财年下半年自由现金流（FCF）将为正。",
-      "tag": "人物/奥尔特曼",
-      "region": "全球",
-      "concept": "ai",
-      "time": "2026-11-21 05:24",
-      "datetime": "2026-11-21 05:24",
-      "source": "华尔街见闻",
-      "url": "https://wallstreetcn.com/livenews/3203590",
-      "summary": "甲骨文：OpenAI合同获得全面资金支持。 为全面履行OpenAI合同锁定所有资金。 仍然预计本公司2028财年下半年自由现金流（FCF）将为正。",
-      "relatedStocks": [
-        "英伟达",
-        "微软",
-        "台积电"
-      ],
-      "bullConcepts": [
-        "AI算力",
-        "半导体",
-        "国产替代"
-      ],
-      "bearConcepts": [
-        "传统软件"
-      ],
-      "bullIndustries": [
-        "半导体",
-        "AI应用",
-        "算力基础设施"
-      ],
-      "bearIndustries": [
-        "传统IT服务"
-      ],
-      "heat": 51,
-      "momentum": 51,
-      "_auto": true
-    },
-    {
-      "id": "ap19cqfxa",
-      "title": "甲骨文：已筹足OpenAI合同所需资金，相关负面报道不实",
-      "tag": "人物/奥尔特曼",
-      "region": "美国",
-      "concept": "aiCapex",
-      "time": "2026-11-21 05:33",
-      "datetime": "2026-11-21 05:33",
-      "source": "新浪7×24",
-      "url": "https://finance.sina.cn/7x24/2026-11-21/detail-inizmruq6943459.d.html",
-      "summary": "【甲骨文：已筹足OpenAI合同所需资金，相关负面报道不实】甲骨文表示，已足额落实履行与OpenAI合同所需的全部资金，后续和供应商开展的私下磋商仅作为备选方案。 该公司称，履行这份OpenAI相关合同的能力并不依赖上述磋商。 甲骨文表示，任何与此说法相悖的媒体报道均不实。 公司目标在2029财年实现逾300亿美元自由现金流，并计划自该财年起依靠自有资金支撑后续扩张。 甲骨文…",
-      "relatedStocks": [
-        "英伟达",
-        "微软",
-        "台积电"
-      ],
-      "bullConcepts": [
-        "AI算力",
-        "半导体",
-        "国产替代"
-      ],
-      "bearConcepts": [
-        "传统软件"
-      ],
-      "bullIndustries": [
-        "半导体",
-        "AI应用",
-        "算力基础设施"
-      ],
-      "bearIndustries": [
-        "传统IT服务"
-      ],
-      "heat": 56,
-      "momentum": 56,
-      "_auto": true
-    },
-    {
-      "id": "apu2p9iw",
-      "title": "美国总统特朗普20日在白宫举行的新闻发布会上表示，日前在中国深圳举行的亚太经合组织领导人非正式会议是一场非常成功的经济会议，美国、中国和俄罗斯三国领导人还举行了首次三方会晤，这是…",
+      "id": "ap3a3gct",
+      "title": "两位知情人士表示，美国总统特朗普特使威特科夫和特朗普的女婿库什纳19日在柏林与卡塔尔高级官员举行会晤，就美国与伊朗之间的斡旋工作进行讨论。卡塔尔首相兼外交大臣穆罕默德及其特使出席…",
       "tag": "人物/特朗普",
       "region": "美国",
-      "concept": "usFinance",
-      "time": "2026-11-21 05:02",
-      "datetime": "2026-11-21 05:02",
+      "concept": "defense",
+      "time": "2026-11-21 10:28",
+      "datetime": "2026-11-21 10:28",
       "source": "华尔街见闻",
-      "url": "https://wallstreetcn.com/livenews/3203580",
-      "summary": "美国总统特朗普20日在白宫举行的新闻发布会上表示，日前在中国深圳举行的亚太经合组织领导人非正式会议是一场非常成功的经济会议，美国、中国和俄罗斯三国领导人还举行了首次三方会晤，这是“多年来最具重大意义的国际峰会之一”。 特朗普说，中俄美元首会晤“史无前例”，“意义非常重大”，会晤期间“气氛极其热烈，令人难以置信”，“我们三人之间的关系非常融洽”。特朗普还说，这次历史性峰会的成果…",
+      "url": "https://wallstreetcn.com/livenews/3203634",
+      "summary": "两位知情人士表示，美国总统特朗普特使威特科夫和特朗普的女婿库什纳19日在柏林与卡塔尔高级官员举行会晤，就美国与伊朗之间的斡旋工作进行讨论。卡塔尔首相兼外交大臣穆罕默德及其特使出席。作为美伊之间的关键斡旋方，卡塔尔数周来一直致力于促成一项协议，旨在恢复停火、重启核谈判，并防止战火重燃。特朗普20日在新闻发布会上表示，伊朗想要达成协议，但伊方提出的协议他无法接受。 (央视新闻)",
       "relatedStocks": [
-        "美股科技",
+        "军工",
         "黄金"
       ],
       "bullConcepts": [
-        "黄金",
-        "防御板块"
+        "军工",
+        "避险资产"
       ],
       "bearConcepts": [
-        "高估值成长股"
+        "风险资产"
       ],
       "bullIndustries": [
-        "银行",
+        "军工",
         "黄金"
       ],
       "bearIndustries": [
-        "高杠杆地产"
+        "航空",
+        "旅游"
       ],
-      "heat": 55,
-      "momentum": 26,
+      "heat": 29,
+      "momentum": 31,
       "_auto": true
     },
     {
-      "id": "ap1avrbkz",
-      "title": "伊朗外长：特朗普每天都有新立场，甚至推翻前一天的声明，这并不令人惊讶。伊朗的首要要求是特朗普明确表示他想要达成协议。",
+      "id": "ap1bt33gd",
+      "title": "根据白宫情况说明书，特朗普总统签署一项行政令，要求联邦承包商及分包商在国会索要相关通讯记录时，向白宫报备并与之协调。承包商必须就所有待处理及未来收到的国会调取请求通知白宫。承包商…",
       "tag": "人物/特朗普",
       "region": "美国",
       "concept": "usMacro",
-      "time": "2026-11-21 05:45",
-      "datetime": "2026-11-21 05:45",
+      "time": "2026-11-21 10:59",
+      "datetime": "2026-11-21 10:59",
       "source": "新浪7×24",
-      "url": "https://finance.sina.cn/7x24/2026-11-21/detail-inizmruv0037321.d.html",
-      "summary": "伊朗外长：特朗普每天都有新立场，甚至推翻前一天的声明，这并不令人惊讶。伊朗的首要要求是特朗普明确表示他想要达成协议。",
+      "url": "https://finance.sina.cn/7x24/2026-11-21/detail-iniznhsh6753377.d.html",
+      "summary": "根据白宫情况说明书，特朗普总统签署一项行政令，要求联邦承包商及分包商在国会索要相关通讯记录时，向白宫报备并与之协调。承包商必须就所有待处理及未来收到的国会调取请求通知白宫。承包商需遵照白宫指示，对享有保密特权的通讯内容予以扣留。联邦承包商须确保分包商同样遵守该行政令。联邦行政机构必须及时告知所有承包商、分包商其应履行的义务。特朗普称，部分国会领袖试图侵犯行政分支的专属权力。",
       "relatedStocks": [
         "宽基指数"
       ],
@@ -140,16 +69,16 @@
       "_auto": true
     },
     {
-      "id": "ap1kf06fq",
-      "title": "据知情人士透露，Anthropic PBC首次公开募股(IPO)吸引了散户投资者约1150亿至1200亿美元的认购需求，超过SpaceX上市时散户的认购金额。这家前沿AI实验室的…",
-      "tag": "人物/马斯克",
+      "id": "ap17rz4tr",
+      "title": "软银董事长孙正义近期接洽华尔街机构，商议融资推进一笔规模达万亿级美元的收购，目标是存储芯片巨头SK海力士，但软银发言人表示，孙正义现已不再积极推进该交易。（The Informa…",
+      "tag": "人物/孙正义",
       "region": "美国",
       "concept": "aiCapex",
-      "time": "2026-11-21 04:17",
-      "datetime": "2026-11-21 04:17",
+      "time": "2026-11-21 10:35",
+      "datetime": "2026-11-21 10:35",
       "source": "华尔街见闻",
-      "url": "https://wallstreetcn.com/livenews/3203558",
-      "summary": "据知情人士透露，Anthropic PBC首次公开募股(IPO)吸引了散户投资者约1150亿至1200亿美元的认购需求，超过SpaceX上市时散户的认购金额。这家前沿AI实验室的IPO吸引了机构投资者超过5000亿美元的认购需求，是SpaceX机构认购金额的两倍多。Anthropic此次IPO规模创下历史纪录，公司及其七名联合创始人通过IPO筹集935亿美元，包括超额配售部分…",
+      "url": "https://wallstreetcn.com/livenews/3203635",
+      "summary": "软银董事长孙正义近期接洽华尔街机构，商议融资推进一笔规模达万亿级美元的收购，目标是存储芯片巨头SK海力士，但软银发言人表示，孙正义现已不再积极推进该交易。（The Information）",
       "relatedStocks": [
         "英伟达",
         "微软",
@@ -171,21 +100,21 @@
       "bearIndustries": [
         "传统IT服务"
       ],
-      "heat": 87,
+      "heat": 24,
       "momentum": 26,
       "_auto": true
     },
     {
-      "id": "ap1thfhrf",
-      "title": "特朗普希望黄仁勋道歉后重掌英伟达",
+      "id": "ap1s7o731",
+      "title": "黄仁勋遭董事会罢免主要原因曝光：缺乏坦诚",
       "tag": "人物/黄仁勋",
-      "region": "美国",
-      "concept": "aiCapex",
-      "time": "2026-11-21 04:51",
-      "datetime": "2026-11-21 04:51",
+      "region": "全球",
+      "concept": "ai",
+      "time": "2026-11-21 10:13",
+      "datetime": "2026-11-21 10:13",
       "source": "环球市场播报",
-      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-21/doc-inizmruv0014971.shtml",
-      "summary": "美国总统唐纳德·特朗普呼吁英伟达在黄仁勋郑重道歉后接受他重掌公司，尽管这种可能性依然看起来极低。 英伟达董事会已明确表示不打算重新接纳这位身陷危机的前首席执行官...",
+      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-21/doc-iniznaki5130702.shtml",
+      "summary": "两名熟悉英伟达董事长及其他董事私下讨论情况的人士透露，最终促使董事会做出决定的，是和黄仁勋“缺乏坦诚”、“撒谎”有关的多项问题。",
       "relatedStocks": [
         "英伟达",
         "微软",
@@ -207,7 +136,7 @@
       "bearIndustries": [
         "传统IT服务"
       ],
-      "heat": 29,
+      "heat": 24,
       "momentum": 26,
       "_auto": true
     },
@@ -240,21 +169,21 @@
       "bearIndustries": [
         "高杠杆地产"
       ],
-      "heat": 60,
+      "heat": 56,
       "momentum": 18,
       "_auto": true
     },
     {
-      "id": "apu8my2y",
-      "title": "美国参议员蒂姆·斯科特表示，英伟达前CEO黄仁勋将在公开听证会上作证。",
-      "tag": "人物/黄仁勋",
-      "region": "美国",
-      "concept": "aiCapex",
-      "time": "2026-11-21 02:43",
-      "datetime": "2026-11-21 02:43",
-      "source": "财联社",
-      "url": "https://www.cls.cn/detail/2540665",
-      "summary": "美国参议员蒂姆·斯科特表示，英伟达前CEO黄仁勋将在公开听证会上作证。",
+      "id": "apa8zuok",
+      "title": "甲骨文：OpenAI合同获得全面资金支持。 为全面履行OpenAI合同锁定所有资金。 仍然预计本公司2028财年下半年自由现金流（FCF）将为正。",
+      "tag": "人物/奥尔特曼",
+      "region": "全球",
+      "concept": "ai",
+      "time": "2026-11-21 05:24",
+      "datetime": "2026-11-21 05:24",
+      "source": "华尔街见闻",
+      "url": "https://wallstreetcn.com/livenews/3203590",
+      "summary": "甲骨文：OpenAI合同获得全面资金支持。 为全面履行OpenAI合同锁定所有资金。 仍然预计本公司2028财年下半年自由现金流（FCF）将为正。",
       "relatedStocks": [
         "英伟达",
         "微软",
@@ -281,93 +210,72 @@
       "_auto": true
     },
     {
-      "id": "apd4etht",
-      "title": "据英国金融时报援引参加周四非公开活动的人士消息，摩根大通首席执行官杰米·戴蒙（Jamie Dimon）表示，他计划寻找方法来追回（offset）英国政府上月推出的银行税上调部分。…",
-      "tag": "人物/戴蒙",
-      "region": "欧洲",
-      "concept": "macro",
-      "time": "2026-11-21 03:35",
-      "datetime": "2026-11-21 03:35",
-      "source": "华尔街见闻",
-      "url": "https://wallstreetcn.com/livenews/3203494",
-      "summary": "据英国金融时报援引参加周四非公开活动的人士消息，摩根大通首席执行官杰米·戴蒙（Jamie Dimon）表示，他计划寻找方法来追回（offset）英国政府上月推出的银行税上调部分。 戴蒙在摩根大通欧洲金融大会上表示，此举是为了“树立一个范例，让[政府]明白这些不公平惩罚背后的取舍代价”。 他补充说，这一举动“更多是出于遗憾”而非愤怒，但并未具体说明该行将如何抵消这项税收的增加。…",
-      "relatedStocks": [
-        "宽基指数"
-      ],
-      "bullConcepts": [
-        "防御板块"
-      ],
-      "bearConcepts": [
-        "周期股"
-      ],
-      "bullIndustries": [
-        "公用事业"
-      ],
-      "bearIndustries": [
-        "顺周期"
-      ],
-      "heat": 24,
-      "momentum": 18,
-      "_auto": true
-    },
-    {
-      "id": "ap1ct54l4",
-      "title": "美联储理事库克表示，当前金融条件过于宽松，而通胀水平\"令人高度担忧\"。",
-      "tag": "人物/库克",
-      "region": "美国",
-      "concept": "usFinance",
-      "time": "2026-11-21 01:19",
-      "datetime": "2026-11-21 01:19",
-      "source": "财联社",
-      "url": "https://www.cls.cn/detail/2540647",
-      "summary": "美联储理事库克表示，当前金融条件过于宽松，而通胀水平\"令人高度担忧\"。",
-      "relatedStocks": [
-        "美股科技",
-        "黄金"
-      ],
-      "bullConcepts": [
-        "黄金",
-        "防御板块"
-      ],
-      "bearConcepts": [
-        "高估值成长股"
-      ],
-      "bullIndustries": [
-        "银行",
-        "黄金"
-      ],
-      "bearIndustries": [
-        "高杠杆地产"
-      ],
-      "heat": 29,
-      "momentum": 18,
-      "_auto": true
-    },
-    {
-      "id": "apbmwni1",
-      "title": "消息人士称，若向软银出售失败，ABB正考虑将机器人业务部门上市。",
-      "tag": "人物/孙正义",
+      "id": "ap1ycbozc",
+      "title": "甲骨文：和OpenAI的基建合作资金已全部到位",
+      "tag": "人物/奥尔特曼",
       "region": "全球",
-      "concept": "macro",
-      "time": "2026-11-21 03:55",
-      "datetime": "2026-11-21 03:55",
-      "source": "财联社",
-      "url": "https://www.cls.cn/detail/2540635",
-      "summary": "消息人士称，若向软银出售失败，ABB正考虑将机器人业务部门上市。",
+      "concept": "ai",
+      "time": "2026-11-21 06:08",
+      "datetime": "2026-11-21 06:08",
+      "source": "环球市场播报",
+      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-21/doc-inizmwaq3607059.shtml",
+      "summary": "甲骨文表示，已足额落实履行与OpenAI合同所需的全部资金，后续和供应商开展的私下磋商仅作为备选方案。 该公司称，履行这份OpenAI相关合同的能力并不依赖上述磋商。",
       "relatedStocks": [
-        "宽基指数"
+        "英伟达",
+        "微软",
+        "台积电"
       ],
       "bullConcepts": [
-        "防御板块"
+        "AI算力",
+        "半导体",
+        "国产替代"
       ],
       "bearConcepts": [
-        "周期股"
+        "传统软件"
       ],
       "bullIndustries": [
-        "公用事业"
+        "半导体",
+        "AI应用",
+        "算力基础设施"
       ],
       "bearIndustries": [
-        "顺周期"
+        "传统IT服务"
+      ],
+      "heat": 47,
+      "momentum": 18,
+      "_auto": true
+    },
+    {
+      "id": "apqfoay0",
+      "title": "据两名了解英伟达董事长及其他董事私下讨论情况的人士透露，最终促使董事会采取（罢免）行动的，是与黄仁勋“不够坦诚”和“撒谎”相关的“多个问题”。",
+      "tag": "人物/黄仁勋",
+      "region": "全球",
+      "concept": "ai",
+      "time": "2026-11-21 10:05",
+      "datetime": "2026-11-21 10:05",
+      "source": "新浪7×24",
+      "url": "https://finance.sina.cn/7x24/2026-11-21/detail-iniznakk6851146.d.html",
+      "summary": "据两名了解英伟达董事长及其他董事私下讨论情况的人士透露，最终促使董事会采取（罢免）行动的，是与黄仁勋“不够坦诚”和“撒谎”相关的“多个问题”。",
+      "relatedStocks": [
+        "英伟达",
+        "微软",
+        "台积电"
+      ],
+      "bullConcepts": [
+        "AI算力",
+        "半导体",
+        "国产替代"
+      ],
+      "bearConcepts": [
+        "传统软件"
+      ],
+      "bullIndustries": [
+        "半导体",
+        "AI应用",
+        "算力基础设施"
+      ],
+      "bearIndustries": [
+        "传统IT服务"
       ],
       "heat": 24,
       "momentum": 26,
@@ -404,6 +312,39 @@
       ],
       "bearIndustries": [
         "传统IT服务"
+      ],
+      "heat": 24,
+      "momentum": 18,
+      "_auto": true
+    },
+    {
+      "id": "apgrhgni",
+      "title": "美联储理事库克：遏制通胀扩散愈发紧迫",
+      "tag": "人物/库克",
+      "region": "美国",
+      "concept": "usFinance",
+      "time": "2026-11-21 01:41",
+      "datetime": "2026-11-21 01:41",
+      "source": "环球市场播报",
+      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-21/doc-inizmmns6980079.shtml",
+      "summary": "美联储理事丽莎·库克表示，美国央行迫切需要加息以压低通胀，并警告称，如果延迟采取行动，未来可能不得不以更快速度将利率升至更高水平。",
+      "relatedStocks": [
+        "美股科技",
+        "黄金"
+      ],
+      "bullConcepts": [
+        "黄金",
+        "防御板块"
+      ],
+      "bearConcepts": [
+        "高估值成长股"
+      ],
+      "bullIndustries": [
+        "银行",
+        "黄金"
+      ],
+      "bearIndustries": [
+        "高杠杆地产"
       ],
       "heat": 24,
       "momentum": 18,
