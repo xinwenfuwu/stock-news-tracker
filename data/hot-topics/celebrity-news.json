@@ -1,86 +1,20 @@
 {
-  "generatedAt": "2026-11-22 10:04",
+  "generatedAt": "2026-11-22 20:28",
   "generatedBy": "GitHub Actions · 多源实时聚合",
   "sourceCount": 5,
-  "autoCount": 12,
+  "autoCount": 10,
   "events": [
     {
-      "id": "ap7u7n38",
-      "title": "特斯拉今日宣布在美国市场推出 FSD v15，目前已向早期体验计划（EAP）成员推送首批版本。官方宣称，本次更新对安全关键场景的处理能力提升了25倍。",
+      "id": "ap1d9x52r",
+      "title": "SpaceX：猎鹰9号火箭系统状态良好，天气条件适宜发射。美国国家侦察局NROL-136任务的推进剂加注即将开始。",
       "tag": "人物/马斯克",
-      "region": "美国",
-      "concept": "evTax",
-      "time": "2026-11-22 09:11",
-      "datetime": "2026-11-22 09:11",
-      "source": "华尔街见闻",
-      "url": "https://wallstreetcn.com/livenews/3203700",
-      "summary": "特斯拉今日宣布在美国市场推出 FSD v15，目前已向早期体验计划（EAP）成员推送首批版本。官方宣称，本次更新对安全关键场景的处理能力提升了25倍。",
-      "relatedStocks": [
-        "特斯拉",
-        "比亚迪"
-      ],
-      "bullConcepts": [
-        "智能驾驶",
-        "动力电池"
-      ],
-      "bearConcepts": [
-        "传统车企"
-      ],
-      "bullIndustries": [
-        "智能驾驶",
-        "锂电池"
-      ],
-      "bearIndustries": [
-        "传统汽车制造"
-      ],
-      "heat": 29,
-      "momentum": 26,
-      "_auto": true
-    },
-    {
-      "id": "apzsitov",
-      "title": "威瑞森CEO深知马斯克要来抢占自家业务，他称SpaceX要参与竞争将耗资超3000亿美元",
-      "tag": "人物/马斯克",
-      "region": "美国",
-      "concept": "usFinance",
-      "time": "2026-11-21 01:01",
-      "datetime": "2026-11-21 01:01",
-      "source": "环球市场播报",
-      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-21/doc-inizmfeu7093765.shtml",
-      "summary": "威瑞森 CEO 丹・舒尔曼表示，公司高度重视 SpaceX 进军电信行业的动向，但并未陷入恐慌。 埃隆・马斯克希望星链（Starlink）成长为美国主流移动运营商。",
-      "relatedStocks": [
-        "美股科技",
-        "黄金"
-      ],
-      "bullConcepts": [
-        "黄金",
-        "防御板块"
-      ],
-      "bearConcepts": [
-        "高估值成长股"
-      ],
-      "bullIndustries": [
-        "银行",
-        "黄金"
-      ],
-      "bearIndustries": [
-        "高杠杆地产"
-      ],
-      "heat": 60,
-      "momentum": 18,
-      "_auto": true
-    },
-    {
-      "id": "ap3tndsb",
-      "title": "当地时间21日，乌克兰总统泽连斯基在会晤英国国防大臣斯特里廷时表示，下一轮乌克兰、美国、欧洲、俄罗斯四方会谈的举办时间与形式，取决于美方和各方就会议议程协调一致的进度。他称，“美…",
-      "tag": "人物/泽连斯基",
       "region": "美国",
       "concept": "usMacro",
-      "time": "2026-11-21 20:02",
-      "datetime": "2026-11-21 20:02",
-      "source": "华尔街见闻",
-      "url": "https://wallstreetcn.com/livenews/3203672",
-      "summary": "当地时间21日，乌克兰总统泽连斯基在会晤英国国防大臣斯特里廷时表示，下一轮乌克兰、美国、欧洲、俄罗斯四方会谈的举办时间与形式，取决于美方和各方就会议议程协调一致的进度。他称，“美方会尽力推动会谈尽快举行，但预计俄方可能采取行动拖延会议”。",
+      "time": "2026-11-22 19:54",
+      "datetime": "2026-11-22 19:54",
+      "source": "新浪7×24",
+      "url": "https://finance.sina.cn/7x24/2026-11-22/detail-inizrhva8866380.d.html",
+      "summary": "SpaceX：猎鹰9号火箭系统状态良好，天气条件适宜发射。美国国家侦察局NROL-136任务的推进剂加注即将开始。",
       "relatedStocks": [
         "宽基指数"
       ],
@@ -96,21 +30,51 @@
       "bearIndustries": [
         "顺周期"
       ],
-      "heat": 56,
-      "momentum": 18,
+      "heat": 42,
+      "momentum": 36,
       "_auto": true
     },
     {
-      "id": "ap1kcbllo",
-      "title": "11月21日外盘头条：美以考虑短期内对伊发动新一轮打击 特朗普否认对万斯不满 高盛警示下周或再现大额抛压",
+      "id": "ap1zs738",
+      "title": "SpaceX：发射约八分钟后，猎鹰9号火箭的一级将返回范登堡太空军基地的4号着陆区，着陆时将伴随一声音爆。",
+      "tag": "人物/马斯克",
+      "region": "全球",
+      "concept": "macro",
+      "time": "2026-11-22 19:56",
+      "datetime": "2026-11-22 19:56",
+      "source": "新浪7×24",
+      "url": "https://finance.sina.cn/7x24/2026-11-22/detail-inizrhuy2730211.d.html",
+      "summary": "SpaceX：发射约八分钟后，猎鹰9号火箭的一级将返回范登堡太空军基地的4号着陆区，着陆时将伴随一声音爆。",
+      "relatedStocks": [
+        "宽基指数"
+      ],
+      "bullConcepts": [
+        "防御板块"
+      ],
+      "bearConcepts": [
+        "周期股"
+      ],
+      "bullIndustries": [
+        "公用事业"
+      ],
+      "bearIndustries": [
+        "顺周期"
+      ],
+      "heat": 42,
+      "momentum": 36,
+      "_auto": true
+    },
+    {
+      "id": "aphkg7i7",
+      "title": "美国总统特朗普在美国福克斯新闻频道21日播出的采访节目中说，将寻求与伊朗达成一项永久性协议。特朗普说：“我所做的是，我要确保即使四年、十五年或二十年后我们有一位不称职的总统，我达…",
       "tag": "人物/特朗普",
       "region": "美国",
       "concept": "usMacro",
-      "time": "2026-11-21 06:04",
-      "datetime": "2026-11-21 06:04",
-      "source": "环球市场播报",
-      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-21/doc-inizmwaq3604347.shtml",
-      "summary": "全球财经媒体昨夜今晨共同关注的头条新闻主要有： 1、打还是拖？美军陷入“战备消耗”焦虑，美以鹰派施压特朗普新年之前“彻底解决”伊朗 2...",
+      "time": "2026-11-22 12:05",
+      "datetime": "2026-11-22 12:05",
+      "source": "华尔街见闻",
+      "url": "https://wallstreetcn.com/livenews/3203713",
+      "summary": "美国总统特朗普在美国福克斯新闻频道21日播出的采访节目中说，将寻求与伊朗达成一项永久性协议。特朗普说：“我所做的是，我要确保即使四年、十五年或二十年后我们有一位不称职的总统，我达成的协议也将是永久性的。我不会让某人允许他们拥有核武器并对达成的协议出尔反尔。”特朗普还称，没有考虑伊朗政权更迭，“我从来不太在乎政权”。（新华社）",
       "relatedStocks": [
         "宽基指数"
       ],
@@ -126,7 +90,37 @@
       "bearIndustries": [
         "顺周期"
       ],
-      "heat": 38,
+      "heat": 24,
+      "momentum": 18,
+      "_auto": true
+    },
+    {
+      "id": "ap1wocvse",
+      "title": "2月内FBI遭第二次网络攻击，特朗普承认“情况不太妙”",
+      "tag": "人物/特朗普",
+      "region": "美国",
+      "concept": "usMacro",
+      "time": "2026-11-22 07:49",
+      "datetime": "2026-11-22 07:49",
+      "source": "新浪财经",
+      "url": "https://finance.sina.com.cn/world/gjcj/2026-11-22/doc-inizqfis1477452.shtml",
+      "summary": "当地时间11月22日，美国广播公司援引知情人士消息称，美国联邦调查局（FBI）正调查其国家犯罪信息中心（NCIC）数据库疑遭黑客入侵事件。",
+      "relatedStocks": [
+        "宽基指数"
+      ],
+      "bullConcepts": [
+        "防御板块"
+      ],
+      "bearConcepts": [
+        "周期股"
+      ],
+      "bullIndustries": [
+        "公用事业"
+      ],
+      "bearIndustries": [
+        "顺周期"
+      ],
+      "heat": 33,
       "momentum": 18,
       "_auto": true
     },
@@ -160,37 +154,43 @@
         "航空",
         "旅游"
       ],
-      "heat": 33,
+      "heat": 24,
       "momentum": 18,
       "_auto": true
     },
     {
-      "id": "ap1wocvse",
-      "title": "2月内FBI遭第二次网络攻击，特朗普承认“情况不太妙”",
-      "tag": "人物/特朗普",
+      "id": "aphxxw8c",
+      "title": "外媒对黄仁勋穷追猛打！1641篇报导75％呈负面，《纽约时报》连发88篇",
+      "tag": "人物/黄仁勋",
       "region": "美国",
-      "concept": "usMacro",
-      "time": "2026-11-22 07:49",
-      "datetime": "2026-11-22 07:49",
-      "source": "新浪财经",
-      "url": "https://finance.sina.com.cn/world/gjcj/2026-11-22/doc-inizqfis1477452.shtml",
-      "summary": "当地时间11月22日，美国广播公司援引知情人士消息称，美国联邦调查局（FBI）正调查其国家犯罪信息中心（NCIC）数据库疑遭黑客入侵事件。",
+      "concept": "aiCapex",
+      "time": "2026-11-22 11:35",
+      "datetime": "2026-11-22 11:35",
+      "source": "滚动播报",
+      "url": "https://finance.sina.com.cn/roll/2026-11-22/doc-inizqwfh8970039.shtml",
+      "summary": "来源：海峡导报 海峡导报综合报道 英伟达前执行长黄仁勋因婚外情风波请辞，震惊全球科技与金融圈。然而有统计分析，过去针对企业界名人的丑闻报导，与黄仁勋事件相比...",
       "relatedStocks": [
-        "宽基指数"
+        "英伟达",
+        "微软",
+        "台积电"
       ],
       "bullConcepts": [
-        "防御板块"
+        "AI算力",
+        "半导体",
+        "国产替代"
       ],
       "bearConcepts": [
-        "周期股"
+        "传统软件"
       ],
       "bullIndustries": [
-        "公用事业"
+        "半导体",
+        "AI应用",
+        "算力基础设施"
       ],
       "bearIndustries": [
-        "顺周期"
+        "传统IT服务"
       ],
-      "heat": 33,
+      "heat": 29,
       "momentum": 18,
       "_auto": true
     },
@@ -264,72 +264,30 @@
       "_auto": true
     },
     {
-      "id": "ap3ak8fo",
-      "title": "黄仁勋20年前诉讼被翻出：被指恐吓、骚扰员工",
-      "tag": "人物/黄仁勋",
-      "region": "全球",
-      "concept": "ai",
-      "time": "2026-11-21 09:22",
-      "datetime": "2026-11-21 09:22",
+      "id": "ap1h8ytid",
+      "title": "泽连斯基提名乌克兰下一任驻美大使人选",
+      "tag": "人物/泽连斯基",
+      "region": "美国",
+      "concept": "usMacro",
+      "time": "2026-11-21 23:29",
+      "datetime": "2026-11-21 23:29",
       "source": "环球市场播报",
-      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-21/doc-iniznakq9884517.shtml",
-      "summary": "一份2007年加州诉讼文件记载，大约二十年前，英伟达两名员工投诉时任首席执行官黄仁勋对待下属的方式，指控其存在威胁员工、发表色情言论等行为。",
+      "url": "https://finance.sina.com.cn/7x24/2026-11-21/doc-inizpkcw3256543.shtml",
+      "summary": "乌克兰总统泽连斯基已提名多名潜在人选，角逐乌克兰下一任驻美国大使一职，该职位自今年8月起空缺。 泽连斯基周六在记者问答中，点名现任外交部长安德烈·瑟比加...",
       "relatedStocks": [
-        "英伟达",
-        "微软",
-        "台积电"
+        "宽基指数"
       ],
       "bullConcepts": [
-        "AI算力",
-        "半导体",
-        "国产替代"
+        "防御板块"
       ],
       "bearConcepts": [
-        "传统软件"
+        "周期股"
       ],
       "bullIndustries": [
-        "半导体",
-        "AI应用",
-        "算力基础设施"
+        "公用事业"
       ],
       "bearIndustries": [
-        "传统IT服务"
-      ],
-      "heat": 24,
-      "momentum": 18,
-      "_auto": true
-    },
-    {
-      "id": "ap1ycbozc",
-      "title": "甲骨文：和OpenAI的基建合作资金已全部到位",
-      "tag": "人物/奥尔特曼",
-      "region": "全球",
-      "concept": "ai",
-      "time": "2026-11-21 06:08",
-      "datetime": "2026-11-21 06:08",
-      "source": "环球市场播报",
-      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-21/doc-inizmwaq3607059.shtml",
-      "summary": "甲骨文表示，已足额落实履行与OpenAI合同所需的全部资金，后续和供应商开展的私下磋商仅作为备选方案。 该公司称，履行这份OpenAI相关合同的能力并不依赖上述磋商。",
-      "relatedStocks": [
-        "英伟达",
-        "微软",
-        "台积电"
-      ],
-      "bullConcepts": [
-        "AI算力",
-        "半导体",
-        "国产替代"
-      ],
-      "bearConcepts": [
-        "传统软件"
-      ],
-      "bullIndustries": [
-        "半导体",
-        "AI应用",
-        "算力基础设施"
-      ],
-      "bearIndustries": [
-        "传统IT服务"
+        "顺周期"
       ],
       "heat": 24,
       "momentum": 18,
@@ -366,39 +324,6 @@
       ],
       "bearIndustries": [
         "传统IT服务"
-      ],
-      "heat": 24,
-      "momentum": 18,
-      "_auto": true
-    },
-    {
-      "id": "apgrhgni",
-      "title": "美联储理事库克：遏制通胀扩散愈发紧迫",
-      "tag": "人物/库克",
-      "region": "美国",
-      "concept": "usFinance",
-      "time": "2026-11-21 01:41",
-      "datetime": "2026-11-21 01:41",
-      "source": "环球市场播报",
-      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-21/doc-inizmmns6980079.shtml",
-      "summary": "美联储理事丽莎·库克表示，美国央行迫切需要加息以压低通胀，并警告称，如果延迟采取行动，未来可能不得不以更快速度将利率升至更高水平。",
-      "relatedStocks": [
-        "美股科技",
-        "黄金"
-      ],
-      "bullConcepts": [
-        "黄金",
-        "防御板块"
-      ],
-      "bearConcepts": [
-        "高估值成长股"
-      ],
-      "bullIndustries": [
-        "银行",
-        "黄金"
-      ],
-      "bearIndustries": [
-        "高杠杆地产"
       ],
       "heat": 24,
       "momentum": 18,
