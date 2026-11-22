@@ -1,111 +1,9 @@
 {
-  "generatedAt": "2026-11-22 04:28",
+  "generatedAt": "2026-11-22 10:04",
   "generatedBy": "GitHub Actions · 多源实时聚合",
   "sourceCount": 5,
   "autoCount": 18,
   "events": [
-    {
-      "id": "ab193opiq",
-      "title": "伊朗革命卫队周六袭击了美国在巴林的两个军事基地，以报复德黑兰所称的美方敌对行动。袭击目标是谢赫伊萨空军基地和朱法尔的美国海军设施。目前尚不清楚损失或伤亡情况。巴林内政部报告称，伊…",
-      "tag": "地缘/政治",
-      "region": "美国",
-      "concept": "defense",
-      "time": "2026-11-22 03:40",
-      "datetime": "2026-11-22 03:40",
-      "source": "新浪7×24",
-      "url": "https://finance.sina.cn/7x24/2026-11-22/detail-inizputq6324483.d.html",
-      "summary": "伊朗革命卫队周六袭击了美国在巴林的两个军事基地，以报复德黑兰所称的美方敌对行动。袭击目标是谢赫伊萨空军基地和朱法尔的美国海军设施。目前尚不清楚损失或伤亡情况。巴林内政部报告称，伊朗的一次袭击击中了一处民用工业设施，引发火灾并造成财产损失，但无人员受伤。目前尚不清楚这些事件是否有关联。",
-      "relatedStocks": [
-        "军工",
-        "黄金"
-      ],
-      "bullConcepts": [
-        "军工",
-        "避险资产"
-      ],
-      "bearConcepts": [
-        "风险资产"
-      ],
-      "bullIndustries": [
-        "军工",
-        "黄金"
-      ],
-      "bearIndustries": [
-        "航空",
-        "旅游"
-      ],
-      "heat": 38,
-      "momentum": 36,
-      "_auto": true
-    },
-    {
-      "id": "abtxfp2d",
-      "title": "巴林内政部21日晚在社交媒体上说，该国一处民用工业设施当天遭伊朗袭击，引发火灾。初步信息显示，袭击造成财产损失，暂无人员伤亡报告。 巴林内政部说，当地民防部门正在采取措施控制火势…",
-      "tag": "地缘/政治",
-      "region": "全球",
-      "concept": "macro",
-      "time": "2026-11-22 04:06",
-      "datetime": "2026-11-22 04:06",
-      "source": "新浪7×24",
-      "url": "https://finance.sina.cn/7x24/2026-11-22/detail-inizputu9320366.d.html",
-      "summary": "巴林内政部21日晚在社交媒体上说，该国一处民用工业设施当天遭伊朗袭击，引发火灾。初步信息显示，袭击造成财产损失，暂无人员伤亡报告。 巴林内政部说，当地民防部门正在采取措施控制火势。（新华社）",
-      "relatedStocks": [
-        "军工",
-        "黄金"
-      ],
-      "bullConcepts": [
-        "军工",
-        "避险资产"
-      ],
-      "bearConcepts": [
-        "风险资产"
-      ],
-      "bullIndustries": [
-        "军工",
-        "黄金"
-      ],
-      "bearIndustries": [
-        "航空",
-        "旅游"
-      ],
-      "heat": 29,
-      "momentum": 41,
-      "_auto": true
-    },
-    {
-      "id": "aboqqk66",
-      "title": "当地时间21日晚，总台报道员在也门荷台达市听到爆炸声，该地区疑似遭沙特主导的多国联军空袭，但具体遭袭地点尚不明确。（央视新闻）",
-      "tag": "地缘/政治",
-      "region": "全球",
-      "concept": "macro",
-      "time": "2026-11-22 01:07",
-      "datetime": "2026-11-22 01:07",
-      "source": "新浪7×24",
-      "url": "https://finance.sina.cn/7x24/2026-11-22/detail-inizpqmu3164379.d.html",
-      "summary": "当地时间21日晚，总台报道员在也门荷台达市听到爆炸声，该地区疑似遭沙特主导的多国联军空袭，但具体遭袭地点尚不明确。（央视新闻）",
-      "relatedStocks": [
-        "军工",
-        "黄金"
-      ],
-      "bullConcepts": [
-        "军工",
-        "避险资产"
-      ],
-      "bearConcepts": [
-        "风险资产"
-      ],
-      "bullIndustries": [
-        "军工",
-        "黄金"
-      ],
-      "bearIndustries": [
-        "航空",
-        "旅游"
-      ],
-      "heat": 65,
-      "momentum": 18,
-      "_auto": true
-    },
     {
       "id": "ab9zs0qx",
       "title": "当地时间21日，伊朗伊斯兰革命卫队海军发表声明称，自20日晚，多艘油轮在霍尔木兹海峡南部海域发生事故。伊朗方面表示，20日晚，美军动用了包括空中加油机、F-16、F/A-18和 …",
@@ -136,57 +34,21 @@
         "航空",
         "旅游"
       ],
-      "heat": 69,
+      "heat": 78,
       "momentum": 18,
       "_auto": true
     },
     {
-      "id": "absbqn67",
-      "title": "Anthropic股价下跌 回吐IPO首日大部分涨幅",
-      "tag": "科技/AI",
-      "region": "全球",
-      "concept": "ai",
-      "time": "2026-11-20 23:05",
-      "datetime": "2026-11-20 23:05",
-      "source": "环球市场播报",
-      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-20/doc-inizmfew3808800.shtml",
-      "summary": "Anthropic PBC股价周五回吐上市首日的大部分涨幅。这家AI实验室刚刚完成史上规模最大的首次公开募股，其股价表现正在考验投资者的信心。",
-      "relatedStocks": [
-        "英伟达",
-        "微软",
-        "台积电"
-      ],
-      "bullConcepts": [
-        "AI算力",
-        "半导体",
-        "国产替代"
-      ],
-      "bearConcepts": [
-        "传统软件"
-      ],
-      "bullIndustries": [
-        "半导体",
-        "AI应用",
-        "算力基础设施"
-      ],
-      "bearIndustries": [
-        "传统IT服务"
-      ],
-      "heat": 87,
-      "momentum": 18,
-      "_auto": true
-    },
-    {
-      "id": "abbgnmyj",
-      "title": "当地时间21日，伊朗方面消息称，位于霍尔木兹甘省东部的锡里克居民报告，几分钟前听到从海面方向传来巨大的爆炸声。爆炸的具体原因尚不明确，但可能与向未经授权的船只发射警告性射击或引爆…",
+      "id": "ab18sffdj",
+      "title": "当地时间21日晚间，也门政府军表示，政府军在代号为“也门黎明”的军事行动中，继续打击胡塞武装目标。过去24小时内，政府军共实施816次军事行动，造成149名胡塞武装人员死伤。同一…",
       "tag": "地缘/政治",
       "region": "全球",
       "concept": "macro",
-      "time": "2026-11-22 02:30",
-      "datetime": "2026-11-22 02:30",
+      "time": "2026-11-22 06:18",
+      "datetime": "2026-11-22 06:18",
       "source": "新浪7×24",
-      "url": "https://finance.sina.cn/7x24/2026-11-22/detail-inizputs3071691.d.html",
-      "summary": "当地时间21日，伊朗方面消息称，位于霍尔木兹甘省东部的锡里克居民报告，几分钟前听到从海面方向传来巨大的爆炸声。爆炸的具体原因尚不明确，但可能与向未经授权的船只发射警告性射击或引爆水雷有关。据悉，在过去三天里，霍尔木兹海峡内至少有12艘未经授权的船只触雷爆炸，并引发了火灾。（央视新闻）",
+      "url": "https://finance.sina.cn/7x24/2026-11-22/detail-inizpyzq3029869.d.html",
+      "summary": "当地时间21日晚间，也门政府军表示，政府军在代号为“也门黎明”的军事行动中，继续打击胡塞武装目标。过去24小时内，政府军共实施816次军事行动，造成149名胡塞武装人员死伤。同一天，也门胡塞武装方面称，沙特主导的多国联军对也门荷台达国际机场实施了三次空袭。（央视新闻）",
       "relatedStocks": [
         "军工",
         "黄金"
@@ -207,41 +69,41 @@
         "旅游"
       ],
       "heat": 42,
-      "momentum": 26,
+      "momentum": 18,
       "_auto": true
     },
     {
-      "id": "abf7ssqb",
-      "title": "卡塔尔-德国声明：谴责胡塞武装在也门以及针对沙特的袭击，并呼吁该组织立即停止一切军事行动。",
-      "tag": "地缘/政治",
-      "region": "欧洲",
-      "concept": "macro",
-      "time": "2026-11-22 00:26",
-      "datetime": "2026-11-22 00:26",
-      "source": "新浪7×24",
-      "url": "https://finance.sina.cn/7x24/2026-11-22/detail-inizpqmu3148966.d.html",
-      "summary": "卡塔尔-德国声明：谴责胡塞武装在也门以及针对沙特的袭击，并呼吁该组织立即停止一切军事行动。",
+      "id": "ab1r7mwt6",
+      "title": "俄国家原子能公司CEO：伊朗布什尔核电站在美国空袭期间经受住韧性考验",
+      "tag": "能源/资源",
+      "region": "美国",
+      "concept": "shale",
+      "time": "2026-11-22 08:12",
+      "datetime": "2026-11-22 08:12",
+      "source": "环球市场播报",
+      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-22/doc-inizqfis1483584.shtml",
+      "summary": "俄罗斯国家原子能公司首席执行官阿列克谢・利哈乔夫接受新闻频道采访时表示，伊朗布什尔核电站在美国对伊朗实施军事打击期间，经受住了韧性压力测试。",
       "relatedStocks": [
-        "军工",
-        "黄金"
+        "中国石油",
+        "紫金矿业"
       ],
       "bullConcepts": [
-        "军工",
-        "避险资产"
+        "油气",
+        "贵金属"
       ],
       "bearConcepts": [
-        "风险资产"
+        "高耗能制造"
       ],
       "bullIndustries": [
-        "军工",
-        "黄金"
+        "石油开采",
+        "贵金属"
       ],
       "bearIndustries": [
-        "航空",
-        "旅游"
+        "航空运输",
+        "化工"
       ],
-      "heat": 33,
-      "momentum": 18,
+      "heat": 47,
+      "momentum": 26,
       "_auto": true
     },
     {
@@ -276,113 +138,37 @@
       "bearIndustries": [
         "传统IT服务"
       ],
-      "heat": 87,
+      "heat": 91,
       "momentum": 18,
       "_auto": true
     },
     {
-      "id": "ab3a3gct",
-      "title": "两位知情人士表示，美国总统特朗普特使威特科夫和特朗普的女婿库什纳19日在柏林与卡塔尔高级官员举行会晤，就美国与伊朗之间的斡旋工作进行讨论。卡塔尔首相兼外交大臣穆罕默德及其特使出席…",
-      "tag": "地缘/政治",
+      "id": "ab1wocvse",
+      "title": "2月内FBI遭第二次网络攻击，特朗普承认“情况不太妙”",
+      "tag": "宏观/综合",
       "region": "美国",
-      "concept": "defense",
-      "time": "2026-11-21 10:28",
-      "datetime": "2026-11-21 10:28",
-      "source": "华尔街见闻",
-      "url": "https://wallstreetcn.com/livenews/3203634",
-      "summary": "两位知情人士表示，美国总统特朗普特使威特科夫和特朗普的女婿库什纳19日在柏林与卡塔尔高级官员举行会晤，就美国与伊朗之间的斡旋工作进行讨论。卡塔尔首相兼外交大臣穆罕默德及其特使出席。作为美伊之间的关键斡旋方，卡塔尔数周来一直致力于促成一项协议，旨在恢复停火、重启核谈判，并防止战火重燃。特朗普20日在新闻发布会上表示，伊朗想要达成协议，但伊方提出的协议他无法接受。 (央视新闻)",
+      "concept": "usMacro",
+      "time": "2026-11-22 07:49",
+      "datetime": "2026-11-22 07:49",
+      "source": "新浪财经",
+      "url": "https://finance.sina.com.cn/world/gjcj/2026-11-22/doc-inizqfis1477452.shtml",
+      "summary": "当地时间11月22日，美国广播公司援引知情人士消息称，美国联邦调查局（FBI）正调查其国家犯罪信息中心（NCIC）数据库疑遭黑客入侵事件。",
       "relatedStocks": [
-        "军工",
-        "黄金"
+        "宽基指数"
       ],
       "bullConcepts": [
-        "军工",
-        "避险资产"
+        "防御板块"
       ],
       "bearConcepts": [
-        "风险资产"
+        "周期股"
       ],
       "bullIndustries": [
-        "军工",
-        "黄金"
+        "公用事业"
       ],
       "bearIndustries": [
-        "航空",
-        "旅游"
+        "顺周期"
       ],
       "heat": 33,
-      "momentum": 18,
-      "_auto": true
-    },
-    {
-      "id": "ab1xietq0",
-      "title": "Anthropic股价暴跌，投资者争相对冲风险，但对冲成本或将极其高昂",
-      "tag": "科技/AI",
-      "region": "全球",
-      "concept": "ai",
-      "time": "2026-11-21 00:12",
-      "datetime": "2026-11-21 00:12",
-      "source": "环球市场播报",
-      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-21/doc-inizmfet5396184.shtml",
-      "summary": "核心要点Anthropic 股票期权将于下周一挂牌上市，期权交易成本可能居高不下。交易员预估 Anthropic 的隐含波动率或将落在 100‑150 区间。",
-      "relatedStocks": [
-        "英伟达",
-        "微软",
-        "台积电"
-      ],
-      "bullConcepts": [
-        "AI算力",
-        "半导体",
-        "国产替代"
-      ],
-      "bearConcepts": [
-        "传统软件"
-      ],
-      "bullIndustries": [
-        "半导体",
-        "AI应用",
-        "算力基础设施"
-      ],
-      "bearIndustries": [
-        "传统IT服务"
-      ],
-      "heat": 87,
-      "momentum": 18,
-      "_auto": true
-    },
-    {
-      "id": "abf479og",
-      "title": "美国加州针对英伟达芯片销售、并就此误导投资者的调查，同时在核查是否存在州法下的刑事违规行为，令这家芯片企业面临更高风险。该州总检察长罗布·邦塔周五称，倘若英伟达或前首席执行官黄仁…",
-      "tag": "科技/AI",
-      "region": "美国",
-      "concept": "aiCapex",
-      "time": "2026-11-22 01:15",
-      "datetime": "2026-11-22 01:15",
-      "source": "新浪7×24",
-      "url": "https://finance.sina.cn/7x24/2026-11-22/detail-inizpqmu3168387.d.html",
-      "summary": "美国加州针对英伟达芯片销售、并就此误导投资者的调查，同时在核查是否存在州法下的刑事违规行为，令这家芯片企业面临更高风险。该州总检察长罗布·邦塔周五称，倘若英伟达或前首席执行官黄仁勋就相关芯片销售情况向公众提供虚假信息，有可能触犯多项加州法律。邦塔前一日刚宣布启动这项调查，调查目前仍处于初步阶段，尚未形成任何结论。邦塔在采访中表示：“我们参考的基本法律框架，是加州法律中禁止误导…",
-      "relatedStocks": [
-        "英伟达",
-        "微软",
-        "台积电"
-      ],
-      "bullConcepts": [
-        "AI算力",
-        "半导体",
-        "国产替代"
-      ],
-      "bearConcepts": [
-        "传统软件"
-      ],
-      "bullIndustries": [
-        "半导体",
-        "AI应用",
-        "算力基础设施"
-      ],
-      "bearIndustries": [
-        "传统IT服务"
-      ],
-      "heat": 24,
       "momentum": 18,
       "_auto": true
     },
@@ -484,7 +270,7 @@
         "航空",
         "旅游"
       ],
-      "heat": 24,
+      "heat": 46,
       "momentum": 18,
       "_auto": true
     },
@@ -518,7 +304,7 @@
         "航空",
         "旅游"
       ],
-      "heat": 24,
+      "heat": 46,
       "momentum": 18,
       "_auto": true
     },
@@ -590,6 +376,36 @@
       "_auto": true
     },
     {
+      "id": "ab1l77r31",
+      "title": "美国FBI再度遭黑客入侵 目标为其犯罪数据库",
+      "tag": "宏观/综合",
+      "region": "美国",
+      "concept": "usMacro",
+      "time": "2026-11-21 10:20",
+      "datetime": "2026-11-21 10:20",
+      "source": "环球市场播报",
+      "url": "https://finance.sina.com.cn/world/2026-11-21/doc-iniznakk6859982.shtml",
+      "summary": "据报道，美国联邦调查局（FBI）国家犯罪信息中心遭黑客攻击。 近日这起入侵事件被曝光之际，特朗普政府正试图缓解公众对美国网络安全的担忧。",
+      "relatedStocks": [
+        "宽基指数"
+      ],
+      "bullConcepts": [
+        "防御板块"
+      ],
+      "bearConcepts": [
+        "周期股"
+      ],
+      "bullIndustries": [
+        "公用事业"
+      ],
+      "bearIndustries": [
+        "顺周期"
+      ],
+      "heat": 38,
+      "momentum": 18,
+      "_auto": true
+    },
+    {
       "id": "ab1s8017h",
       "title": "被解职CEO领英上迟迟不肯“卸任”",
       "tag": "宏观/综合",
@@ -616,6 +432,163 @@
         "顺周期"
       ],
       "heat": 42,
+      "momentum": 18,
+      "_auto": true
+    },
+    {
+      "id": "ab17qv2p0",
+      "title": "特朗普称网传FBI数据库遭黑客入侵一事 “情况不妙”",
+      "tag": "宏观/综合",
+      "region": "美国",
+      "concept": "usMacro",
+      "time": "2026-11-22 07:35",
+      "datetime": "2026-11-22 07:35",
+      "source": "环球市场播报",
+      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-22/doc-inizqfis1468487.shtml",
+      "summary": "据报道，FBI 正在调查全国犯罪信息中心（NCIC）疑似遭黑客入侵事件。 NCIC 是联邦及地方执法机构共用的线上数据库，用于共享通缉令、背景审查等信息...",
+      "relatedStocks": [
+        "宽基指数"
+      ],
+      "bullConcepts": [
+        "防御板块"
+      ],
+      "bearConcepts": [
+        "周期股"
+      ],
+      "bullIndustries": [
+        "公用事业"
+      ],
+      "bearIndustries": [
+        "顺周期"
+      ],
+      "heat": 33,
+      "momentum": 18,
+      "_auto": true
+    },
+    {
+      "id": "aboz8ks",
+      "title": "墨西哥逮捕贩毒集团头目后，美国大使馆发布警报，敦促在墨西哥锡那罗亚州的美国公民保持警惕。",
+      "tag": "宏观/综合",
+      "region": "美国",
+      "concept": "usMacro",
+      "time": "2026-11-22 06:08",
+      "datetime": "2026-11-22 06:08",
+      "source": "新浪7×24",
+      "url": "https://finance.sina.cn/7x24/2026-11-22/detail-inizpyzn6249521.d.html",
+      "summary": "墨西哥逮捕贩毒集团头目后，美国大使馆发布警报，敦促在墨西哥锡那罗亚州的美国公民保持警惕。",
+      "relatedStocks": [
+        "宽基指数"
+      ],
+      "bullConcepts": [
+        "防御板块"
+      ],
+      "bearConcepts": [
+        "周期股"
+      ],
+      "bullIndustries": [
+        "公用事业"
+      ],
+      "bearIndustries": [
+        "顺周期"
+      ],
+      "heat": 24,
+      "momentum": 18,
+      "_auto": true
+    },
+    {
+      "id": "ab1fyh6ot",
+      "title": "特朗普否认对万斯不满 淡化两人围绕伊朗战争的摩擦",
+      "tag": "地缘/政治",
+      "region": "美国",
+      "concept": "defense",
+      "time": "2026-11-21 04:49",
+      "datetime": "2026-11-21 04:49",
+      "source": "环球市场播报",
+      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-21/doc-inizmruq6920985.shtml",
+      "summary": "美国总统唐纳德·特朗普否认他因副总统JD·万斯将共和党中期选举失利归咎于伊朗战争而对其不满的报道。 特朗普周五在记者会上表示，万斯选后在社交媒体上称伊朗战争引发选民...",
+      "relatedStocks": [
+        "军工",
+        "黄金"
+      ],
+      "bullConcepts": [
+        "军工",
+        "避险资产"
+      ],
+      "bearConcepts": [
+        "风险资产"
+      ],
+      "bullIndustries": [
+        "军工",
+        "黄金"
+      ],
+      "bearIndustries": [
+        "航空",
+        "旅游"
+      ],
+      "heat": 33,
+      "momentum": 18,
+      "_auto": true
+    },
+    {
+      "id": "abn28d5m",
+      "title": "比特币跌至两年多低点 风险资产抛售加剧下行压力",
+      "tag": "金融/宏观",
+      "region": "美国",
+      "concept": "usFinance",
+      "time": "2026-11-21 04:40",
+      "datetime": "2026-11-21 04:40",
+      "source": "环球市场播报",
+      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-21/doc-inizmruv0012034.shtml",
+      "summary": "比特币跌至两年多来的最低水平，从特朗普再次当选后备受市场追捧的资产，进一步转变为更广泛投机性押注退潮的受害者。 这种最早的加密货币一度暴跌6.1%，至57，716美元...",
+      "relatedStocks": [
+        "美股科技",
+        "黄金"
+      ],
+      "bullConcepts": [
+        "黄金",
+        "防御板块"
+      ],
+      "bearConcepts": [
+        "高估值成长股"
+      ],
+      "bullIndustries": [
+        "银行",
+        "黄金"
+      ],
+      "bearIndustries": [
+        "高杠杆地产"
+      ],
+      "heat": 33,
+      "momentum": 18,
+      "_auto": true
+    },
+    {
+      "id": "ab86sh31",
+      "title": "青海海西州德令哈市附近发生5.7级左右地震",
+      "tag": "宏观/综合",
+      "region": "中国",
+      "concept": "broker",
+      "time": "2026-11-21 18:49",
+      "datetime": "2026-11-21 18:49",
+      "source": "财联社",
+      "url": "https://www.cls.cn/detail/2540820",
+      "summary": "中国地震台网自动测定：11月21日18时45分在青海海西州德令哈市附近（北纬37.14度，东经96.59度）发生5.7级左右地震，最终结果以正式速报为准。",
+      "relatedStocks": [
+        "宽基指数"
+      ],
+      "bullConcepts": [
+        "防御板块"
+      ],
+      "bearConcepts": [
+        "周期股"
+      ],
+      "bullIndustries": [
+        "公用事业"
+      ],
+      "bearIndustries": [
+        "顺周期"
+      ],
+      "heat": 33,
       "momentum": 18,
       "_auto": true
     },

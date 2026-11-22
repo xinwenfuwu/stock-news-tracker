@@ -1,37 +1,40 @@
 {
-  "generatedAt": "2026-11-22 04:28",
+  "generatedAt": "2026-11-22 10:04",
   "generatedBy": "GitHub Actions · 多源实时聚合",
   "sourceCount": 5,
-  "autoCount": 13,
+  "autoCount": 12,
   "events": [
     {
-      "id": "ap3tndsb",
-      "title": "当地时间21日，乌克兰总统泽连斯基在会晤英国国防大臣斯特里廷时表示，下一轮乌克兰、美国、欧洲、俄罗斯四方会谈的举办时间与形式，取决于美方和各方就会议议程协调一致的进度。他称，“美…",
-      "tag": "人物/泽连斯基",
+      "id": "ap7u7n38",
+      "title": "特斯拉今日宣布在美国市场推出 FSD v15，目前已向早期体验计划（EAP）成员推送首批版本。官方宣称，本次更新对安全关键场景的处理能力提升了25倍。",
+      "tag": "人物/马斯克",
       "region": "美国",
-      "concept": "usMacro",
-      "time": "2026-11-21 20:02",
-      "datetime": "2026-11-21 20:02",
+      "concept": "evTax",
+      "time": "2026-11-22 09:11",
+      "datetime": "2026-11-22 09:11",
       "source": "华尔街见闻",
-      "url": "https://wallstreetcn.com/livenews/3203672",
-      "summary": "当地时间21日，乌克兰总统泽连斯基在会晤英国国防大臣斯特里廷时表示，下一轮乌克兰、美国、欧洲、俄罗斯四方会谈的举办时间与形式，取决于美方和各方就会议议程协调一致的进度。他称，“美方会尽力推动会谈尽快举行，但预计俄方可能采取行动拖延会议”。",
+      "url": "https://wallstreetcn.com/livenews/3203700",
+      "summary": "特斯拉今日宣布在美国市场推出 FSD v15，目前已向早期体验计划（EAP）成员推送首批版本。官方宣称，本次更新对安全关键场景的处理能力提升了25倍。",
       "relatedStocks": [
-        "宽基指数"
+        "特斯拉",
+        "比亚迪"
       ],
       "bullConcepts": [
-        "防御板块"
+        "智能驾驶",
+        "动力电池"
       ],
       "bearConcepts": [
-        "周期股"
+        "传统车企"
       ],
       "bullIndustries": [
-        "公用事业"
+        "智能驾驶",
+        "锂电池"
       ],
       "bearIndustries": [
-        "顺周期"
+        "传统汽车制造"
       ],
-      "heat": 65,
-      "momentum": 18,
+      "heat": 29,
+      "momentum": 26,
       "_auto": true
     },
     {
@@ -62,6 +65,36 @@
       ],
       "bearIndustries": [
         "高杠杆地产"
+      ],
+      "heat": 60,
+      "momentum": 18,
+      "_auto": true
+    },
+    {
+      "id": "ap3tndsb",
+      "title": "当地时间21日，乌克兰总统泽连斯基在会晤英国国防大臣斯特里廷时表示，下一轮乌克兰、美国、欧洲、俄罗斯四方会谈的举办时间与形式，取决于美方和各方就会议议程协调一致的进度。他称，“美…",
+      "tag": "人物/泽连斯基",
+      "region": "美国",
+      "concept": "usMacro",
+      "time": "2026-11-21 20:02",
+      "datetime": "2026-11-21 20:02",
+      "source": "华尔街见闻",
+      "url": "https://wallstreetcn.com/livenews/3203672",
+      "summary": "当地时间21日，乌克兰总统泽连斯基在会晤英国国防大臣斯特里廷时表示，下一轮乌克兰、美国、欧洲、俄罗斯四方会谈的举办时间与形式，取决于美方和各方就会议议程协调一致的进度。他称，“美方会尽力推动会谈尽快举行，但预计俄方可能采取行动拖延会议”。",
+      "relatedStocks": [
+        "宽基指数"
+      ],
+      "bullConcepts": [
+        "防御板块"
+      ],
+      "bearConcepts": [
+        "周期股"
+      ],
+      "bullIndustries": [
+        "公用事业"
+      ],
+      "bearIndustries": [
+        "顺周期"
       ],
       "heat": 56,
       "momentum": 18,
@@ -98,46 +131,16 @@
       "_auto": true
     },
     {
-      "id": "ap4366x2",
-      "title": "英国国防大臣斯特里廷对泽连斯基表示：我认为自温斯顿·丘吉尔以来，没有哪位欧洲领导人像您这样，不仅为本国人民和国家的尊严与自由，也为整个欧洲大陆的尊严与自由做出了如此巨大的贡献。我…",
+      "id": "apg4tbtm",
+      "title": "11月21日，乌克兰总统泽连斯基在基辅会见到访的英国国防大臣斯特里廷。双方重点就乌防空能力建设、“爱国者”防空系统所用拦截弹供应、联合武器生产、远程打击能力等议题进行磋商。在联合…",
       "tag": "人物/泽连斯基",
       "region": "欧洲",
       "concept": "macro",
-      "time": "2026-11-22 00:42",
-      "datetime": "2026-11-22 00:42",
-      "source": "新浪7×24",
-      "url": "https://finance.sina.cn/7x24/2026-11-22/detail-inizpqmu3155504.d.html",
-      "summary": "英国国防大臣斯特里廷对泽连斯基表示：我认为自温斯顿·丘吉尔以来，没有哪位欧洲领导人像您这样，不仅为本国人民和国家的尊严与自由，也为整个欧洲大陆的尊严与自由做出了如此巨大的贡献。我们对您的领导力深感敬佩，也对乌克兰人民的坚韧与勇气深感敬佩。",
-      "relatedStocks": [
-        "宽基指数"
-      ],
-      "bullConcepts": [
-        "防御板块"
-      ],
-      "bearConcepts": [
-        "周期股"
-      ],
-      "bullIndustries": [
-        "公用事业"
-      ],
-      "bearIndustries": [
-        "顺周期"
-      ],
-      "heat": 33,
-      "momentum": 18,
-      "_auto": true
-    },
-    {
-      "id": "ap3a3gct",
-      "title": "两位知情人士表示，美国总统特朗普特使威特科夫和特朗普的女婿库什纳19日在柏林与卡塔尔高级官员举行会晤，就美国与伊朗之间的斡旋工作进行讨论。卡塔尔首相兼外交大臣穆罕默德及其特使出席…",
-      "tag": "人物/特朗普",
-      "region": "美国",
-      "concept": "defense",
-      "time": "2026-11-21 10:28",
-      "datetime": "2026-11-21 10:28",
+      "time": "2026-11-21 21:07",
+      "datetime": "2026-11-21 21:07",
       "source": "华尔街见闻",
-      "url": "https://wallstreetcn.com/livenews/3203634",
-      "summary": "两位知情人士表示，美国总统特朗普特使威特科夫和特朗普的女婿库什纳19日在柏林与卡塔尔高级官员举行会晤，就美国与伊朗之间的斡旋工作进行讨论。卡塔尔首相兼外交大臣穆罕默德及其特使出席。作为美伊之间的关键斡旋方，卡塔尔数周来一直致力于促成一项协议，旨在恢复停火、重启核谈判，并防止战火重燃。特朗普20日在新闻发布会上表示，伊朗想要达成协议，但伊方提出的协议他无法接受。 (央视新闻)",
+      "url": "https://wallstreetcn.com/livenews/3203681",
+      "summary": "11月21日，乌克兰总统泽连斯基在基辅会见到访的英国国防大臣斯特里廷。双方重点就乌防空能力建设、“爱国者”防空系统所用拦截弹供应、联合武器生产、远程打击能力等议题进行磋商。在联合武器生产与远程打击能力建设方面，双方认为该领域具备深化合作的空间。通过联合生产与技术协作，能够助力乌克兰推进本土导弹研发计划。此外，泽连斯基还表示，英国提供的新一批国防与人道主义援助总额超过5亿英镑。…",
       "relatedStocks": [
         "军工",
         "黄金"
@@ -162,16 +165,16 @@
       "_auto": true
     },
     {
-      "id": "ap1uv8zaf",
-      "title": "马斯克：对黎曼证明（迄今为止）实用性的简单解释是，它消除了其他依赖该证明的数学定理的条件性。当然，这也是超级智能实现的又一件令人惊叹的事。",
-      "tag": "人物/马斯克",
-      "region": "全球",
-      "concept": "macro",
-      "time": "2026-11-22 02:50",
-      "datetime": "2026-11-22 02:50",
-      "source": "新浪7×24",
-      "url": "https://finance.sina.cn/7x24/2026-11-22/detail-inizputs3080891.d.html",
-      "summary": "马斯克：对黎曼证明（迄今为止）实用性的简单解释是，它消除了其他依赖该证明的数学定理的条件性。当然，这也是超级智能实现的又一件令人惊叹的事。",
+      "id": "ap1wocvse",
+      "title": "2月内FBI遭第二次网络攻击，特朗普承认“情况不太妙”",
+      "tag": "人物/特朗普",
+      "region": "美国",
+      "concept": "usMacro",
+      "time": "2026-11-22 07:49",
+      "datetime": "2026-11-22 07:49",
+      "source": "新浪财经",
+      "url": "https://finance.sina.com.cn/world/gjcj/2026-11-22/doc-inizqfis1477452.shtml",
+      "summary": "当地时间11月22日，美国广播公司援引知情人士消息称，美国联邦调查局（FBI）正调查其国家犯罪信息中心（NCIC）数据库疑遭黑客入侵事件。",
       "relatedStocks": [
         "宽基指数"
       ],
@@ -187,115 +190,7 @@
       "bearIndustries": [
         "顺周期"
       ],
-      "heat": 24,
-      "momentum": 26,
-      "_auto": true
-    },
-    {
-      "id": "ap17rz4tr",
-      "title": "软银董事长孙正义近期接洽华尔街机构，商议融资推进一笔规模达万亿级美元的收购，目标是存储芯片巨头SK海力士，但软银发言人表示，孙正义现已不再积极推进该交易。（The Informa…",
-      "tag": "人物/孙正义",
-      "region": "美国",
-      "concept": "aiCapex",
-      "time": "2026-11-21 10:35",
-      "datetime": "2026-11-21 10:35",
-      "source": "华尔街见闻",
-      "url": "https://wallstreetcn.com/livenews/3203635",
-      "summary": "软银董事长孙正义近期接洽华尔街机构，商议融资推进一笔规模达万亿级美元的收购，目标是存储芯片巨头SK海力士，但软银发言人表示，孙正义现已不再积极推进该交易。（The Information）",
-      "relatedStocks": [
-        "英伟达",
-        "微软",
-        "台积电"
-      ],
-      "bullConcepts": [
-        "AI算力",
-        "半导体",
-        "国产替代"
-      ],
-      "bearConcepts": [
-        "传统软件"
-      ],
-      "bullIndustries": [
-        "半导体",
-        "AI应用",
-        "算力基础设施"
-      ],
-      "bearIndustries": [
-        "传统IT服务"
-      ],
-      "heat": 24,
-      "momentum": 18,
-      "_auto": true
-    },
-    {
-      "id": "ap1ycbozc",
-      "title": "甲骨文：和OpenAI的基建合作资金已全部到位",
-      "tag": "人物/奥尔特曼",
-      "region": "全球",
-      "concept": "ai",
-      "time": "2026-11-21 06:08",
-      "datetime": "2026-11-21 06:08",
-      "source": "环球市场播报",
-      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-21/doc-inizmwaq3607059.shtml",
-      "summary": "甲骨文表示，已足额落实履行与OpenAI合同所需的全部资金，后续和供应商开展的私下磋商仅作为备选方案。 该公司称，履行这份OpenAI相关合同的能力并不依赖上述磋商。",
-      "relatedStocks": [
-        "英伟达",
-        "微软",
-        "台积电"
-      ],
-      "bullConcepts": [
-        "AI算力",
-        "半导体",
-        "国产替代"
-      ],
-      "bearConcepts": [
-        "传统软件"
-      ],
-      "bullIndustries": [
-        "半导体",
-        "AI应用",
-        "算力基础设施"
-      ],
-      "bearIndustries": [
-        "传统IT服务"
-      ],
-      "heat": 29,
-      "momentum": 18,
-      "_auto": true
-    },
-    {
-      "id": "aphipxqh",
-      "title": "拉加德：欧盟基金应为芯片工厂、数据中心项目承担首轮损失",
-      "tag": "人物/拉加德",
-      "region": "中国",
-      "concept": "llm",
-      "time": "2026-11-20 22:45",
-      "datetime": "2026-11-20 22:45",
-      "source": "环球市场播报",
-      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-20/doc-inizkywy3928249.shtml",
-      "summary": "核心要点欧洲央行行长克里斯蒂娜・拉加德表示，欧盟公共资金应当为大型芯片工厂、数据中心项目承担首轮损失，以此吸引私人资本入局。",
-      "relatedStocks": [
-        "英伟达",
-        "微软",
-        "台积电"
-      ],
-      "bullConcepts": [
-        "AI算力",
-        "半导体",
-        "国产替代"
-      ],
-      "bearConcepts": [
-        "传统软件"
-      ],
-      "bullIndustries": [
-        "半导体",
-        "AI应用",
-        "算力基础设施"
-      ],
-      "bearIndustries": [
-        "传统IT服务"
-      ],
-      "heat": 24,
+      "heat": 33,
       "momentum": 18,
       "_auto": true
     },
@@ -379,6 +274,78 @@
       "source": "环球市场播报",
       "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-21/doc-iniznakq9884517.shtml",
       "summary": "一份2007年加州诉讼文件记载，大约二十年前，英伟达两名员工投诉时任首席执行官黄仁勋对待下属的方式，指控其存在威胁员工、发表色情言论等行为。",
+      "relatedStocks": [
+        "英伟达",
+        "微软",
+        "台积电"
+      ],
+      "bullConcepts": [
+        "AI算力",
+        "半导体",
+        "国产替代"
+      ],
+      "bearConcepts": [
+        "传统软件"
+      ],
+      "bullIndustries": [
+        "半导体",
+        "AI应用",
+        "算力基础设施"
+      ],
+      "bearIndustries": [
+        "传统IT服务"
+      ],
+      "heat": 24,
+      "momentum": 18,
+      "_auto": true
+    },
+    {
+      "id": "ap1ycbozc",
+      "title": "甲骨文：和OpenAI的基建合作资金已全部到位",
+      "tag": "人物/奥尔特曼",
+      "region": "全球",
+      "concept": "ai",
+      "time": "2026-11-21 06:08",
+      "datetime": "2026-11-21 06:08",
+      "source": "环球市场播报",
+      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-21/doc-inizmwaq3607059.shtml",
+      "summary": "甲骨文表示，已足额落实履行与OpenAI合同所需的全部资金，后续和供应商开展的私下磋商仅作为备选方案。 该公司称，履行这份OpenAI相关合同的能力并不依赖上述磋商。",
+      "relatedStocks": [
+        "英伟达",
+        "微软",
+        "台积电"
+      ],
+      "bullConcepts": [
+        "AI算力",
+        "半导体",
+        "国产替代"
+      ],
+      "bearConcepts": [
+        "传统软件"
+      ],
+      "bullIndustries": [
+        "半导体",
+        "AI应用",
+        "算力基础设施"
+      ],
+      "bearIndustries": [
+        "传统IT服务"
+      ],
+      "heat": 24,
+      "momentum": 18,
+      "_auto": true
+    },
+    {
+      "id": "apqtly27",
+      "title": "软银孙正义被曝曾考虑1万亿美元收购SK海力士",
+      "tag": "人物/孙正义",
+      "region": "美国",
+      "concept": "aiCapex",
+      "time": "2026-11-21 10:39",
+      "datetime": "2026-11-21 10:39",
+      "source": "环球市场播报",
+      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-21/doc-iniznhsf5015629.shtml",
+      "summary": "据知情人士透露，软银首席执行官孙正义近期接洽华尔街机构，商议融资推进一笔规模达万亿级美元的收购，目标是存储芯片巨头SK海力士，但软银发言人表示...",
       "relatedStocks": [
         "英伟达",
         "微软",
