@@ -1,20 +1,56 @@
 {
-  "generatedAt": "2026-11-22 20:28",
+  "generatedAt": "2026-11-23 04:40",
   "generatedBy": "GitHub Actions · 多源实时聚合",
   "sourceCount": 5,
   "autoCount": 10,
   "events": [
     {
-      "id": "ap1d9x52r",
-      "title": "SpaceX：猎鹰9号火箭系统状态良好，天气条件适宜发射。美国国家侦察局NROL-136任务的推进剂加注即将开始。",
-      "tag": "人物/马斯克",
+      "id": "apuc3i0e",
+      "title": "OpenAI首席科学家呼吁业界限制模型开发 首席执行官Altman表示赞同",
+      "tag": "人物/奥尔特曼",
+      "region": "全球",
+      "concept": "ai",
+      "time": "2026-11-23 04:22",
+      "datetime": "2026-11-23 04:22",
+      "source": "财联社",
+      "url": "https://www.cls.cn/detail/2541067",
+      "summary": "【OpenAI首席科学家呼吁业界限制模型开发 首席执行官Altman表示赞同】财联社11月23日电，OpenAI首席科学家Pachocki提议，人工智能公司应同意对开发能力日益强大的模型设限，直到研究人员有更好的方法来理解和监控这些模型的行为。Pachocki警告称，最早到2027年，AI就可能加速自身进化，其速度可能超过研究人员提高监控和理解这项技术能力的速度。OpenAI…",
+      "relatedStocks": [
+        "英伟达",
+        "微软",
+        "台积电"
+      ],
+      "bullConcepts": [
+        "AI算力",
+        "半导体",
+        "国产替代"
+      ],
+      "bearConcepts": [
+        "传统软件"
+      ],
+      "bullIndustries": [
+        "半导体",
+        "AI应用",
+        "算力基础设施"
+      ],
+      "bearIndustries": [
+        "传统IT服务"
+      ],
+      "heat": 78,
+      "momentum": 56,
+      "_auto": true
+    },
+    {
+      "id": "ap1ousm1i",
+      "title": "美国总统特朗普表示，如果Chuck Schumer（舒默）出任参议院多数党领导人，我们将很难合作。",
+      "tag": "人物/特朗普",
       "region": "美国",
       "concept": "usMacro",
-      "time": "2026-11-22 19:54",
-      "datetime": "2026-11-22 19:54",
-      "source": "新浪7×24",
-      "url": "https://finance.sina.cn/7x24/2026-11-22/detail-inizrhva8866380.d.html",
-      "summary": "SpaceX：猎鹰9号火箭系统状态良好，天气条件适宜发射。美国国家侦察局NROL-136任务的推进剂加注即将开始。",
+      "time": "2026-11-22 21:56",
+      "datetime": "2026-11-22 21:56",
+      "source": "财联社",
+      "url": "https://www.cls.cn/detail/2541035",
+      "summary": "美国总统特朗普表示，如果Chuck Schumer（舒默）出任参议院多数党领导人，我们将很难合作。",
       "relatedStocks": [
         "宽基指数"
       ],
@@ -30,21 +66,51 @@
       "bearIndustries": [
         "顺周期"
       ],
-      "heat": 42,
-      "momentum": 36,
+      "heat": 87,
+      "momentum": 18,
       "_auto": true
     },
     {
-      "id": "ap1zs738",
-      "title": "SpaceX：发射约八分钟后，猎鹰9号火箭的一级将返回范登堡太空军基地的4号着陆区，着陆时将伴随一声音爆。",
+      "id": "apmcobip",
+      "title": "美国总统特朗普表示，如果无法达成协议，他倾向于在新年后恢复对伊朗的打击。特朗普表示，目前仍在与伊朗进行间接对话。特朗普形容伊朗人是“专业的踢踏舞演员”，并补充说，他们所做的就只是…",
+      "tag": "人物/特朗普",
+      "region": "美国",
+      "concept": "usMacro",
+      "time": "2026-11-23 01:58",
+      "datetime": "2026-11-23 01:58",
+      "source": "新浪7×24",
+      "url": "https://finance.sina.cn/7x24/2026-11-23/detail-inizrxss2510245.d.html",
+      "summary": "美国总统特朗普表示，如果无法达成协议，他倾向于在新年后恢复对伊朗的打击。特朗普表示，目前仍在与伊朗进行间接对话。特朗普形容伊朗人是“专业的踢踏舞演员”，并补充说，他们所做的就只是空谈。",
+      "relatedStocks": [
+        "宽基指数"
+      ],
+      "bullConcepts": [
+        "防御板块"
+      ],
+      "bearConcepts": [
+        "周期股"
+      ],
+      "bullIndustries": [
+        "公用事业"
+      ],
+      "bearIndustries": [
+        "顺周期"
+      ],
+      "heat": 87,
+      "momentum": 18,
+      "_auto": true
+    },
+    {
+      "id": "ap1pwbow3",
+      "title": "SpaceX：猎鹰9号火箭搭载NROL-136任务从加州4E发射台升空，距USSF-317任务发射仅32小时，创下同一发射台两次发射间的最快周转纪录。",
       "tag": "人物/马斯克",
       "region": "全球",
       "concept": "macro",
-      "time": "2026-11-22 19:56",
-      "datetime": "2026-11-22 19:56",
+      "time": "2026-11-23 02:59",
+      "datetime": "2026-11-23 02:59",
       "source": "新浪7×24",
-      "url": "https://finance.sina.cn/7x24/2026-11-22/detail-inizrhuy2730211.d.html",
-      "summary": "SpaceX：发射约八分钟后，猎鹰9号火箭的一级将返回范登堡太空军基地的4号着陆区，着陆时将伴随一声音爆。",
+      "url": "https://finance.sina.cn/7x24/2026-11-23/detail-inizrxsq5757459.d.html",
+      "summary": "SpaceX：猎鹰9号火箭搭载NROL-136任务从加州4E发射台升空，距USSF-317任务发射仅32小时，创下同一发射台两次发射间的最快周转纪录。",
       "relatedStocks": [
         "宽基指数"
       ],
@@ -60,81 +126,21 @@
       "bearIndustries": [
         "顺周期"
       ],
-      "heat": 42,
-      "momentum": 36,
+      "heat": 47,
+      "momentum": 26,
       "_auto": true
     },
     {
-      "id": "aphkg7i7",
-      "title": "美国总统特朗普在美国福克斯新闻频道21日播出的采访节目中说，将寻求与伊朗达成一项永久性协议。特朗普说：“我所做的是，我要确保即使四年、十五年或二十年后我们有一位不称职的总统，我达…",
-      "tag": "人物/特朗普",
+      "id": "apxu0gp6",
+      "title": "当地时间22日，据以色列方面消息，以色列看守政府总理内塔尼亚胡正考虑在未经美国批准的情况下单独对伊朗发动袭击。以军军事情报局在近日一场闭门会议中警告，此举可能引发多条战线同时爆发…",
+      "tag": "人物/内塔尼亚胡",
       "region": "美国",
-      "concept": "usMacro",
-      "time": "2026-11-22 12:05",
-      "datetime": "2026-11-22 12:05",
-      "source": "华尔街见闻",
-      "url": "https://wallstreetcn.com/livenews/3203713",
-      "summary": "美国总统特朗普在美国福克斯新闻频道21日播出的采访节目中说，将寻求与伊朗达成一项永久性协议。特朗普说：“我所做的是，我要确保即使四年、十五年或二十年后我们有一位不称职的总统，我达成的协议也将是永久性的。我不会让某人允许他们拥有核武器并对达成的协议出尔反尔。”特朗普还称，没有考虑伊朗政权更迭，“我从来不太在乎政权”。（新华社）",
-      "relatedStocks": [
-        "宽基指数"
-      ],
-      "bullConcepts": [
-        "防御板块"
-      ],
-      "bearConcepts": [
-        "周期股"
-      ],
-      "bullIndustries": [
-        "公用事业"
-      ],
-      "bearIndustries": [
-        "顺周期"
-      ],
-      "heat": 24,
-      "momentum": 18,
-      "_auto": true
-    },
-    {
-      "id": "ap1wocvse",
-      "title": "2月内FBI遭第二次网络攻击，特朗普承认“情况不太妙”",
-      "tag": "人物/特朗普",
-      "region": "美国",
-      "concept": "usMacro",
-      "time": "2026-11-22 07:49",
-      "datetime": "2026-11-22 07:49",
-      "source": "新浪财经",
-      "url": "https://finance.sina.com.cn/world/gjcj/2026-11-22/doc-inizqfis1477452.shtml",
-      "summary": "当地时间11月22日，美国广播公司援引知情人士消息称，美国联邦调查局（FBI）正调查其国家犯罪信息中心（NCIC）数据库疑遭黑客入侵事件。",
-      "relatedStocks": [
-        "宽基指数"
-      ],
-      "bullConcepts": [
-        "防御板块"
-      ],
-      "bearConcepts": [
-        "周期股"
-      ],
-      "bullIndustries": [
-        "公用事业"
-      ],
-      "bearIndustries": [
-        "顺周期"
-      ],
-      "heat": 33,
-      "momentum": 18,
-      "_auto": true
-    },
-    {
-      "id": "apg4tbtm",
-      "title": "11月21日，乌克兰总统泽连斯基在基辅会见到访的英国国防大臣斯特里廷。双方重点就乌防空能力建设、“爱国者”防空系统所用拦截弹供应、联合武器生产、远程打击能力等议题进行磋商。在联合…",
-      "tag": "人物/泽连斯基",
-      "region": "欧洲",
-      "concept": "macro",
-      "time": "2026-11-21 21:07",
-      "datetime": "2026-11-21 21:07",
-      "source": "华尔街见闻",
-      "url": "https://wallstreetcn.com/livenews/3203681",
-      "summary": "11月21日，乌克兰总统泽连斯基在基辅会见到访的英国国防大臣斯特里廷。双方重点就乌防空能力建设、“爱国者”防空系统所用拦截弹供应、联合武器生产、远程打击能力等议题进行磋商。在联合武器生产与远程打击能力建设方面，双方认为该领域具备深化合作的空间。通过联合生产与技术协作，能够助力乌克兰推进本土导弹研发计划。此外，泽连斯基还表示，英国提供的新一批国防与人道主义援助总额超过5亿英镑。…",
+      "concept": "defense",
+      "time": "2026-11-23 03:02",
+      "datetime": "2026-11-23 03:02",
+      "source": "新浪7×24",
+      "url": "https://finance.sina.cn/7x24/2026-11-23/detail-inizrxss2534526.d.html",
+      "summary": "当地时间22日，据以色列方面消息，以色列看守政府总理内塔尼亚胡正考虑在未经美国批准的情况下单独对伊朗发动袭击。以军军事情报局在近日一场闭门会议中警告，此举可能引发多条战线同时爆发冲突。（央视新闻）",
       "relatedStocks": [
         "军工",
         "黄金"
@@ -154,7 +160,73 @@
         "航空",
         "旅游"
       ],
-      "heat": 24,
+      "heat": 42,
+      "momentum": 26,
+      "_auto": true
+    },
+    {
+      "id": "ap1wbt50t",
+      "title": "OpenAI：困惑度（Perplexity）用于衡量模型预测下一个词元的能力。",
+      "tag": "人物/奥尔特曼",
+      "region": "全球",
+      "concept": "ai",
+      "time": "2026-11-23 01:25",
+      "datetime": "2026-11-23 01:25",
+      "source": "新浪7×24",
+      "url": "https://finance.sina.cn/7x24/2026-11-23/detail-inizrxsw0940272.d.html",
+      "summary": "OpenAI：困惑度（Perplexity）用于衡量模型预测下一个词元的能力。",
+      "relatedStocks": [
+        "英伟达",
+        "微软",
+        "台积电"
+      ],
+      "bullConcepts": [
+        "AI算力",
+        "半导体",
+        "国产替代"
+      ],
+      "bearConcepts": [
+        "传统软件"
+      ],
+      "bullIndustries": [
+        "半导体",
+        "AI应用",
+        "算力基础设施"
+      ],
+      "bearIndustries": [
+        "传统IT服务"
+      ],
+      "heat": 74,
+      "momentum": 18,
+      "_auto": true
+    },
+    {
+      "id": "apbyvw8s",
+      "title": "美情报主管收到警告：若不解释乌克兰星盾限速问题，国会将冻结SpaceX相关资金",
+      "tag": "人物/马斯克",
+      "region": "美国",
+      "concept": "usMacro",
+      "time": "2026-11-22 10:11",
+      "datetime": "2026-11-22 10:11",
+      "source": "环球市场播报",
+      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-22/doc-inizqmrk2910177.shtml",
+      "summary": "相关媒体获悉，一名国会民主党资深议员警告，如果特朗普政府与马斯克拒绝披露是谁下令对乌克兰军用星盾（Starshield）卫星服务限速...",
+      "relatedStocks": [
+        "宽基指数"
+      ],
+      "bullConcepts": [
+        "防御板块"
+      ],
+      "bearConcepts": [
+        "周期股"
+      ],
+      "bullIndustries": [
+        "公用事业"
+      ],
+      "bearIndustries": [
+        "顺周期"
+      ],
+      "heat": 38,
       "momentum": 18,
       "_auto": true
     },
@@ -228,42 +300,6 @@
       "_auto": true
     },
     {
-      "id": "ap1s7o731",
-      "title": "黄仁勋遭董事会罢免主要原因曝光：缺乏坦诚",
-      "tag": "人物/黄仁勋",
-      "region": "全球",
-      "concept": "ai",
-      "time": "2026-11-21 10:13",
-      "datetime": "2026-11-21 10:13",
-      "source": "环球市场播报",
-      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-21/doc-iniznaki5130702.shtml",
-      "summary": "两名熟悉英伟达董事长及其他董事私下讨论情况的人士透露，最终促使董事会做出决定的，是和黄仁勋“缺乏坦诚”、“撒谎”有关的多项问题。",
-      "relatedStocks": [
-        "英伟达",
-        "微软",
-        "台积电"
-      ],
-      "bullConcepts": [
-        "AI算力",
-        "半导体",
-        "国产替代"
-      ],
-      "bearConcepts": [
-        "传统软件"
-      ],
-      "bullIndustries": [
-        "半导体",
-        "AI应用",
-        "算力基础设施"
-      ],
-      "bearIndustries": [
-        "传统IT服务"
-      ],
-      "heat": 24,
-      "momentum": 18,
-      "_auto": true
-    },
-    {
       "id": "ap1h8ytid",
       "title": "泽连斯基提名乌克兰下一任驻美大使人选",
       "tag": "人物/泽连斯基",
@@ -288,42 +324,6 @@
       ],
       "bearIndustries": [
         "顺周期"
-      ],
-      "heat": 24,
-      "momentum": 18,
-      "_auto": true
-    },
-    {
-      "id": "apqtly27",
-      "title": "软银孙正义被曝曾考虑1万亿美元收购SK海力士",
-      "tag": "人物/孙正义",
-      "region": "美国",
-      "concept": "aiCapex",
-      "time": "2026-11-21 10:39",
-      "datetime": "2026-11-21 10:39",
-      "source": "环球市场播报",
-      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-21/doc-iniznhsf5015629.shtml",
-      "summary": "据知情人士透露，软银首席执行官孙正义近期接洽华尔街机构，商议融资推进一笔规模达万亿级美元的收购，目标是存储芯片巨头SK海力士，但软银发言人表示...",
-      "relatedStocks": [
-        "英伟达",
-        "微软",
-        "台积电"
-      ],
-      "bullConcepts": [
-        "AI算力",
-        "半导体",
-        "国产替代"
-      ],
-      "bearConcepts": [
-        "传统软件"
-      ],
-      "bullIndustries": [
-        "半导体",
-        "AI应用",
-        "算力基础设施"
-      ],
-      "bearIndustries": [
-        "传统IT服务"
       ],
       "heat": 24,
       "momentum": 18,

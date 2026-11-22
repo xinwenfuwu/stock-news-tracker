@@ -1,118 +1,11 @@
 {
-  "generatedAt": "2026-11-22 20:28",
+  "generatedAt": "2026-11-23 04:40",
   "generatedBy": "GitHub Actions · 财经日历 + 多源新闻 + 精选底库",
   "sourceCount": 5,
   "calendarCount": 70,
-  "seedCount": 24,
-  "autoCount": 21,
+  "seedCount": 23,
+  "autoCount": 16,
   "events": [
-    {
-      "id": "uc26",
-      "title": "虹桥国际科技周",
-      "tag": "展会/科技",
-      "date": "2026-11-20",
-      "endDate": "2026-11-22",
-      "region": "中国",
-      "scope": "cn",
-      "location": "上海",
-      "concept": "robot",
-      "source": "全球科技活动日历",
-      "importance": 68,
-      "summary": "聚焦AI、机器人与智能工业，承接进博会技术溢出效应。",
-      "relatedStocks": [
-        "机器人",
-        "AI",
-        "智能装备"
-      ]
-    },
-    {
-      "id": "au1mkdo2h",
-      "title": "李在明感谢中方活动",
-      "tag": "宏观/综合/日程",
-      "date": "2026-11-22",
-      "region": "中国",
-      "scope": "cn",
-      "concept": "broker",
-      "source": "滚动播报",
-      "summary": "央视新闻11月22日消息，亚太经合组织第三十三次领导人非正式会议近日在深圳成功举行。 多国领导人表示，此次会议充分展现了中国在基础设施建设等方面的卓越水平...",
-      "relatedStocks": [
-        "宽基指数"
-      ],
-      "importance": 72,
-      "_auto": true
-    },
-    {
-      "id": "au99pjn0",
-      "title": "中国铁塔发布三项重大成果，成立两大创新联合体",
-      "tag": "科技/AI/日程",
-      "date": "2026-11-22",
-      "region": "中国",
-      "scope": "cn",
-      "concept": "llm",
-      "source": "新浪财经",
-      "summary": "11月22日消息，在近日举行的中国铁塔2026年科技创新大会上，中国铁塔正式发布《2026年度优秀科技成果集》，推出星枢算力管理平台、中国铁塔新型钠离子电池...",
-      "relatedStocks": [
-        "英伟达",
-        "微软",
-        "台积电"
-      ],
-      "importance": 72,
-      "_auto": true
-    },
-    {
-      "id": "au1fsl0sf",
-      "title": "11月22日大会",
-      "tag": "科技/AI/日程",
-      "date": "2026-11-22",
-      "region": "中国",
-      "scope": "cn",
-      "concept": "llm",
-      "source": "华尔街见闻",
-      "summary": "计划于 2026-11-22 举行或公布，来源：华尔街见闻。",
-      "relatedStocks": [
-        "英伟达",
-        "微软",
-        "台积电"
-      ],
-      "importance": 72,
-      "_auto": true
-    },
-    {
-      "id": "auk5iql0",
-      "title": "蚂蚁集团CEO韩歆毅：人工智能已走到临床很多环节",
-      "tag": "科技/AI/日程",
-      "date": "2026-11-22",
-      "region": "全球",
-      "scope": "world",
-      "concept": "ai",
-      "source": "新浪科技",
-      "summary": "新浪科技讯 11月22日下午消息，2026蚂蚁阿福医疗健康生态大会举行。 在“AI赋能下的未来医院”分论坛上，蚂蚁集团首席执行官韩歆毅提出...",
-      "relatedStocks": [
-        "英伟达",
-        "微软",
-        "台积电"
-      ],
-      "importance": 69,
-      "_auto": true
-    },
-    {
-      "id": "aupi6jvl",
-      "title": "11月22日活动",
-      "tag": "科技/AI/日程",
-      "date": "2026-11-22",
-      "region": "全球",
-      "scope": "world",
-      "concept": "ai",
-      "source": "华尔街见闻",
-      "summary": "11月22日，深交所发布《关于进一步减免相关费用的通知》，推出新一批降费措施，包括免收交易单元使用费、网络投票服务费、减免交易通信服务费、下调数据中心收费标准等，并将今年初已发布的免收上市费、债券经手费等措施有效期再延长两年。本次新推出的降费措施预计向市场让利13.9亿元，预计本年度深市整体降费金额超过22亿元。",
-      "relatedStocks": [
-        "英伟达",
-        "微软",
-        "台积电"
-      ],
-      "importance": 64,
-      "_auto": true
-    },
     {
       "id": "au14ws369",
       "title": "第十六届香港国际金融论坛暨第七届领航「9+2」粤港澳大湾区发展论坛·香港国际具身智能峰会",
@@ -128,22 +21,6 @@
         "黄金"
       ],
       "importance": 72,
-      "_auto": true
-    },
-    {
-      "id": "aubjarc1",
-      "title": "新加坡总理将于11月23日至25日赴澳大利亚出席领导人会议",
-      "tag": "宏观/综合/日程",
-      "date": "2026-11-23",
-      "region": "全球",
-      "scope": "world",
-      "concept": "macro",
-      "source": "财联社",
-      "summary": "计划于 2026-11-23 举行或公布，来源：财联社。",
-      "relatedStocks": [
-        "宽基指数"
-      ],
-      "importance": 69,
       "_auto": true
     },
     {
@@ -190,6 +67,23 @@
       "summary": "计划于 2026-11-24 举行或公布，来源：每日经济新闻·财经日历。",
       "relatedStocks": [
         "宽基指数"
+      ],
+      "importance": 72,
+      "_auto": true
+    },
+    {
+      "id": "au1jf0vip",
+      "title": "下周资本市场大事提醒：国内首批18只主动ETF周一集体上市 美国PCE物价指数与假日消费成焦点",
+      "tag": "金融/宏观/日程",
+      "date": "2026-11-24",
+      "region": "美国",
+      "scope": "us",
+      "concept": "usFinance",
+      "source": "财联社",
+      "summary": "【下周资本市场大事提醒：国内首批18只主动ETF周一集体上市 美国PCE物价指数与假日消费成焦点】 1、11月27日，国家统计局将公布中国10月规模以上工业企业利润同比数据。此前1—9月规上工业利润累计同比增15.5%。 2、中国央行：2026年11月24日将招标发行2026年第十期和第十一期中央银行票据。 3、首批18只主动ETF周一集体上市，此前合计吸…",
+      "relatedStocks": [
+        "美股科技",
+        "黄金"
       ],
       "importance": 72,
       "_auto": true
@@ -330,24 +224,6 @@
       "_auto": true
     },
     {
-      "id": "au156rqmk",
-      "title": "亚马逊接近以75亿美元收购AI初创企业Decart",
-      "tag": "科技/AI/日程",
-      "date": "2026-11-29",
-      "region": "美国",
-      "scope": "us",
-      "concept": "aiCapex",
-      "source": "环球市场播报",
-      "summary": "亚马逊即将达成一项75亿美元收购AI初创公司Decart的交易。双方谈判已进入后期阶段，交易最早可能于下周初敲定，但谈判仍存在破裂可能。",
-      "relatedStocks": [
-        "英伟达",
-        "微软",
-        "台积电"
-      ],
-      "importance": 62,
-      "_auto": true
-    },
-    {
       "id": "uc29",
       "title": "AWS re:Invent 2026",
       "tag": "会议/云",
@@ -367,6 +243,24 @@
       ]
     },
     {
+      "id": "au156rqn8",
+      "title": "亚马逊接近以75亿美元收购AI初创企业Decart",
+      "tag": "科技/AI/日程",
+      "date": "2026-11-30",
+      "region": "美国",
+      "scope": "us",
+      "concept": "aiCapex",
+      "source": "环球市场播报",
+      "summary": "亚马逊即将达成一项75亿美元收购AI初创公司Decart的交易。双方谈判已进入后期阶段，交易最早可能于下周初敲定，但谈判仍存在破裂可能。",
+      "relatedStocks": [
+        "英伟达",
+        "微软",
+        "台积电"
+      ],
+      "importance": 62,
+      "_auto": true
+    },
+    {
       "id": "au1mwi7xu",
       "title": "中国11月官方制造业PMI数据公布",
       "tag": "宏观/综合/日程",
@@ -379,7 +273,7 @@
       "relatedStocks": [
         "宽基指数"
       ],
-      "importance": 53,
+      "importance": 57,
       "_auto": true
     },
     {
