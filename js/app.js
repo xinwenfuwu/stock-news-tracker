@@ -16492,7 +16492,7 @@ const app = createApp({
       ['上海','2026-02-12','临港 300mm 大硅片二期','688126','沪硅产业','上海新昇半导体科技有限公司','定增募投',132,'300mm 硅片 60 万片/月','半导体','土建','2027-09-10','设备搬入','低','2025-11-18','集成电路','沪发改高技〔2025〕156号','2026年上海市重大工程项目清单','浦东'],
       // 20261117o：上海 2026 重大工程补充（源自市发改委 184 项正式项目清单，单项目投资额未逐项披露故留「—」）
       ['上海','2026-02-12','临港实验室临港园区项目','—','临港实验室','临港实验室','政府代建',0,'重大科技基础设施','半导体','建成','2026-06-30','运行中','高','2022-03-10','重大项目','—','2026年上海市重大工程项目清单','浦东'],
-      ['上海','2026-02-12','上海硬X射线自由电子激光装置项目','—','中科院上海应物所','中国科学院上海应用物理研究所','政府代建',0,'自由电子激光装置','科技','在建','2027-12-31','建成','中','2018-04-01','重大项目','—','2026年上海市重大工程项目清单','浦东'],
+      ['上海','2026-02-12','上海硬X射线自由电子激光装置项目','—','—','上海科技大学（建设法人）、中科院上海高等研究院','政府代建',104.36,'国家重大科技基础设施：8GeV超导直线加速器、3条波荡器线、3条光束线及首批10个实验站，装置总长约3.1公里','科技','在建','2027-12-31','建成','高','2018-04-01','重大项目','—','2026年上海市重大工程项目清单','浦东'],
       ['上海','2026-02-12','中国商飞总装制造中心浦东基地建设项目','—','中国商飞','中国商用飞机有限责任公司','自建',0,'C919 大飞机总装','军工与高端制造','在建','2027-12-31','投产','中','2019-08-01','重大项目','—','2026年上海市重大工程项目清单','浦东'],
       ['上海','2026-02-12','宁德时代未来能源技术研发及产业化基地项目','300750','宁德时代','宁德时代新能源科技股份有限公司','自建',0,'动力电池研发产业化','锂电与新能源车','在建','2027-06-30','试产','中','2024-01-01','新能源','—','2026年上海市重大工程项目清单','闵行'],
       ['上海','2026-02-12','格科半导体12英寸CIS集成电路研发与产业化项目','688728','格科微','格科微电子（上海）有限公司','自建',0,'12英寸 CIS 芯片','半导体','在建','2027-12-31','量产','中','2023-05-01','集成电路','—','2026年上海市重大工程项目清单','浦东'],
@@ -16762,10 +16762,18 @@ const app = createApp({
         return x < y ? -1 : x > y ? 1 : 0;
       });
     });
-    /** 20261117p：官方完整明细索引（安徽1806/上海198），按 省 -> 市 -> [项目]；已去重 */
+    /** 20261117p：官方完整明细索引（安徽1806/上海198），按 省 -> 市 -> [项目]；已去重
+     *  20261122a：明细行补字段——
+     *    ① 同省同项目名的内置样例行：样例字段更完整，并入明细行（仅补空缺，避免被空明细行遮蔽）；
+     *    ② window.FGW_SH_EXTRA（上海198项官方建设状态/产业/投资主体/上市公司等，见 fgw-detail.js）。
+     *    明细行金额不计入省/市卡片「总投资」汇总（官方清单未逐项披露，仅行内展示）。 */
     const FGW_DETAIL_INDEX = (function () {
       const idx = {};
       const raw = (typeof window !== 'undefined' && Array.isArray(window.FGW_DETAIL_RAW)) ? window.FGW_DETAIL_RAW : [];
+      const seedByKey = {};
+      FGW_SEED_RAW.forEach(function (r) { if (r[0] && r[2]) seedByKey[r[0] + '|' + r[2]] = r; });
+      const extra = (typeof window !== 'undefined' && window.FGW_SH_EXTRA) || {};
+      const FILL = ['pub', 'code', 'name', 'subject', 'nature', 'product', 'ind', 'stage', 'next', 'nextStage', 'start', 'conf', 'docNo', 'note'];
       const seen = {};
       raw.forEach(function (r) {
         const pv = r[0], ct = r[1], proj = r[2], cat = r[3] || '';
@@ -16773,11 +16781,33 @@ const app = createApp({
         const key = pv + '|' + proj;
         if (seen[key]) return; // 省+项目名去重
         seen[key] = 1;
+        const row = { id: 'fd' + Object.keys(seen).length, prov: pv, city: ct, proj: proj,
+          category: cat, source: '官方重点项目清单（完整明细）', pub: '', amt: null, next: '',
+          _detail: true, leader: fgwLeaderOf(proj, ''), company: fgwCompanyOf(proj) };
+        // ① 内置样例行并入（仅补空缺字段；样例句 amt=0 视为未披露）
+        const sd = seedByKey[key];
+        if (sd) {
+          const sdMap = { pub: sd[1], code: sd[3], name: sd[4], subject: sd[5], nature: sd[6], amt: sd[7], product: sd[8], ind: sd[9], stage: sd[10], next: sd[11], nextStage: sd[12], conf: sd[13], start: sd[14], docNo: sd[16] };
+          Object.keys(sdMap).forEach(function (k) {
+            const v = sdMap[k];
+            if (v == null || v === '' || v === '—') return;
+            if (k === 'amt') { if (Number(v) > 0 && row.amt == null) row.amt = Number(v); return; }
+            if (row[k] == null || row[k] === '') row[k] = v;
+          });
+        }
+        // ② 上海198项官方补充字段（非空即覆盖）
+        const ex = extra[key] || extra[proj];
+        if (ex) {
+          FILL.forEach(function (k) { if (ex[k]) row[k] = ex[k]; });
+          if (ex.amt != null) row.amt = ex.amt;
+        }
+        // ③ 按最终 subject / 上市公司名 重算 主导方 与 聚合归属
+        row.leader = fgwLeaderOf(proj, row.subject || '');
+        const nm = String(row.name || '').trim();
+        row.company = (nm && nm !== '—' && !/实验室|研究院|临床中心|研究所/.test(nm)) ? nm : fgwCompanyOf(proj);
         if (!idx[pv]) idx[pv] = {};
         if (!idx[pv][ct]) idx[pv][ct] = [];
-        idx[pv][ct].push({ id: 'fd' + Object.keys(seen).length, prov: pv, city: ct, proj: proj,
-          category: cat, source: '官方重点项目清单（完整明细）', pub: '', amt: null, next: '',
-          _detail: true, leader: fgwLeaderOf(proj, ''), company: fgwCompanyOf(proj) });
+        idx[pv][ct].push(row);
       });
       return idx;
     })();
@@ -16860,7 +16890,8 @@ const app = createApp({
       return Object.keys(byProv).sort(cmp).map(pv => {
         const cities = Object.keys(byProv[pv]).sort(cmp).map(ct => {
           const rows = byProv[pv][ct];
-          const amtSum = rows.reduce((s, r) => s + (Number(r.amt) || 0), 0);
+          // 20261122a：官方明细行金额不计入「总投资」汇总（清单未逐项披露，避免把个别已披露项目金额误读为全市总投资）
+          const amtSum = rows.reduce((s, r) => s + (r._detail ? 0 : (Number(r.amt) || 0)), 0);
           const meta = fgwMetaOf(pv, ct, yr);
           return {
             key: 'city:' + pv + '|' + ct, label: ct, n: rows.length, amt: amtSum,
@@ -16874,7 +16905,7 @@ const app = createApp({
           };
         });
         const all = cities.reduce((a, c) => a.concat(c.rows), []);
-        const amtSum = all.reduce((s, r) => s + (Number(r.amt) || 0), 0);
+        const amtSum = all.reduce((s, r) => s + (r._detail ? 0 : (Number(r.amt) || 0)), 0);
         const meta = fgwMetaOf(pv, '', yr);
         return {
           key: 'prov:' + pv, label: pv, n: all.length, cityN: cities.length, amt: amtSum,
