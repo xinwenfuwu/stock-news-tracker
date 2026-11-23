@@ -1,20 +1,164 @@
 {
-  "generatedAt": "2026-11-23 10:29",
+  "generatedAt": "2026-11-23 22:22",
   "generatedBy": "GitHub Actions · 多源实时聚合",
   "sourceCount": 5,
   "autoCount": 8,
   "events": [
     {
-      "id": "apd12jda",
-      "title": "明晟与印尼总统普拉博沃及达利欧讨论避免印尼评级下调事宜。",
-      "tag": "人物/达利欧",
+      "id": "ap1a6ir8m",
+      "title": "美国总统特朗普：英伟达董事会做出了正确的决定。 黄仁勋是一位爱国者，是国家的宝贵财富。 美国没有理由认为黄仁勋的回归会构成风险。 美国没有证据表明黄仁勋的行为违法。",
+      "tag": "人物/黄仁勋",
+      "region": "美国",
+      "concept": "aiCapex",
+      "time": "2026-11-23 22:07",
+      "datetime": "2026-11-23 22:07",
+      "source": "华尔街见闻",
+      "url": "https://wallstreetcn.com/livenews/3204343",
+      "summary": "美国总统特朗普：英伟达董事会做出了正确的决定。 黄仁勋是一位爱国者，是国家的宝贵财富。 美国没有理由认为黄仁勋的回归会构成风险。 美国没有证据表明黄仁勋的行为违法。",
+      "relatedStocks": [
+        "英伟达",
+        "微软",
+        "台积电"
+      ],
+      "bullConcepts": [
+        "AI算力",
+        "半导体",
+        "国产替代"
+      ],
+      "bearConcepts": [
+        "传统软件"
+      ],
+      "bullIndustries": [
+        "半导体",
+        "AI应用",
+        "算力基础设施"
+      ],
+      "bearIndustries": [
+        "传统IT服务"
+      ],
+      "heat": 100,
+      "momentum": 96,
+      "_auto": true
+    },
+    {
+      "id": "apjg9jfb",
+      "title": "美国总统特朗普：英伟达董事会作出了让黄仁勋重回首席执行官一职的正确、恰当的决定。国家需要黄仁勋掌舵英伟达，以保障这家公司取得成功、蓬勃发展，同时助力美国经济走向繁荣。美国政府没有…",
+      "tag": "人物/黄仁勋",
+      "region": "美国",
+      "concept": "aiCapex",
+      "time": "2026-11-23 22:10",
+      "datetime": "2026-11-23 22:10",
+      "source": "新浪7×24",
+      "url": "https://finance.sina.cn/7x24/2026-11-23/detail-iniztwis5398468.d.html",
+      "summary": "美国总统特朗普：英伟达董事会作出了让黄仁勋重回首席执行官一职的正确、恰当的决定。国家需要黄仁勋掌舵英伟达，以保障这家公司取得成功、蓬勃发展，同时助力美国经济走向繁荣。美国政府没有理由认为黄仁勋回归英伟达会带来任何国家安全风险。美国司法部长已经证实，美国政府并未掌握证据证明他存在任何不法行为。就我个人而言，我对黄仁勋有所了解，他是一名国宝级人才。与此同时，英伟达应当继续确保其履…",
+      "relatedStocks": [
+        "英伟达",
+        "微软",
+        "台积电"
+      ],
+      "bullConcepts": [
+        "AI算力",
+        "半导体",
+        "国产替代"
+      ],
+      "bearConcepts": [
+        "传统软件"
+      ],
+      "bullIndustries": [
+        "半导体",
+        "AI应用",
+        "算力基础设施"
+      ],
+      "bearIndustries": [
+        "传统IT服务"
+      ],
+      "heat": 100,
+      "momentum": 91,
+      "_auto": true
+    },
+    {
+      "id": "ap23lwrv",
+      "title": "SpaceX在美国俄勒冈州、弗吉尼亚州遭起诉：AI生成色情露骨图像",
+      "tag": "人物/马斯克",
+      "region": "美国",
+      "concept": "aiCapex",
+      "time": "2026-11-23 21:47",
+      "datetime": "2026-11-23 21:47",
+      "source": "环球市场播报",
+      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-23/doc-iniztwiw8136130.shtml",
+      "summary": "美国俄勒冈州与弗吉尼亚州于周一起诉埃隆·马斯克旗下SpaceX，指控该公司推出的一款人工智能工具，可供用户生成女性以及儿童的色情化图像，违反两州的消费者保护相关法律。",
+      "relatedStocks": [
+        "英伟达",
+        "微软",
+        "台积电"
+      ],
+      "bullConcepts": [
+        "AI算力",
+        "半导体",
+        "国产替代"
+      ],
+      "bearConcepts": [
+        "传统软件"
+      ],
+      "bullIndustries": [
+        "半导体",
+        "AI应用",
+        "算力基础设施"
+      ],
+      "bearIndustries": [
+        "传统IT服务"
+      ],
+      "heat": 47,
+      "momentum": 41,
+      "_auto": true
+    },
+    {
+      "id": "ap1xubhl6",
+      "title": "特朗普：英伟达应继续内部调查。",
+      "tag": "人物/特朗普",
+      "region": "美国",
+      "concept": "aiCapex",
+      "time": "2026-11-23 22:07",
+      "datetime": "2026-11-23 22:07",
+      "source": "新浪7×24",
+      "url": "https://finance.sina.cn/7x24/2026-11-23/detail-iniztwiy0476199.d.html",
+      "summary": "特朗普：英伟达应继续内部调查。",
+      "relatedStocks": [
+        "英伟达",
+        "微软",
+        "台积电"
+      ],
+      "bullConcepts": [
+        "AI算力",
+        "半导体",
+        "国产替代"
+      ],
+      "bearConcepts": [
+        "传统软件"
+      ],
+      "bullIndustries": [
+        "半导体",
+        "AI应用",
+        "算力基础设施"
+      ],
+      "bearIndustries": [
+        "传统IT服务"
+      ],
+      "heat": 47,
+      "momentum": 61,
+      "_auto": true
+    },
+    {
+      "id": "ap1717od9",
+      "title": "以色列总理内塔尼亚胡称该国面临“重大威胁”。",
+      "tag": "人物/内塔尼亚胡",
       "region": "全球",
       "concept": "macro",
-      "time": "2026-11-23 10:27",
-      "datetime": "2026-11-23 10:27",
-      "source": "新浪7×24",
-      "url": "https://finance.sina.cn/7x24/2026-11-23/detail-inizsuwk8343616.d.html",
-      "summary": "明晟与印尼总统普拉博沃及达利欧讨论避免印尼评级下调事宜。",
+      "time": "2026-11-23 21:41",
+      "datetime": "2026-11-23 21:41",
+      "source": "财联社",
+      "url": "https://www.cls.cn/detail/2542186",
+      "summary": "以色列总理内塔尼亚胡称该国面临“重大威胁”。",
       "relatedStocks": [
         "宽基指数"
       ],
@@ -31,89 +175,50 @@
         "顺周期"
       ],
       "heat": 24,
-      "momentum": 36,
+      "momentum": 26,
       "_auto": true
     },
     {
-      "id": "apn4265n",
-      "title": "“内塔尼亚胡正考虑单独对伊朗动武”！美方紧急提醒：敌对行动可能升级！黄金现在能抄底吗？",
-      "tag": "人物/内塔尼亚胡",
-      "region": "美国",
-      "concept": "usFinance",
-      "time": "2026-11-23 07:40",
-      "datetime": "2026-11-23 07:40",
-      "source": "市场资讯",
-      "url": "https://finance.sina.com.cn/money/future/fmnews/2026-11-23/doc-inizsqqh5488349.shtml",
-      "summary": "来源：期货日报 早上好，来看一些热点消息。 今日早盘，美股股指期货高开，截至发稿，纳指期货涨幅扩大至2.36%，标普500指数期货涨超1%。",
+      "id": "apwv6a7g",
+      "title": "伯恩斯坦：SpaceX领先竞争对手约十年，星舰首次成功回收上面级成为关键突破",
+      "tag": "人物/马斯克",
+      "region": "全球",
+      "concept": "macro",
+      "time": "2026-11-23 15:19",
+      "datetime": "2026-11-23 15:19",
+      "source": "环球市场播报",
+      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-23/doc-iniztfmy5482889.shtml",
+      "summary": "11月23日，伯恩斯坦在最新报告中指出，SpaceX在11月14日举行的星舰第15次试飞中，首次成功利用发射塔机械臂回收火箭上面级，标志着其完全可重复使用运载系统取得关键技术突...",
       "relatedStocks": [
-        "美股科技",
-        "黄金"
+        "宽基指数"
       ],
       "bullConcepts": [
-        "黄金",
         "防御板块"
       ],
       "bearConcepts": [
-        "高估值成长股"
+        "周期股"
       ],
       "bullIndustries": [
-        "银行",
-        "黄金"
+        "公用事业"
       ],
       "bearIndustries": [
-        "高杠杆地产"
+        "顺周期"
       ],
-      "heat": 24,
+      "heat": 47,
       "momentum": 18,
       "_auto": true
     },
     {
-      "id": "apown7xn",
-      "title": "11月23日周末要闻：特朗普称若无法达成协议 倾向于新年后打击伊朗 内塔尼亚胡被曝正考虑单独对伊朗动武",
-      "tag": "人物/特朗普",
-      "region": "美国",
-      "concept": "aiCapex",
-      "time": "2026-11-23 06:34",
-      "datetime": "2026-11-23 06:34",
-      "source": "环球市场播报",
-      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-23/doc-inizskhq8448976.shtml",
-      "summary": "市场 11月21日收盘：纳指狂泻千点 英伟达跌14% 标普道指双双步入回调区间 11月21日热门中概股普跌，台积电跌超9%，阿里巴巴跌2.68% 欧洲股市创2025年以来最大周跌幅...",
-      "relatedStocks": [
-        "英伟达",
-        "微软",
-        "台积电"
-      ],
-      "bullConcepts": [
-        "AI算力",
-        "半导体",
-        "国产替代"
-      ],
-      "bearConcepts": [
-        "传统软件"
-      ],
-      "bullIndustries": [
-        "半导体",
-        "AI应用",
-        "算力基础设施"
-      ],
-      "bearIndustries": [
-        "传统IT服务"
-      ],
-      "heat": 46,
-      "momentum": 18,
-      "_auto": true
-    },
-    {
-      "id": "ap130k07x",
-      "title": "OpenAI首席科学家呼吁业界限制模型开发 奥特曼表示赞同",
+      "id": "ap1hkkbbe",
+      "title": "OpenAI呼吁头部AI企业就AI研发限制达成共识",
       "tag": "人物/奥尔特曼",
       "region": "全球",
       "concept": "ai",
-      "time": "2026-11-23 04:19",
-      "datetime": "2026-11-23 04:19",
+      "time": "2026-11-23 17:18",
+      "datetime": "2026-11-23 17:18",
       "source": "环球市场播报",
-      "url": "https://finance.sina.com.cn/7x24/2026-11-23/doc-inizscyq2429164.shtml",
-      "summary": "OpenAI首席科学家Jakub Pachocki提议，人工智能公司应同意对开发能力日益强大的模型设限，直到研究人员有更好的方法来理解和监控这些模型的行为。",
+      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-23/doc-iniztmue0564932.shtml",
+      "summary": "OpenAI 首席科学家呼吁建立 “一套通用框架，用以设定递进式技术上限，并管控后续研发节奏”。 OpenAI 首席科学家呼吁各大主流 AI 模型开发商划定研发红线：在人类理解...",
       "relatedStocks": [
         "英伟达",
         "微软",
@@ -135,57 +240,21 @@
       "bearIndustries": [
         "传统IT服务"
       ],
-      "heat": 33,
+      "heat": 29,
       "momentum": 18,
       "_auto": true
     },
     {
-      "id": "ap1x5c5ex",
-      "title": "马斯克最新警告：人工智能行业明年可能面临严重的资金短缺 可能需要数千亿美元额外资金投入",
-      "tag": "人物/马斯克",
-      "region": "美国",
-      "concept": "aiCapex",
-      "time": "2026-11-22 12:56",
-      "datetime": "2026-11-22 12:56",
-      "source": "滚动播报",
-      "url": "https://finance.sina.com.cn/roll/2026-11-22/doc-inizqrxk9062900.shtml",
-      "summary": "来源：中新经纬 11月22日，知名深度学习领域开源项目Keras创始人弗朗索瓦・肖莱（François Chollet）在社交平台上表示，要么你认为AI基础设施建设已经结束...",
-      "relatedStocks": [
-        "英伟达",
-        "微软",
-        "台积电"
-      ],
-      "bullConcepts": [
-        "AI算力",
-        "半导体",
-        "国产替代"
-      ],
-      "bearConcepts": [
-        "传统软件"
-      ],
-      "bullIndustries": [
-        "半导体",
-        "AI应用",
-        "算力基础设施"
-      ],
-      "bearIndustries": [
-        "传统IT服务"
-      ],
-      "heat": 24,
-      "momentum": 18,
-      "_auto": true
-    },
-    {
-      "id": "ap1h3pqez",
-      "title": "金价大跌，莫迪发声：我曾呼吁不要买黄金，有人听从建议，钱保住了",
-      "tag": "人物/莫迪",
+      "id": "ap14o75ou",
+      "title": "特朗普出席迷因币持有者晚宴 币价已较峰值暴跌98%",
+      "tag": "人物/特朗普",
       "region": "美国",
       "concept": "usFinance",
-      "time": "2026-11-23 08:20",
-      "datetime": "2026-11-23 08:20",
-      "source": "滚动播报",
-      "url": "https://finance.sina.com.cn/wm/2026-11-23/doc-inizsqqn8378378.shtml",
-      "summary": "文章来源：华夏时报 上周国际金价迎来剧烈杀跌，现货黄金接连失守3800、3700、3600美元关口，最低触及3502美元/盎司，创14个月新低。",
+      "time": "2026-11-23 16:52",
+      "datetime": "2026-11-23 16:52",
+      "source": "环球市场播报",
+      "url": "https://finance.sina.com.cn/world/2026-11-23/doc-iniztfmy5561715.shtml",
+      "summary": "Morten Christensen第一次通过交易获得参加美国总统唐纳德·特朗普晚宴的资格，花了大约1200美元。第二次花了约500美元。而这一次，他说自己最终反倒赚了6美元。",
       "relatedStocks": [
         "美股科技",
         "黄金"
@@ -206,76 +275,6 @@
       ],
       "heat": 24,
       "momentum": 18,
-      "_auto": true
-    },
-    {
-      "id": "aphxxw8c",
-      "title": "外媒对黄仁勋穷追猛打！1641篇报导75％呈负面，《纽约时报》连发88篇",
-      "tag": "人物/黄仁勋",
-      "region": "美国",
-      "concept": "aiCapex",
-      "time": "2026-11-22 11:35",
-      "datetime": "2026-11-22 11:35",
-      "source": "滚动播报",
-      "url": "https://finance.sina.com.cn/roll/2026-11-22/doc-inizqwfh8970039.shtml",
-      "summary": "来源：海峡导报 海峡导报综合报道 英伟达前执行长黄仁勋因婚外情风波请辞，震惊全球科技与金融圈。然而有统计分析，过去针对企业界名人的丑闻报导，与黄仁勋事件相比...",
-      "relatedStocks": [
-        "英伟达",
-        "微软",
-        "台积电"
-      ],
-      "bullConcepts": [
-        "AI算力",
-        "半导体",
-        "国产替代"
-      ],
-      "bearConcepts": [
-        "传统软件"
-      ],
-      "bullIndustries": [
-        "半导体",
-        "AI应用",
-        "算力基础设施"
-      ],
-      "bearIndustries": [
-        "传统IT服务"
-      ],
-      "heat": 24,
-      "momentum": 18,
-      "_auto": true
-    },
-    {
-      "id": "ap1114yyb",
-      "title": "特朗普：伊朗上周发射的无人机和导弹数量创一年多来新高",
-      "tag": "人物/特朗普",
-      "region": "美国",
-      "concept": "defense",
-      "time": "2026-11-23 08:42",
-      "datetime": "2026-11-23 08:42",
-      "source": "环球市场播报",
-      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-23/doc-inizsqqq0718417.shtml",
-      "summary": "美国总统唐纳德·特朗普在Truth Social发文称：“伊朗上周发射的无人机和导弹数量超过过去一年多来任何时候。” “别担心，它们全都被击落了，没有造成任何损失...",
-      "relatedStocks": [
-        "军工",
-        "黄金"
-      ],
-      "bullConcepts": [
-        "军工",
-        "避险资产"
-      ],
-      "bearConcepts": [
-        "风险资产"
-      ],
-      "bullIndustries": [
-        "军工",
-        "黄金"
-      ],
-      "bearIndustries": [
-        "航空",
-        "旅游"
-      ],
-      "heat": 29,
-      "momentum": 26,
       "_auto": true
     },
     {

@@ -1,178 +1,20 @@
 {
-  "generatedAt": "2026-11-23 10:29",
+  "generatedAt": "2026-11-23 22:22",
   "generatedBy": "GitHub Actions · 多源实时聚合",
   "sourceCount": 5,
-  "autoCount": 15,
+  "autoCount": 18,
   "events": [
     {
-      "id": "abrni388",
-      "title": "中国地震台网自动测定：11月23日10时14分在新疆阿克苏地区拜城县附近（北纬42.01度，东经82.47度）发生4.3级左右地震，最终结果以正式速报为准。",
-      "tag": "宏观/综合",
-      "region": "中国",
-      "concept": "broker",
-      "time": "2026-11-23 10:16",
-      "datetime": "2026-11-23 10:16",
-      "source": "新浪7×24",
-      "url": "https://finance.sina.cn/7x24/2026-11-23/detail-inizsuwk8335544.d.html",
-      "summary": "中国地震台网自动测定：11月23日10时14分在新疆阿克苏地区拜城县附近（北纬42.01度，东经82.47度）发生4.3级左右地震，最终结果以正式速报为准。",
-      "relatedStocks": [
-        "宽基指数"
-      ],
-      "bullConcepts": [
-        "防御板块"
-      ],
-      "bearConcepts": [
-        "周期股"
-      ],
-      "bullIndustries": [
-        "公用事业"
-      ],
-      "bearIndustries": [
-        "顺周期"
-      ],
-      "heat": 78,
-      "momentum": 71,
-      "_auto": true
-    },
-    {
-      "id": "abc1e8hw",
-      "title": "交易商协会对广汇汽车予以严重警告 暂停其债务融资工具相关业务2年",
-      "tag": "宏观/综合",
-      "region": "中国",
-      "concept": "broker",
-      "time": "2026-11-23 10:11",
-      "datetime": "2026-11-23 10:11",
-      "source": "财联社",
-      "url": "https://www.cls.cn/detail/2541257",
-      "summary": "【交易商协会对广汇汽车予以严重警告 暂停其债务融资工具相关业务2年】财联社11月23日电，中国银行间市场交易商协会公告，经查，广汇汽车服务有限责任公司作为债务融资工具发行人，未按期披露2025年半年度报告、2025年年度报告，未及时披露违约处置进展情况。根据银行间债券市场相关自律规定，经自律处分会议审议，对广汇汽车予以严重警告，暂停其债务融资工具相关业务2年。",
-      "relatedStocks": [
-        "宽基指数"
-      ],
-      "bullConcepts": [
-        "防御板块"
-      ],
-      "bearConcepts": [
-        "周期股"
-      ],
-      "bullIndustries": [
-        "公用事业"
-      ],
-      "bearIndustries": [
-        "顺周期"
-      ],
-      "heat": 24,
-      "momentum": 36,
-      "_auto": true
-    },
-    {
-      "id": "abp83ksx",
-      "title": "俄船只在利比亚海域遇袭 联合国机构“严重关切”",
-      "tag": "贸易/供应链",
-      "region": "全球",
-      "concept": "trade",
-      "time": "2026-11-23 10:14",
-      "datetime": "2026-11-23 10:14",
-      "source": "新浪7×24",
-      "url": "https://finance.sina.cn/7x24/2026-11-23/detail-inizsuwn0662802.d.html",
-      "summary": "【俄船只在利比亚海域遇袭 联合国机构“严重关切”】联合国利比亚支助团（联利支助团）23日凌晨发表声明，对前一天发生在利比亚东部城市班加西港口及附近海域的袭击事件表达严重关切，呼吁立即展开独立、透明的调查。联利支助团在社交媒体上发布的声明中强调，必须充分尊重利比亚主权、领土完整及公民和国家资源安全，“利比亚承受不起、也绝不能成为外部冲突的角斗场”。联利支助团敦促各方保持最大限度…",
-      "relatedStocks": [
-        "跨境电商",
-        "航运"
-      ],
-      "bullConcepts": [
-        "内需",
-        "国产替代"
-      ],
-      "bearConcepts": [
-        "出口链"
-      ],
-      "bullIndustries": [
-        "跨境电商",
-        "内需消费"
-      ],
-      "bearIndustries": [
-        "出口制造",
-        "航运"
-      ],
-      "heat": 24,
-      "momentum": 36,
-      "_auto": true
-    },
-    {
-      "id": "ab1fcnyc2",
-      "title": "俄军舰在利比亚遭无人快艇袭击爆炸",
-      "tag": "地缘/政治",
-      "region": "美国",
-      "concept": "defense",
-      "time": "2026-11-23 10:23",
-      "datetime": "2026-11-23 10:23",
-      "source": "财联社",
-      "url": "https://www.cls.cn/detail/2541285",
-      "summary": "财联社11月23日电，综合利比亚与俄罗斯媒体11月22日报道，停泊在利比亚班加西的俄罗斯“水星”号护卫舰当天遭到多艘无人快艇袭击，袭击导致“水星”号护卫舰爆炸起火，部分来袭快艇被拦截。消息人士表示，这些无人快艇上安装了星链系统装置，目前技术人员正在研究和分析被截获快艇的导航系统。另据美国“阿克西奥斯新闻网”22日援引消息人士的话报道，乌克兰国家安全局对停泊在利比亚的一艘俄罗斯…",
-      "relatedStocks": [
-        "军工",
-        "黄金"
-      ],
-      "bullConcepts": [
-        "军工",
-        "避险资产"
-      ],
-      "bearConcepts": [
-        "风险资产"
-      ],
-      "bullIndustries": [
-        "军工",
-        "黄金"
-      ],
-      "bearIndustries": [
-        "航空",
-        "旅游"
-      ],
-      "heat": 46,
-      "momentum": 36,
-      "_auto": true
-    },
-    {
-      "id": "ab1uj96vk",
-      "title": "三星证券超 8000 名客户个人信息遭泄露",
-      "tag": "宏观/综合",
-      "region": "全球",
-      "concept": "macro",
-      "time": "2026-11-23 09:56",
-      "datetime": "2026-11-23 09:56",
-      "source": "新浪7×24",
-      "url": "https://finance.sina.cn/7x24/2026-11-23/detail-inizsqqh5602434.d.html",
-      "summary": "【三星证券超 8000 名客户个人信息遭泄露】这家券商周一通报，三星证券确认其客户服务系统遭非法访问，共计 8241 名客户的信息发生外泄。近几个月来，韩国多家金融机构接连遭遇网络攻击，本次事件是其中一起。",
-      "relatedStocks": [
-        "宽基指数"
-      ],
-      "bullConcepts": [
-        "防御板块"
-      ],
-      "bearConcepts": [
-        "周期股"
-      ],
-      "bullIndustries": [
-        "公用事业"
-      ],
-      "bearIndustries": [
-        "顺周期"
-      ],
-      "heat": 24,
-      "momentum": 26,
-      "_auto": true
-    },
-    {
-      "id": "abhxxw8c",
-      "title": "外媒对黄仁勋穷追猛打！1641篇报导75％呈负面，《纽约时报》连发88篇",
+      "id": "ab156ww62",
+      "title": "英伟达美股盘前涨幅扩大至30%。消息面上，英伟达董事会一致同意恢复黄仁勋CEO职务。",
       "tag": "科技/AI",
       "region": "美国",
       "concept": "aiCapex",
-      "time": "2026-11-22 11:35",
-      "datetime": "2026-11-22 11:35",
-      "source": "滚动播报",
-      "url": "https://finance.sina.com.cn/roll/2026-11-22/doc-inizqwfh8970039.shtml",
-      "summary": "来源：海峡导报 海峡导报综合报道 英伟达前执行长黄仁勋因婚外情风波请辞，震惊全球科技与金融圈。然而有统计分析，过去针对企业界名人的丑闻报导，与黄仁勋事件相比...",
+      "time": "2026-11-23 22:04",
+      "datetime": "2026-11-23 22:04",
+      "source": "新浪7×24",
+      "url": "https://finance.sina.cn/7x24/2026-11-23/detail-iniztwis5394435.d.html",
+      "summary": "英伟达美股盘前涨幅扩大至30%。消息面上，英伟达董事会一致同意恢复黄仁勋CEO职务。",
       "relatedStocks": [
         "英伟达",
         "微软",
@@ -194,55 +36,237 @@
       "bearIndustries": [
         "传统IT服务"
       ],
-      "heat": 24,
-      "momentum": 18,
+      "heat": 100,
+      "momentum": 96,
       "_auto": true
     },
     {
-      "id": "ab1pjosg3",
-      "title": "特朗普发文称中期选举印证其两大预判，认为选举过程十分蹊跷",
-      "tag": "地缘/政治",
+      "id": "ab1a6ir8m",
+      "title": "美国总统特朗普：英伟达董事会做出了正确的决定。 黄仁勋是一位爱国者，是国家的宝贵财富。 美国没有理由认为黄仁勋的回归会构成风险。 美国没有证据表明黄仁勋的行为违法。",
+      "tag": "科技/AI",
       "region": "美国",
-      "concept": "defense",
-      "time": "2026-11-23 05:52",
-      "datetime": "2026-11-23 05:52",
-      "source": "环球市场播报",
-      "url": "https://finance.sina.com.cn/7x24/2026-11-23/doc-inizskhn2331238.shtml",
-      "summary": "美国总统特朗普表示，他此前针对11月3日中期选举作出两项预判。其一，若民主党赢得选举，股市将大幅下跌，该情况已经出现；其二，伊朗的袭击行动会变得更加激进...",
+      "concept": "aiCapex",
+      "time": "2026-11-23 22:07",
+      "datetime": "2026-11-23 22:07",
+      "source": "华尔街见闻",
+      "url": "https://wallstreetcn.com/livenews/3204343",
+      "summary": "美国总统特朗普：英伟达董事会做出了正确的决定。 黄仁勋是一位爱国者，是国家的宝贵财富。 美国没有理由认为黄仁勋的回归会构成风险。 美国没有证据表明黄仁勋的行为违法。",
       "relatedStocks": [
-        "军工",
-        "黄金"
+        "英伟达",
+        "微软",
+        "台积电"
       ],
       "bullConcepts": [
-        "军工",
-        "避险资产"
+        "AI算力",
+        "半导体",
+        "国产替代"
       ],
       "bearConcepts": [
-        "风险资产"
+        "传统软件"
       ],
       "bullIndustries": [
-        "军工",
-        "黄金"
+        "半导体",
+        "AI应用",
+        "算力基础设施"
       ],
       "bearIndustries": [
-        "航空",
-        "旅游"
+        "传统IT服务"
       ],
-      "heat": 24,
-      "momentum": 18,
+      "heat": 100,
+      "momentum": 96,
       "_auto": true
     },
     {
-      "id": "ab1uhaz05",
-      "title": "美国移民执法人员在西雅图机场逮捕两名乘客，民主党承诺展开国会调查",
+      "id": "abjg9jfb",
+      "title": "美国总统特朗普：英伟达董事会作出了让黄仁勋重回首席执行官一职的正确、恰当的决定。国家需要黄仁勋掌舵英伟达，以保障这家公司取得成功、蓬勃发展，同时助力美国经济走向繁荣。美国政府没有…",
+      "tag": "科技/AI",
+      "region": "美国",
+      "concept": "aiCapex",
+      "time": "2026-11-23 22:10",
+      "datetime": "2026-11-23 22:10",
+      "source": "新浪7×24",
+      "url": "https://finance.sina.cn/7x24/2026-11-23/detail-iniztwis5398468.d.html",
+      "summary": "美国总统特朗普：英伟达董事会作出了让黄仁勋重回首席执行官一职的正确、恰当的决定。国家需要黄仁勋掌舵英伟达，以保障这家公司取得成功、蓬勃发展，同时助力美国经济走向繁荣。美国政府没有理由认为黄仁勋回归英伟达会带来任何国家安全风险。美国司法部长已经证实，美国政府并未掌握证据证明他存在任何不法行为。就我个人而言，我对黄仁勋有所了解，他是一名国宝级人才。与此同时，英伟达应当继续确保其履…",
+      "relatedStocks": [
+        "英伟达",
+        "微软",
+        "台积电"
+      ],
+      "bullConcepts": [
+        "AI算力",
+        "半导体",
+        "国产替代"
+      ],
+      "bearConcepts": [
+        "传统软件"
+      ],
+      "bullIndustries": [
+        "半导体",
+        "AI应用",
+        "算力基础设施"
+      ],
+      "bearIndustries": [
+        "传统IT服务"
+      ],
+      "heat": 100,
+      "momentum": 91,
+      "_auto": true
+    },
+    {
+      "id": "ab69fxzm",
+      "title": "美国总统特朗普称，希望英伟达CEO黄仁勋很快回到英伟达。（PBS新闻）",
+      "tag": "科技/AI",
+      "region": "美国",
+      "concept": "aiCapex",
+      "time": "2026-11-23 21:34",
+      "datetime": "2026-11-23 21:34",
+      "source": "华尔街见闻",
+      "url": "https://wallstreetcn.com/livenews/3204324",
+      "summary": "美国总统特朗普称，希望英伟达CEO黄仁勋很快回到英伟达。（PBS新闻）",
+      "relatedStocks": [
+        "英伟达",
+        "微软",
+        "台积电"
+      ],
+      "bullConcepts": [
+        "AI算力",
+        "半导体",
+        "国产替代"
+      ],
+      "bearConcepts": [
+        "传统软件"
+      ],
+      "bullIndustries": [
+        "半导体",
+        "AI应用",
+        "算力基础设施"
+      ],
+      "bearIndustries": [
+        "传统IT服务"
+      ],
+      "heat": 96,
+      "momentum": 76,
+      "_auto": true
+    },
+    {
+      "id": "ab1h0wjtv",
+      "title": "欧洲斯托克600科技指数大涨4.4%，此前英伟达重新任命黄仁勋为首席执行官。阿斯麦股价上涨9.9%。德国半导体股上涨4.27%至12.57%。伦敦金属交易所（LME）三个月期铜涨…",
+      "tag": "科技/AI",
+      "region": "美国",
+      "concept": "aiCapex",
+      "time": "2026-11-23 22:11",
+      "datetime": "2026-11-23 22:11",
+      "source": "新浪7×24",
+      "url": "https://finance.sina.cn/7x24/2026-11-23/detail-iniztwiy0478948.d.html",
+      "summary": "欧洲斯托克600科技指数大涨4.4%，此前英伟达重新任命黄仁勋为首席执行官。阿斯麦股价上涨9.9%。德国半导体股上涨4.27%至12.57%。伦敦金属交易所（LME）三个月期铜涨幅扩大至逾3%，触及每吨12,548.50美元。",
+      "relatedStocks": [
+        "英伟达",
+        "微软",
+        "台积电"
+      ],
+      "bullConcepts": [
+        "AI算力",
+        "半导体",
+        "国产替代"
+      ],
+      "bearConcepts": [
+        "传统软件"
+      ],
+      "bullIndustries": [
+        "半导体",
+        "AI应用",
+        "算力基础设施"
+      ],
+      "bearIndustries": [
+        "传统IT服务"
+      ],
+      "heat": 78,
+      "momentum": 71,
+      "_auto": true
+    },
+    {
+      "id": "ab1k2ja4e",
+      "title": "在有关英伟达董事会已恢复黄仁勋（Jensen Huang）总裁兼首席执行官职务的报道发布后，欧洲信用风险指标在次日延续了跌势。投资级信用违约互换（CDS）指数iTraxx Mai…",
+      "tag": "科技/AI",
+      "region": "欧洲",
+      "concept": "ai",
+      "time": "2026-11-23 22:12",
+      "datetime": "2026-11-23 22:12",
+      "source": "华尔街见闻",
+      "url": "https://wallstreetcn.com/livenews/3204347",
+      "summary": "在有关英伟达董事会已恢复黄仁勋（Jensen Huang）总裁兼首席执行官职务的报道发布后，欧洲信用风险指标在次日延续了跌势。投资级信用违约互换（CDS）指数iTraxx Main下跌最多达2.4个基点（bps），伦敦时间下午2:13左右报约63.3个基点。挂钩垃圾级债券的iTraxx Crossover指数下跌12.4个基点，至约311个基点。（彭博）",
+      "relatedStocks": [
+        "英伟达",
+        "微软",
+        "台积电"
+      ],
+      "bullConcepts": [
+        "AI算力",
+        "半导体",
+        "国产替代"
+      ],
+      "bearConcepts": [
+        "传统软件"
+      ],
+      "bullIndustries": [
+        "半导体",
+        "AI应用",
+        "算力基础设施"
+      ],
+      "bearIndustries": [
+        "传统IT服务"
+      ],
+      "heat": 60,
+      "momentum": 51,
+      "_auto": true
+    },
+    {
+      "id": "ab23lwrv",
+      "title": "SpaceX在美国俄勒冈州、弗吉尼亚州遭起诉：AI生成色情露骨图像",
+      "tag": "科技/AI",
+      "region": "美国",
+      "concept": "aiCapex",
+      "time": "2026-11-23 21:47",
+      "datetime": "2026-11-23 21:47",
+      "source": "环球市场播报",
+      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-23/doc-iniztwiw8136130.shtml",
+      "summary": "美国俄勒冈州与弗吉尼亚州于周一起诉埃隆·马斯克旗下SpaceX，指控该公司推出的一款人工智能工具，可供用户生成女性以及儿童的色情化图像，违反两州的消费者保护相关法律。",
+      "relatedStocks": [
+        "英伟达",
+        "微软",
+        "台积电"
+      ],
+      "bullConcepts": [
+        "AI算力",
+        "半导体",
+        "国产替代"
+      ],
+      "bearConcepts": [
+        "传统软件"
+      ],
+      "bullIndustries": [
+        "半导体",
+        "AI应用",
+        "算力基础设施"
+      ],
+      "bearIndustries": [
+        "传统IT服务"
+      ],
+      "heat": 47,
+      "momentum": 41,
+      "_auto": true
+    },
+    {
+      "id": "ab6mzyw2",
+      "title": "特朗普：美国司法部长已证实，美国政府没有证据表明黄仁勋从事任何非法行为。",
       "tag": "宏观/综合",
       "region": "美国",
       "concept": "usMacro",
-      "time": "2026-11-22 14:37",
-      "datetime": "2026-11-22 14:37",
-      "source": "环球市场播报",
-      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-22/doc-inizqwfh8975290.shtml",
-      "summary": "美国移民与海关执法局（ICE）执法人员在西雅图-塔科马国际机场逮捕两名乘客，引发华盛顿州多名政府官员及民主党议员的强烈批评。",
+      "time": "2026-11-23 22:08",
+      "datetime": "2026-11-23 22:08",
+      "source": "新浪7×24",
+      "url": "https://finance.sina.cn/7x24/2026-11-23/detail-iniztwiy0476914.d.html",
+      "summary": "特朗普：美国司法部长已证实，美国政府没有证据表明黄仁勋从事任何非法行为。",
       "relatedStocks": [
         "宽基指数"
       ],
@@ -258,226 +282,366 @@
       "bearIndustries": [
         "顺周期"
       ],
-      "heat": 24,
-      "momentum": 18,
+      "heat": 47,
+      "momentum": 61,
       "_auto": true
     },
     {
-      "id": "ab1y0vtps",
-      "title": "伊朗称袭击美军驻巴林基地并击落两架无人机，霍尔木兹海峡两艘油轮遇袭",
-      "tag": "地缘/政治",
+      "id": "ab131x19t",
+      "title": "黄仁勋表示：“我很荣幸重返英伟达，在新一轮工业革命开启之际，带领这家全球最重要的科技企业之一。我怀着极大的谦卑之心扛起这份责任，并重申我的承诺。感谢英伟达董事会在整个过程中审慎考…",
+      "tag": "科技/AI",
       "region": "全球",
-      "concept": "macro",
-      "time": "2026-11-22 14:24",
-      "datetime": "2026-11-22 14:24",
-      "source": "环球市场播报",
-      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-22/doc-inizqwfe2803603.shtml",
-      "summary": "当地时间11月21日，伊朗伊斯兰革命卫队宣布，使用导弹及无人机袭击了位于巴林里法和阿瓦利基地的两部美军“爱国者”防空系统雷达。",
+      "concept": "ai",
+      "time": "2026-11-23 22:02",
+      "datetime": "2026-11-23 22:02",
+      "source": "华尔街见闻",
+      "url": "https://wallstreetcn.com/livenews/3204338",
+      "summary": "黄仁勋表示：“我很荣幸重返英伟达，在新一轮工业革命开启之际，带领这家全球最重要的科技企业之一。我怀着极大的谦卑之心扛起这份责任，并重申我的承诺。感谢英伟达董事会在整个过程中审慎考量、给予信任。特别感谢哈维·琼斯作为董事会主席的担当，也感谢科莱特·克雷斯以及高管团队在此期间带领公司稳步前行。我由衷感谢全体员工、股东、行业同仁以及全球合作伙伴给予的鼎力支持。最重要的是，感谢家人的…",
       "relatedStocks": [
-        "军工",
-        "黄金"
+        "英伟达",
+        "微软",
+        "台积电"
       ],
       "bullConcepts": [
-        "军工",
-        "避险资产"
+        "AI算力",
+        "半导体",
+        "国产替代"
       ],
       "bearConcepts": [
-        "风险资产"
+        "传统软件"
       ],
       "bullIndustries": [
-        "军工",
-        "黄金"
+        "半导体",
+        "AI应用",
+        "算力基础设施"
       ],
       "bearIndustries": [
-        "航空",
-        "旅游"
+        "传统IT服务"
       ],
-      "heat": 24,
-      "momentum": 18,
+      "heat": 55,
+      "momentum": 46,
       "_auto": true
     },
     {
-      "id": "ab1v473u7",
-      "title": "将被实施ST！启迪设计，停牌一天！",
-      "tag": "宏观/综合",
-      "region": "全球",
-      "concept": "macro",
-      "time": "2026-11-22 18:09",
-      "datetime": "2026-11-22 18:09",
-      "source": "市场资讯",
-      "url": "https://finance.sina.com.cn/stock/s/2026-11-22/doc-inizrhva8823772.shtml",
-      "summary": "来源：资本秘闻 11月22日晚间，启迪设计（300500）披露公告称，公司于11月19日收到江苏证监局下发的《行政处罚事先告知书》，公司股票将被实施其他风险警示...",
-      "relatedStocks": [
-        "宽基指数"
-      ],
-      "bullConcepts": [
-        "防御板块"
-      ],
-      "bearConcepts": [
-        "周期股"
-      ],
-      "bullIndustries": [
-        "公用事业"
-      ],
-      "bearIndustries": [
-        "顺周期"
-      ],
-      "heat": 24,
-      "momentum": 18,
-      "_auto": true
-    },
-    {
-      "id": "ab1baquh4",
-      "title": "明天停牌！300500，将被实施其他风险警示",
-      "tag": "宏观/综合",
-      "region": "中国",
-      "concept": "broker",
-      "time": "2026-11-22 17:55",
-      "datetime": "2026-11-22 17:55",
-      "source": "新浪财经",
-      "url": "https://finance.sina.com.cn/stock/s/2026-11-22/doc-inizrape8946833.shtml",
-      "summary": "公司股票将于11月23日停牌一天。 启迪设计（300500）11月22日公告称，公司收到证监会江苏监管局《行政处罚事先告知书》，因原子公司虚增利润等事项...",
-      "relatedStocks": [
-        "宽基指数"
-      ],
-      "bullConcepts": [
-        "防御板块"
-      ],
-      "bearConcepts": [
-        "周期股"
-      ],
-      "bullIndustries": [
-        "公用事业"
-      ],
-      "bearIndustries": [
-        "顺周期"
-      ],
-      "heat": 24,
-      "momentum": 18,
-      "_auto": true
-    },
-    {
-      "id": "ab1p8jurl",
-      "title": "巴林称民用工业设施遭伊朗袭击并起火",
-      "tag": "地缘/政治",
-      "region": "全球",
-      "concept": "macro",
-      "time": "2026-11-22 14:59",
-      "datetime": "2026-11-22 14:59",
-      "source": "环球市场播报",
-      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-22/doc-inizqwfa6049277.shtml",
-      "summary": "巴林内政部表示，“伊朗侵略”行动将一处民用工业设施作为袭击目标，并导致现场发生火情。巴林内政部在发帖称，民防部门正在努力控制火势初步报告显示有财产损失...",
-      "relatedStocks": [
-        "军工",
-        "黄金"
-      ],
-      "bullConcepts": [
-        "军工",
-        "避险资产"
-      ],
-      "bearConcepts": [
-        "风险资产"
-      ],
-      "bullIndustries": [
-        "军工",
-        "黄金"
-      ],
-      "bearIndustries": [
-        "航空",
-        "旅游"
-      ],
-      "heat": 24,
-      "momentum": 18,
-      "_auto": true
-    },
-    {
-      "id": "ab13aj4xt",
-      "title": "墨军方抓获大毒枭现场毒枭矮子伊西德罗手被反绑押上飞机",
-      "tag": "宏观/综合",
+      "id": "abztzd3u",
+      "title": "英伟达重新任命黄仁勋为首席执行官，美国Neocloud和数据中心公司股价盘前上涨，APPLIED DIGITAL 上涨 21.5%，CORE SCIENTIFIC 上涨 16.4…",
+      "tag": "科技/AI",
       "region": "美国",
-      "concept": "usMacro",
-      "time": "2026-11-22 12:06",
-      "datetime": "2026-11-22 12:06",
-      "source": "新京报",
-      "url": "https://finance.sina.com.cn/jjxw/2026-11-22/doc-inizqrxh2861734.shtml",
-      "summary": "【#墨军方抓获大毒枭现场##毒枭矮子伊西德罗手被反绑押上飞机#】11月20日，墨西哥特种部队逮捕美国FBI十大通缉要犯之一、毒枭“矮子伊西德罗”。",
+      "concept": "aiCapex",
+      "time": "2026-11-23 22:03",
+      "datetime": "2026-11-23 22:03",
+      "source": "新浪7×24",
+      "url": "https://finance.sina.cn/7x24/2026-11-23/detail-iniztwis5393657.d.html",
+      "summary": "英伟达重新任命黄仁勋为首席执行官，美国Neocloud和数据中心公司股价盘前上涨，APPLIED DIGITAL 上涨 21.5%，CORE SCIENTIFIC 上涨 16.4%，HUT 8 上涨 17.6%。CoreWeave 上涨 29%，IREN 上涨 22.7%，Nebius 上涨 27.3%。",
       "relatedStocks": [
-        "宽基指数"
+        "英伟达",
+        "微软",
+        "台积电"
       ],
       "bullConcepts": [
-        "防御板块"
+        "AI算力",
+        "半导体",
+        "国产替代"
       ],
       "bearConcepts": [
-        "周期股"
+        "传统软件"
       ],
       "bullIndustries": [
-        "公用事业"
+        "半导体",
+        "AI应用",
+        "算力基础设施"
       ],
       "bearIndustries": [
-        "顺周期"
+        "传统IT服务"
       ],
-      "heat": 24,
-      "momentum": 18,
+      "heat": 51,
+      "momentum": 41,
       "_auto": true
     },
     {
-      "id": "abbzc3sf",
-      "title": "三连跌停后，002187，最新回应！",
-      "tag": "宏观/综合",
-      "region": "全球",
-      "concept": "macro",
-      "time": "2026-11-22 20:09",
-      "datetime": "2026-11-22 20:09",
-      "source": "新浪财经",
-      "url": "https://finance.sina.com.cn/stock/zqgd/2026-11-22/doc-inizrhva8874824.shtml",
-      "summary": "近期，广百股份（002187）经历了一轮暴涨暴跌。 11月22日，广百股份再次披露异动公告，公司提示，其股票于2026年11月18日、11月19日...",
+      "id": "ab106l6sb",
+      "title": "英伟达宣布，黄仁勋即日起恢复担任公司总裁兼首席执行官，并重新担任董事会成员。董事会表示，在决定让黄仁勋复职前，曾听取美国政府高级层级的意见。董事会表示：“我们相信，黄先生复职不会…",
+      "tag": "科技/AI",
+      "region": "美国",
+      "concept": "aiCapex",
+      "time": "2026-11-23 21:56",
+      "datetime": "2026-11-23 21:56",
+      "source": "华尔街见闻",
+      "url": "https://wallstreetcn.com/livenews/3204330",
+      "summary": "英伟达宣布，黄仁勋即日起恢复担任公司总裁兼首席执行官，并重新担任董事会成员。董事会表示，在决定让黄仁勋复职前，曾听取美国政府高级层级的意见。董事会表示：“我们相信，黄先生复职不会构成国家安全风险”。曾担任临时首席执行官的Colette Kress将继续担任首席财务官。英伟达启动招聘程序，寻找首席合规官职位的人选。（彭博）",
       "relatedStocks": [
-        "宽基指数"
+        "英伟达",
+        "微软",
+        "台积电"
       ],
       "bullConcepts": [
-        "防御板块"
+        "AI算力",
+        "半导体",
+        "国产替代"
       ],
       "bearConcepts": [
-        "周期股"
+        "传统软件"
       ],
       "bullIndustries": [
-        "公用事业"
+        "半导体",
+        "AI应用",
+        "算力基础设施"
       ],
       "bearIndustries": [
-        "顺周期"
+        "传统IT服务"
       ],
-      "heat": 24,
-      "momentum": 18,
+      "heat": 51,
+      "momentum": 41,
       "_auto": true
     },
     {
-      "id": "ab10lq89t",
-      "title": "退市警报拉响！002146，股价再度跌破1元",
-      "tag": "宏观/综合",
+      "id": "ab1v1iwix",
+      "title": "据以色列方面当地时间23日消息，受命组建政府的以色列正直党领导人埃森科特当天下午发表讲话说，目前伊朗并未构成直接且迫在眉睫的威胁，以色列无需在组建新政府前对伊朗采取军事行动。",
+      "tag": "地缘/政治",
       "region": "全球",
       "concept": "macro",
-      "time": "2026-11-22 17:45",
-      "datetime": "2026-11-22 17:45",
-      "source": "证券时报",
-      "url": "https://finance.sina.com.cn/stock/s/2026-11-22/doc-inizrape8940615.shtml",
-      "summary": "11月20日，荣盛发展（002146）股票收盘价为0.96元/股，再度触发面值退市风险。11月22日晚间，荣盛发展披露风险提示公告，称董事会及经营管理层高度重视并密切关注公司当前...",
+      "time": "2026-11-23 21:25",
+      "datetime": "2026-11-23 21:25",
+      "source": "华尔街见闻",
+      "url": "https://wallstreetcn.com/livenews/3204321",
+      "summary": "据以色列方面当地时间23日消息，受命组建政府的以色列正直党领导人埃森科特当天下午发表讲话说，目前伊朗并未构成直接且迫在眉睫的威胁，以色列无需在组建新政府前对伊朗采取军事行动。",
       "relatedStocks": [
-        "宽基指数"
+        "军工",
+        "黄金"
       ],
       "bullConcepts": [
-        "防御板块"
+        "军工",
+        "避险资产"
       ],
       "bearConcepts": [
-        "周期股"
+        "风险资产"
       ],
       "bullIndustries": [
-        "公用事业"
+        "军工",
+        "黄金"
       ],
       "bearIndustries": [
-        "顺周期"
+        "航空",
+        "旅游"
       ],
-      "heat": 24,
-      "momentum": 18,
+      "heat": 29,
+      "momentum": 26,
+      "_auto": true
+    },
+    {
+      "id": "ab1fb2o5e",
+      "title": "英伟达：相信重新委任黄仁勋不会带来安全风险。 调查将继续进行直至结束。",
+      "tag": "科技/AI",
+      "region": "全球",
+      "concept": "ai",
+      "time": "2026-11-23 22:01",
+      "datetime": "2026-11-23 22:01",
+      "source": "华尔街见闻",
+      "url": "https://wallstreetcn.com/livenews/3204337",
+      "summary": "英伟达：相信重新委任黄仁勋不会带来安全风险。 调查将继续进行直至结束。",
+      "relatedStocks": [
+        "英伟达",
+        "微软",
+        "台积电"
+      ],
+      "bullConcepts": [
+        "AI算力",
+        "半导体",
+        "国产替代"
+      ],
+      "bearConcepts": [
+        "传统软件"
+      ],
+      "bullIndustries": [
+        "半导体",
+        "AI应用",
+        "算力基础设施"
+      ],
+      "bearIndustries": [
+        "传统IT服务"
+      ],
+      "heat": 55,
+      "momentum": 46,
+      "_auto": true
+    },
+    {
+      "id": "ab19w6c97",
+      "title": "AI交易抛售压力缓解，美股盘前科技股集体反弹，英伟达盘前一度涨近10%。 欧元区综合PMI初值连续五个月扩张，德国升至55创四年半新高，德法分化创六年之最。 AI交易退潮、外资创…",
+      "tag": "科技/AI",
+      "region": "美国",
+      "concept": "aiCapex",
+      "time": "2026-11-23 21:30",
+      "datetime": "2026-11-23 21:30",
+      "source": "华尔街见闻",
+      "url": "https://wallstreetcn.com/livenews/3204323",
+      "summary": "AI交易抛售压力缓解，美股盘前科技股集体反弹，英伟达盘前一度涨近10%。 欧元区综合PMI初值连续五个月扩张，德国升至55创四年半新高，德法分化创六年之最。 AI交易退潮、外资创纪录涌入！印度股市一度收复年内失地，全球资金开始重新押注印度。 韩国预计稳市举措将提振市场情绪。 特朗普“再次施压”：我希望英伟达董事会重新聘用黄仁勋。 面对英伟达挖角传闻，Arm CEO哈斯最新承诺…",
+      "relatedStocks": [
+        "英伟达",
+        "微软",
+        "台积电"
+      ],
+      "bullConcepts": [
+        "AI算力",
+        "半导体",
+        "国产替代"
+      ],
+      "bearConcepts": [
+        "传统软件"
+      ],
+      "bullIndustries": [
+        "半导体",
+        "AI应用",
+        "算力基础设施"
+      ],
+      "bearIndustries": [
+        "传统IT服务"
+      ],
+      "heat": 46,
+      "momentum": 26,
+      "_auto": true
+    },
+    {
+      "id": "ab1mmnbzg",
+      "title": "特朗普：祝贺黄仁勋恢复职位",
+      "tag": "科技/AI",
+      "region": "美国",
+      "concept": "aiCapex",
+      "time": "2026-11-23 22:12",
+      "datetime": "2026-11-23 22:12",
+      "source": "环球市场播报",
+      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-23/doc-iniztwis5399515.shtml",
+      "summary": "美国总统特朗普在社交媒体发文称，英伟达董事会作出了让黄仁勋重回首席执行官一职的正确、恰当的决定。国家需要黄仁勋掌舵英伟达，以保障这家公司取得成功、蓬勃发展...",
+      "relatedStocks": [
+        "英伟达",
+        "微软",
+        "台积电"
+      ],
+      "bullConcepts": [
+        "AI算力",
+        "半导体",
+        "国产替代"
+      ],
+      "bearConcepts": [
+        "传统软件"
+      ],
+      "bullIndustries": [
+        "半导体",
+        "AI应用",
+        "算力基础设施"
+      ],
+      "bearIndustries": [
+        "传统IT服务"
+      ],
+      "heat": 47,
+      "momentum": 61,
+      "_auto": true
+    },
+    {
+      "id": "ab18ja30o",
+      "title": "在英伟达董事会恢复黄仁勋首席执行官职务后，CBOE波动率指数延续跌势；最新下跌7.97点，报27.80。",
+      "tag": "科技/AI",
+      "region": "全球",
+      "concept": "ai",
+      "time": "2026-11-23 22:11",
+      "datetime": "2026-11-23 22:11",
+      "source": "新浪7×24",
+      "url": "https://finance.sina.com.cn/7x24/",
+      "summary": "在英伟达董事会恢复黄仁勋首席执行官职务后，CBOE波动率指数延续跌势；最新下跌7.97点，报27.80。",
+      "relatedStocks": [
+        "英伟达",
+        "微软",
+        "台积电"
+      ],
+      "bullConcepts": [
+        "AI算力",
+        "半导体",
+        "国产替代"
+      ],
+      "bearConcepts": [
+        "传统软件"
+      ],
+      "bullIndustries": [
+        "半导体",
+        "AI应用",
+        "算力基础设施"
+      ],
+      "bearIndustries": [
+        "传统IT服务"
+      ],
+      "heat": 46,
+      "momentum": 36,
+      "_auto": true
+    },
+    {
+      "id": "ab1cii9ny",
+      "title": "德国国债收益率上升4.27个基点至3.102%；黄仁勋重新担任英伟达首席执行官后，股市大涨。",
+      "tag": "科技/AI",
+      "region": "欧洲",
+      "concept": "ai",
+      "time": "2026-11-23 22:06",
+      "datetime": "2026-11-23 22:06",
+      "source": "新浪7×24",
+      "url": "https://finance.sina.com.cn/7x24/",
+      "summary": "德国国债收益率上升4.27个基点至3.102%；黄仁勋重新担任英伟达首席执行官后，股市大涨。",
+      "relatedStocks": [
+        "英伟达",
+        "微软",
+        "台积电"
+      ],
+      "bullConcepts": [
+        "AI算力",
+        "半导体",
+        "国产替代"
+      ],
+      "bearConcepts": [
+        "传统软件"
+      ],
+      "bullIndustries": [
+        "半导体",
+        "AI应用",
+        "算力基础设施"
+      ],
+      "bearIndustries": [
+        "传统IT服务"
+      ],
+      "heat": 46,
+      "momentum": 36,
+      "_auto": true
+    },
+    {
+      "id": "ab1q2luq4",
+      "title": "美国信用风险继续回落，此前英伟达宣布黄仁勋复出，特朗普为此表态背书。",
+      "tag": "科技/AI",
+      "region": "美国",
+      "concept": "aiCapex",
+      "time": "2026-11-23 22:16",
+      "datetime": "2026-11-23 22:16",
+      "source": "华尔街见闻",
+      "url": "https://wallstreetcn.com/livenews/3204349",
+      "summary": "美国信用风险继续回落，此前英伟达宣布黄仁勋复出，特朗普为此表态背书。",
+      "relatedStocks": [
+        "英伟达",
+        "微软",
+        "台积电"
+      ],
+      "bullConcepts": [
+        "AI算力",
+        "半导体",
+        "国产替代"
+      ],
+      "bearConcepts": [
+        "传统软件"
+      ],
+      "bullIndustries": [
+        "半导体",
+        "AI应用",
+        "算力基础设施"
+      ],
+      "bearIndustries": [
+        "传统IT服务"
+      ],
+      "heat": 46,
+      "momentum": 36,
       "_auto": true
     },
     {
@@ -717,6 +881,44 @@
       ],
       "heat": 95,
       "momentum": 92
+    },
+    {
+      "id": "b8",
+      "title": "霍尔木兹海峡三艘油轮爆炸起火，伊朗多地遭袭",
+      "tag": "地缘/能源",
+      "region": "全球",
+      "concept": "energy",
+      "time": "2026-11-08",
+      "datetime": "2026-11-08 11:20",
+      "source": "央视/塔斯尼姆通讯社",
+      "summary": "伊朗革命卫队称11月8日当天已有三艘违规油轮在霍尔木兹海峡东部禁航区触雷爆炸起火；同日格什姆岛等地传出爆炸声，伊朗称遭美军袭击。特朗普宣布针对伊朗的\"铁门\"特遣行动全面展开。海峡通航风险推升原油与航运溢价。",
+      "relatedStocks": [
+        "中国海油",
+        "山东黄金",
+        "航运"
+      ],
+      "bullConcepts": [
+        "石油",
+        "黄金",
+        "油运",
+        "军工"
+      ],
+      "bearConcepts": [
+        "航空",
+        "化工(成本端)"
+      ],
+      "bullIndustries": [
+        "石油开采",
+        "航运",
+        "黄金",
+        "军工"
+      ],
+      "bearIndustries": [
+        "航空运输",
+        "化工"
+      ],
+      "heat": 90,
+      "momentum": 88
     },
     {
       "id": "b9",
