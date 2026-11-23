@@ -1,122 +1,20 @@
 {
-  "generatedAt": "2026-11-23 04:40",
+  "generatedAt": "2026-11-23 10:29",
   "generatedBy": "GitHub Actions · 多源实时聚合",
   "sourceCount": 5,
-  "autoCount": 18,
+  "autoCount": 15,
   "events": [
     {
-      "id": "abngajzs",
-      "title": "当地时间22日晚，伊朗军队海军宣布，当天下午，两艘油轮关闭导航系统，无视伊朗发出的警告，擅自进入霍尔木兹海峡东部禁航区，随后触雷起火。伊朗伊斯兰革命卫队海军同日表示，两艘超级油轮…",
-      "tag": "地缘/政治",
-      "region": "全球",
-      "concept": "macro",
-      "time": "2026-11-23 00:47",
-      "datetime": "2026-11-23 00:47",
-      "source": "新浪7×24",
-      "url": "https://finance.sina.cn/7x24/2026-11-23/detail-inizrtkw8728787.d.html",
-      "summary": "当地时间22日晚，伊朗军队海军宣布，当天下午，两艘油轮关闭导航系统，无视伊朗发出的警告，擅自进入霍尔木兹海峡东部禁航区，随后触雷起火。伊朗伊斯兰革命卫队海军同日表示，两艘超级油轮在霍尔木兹海峡附近海域航行时，未遵守革命卫队海军发布的指令，擅自通过未经伊朗授权的航线，结果在霍尔木兹海峡以东、盖奈姆岛以北海域触雷爆炸并被迫停航。（央视新闻）",
-      "relatedStocks": [
-        "军工",
-        "黄金"
-      ],
-      "bullConcepts": [
-        "军工",
-        "避险资产"
-      ],
-      "bearConcepts": [
-        "风险资产"
-      ],
-      "bullIndustries": [
-        "军工",
-        "黄金"
-      ],
-      "bearIndustries": [
-        "航空",
-        "旅游"
-      ],
-      "heat": 56,
-      "momentum": 18,
-      "_auto": true
-    },
-    {
-      "id": "ab1ck2ujn",
-      "title": "当地时间22日，也门胡塞武装发表声明称当天发动两次军事行动。第一次行动以沙特的拉比格炼油厂为目标，并称袭击直接命中目标，第二次行动以沙特瓦迪达瓦西尔地区的一处雷达为目标。（央视新…",
-      "tag": "地缘/政治",
-      "region": "全球",
-      "concept": "macro",
-      "time": "2026-11-23 01:08",
-      "datetime": "2026-11-23 01:08",
-      "source": "新浪7×24",
-      "url": "https://finance.sina.cn/7x24/2026-11-23/detail-inizrxsw0934258.d.html",
-      "summary": "当地时间22日，也门胡塞武装发表声明称当天发动两次军事行动。第一次行动以沙特的拉比格炼油厂为目标，并称袭击直接命中目标，第二次行动以沙特瓦迪达瓦西尔地区的一处雷达为目标。（央视新闻）",
-      "relatedStocks": [
-        "军工",
-        "黄金"
-      ],
-      "bullConcepts": [
-        "军工",
-        "避险资产"
-      ],
-      "bearConcepts": [
-        "风险资产"
-      ],
-      "bullIndustries": [
-        "军工",
-        "黄金"
-      ],
-      "bearIndustries": [
-        "航空",
-        "旅游"
-      ],
-      "heat": 51,
-      "momentum": 18,
-      "_auto": true
-    },
-    {
-      "id": "abxu0gp6",
-      "title": "当地时间22日，据以色列方面消息，以色列看守政府总理内塔尼亚胡正考虑在未经美国批准的情况下单独对伊朗发动袭击。以军军事情报局在近日一场闭门会议中警告，此举可能引发多条战线同时爆发…",
-      "tag": "地缘/政治",
-      "region": "美国",
-      "concept": "defense",
-      "time": "2026-11-23 03:02",
-      "datetime": "2026-11-23 03:02",
-      "source": "新浪7×24",
-      "url": "https://finance.sina.cn/7x24/2026-11-23/detail-inizrxss2534526.d.html",
-      "summary": "当地时间22日，据以色列方面消息，以色列看守政府总理内塔尼亚胡正考虑在未经美国批准的情况下单独对伊朗发动袭击。以军军事情报局在近日一场闭门会议中警告，此举可能引发多条战线同时爆发冲突。（央视新闻）",
-      "relatedStocks": [
-        "军工",
-        "黄金"
-      ],
-      "bullConcepts": [
-        "军工",
-        "避险资产"
-      ],
-      "bearConcepts": [
-        "风险资产"
-      ],
-      "bullIndustries": [
-        "军工",
-        "黄金"
-      ],
-      "bearIndustries": [
-        "航空",
-        "旅游"
-      ],
-      "heat": 42,
-      "momentum": 26,
-      "_auto": true
-    },
-    {
-      "id": "ab1l5wljd",
-      "title": "中国地震台网自动测定：11月22日17时8分，在新疆乌鲁木齐市乌鲁木齐县附近（北纬43.40度，东经88.04度）发生4.7级左右地震。最终结果以正式速报为准。（央视新闻）",
+      "id": "abrni388",
+      "title": "中国地震台网自动测定：11月23日10时14分在新疆阿克苏地区拜城县附近（北纬42.01度，东经82.47度）发生4.3级左右地震，最终结果以正式速报为准。",
       "tag": "宏观/综合",
       "region": "中国",
       "concept": "broker",
-      "time": "2026-11-22 17:17",
-      "datetime": "2026-11-22 17:17",
-      "source": "华尔街见闻",
-      "url": "https://wallstreetcn.com/livenews/3203733",
-      "summary": "中国地震台网自动测定：11月22日17时8分，在新疆乌鲁木齐市乌鲁木齐县附近（北纬43.40度，东经88.04度）发生4.7级左右地震。最终结果以正式速报为准。（央视新闻）",
+      "time": "2026-11-23 10:16",
+      "datetime": "2026-11-23 10:16",
+      "source": "新浪7×24",
+      "url": "https://finance.sina.cn/7x24/2026-11-23/detail-inizsuwk8335544.d.html",
+      "summary": "中国地震台网自动测定：11月23日10时14分在新疆阿克苏地区拜城县附近（北纬42.01度，东经82.47度）发生4.3级左右地震，最终结果以正式速报为准。",
       "relatedStocks": [
         "宽基指数"
       ],
@@ -132,125 +30,85 @@
       "bearIndustries": [
         "顺周期"
       ],
-      "heat": 42,
-      "momentum": 18,
+      "heat": 78,
+      "momentum": 71,
       "_auto": true
     },
     {
-      "id": "ab1r7mwt6",
-      "title": "俄国家原子能公司CEO：伊朗布什尔核电站在美国空袭期间经受住韧性考验",
-      "tag": "能源/资源",
-      "region": "美国",
-      "concept": "shale",
-      "time": "2026-11-22 08:12",
-      "datetime": "2026-11-22 08:12",
-      "source": "环球市场播报",
-      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-22/doc-inizqfis1483584.shtml",
-      "summary": "俄罗斯国家原子能公司首席执行官阿列克谢・利哈乔夫接受新闻频道采访时表示，伊朗布什尔核电站在美国对伊朗实施军事打击期间，经受住了韧性压力测试。",
+      "id": "abc1e8hw",
+      "title": "交易商协会对广汇汽车予以严重警告 暂停其债务融资工具相关业务2年",
+      "tag": "宏观/综合",
+      "region": "中国",
+      "concept": "broker",
+      "time": "2026-11-23 10:11",
+      "datetime": "2026-11-23 10:11",
+      "source": "财联社",
+      "url": "https://www.cls.cn/detail/2541257",
+      "summary": "【交易商协会对广汇汽车予以严重警告 暂停其债务融资工具相关业务2年】财联社11月23日电，中国银行间市场交易商协会公告，经查，广汇汽车服务有限责任公司作为债务融资工具发行人，未按期披露2025年半年度报告、2025年年度报告，未及时披露违约处置进展情况。根据银行间债券市场相关自律规定，经自律处分会议审议，对广汇汽车予以严重警告，暂停其债务融资工具相关业务2年。",
       "relatedStocks": [
-        "中国石油",
-        "紫金矿业"
+        "宽基指数"
       ],
       "bullConcepts": [
-        "油气",
-        "贵金属"
+        "防御板块"
       ],
       "bearConcepts": [
-        "高耗能制造"
+        "周期股"
       ],
       "bullIndustries": [
-        "石油开采",
-        "贵金属"
+        "公用事业"
       ],
       "bearIndustries": [
-        "航空运输",
-        "化工"
+        "顺周期"
       ],
-      "heat": 47,
-      "momentum": 18,
+      "heat": 24,
+      "momentum": 36,
       "_auto": true
     },
     {
-      "id": "abwdqp6y",
-      "title": "Anthropic上市未能止住美股暴跌 华尔街追问什么能拯救AI交易",
-      "tag": "科技/AI",
-      "region": "美国",
-      "concept": "aiCapex",
-      "time": "2026-11-22 00:12",
-      "datetime": "2026-11-22 00:12",
-      "source": "环球市场播报",
-      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-22/doc-inizpqms6366294.shtml",
-      "summary": "本月美股走势艰难，民主党在中期选举中取得胜利，英伟达公司黄仁勋突然遭罢免，接连给市场带来冲击。 Anthropic创纪录的首次公开募股原本被寄望能给市场带来喘息之机...",
+      "id": "abp83ksx",
+      "title": "俄船只在利比亚海域遇袭 联合国机构“严重关切”",
+      "tag": "贸易/供应链",
+      "region": "全球",
+      "concept": "trade",
+      "time": "2026-11-23 10:14",
+      "datetime": "2026-11-23 10:14",
+      "source": "新浪7×24",
+      "url": "https://finance.sina.cn/7x24/2026-11-23/detail-inizsuwn0662802.d.html",
+      "summary": "【俄船只在利比亚海域遇袭 联合国机构“严重关切”】联合国利比亚支助团（联利支助团）23日凌晨发表声明，对前一天发生在利比亚东部城市班加西港口及附近海域的袭击事件表达严重关切，呼吁立即展开独立、透明的调查。联利支助团在社交媒体上发布的声明中强调，必须充分尊重利比亚主权、领土完整及公民和国家资源安全，“利比亚承受不起、也绝不能成为外部冲突的角斗场”。联利支助团敦促各方保持最大限度…",
       "relatedStocks": [
-        "英伟达",
-        "微软",
-        "台积电"
+        "跨境电商",
+        "航运"
       ],
       "bullConcepts": [
-        "AI算力",
-        "半导体",
+        "内需",
         "国产替代"
       ],
       "bearConcepts": [
-        "传统软件"
+        "出口链"
       ],
       "bullIndustries": [
-        "半导体",
-        "AI应用",
-        "算力基础设施"
+        "跨境电商",
+        "内需消费"
       ],
       "bearIndustries": [
-        "传统IT服务"
+        "出口制造",
+        "航运"
       ],
-      "heat": 56,
-      "momentum": 18,
+      "heat": 24,
+      "momentum": 36,
       "_auto": true
     },
     {
-      "id": "aberg5ah",
-      "title": "据苏丹民间机构、地方组织和目击者22日的消息，该国首都喀土穆及其西北恩图曼市多处目标当天遭无人机袭击，造成4人死亡、约10人受伤。一处联合国设施在袭击中受损。（新华社）",
-      "tag": "地缘/政治",
-      "region": "全球",
-      "concept": "macro",
-      "time": "2026-11-23 02:44",
-      "datetime": "2026-11-23 02:44",
-      "source": "新浪7×24",
-      "url": "https://finance.sina.cn/7x24/2026-11-23/detail-inizrxsu8639967.d.html",
-      "summary": "据苏丹民间机构、地方组织和目击者22日的消息，该国首都喀土穆及其西北恩图曼市多处目标当天遭无人机袭击，造成4人死亡、约10人受伤。一处联合国设施在袭击中受损。（新华社）",
-      "relatedStocks": [
-        "军工",
-        "黄金"
-      ],
-      "bullConcepts": [
-        "军工",
-        "避险资产"
-      ],
-      "bearConcepts": [
-        "风险资产"
-      ],
-      "bullIndustries": [
-        "军工",
-        "黄金"
-      ],
-      "bearIndustries": [
-        "航空",
-        "旅游"
-      ],
-      "heat": 51,
-      "momentum": 26,
-      "_auto": true
-    },
-    {
-      "id": "abuyz9f",
-      "title": "巴林内政部22日在社交媒体上说，伊朗前一日针对巴林的袭击造成1名巴林公民和1名巴基斯坦公民受伤。此前，巴林内政部21日晚在社交媒体上说，该国一处民用工业设施当天遭伊朗袭击，引发火…",
+      "id": "ab1fcnyc2",
+      "title": "俄军舰在利比亚遭无人快艇袭击爆炸",
       "tag": "地缘/政治",
       "region": "美国",
       "concept": "defense",
-      "time": "2026-11-22 19:43",
-      "datetime": "2026-11-22 19:43",
-      "source": "华尔街见闻",
-      "url": "https://wallstreetcn.com/livenews/3203747",
-      "summary": "巴林内政部22日在社交媒体上说，伊朗前一日针对巴林的袭击造成1名巴林公民和1名巴基斯坦公民受伤。此前，巴林内政部21日晚在社交媒体上说，该国一处民用工业设施当天遭伊朗袭击，引发火灾。巴林国防军总司令部21日晚发表声明说，该国防空系统当天对伊朗的多次空袭进行拦截，行动导致碎片坠落。伊朗伊斯兰革命卫队21日发表声明称，革命卫队航空航天部队使用导弹和无人机袭击了美国在巴林里法和阿瓦…",
+      "time": "2026-11-23 10:23",
+      "datetime": "2026-11-23 10:23",
+      "source": "财联社",
+      "url": "https://www.cls.cn/detail/2541285",
+      "summary": "财联社11月23日电，综合利比亚与俄罗斯媒体11月22日报道，停泊在利比亚班加西的俄罗斯“水星”号护卫舰当天遭到多艘无人快艇袭击，袭击导致“水星”号护卫舰爆炸起火，部分来袭快艇被拦截。消息人士表示，这些无人快艇上安装了星链系统装置，目前技术人员正在研究和分析被截获快艇的导航系统。另据美国“阿克西奥斯新闻网”22日援引消息人士的话报道，乌克兰国家安全局对停泊在利比亚的一艘俄罗斯…",
       "relatedStocks": [
         "军工",
         "黄金"
@@ -270,89 +128,21 @@
         "航空",
         "旅游"
       ],
-      "heat": 29,
-      "momentum": 18,
+      "heat": 46,
+      "momentum": 36,
       "_auto": true
     },
     {
-      "id": "ab1503pvu",
-      "title": "沙特全指在周日收盘时下跌约2%，创10月25日以来最大跌幅，因沙特领导的部队与伊朗支持的胡塞武装在也门的冲突升级。银行子指数下跌2.5%，为3月以来最大跌幅。拉吉希银行、沙特国家…",
-      "tag": "地缘/政治",
-      "region": "全球",
-      "concept": "macro",
-      "time": "2026-11-22 20:43",
-      "datetime": "2026-11-22 20:43",
-      "source": "华尔街见闻",
-      "url": "https://wallstreetcn.com/livenews/3203752",
-      "summary": "沙特全指在周日收盘时下跌约2%，创10月25日以来最大跌幅，因沙特领导的部队与伊朗支持的胡塞武装在也门的冲突升级。银行子指数下跌2.5%，为3月以来最大跌幅。拉吉希银行、沙特国家银行和Alinma银行领跌。Maaden、阿美石油和ACWA Power也是当日按点数计算跌幅最大的股票之一。",
-      "relatedStocks": [
-        "军工",
-        "黄金"
-      ],
-      "bullConcepts": [
-        "军工",
-        "避险资产"
-      ],
-      "bearConcepts": [
-        "风险资产"
-      ],
-      "bullIndustries": [
-        "军工",
-        "黄金"
-      ],
-      "bearIndustries": [
-        "航空",
-        "旅游"
-      ],
-      "heat": 24,
-      "momentum": 18,
-      "_auto": true
-    },
-    {
-      "id": "abewv9pj",
-      "title": "韩国电力公社（KEPCO）周日表示，已确认发生另一起涉及约152万用户个人信息的数据泄露事件。此前一个月，该公司刚披露了一起影响数万名用户的独立数据泄露事件。这家公用事业公司称，…",
-      "tag": "能源/资源",
-      "region": "全球",
-      "concept": "energy",
-      "time": "2026-11-22 20:08",
-      "datetime": "2026-11-22 20:08",
-      "source": "华尔街见闻",
-      "url": "https://wallstreetcn.com/livenews/3203749",
-      "summary": "韩国电力公社（KEPCO）周日表示，已确认发生另一起涉及约152万用户个人信息的数据泄露事件。此前一个月，该公司刚披露了一起影响数万名用户的独立数据泄露事件。这家公用事业公司称，其“KEPCO ON”客户服务平台上650,487名用户以及电子采购系统（SRM）中869,761名用户的个人信息遭到泄露。",
-      "relatedStocks": [
-        "中国石油",
-        "紫金矿业"
-      ],
-      "bullConcepts": [
-        "油气",
-        "贵金属"
-      ],
-      "bearConcepts": [
-        "高耗能制造"
-      ],
-      "bullIndustries": [
-        "石油开采",
-        "贵金属"
-      ],
-      "bearIndustries": [
-        "航空运输",
-        "化工"
-      ],
-      "heat": 24,
-      "momentum": 18,
-      "_auto": true
-    },
-    {
-      "id": "ab129llns",
-      "title": "从国铁青藏集团公司了解到，受昨晚（21日）青海省海西州地震影响扣停的部分青藏铁路列车，经铁路部门巡检确认线路设备完好，今天已限速恢复运行。青海省海西州德令哈市5.6级地震，波及青…",
+      "id": "ab1uj96vk",
+      "title": "三星证券超 8000 名客户个人信息遭泄露",
       "tag": "宏观/综合",
       "region": "全球",
       "concept": "macro",
-      "time": "2026-11-22 11:49",
-      "datetime": "2026-11-22 11:49",
-      "source": "华尔街见闻",
-      "url": "https://wallstreetcn.com/livenews/3203712",
-      "summary": "从国铁青藏集团公司了解到，受昨晚（21日）青海省海西州地震影响扣停的部分青藏铁路列车，经铁路部门巡检确认线路设备完好，今天已限速恢复运行。青海省海西州德令哈市5.6级地震，波及青藏铁路西宁至格尔木段部分区间。地震发生后，铁路部门紧急扣停途经列车，并启动应急预案，封锁区间、进行设备全面巡检，同时准备了充足的食品、饮用水等应急物资，保障旅客需求。（央视新闻）",
+      "time": "2026-11-23 09:56",
+      "datetime": "2026-11-23 09:56",
+      "source": "新浪7×24",
+      "url": "https://finance.sina.cn/7x24/2026-11-23/detail-inizsqqh5602434.d.html",
+      "summary": "【三星证券超 8000 名客户个人信息遭泄露】这家券商周一通报，三星证券确认其客户服务系统遭非法访问，共计 8241 名客户的信息发生外泄。近几个月来，韩国多家金融机构接连遭遇网络攻击，本次事件是其中一起。",
       "relatedStocks": [
         "宽基指数"
       ],
@@ -369,41 +159,7 @@
         "顺周期"
       ],
       "heat": 24,
-      "momentum": 18,
-      "_auto": true
-    },
-    {
-      "id": "ab12vlk9t",
-      "title": "众议院民主党领袖杰弗里斯接受访谈：拒绝与斯蒂芬·米勒会面，上任首要务是终止伊朗战争，推动两国方案",
-      "tag": "地缘/政治",
-      "region": "美国",
-      "concept": "defense",
-      "time": "2026-11-22 00:28",
-      "datetime": "2026-11-22 00:28",
-      "source": "环球市场播报",
-      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-22/doc-inizpqmw9372978.shtml",
-      "summary": "周三，美国众议院民主党人以压倒性票数提名哈基姆·杰弗里斯担任下一任众议院议长，这几乎意味着，明年1月他将成为美国历史上首位黑人议长。",
-      "relatedStocks": [
-        "军工",
-        "黄金"
-      ],
-      "bullConcepts": [
-        "军工",
-        "避险资产"
-      ],
-      "bearConcepts": [
-        "风险资产"
-      ],
-      "bullIndustries": [
-        "军工",
-        "黄金"
-      ],
-      "bearIndustries": [
-        "航空",
-        "旅游"
-      ],
-      "heat": 24,
-      "momentum": 18,
+      "momentum": 26,
       "_auto": true
     },
     {
@@ -438,85 +194,55 @@
       "bearIndustries": [
         "传统IT服务"
       ],
-      "heat": 29,
+      "heat": 24,
       "momentum": 18,
       "_auto": true
     },
     {
-      "id": "ab1wocvse",
-      "title": "2月内FBI遭第二次网络攻击，特朗普承认“情况不太妙”",
-      "tag": "宏观/综合",
-      "region": "美国",
-      "concept": "usMacro",
-      "time": "2026-11-22 07:49",
-      "datetime": "2026-11-22 07:49",
-      "source": "新浪财经",
-      "url": "https://finance.sina.com.cn/world/gjcj/2026-11-22/doc-inizqfis1477452.shtml",
-      "summary": "当地时间11月22日，美国广播公司援引知情人士消息称，美国联邦调查局（FBI）正调查其国家犯罪信息中心（NCIC）数据库疑遭黑客入侵事件。",
-      "relatedStocks": [
-        "宽基指数"
-      ],
-      "bullConcepts": [
-        "防御板块"
-      ],
-      "bearConcepts": [
-        "周期股"
-      ],
-      "bullIndustries": [
-        "公用事业"
-      ],
-      "bearIndustries": [
-        "顺周期"
-      ],
-      "heat": 29,
-      "momentum": 18,
-      "_auto": true
-    },
-    {
-      "id": "ab19p0g3n",
-      "title": "胡塞武装军事发言人：袭击了沙特阿拉伯杜瓦塞尔地区的雷达站。",
+      "id": "ab1pjosg3",
+      "title": "特朗普发文称中期选举印证其两大预判，认为选举过程十分蹊跷",
       "tag": "地缘/政治",
-      "region": "全球",
-      "concept": "macro",
-      "time": "2026-11-23 00:46",
-      "datetime": "2026-11-23 00:46",
-      "source": "新浪7×24",
-      "url": "https://finance.sina.cn/7x24/2026-11-23/detail-inizrtku2611392.d.html",
-      "summary": "胡塞武装军事发言人：袭击了沙特阿拉伯杜瓦塞尔地区的雷达站。",
-      "relatedStocks": [
-        "军工",
-        "黄金"
-      ],
-      "bullConcepts": [
-        "军工",
-        "避险资产"
-      ],
-      "bearConcepts": [
-        "风险资产"
-      ],
-      "bullIndustries": [
-        "军工",
-        "黄金"
-      ],
-      "bearIndustries": [
-        "航空",
-        "旅游"
-      ],
-      "heat": 29,
-      "momentum": 18,
-      "_auto": true
-    },
-    {
-      "id": "ab17qv2p0",
-      "title": "特朗普称网传FBI数据库遭黑客入侵一事 “情况不妙”",
-      "tag": "宏观/综合",
       "region": "美国",
-      "concept": "usMacro",
-      "time": "2026-11-22 07:35",
-      "datetime": "2026-11-22 07:35",
+      "concept": "defense",
+      "time": "2026-11-23 05:52",
+      "datetime": "2026-11-23 05:52",
       "source": "环球市场播报",
-      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-22/doc-inizqfis1468487.shtml",
-      "summary": "据报道，FBI 正在调查全国犯罪信息中心（NCIC）疑似遭黑客入侵事件。 NCIC 是联邦及地方执法机构共用的线上数据库，用于共享通缉令、背景审查等信息...",
+      "url": "https://finance.sina.com.cn/7x24/2026-11-23/doc-inizskhn2331238.shtml",
+      "summary": "美国总统特朗普表示，他此前针对11月3日中期选举作出两项预判。其一，若民主党赢得选举，股市将大幅下跌，该情况已经出现；其二，伊朗的袭击行动会变得更加激进...",
+      "relatedStocks": [
+        "军工",
+        "黄金"
+      ],
+      "bullConcepts": [
+        "军工",
+        "避险资产"
+      ],
+      "bearConcepts": [
+        "风险资产"
+      ],
+      "bullIndustries": [
+        "军工",
+        "黄金"
+      ],
+      "bearIndustries": [
+        "航空",
+        "旅游"
+      ],
+      "heat": 24,
+      "momentum": 18,
+      "_auto": true
+    },
+    {
+      "id": "ab1uhaz05",
+      "title": "美国移民执法人员在西雅图机场逮捕两名乘客，民主党承诺展开国会调查",
+      "tag": "宏观/综合",
+      "region": "美国",
+      "concept": "usMacro",
+      "time": "2026-11-22 14:37",
+      "datetime": "2026-11-22 14:37",
+      "source": "环球市场播报",
+      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-22/doc-inizqwfh8975290.shtml",
+      "summary": "美国移民与海关执法局（ICE）执法人员在西雅图-塔科马国际机场逮捕两名乘客，引发华盛顿州多名政府官员及民主党议员的强烈批评。",
       "relatedStocks": [
         "宽基指数"
       ],
@@ -532,21 +258,21 @@
       "bearIndustries": [
         "顺周期"
       ],
-      "heat": 29,
+      "heat": 24,
       "momentum": 18,
       "_auto": true
     },
     {
-      "id": "ab1m6ys7k",
-      "title": "胡塞武装：沙特主导的联军对也门发动81次袭击",
+      "id": "ab1y0vtps",
+      "title": "伊朗称袭击美军驻巴林基地并击落两架无人机，霍尔木兹海峡两艘油轮遇袭",
       "tag": "地缘/政治",
       "region": "全球",
       "concept": "macro",
-      "time": "2026-11-23 03:14",
-      "datetime": "2026-11-23 03:14",
-      "source": "财联社",
-      "url": "https://www.cls.cn/detail/2541064",
-      "summary": "【胡塞武装：沙特主导的联军对也门发动81次袭击】财联社11月23日电，当地时间22日晚，也门胡塞武装发表声明称，过去24小时内，沙特主导的多国联军对也门首都萨那以及焦夫省、塔伊兹省、萨达省、马里卜省、拉赫季省、拜达省和荷台达省发动了81次空袭和导弹袭击。",
+      "time": "2026-11-22 14:24",
+      "datetime": "2026-11-22 14:24",
+      "source": "环球市场播报",
+      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-22/doc-inizqwfe2803603.shtml",
+      "summary": "当地时间11月21日，伊朗伊斯兰革命卫队宣布，使用导弹及无人机袭击了位于巴林里法和阿瓦利基地的两部美军“爱国者”防空系统雷达。",
       "relatedStocks": [
         "军工",
         "黄金"
@@ -566,21 +292,81 @@
         "航空",
         "旅游"
       ],
-      "heat": 29,
-      "momentum": 26,
+      "heat": 24,
+      "momentum": 18,
       "_auto": true
     },
     {
-      "id": "abn3wn0n",
-      "title": "两名利比亚军方消息人士称，一艘悬挂马耳他国旗的商船在利比亚班加西沿海遭到自杀式无人机艇袭击。",
+      "id": "ab1v473u7",
+      "title": "将被实施ST！启迪设计，停牌一天！",
+      "tag": "宏观/综合",
+      "region": "全球",
+      "concept": "macro",
+      "time": "2026-11-22 18:09",
+      "datetime": "2026-11-22 18:09",
+      "source": "市场资讯",
+      "url": "https://finance.sina.com.cn/stock/s/2026-11-22/doc-inizrhva8823772.shtml",
+      "summary": "来源：资本秘闻 11月22日晚间，启迪设计（300500）披露公告称，公司于11月19日收到江苏证监局下发的《行政处罚事先告知书》，公司股票将被实施其他风险警示...",
+      "relatedStocks": [
+        "宽基指数"
+      ],
+      "bullConcepts": [
+        "防御板块"
+      ],
+      "bearConcepts": [
+        "周期股"
+      ],
+      "bullIndustries": [
+        "公用事业"
+      ],
+      "bearIndustries": [
+        "顺周期"
+      ],
+      "heat": 24,
+      "momentum": 18,
+      "_auto": true
+    },
+    {
+      "id": "ab1baquh4",
+      "title": "明天停牌！300500，将被实施其他风险警示",
+      "tag": "宏观/综合",
+      "region": "中国",
+      "concept": "broker",
+      "time": "2026-11-22 17:55",
+      "datetime": "2026-11-22 17:55",
+      "source": "新浪财经",
+      "url": "https://finance.sina.com.cn/stock/s/2026-11-22/doc-inizrape8946833.shtml",
+      "summary": "公司股票将于11月23日停牌一天。 启迪设计（300500）11月22日公告称，公司收到证监会江苏监管局《行政处罚事先告知书》，因原子公司虚增利润等事项...",
+      "relatedStocks": [
+        "宽基指数"
+      ],
+      "bullConcepts": [
+        "防御板块"
+      ],
+      "bearConcepts": [
+        "周期股"
+      ],
+      "bullIndustries": [
+        "公用事业"
+      ],
+      "bearIndustries": [
+        "顺周期"
+      ],
+      "heat": 24,
+      "momentum": 18,
+      "_auto": true
+    },
+    {
+      "id": "ab1p8jurl",
+      "title": "巴林称民用工业设施遭伊朗袭击并起火",
       "tag": "地缘/政治",
       "region": "全球",
       "concept": "macro",
-      "time": "2026-11-23 01:17",
-      "datetime": "2026-11-23 01:17",
-      "source": "新浪7×24",
-      "url": "https://finance.sina.cn/7x24/2026-11-23/detail-inizrxsw0937643.d.html",
-      "summary": "两名利比亚军方消息人士称，一艘悬挂马耳他国旗的商船在利比亚班加西沿海遭到自杀式无人机艇袭击。",
+      "time": "2026-11-22 14:59",
+      "datetime": "2026-11-22 14:59",
+      "source": "环球市场播报",
+      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-22/doc-inizqwfa6049277.shtml",
+      "summary": "巴林内政部表示，“伊朗侵略”行动将一处民用工业设施作为袭击目标，并导致现场发生火情。巴林内政部在发帖称，民防部门正在努力控制火势初步报告显示有财产损失...",
       "relatedStocks": [
         "军工",
         "黄金"
@@ -600,7 +386,97 @@
         "航空",
         "旅游"
       ],
-      "heat": 46,
+      "heat": 24,
+      "momentum": 18,
+      "_auto": true
+    },
+    {
+      "id": "ab13aj4xt",
+      "title": "墨军方抓获大毒枭现场毒枭矮子伊西德罗手被反绑押上飞机",
+      "tag": "宏观/综合",
+      "region": "美国",
+      "concept": "usMacro",
+      "time": "2026-11-22 12:06",
+      "datetime": "2026-11-22 12:06",
+      "source": "新京报",
+      "url": "https://finance.sina.com.cn/jjxw/2026-11-22/doc-inizqrxh2861734.shtml",
+      "summary": "【#墨军方抓获大毒枭现场##毒枭矮子伊西德罗手被反绑押上飞机#】11月20日，墨西哥特种部队逮捕美国FBI十大通缉要犯之一、毒枭“矮子伊西德罗”。",
+      "relatedStocks": [
+        "宽基指数"
+      ],
+      "bullConcepts": [
+        "防御板块"
+      ],
+      "bearConcepts": [
+        "周期股"
+      ],
+      "bullIndustries": [
+        "公用事业"
+      ],
+      "bearIndustries": [
+        "顺周期"
+      ],
+      "heat": 24,
+      "momentum": 18,
+      "_auto": true
+    },
+    {
+      "id": "abbzc3sf",
+      "title": "三连跌停后，002187，最新回应！",
+      "tag": "宏观/综合",
+      "region": "全球",
+      "concept": "macro",
+      "time": "2026-11-22 20:09",
+      "datetime": "2026-11-22 20:09",
+      "source": "新浪财经",
+      "url": "https://finance.sina.com.cn/stock/zqgd/2026-11-22/doc-inizrhva8874824.shtml",
+      "summary": "近期，广百股份（002187）经历了一轮暴涨暴跌。 11月22日，广百股份再次披露异动公告，公司提示，其股票于2026年11月18日、11月19日...",
+      "relatedStocks": [
+        "宽基指数"
+      ],
+      "bullConcepts": [
+        "防御板块"
+      ],
+      "bearConcepts": [
+        "周期股"
+      ],
+      "bullIndustries": [
+        "公用事业"
+      ],
+      "bearIndustries": [
+        "顺周期"
+      ],
+      "heat": 24,
+      "momentum": 18,
+      "_auto": true
+    },
+    {
+      "id": "ab10lq89t",
+      "title": "退市警报拉响！002146，股价再度跌破1元",
+      "tag": "宏观/综合",
+      "region": "全球",
+      "concept": "macro",
+      "time": "2026-11-22 17:45",
+      "datetime": "2026-11-22 17:45",
+      "source": "证券时报",
+      "url": "https://finance.sina.com.cn/stock/s/2026-11-22/doc-inizrape8940615.shtml",
+      "summary": "11月20日，荣盛发展（002146）股票收盘价为0.96元/股，再度触发面值退市风险。11月22日晚间，荣盛发展披露风险提示公告，称董事会及经营管理层高度重视并密切关注公司当前...",
+      "relatedStocks": [
+        "宽基指数"
+      ],
+      "bullConcepts": [
+        "防御板块"
+      ],
+      "bearConcepts": [
+        "周期股"
+      ],
+      "bullIndustries": [
+        "公用事业"
+      ],
+      "bearIndustries": [
+        "顺周期"
+      ],
+      "heat": 24,
       "momentum": 18,
       "_auto": true
     },

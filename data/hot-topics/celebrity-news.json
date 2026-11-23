@@ -1,116 +1,20 @@
 {
-  "generatedAt": "2026-11-23 04:40",
+  "generatedAt": "2026-11-23 10:29",
   "generatedBy": "GitHub Actions · 多源实时聚合",
   "sourceCount": 5,
-  "autoCount": 10,
+  "autoCount": 8,
   "events": [
     {
-      "id": "apuc3i0e",
-      "title": "OpenAI首席科学家呼吁业界限制模型开发 首席执行官Altman表示赞同",
-      "tag": "人物/奥尔特曼",
-      "region": "全球",
-      "concept": "ai",
-      "time": "2026-11-23 04:22",
-      "datetime": "2026-11-23 04:22",
-      "source": "财联社",
-      "url": "https://www.cls.cn/detail/2541067",
-      "summary": "【OpenAI首席科学家呼吁业界限制模型开发 首席执行官Altman表示赞同】财联社11月23日电，OpenAI首席科学家Pachocki提议，人工智能公司应同意对开发能力日益强大的模型设限，直到研究人员有更好的方法来理解和监控这些模型的行为。Pachocki警告称，最早到2027年，AI就可能加速自身进化，其速度可能超过研究人员提高监控和理解这项技术能力的速度。OpenAI…",
-      "relatedStocks": [
-        "英伟达",
-        "微软",
-        "台积电"
-      ],
-      "bullConcepts": [
-        "AI算力",
-        "半导体",
-        "国产替代"
-      ],
-      "bearConcepts": [
-        "传统软件"
-      ],
-      "bullIndustries": [
-        "半导体",
-        "AI应用",
-        "算力基础设施"
-      ],
-      "bearIndustries": [
-        "传统IT服务"
-      ],
-      "heat": 78,
-      "momentum": 56,
-      "_auto": true
-    },
-    {
-      "id": "ap1ousm1i",
-      "title": "美国总统特朗普表示，如果Chuck Schumer（舒默）出任参议院多数党领导人，我们将很难合作。",
-      "tag": "人物/特朗普",
-      "region": "美国",
-      "concept": "usMacro",
-      "time": "2026-11-22 21:56",
-      "datetime": "2026-11-22 21:56",
-      "source": "财联社",
-      "url": "https://www.cls.cn/detail/2541035",
-      "summary": "美国总统特朗普表示，如果Chuck Schumer（舒默）出任参议院多数党领导人，我们将很难合作。",
-      "relatedStocks": [
-        "宽基指数"
-      ],
-      "bullConcepts": [
-        "防御板块"
-      ],
-      "bearConcepts": [
-        "周期股"
-      ],
-      "bullIndustries": [
-        "公用事业"
-      ],
-      "bearIndustries": [
-        "顺周期"
-      ],
-      "heat": 87,
-      "momentum": 18,
-      "_auto": true
-    },
-    {
-      "id": "apmcobip",
-      "title": "美国总统特朗普表示，如果无法达成协议，他倾向于在新年后恢复对伊朗的打击。特朗普表示，目前仍在与伊朗进行间接对话。特朗普形容伊朗人是“专业的踢踏舞演员”，并补充说，他们所做的就只是…",
-      "tag": "人物/特朗普",
-      "region": "美国",
-      "concept": "usMacro",
-      "time": "2026-11-23 01:58",
-      "datetime": "2026-11-23 01:58",
-      "source": "新浪7×24",
-      "url": "https://finance.sina.cn/7x24/2026-11-23/detail-inizrxss2510245.d.html",
-      "summary": "美国总统特朗普表示，如果无法达成协议，他倾向于在新年后恢复对伊朗的打击。特朗普表示，目前仍在与伊朗进行间接对话。特朗普形容伊朗人是“专业的踢踏舞演员”，并补充说，他们所做的就只是空谈。",
-      "relatedStocks": [
-        "宽基指数"
-      ],
-      "bullConcepts": [
-        "防御板块"
-      ],
-      "bearConcepts": [
-        "周期股"
-      ],
-      "bullIndustries": [
-        "公用事业"
-      ],
-      "bearIndustries": [
-        "顺周期"
-      ],
-      "heat": 87,
-      "momentum": 18,
-      "_auto": true
-    },
-    {
-      "id": "ap1pwbow3",
-      "title": "SpaceX：猎鹰9号火箭搭载NROL-136任务从加州4E发射台升空，距USSF-317任务发射仅32小时，创下同一发射台两次发射间的最快周转纪录。",
-      "tag": "人物/马斯克",
+      "id": "apd12jda",
+      "title": "明晟与印尼总统普拉博沃及达利欧讨论避免印尼评级下调事宜。",
+      "tag": "人物/达利欧",
       "region": "全球",
       "concept": "macro",
-      "time": "2026-11-23 02:59",
-      "datetime": "2026-11-23 02:59",
+      "time": "2026-11-23 10:27",
+      "datetime": "2026-11-23 10:27",
       "source": "新浪7×24",
-      "url": "https://finance.sina.cn/7x24/2026-11-23/detail-inizrxsq5757459.d.html",
-      "summary": "SpaceX：猎鹰9号火箭搭载NROL-136任务从加州4E发射台升空，距USSF-317任务发射仅32小时，创下同一发射台两次发射间的最快周转纪录。",
+      "url": "https://finance.sina.cn/7x24/2026-11-23/detail-inizsuwk8343616.d.html",
+      "summary": "明晟与印尼总统普拉博沃及达利欧讨论避免印尼评级下调事宜。",
       "relatedStocks": [
         "宽基指数"
       ],
@@ -126,55 +30,54 @@
       "bearIndustries": [
         "顺周期"
       ],
-      "heat": 47,
-      "momentum": 26,
+      "heat": 24,
+      "momentum": 36,
       "_auto": true
     },
     {
-      "id": "apxu0gp6",
-      "title": "当地时间22日，据以色列方面消息，以色列看守政府总理内塔尼亚胡正考虑在未经美国批准的情况下单独对伊朗发动袭击。以军军事情报局在近日一场闭门会议中警告，此举可能引发多条战线同时爆发…",
+      "id": "apn4265n",
+      "title": "“内塔尼亚胡正考虑单独对伊朗动武”！美方紧急提醒：敌对行动可能升级！黄金现在能抄底吗？",
       "tag": "人物/内塔尼亚胡",
       "region": "美国",
-      "concept": "defense",
-      "time": "2026-11-23 03:02",
-      "datetime": "2026-11-23 03:02",
-      "source": "新浪7×24",
-      "url": "https://finance.sina.cn/7x24/2026-11-23/detail-inizrxss2534526.d.html",
-      "summary": "当地时间22日，据以色列方面消息，以色列看守政府总理内塔尼亚胡正考虑在未经美国批准的情况下单独对伊朗发动袭击。以军军事情报局在近日一场闭门会议中警告，此举可能引发多条战线同时爆发冲突。（央视新闻）",
+      "concept": "usFinance",
+      "time": "2026-11-23 07:40",
+      "datetime": "2026-11-23 07:40",
+      "source": "市场资讯",
+      "url": "https://finance.sina.com.cn/money/future/fmnews/2026-11-23/doc-inizsqqh5488349.shtml",
+      "summary": "来源：期货日报 早上好，来看一些热点消息。 今日早盘，美股股指期货高开，截至发稿，纳指期货涨幅扩大至2.36%，标普500指数期货涨超1%。",
       "relatedStocks": [
-        "军工",
+        "美股科技",
         "黄金"
       ],
       "bullConcepts": [
-        "军工",
-        "避险资产"
+        "黄金",
+        "防御板块"
       ],
       "bearConcepts": [
-        "风险资产"
+        "高估值成长股"
       ],
       "bullIndustries": [
-        "军工",
+        "银行",
         "黄金"
       ],
       "bearIndustries": [
-        "航空",
-        "旅游"
+        "高杠杆地产"
       ],
-      "heat": 42,
-      "momentum": 26,
+      "heat": 24,
+      "momentum": 18,
       "_auto": true
     },
     {
-      "id": "ap1wbt50t",
-      "title": "OpenAI：困惑度（Perplexity）用于衡量模型预测下一个词元的能力。",
-      "tag": "人物/奥尔特曼",
-      "region": "全球",
-      "concept": "ai",
-      "time": "2026-11-23 01:25",
-      "datetime": "2026-11-23 01:25",
-      "source": "新浪7×24",
-      "url": "https://finance.sina.cn/7x24/2026-11-23/detail-inizrxsw0940272.d.html",
-      "summary": "OpenAI：困惑度（Perplexity）用于衡量模型预测下一个词元的能力。",
+      "id": "apown7xn",
+      "title": "11月23日周末要闻：特朗普称若无法达成协议 倾向于新年后打击伊朗 内塔尼亚胡被曝正考虑单独对伊朗动武",
+      "tag": "人物/特朗普",
+      "region": "美国",
+      "concept": "aiCapex",
+      "time": "2026-11-23 06:34",
+      "datetime": "2026-11-23 06:34",
+      "source": "环球市场播报",
+      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-23/doc-inizskhq8448976.shtml",
+      "summary": "市场 11月21日收盘：纳指狂泻千点 英伟达跌14% 标普道指双双步入回调区间 11月21日热门中概股普跌，台积电跌超9%，阿里巴巴跌2.68% 欧洲股市创2025年以来最大周跌幅...",
       "relatedStocks": [
         "英伟达",
         "微软",
@@ -196,37 +99,112 @@
       "bearIndustries": [
         "传统IT服务"
       ],
-      "heat": 74,
+      "heat": 46,
       "momentum": 18,
       "_auto": true
     },
     {
-      "id": "apbyvw8s",
-      "title": "美情报主管收到警告：若不解释乌克兰星盾限速问题，国会将冻结SpaceX相关资金",
-      "tag": "人物/马斯克",
-      "region": "美国",
-      "concept": "usMacro",
-      "time": "2026-11-22 10:11",
-      "datetime": "2026-11-22 10:11",
+      "id": "ap130k07x",
+      "title": "OpenAI首席科学家呼吁业界限制模型开发 奥特曼表示赞同",
+      "tag": "人物/奥尔特曼",
+      "region": "全球",
+      "concept": "ai",
+      "time": "2026-11-23 04:19",
+      "datetime": "2026-11-23 04:19",
       "source": "环球市场播报",
-      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-22/doc-inizqmrk2910177.shtml",
-      "summary": "相关媒体获悉，一名国会民主党资深议员警告，如果特朗普政府与马斯克拒绝披露是谁下令对乌克兰军用星盾（Starshield）卫星服务限速...",
+      "url": "https://finance.sina.com.cn/7x24/2026-11-23/doc-inizscyq2429164.shtml",
+      "summary": "OpenAI首席科学家Jakub Pachocki提议，人工智能公司应同意对开发能力日益强大的模型设限，直到研究人员有更好的方法来理解和监控这些模型的行为。",
       "relatedStocks": [
-        "宽基指数"
+        "英伟达",
+        "微软",
+        "台积电"
       ],
       "bullConcepts": [
+        "AI算力",
+        "半导体",
+        "国产替代"
+      ],
+      "bearConcepts": [
+        "传统软件"
+      ],
+      "bullIndustries": [
+        "半导体",
+        "AI应用",
+        "算力基础设施"
+      ],
+      "bearIndustries": [
+        "传统IT服务"
+      ],
+      "heat": 33,
+      "momentum": 18,
+      "_auto": true
+    },
+    {
+      "id": "ap1x5c5ex",
+      "title": "马斯克最新警告：人工智能行业明年可能面临严重的资金短缺 可能需要数千亿美元额外资金投入",
+      "tag": "人物/马斯克",
+      "region": "美国",
+      "concept": "aiCapex",
+      "time": "2026-11-22 12:56",
+      "datetime": "2026-11-22 12:56",
+      "source": "滚动播报",
+      "url": "https://finance.sina.com.cn/roll/2026-11-22/doc-inizqrxk9062900.shtml",
+      "summary": "来源：中新经纬 11月22日，知名深度学习领域开源项目Keras创始人弗朗索瓦・肖莱（François Chollet）在社交平台上表示，要么你认为AI基础设施建设已经结束...",
+      "relatedStocks": [
+        "英伟达",
+        "微软",
+        "台积电"
+      ],
+      "bullConcepts": [
+        "AI算力",
+        "半导体",
+        "国产替代"
+      ],
+      "bearConcepts": [
+        "传统软件"
+      ],
+      "bullIndustries": [
+        "半导体",
+        "AI应用",
+        "算力基础设施"
+      ],
+      "bearIndustries": [
+        "传统IT服务"
+      ],
+      "heat": 24,
+      "momentum": 18,
+      "_auto": true
+    },
+    {
+      "id": "ap1h3pqez",
+      "title": "金价大跌，莫迪发声：我曾呼吁不要买黄金，有人听从建议，钱保住了",
+      "tag": "人物/莫迪",
+      "region": "美国",
+      "concept": "usFinance",
+      "time": "2026-11-23 08:20",
+      "datetime": "2026-11-23 08:20",
+      "source": "滚动播报",
+      "url": "https://finance.sina.com.cn/wm/2026-11-23/doc-inizsqqn8378378.shtml",
+      "summary": "文章来源：华夏时报 上周国际金价迎来剧烈杀跌，现货黄金接连失守3800、3700、3600美元关口，最低触及3502美元/盎司，创14个月新低。",
+      "relatedStocks": [
+        "美股科技",
+        "黄金"
+      ],
+      "bullConcepts": [
+        "黄金",
         "防御板块"
       ],
       "bearConcepts": [
-        "周期股"
+        "高估值成长股"
       ],
       "bullIndustries": [
-        "公用事业"
+        "银行",
+        "黄金"
       ],
       "bearIndustries": [
-        "顺周期"
+        "高杠杆地产"
       ],
-      "heat": 38,
+      "heat": 24,
       "momentum": 18,
       "_auto": true
     },
@@ -262,71 +240,42 @@
       "bearIndustries": [
         "传统IT服务"
       ],
+      "heat": 24,
+      "momentum": 18,
+      "_auto": true
+    },
+    {
+      "id": "ap1114yyb",
+      "title": "特朗普：伊朗上周发射的无人机和导弹数量创一年多来新高",
+      "tag": "人物/特朗普",
+      "region": "美国",
+      "concept": "defense",
+      "time": "2026-11-23 08:42",
+      "datetime": "2026-11-23 08:42",
+      "source": "环球市场播报",
+      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-23/doc-inizsqqq0718417.shtml",
+      "summary": "美国总统唐纳德·特朗普在Truth Social发文称：“伊朗上周发射的无人机和导弹数量超过过去一年多来任何时候。” “别担心，它们全都被击落了，没有造成任何损失...",
+      "relatedStocks": [
+        "军工",
+        "黄金"
+      ],
+      "bullConcepts": [
+        "军工",
+        "避险资产"
+      ],
+      "bearConcepts": [
+        "风险资产"
+      ],
+      "bullIndustries": [
+        "军工",
+        "黄金"
+      ],
+      "bearIndustries": [
+        "航空",
+        "旅游"
+      ],
       "heat": 29,
-      "momentum": 18,
-      "_auto": true
-    },
-    {
-      "id": "aphe41qv",
-      "title": "巴菲特将感恩节礼物提高三倍 捐赠财富详细分析",
-      "tag": "人物/巴菲特",
-      "region": "美国",
-      "concept": "usFinance",
-      "time": "2026-11-21 22:19",
-      "datetime": "2026-11-21 22:19",
-      "source": "环球市场播报",
-      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-21/doc-inizpkcw3230385.shtml",
-      "summary": "巴菲特称善良会“复利”，其感恩节礼物大幅增加。 96岁的沃伦·巴菲特今年将向四家家族基金会的感恩节捐赠额提高了三倍多，达到55亿美元。",
-      "relatedStocks": [
-        "美股科技",
-        "黄金"
-      ],
-      "bullConcepts": [
-        "黄金",
-        "防御板块"
-      ],
-      "bearConcepts": [
-        "高估值成长股"
-      ],
-      "bullIndustries": [
-        "银行",
-        "黄金"
-      ],
-      "bearIndustries": [
-        "高杠杆地产"
-      ],
-      "heat": 24,
-      "momentum": 18,
-      "_auto": true
-    },
-    {
-      "id": "ap1h8ytid",
-      "title": "泽连斯基提名乌克兰下一任驻美大使人选",
-      "tag": "人物/泽连斯基",
-      "region": "美国",
-      "concept": "usMacro",
-      "time": "2026-11-21 23:29",
-      "datetime": "2026-11-21 23:29",
-      "source": "环球市场播报",
-      "url": "https://finance.sina.com.cn/7x24/2026-11-21/doc-inizpkcw3256543.shtml",
-      "summary": "乌克兰总统泽连斯基已提名多名潜在人选，角逐乌克兰下一任驻美国大使一职，该职位自今年8月起空缺。 泽连斯基周六在记者问答中，点名现任外交部长安德烈·瑟比加...",
-      "relatedStocks": [
-        "宽基指数"
-      ],
-      "bullConcepts": [
-        "防御板块"
-      ],
-      "bearConcepts": [
-        "周期股"
-      ],
-      "bullIndustries": [
-        "公用事业"
-      ],
-      "bearIndustries": [
-        "顺周期"
-      ],
-      "heat": 24,
-      "momentum": 18,
+      "momentum": 26,
       "_auto": true
     },
     {
