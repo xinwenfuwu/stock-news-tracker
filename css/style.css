@@ -4525,6 +4525,21 @@ body.guest-mode #app { display: none; }
 .hfei-daily-hist > div { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
 .hfei-iter-vers { display: flex; align-items: center; flex-wrap: wrap; gap: 6px; margin: 8px 0; }
 
+/* 20261125b：完整迭代逻辑思维链 */
+.hfei-chain { margin-top: 12px; padding: 12px; border: 1px solid var(--border); border-radius: 10px; background: var(--surface-2, #fafafa); }
+.hfei-chain-head { font-weight: 700; font-size: 14px; margin-bottom: 10px; }
+.hfei-chain-flow { display: flex; flex-direction: column; gap: 2px; }
+.hfei-chain-step { padding: 8px 10px; border-radius: 8px; background: #fff; border: 1px solid var(--border); }
+.hfei-chain-verify { border-color: var(--accent, #6366f1); }
+.hfei-chain-step-t { font-size: 13px; font-weight: 600; margin-bottom: 5px; display: flex; align-items: center; gap: 7px; }
+.hfei-chain-num { display: inline-flex; align-items: center; justify-content: center; width: 20px; height: 20px; border-radius: 50%; background: var(--accent, #6366f1); color: #fff; font-size: 12px; }
+.hfei-chain-step-b { font-size: 12.5px; line-height: 1.85; color: var(--text-secondary); }
+.hfei-chain-step-b > div { margin: 2px 0; }
+.hfei-chain-step-b b { display: inline-block; min-width: 56px; color: var(--text); margin-right: 4px; }
+.hfei-chain-arrow { text-align: center; color: var(--accent, #6366f1); font-size: 16px; line-height: 1.2; }
+.hfei-chain-conclusion { margin-top: 6px; padding: 5px 8px; border-radius: 6px; background: #f0fdf4; color: #15803d; font-weight: 600; }
+.hfei-chain-conclusion.ok { background: #fef2f2; color: #b91c1c; }
+
 @media (max-width: 900px) {
   .hfei-two { grid-template-columns: 1fr; gap: 0; }
 }
