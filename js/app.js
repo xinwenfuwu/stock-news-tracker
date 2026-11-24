@@ -7257,59 +7257,93 @@ const app = createApp({
         prevEnd: atClose(dayShift(start0, -k))
       };
     }
-    /* 20261111i：把「今天/昨天/前天」的窗口计算、写入、刷新拆开，
-     * 红框（火热话题标题栏）按钮与每日快讯面板按钮各自有入口，但共用同一套窗口口径。
-     *   · 红框按钮 → 首要目标是红框内「新闻统计开始时间」两个时间框
-     *     （每日话题 dailyWin / 统计分析 analysisWin），由 setHtWinDay 直接进入；
-     *   · 每日快讯 / 新闻追踪页顶部按钮 → briefWin，由 setBriefWinDay 进入；
-     *   · 20261111h 的全局同步语义保留：三套窗口仍写同一个值、各自刷新，
-     *     这样无论点哪一组按钮，左右两侧显示的都是同一时间段，不会出现「选了昨天、下方还是今天」。
-     * 两处高亮分开记录，手动改任一时间框则两组一起取消高亮（当前为自定义窗口）。 */
+    /* 20261124b：「今天/昨天/前天」窗口计算与写入彻底左右解耦：
+     *   · 左栏红框按钮 → 只写 dailyWin* / analysisWin*，只高亮 htWinDay；
+     *   · 右栏快讯按钮 → 只写 briefWin* / briefPrevWin*，只高亮 briefWinDay；
+     *   · 两侧共用同一套隔夜窗口算法 overnightShiftedDefaults(k)，但互不写入对方状态、互不触发对方刷新；
+     *   · 手动改某一侧时间框只取消该侧高亮。 */
     /**
-     * 20261124a：隔夜窗口口径 —— 「交易日 T 的前一自然日 15:00（收盘）→ T 当日 9:25（开盘前）」。
-     * 用户举例：昨天交易日 = 2026/11/22 15:00 → 2026/11/23 9:25（今天 11/24，昨天 T=11/23 周一，
-     *   窗口 = T 前一自然日 11/22 周日 15:00 → T 当日 11/23 09:25）。
-     * k=0 今天 / 1 昨天 / 2 前天：目标交易日 T = 今天往前推 k 个自然日，
-     *   start = (T-1 日) 15:00，end = T 日 9:25（自然日相邻，严格贴合用户举例）。
-     * 「上次」对比周期 = T 的前一交易日对应窗口 [(T-2) 15:00, (T-1) 9:25]。
+     * 20261124b：A股交易日历，依据上海证券交易所《2026年休市安排》（2025-12-22 公告）。
+     * 法定休市区间（周末由 getDay 判定）：元旦 01-01~01-03 / 春节 02-15~02-23 / 清明 04-04~04-06
+     *   / 劳动节 05-01~05-05 / 端午 06-19~06-21 / 中秋 09-25~09-27 / 国庆 10-01~10-07
+     * 来源：https://www.sse.com.cn/disclosure/dealinstruc/closed
+     */
+    const CN_MARKET_HOLIDAYS_2026 = [
+      ['2026-01-01', '2026-01-03'], ['2026-02-15', '2026-02-23'],
+      ['2026-04-04', '2026-04-06'], ['2026-05-01', '2026-05-05'],
+      ['2026-06-19', '2026-06-21'], ['2026-09-25', '2026-09-27'],
+      ['2026-10-01', '2026-10-07']
+    ];
+    function isTradingDayCN(d) {
+      if (!d) return false;
+      const day = d.getDay();
+      if (day === 0 || day === 6) return false;                     // 周末休市
+      if (d.getFullYear() === 2026) {
+        const p = n => (n < 10 ? '0' : '') + n;
+        const key = d.getFullYear() + '-' + p(d.getMonth() + 1) + '-' + p(d.getDate());
+        for (const h of CN_MARKET_HOLIDAYS_2026) if (key >= h[0] && key <= h[1]) return false;
+      }
+      return true;
+    }
+    /** 按 A股开市安排平移 n 个交易日；n=0 且当天休市时向前取最近交易日。 */
+    function shiftTradingDayCN(d, n) {
+      const cur = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+      const step = n > 0 ? 1 : -1;
+      while (!isTradingDayCN(cur)) cur.setDate(cur.getDate() + step);
+      let left = Math.abs(n);
+      while (left > 0) {
+        cur.setDate(cur.getDate() + step);
+        while (!isTradingDayCN(cur)) cur.setDate(cur.getDate() + step);
+        left--;
+      }
+      return cur;
+    }
+    /**
+     * 20261124b：隔夜窗口按 A股开市安排取 —— 目标交易日 T = 今天往前推 k 个交易日（跳周末+法定节假日），
+     * 窗口 = [T 的前一交易日 15:00 收盘, T 当日 9:25 开盘前]。
+     * 例：今天 2026-11-24(二) 点「昨天」→ T=11/23(一)，前一交易日=11/20(五) → 11/20 15:00 → 11/23 9:25；
+     *     目标交易日为周一 → 上周五 15:00 → 周一 9:25（跨周末，符合用户要求）。
+     * 「上次」对比周期 = 上一交易日对应的隔夜窗口。
      */
     function overnightShiftedDefaults(k) {
       const HT = ht_();
       if (!HT || !HT.toLocalInputValue) return null;
       const PREOPEN_H = 9, PREOPEN_M = 25, CLOSE_H = 15;
       const day0 = new Date(); day0.setHours(0, 0, 0, 0);
-      const dayAdd = (d, n) => new Date(d.getFullYear(), d.getMonth(), d.getDate() + n);
-      // 目标交易日 T：今天往前推 k 个自然日；窗口 = [T-1 日 15:00, T 日 9:25]
-      const T = dayAdd(day0, -k);
-      const startDay = dayAdd(T, -1);
-      const prevStartDay = dayAdd(T, -2);
-      const prevEndDay = dayAdd(T, -1);
+      const T = shiftTradingDayCN(day0, -k);                        // 目标交易日
+      const startDay = shiftTradingDayCN(T, -1);                    // 前一交易日（窗口起点）
+      const prevT = shiftTradingDayCN(T, -1);                       // 对比周期的目标交易日
+      const prevStartDay = shiftTradingDayCN(prevT, -1);            // 对比周期起点
+      const at = (d, h, m) => new Date(d.getFullYear(), d.getMonth(), d.getDate(), h, m, 0, 0);
       return {
-        start: new Date(startDay.getFullYear(), startDay.getMonth(), startDay.getDate(), CLOSE_H, 0, 0, 0),
-        end: new Date(T.getFullYear(), T.getMonth(), T.getDate(), PREOPEN_H, PREOPEN_M, 0, 0),
-        prevStart: new Date(prevStartDay.getFullYear(), prevStartDay.getMonth(), prevStartDay.getDate(), CLOSE_H, 0, 0, 0),
-        prevEnd: new Date(prevEndDay.getFullYear(), prevEndDay.getMonth(), prevEndDay.getDate(), PREOPEN_H, PREOPEN_M, 0, 0)
+        start: at(startDay, CLOSE_H, 0),
+        end: at(T, PREOPEN_H, PREOPEN_M),
+        prevStart: at(prevStartDay, CLOSE_H, 0),
+        prevEnd: at(prevT, PREOPEN_H, PREOPEN_M)
       };
     }
-    function applyDayPresetValues(k) {
+    function applyDayPresetValues(k, side) {
       const HT = ht_();
-      // 20261124a：快捷窗口统一改用「收盘15:00 → 次日9:25」隔夜口径（原 briefShiftedDefaults 为 15:00→15:00）
+      // 20261124b：隔夜窗口按 A股开市安排（前一交易日15:00 → 目标交易日9:25）
       const w = overnightShiftedDefaults(k);
       if (!w || !HT || !HT.toLocalInputValue) return false;
       const sVal = HT.toLocalInputValue(w.start);
       const eVal = HT.toLocalInputValue(w.end);
-      // ① 红框内的时间框（本轮用户明确指定的作用目标）
-      dailyWinStart.value = sVal;
-      dailyWinEnd.value = eVal;
-      analysisWinStart.value = sVal;
-      analysisWinEnd.value = eVal;
-      // ② 每日快讯窗口 + 「上次」对比周期，保持左右同口径
-      briefWinStart.value = sVal;
-      briefWinEnd.value = eVal;
-      briefPrevWinStart.value = HT.toLocalInputValue(w.prevStart);
-      briefPrevWinEnd.value = HT.toLocalInputValue(w.prevEnd);
-      briefWinDay.value = k;
-      htWinDay.value = k;
+      if (side === 'hot') {
+        // 左栏「火热话题」：每日话题 + 统计分析两个子页同口径；只写左栏、只高亮左栏
+        dailyWinStart.value = sVal;
+        dailyWinEnd.value = eVal;
+        analysisWinStart.value = sVal;
+        analysisWinEnd.value = eVal;
+        htWinDay.value = k;
+      } else {
+        // 右栏「格隆汇每日快讯」：窗口 + 「上次」对比周期；只写右栏、只高亮右栏
+        briefWinStart.value = sVal;
+        briefWinEnd.value = eVal;
+        briefPrevWinStart.value = HT.toLocalInputValue(w.prevStart);
+        briefPrevWinEnd.value = HT.toLocalInputValue(w.prevEnd);
+        briefWinDay.value = k;
+      }
       return true;
     }
     function flashHtWinBoxes() {
@@ -7321,21 +7355,22 @@ const app = createApp({
       });
     }
     function applyDayPreset(k, from) {
-      if (!applyDayPresetValues(k)) return;
-      flashHtWinBoxes();
+      if (!applyDayPresetValues(k, from)) return;
+      // 20261124b：左右彻底独立——只有左栏按钮闪左栏时间框；右栏按钮不触碰左栏 UI
+      if (from === 'hot') flashHtWinBoxes();
       // 20261124a：只填日期、不自动刷新。用户明确要求：选完日期后由用户点「刷新」按钮再统计。
       const label = ['今天', '昨天', '前天'][k] || '自定义';
       showToast(from === 'hot'
-        ? '已切换「' + label + '」隔夜窗口（收盘15:00→次日9:25），时间框已更新；请点「刷新」按钮统计'
-        : '已切换「' + label + '」隔夜窗口（收盘15:00→次日9:25），时间框已更新；请点「刷新」按钮统计', 'success');
+        ? '左栏已切换「' + label + '」隔夜窗口（前一交易日15:00→当日9:25）；仅本栏生效，请点本栏「刷新」统计'
+        : '右栏已切换「' + label + '」隔夜窗口（前一交易日15:00→当日9:25）；仅本栏生效，请点本栏「刷新」统计', 'success');
     }
-    /** 红框（火热话题标题栏）里的「今天 / 昨天 / 前天」→ 驱动红框内时间框 */
+    /** 红框（火热话题标题栏）里的「今天 / 昨天 / 前天」→ 只驱动左栏时间框 */
     function setHtWinDay(k) { applyDayPreset(k, 'hot'); }
-    /** 每日快讯面板 / 新闻追踪页顶部的「今天 / 昨天 / 前天」 */
+    /** 每日快讯面板 / 新闻追踪页顶部的「今天 / 昨天 / 前天」→ 只驱动右栏时间框 */
     function setBriefWinDay(k) { applyDayPreset(k, 'brief'); }
-    /** 手动修改时间框：取消快捷按钮高亮（说明当前是自定义窗口） */
-    function onBriefWinManualEdit() { briefWinDay.value = -1; htWinDay.value = -1; }
-    function onHtWinManualEdit() { htWinDay.value = -1; briefWinDay.value = -1; }
+    /** 手动修改时间框：只取消本侧快捷按钮高亮（左右独立，20261124b） */
+    function onBriefWinManualEdit() { briefWinDay.value = -1; }
+    function onHtWinManualEdit() { htWinDay.value = -1; }
     /** 时间栏文案：'2026年9月16日 15:00 - 2026年9月17日 15:00' */
     const briefWinText = computed(() => {
       const HT = ht_();

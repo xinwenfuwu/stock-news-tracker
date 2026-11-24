@@ -10,12 +10,12 @@
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
   <title>股市信息分析系统</title>
-  <link rel="stylesheet" href="css/style.css?v=20261124a">
+  <link rel="stylesheet" href="css/style.css?v=20261124b">
   <!-- Vue 3 全局构建版（v3.4.21 · 自托管）
        原先走 unpkg.com CDN：国内网络对 unpkg 的连通性不稳定，一旦该请求长时间挂起，
        <head> 里的阻塞脚本会让整页停在白屏、后续 auth-boot.js 根本不会执行。
        改为同源托管后，启动链路不再依赖任何第三方 CDN。 -->
-  <script src="js/vue.global.prod.js?v=20261124a"></script>
+  <script src="js/vue.global.prod.js?v=20261124b"></script>
 </head>
 <body class="auth-locked">
   <!-- ===== 登录关卡：登录通过前业务脚本不会被加载 ===== -->
@@ -101,7 +101,7 @@
         <input class="auth-input" type="text" id="auth-renew-user" placeholder="用户名（你注册时用的）" maxlength="20" autocomplete="off">
         <div class="auth-renew-plans" id="auth-renew-plans"></div>
         <div class="auth-renew-qr" id="auth-renew-qr">
-          <div class="auth-renew-qrbox"><img id="auth-renew-wx" src="assets/wechat-pay-qr.jpg?v=20261124a" alt="微信支付收款码"><span>微信支付（扫码支付）</span></div>
+          <div class="auth-renew-qrbox"><img id="auth-renew-wx" src="assets/wechat-pay-qr.jpg?v=20261124b" alt="微信支付收款码"><span>微信支付（扫码支付）</span></div>
           <div class="muted small" style="margin-top:6px;color:#c2410c;font-weight:600">支付时请添加会员备注，付款成功截图保存</div>
         </div>
         <input class="auth-input" type="text" id="auth-renew-amount" inputmode="decimal" placeholder="支付金额（必填，如 1000）" autocomplete="off">
@@ -348,14 +348,14 @@
             </button>
             <button class="sw-btn sw-btn-ghost" :disabled="briefLoading" @click="resetBriefWin"
                     title="恢复默认：上次闭市 → 本次闭市（同步恢复「上次」对比周期为默认）">重置</button>
-            <!-- 20261124a：今天 / 昨天 / 前天 快捷窗口：填入「收盘15:00→次日9:25」隔夜窗口（可再手动改），只填日期不刷新，需点「刷新」按钮统计 -->
+            <!-- 20261124b：快捷窗口只作用于本栏（不影响火热话题）；隔夜窗口按A股开市安排（前一交易日15:00→当日9:25）；只填日期不刷新 -->
             <span class="sw-sep">｜</span>
             <button class="sw-btn sw-btn-day" :class="{active: briefWinDay===0}" :disabled="briefLoading" @click="setBriefWinDay(0)"
-                    title="填入「今天」隔夜窗口（昨15:00→今9:25）；只填日期不刷新，请点「刷新」统计">今天</button>
+                    title="填入「今天」隔夜窗口（前一交易日15:00→当日9:25）；只作用于本栏，不影响火热话题；只填日期不刷新">今天</button>
             <button class="sw-btn sw-btn-day" :class="{active: briefWinDay===1}" :disabled="briefLoading" @click="setBriefWinDay(1)"
-                    title="填入「昨天」隔夜窗口（前一日15:00→当日9:25，如 11/22 15:00→11/23 9:25）；只填日期不刷新，请点「刷新」统计">昨天</button>
+                    title="填入「昨天」隔夜窗口（按A股开市安排，如目标交易日为周一则取上周五15:00→周一9:25）；只作用于本栏，不影响火热话题；只填日期不刷新">昨天</button>
             <button class="sw-btn sw-btn-day" :class="{active: briefWinDay===2}" :disabled="briefLoading" @click="setBriefWinDay(2)"
-                    title="填入「前天」隔夜窗口；只填日期不刷新，请点「刷新」统计">前天</button>
+                    title="填入「前天」隔夜窗口；只作用于本栏，不影响火热话题；只填日期不刷新">前天</button>
             <span class="sw-text" v-if="briefWinText">{{ briefWinText }}</span>
           </div>
 
@@ -812,7 +812,7 @@
               <span class="hfei-dom-why">{{ hfeiReport.ai.dominant.why }}</span>
             </div>
 
-            <!-- 20261124a：主导事件预计影响天数/日期区间 + 建议操作的三个概念板块 -->
+            <!-- 20261124b：主导事件预计影响天数/日期区间 + 建议操作的三个概念板块 -->
             <div class="hfei-impact" v-if="hfeiReport.ai.impact || (hfeiReport.ai.actionConcepts && hfeiReport.ai.actionConcepts.length)">
               <div class="hfei-impact-row" v-if="hfeiReport.ai.impact">
                 <span class="hfei-impact-tag">预计影响天数</span>
@@ -1346,7 +1346,7 @@
                   <div class="qr-row">
                     <div class="qr-box">
                       <div class="qr-cap">推荐使用微信支付</div>
-                      <img src="assets/wechat-pay-qr.jpg?v=20261124a" alt="微信支付收款码" class="qr-pay-img">
+                      <img src="assets/wechat-pay-qr.jpg?v=20261124b" alt="微信支付收款码" class="qr-pay-img">
                       <div class="qr-cap" style="margin-top:6px;color:#c2410c;font-weight:600">支付时请添加会员备注，付款成功截图保存</div>
                       <div class="qr-cap muted small">火柴盒网络服务</div>
                     </div>
@@ -1595,14 +1595,14 @@
             <div class="panel-head">
               <h3 class="panel-title" style="margin:0">🔥 火热话题</h3>
               <div class="ht-head-right">
-                <!-- 今天 / 昨天 / 前天 快捷窗口（20261124a）：红框内的按钮，填入「收盘15:00→次日9:25」隔夜窗口；只填日期不刷新，需点「刷新」按钮统计 -->
+                <!-- 20261124b：红框按钮只作用于左栏时间框（每日话题/统计分析），不影响右栏每日快讯；隔夜窗口按A股开市安排（前一交易日15:00→当日9:25）；只填日期不刷新 -->
                 <div class="ht-day-btns" id="ht-day-btns">
                   <button class="sw-btn sw-btn-day" :class="{active: htWinDay===0}" :disabled="hotTopicsLoading || analysisLoading" @click="setHtWinDay(0)"
-                          title="把本栏「新闻统计开始时间」填成「今天」隔夜窗口（昨15:00→今9:25）；每日快讯同步，只填日期不刷新，请点「刷新」统计">今天</button>
+                          title="把本栏「新闻统计开始时间」填成「今天」隔夜窗口（前一交易日15:00→当日9:25）；只作用于本栏，不影响每日快讯；只填日期不刷新">今天</button>
                   <button class="sw-btn sw-btn-day" :class="{active: htWinDay===1}" :disabled="hotTopicsLoading || analysisLoading" @click="setHtWinDay(1)"
-                          title="把本栏「新闻统计开始时间」填成「昨天」隔夜窗口（前一日15:00→当日9:25，如 11/22 15:00→11/23 9:25）；每日快讯同步，只填日期不刷新，请点「刷新」统计">昨天</button>
+                          title="把本栏「新闻统计开始时间」填成「昨天」隔夜窗口（按A股开市安排，如目标交易日为周一则取上周五15:00→周一9:25）；只作用于本栏，不影响每日快讯；只填日期不刷新">昨天</button>
                   <button class="sw-btn sw-btn-day" :class="{active: htWinDay===2}" :disabled="hotTopicsLoading || analysisLoading" @click="setHtWinDay(2)"
-                          title="把本栏「新闻统计开始时间」填成「前天」隔夜窗口；每日快讯同步，只填日期不刷新，请点「刷新」统计">前天</button>
+                          title="把本栏「新闻统计开始时间」填成「前天」隔夜窗口；只作用于本栏，不影响每日快讯；只填日期不刷新">前天</button>
                 </div>
                 <div class="ht-tabs">
                   <button :class="['ht-tab', { active: htTab === 'daily' }]" @click="htTab = 'daily'">每日话题</button>
@@ -1948,14 +1948,14 @@
               </button>
               <button class="sw-btn sw-btn-ghost" :disabled="briefLoading" @click="resetBriefWin"
                       title="恢复默认：昨天 15:00 → 现在">重置</button>
-              <!-- 20261110a：今天 / 昨天 / 前天 快捷窗口（与新闻追踪页同一套状态） -->
+              <!-- 20261124b：今天 / 昨天 / 前天 快捷窗口（只作用于本栏，与火热话题互不影响） -->
               <span class="sw-sep">｜</span>
               <button class="sw-btn sw-btn-day" :class="{active: briefWinDay===0}" :disabled="briefLoading" @click="setBriefWinDay(0)"
-                      title="填入「今天」隔夜窗口（昨15:00→今9:25）；只填日期不刷新，请点「刷新」统计">今天</button>
+                      title="填入「今天」隔夜窗口（前一交易日15:00→当日9:25）；只作用于本栏，不影响火热话题；只填日期不刷新">今天</button>
               <button class="sw-btn sw-btn-day" :class="{active: briefWinDay===1}" :disabled="briefLoading" @click="setBriefWinDay(1)"
-                      title="填入「昨天」隔夜窗口（前一日15:00→当日9:25，如 11/22 15:00→11/23 9:25）；只填日期不刷新，请点「刷新」统计">昨天</button>
+                      title="填入「昨天」隔夜窗口（按A股开市安排，如目标交易日为周一则取上周五15:00→周一9:25）；只作用于本栏，不影响火热话题；只填日期不刷新">昨天</button>
               <button class="sw-btn sw-btn-day" :class="{active: briefWinDay===2}" :disabled="briefLoading" @click="setBriefWinDay(2)"
-                      title="填入「前天」隔夜窗口；只填日期不刷新，请点「刷新」统计">前天</button>
+                      title="填入「前天」隔夜窗口；只作用于本栏，不影响火热话题；只填日期不刷新">前天</button>
               <span class="sw-text" v-if="briefWinText">{{ briefWinText }}</span>
             </div>
 
@@ -6330,14 +6330,14 @@
     </transition>
   </div>
 
-  <script src="js/auth.js?v=20261124a"></script>
-  <script src="js/auth-sync.js?v=20261124a"></script>
+  <script src="js/auth.js?v=20261124b"></script>
+  <script src="js/auth-sync.js?v=20261124b"></script>
   <!-- 边缘加速默认站点（batch37 治本：Cloudflare Worker 代理东财/腾讯，缓解 JSONP 限流误报）。
        若你所在地区 workers.dev 访问慢，可在「设置 → 行情加速地址」清空即恢复纯直连。 -->
   <script>window.__SNT_ACCEL__ = 'https://sichina.dpdns.org';</script>
   <!-- 扫码支付二维码渲染库（第三方 qrcodejs，本地托管避免外链失效）。renderQr 会先检测全局 QRCode 是否存在。 -->
-  <script src="assets/qrcode.min.js?v=20261124a"></script>
-  <script src="js/auth-boot.js?v=20261124a"></script>
+  <script src="assets/qrcode.min.js?v=20261124b"></script>
+  <script src="js/auth-boot.js?v=20261124b"></script>
   <!-- store / stock-api / hot-topics / app 由 auth-boot.js 在登录通过后动态装载，
        未登录时它们不会被下载，业务数据也不会进入内存 -->
 </body>
