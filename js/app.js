@@ -12761,11 +12761,20 @@ const app = createApp({
       const s = hfeiStrategy();
       const w = HF_BLOCKS.map(b => b.tag + ' ' + Number(s.weights[b.key] || 1).toFixed(2)).join(' · ');
       const lessons = s.lessons.slice(-8).map((x, i) => (i + 1) + '. ' + x).join('\n');
+      const cm = s.correctionModel || null;
+      const anchor = s.reverse || null;
       return '【策略版本】v' + s.version
         + (s.updatedAt ? '（' + new Date(s.updatedAt).toLocaleDateString('zh-CN') + ' 迭代）' : '（初始版）')
         + '\n【子版块权重】' + w + '　权重 >1 = 历史上该子版块主导时预测更准，研判时应加重；<1 = 该子版块常失效，不要让它单独决定结论。'
         + '\n【使用规则】权重 <0.9 的子版块不得单独作为主导（除非当日出现全新硬证据）；权重 >1.15 的子版块若与主导方向冲突，以主导为准，但要降低整体仓位判断的确定性。'
-        + (lessons ? '\n【历史迭代经验（逐条遵守，这是过往复盘得出的硬约束）】\n' + lessons : '');
+        + (lessons ? '\n【历史迭代经验（逐条遵守，这是过往复盘得出的硬约束）】\n' + lessons : '')
+        + (anchor && ((anchor.upConcepts || []).length || (anchor.downConcepts || []).length)
+          ? '\n【最近一次真实方向锚】优先关注：' + ((anchor.upConcepts || []).join('/') || '—') + '；严格规避：' + ((anchor.downConcepts || []).join('/') || '—') + '；仅在当日窗口出现更强已落地证据时才可覆盖，并须说明原因。'
+          : '')
+        + (cm && (cm.hardRules || []).length
+          ? '\n【完整修正逻辑（用户框架＋量化回灌，逐条遵守）】\n' + cm.hardRules.slice(0, 8).map((x, i) => (i + 1) + '. ' + x).join('\n')
+          + (cm.dominantEvent ? '\n主导事件判定：' + cm.dominantEvent + '｜叙事：' + ((cm.narrative && cm.narrative.type) || '—') + '｜中美映射：' + ((cm.mapping && cm.mapping.conclusion) || '—') : '')
+          : '');
     }
     function hfeiFmtPct(x) {
       return (x == null || isNaN(x)) ? '—' : ((x >= 0 ? '+' : '') + Number(x).toFixed(2) + '%');
@@ -13821,6 +13830,124 @@ const app = createApp({
       } catch (e) { /* 跌幅榜拿不到就留空，不编造 */ }
       return { up: up, down: down };
     }
+    /** ===== 20261125d：完整修正逻辑（主导事件 → 虚实叙事 → 中美映射 → 量化评分 → 硬约束） =====
+     *  用户口径：一键完整迭代不是换个说法，而要把「预测利好概念/股 = 目标日大涨概念/股、
+     *  预测利空概念 = 目标日大跌概念」写成可审阅、可回灌、可执行的完整逻辑。
+     */
+    /** 中文二元组：用于概念名与个股所属板块的粗粒度匹配 */
+    function hfeiTokens(s) {
+      const t = String(s || '').replace(/[\s（）()·、\/]/g, '');
+      const out = [];
+      for (let i = 0; i + 1 < t.length; i++) out.push(t.slice(i, i + 2));
+      return out;
+    }
+    function hfeiConceptConfirm(concept, sector) {
+      const a = hfeiTokens(concept), b = String(sector || '');
+      if (!b) return false;
+      return a.some(x => b.indexOf(x) >= 0) || b.indexOf(String(concept || '')) >= 0;
+    }
+    /** 虚实叙事判定：已发生/落地=实，预期/拟/传闻=虚；中美竞争与国产替代双向映射 */
+    function hfeiClassifyNarrative(text) {
+      const t = String(text || '');
+      const realized = /落地|已发布|已签|签约|中标|订单|投产|量产|开工|完工|交付|出货|业绩|财报|涨价|获批|批复|获准|实施|兑现|生效|减产|停产|涨价函/.test(t);
+      const expected = /预计|拟于|拟在|计划|有望|或将|预期|传闻|消息称|远期|规划|可能|或将|即将|或将|如果|若/.test(t);
+      const usRival = /美国|美方|白宫|美联储|出口管制|制裁|限制|关税|补贴|法案|芯片法案|对华|中美/.test(t);
+      const substitution = /国产替代|自主可控|国产化|替代|信创|国产|突围|内循环|自主/.test(t);
+      let type = '待判定', certainty = '待确认', score = 0;
+      const evidence = [];
+      if (realized && expected) {
+        type = '半实半虚（必须核对落地证据）'; certainty = '部分确定'; score += 4;
+        evidence.push('同时出现已落地与预期措辞：按半实半虚处理，不能当纯利好追高');
+      } else if (realized) {
+        type = '实（已发生/已落地）'; certainty = '确定利好/实利空'; score += 18;
+        evidence.push('命中已发生/落地证据词：订单、中标、投产、财报、涨价、政策生效等');
+      } else if (expected) {
+        type = '虚（预期/不确定）'; certainty = '不确定预期'; score -= 12;
+        evidence.push('仅出现预计/拟/有望/规划等预期词：降级为观察，不单独决定主导');
+      } else {
+        evidence.push('未发现明确虚实措辞：按中性叙事处理，必须以真实涨跌榜确认');
+      }
+      if (usRival) {
+        score -= 5;
+        evidence.push('中美竞争关系：美国大利好不可直接等同中国同链条利好，直接映射降权');
+      }
+      if (substitution) {
+        score += 12;
+        evidence.push('国产替代/自主可控：美国限制或领先会反向强化中国替代链，真正受益方向需切到替代端');
+      }
+      return { type: type, certainty: certainty, score: Math.max(-20, Math.min(30, score)), evidence: evidence, realized: realized, expected: expected, usRival: usRival, substitution: substitution };
+    }
+    /** 中美竞争映射：把用户给的对抗/国产替代逻辑显式写进修正结论 */
+    function hfeiChinaMapping(text, cls) {
+      const t = String(text || '');
+      const usRival = cls && cls.usRival || /美国|美方|出口管制|制裁|限制|关税|补贴|法案|对华|中美/.test(t);
+      const substitution = cls && cls.substitution || /国产替代|自主可控|国产化|替代|信创|自主/.test(t);
+      return {
+        direct: usRival
+          ? '美国大利好不等于中国同链条利好：美国同链条大涨不能直接映射中国。中美是竞争关系，若伴随限制/制裁，同链条中国企业反而承压。'
+          : '事件不带明显中美竞争属性，按常规产业链传导处理。',
+        substitution: substitution
+          ? '国产替代受益成立：美国领先或封锁越狠，中国自主可控/国产替代的确定性与紧迫性越高，真正受益方向落在替代端而非原映射端。'
+          : '未见明确国产替代线索，不强行套用替代逻辑。',
+        conclusion: (usRival && substitution)
+          ? '先判美国事件虚实，再切到中国受益端：直接映射降级、国产替代升级，用今日真实领涨概念验证是否切对。'
+          : '按「事件虚实 → 中国受益端 → 真实涨跌验证」三步处理。'
+      };
+    }
+    /** 多因子量化评分（参考 DeepSeek 类量化研究常用因子框架，本地可计算，不依赖外部模型） */
+    function hfeiQuantScoreConcepts(data, direction, cls) {
+      const up = direction === 'up';
+      const boards = up ? ((data.boards && data.boards.conceptUp) || []) : ((data.boards && data.boards.conceptDown) || []);
+      const stocks = up ? ((data.stocks && data.stocks.up) || [])
+        : (((data.stocks && data.stocks.down && data.stocks.down.length) ? data.stocks.down : (((data.stocks && data.stocks.up) || []).slice().sort((a, b) => Number(a.chg) - Number(b.chg)))));
+      const narrative = (cls && Number(cls.score)) || 0;
+      return boards.slice(0, 6).map((b, i) => {
+        const rankScore = Math.max(5, 30 - i * 5);
+        const chgScore = Math.min(25, Math.abs(Number(b.chg) || 0) * 5);
+        const confirms = (stocks || []).filter(s => hfeiConceptConfirm(b.name, s.sector || ''));
+        const capital = Math.min(20, confirms.length * 10);
+        const breadth = confirms.length >= 2 ? 15 : (confirms.length === 1 ? 8 : 0);
+        const narrativeScore = Math.max(-12, Math.min(18, narrative));
+        const total = Math.round(rankScore + chgScore + capital + breadth + narrativeScore);
+        return {
+          name: b.name, chg: b.chg,
+          rankScore: rankScore, chgScore: Math.round(chgScore), capital: capital,
+          breadth: breadth, narrative: narrativeScore, total: total,
+          stocks: confirms.slice(0, 3).map(s => s.name + '(' + s.code + ') ' + ((s.chg >= 0 ? '+' : '') + s.chg) + '%')
+        };
+      }).sort((a, b) => b.total - a.total);
+    }
+    /** 汇总完整修正逻辑，随复盘存档并回灌策略/迭代表 */
+    function hfeiBuildFullCorrection(data, ai) {
+      const j = ai || {};
+      const rec = hfeiReportOf(data.date) || (hfeiReport.value && hfeiReport.value.targetDate === data.date ? hfeiReport.value : null);
+      const topEv = ((rec && rec.ai && rec.ai.topEvents) || [])[0] || null;
+      const dominantEvent = String(j.dominantEvent || (topEv && topEv.title) || j.upLogic || '未识别到明确主导新闻').slice(0, 180);
+      const dominantSource = String(j.dominantSource || (topEv && topEv.source) || ((rec && rec.ai && rec.ai.dominant && rec.ai.dominant.source) || '') || '未标注').slice(0, 40);
+      const cls = hfeiClassifyNarrative(dominantEvent + ' ' + (j.narrativeNote || '') + ' ' + (j.upLogic || ''));
+      const mapping = hfeiChinaMapping(dominantEvent + ' ' + (j.cnMapping || ''), cls);
+      const quantUp = hfeiQuantScoreConcepts(data, 'up', cls);
+      const quantDown = hfeiQuantScoreConcepts(data, 'down', cls);
+      const hardRules = [
+        '主导事件必须能解释今日真实领涨/领跌概念；解释不了的降为噪音，不得写进主导判定。',
+        '虚实叙事分两级：已发生的订单、中标、投产、财报、涨价、政策生效=实，优先定价；预计、拟、有望、规划、传闻=虚，降级为观察。',
+        '中美对抗下，美国大利好不等于中国同链条利好；竞争关系若带来限制/制裁，直接映射降级甚至反向。',
+        '国产替代是反向受益端：美国越封锁或领先，中国自主可控/国产替代链受益确定性越高，须切换到替代端选概念。',
+        '利好概念只能取今日真实概念涨幅前三，利空概念只能取跌幅前三；自选概念一律无效。',
+        '个股必须在今日涨幅榜/领涨板块成分中出现，且主营与概念匹配；无资金确认的只列观察，不进 3×3 核心表。',
+        '虚实评分、资金确认、概念纯度三项同时过线才给核心仓位；虚叙事+无资金确认不得作为主导。'
+      ];
+      const fullText = [
+        '【1 决定市场的主导新闻事件】' + dominantEvent + '（来源：' + dominantSource + '）',
+        '【2 虚实叙事判定】' + cls.type + '｜确定性：' + cls.certainty + '｜叙事分：' + cls.score + '。' + cls.evidence.join('；'),
+        '【3 中美竞争映射】直接映射：' + mapping.direct + ' 国产替代：' + mapping.substitution + ' 结论：' + mapping.conclusion,
+        '【4 量化评分（类 DeepSeek 多因子）】领涨：' + quantUp.slice(0, 3).map(x => x.name + ' ' + x.total + '分(排名' + x.rankScore + '+涨幅' + x.chgScore + '+资金' + x.capital + '+广度' + x.breadth + '+叙事' + x.narrative + ')').join('；'),
+        '领跌：' + quantDown.slice(0, 3).map(x => x.name + ' ' + x.total + '分(排名' + x.rankScore + '+跌幅' + x.chgScore + '+资金' + x.capital + '+广度' + x.breadth + '+叙事' + x.narrative + ')').join('；'),
+        '【5 下次必须执行的硬约束】' + hardRules.join(' '),
+        '【6 最终对齐目标】预测利好概念 = 今日真实大涨概念；利好概念内个股 = 今日涨幅榜核心股；预测利空概念 = 今日真实大跌概念。'
+      ].join('\n');
+      return { dominantEvent: dominantEvent, dominantSource: dominantSource, narrative: cls, mapping: mapping, quantUp: quantUp, quantDown: quantDown, hardRules: hardRules, fullText: fullText };
+    }
     /** 大模型反推「正确逻辑」：从今日真实涨跌榜倒推出下次应遵守的判据与修正条款 */
     async function hfeiAIReverseLogic(dateISO, data) {
       if (!aiConfigured.value) return null;
@@ -13839,19 +13966,28 @@ const app = createApp({
       const pred = rec ? ('主导:' + ((rec.ai && rec.ai.dominant && rec.ai.dominant.source) || '—')
         + '｜利好板块:' + ((rec.ai && rec.ai.bullSectors || []).map(s => s.name).join('/') || '—')
         + '｜建议概念:' + ((rec.ai && rec.ai.actionConcepts || []).join('/') || '—')) : '（当日无盘前报告）';
-      const sys = '你是 A 股收盘复盘与策略迭代专家。用户会给出某交易日「真实的板块/个股涨跌榜」与「当日盘前预测」，'
+      const predEvents = ((rec && rec.ai && rec.ai.topEvents) || []).slice(0, 6)
+        .map(e => (e.source || '') + '·' + (e.title || '') + (e.date ? '(' + e.date + ')' : '')).join('；') || '—';
+      const sys = '你是 A 股收盘复盘与量化策略迭代专家。用户会给出某交易日「真实的板块/个股涨跌榜」与「当日盘前预测及候选新闻」，'
         + '你要从真实结果**反推出正确的逻辑**：为什么这些概念领涨、那些领跌；盘前判断哪里对、哪里错、错在哪个环节（事件解读/板块映射/情绪判断/选股纯度）；'
         + '并提炼出能让下一次盘前预测更准的可执行条款。'
-        + '输出严格 JSON：{"verdict":"一句话复盘结论(30字内)","upLogic":"今日领涨的真实驱动逻辑(60字内)",'
+        + '输出严格 JSON：{"verdict":"一句话复盘结论(30字内)","dominantEvent":"真正决定今日市场的主导新闻事件（必须来自候选新闻，50字内）",'
+        + '"dominantSource":"该事件所属子版块","narrativeNote":"该事件是已落地实利好/已发生实利空，还是不确定预期；给出证据词",'
+        + '"cnMapping":"若涉及美国/中美竞争，写出对中国同链条与国产替代的双向映射；否则写无",'
+        + '"upLogic":"今日领涨的真实驱动逻辑(60字内)",'
         + '"downLogic":"今日领跌的真实原因(60字内)","predCheck":"盘前预测对照点评(60字内)",'
         + '"upConcepts":["领涨概念1","领涨概念2","领涨概念3"],"downConcepts":["领跌概念1","领跌概念2","领跌概念3"],'
         + '"lessons":["下次必须遵守的条款1","条款2","条款3"]}  不要 markdown、不要多余文字。'
-        + '硬性要求：upConcepts 必须**只从用户给出的「概念板块涨幅前6」中挑选涨幅最高的 3 个**（名称原样照抄，不得臆造、不得选跌幅榜里的概念）；'
-        + 'downConcepts 只从「概念板块跌幅前6」中挑；lessons 必须针对「盘前错在哪」给出下次可执行的修正判据。';
+        + '硬性要求：① upConcepts 必须**只从用户给出的「概念板块涨幅前6」中挑涨幅最高的 3 个**（名称原样照抄，不得臆造、不得选跌幅榜里的概念）；'
+        + '② downConcepts 只从「概念板块跌幅前6」中挑跌幅最大的 3 个；'
+        + '③ dominantEvent 必须来自候选新闻或明确写「未见明确主导新闻」，且必须能解释今日真实涨跌榜；'
+        + '④ 叙事判断必须区分已发生实际利好（订单/中标/投产/财报/涨价/政策生效）与不确定预期利好（预计/拟/有望/规划/传闻）；'
+        + '⑤ 涉及美国大利好时必须判断中美竞争下的直接映射是否失效，并指出国产替代是否是真正受益端。';
       const user = '【交易日】' + dateISO
         + '\n【盘前预测】' + pred
-        + '\n【概念板块涨幅前6（今日真正领涨，upConcepts 只能从这里选）】' + cUp
-        + '\n【概念板块跌幅前6（downConcepts 从这里选）】' + cDn
+        + '\n【盘前候选新闻事件（dominantEvent 只能从此选或写未见明确主导新闻）】' + predEvents
+        + '\n【概念板块涨幅前6（今日真正领涨，upConcepts 只能从这里选涨幅最高的3个）】' + cUp
+        + '\n【概念板块跌幅前6（downConcepts 只从这里选跌幅最大的3个）】' + cDn
         + '\n【行业板块涨幅前5】' + iUp
         + '\n【个股涨幅前6（今日真正大涨，含各自所属板块）】' + sUp
         + '\n【个股跌幅前6】' + sDn
@@ -13867,25 +14003,32 @@ const app = createApp({
       // 保证「迭代逻辑指向的概念 = 今日真正大涨的概念」；downConcepts 同理取跌幅榜。
       const realUpNames = conceptAll.slice().sort((a, b) => b.chg - a.chg).slice(0, 8).map(b => b.name).filter(Boolean);
       const realDnNames = conceptAll.slice().sort((a, b) => a.chg - b.chg).slice(0, 8).map(b => b.name).filter(Boolean);
+      // 20261125d：严格对齐目标日真实前三——模型给的只作候选，不在前三的一律丢弃，再用真实前三补足。
       const pickReal = (given, real) => {
         const out = [];
         arrOf(given).forEach(x => {
           const s = String(x || '').trim();
-          if (s && out.indexOf(s) < 0 && out.length < 3) out.push(s);
+          if (s && out.indexOf(s) < 0 && out.length < 3 && real.slice(0, 3).indexOf(s) >= 0) out.push(s);
         });
-        // 用真实榜单补足到 3 个（只取榜单里真实存在的，按涨幅优先）
-        for (const nm of real) { if (out.length >= 3) break; if (out.indexOf(nm) < 0) out.push(nm); }
+        for (const nm of real.slice(0, 3)) { if (out.length >= 3) break; if (out.indexOf(nm) < 0) out.push(nm); }
         return out.slice(0, 3);
       };
-      return {
+      const logic = {
         verdict: String(j.verdict || ''),
+        dominantEvent: String(j.dominantEvent || ''),
+        dominantSource: String(j.dominantSource || ''),
+        narrativeNote: String(j.narrativeNote || ''),
+        cnMapping: String(j.cnMapping || ''),
         upLogic: String(j.upLogic || ''),
         downLogic: String(j.downLogic || ''),
         predCheck: String(j.predCheck || ''),
         upConcepts: pickReal(j.upConcepts, realUpNames),
-        downConcepts: pickReal(j.downConcepts, realDnNames),
+        downConcepts: pickReal(j.downConcepts || j.bearConcepts, realDnNames),
         lessons: arrOf(j.lessons).map(x => String(x || '').slice(0, 110)).filter(Boolean).slice(0, 6)
       };
+      // 完整修正逻辑：用户框架 + 本地多因子量化，不依赖 AI 是否返回全部字段
+      logic.correction = hfeiBuildFullCorrection(data, j);
+      return logic;
     }
     /** 「📊 今日收盘复盘」主流程：取真实涨跌 → 大模型反推 → 按日存档 */
     async function hfeiRunTodayReview() {
@@ -13915,6 +14058,20 @@ const app = createApp({
         hfeiTodayStep.value = '② 大模型从真实结果反推正确逻辑…';
         const ai = await hfeiAIReverseLogic(dateISO, data);
         if (ai) data.logic = ai;
+        else {
+          // 未配置/AI 调用失败时仍给出确定性修正逻辑，保证「完整迭代」可审阅、可执行。
+          const correction = hfeiBuildFullCorrection(data, {});
+          data.logic = {
+            verdict: '按真实涨跌榜建立确定性修正逻辑（未调用大模型）',
+            upLogic: '今日领涨：' + (data.boards.conceptUp || []).slice(0, 3).map(b => b.name + ' ' + b.chg + '%').join('、'),
+            downLogic: '今日领跌：' + (data.boards.conceptDown || []).slice(0, 3).map(b => b.name + ' ' + b.chg + '%').join('、'),
+            predCheck: '以今日真实领涨/领跌概念作为下次预测硬锚；模型未参与归因。',
+            upConcepts: (data.boards.conceptUp || []).slice(0, 3).map(b => b.name),
+            downConcepts: (data.boards.conceptDown || []).slice(0, 3).map(b => b.name),
+            lessons: correction.hardRules.slice(0, 6),
+            correction: correction
+          };
+        }
         data.at = Date.now();
         data.atText = new Date().toLocaleString('zh-CN', { hour12: false });
         hfeiAllDaily()[dateISO] = data;
@@ -13956,8 +14113,19 @@ const app = createApp({
         date: hfeiReviewDay(),
         upConcepts: (logic.upConcepts || []).slice(0, 3),
         downConcepts: (logic.downConcepts || []).slice(0, 3),
-        verdict: logic.verdict || ''
+        verdict: logic.verdict || '',
+        correction: logic.correction ? {
+          dominantEvent: logic.correction.dominantEvent || '',
+          narrativeType: (logic.correction.narrative || {}).type || '',
+          narrativeScore: (logic.correction.narrative || {}).score || 0,
+          chinaMapping: (logic.correction.mapping || {}).conclusion || '',
+          upScores: (logic.correction.quantUp || []).slice(0, 3),
+          downScores: (logic.correction.quantDown || []).slice(0, 3),
+          fullText: logic.correction.fullText || ''
+        } : null
       };
+      // 完整修正逻辑独立存档：不被经验条款去重删掉，prompt 每次生成都读它
+      if (logic.correction) s.correctionModel = JSON.parse(JSON.stringify(logic.correction));
       s.version = Number(s.version || 1) + 1;
       s.updatedAt = Date.now();
       s.log.push({ v: s.version, at: s.updatedAt, n: 1, weights: JSON.parse(JSON.stringify(s.weights)), lessons: s.lessons.length, via: '今日反推' });
@@ -13979,6 +14147,8 @@ const app = createApp({
         const strat = hfeiApplyLogicToStrategy(rv.logic);
         hfeiIterTableStep.value = '② 按修正逻辑重组 3 核心概念 × 各 3 只核心股…';
         const upC = (rv.logic.upConcepts || []).slice(0, 3);
+        const dnC = (rv.logic.downConcepts || []).slice(0, 3);
+        const correction = rv.logic.correction || {};
         const cUpNames = (rv.boards.conceptUp || []).slice(0, 8).map(b => b.name + ' ' + ((b.chg >= 0 ? '+' : '') + b.chg + '%')).join('、');
         const sUpNames = (rv.stocks.up || []).slice(0, 8).map(s => s.name + '(' + s.code + ') ' + ((s.chg >= 0 ? '+' : '') + s.chg + '%') + (s.sector ? '[' + s.sector + ']' : '')).join('、');
         const sys = '你是 A 股选股专家。基于「今日收盘反推出的正确逻辑」与「今日真实领涨概念/个股」，'
@@ -13986,17 +14156,24 @@ const app = createApp({
           + '核心股判定：概念纯度高（主营真实属于该概念）、龙头地位、今日有资金异动（涨幅榜或领涨板块成分）、弹性适中（排除超大市值钝化股）。'
           + '严禁编造代码；不确定就换一只。输出严格 JSON：'
           + '{"actionConcepts":["概念1","概念2","概念3"],'
+          + '"bearConcepts":["利空概念1","利空概念2","利空概念3"],'
           + '"picks":[{"code":"6位代码","name":"简称","concept":"必须取自actionConcepts","core":1-5,"sector":"所属板块","reason":"为何是该概念最核心标的，30字内"}]}'
           + '  硬性要求：① actionConcepts 必须**原样取自「必须操作的3个领涨概念」**，不得换成别的、不得臆造；'
-          + '② picks 每只股的 concept 必须属于这 3 个概念之一，且优先从「今日个股涨幅榜」里挑选属于这些概念的强势股（今日已大涨、资金已介入的更可能延续）；'
-          + '③ picks 正好 9 只、每概念恰好 3 只、全部 bull、不要 markdown。';
+          + '② bearConcepts 必须原样取自「必须规避的3个领跌概念」，这是利空预测，不得漏写；'
+          + '③ picks 每只股的 concept 必须属于这 3 个概念之一，且优先从「今日个股涨幅榜」里挑选属于这些概念的强势股（今日已大涨、资金已介入的更可能延续）；'
+          + '④ picks 正好 9 只、每概念恰好 3 只、全部 bull、不要 markdown。';
         const user = '【复盘交易日】' + dateISO
           + '\n【反推结论】' + (rv.logic.verdict || '')
+          + '\n【主导新闻事件】' + (correction.dominantEvent || '—') + '（' + (correction.dominantSource || '—') + '）'
+          + '\n【虚实叙事判定】' + ((correction.narrative || {}).type || '—') + '｜' + ((correction.narrative || {}).certainty || '—') + '｜' + ((correction.narrative || {}).evidence || []).join('；')
+          + '\n【中美竞争/国产替代映射】' + ((correction.mapping || {}).conclusion || '—')
+          + '\n【量化评分前列】' + (correction.quantUp || []).slice(0, 3).map(x => x.name + ' ' + x.total + '分').join('、')
           + '\n【领涨逻辑】' + (rv.logic.upLogic || '')
           + '\n【领跌规避】' + (rv.logic.downLogic || '')
           + '\n【修正后须遵守的条款】' + (rv.logic.lessons || []).join('；')
           + '\n【迭代后策略版本】v' + (strat ? strat.version : '—')
           + '\n【必须操作的3个领涨概念（原样照抄，actionConcepts 只能用这些）】' + (upC.join(' / ') || '—')
+          + '\n【必须规避的3个领跌概念（原样照抄，bearConcepts 只能用这些）】' + (dnC.join(' / ') || '—')
           + '\n【今日概念板块涨幅榜（真实）】' + (cUpNames || '—')
           + '\n【今日个股涨幅榜（真实，含所属板块；优先从中选股）】' + (sUpNames || '—')
           + '\n请输出迭代版标的股 JSON。';
@@ -14020,6 +14197,17 @@ const app = createApp({
           for (const nm of allow) { if (aligned.length >= 3) break; if (aligned.indexOf(nm) < 0) aligned.push(nm); }
           return aligned.slice(0, 3);
         })();
+        // 利空概念同样强制对齐今日真实跌幅前三（AI 给的只是候选，不在前三的一律丢弃）。
+        const bearConcepts = (function () {
+          const allow = dnC.filter(Boolean);
+          const out = [];
+          arrOf(j.bearConcepts).forEach(x => {
+            const s = String((x && x.name) || (typeof x === 'string' ? x : '') || '').trim();
+            if (s && allow.indexOf(s) >= 0 && out.indexOf(s) < 0 && out.length < 3) out.push(s);
+          });
+          for (const nm of allow) { if (out.length >= 3) break; if (out.indexOf(nm) < 0) out.push(nm); }
+          return out.slice(0, 3);
+        })();
         const picks = await hfeiVerifyPicks(arrOf(j.picks).map(p => Object.assign({}, p, { side: 'bull', newsDate: dateISO })), {
           dates: [dateISO], concepts: actConcepts, fallbackDate: dateISO
         });
@@ -14030,7 +14218,7 @@ const app = createApp({
           createdAt: Date.now(),
           createdAtText: new Date().toLocaleString('zh-CN', { hour12: false }),
           logic: JSON.parse(JSON.stringify(rv.logic || {})),
-          ai: { actionConcepts: actConcepts, picks: picks }
+          ai: { actionConcepts: actConcepts, bearConcepts: bearConcepts, picks: picks }
         };
         try { await hfeiRefreshPicks(iterRec); } catch (e) { /* 行情缺失不影响表格 */ }
         const arr = hfeiIterOf(dateISO);
@@ -14115,7 +14303,9 @@ const app = createApp({
       const sUp = ((rv.stocks && rv.stocks.up) || []).slice(0, 8).map(s => ({ name: s.name, code: s.code, chg: s.chg, sector: s.sector || '' }));
       // ② 迭代新表的概念与个股
       const itConcepts = (act && act.ai && Array.isArray(act.ai.actionConcepts)) ? act.ai.actionConcepts.slice() : [];
+      const itBear = (act && act.ai && Array.isArray(act.ai.bearConcepts)) ? act.ai.bearConcepts.slice() : [];
       const itPicks = (act && act.ai && Array.isArray(act.ai.picks)) ? act.ai.picks : [];
+      const correction = (lg.correction && typeof lg.correction === 'object') ? lg.correction : null;
       // ③ 命中验证：迭代概念是否落在今日真实领涨概念内；选中个股是否在今日涨幅榜内
       const upNames = cUp.map(b => b.name);
       const conceptHit = itConcepts.map(c => ({ name: c, inTop: upNames.indexOf(c) >= 0 }));
@@ -14128,24 +14318,35 @@ const app = createApp({
       });
       const conceptMatch = conceptHit.filter(x => x.inTop).length;
       const stockMatch = stockHit.filter(x => x.inTop).length;
+      const dnNames = cDn.map(b => b.name);
+      const bearHit = itBear.map(c => ({ name: c, inTop: dnNames.indexOf(c) >= 0 }));
+      const bearMatch = bearHit.filter(x => x.inTop).length;
       // ④ 修正后的策略摘要
       const strat = hfeiStratRef.value || {};
       const lessons = ((strat.lessons || []).slice(0, 4));
+      const fullyAligned = conceptHit.length === 3 && conceptMatch === 3 && (!itBear.length || (bearHit.length === 3 && bearMatch === 3));
       return {
         date: rv.date,
         hasLogic: !!(lg.verdict || lg.upLogic || lg.lessons),
         verdict: lg.verdict || '', upLogic: lg.upLogic || '', downLogic: lg.downLogic || '', predCheck: lg.predCheck || '',
-        lessons: lessons,
+        lessons: lessons, correction: correction,
+        dominantEvent: lg.dominantEvent || (correction && correction.dominantEvent) || '',
+        narrative: correction ? correction.narrative : null,
+        mapping: correction ? correction.mapping : null,
+        quantUp: correction ? (correction.quantUp || []).slice(0, 3) : [],
+        quantDown: correction ? (correction.quantDown || []).slice(0, 3) : [],
+        hardRules: correction ? (correction.hardRules || []) : [],
         upConcepts: upConcepts, dnConcepts: dnConcepts,
         cUp: cUp, cDn: cDn, sUp: sUp,
         hasIter: !!act,
         iterVersion: act ? act.version : null,
         itConcepts: itConcepts,
-        conceptHit: conceptHit, stockHit: stockHit,
-        conceptMatch: conceptMatch, stockMatch: stockMatch,
-        conclusion: conceptMatch >= 2
-          ? ('迭代后 ' + conceptMatch + '/' + conceptHit.length + ' 个概念命中今日真实领涨，方向已对齐')
-          : '尚未生成迭代新表或对齐度不足，点「生成迭代新表」后查看'
+        itBear: itBear,
+        conceptHit: conceptHit, stockHit: stockHit, bearHit: bearHit,
+        conceptMatch: conceptMatch, stockMatch: stockMatch, bearMatch: bearMatch,
+        conclusion: fullyAligned
+          ? ('已完全对齐：预测利好 3/3 = 今日真实领涨；预测利空 ' + bearMatch + '/' + bearHit.length + ' = 今日真实领跌；个股命中 ' + stockMatch + '/' + stockHit.length)
+          : ('当前对齐：利好 ' + conceptMatch + '/' + conceptHit.length + '、利空 ' + bearMatch + '/' + bearHit.length + '、个股 ' + stockMatch + '/' + stockHit.length + '，点「♻️ 一键完整迭代」重新修正')
       };
     });
 

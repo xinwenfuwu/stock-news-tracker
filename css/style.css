@@ -4539,6 +4539,19 @@ body.guest-mode #app { display: none; }
 .hfei-chain-arrow { text-align: center; color: var(--accent, #6366f1); font-size: 16px; line-height: 1.2; }
 .hfei-chain-conclusion { margin-top: 6px; padding: 5px 8px; border-radius: 6px; background: #f0fdf4; color: #15803d; font-weight: 600; }
 .hfei-chain-conclusion.ok { background: #fef2f2; color: #b91c1c; }
+.hfei-full-logic { margin-top: 12px; padding: 12px; border: 1px solid var(--border); border-radius: 10px; background: var(--surface-2, #fafafa); }
+.hfei-full-logic-head { font-weight: 700; font-size: 14px; margin-bottom: 10px; }
+.hfei-full-logic-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 10px; }
+.hfei-full-logic-card { padding: 10px 12px; border: 1px solid var(--border); border-radius: 8px; background: #fff; font-size: 12.5px; line-height: 1.8; color: var(--text-secondary); }
+.hfei-full-logic-card > b { display: block; color: var(--text); margin-bottom: 4px; font-size: 13px; }
+.hfei-full-logic-card ul, .hfei-full-logic-card ol { margin: 6px 0 0; padding-left: 20px; }
+.hfei-full-logic-card li { margin: 2px 0; }
+.hfei-full-logic-hi { color: var(--accent, #6366f1); font-weight: 600; }
+.hfei-quant-table { margin-top: 6px; font-size: 12px; }
+.hfei-quant-table th, .hfei-quant-table td { padding: 4px 6px; white-space: nowrap; }
+.hfei-full-logic-raw { margin-top: 10px; }
+.hfei-full-logic-raw summary { cursor: pointer; font-weight: 600; color: var(--accent, #6366f1); }
+.hfei-full-logic-raw pre { margin: 8px 0 0; padding: 10px; border: 1px solid var(--border); border-radius: 8px; background: #fff; white-space: pre-wrap; word-break: break-word; font-size: 12px; line-height: 1.8; color: var(--text-secondary); }
 
 @media (max-width: 900px) {
   .hfei-two { grid-template-columns: 1fr; gap: 0; }
