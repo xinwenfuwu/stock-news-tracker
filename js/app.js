@@ -7238,6 +7238,9 @@ const app = createApp({
     /* 20261111i：红框（火热话题标题栏）里的「今天/昨天/前天」独立记录自己的高亮状态，
      * 不再借用每日快讯面板的 briefWinDay；同时把红框内时间框作为该组按钮的直接作用目标。 */
     const htWinDay = ref(0);
+    // 20261124c：「上/下」盘中时段快捷口径（与「今天/昨天/前天」互斥）：''=无  'am'=上午9:25-11:30  'pm'=下午11:30-15:00
+    const briefSession = ref('');
+    const htSession = ref('');
     const dayPresetFlash = ref(false);   // 点击后红框内时间框短暂高亮，直观看到「已应用到本栏时间框」
     let _dayPresetFlashTimer = null;
     function briefShiftedDefaults(k) {
@@ -7322,6 +7325,26 @@ const app = createApp({
         prevEnd: at(prevT, PREOPEN_H, PREOPEN_M)
       };
     }
+    /**
+     * 20261124c：盘中时段窗口 —— 「上」= 当天交易日 09:25-11:30，「下」= 当天交易日 11:30-15:00。
+     * 当天交易日按 A股开市安排（休市日向前取最近交易日）。
+     * 「上次」对比周期 = 前一交易日同一时段，便于快讯右栏做同时段同比。
+     */
+    function intradaySessionWindow(part) {
+      const HT = ht_();
+      if (!HT || !HT.toLocalInputValue) return null;
+      const day0 = new Date(); day0.setHours(0, 0, 0, 0);
+      const T = shiftTradingDayCN(day0, 0);                       // 当天交易日（休市则向前取最近交易日）
+      const prevT = shiftTradingDayCN(T, -1);                     // 前一交易日
+      const at = (d, h, m) => new Date(d.getFullYear(), d.getMonth(), d.getDate(), h, m, 0, 0);
+      const am = part === 'am';
+      return {
+        start: at(T, am ? 9 : 11, am ? 25 : 30),
+        end: at(T, am ? 11 : 15, am ? 30 : 0),
+        prevStart: at(prevT, am ? 9 : 11, am ? 25 : 30),
+        prevEnd: at(prevT, am ? 11 : 15, am ? 30 : 0)
+      };
+    }
     function applyDayPresetValues(k, side) {
       const HT = ht_();
       // 20261124b：隔夜窗口按 A股开市安排（前一交易日15:00 → 目标交易日9:25）
@@ -7336,6 +7359,7 @@ const app = createApp({
         analysisWinStart.value = sVal;
         analysisWinEnd.value = eVal;
         htWinDay.value = k;
+        htSession.value = '';                                     // 与「上/下」互斥
       } else {
         // 右栏「格隆汇每日快讯」：窗口 + 「上次」对比周期；只写右栏、只高亮右栏
         briefWinStart.value = sVal;
@@ -7343,8 +7367,40 @@ const app = createApp({
         briefPrevWinStart.value = HT.toLocalInputValue(w.prevStart);
         briefPrevWinEnd.value = HT.toLocalInputValue(w.prevEnd);
         briefWinDay.value = k;
+        briefSession.value = '';                                  // 与「上/下」互斥
       }
       return true;
+    }
+    /** 20261124c：把「上/下」盘中时段写入对应侧时间框（左右独立） */
+    function applySessionValues(part, side) {
+      const HT = ht_();
+      const w = intradaySessionWindow(part);
+      if (!w || !HT || !HT.toLocalInputValue) return false;
+      const sVal = HT.toLocalInputValue(w.start);
+      const eVal = HT.toLocalInputValue(w.end);
+      if (side === 'hot') {
+        dailyWinStart.value = sVal;
+        dailyWinEnd.value = eVal;
+        analysisWinStart.value = sVal;
+        analysisWinEnd.value = eVal;
+        htSession.value = part;
+        htWinDay.value = -1;                                      // 与「今天/昨天/前天」互斥
+      } else {
+        briefWinStart.value = sVal;
+        briefWinEnd.value = eVal;
+        briefPrevWinStart.value = HT.toLocalInputValue(w.prevStart);
+        briefPrevWinEnd.value = HT.toLocalInputValue(w.prevEnd);
+        briefSession.value = part;
+        briefWinDay.value = -1;                                   // 与「今天/昨天/前天」互斥
+      }
+      return true;
+    }
+    function applySession(part, from) {
+      if (!applySessionValues(part, from)) return;
+      // 左右彻底独立：只有左栏按钮闪左栏时间框
+      if (from === 'hot') flashHtWinBoxes();
+      const label = part === 'am' ? '上午 09:25-11:30' : '下午 11:30-15:00';
+      showToast((from === 'hot' ? '左栏' : '右栏') + '已切换「' + label + '」当天交易时段；仅本栏生效，请点本栏「刷新」统计', 'success');
     }
     function flashHtWinBoxes() {
       dayPresetFlash.value = false;
@@ -7368,9 +7424,12 @@ const app = createApp({
     function setHtWinDay(k) { applyDayPreset(k, 'hot'); }
     /** 每日快讯面板 / 新闻追踪页顶部的「今天 / 昨天 / 前天」→ 只驱动右栏时间框 */
     function setBriefWinDay(k) { applyDayPreset(k, 'brief'); }
-    /** 手动修改时间框：只取消本侧快捷按钮高亮（左右独立，20261124b） */
-    function onBriefWinManualEdit() { briefWinDay.value = -1; }
-    function onHtWinManualEdit() { htWinDay.value = -1; }
+    /** 20261124c：「上 / 下」盘中时段 → 只驱动本侧时间框 */
+    function setHtSession(part) { applySession(part, 'hot'); }
+    function setBriefSession(part) { applySession(part, 'brief'); }
+    /** 手动修改时间框：只取消本侧快捷按钮高亮（左右独立，20261124c 含时段按钮） */
+    function onBriefWinManualEdit() { briefWinDay.value = -1; briefSession.value = ''; }
+    function onHtWinManualEdit() { htWinDay.value = -1; htSession.value = ''; }
     /** 时间栏文案：'2026年9月16日 15:00 - 2026年9月17日 15:00' */
     const briefWinText = computed(() => {
       const HT = ht_();
@@ -18132,6 +18191,8 @@ const app = createApp({
       // 20261111i：红框（火热话题）独立入口 + 高亮 + 时间框反馈动画
       briefWinDay, setBriefWinDay, onBriefWinManualEdit,
       htWinDay, setHtWinDay, onHtWinManualEdit, dayPresetFlash,
+      // 20261124c：「上/下」盘中时段快捷窗口（左右独立）
+      briefSession, htSession, setBriefSession, setHtSession,
       // batch73：「上次」对比周期（「昨」排名窗口）状态
       briefPrevWinStart, briefPrevWinEnd, lastBriefLoading, loadLastBriefStats,
       onBriefDateChange, toggleBriefCat, moreBriefNews, hlBrief, autoLoadBriefs, loadBriefsNow,
