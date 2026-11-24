@@ -7238,7 +7238,7 @@ const app = createApp({
     /* 20261111i：红框（火热话题标题栏）里的「今天/昨天/前天」独立记录自己的高亮状态，
      * 不再借用每日快讯面板的 briefWinDay；同时把红框内时间框作为该组按钮的直接作用目标。 */
     const htWinDay = ref(0);
-    // 20261124c：「上/下」盘中时段快捷口径（与「今天/昨天/前天」互斥）：''=无  'am'=上午9:25-11:30  'pm'=下午11:30-15:00
+    // 20261124d：「上/下」盘中时段快捷口径（与「今天/昨天/前天」互斥）：''=无  'am'=上午9:25-11:30  'pm'=下午11:30-15:00
     const briefSession = ref('');
     const htSession = ref('');
     const dayPresetFlash = ref(false);   // 点击后红框内时间框短暂高亮，直观看到「已应用到本栏时间框」
@@ -7326,7 +7326,7 @@ const app = createApp({
       };
     }
     /**
-     * 20261124c：盘中时段窗口 —— 「上」= 当天交易日 09:25-11:30，「下」= 当天交易日 11:30-15:00。
+     * 20261124d：盘中时段窗口 —— 「上」= 当天交易日 09:25-11:30，「下」= 当天交易日 11:30-15:00。
      * 当天交易日按 A股开市安排（休市日向前取最近交易日）。
      * 「上次」对比周期 = 前一交易日同一时段，便于快讯右栏做同时段同比。
      */
@@ -7371,7 +7371,7 @@ const app = createApp({
       }
       return true;
     }
-    /** 20261124c：把「上/下」盘中时段写入对应侧时间框（左右独立） */
+    /** 20261124d：把「上/下」盘中时段写入对应侧时间框（左右独立） */
     function applySessionValues(part, side) {
       const HT = ht_();
       const w = intradaySessionWindow(part);
@@ -7424,10 +7424,10 @@ const app = createApp({
     function setHtWinDay(k) { applyDayPreset(k, 'hot'); }
     /** 每日快讯面板 / 新闻追踪页顶部的「今天 / 昨天 / 前天」→ 只驱动右栏时间框 */
     function setBriefWinDay(k) { applyDayPreset(k, 'brief'); }
-    /** 20261124c：「上 / 下」盘中时段 → 只驱动本侧时间框 */
+    /** 20261124d：「上 / 下」盘中时段 → 只驱动本侧时间框 */
     function setHtSession(part) { applySession(part, 'hot'); }
     function setBriefSession(part) { applySession(part, 'brief'); }
-    /** 手动修改时间框：只取消本侧快捷按钮高亮（左右独立，20261124c 含时段按钮） */
+    /** 手动修改时间框：只取消本侧快捷按钮高亮（左右独立，20261124d 含时段按钮） */
     function onBriefWinManualEdit() { briefWinDay.value = -1; briefSession.value = ''; }
     function onHtWinManualEdit() { htWinDay.value = -1; htSession.value = ''; }
     /** 时间栏文案：'2026年9月16日 15:00 - 2026年9月17日 15:00' */
@@ -11336,9 +11336,10 @@ const app = createApp({
     // ===== 20261110c：新闻范围（近 N 日）——两个面板各自独立设置 =====
     // 位置：影响力事件 / 未来事件 两个面板标题行「🔄 刷新数据」左侧各有一个选择框，各管各的，互不同步。
     // 语义：'' / null = 不选（影响力事件仍按默认 10 交易日窗口，突发/人物不限范围）；
-    //       选了 N 日 = 只统计「以 15:00 收盘为界、跳过周末的交易日窗口」内的条目：
-    //       起点 = (N-1) 个交易日前那天的 15:00 收盘，终点 = 现在（详见 rangeStartMs / tradingDayOffsetISO）。
-    //       例：选 1 = 今天（最近交易日）15:00 ~ 现在；选 2 = 昨天（最近交易日）15:00 ~ 现在。
+    //       20261124d：选了 N 日 = 只统计「近 N 个收盘日窗口」内的条目。
+    //       一个交易日 = 上次收盘 15:00 → 本次收盘 15:00；15:00 以后为第二天（换日）。
+    //       近 N 交易日窗口 = [本次收盘往前 N 个交易日 15:00, 现在]（详见 rangeWindow）。
+    //       例：现在 11/24(二)14:41 选 1 → [11/23(一)15:00, 现在]；选 2 → [11/20(五)15:00, 现在]。
     // 作用范围：inflRangeDays 管影响力事件（按事件日期）；futureRangeDays 管突发/人物（按新闻 datetime）。
     //       「未来」子版块改用 futureWithinDays：事件日期落在「今天 ~ 今天+N 个自然日」内（含进行中）。
     const NEWS_RANGE_OPTIONS = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15];
@@ -11355,9 +11356,9 @@ const app = createApp({
     }
     const inflRangeDays = ref((D && Number(D.inflRangeDays)) ? Number(D.inflRangeDays) : null);
     const futureRangeDays = ref((D && Number(D.futureRangeDays)) ? Number(D.futureRangeDays) : null);
-    /** 事件/新闻时间是否落在「近 n 日（股市收盘窗口）」范围内；n 为空时恒为 true。
+    /** 事件/新闻时间是否落在「近 n 交易日（上次收盘 ~ 本次收盘，15:00 换日）」范围内；n 为空时恒为 true。
      *  时间字段优先级：datetime（新闻精确时间）> time > date（事件日期）。
-     *  窗口 = [ (n-1) 个交易日前 15:00, 现在 ]；无任何时间信息的条目保留，避免整条被误剔除。 */
+     *  窗口 = [ 本次收盘往前 n 个交易日 15:00, 现在 ]；无任何时间信息的条目保留，避免整条被误剔除。 */
     function newsInRange(e, n) {
       const days = Number(n) || 0;
       if (!days) return true;
@@ -11436,14 +11437,43 @@ const app = createApp({
       }
       return _isoOf(d);
     }
-    /** 近 n 日窗口起点（毫秒）：第 n-1 个交易日前那天的 15:00 */
-    function rangeStartMs(n) {
-      const iso = tradingDayOffsetISO((Number(n) || 1) - 1);
-      const t = new Date(iso + 'T15:00:00');
-      return isNaN(t.getTime()) ? 0 : t.getTime();
+    /** 20261124d：统一「近 N 交易日」窗口 = 上次收盘(15:00) ~ 本次收盘(15:00)。
+     *  用户定义：一个交易日 = 上次收盘至今天收盘期间的新闻；收盘 15:00 以后为第二天。
+     *  口径与全站 HotTopics.defaultWindowEnd/Start 完全一致（15:00 换日、跳周末）：
+     *    本次收盘 = 未到今天 15:00 → 今天 15:00；已过 → 下一交易日 15:00；
+     *    上次收盘 = 本次收盘的前一交易日 15:00。
+     *  近 N 交易日起点 = 本次收盘往前 N 个交易日的 15:00（即第 N 个「上次收盘」）。
+     *  例：现在 11/24(二)14:41 选「近1」→ 起点 11/23(一)15:00，本次收盘 11/24 15:00；
+     *      盘中取数到「现在」，故实际区间 = 11/23 15:00 ~ 11/24 14:41。
+     *  （修复前起点误取「今天 15:00」，盘中 14:41 时起点>终点 → 空集 → 无数据。） */
+    function rangeWindow(n) {
+      const days = Math.max(1, Number(n) || 1);
+      const HT = ht_();
+      if (HT && HT.defaultWindowEnd && HT.shiftTradingDay && HT.WIN_CUTOFF_HOUR != null) {
+        const H = HT.WIN_CUTOFF_HOUR;
+        const close = HT.defaultWindowEnd();                       // 本次收盘 Date（15:00）
+        const closeDay = new Date(close.getFullYear(), close.getMonth(), close.getDate());
+        const startDay = HT.shiftTradingDay(closeDay, -days);      // 往前 N 个交易日
+        const atH = (d) => new Date(d.getFullYear(), d.getMonth(), d.getDate(), H, 0, 0, 0);
+        return { startMs: atH(startDay).getTime(), endMs: close.getTime(), startISO: _isoOf(startDay), endISO: _isoOf(closeDay) };
+      }
+      // 回退（HotTopics 未加载时）：等价的 15:00 换日 + 跳周末算法
+      const now = new Date();
+      const H = 15;
+      const today0 = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+      const todayClose = new Date(now.getFullYear(), now.getMonth(), now.getDate(), H, 0, 0, 0);
+      const sh = (d, delta) => { const c = new Date(d.getFullYear(), d.getMonth(), d.getDate()); const step = delta > 0 ? 1 : -1; let left = Math.abs(delta); while (left > 0) { c.setDate(c.getDate() + step); if (c.getDay() !== 0 && c.getDay() !== 6) left--; } return c; };
+      const closeDay = now.getTime() < todayClose.getTime() ? today0 : sh(today0, 1);
+      const startDay = sh(closeDay, -days);
+      const atH = (d) => new Date(d.getFullYear(), d.getMonth(), d.getDate(), H, 0, 0, 0);
+      return { startMs: atH(startDay).getTime(), endMs: atH(closeDay).getTime(), startISO: _isoOf(startDay), endISO: _isoOf(closeDay) };
     }
-    /** 近 n 日窗口起点日期（YYYY-MM-DD），用于按日期比较 / 文案 */
-    function rangeStartISO(n) { return tradingDayOffsetISO((Number(n) || 1) - 1); }
+    /** 近 n 交易日窗口起点（毫秒）：本次收盘往前 n 个交易日 15:00 */
+    function rangeStartMs(n) { const w = rangeWindow(n); return isNaN(w.startMs) ? 0 : w.startMs; }
+    /** 近 n 交易日窗口起点日期（YYYY-MM-DD），用于按日期比较 / 文案 */
+    function rangeStartISO(n) { return rangeWindow(n).startISO; }
+    /** 近 n 交易日窗口终点日期（YYYY-MM-DD）= 本次收盘日（15:00 换日后） */
+    function rangeEndISO(n) { return rangeWindow(n).endISO; }
     /** 未来子版块：事件日期落在「今天 ~ 今天+N 个自然日」内（含进行中、含第 N 天）。
      *   开始时间不超过 N 天、结束时间不早于今天，即视为「未来 N 日内」。n 为空时恒 true。 */
     function futureWithinDays(e, n) {
@@ -11890,14 +11920,15 @@ const app = createApp({
       const d = new Date(); d.setHours(12, 0, 0, 0); d.setDate(d.getDate() - Number(daysAgo || 0));
       return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
     }
-    /** 是否落在「近 N 交易日（股市收盘窗口）」内：事件日期 ∈ [ (N-1)交易日前 15:00 起点日期, 今天 ] */
+    /** 20261124d：是否落在「近 N 交易日（上次收盘 ~ 本次收盘）」窗口内。
+     *  与右栏统一口径：日期 ∈ [上次收盘日, 本次收盘日]，15:00 换日。 */
     function inflInWindow(e) {
-      const startISO = rangeStartISO(inflDays());
+      const w = rangeWindow(inflDays());
       const date = (e && e.date) || '';
-      return date >= startISO && date <= todayISO();
+      return date >= w.startISO && date <= w.endISO;
     }
     const inflWindowDays = computed(() => inflDays());
-    const inflWindowLabel = computed(() => rangeStartISO(inflDays()) + ' 15:00（收盘窗口）~ 现在');
+    const inflWindowLabel = computed(() => rangeStartISO(inflDays()) + ' 15:00 ~ ' + rangeEndISO(inflDays()) + ' 15:00（收盘窗口）');
 
     // ===== 20261117n：影响力事件时间口径改为「全网最早报道时间」=====
     // 需求：影响力事件下的时间逻辑，以全网最早的报道时间为准进行逻辑筛选。
@@ -18191,7 +18222,7 @@ const app = createApp({
       // 20261111i：红框（火热话题）独立入口 + 高亮 + 时间框反馈动画
       briefWinDay, setBriefWinDay, onBriefWinManualEdit,
       htWinDay, setHtWinDay, onHtWinManualEdit, dayPresetFlash,
-      // 20261124c：「上/下」盘中时段快捷窗口（左右独立）
+      // 20261124d：「上/下」盘中时段快捷窗口（左右独立）
       briefSession, htSession, setBriefSession, setHtSession,
       // batch73：「上次」对比周期（「昨」排名窗口）状态
       briefPrevWinStart, briefPrevWinEnd, lastBriefLoading, loadLastBriefStats,
