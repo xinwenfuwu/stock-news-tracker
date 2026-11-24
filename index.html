@@ -10,12 +10,12 @@
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
   <title>股市信息分析系统</title>
-  <link rel="stylesheet" href="css/style.css?v=20261124f">
+  <link rel="stylesheet" href="css/style.css?v=20261124g">
   <!-- Vue 3 全局构建版（v3.4.21 · 自托管）
        原先走 unpkg.com CDN：国内网络对 unpkg 的连通性不稳定，一旦该请求长时间挂起，
        <head> 里的阻塞脚本会让整页停在白屏、后续 auth-boot.js 根本不会执行。
        改为同源托管后，启动链路不再依赖任何第三方 CDN。 -->
-  <script src="js/vue.global.prod.js?v=20261124f"></script>
+  <script src="js/vue.global.prod.js?v=20261124g"></script>
 </head>
 <body class="auth-locked">
   <!-- ===== 登录关卡：登录通过前业务脚本不会被加载 ===== -->
@@ -101,7 +101,7 @@
         <input class="auth-input" type="text" id="auth-renew-user" placeholder="用户名（你注册时用的）" maxlength="20" autocomplete="off">
         <div class="auth-renew-plans" id="auth-renew-plans"></div>
         <div class="auth-renew-qr" id="auth-renew-qr">
-          <div class="auth-renew-qrbox"><img id="auth-renew-wx" src="assets/wechat-pay-qr.jpg?v=20261124f" alt="微信支付收款码"><span>微信支付（扫码支付）</span></div>
+          <div class="auth-renew-qrbox"><img id="auth-renew-wx" src="assets/wechat-pay-qr.jpg?v=20261124g" alt="微信支付收款码"><span>微信支付（扫码支付）</span></div>
           <div class="muted small" style="margin-top:6px;color:#c2410c;font-weight:600">支付时请添加会员备注，付款成功截图保存</div>
         </div>
         <input class="auth-input" type="text" id="auth-renew-amount" inputmode="decimal" placeholder="支付金额（必填，如 1000）" autocomplete="off">
@@ -348,7 +348,7 @@
             </button>
             <button class="sw-btn sw-btn-ghost" :disabled="briefLoading" @click="resetBriefWin"
                     title="恢复默认：上次闭市 → 本次闭市（同步恢复「上次」对比周期为默认）">重置</button>
-            <!-- 20261124f：快捷窗口只作用于本栏（不影响火热话题）；隔夜窗口按A股开市安排（前一交易日15:00→当日9:25）；只填日期不刷新 -->
+            <!-- 20261124g：快捷窗口只作用于本栏（不影响火热话题）；隔夜窗口按A股开市安排（前一交易日15:00→当日9:25）；只填日期不刷新 -->
             <span class="sw-sep">｜</span>
             <button class="sw-btn sw-btn-day" :class="{active: briefWinDay===0}" :disabled="briefLoading" @click="setBriefWinDay(0)"
                     title="填入「今天」隔夜窗口（前一交易日15:00→当日9:25）；只作用于本栏，不影响火热话题；只填日期不刷新">今天</button>
@@ -817,7 +817,7 @@
               <span class="hfei-dom-why">{{ hfeiReport.ai.dominant.why }}</span>
             </div>
 
-            <!-- 20261124f：主导事件预计影响天数/日期区间 + 建议操作的三个概念板块 -->
+            <!-- 20261124g：主导事件预计影响天数/日期区间 + 建议操作的三个概念板块 -->
             <div class="hfei-impact" v-if="hfeiReport.ai.impact || (hfeiReport.ai.actionConcepts && hfeiReport.ai.actionConcepts.length)">
               <div class="hfei-impact-row" v-if="hfeiReport.ai.impact">
                 <span class="hfei-impact-tag">预计影响天数</span>
@@ -1091,6 +1091,176 @@
                 <div class="muted small" v-if="!((hfeiStratRef.log || []).length)">暂无迭代历史</div>
               </div>
             </div>
+
+            <!-- ⑨ 20261124g：今日收盘复盘 → 反推正确逻辑（独立于报告目标日） -->
+            <div class="hfei-sec hfei-today-rv">
+              <div class="hfei-sec-head">
+                <span class="hfei-sec-no">⑨</span>
+                <span class="hfei-sec-title">📊 今日收盘复盘 · 反推正确逻辑</span>
+                <button class="btn btn-sm" :disabled="hfeiTodayReviewing" @click="hfeiRunTodayReview">
+                  {{ hfeiTodayReviewing ? '复盘中…' : '📊 今日收盘复盘' }}
+                </button>
+                <button class="btn btn-sm" :disabled="hfeiIteratingTable || hfeiTodayReviewing" @click="hfeiFullIterate">
+                  {{ hfeiIteratingTable ? '迭代中…' : '♻️ 一键完整迭代' }}
+                </button>
+                <button class="btn btn-sm" :class="{ 'btn-active': hfeiIterSettingsRef.auto }" @click="hfeiToggleAutoIter"
+                        :title="'交易日 15:30 后打开页面自动跑完整闭环（每日一次）；当前' + (hfeiIterSettingsRef.auto ? '已开启' : '已关闭')">
+                  每日迭代 {{ hfeiIterSettingsRef.auto ? '开' : '关' }}
+                </button>
+                <span class="hfei-badge" v-if="hfeiTodayReview">复盘日 {{ hfeiTodayReview.date }}</span>
+              </div>
+              <div class="hfei-tip" v-if="hfeiTodayReviewing">⏳ {{ hfeiTodayStep }}</div>
+              <div class="muted small" v-else-if="!hfeiTodayReview">
+                交易日收盘后点「📊 今日收盘复盘」：取今日全市场概念 / 行业板块与个股的真实涨跌榜，让大模型<b>从真实结果反推「正确逻辑」</b>（为何涨、为何跌、盘前错在哪），再据此修正整个预测模式。
+              </div>
+              <template v-if="hfeiTodayReview">
+                <div class="hfei-rv-ai" v-if="hfeiTodayReview.logic">
+                  <div class="hfei-rv-line" v-if="hfeiTodayReview.logic.verdict"><b>结论</b>{{ hfeiTodayReview.logic.verdict }}</div>
+                  <div class="hfei-rv-line" v-if="hfeiTodayReview.logic.upLogic"><b class="up">领涨逻辑</b>{{ hfeiTodayReview.logic.upLogic }}</div>
+                  <div class="hfei-rv-line" v-if="hfeiTodayReview.logic.downLogic"><b class="down">领跌原因</b>{{ hfeiTodayReview.logic.downLogic }}</div>
+                  <div class="hfei-rv-line" v-if="hfeiTodayReview.logic.predCheck"><b>预测对照</b>{{ hfeiTodayReview.logic.predCheck }}</div>
+                  <ul class="hfei-lessons" v-if="hfeiTodayReview.logic.lessons && hfeiTodayReview.logic.lessons.length">
+                    <li v-for="(l, i) in hfeiTodayReview.logic.lessons" :key="'trl'+i">{{ l }}</li>
+                  </ul>
+                </div>
+                <div class="hfei-rv-ai" v-else>
+                  <div class="muted small">本次复盘取到了真实涨跌榜，但未调用大模型（未配置或调用失败）：核对下方榜单后可点「♻️ 一键完整迭代」重试反推。</div>
+                </div>
+
+                <div class="hfei-two hfei-rv-two">
+                  <div class="hfei-sec hfei-sec-bull">
+                    <div class="hfei-sec-head"><span class="hfei-sec-title">今日涨幅榜 · 概念 / 行业（红）</span></div>
+                    <table class="data-table hfei-rv-table">
+                      <thead><tr><th>板块</th><th>类型</th><th class="num-col">涨跌</th></tr></thead>
+                      <tbody>
+                        <tr v-for="(b, i) in hfeiTodayReview.boards.conceptUp" :key="'tbu'+i">
+                          <td>{{ b.name }}</td><td>{{ b.type }}</td>
+                          <td class="num-col"><span class="up">+{{ b.chg }}%</span></td>
+                        </tr>
+                        <tr v-for="(b, i) in hfeiTodayReview.boards.industryUp" :key="'tiu'+i">
+                          <td>{{ b.name }}</td><td>{{ b.type }}</td>
+                          <td class="num-col"><span class="up">+{{ b.chg }}%</span></td>
+                        </tr>
+                        <tr v-if="!hfeiTodayReview.boards.conceptUp.length && !hfeiTodayReview.boards.industryUp.length"><td colspan="3" class="empty-row">无涨幅榜数据</td></tr>
+                      </tbody>
+                    </table>
+                  </div>
+                  <div class="hfei-sec hfei-sec-bear">
+                    <div class="hfei-sec-head"><span class="hfei-sec-title">今日跌幅榜 · 概念 / 行业（绿）</span></div>
+                    <table class="data-table hfei-rv-table">
+                      <thead><tr><th>板块</th><th>类型</th><th class="num-col">涨跌</th></tr></thead>
+                      <tbody>
+                        <tr v-for="(b, i) in hfeiTodayReview.boards.conceptDown" :key="'tbd'+i">
+                          <td>{{ b.name }}</td><td>{{ b.type }}</td>
+                          <td class="num-col"><span class="down">{{ b.chg }}%</span></td>
+                        </tr>
+                        <tr v-for="(b, i) in hfeiTodayReview.boards.industryDown" :key="'tid'+i">
+                          <td>{{ b.name }}</td><td>{{ b.type }}</td>
+                          <td class="num-col"><span class="down">{{ b.chg }}%</span></td>
+                        </tr>
+                        <tr v-if="!hfeiTodayReview.boards.conceptDown.length && !hfeiTodayReview.boards.industryDown.length"><td colspan="3" class="empty-row">无跌幅榜数据</td></tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+
+                <div class="hfei-two hfei-rv-two">
+                  <div class="hfei-sec hfei-sec-bull">
+                    <div class="hfei-sec-head"><span class="hfei-sec-title">今日涨幅个股 TOP（红）</span></div>
+                    <table class="data-table hfei-rv-table">
+                      <thead><tr><th>名称</th><th>代码</th><th class="num-col">涨跌</th></tr></thead>
+                      <tbody>
+                        <tr v-for="(s, i) in hfeiTodayReview.stocks.up" :key="'tsu'+i">
+                          <td>{{ s.name }}</td><td class="hfei-code">{{ s.code }}</td>
+                          <td class="num-col"><span class="up">+{{ s.chg }}%</span></td>
+                        </tr>
+                        <tr v-if="!hfeiTodayReview.stocks.up.length"><td colspan="3" class="empty-row">无数据</td></tr>
+                      </tbody>
+                    </table>
+                  </div>
+                  <div class="hfei-sec hfei-sec-bear">
+                    <div class="hfei-sec-head"><span class="hfei-sec-title">今日跌幅个股 TOP（绿）</span></div>
+                    <table class="data-table hfei-rv-table">
+                      <thead><tr><th>名称</th><th>代码</th><th class="num-col">涨跌</th></tr></thead>
+                      <tbody>
+                        <tr v-for="(s, i) in hfeiTodayReview.stocks.down" :key="'tsd'+i">
+                          <td>{{ s.name }}</td><td class="hfei-code">{{ s.code }}</td>
+                          <td class="num-col"><span class="down">{{ s.chg }}%</span></td>
+                        </tr>
+                        <tr v-if="!hfeiTodayReview.stocks.down.length"><td colspan="3" class="empty-row">无数据</td></tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+                <div class="hfei-daily-hist">
+                  <button class="btn btn-sm" @click="hfeiDailyHistShow = !hfeiDailyHistShow">🗂 历史复盘（{{ hfeiDailyHist().length }}）</button>
+                  <div v-if="hfeiDailyHistShow">
+                    <button class="btn btn-sm" v-for="d in hfeiDailyHist()" :key="'dh'+d.date"
+                            :class="{active: hfeiTodayReview && hfeiTodayReview.date === d.date}"
+                            @click="hfeiTodayReview = d; hfeiLoadIterOf(d.date)">{{ d.date }}</button>
+                  </div>
+                </div>
+              </template>
+            </div>
+
+            <!-- ⑩ 20261124g：迭代后的新此表（复盘反推逻辑修正后重新生成，不覆盖原报告） -->
+            <div class="hfei-sec hfei-iter-picks">
+              <div class="hfei-sec-head">
+                <span class="hfei-sec-no">⑩</span>
+                <span class="hfei-sec-title">迭代版标的股（3 核心概念 × 3 只 · 反推逻辑修正后新表）</span>
+                <button class="btn btn-sm" :disabled="hfeiIteratingTable" @click="hfeiGenerateIterTable">
+                  {{ hfeiIteratingTable ? '生成中…' : (hfeiIterReports.length ? '🔄 再生成一版' : '✨ 生成迭代新表') }}
+                </button>
+                <span class="muted small">基于今日真实涨跌反推的逻辑重新生成，<b>原报告保留不覆盖</b>；每版逻辑 v 递增</span>
+              </div>
+              <div class="hfei-tip" v-if="hfeiIteratingTable">⏳ {{ hfeiIterTableStep }}</div>
+              <div v-if="hfeiIterReports.length > 1" class="hfei-iter-vers">
+                <span class="muted small">迭代版本：</span>
+                <button class="btn btn-sm" v-for="(it, i) in hfeiIterReports" :key="'iv'+it.id"
+                        :class="{active: hfeiIterActive && hfeiIterActive.id === it.id}"
+                        @click="hfeiIterActive = it">v{{ it.version }} · {{ it.createdAtText.slice(11) }}</button>
+              </div>
+              <template v-if="hfeiIterActive">
+                <div class="hfei-meta">
+                  <span class="hfei-badge">基于复盘日 <b>{{ hfeiIterActive.baseDate }}</b></span>
+                  <span class="hfei-badge">迭代逻辑 v{{ hfeiIterActive.version }}</span>
+                  <span class="hfei-badge">生成于 {{ hfeiIterActive.createdAtText }}</span>
+                </div>
+                <div class="table-wrap table-scroll-x">
+                  <table class="data-table hfei-pick-table">
+                    <thead><tr><th class="num-col">#</th><th>核心概念</th><th>核心度</th><th>代码</th><th>名称</th><th>所属板块</th><th>方向</th><th>入选逻辑</th><th class="num-col">今日涨幅</th><th class="num-col">距今涨幅</th><th class="num-col">最近价</th></tr></thead>
+                    <tbody>
+                      <template v-for="(g, gi) in hfeiIterPickGroups" :key="'igp'+gi">
+                        <tr class="hfei-pick-group">
+                          <td colspan="11"><b>核心概念 {{ gi + 1 }} · {{ g.concept }}</b><span class="hfei-pick-group-hit" v-if="g.n">{{ g.hit }}/{{ g.n }} 上涨</span></td>
+                        </tr>
+                        <tr v-for="(p, i) in g.items" :key="'ipk'+gi+'-'+i">
+                          <td class="num-col">{{ i + 1 }}</td>
+                          <td class="hfei-pick-concept">{{ g.concept }}</td>
+                          <td class="num-col hfei-core"><span :title="'核心度 ' + p.core + '/5'">{{ '★'.repeat(p.core || 3) }}</span></td>
+                          <td class="hfei-code">{{ /^\d{6}$/.test(p.code) ? p.code : '待校验' }}</td>
+                          <td>{{ p.name || '—' }}</td>
+                          <td>{{ p.sector || '—' }}</td>
+                          <td><span class="hfei-side" :class="'is-' + p.side">{{ p.side === 'bear' ? '利空' : '利好' }}</span></td>
+                          <td>{{ p.reason }}</td>
+                          <td class="num-col hfei-chg">
+                            <span v-if="p.live && p.live.dayChg != null" :class="p.live.dayChg >= 0 ? 'up' : 'down'">{{ (p.live.dayChg >= 0 ? '+' : '') + p.live.dayChg.toFixed(2) + '%' }}</span>
+                            <span v-else class="muted">—</span>
+                          </td>
+                          <td class="num-col hfei-chg">
+                            <span v-if="p.live && p.live.sincePct != null" :class="p.live.sincePct >= 0 ? 'up' : 'down'">{{ (p.live.sincePct >= 0 ? '+' : '') + p.live.sincePct.toFixed(2) + '%' }}</span>
+                            <span v-else class="muted">—</span>
+                          </td>
+                          <td class="num-col">{{ (p.live && p.live.price != null) ? p.live.price : '—' }}</td>
+                        </tr>
+                      </template>
+                      <tr v-if="!hfeiIterPickGroups.length"><td colspan="11" class="empty-row">尚未生成迭代新表：点「✨ 生成迭代新表」</td></tr>
+                    </tbody>
+                  </table>
+                </div>
+              </template>
+              <div class="muted small" v-else>尚无迭代新表。先做「📊 今日收盘复盘」，再点「✨ 生成迭代新表」或「♻️ 一键完整迭代」。</div>
+            </div>
           </template>
         </div>
 
@@ -1351,7 +1521,7 @@
                   <div class="qr-row">
                     <div class="qr-box">
                       <div class="qr-cap">推荐使用微信支付</div>
-                      <img src="assets/wechat-pay-qr.jpg?v=20261124f" alt="微信支付收款码" class="qr-pay-img">
+                      <img src="assets/wechat-pay-qr.jpg?v=20261124g" alt="微信支付收款码" class="qr-pay-img">
                       <div class="qr-cap" style="margin-top:6px;color:#c2410c;font-weight:600">支付时请添加会员备注，付款成功截图保存</div>
                       <div class="qr-cap muted small">火柴盒网络服务</div>
                     </div>
@@ -1600,7 +1770,7 @@
             <div class="panel-head">
               <h3 class="panel-title" style="margin:0">🔥 火热话题</h3>
               <div class="ht-head-right">
-                <!-- 20261124f：红框按钮只作用于左栏时间框（每日话题/统计分析），不影响右栏每日快讯；隔夜窗口按A股开市安排（前一交易日15:00→当日9:25）；只填日期不刷新 -->
+                <!-- 20261124g：红框按钮只作用于左栏时间框（每日话题/统计分析），不影响右栏每日快讯；隔夜窗口按A股开市安排（前一交易日15:00→当日9:25）；只填日期不刷新 -->
                 <div class="ht-day-btns" id="ht-day-btns">
                   <button class="sw-btn sw-btn-day" :class="{active: htWinDay===0}" :disabled="hotTopicsLoading || analysisLoading" @click="setHtWinDay(0)"
                           title="把本栏「新闻统计开始时间」填成「今天」隔夜窗口（前一交易日15:00→当日9:25）；只作用于本栏，不影响每日快讯；只填日期不刷新">今天</button>
@@ -1957,7 +2127,7 @@
               </button>
               <button class="sw-btn sw-btn-ghost" :disabled="briefLoading" @click="resetBriefWin"
                       title="恢复默认：昨天 15:00 → 现在">重置</button>
-              <!-- 20261124f：今天 / 昨天 / 前天 快捷窗口（只作用于本栏，与火热话题互不影响） -->
+              <!-- 20261124g：今天 / 昨天 / 前天 快捷窗口（只作用于本栏，与火热话题互不影响） -->
               <span class="sw-sep">｜</span>
               <button class="sw-btn sw-btn-day" :class="{active: briefWinDay===0}" :disabled="briefLoading" @click="setBriefWinDay(0)"
                       title="填入「今天」隔夜窗口（前一交易日15:00→当日9:25）；只作用于本栏，不影响火热话题；只填日期不刷新">今天</button>
@@ -3839,12 +4009,12 @@
                 <button class="infl-tab" :class="{active: futureRegion==='people'}" @click="setFutureRegion('people')">👤 人物</button>
               </div>
 
-              <!-- 20261124f：突发/未来语义说明 -->
+              <!-- 20261124g：突发/未来语义说明 -->
               <p class="muted small" v-if="futureRegion==='breaking'" style="margin:6px 0 8px">
-                ⚡ <b>突发口径（20261124f）：</b>只收<b>已发生、正在发生、还没完结、未来还会生变且走势突变性大</b>的全球大事件。标「🔄 进行中·会生变 / ⚡ 走势突变 / ⏳ 后续待发生」的事件<b>不受「近 N 交易日」首报窗口限制</b>（事态每天都在产生新进展、仍影响后市）；单点快讯仍按窗口过滤。
+                ⚡ <b>突发口径（20261124g）：</b>只收<b>已发生、正在发生、还没完结、未来还会生变且走势突变性大</b>的全球大事件。标「🔄 进行中·会生变 / ⚡ 走势突变 / ⏳ 后续待发生」的事件<b>不受「近 N 交易日」首报窗口限制</b>（事态每天都在产生新进展、仍影响后市）；单点快讯仍按窗口过滤。
               </p>
               <p class="muted small" v-if="futureRegion==='future'" style="margin:6px 0 8px">
-                🛡 <b>预防止损口径（20261124f）：</b>「未来」只跟踪<b>尚未发生、即将发生</b>的大事件（会议 / 峰会 / 数据发布 / 政策落地 / 财报等），用于<b>提前预防风险与设定止损位</b>。已结束事件自动剔除；卡片按距今天数倒计时，越临近越需关注。
+                🛡 <b>预防止损口径（20261124g）：</b>「未来」只跟踪<b>尚未发生、即将发生</b>的大事件（会议 / 峰会 / 数据发布 / 政策落地 / 财报等），用于<b>提前预防风险与设定止损位</b>。已结束事件自动剔除；卡片按距今天数倒计时，越临近越需关注。
               </p>
               <!-- 20261119a：人物首报口径说明 -->
               <p class="muted small" v-if="futureRegion==='people'" style="margin:6px 0 8px">
@@ -6353,14 +6523,14 @@
     </transition>
   </div>
 
-  <script src="js/auth.js?v=20261124f"></script>
-  <script src="js/auth-sync.js?v=20261124f"></script>
+  <script src="js/auth.js?v=20261124g"></script>
+  <script src="js/auth-sync.js?v=20261124g"></script>
   <!-- 边缘加速默认站点（batch37 治本：Cloudflare Worker 代理东财/腾讯，缓解 JSONP 限流误报）。
        若你所在地区 workers.dev 访问慢，可在「设置 → 行情加速地址」清空即恢复纯直连。 -->
   <script>window.__SNT_ACCEL__ = 'https://sichina.dpdns.org';</script>
   <!-- 扫码支付二维码渲染库（第三方 qrcodejs，本地托管避免外链失效）。renderQr 会先检测全局 QRCode 是否存在。 -->
-  <script src="assets/qrcode.min.js?v=20261124f"></script>
-  <script src="js/auth-boot.js?v=20261124f"></script>
+  <script src="assets/qrcode.min.js?v=20261124g"></script>
+  <script src="js/auth-boot.js?v=20261124g"></script>
   <!-- store / stock-api / hot-topics / app 由 auth-boot.js 在登录通过后动态装载，
        未登录时它们不会被下载，业务数据也不会进入内存 -->
 </body>

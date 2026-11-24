@@ -46,6 +46,13 @@ const Store = {
       hfeiReports: {},
       hfeiReviews: {},
       hfeiStrategy: null,
+      // 20261124g：今日收盘复盘（按实际复盘日存）+ 每日迭代后的新报告（不覆盖原报告）
+      //   hfeiDailyReviews : { 'YYYY-MM-DD': { date, at, boards..., stocks..., logic..., ai... } }
+      //   hfeiIterReports  : { 'YYYY-MM-DD': [ {id, baseDate, version, ai, ...}, ... ] }  同一目标日可有多版迭代
+      //   hfeiIterSettings : { auto: true, lastRunDate: '' }
+      hfeiDailyReviews: {},
+      hfeiIterReports: {},
+      hfeiIterSettings: { auto: true, lastRunDate: '' },
       favorites: [],          // 收藏股票：[{code, name, favDate, note}]
       catMeta: {},             // 子类标注：{ "概念归类::人工智能": { color:'#ff0000', note:'重点' }, ... }（概念/行业归类行右侧颜色与备注）
       holdings: {},            // 用户持仓：{ [username]: [{id, code, name, entryDate, entryPrice, currentPrice, shares, direction, fee, note, createdAt, updatedAt}] }

@@ -4518,6 +4518,13 @@ body.guest-mode #app { display: none; }
 .hfei-strat-log { margin-top: 8px; border-top: 1px dashed var(--border); padding-top: 8px; }
 .hfei-strat-log-row { display: flex; gap: 10px; flex-wrap: wrap; font-size: 12px; color: var(--text-secondary); line-height: 1.9; }
 
+/* 20261124g：今日收盘复盘 + 迭代新表 */
+.hfei-today-rv, .hfei-iter-picks { border-left: 3px solid var(--accent, #6366f1); }
+.btn.btn-active { background: var(--accent, #6366f1); color: #fff; border-color: var(--accent, #6366f1); }
+.hfei-daily-hist { margin-top: 10px; }
+.hfei-daily-hist > div { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
+.hfei-iter-vers { display: flex; align-items: center; flex-wrap: wrap; gap: 6px; margin: 8px 0; }
+
 @media (max-width: 900px) {
   .hfei-two { grid-template-columns: 1fr; gap: 0; }
 }
