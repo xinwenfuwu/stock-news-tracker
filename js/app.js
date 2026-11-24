@@ -7265,9 +7265,36 @@ const app = createApp({
      *   · 20261111h 的全局同步语义保留：三套窗口仍写同一个值、各自刷新，
      *     这样无论点哪一组按钮，左右两侧显示的都是同一时间段，不会出现「选了昨天、下方还是今天」。
      * 两处高亮分开记录，手动改任一时间框则两组一起取消高亮（当前为自定义窗口）。 */
+    /**
+     * 20261124a：隔夜窗口口径 —— 「交易日 T 的前一自然日 15:00（收盘）→ T 当日 9:25（开盘前）」。
+     * 用户举例：昨天交易日 = 2026/11/22 15:00 → 2026/11/23 9:25（今天 11/24，昨天 T=11/23 周一，
+     *   窗口 = T 前一自然日 11/22 周日 15:00 → T 当日 11/23 09:25）。
+     * k=0 今天 / 1 昨天 / 2 前天：目标交易日 T = 今天往前推 k 个自然日，
+     *   start = (T-1 日) 15:00，end = T 日 9:25（自然日相邻，严格贴合用户举例）。
+     * 「上次」对比周期 = T 的前一交易日对应窗口 [(T-2) 15:00, (T-1) 9:25]。
+     */
+    function overnightShiftedDefaults(k) {
+      const HT = ht_();
+      if (!HT || !HT.toLocalInputValue) return null;
+      const PREOPEN_H = 9, PREOPEN_M = 25, CLOSE_H = 15;
+      const day0 = new Date(); day0.setHours(0, 0, 0, 0);
+      const dayAdd = (d, n) => new Date(d.getFullYear(), d.getMonth(), d.getDate() + n);
+      // 目标交易日 T：今天往前推 k 个自然日；窗口 = [T-1 日 15:00, T 日 9:25]
+      const T = dayAdd(day0, -k);
+      const startDay = dayAdd(T, -1);
+      const prevStartDay = dayAdd(T, -2);
+      const prevEndDay = dayAdd(T, -1);
+      return {
+        start: new Date(startDay.getFullYear(), startDay.getMonth(), startDay.getDate(), CLOSE_H, 0, 0, 0),
+        end: new Date(T.getFullYear(), T.getMonth(), T.getDate(), PREOPEN_H, PREOPEN_M, 0, 0),
+        prevStart: new Date(prevStartDay.getFullYear(), prevStartDay.getMonth(), prevStartDay.getDate(), CLOSE_H, 0, 0, 0),
+        prevEnd: new Date(prevEndDay.getFullYear(), prevEndDay.getMonth(), prevEndDay.getDate(), PREOPEN_H, PREOPEN_M, 0, 0)
+      };
+    }
     function applyDayPresetValues(k) {
       const HT = ht_();
-      const w = briefShiftedDefaults(k);
+      // 20261124a：快捷窗口统一改用「收盘15:00 → 次日9:25」隔夜口径（原 briefShiftedDefaults 为 15:00→15:00）
+      const w = overnightShiftedDefaults(k);
       if (!w || !HT || !HT.toLocalInputValue) return false;
       const sVal = HT.toLocalInputValue(w.start);
       const eVal = HT.toLocalInputValue(w.end);
@@ -7296,14 +7323,11 @@ const app = createApp({
     function applyDayPreset(k, from) {
       if (!applyDayPresetValues(k)) return;
       flashHtWinBoxes();
-      // 填充后自动按新窗口刷新一次，用户马上能看到该时间段的数据；仍可手动改框再点各自「刷新」
-      if (!briefLoading.value) refreshBriefCloseWindow().catch(() => {});
-      if (!hotTopicsLoading.value) refreshDailyTopics().catch(() => {});
-      if (!analysisLoading.value) runAnalysis().catch(() => {});
+      // 20261124a：只填日期、不自动刷新。用户明确要求：选完日期后由用户点「刷新」按钮再统计。
       const label = ['今天', '昨天', '前天'][k] || '自定义';
       showToast(from === 'hot'
-        ? '已切换「' + label + '」：火热话题本栏时间框已更新（每日快讯同步同口径）'
-        : '已切换「' + label + '」：每日快讯时间框已更新（火热话题本栏同步同口径）', 'success');
+        ? '已切换「' + label + '」隔夜窗口（收盘15:00→次日9:25），时间框已更新；请点「刷新」按钮统计'
+        : '已切换「' + label + '」隔夜窗口（收盘15:00→次日9:25），时间框已更新；请点「刷新」按钮统计', 'success');
     }
     /** 红框（火热话题标题栏）里的「今天 / 昨天 / 前天」→ 驱动红框内时间框 */
     function setHtWinDay(k) { applyDayPreset(k, 'hot'); }
