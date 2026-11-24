@@ -7238,7 +7238,7 @@ const app = createApp({
     /* 20261111i：红框（火热话题标题栏）里的「今天/昨天/前天」独立记录自己的高亮状态，
      * 不再借用每日快讯面板的 briefWinDay；同时把红框内时间框作为该组按钮的直接作用目标。 */
     const htWinDay = ref(0);
-    // 20261124g：「上/下」盘中时段快捷口径（与「今天/昨天/前天」互斥）：''=无  'am'=上午9:25-11:30  'pm'=下午11:30-15:00
+    // 20261124h：「上/下」盘中时段快捷口径（与「今天/昨天/前天」互斥）：''=无  'am'=上午9:25-11:30  'pm'=下午11:30-15:00
     const briefSession = ref('');
     const htSession = ref('');
     const dayPresetFlash = ref(false);   // 点击后红框内时间框短暂高亮，直观看到「已应用到本栏时间框」
@@ -7326,7 +7326,7 @@ const app = createApp({
       };
     }
     /**
-     * 20261124g：盘中时段窗口 —— 「上」= 当天交易日 09:25-11:30，「下」= 当天交易日 11:30-15:00。
+     * 20261124h：盘中时段窗口 —— 「上」= 当天交易日 09:25-11:30，「下」= 当天交易日 11:30-15:00。
      * 当天交易日按 A股开市安排（休市日向前取最近交易日）。
      * 「上次」对比周期 = 前一交易日同一时段，便于快讯右栏做同时段同比。
      */
@@ -7371,7 +7371,7 @@ const app = createApp({
       }
       return true;
     }
-    /** 20261124g：把「上/下」盘中时段写入对应侧时间框（左右独立） */
+    /** 20261124h：把「上/下」盘中时段写入对应侧时间框（左右独立） */
     function applySessionValues(part, side) {
       const HT = ht_();
       const w = intradaySessionWindow(part);
@@ -7424,10 +7424,10 @@ const app = createApp({
     function setHtWinDay(k) { applyDayPreset(k, 'hot'); }
     /** 每日快讯面板 / 新闻追踪页顶部的「今天 / 昨天 / 前天」→ 只驱动右栏时间框 */
     function setBriefWinDay(k) { applyDayPreset(k, 'brief'); }
-    /** 20261124g：「上 / 下」盘中时段 → 只驱动本侧时间框 */
+    /** 20261124h：「上 / 下」盘中时段 → 只驱动本侧时间框 */
     function setHtSession(part) { applySession(part, 'hot'); }
     function setBriefSession(part) { applySession(part, 'brief'); }
-    /** 手动修改时间框：只取消本侧快捷按钮高亮（左右独立，20261124g 含时段按钮） */
+    /** 手动修改时间框：只取消本侧快捷按钮高亮（左右独立，20261124h 含时段按钮） */
     function onBriefWinManualEdit() { briefWinDay.value = -1; briefSession.value = ''; }
     function onHtWinManualEdit() { htWinDay.value = -1; htSession.value = ''; }
     /** 时间栏文案：'2026年9月16日 15:00 - 2026年9月17日 15:00' */
@@ -11336,7 +11336,7 @@ const app = createApp({
     // ===== 20261110c：新闻范围（近 N 日）——两个面板各自独立设置 =====
     // 位置：影响力事件 / 未来事件 两个面板标题行「🔄 刷新数据」左侧各有一个选择框，各管各的，互不同步。
     // 语义：'' / null = 不选（影响力事件仍按默认 10 交易日窗口，突发/人物不限范围）；
-    //       20261124g：选了 N 日 = 只统计「近 N 个收盘日窗口」内的条目。
+    //       20261124h：选了 N 日 = 只统计「近 N 个收盘日窗口」内的条目。
     //       一个交易日 = 上次收盘 15:00 → 本次收盘 15:00；15:00 以后为第二天（换日）。
     //       近 N 交易日窗口 = [本次收盘往前 N 个交易日 15:00, 现在]（详见 rangeWindow）。
     //       例：现在 11/24(二)14:41 选 1 → [11/23(一)15:00, 现在]；选 2 → [11/20(五)15:00, 现在]。
@@ -11356,7 +11356,7 @@ const app = createApp({
     }
     const inflRangeDays = ref((D && Number(D.inflRangeDays)) ? Number(D.inflRangeDays) : null);
     const futureRangeDays = ref((D && Number(D.futureRangeDays)) ? Number(D.futureRangeDays) : null);
-    /** 20261124g：突发 = 正在发生、还没完、未来还会生变、走势突变性大的全球大事件。
+    /** 20261124h：突发 = 正在发生、还没完、未来还会生变、走势突变性大的全球大事件。
      *  这类事件的判定信号（数据无 status 字段，从 time/tag/momentum/summary 推断）：
      *   ① time 含延续/后续词（起 / 进行中 / 预计 / 拟 / 持续 / 将至 / 谈判 / 调查…）→ 事态未完、还会生变；
      *   ② momentum >= 50（扩散速度快）→ 走势突变性强；
@@ -11378,7 +11378,7 @@ const app = createApp({
       if (/将继续|后续|尚未|仍在|仍将|预计将于|有可能进一步|或将|有望/.test(summary)) return true;
       return false;
     }
-    /** 20261124g：进行中事件的延续状态文案 + 突变性徽标（供卡片展示） */
+    /** 20261124h：进行中事件的延续状态文案 + 突变性徽标（供卡片展示） */
     function breakingOngoingBadge(e) {
       if (!breakingIsOngoing(e)) return null;
       const time = String(e.time || '');
@@ -11469,7 +11469,7 @@ const app = createApp({
       }
       return _isoOf(d);
     }
-    /** 20261124g：统一「近 N 交易日」窗口 = 上次收盘(15:00) ~ 本次收盘(15:00)。
+    /** 20261124h：统一「近 N 交易日」窗口 = 上次收盘(15:00) ~ 本次收盘(15:00)。
      *  用户定义：一个交易日 = 上次收盘至今天收盘期间的新闻；收盘 15:00 以后为第二天。
      *  口径与全站 HotTopics.defaultWindowEnd/Start 完全一致（15:00 换日、跳周末）：
      *    本次收盘 = 未到今天 15:00 → 今天 15:00；已过 → 下一交易日 15:00；
@@ -11684,7 +11684,7 @@ const app = createApp({
         const raw = rawAll.filter(e => !inflIsEvtIndexNews(e));
         // 20261119a：先按语义首报锚定（同义新闻取最早报道时间、排除一个月外旧闻），
         // 再用首报时间参与本面板自己的「近 N 日」范围筛选（不影响左侧影响力事件）
-        // 20261124g：突发 = 已发生 + 正在发生 + 未来还会生变 + 走势突变 的全球大事件。
+        // 20261124h：突发 = 已发生 + 正在发生 + 未来还会生变 + 走势突变 的全球大事件。
         //   「进行中·会生变」事件（延续词/高 momentum/持续演变标签）即使首报在窗口外也保留——
         //   它们每天都在产生新进展、仍会影响后市，正是突发要抓的对象；普通单点快讯仍按交易日窗口过滤。
         const src0 = futureAnchorFirstReport(raw);
@@ -11961,7 +11961,7 @@ const app = createApp({
       const d = new Date(); d.setHours(12, 0, 0, 0); d.setDate(d.getDate() - Number(daysAgo || 0));
       return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
     }
-    /** 20261124g：是否落在「近 N 交易日（上次收盘 ~ 本次收盘）」窗口内。
+    /** 20261124h：是否落在「近 N 交易日（上次收盘 ~ 本次收盘）」窗口内。
      *  与右栏统一口径：日期 ∈ [上次收盘日, 本次收盘日]，15:00 换日。 */
     function inflInWindow(e) {
       const w = rangeWindow(inflDays());
@@ -13633,7 +13633,7 @@ const app = createApp({
     });
 
     // ============================================================================
-    // 20261124g：今日收盘复盘 → 反推正确逻辑 → 修正整个模式 → 生成迭代新表 → 每日迭代
+    // 20261124h：今日收盘复盘 → 反推正确逻辑 → 修正整个模式 → 生成迭代新表 → 每日迭代
     // 与 ⑦ 的「目标日复盘」不同：这里复盘的是「今日真实收盘行情」（涨跌板块/个股），
     // 用真实结果反推「什么样的逻辑才是正确的」，再回灌策略并生成一份新的此表（不覆盖原报告）。
     // ============================================================================
@@ -16630,7 +16630,7 @@ const app = createApp({
         ok: false, status: 'nodata', startDate: '', leadDays: null, leadBars: null,
         lowDate: '', lowClose: null, peakClose: null, gainPct: null,
         idxGainPct: null, alphaPct: null, note: '',
-        // 20261124g：本阶段涨跌幅（未启动=下跌波段跌幅；已启动=低点至今涨幅）
+        // 20261124h：本阶段涨跌幅（未启动=下跌波段跌幅；已启动=低点至今涨幅）
         stageChgPct: null, stageFrom: '', stageTo: ''
       };
       if (!Array.isArray(bars) || bars.length < 60) { out.note = '日K不足 60 根'; return out; }
@@ -16646,7 +16646,7 @@ const app = createApp({
       for (let i = from; i <= cut; i++) if (bars[i].close < bars[lowIdx].close) lowIdx = i;
       out.lowDate = bars[lowIdx].date;
       out.lowClose = bars[lowIdx].close;
-      // 20261124g：下跌波段的起点高点 = 窗口内 (from ~ lowIdx) 的最高收盘，用于未启动时的跌幅
+      // 20261124h：下跌波段的起点高点 = 窗口内 (from ~ lowIdx) 的最高收盘，用于未启动时的跌幅
       let dropIdx = from;
       for (let i = from; i <= lowIdx; i++) if (bars[i].close > bars[dropIdx].close) dropIdx = i;
       const dropHigh = bars[dropIdx].close;
@@ -16669,14 +16669,14 @@ const app = createApp({
       out.gainPct = bars[lowIdx].close > 0 ? (bars[peakIdx].close / bars[lowIdx].close - 1) * 100 : null;
       if (start < 0 || out.gainPct == null || out.gainPct < IND_PR_MIN_GAIN * 100) {
         out.status = 'cold';
-        // 20261124g：未启动 → 本阶段涨跌幅 = 下跌波段（高点 → 低点）跌幅，负数用绿色
+        // 20261124h：未启动 → 本阶段涨跌幅 = 下跌波段（高点 → 低点）跌幅，负数用绿色
         out.stageChgPct = dropHigh > 0 ? (out.lowClose / dropHigh - 1) * 100 : null;
         out.stageFrom = bars[dropIdx].date;
         out.stageTo = out.lowDate;
         out.note = start < 0 ? '窗口内未出现启动信号' : ('最大波段仅 ' + out.gainPct.toFixed(1) + '%，不足 8%');
         return out;
       }
-      // 20261124g：已启动 → 本阶段涨跌幅 = 低点 → 窗口末根收盘的涨幅，正数用红色
+      // 20261124h：已启动 → 本阶段涨跌幅 = 低点 → 窗口末根收盘的涨幅，正数用红色
       out.stageChgPct = out.lowClose > 0 ? (bars[cut].close / out.lowClose - 1) * 100 : null;
       out.stageFrom = out.lowDate;
       out.stageTo = bars[cut].date;
@@ -16773,12 +16773,12 @@ const app = createApp({
         indPrInds.value = Object.keys(g).map(k => ({
           name: k, n: g[k].leads.length,
           med: indPrPct(g[k].leads, 0.5),
-          // 20261124g：产业内 P25/P75，用于回推「预测启动区间」（提前天数越多→启动越早）
+          // 20261124h：产业内 P25/P75，用于回推「预测启动区间」（提前天数越多→启动越早）
           p25: indPrPct(g[k].leads, 0.25),
           p75: indPrPct(g[k].leads, 0.75),
           gainMed: indPrPct(g[k].gains, 0.5)
         })).filter(x => x.n).sort((a, b) => b.n - a.n || (a.med - b.med));
-        // 20261124g：区间依赖上面算出的 stats/inds，回测完成后一次性预计算到每行
+        // 20261124h：区间依赖上面算出的 stats/inds，回测完成后一次性预计算到每行
         rows.forEach(r => { r.win = indPrWindow(r); });
         indPrDoneAt.value = new Date().toLocaleTimeString('zh-CN', { hour12: false });
       } catch (e) {
@@ -16816,7 +16816,7 @@ const app = createApp({
       };
     }
 
-    /** 20261124g：预测启动区间 —— 用同产业（样本 <3 时用全样本）启动提前天数的 P25~P75 回推。
+    /** 20261124h：预测启动区间 —— 用同产业（样本 <3 时用全样本）启动提前天数的 P25~P75 回推。
      *  提前天数越大 → 启动越早，故区间 = [节点日 − P75, 节点日 − P25]。
      *  判据：今天是否落在该区间内 → 红色(ind-pr-up)；否则绿色(ind-pr-dn)。 */
     function indPrWindow(row) {
@@ -18633,7 +18633,7 @@ const app = createApp({
       futureRegion, futureEvents, futureLoading, futureError, futureDate, futureLastRefresh, futureSortBy, futureAutoRefresh, futureRefreshMs,
       futureRegionLabel, daysFromToday, setFutureRegion, refreshFuture, futureSortLabel, setFutureSort, setFutureAutoRefresh, setFutureRefreshMs, surgeClass,
       futureScope, futureScopeLabel, futureScopeCounts, setFutureScope, futureIsOngoing,
-      // 20261124g：突发「进行中·会生变·突变」判定
+      // 20261124h：突发「进行中·会生变·突变」判定
       breakingIsOngoing, breakingOngoingBadge,
       thsSectors, thsSectorsLoading, thsSectorsError, refreshThsSectorsOnly, thsSectorTab, setThsSectorTab,
       doubaoKeyInput, doubaoKeyFormShow, doubaoGuideShow, doubaoKeyActive,
@@ -18661,7 +18661,7 @@ const app = createApp({
       // 20261111i：红框（火热话题）独立入口 + 高亮 + 时间框反馈动画
       briefWinDay, setBriefWinDay, onBriefWinManualEdit,
       htWinDay, setHtWinDay, onHtWinManualEdit, dayPresetFlash,
-      // 20261124g：「上/下」盘中时段快捷窗口（左右独立）
+      // 20261124h：「上/下」盘中时段快捷窗口（左右独立）
       briefSession, htSession, setBriefSession, setHtSession,
       // batch73：「上次」对比周期（「昨」排名窗口）状态
       briefPrevWinStart, briefPrevWinEnd, lastBriefLoading, loadLastBriefStats,
@@ -18702,7 +18702,7 @@ const app = createApp({
       hfeiQuoting, hfeiRefreshCurrent, hfeiChgLabel, hfeiPickGroups,
       hfeiReview, hfeiReviewing, hfeiReviewStep, hfeiCanReview, hfeiRunReview, hfeiReviewCount,
       hfeiIterating, hfeiIterateStep, hfeiIterate, hfeiStratRef, hfeiStratShow, hfeiStrategy, hfeiWeightRows,
-      // 20261124g：今日收盘复盘 → 反推逻辑 → 迭代新表 → 每日自动
+      // 20261124h：今日收盘复盘 → 反推逻辑 → 迭代新表 → 每日自动
       hfeiTodayReview, hfeiTodayReviewing, hfeiTodayStep, hfeiRunTodayReview, hfeiReviewDay,
       hfeiIterReports, hfeiIterActive, hfeiIteratingTable, hfeiIterTableStep,
       hfeiGenerateIterTable, hfeiFullIterate, hfeiLoadIterOf, hfeiIterPickGroups,
