@@ -1,20 +1,20 @@
 {
-  "generatedAt": "2026-11-23 22:22",
+  "generatedAt": "2026-11-24 10:53",
   "generatedBy": "GitHub Actions · 多源实时聚合",
   "sourceCount": 5,
-  "autoCount": 8,
+  "autoCount": 4,
   "events": [
     {
-      "id": "ap1a6ir8m",
-      "title": "美国总统特朗普：英伟达董事会做出了正确的决定。 黄仁勋是一位爱国者，是国家的宝贵财富。 美国没有理由认为黄仁勋的回归会构成风险。 美国没有证据表明黄仁勋的行为违法。",
+      "id": "ap11xu0qd",
+      "title": "黄仁勋重返英伟达提振AI股，韩国股市大幅反弹",
       "tag": "人物/黄仁勋",
       "region": "美国",
       "concept": "aiCapex",
-      "time": "2026-11-23 22:07",
-      "datetime": "2026-11-23 22:07",
-      "source": "华尔街见闻",
-      "url": "https://wallstreetcn.com/livenews/3204343",
-      "summary": "美国总统特朗普：英伟达董事会做出了正确的决定。 黄仁勋是一位爱国者，是国家的宝贵财富。 美国没有理由认为黄仁勋的回归会构成风险。 美国没有证据表明黄仁勋的行为违法。",
+      "time": "2026-11-24 10:18",
+      "datetime": "2026-11-24 10:18",
+      "source": "环球市场播报",
+      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-24/doc-inizuxvn0185199.shtml",
+      "summary": "周二，受华尔街科技股大涨带动，韩国股市从近期10个月低点反弹，此前黄仁勋重返英伟达CEO职位，引发了遭重挫的人工智能股的解脱性反弹。",
       "relatedStocks": [
         "英伟达",
         "微软",
@@ -36,57 +36,21 @@
       "bearIndustries": [
         "传统IT服务"
       ],
-      "heat": 100,
-      "momentum": 96,
+      "heat": 42,
+      "momentum": 31,
       "_auto": true
     },
     {
-      "id": "apjg9jfb",
-      "title": "美国总统特朗普：英伟达董事会作出了让黄仁勋重回首席执行官一职的正确、恰当的决定。国家需要黄仁勋掌舵英伟达，以保障这家公司取得成功、蓬勃发展，同时助力美国经济走向繁荣。美国政府没有…",
+      "id": "ap1t2lbq6",
+      "title": "11月24日外盘头条：特朗普介入推动 黄仁勋重掌英伟达 公司市值增加9500亿美元 AI相关股票普涨",
       "tag": "人物/黄仁勋",
       "region": "美国",
       "concept": "aiCapex",
-      "time": "2026-11-23 22:10",
-      "datetime": "2026-11-23 22:10",
-      "source": "新浪7×24",
-      "url": "https://finance.sina.cn/7x24/2026-11-23/detail-iniztwis5398468.d.html",
-      "summary": "美国总统特朗普：英伟达董事会作出了让黄仁勋重回首席执行官一职的正确、恰当的决定。国家需要黄仁勋掌舵英伟达，以保障这家公司取得成功、蓬勃发展，同时助力美国经济走向繁荣。美国政府没有理由认为黄仁勋回归英伟达会带来任何国家安全风险。美国司法部长已经证实，美国政府并未掌握证据证明他存在任何不法行为。就我个人而言，我对黄仁勋有所了解，他是一名国宝级人才。与此同时，英伟达应当继续确保其履…",
-      "relatedStocks": [
-        "英伟达",
-        "微软",
-        "台积电"
-      ],
-      "bullConcepts": [
-        "AI算力",
-        "半导体",
-        "国产替代"
-      ],
-      "bearConcepts": [
-        "传统软件"
-      ],
-      "bullIndustries": [
-        "半导体",
-        "AI应用",
-        "算力基础设施"
-      ],
-      "bearIndustries": [
-        "传统IT服务"
-      ],
-      "heat": 100,
-      "momentum": 91,
-      "_auto": true
-    },
-    {
-      "id": "ap23lwrv",
-      "title": "SpaceX在美国俄勒冈州、弗吉尼亚州遭起诉：AI生成色情露骨图像",
-      "tag": "人物/马斯克",
-      "region": "美国",
-      "concept": "aiCapex",
-      "time": "2026-11-23 21:47",
-      "datetime": "2026-11-23 21:47",
+      "time": "2026-11-24 05:38",
+      "datetime": "2026-11-24 05:38",
       "source": "环球市场播报",
-      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-23/doc-iniztwiw8136130.shtml",
-      "summary": "美国俄勒冈州与弗吉尼亚州于周一起诉埃隆·马斯克旗下SpaceX，指控该公司推出的一款人工智能工具，可供用户生成女性以及儿童的色情化图像，违反两州的消费者保护相关法律。",
+      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-24/doc-inizupfs0261380.shtml",
+      "summary": "全球财经媒体昨夜今晨共同关注的头条新闻主要有： 1、原油：油价下跌 供应趋于充裕且伊朗局势暂缓 2、黄仁勋复职带动AI相关股票普涨 英伟达市值数小时增逾1万亿美元 3...",
       "relatedStocks": [
         "英伟达",
         "微软",
@@ -108,153 +72,21 @@
       "bearIndustries": [
         "传统IT服务"
       ],
-      "heat": 47,
-      "momentum": 41,
-      "_auto": true
-    },
-    {
-      "id": "ap1xubhl6",
-      "title": "特朗普：英伟达应继续内部调查。",
-      "tag": "人物/特朗普",
-      "region": "美国",
-      "concept": "aiCapex",
-      "time": "2026-11-23 22:07",
-      "datetime": "2026-11-23 22:07",
-      "source": "新浪7×24",
-      "url": "https://finance.sina.cn/7x24/2026-11-23/detail-iniztwiy0476199.d.html",
-      "summary": "特朗普：英伟达应继续内部调查。",
-      "relatedStocks": [
-        "英伟达",
-        "微软",
-        "台积电"
-      ],
-      "bullConcepts": [
-        "AI算力",
-        "半导体",
-        "国产替代"
-      ],
-      "bearConcepts": [
-        "传统软件"
-      ],
-      "bullIndustries": [
-        "半导体",
-        "AI应用",
-        "算力基础设施"
-      ],
-      "bearIndustries": [
-        "传统IT服务"
-      ],
-      "heat": 47,
-      "momentum": 61,
-      "_auto": true
-    },
-    {
-      "id": "ap1717od9",
-      "title": "以色列总理内塔尼亚胡称该国面临“重大威胁”。",
-      "tag": "人物/内塔尼亚胡",
-      "region": "全球",
-      "concept": "macro",
-      "time": "2026-11-23 21:41",
-      "datetime": "2026-11-23 21:41",
-      "source": "财联社",
-      "url": "https://www.cls.cn/detail/2542186",
-      "summary": "以色列总理内塔尼亚胡称该国面临“重大威胁”。",
-      "relatedStocks": [
-        "宽基指数"
-      ],
-      "bullConcepts": [
-        "防御板块"
-      ],
-      "bearConcepts": [
-        "周期股"
-      ],
-      "bullIndustries": [
-        "公用事业"
-      ],
-      "bearIndustries": [
-        "顺周期"
-      ],
-      "heat": 24,
-      "momentum": 26,
-      "_auto": true
-    },
-    {
-      "id": "apwv6a7g",
-      "title": "伯恩斯坦：SpaceX领先竞争对手约十年，星舰首次成功回收上面级成为关键突破",
-      "tag": "人物/马斯克",
-      "region": "全球",
-      "concept": "macro",
-      "time": "2026-11-23 15:19",
-      "datetime": "2026-11-23 15:19",
-      "source": "环球市场播报",
-      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-23/doc-iniztfmy5482889.shtml",
-      "summary": "11月23日，伯恩斯坦在最新报告中指出，SpaceX在11月14日举行的星舰第15次试飞中，首次成功利用发射塔机械臂回收火箭上面级，标志着其完全可重复使用运载系统取得关键技术突...",
-      "relatedStocks": [
-        "宽基指数"
-      ],
-      "bullConcepts": [
-        "防御板块"
-      ],
-      "bearConcepts": [
-        "周期股"
-      ],
-      "bullIndustries": [
-        "公用事业"
-      ],
-      "bearIndustries": [
-        "顺周期"
-      ],
-      "heat": 47,
+      "heat": 83,
       "momentum": 18,
       "_auto": true
     },
     {
-      "id": "ap1hkkbbe",
-      "title": "OpenAI呼吁头部AI企业就AI研发限制达成共识",
-      "tag": "人物/奥尔特曼",
-      "region": "全球",
-      "concept": "ai",
-      "time": "2026-11-23 17:18",
-      "datetime": "2026-11-23 17:18",
-      "source": "环球市场播报",
-      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-23/doc-iniztmue0564932.shtml",
-      "summary": "OpenAI 首席科学家呼吁建立 “一套通用框架，用以设定递进式技术上限，并管控后续研发节奏”。 OpenAI 首席科学家呼吁各大主流 AI 模型开发商划定研发红线：在人类理解...",
-      "relatedStocks": [
-        "英伟达",
-        "微软",
-        "台积电"
-      ],
-      "bullConcepts": [
-        "AI算力",
-        "半导体",
-        "国产替代"
-      ],
-      "bearConcepts": [
-        "传统软件"
-      ],
-      "bullIndustries": [
-        "半导体",
-        "AI应用",
-        "算力基础设施"
-      ],
-      "bearIndustries": [
-        "传统IT服务"
-      ],
-      "heat": 29,
-      "momentum": 18,
-      "_auto": true
-    },
-    {
-      "id": "ap14o75ou",
-      "title": "特朗普出席迷因币持有者晚宴 币价已较峰值暴跌98%",
+      "id": "ap1rbfnh5",
+      "title": "特朗普举办加密货币晚宴，其迷因币价格跌至1美元以下",
       "tag": "人物/特朗普",
       "region": "美国",
       "concept": "usFinance",
-      "time": "2026-11-23 16:52",
-      "datetime": "2026-11-23 16:52",
+      "time": "2026-11-24 00:04",
+      "datetime": "2026-11-24 00:04",
       "source": "环球市场播报",
-      "url": "https://finance.sina.com.cn/world/2026-11-23/doc-iniztfmy5561715.shtml",
-      "summary": "Morten Christensen第一次通过交易获得参加美国总统唐纳德·特朗普晚宴的资格，花了大约1200美元。第二次花了约500美元。而这一次，他说自己最终反倒赚了6美元。",
+      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-24/doc-inizuarw0396815.shtml",
+      "summary": "核心要点周日，特朗普为其迷因币的大额持有者举办晚宴。该代币曾在 2025 年 1 月冲高至 75 美元以上，如今交易价格已经跌破 1 美元。",
       "relatedStocks": [
         "美股科技",
         "黄金"
@@ -274,6 +106,42 @@
         "高杠杆地产"
       ],
       "heat": 24,
+      "momentum": 18,
+      "_auto": true
+    },
+    {
+      "id": "ap8tqn46",
+      "title": "马斯克在黄仁勋复职后发声：逆境中的朋友才是真朋友",
+      "tag": "人物/马斯克",
+      "region": "全球",
+      "concept": "ai",
+      "time": "2026-11-24 08:12",
+      "datetime": "2026-11-24 08:12",
+      "source": "环球市场播报",
+      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-24/doc-inizutpn7880566.shtml",
+      "summary": "当地时间周一，在英伟达董事会一致决定让黄仁勋重返首席执行官（CEO）岗位后，特斯拉与SpaceX首席执行官埃隆·马斯克再次发声，力挺他的好友黄仁勋。",
+      "relatedStocks": [
+        "英伟达",
+        "微软",
+        "台积电"
+      ],
+      "bullConcepts": [
+        "AI算力",
+        "半导体",
+        "国产替代"
+      ],
+      "bearConcepts": [
+        "传统软件"
+      ],
+      "bullIndustries": [
+        "半导体",
+        "AI应用",
+        "算力基础设施"
+      ],
+      "bearIndustries": [
+        "传统IT服务"
+      ],
+      "heat": 46,
       "momentum": 18,
       "_auto": true
     },
