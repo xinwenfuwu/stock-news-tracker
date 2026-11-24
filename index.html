@@ -10,12 +10,12 @@
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
   <title>股市信息分析系统</title>
-  <link rel="stylesheet" href="css/style.css?v=20261124d">
+  <link rel="stylesheet" href="css/style.css?v=20261124e">
   <!-- Vue 3 全局构建版（v3.4.21 · 自托管）
        原先走 unpkg.com CDN：国内网络对 unpkg 的连通性不稳定，一旦该请求长时间挂起，
        <head> 里的阻塞脚本会让整页停在白屏、后续 auth-boot.js 根本不会执行。
        改为同源托管后，启动链路不再依赖任何第三方 CDN。 -->
-  <script src="js/vue.global.prod.js?v=20261124d"></script>
+  <script src="js/vue.global.prod.js?v=20261124e"></script>
 </head>
 <body class="auth-locked">
   <!-- ===== 登录关卡：登录通过前业务脚本不会被加载 ===== -->
@@ -101,7 +101,7 @@
         <input class="auth-input" type="text" id="auth-renew-user" placeholder="用户名（你注册时用的）" maxlength="20" autocomplete="off">
         <div class="auth-renew-plans" id="auth-renew-plans"></div>
         <div class="auth-renew-qr" id="auth-renew-qr">
-          <div class="auth-renew-qrbox"><img id="auth-renew-wx" src="assets/wechat-pay-qr.jpg?v=20261124d" alt="微信支付收款码"><span>微信支付（扫码支付）</span></div>
+          <div class="auth-renew-qrbox"><img id="auth-renew-wx" src="assets/wechat-pay-qr.jpg?v=20261124e" alt="微信支付收款码"><span>微信支付（扫码支付）</span></div>
           <div class="muted small" style="margin-top:6px;color:#c2410c;font-weight:600">支付时请添加会员备注，付款成功截图保存</div>
         </div>
         <input class="auth-input" type="text" id="auth-renew-amount" inputmode="decimal" placeholder="支付金额（必填，如 1000）" autocomplete="off">
@@ -348,7 +348,7 @@
             </button>
             <button class="sw-btn sw-btn-ghost" :disabled="briefLoading" @click="resetBriefWin"
                     title="恢复默认：上次闭市 → 本次闭市（同步恢复「上次」对比周期为默认）">重置</button>
-            <!-- 20261124d：快捷窗口只作用于本栏（不影响火热话题）；隔夜窗口按A股开市安排（前一交易日15:00→当日9:25）；只填日期不刷新 -->
+            <!-- 20261124e：快捷窗口只作用于本栏（不影响火热话题）；隔夜窗口按A股开市安排（前一交易日15:00→当日9:25）；只填日期不刷新 -->
             <span class="sw-sep">｜</span>
             <button class="sw-btn sw-btn-day" :class="{active: briefWinDay===0}" :disabled="briefLoading" @click="setBriefWinDay(0)"
                     title="填入「今天」隔夜窗口（前一交易日15:00→当日9:25）；只作用于本栏，不影响火热话题；只填日期不刷新">今天</button>
@@ -817,7 +817,7 @@
               <span class="hfei-dom-why">{{ hfeiReport.ai.dominant.why }}</span>
             </div>
 
-            <!-- 20261124d：主导事件预计影响天数/日期区间 + 建议操作的三个概念板块 -->
+            <!-- 20261124e：主导事件预计影响天数/日期区间 + 建议操作的三个概念板块 -->
             <div class="hfei-impact" v-if="hfeiReport.ai.impact || (hfeiReport.ai.actionConcepts && hfeiReport.ai.actionConcepts.length)">
               <div class="hfei-impact-row" v-if="hfeiReport.ai.impact">
                 <span class="hfei-impact-tag">预计影响天数</span>
@@ -1351,7 +1351,7 @@
                   <div class="qr-row">
                     <div class="qr-box">
                       <div class="qr-cap">推荐使用微信支付</div>
-                      <img src="assets/wechat-pay-qr.jpg?v=20261124d" alt="微信支付收款码" class="qr-pay-img">
+                      <img src="assets/wechat-pay-qr.jpg?v=20261124e" alt="微信支付收款码" class="qr-pay-img">
                       <div class="qr-cap" style="margin-top:6px;color:#c2410c;font-weight:600">支付时请添加会员备注，付款成功截图保存</div>
                       <div class="qr-cap muted small">火柴盒网络服务</div>
                     </div>
@@ -1600,7 +1600,7 @@
             <div class="panel-head">
               <h3 class="panel-title" style="margin:0">🔥 火热话题</h3>
               <div class="ht-head-right">
-                <!-- 20261124d：红框按钮只作用于左栏时间框（每日话题/统计分析），不影响右栏每日快讯；隔夜窗口按A股开市安排（前一交易日15:00→当日9:25）；只填日期不刷新 -->
+                <!-- 20261124e：红框按钮只作用于左栏时间框（每日话题/统计分析），不影响右栏每日快讯；隔夜窗口按A股开市安排（前一交易日15:00→当日9:25）；只填日期不刷新 -->
                 <div class="ht-day-btns" id="ht-day-btns">
                   <button class="sw-btn sw-btn-day" :class="{active: htWinDay===0}" :disabled="hotTopicsLoading || analysisLoading" @click="setHtWinDay(0)"
                           title="把本栏「新闻统计开始时间」填成「今天」隔夜窗口（前一交易日15:00→当日9:25）；只作用于本栏，不影响每日快讯；只填日期不刷新">今天</button>
@@ -1957,7 +1957,7 @@
               </button>
               <button class="sw-btn sw-btn-ghost" :disabled="briefLoading" @click="resetBriefWin"
                       title="恢复默认：昨天 15:00 → 现在">重置</button>
-              <!-- 20261124d：今天 / 昨天 / 前天 快捷窗口（只作用于本栏，与火热话题互不影响） -->
+              <!-- 20261124e：今天 / 昨天 / 前天 快捷窗口（只作用于本栏，与火热话题互不影响） -->
               <span class="sw-sep">｜</span>
               <button class="sw-btn sw-btn-day" :class="{active: briefWinDay===0}" :disabled="briefLoading" @click="setBriefWinDay(0)"
                       title="填入「今天」隔夜窗口（前一交易日15:00→当日9:25）；只作用于本栏，不影响火热话题；只填日期不刷新">今天</button>
@@ -2995,7 +2995,7 @@
                       <thead><tr>
                         <th>上市公司</th><th>项目</th><th>投产节点</th><th class="num-col">节点日</th><th class="num-col">距今</th>
                         <th class="num-col">低点日</th><th class="num-col">启动日</th><th class="num-col">提前天数</th>
-                        <th class="num-col">启动波涨幅</th><th class="num-col">超额</th><th>状态</th>
+                        <th class="num-col">启动波涨幅</th><th class="num-col">超额</th><th class="num-col" title="未启动=下跌波段跌幅(绿)；已启动=低点至今涨幅(红)">本阶段涨跌幅</th><th class="num-col" title="同产业启动提前天数P25~P75回推；今天在区间内红色，否则绿色">预测启动区间</th><th>状态</th>
                       </tr></thead>
                       <tbody>
                         <tr v-for="r in indPrRows" :key="'pr'+r.id" v-show="!indPrOnlyHit || r.pr.ok">
@@ -3009,13 +3009,15 @@
                           <td class="num-col" data-label="提前天数"><b class="ind-pr-hot" v-if="r.pr.ok">{{ r.pr.leadDays }} 天</b><span v-else class="muted">—</span></td>
                           <td class="num-col" data-label="启动波涨幅"><template v-if="r.pr.ok">{{ r.pr.gainPct != null ? (r.pr.gainPct > 0 ? '+' : '') + r.pr.gainPct.toFixed(1) + '%' : '—' }}</template><span v-else class="muted" :title="r.pr.gainPct != null ? ('窗口内最大波段仅 ' + r.pr.gainPct.toFixed(1) + '%，不足 8%') : ''">—</span></td>
                           <td class="num-col" data-label="超额" :class="r.pr.alphaPct != null ? (r.pr.alphaPct >= 0 ? 'ind-pr-up' : 'ind-pr-dn') : ''">{{ r.pr.alphaPct != null ? (r.pr.alphaPct > 0 ? '+' : '') + r.pr.alphaPct.toFixed(1) + '%' : '—' }}</td>
+                          <td class="num-col" data-label="本阶段涨跌幅" :class="r.pr.stageChgPct != null ? (r.pr.stageChgPct > 0 ? 'ind-pr-up' : r.pr.stageChgPct < 0 ? 'ind-pr-dn' : '') : ''" :title="r.pr.stageFrom ? ('阶段：' + r.pr.stageFrom + ' → ' + r.pr.stageTo) : ''">{{ r.pr.stageChgPct != null ? ((r.pr.stageChgPct > 0 ? '+' : '') + r.pr.stageChgPct.toFixed(1) + '%') : '—' }}</td>
+                          <td class="num-col ind-pr-range" data-label="预测启动区间" :class="r.win ? (r.win.inWindow ? 'ind-pr-up' : 'ind-pr-dn') : ''" :title="r.win ? ('提前 ' + r.win.p25 + '~' + r.win.p75 + ' 天（样本 ' + r.win.sample + '）；今天 ' + r.win.todayISO + (r.win.inWindow ? ' 在区间内' : ' 不在区间内')) : '样本不足，无法估算'">{{ r.win ? (r.win.startISO.slice(5) + ' ~ ' + r.win.endISO.slice(5)) : '—' }}</td>
                           <td data-label="状态"><span class="ind-pr-st" :class="indPrStatus(r).cls">{{ indPrStatus(r).text }}</span></td>
                         </tr>
-                        <tr v-if="!indPrRows.length"><td colspan="11" class="muted small">—</td></tr>
+                        <tr v-if="!indPrRows.length"><td colspan="13" class="muted small">—</td></tr>
                       </tbody>
                     </table>
                   </div>
-                  <p class="muted small ind-pr-foot">口径说明：① 只统计「试产 / 小批量 / 量产 / 并网」类产能兑现节点；② 观察窗 = 节点日前 120 个交易日；③ 启动确认 = MA5 上穿 MA10（收盘价站上 MA5 且 MA5&gt;MA10）、当日量能 ≥ 前 20 日均量 1.5 倍、自窗口低点涨幅 ≥5%，三者满足 ≥2 条；④ 启动波涨幅 &lt;8% 视为未启动；⑤ 提前天数 = 节点日 − 启动日（自然日），超过 300 天不计入统计（视为与本次投产无因果）；⑥ 「超额」= 启动波涨幅 − 同期沪深300 涨幅，用来剔除大盘普涨的干扰。<b>⑦ 样本口径</b>：统计对象是<b>当前跟踪表内各项目的「本轮」启动情况</b>（横截面），不是历史案例库回溯；若把已投产的历史项目也录入跟踪表（节点日填过去的日期），会一并纳入统计，样本越多、中位数越稳。数据源：腾讯日线（不复权），仅作规律参考，不构成投资建议。</p>
+                  <p class="muted small ind-pr-foot">口径说明：① 只统计「试产 / 小批量 / 量产 / 并网」类产能兑现节点；② 观察窗 = 节点日前 120 个交易日；③ 启动确认 = MA5 上穿 MA10（收盘价站上 MA5 且 MA5&gt;MA10）、当日量能 ≥ 前 20 日均量 1.5 倍、自窗口低点涨幅 ≥5%，三者满足 ≥2 条；④ 启动波涨幅 &lt;8% 视为未启动；⑤ 提前天数 = 节点日 − 启动日（自然日），超过 300 天不计入统计（视为与本次投产无因果）；⑥ 「超额」= 启动波涨幅 − 同期沪深300 涨幅，用来剔除大盘普涨的干扰。⑧ <b>本阶段涨跌幅</b>：未启动 = 观察窗内下跌波段（高点→低点）跌幅（绿）；已启动 = 低点 → 最新交易日收盘涨幅（红）。⑨ <b>预测启动区间</b>：用同产业（样本 &lt;3 用全样本）启动提前天数的 P25~P75 回推，即 [节点日−P75, 节点日−P25]；今天落在区间内显示红色，否则绿色。<b>⑦ 样本口径</b>：统计对象是<b>当前跟踪表内各项目的「本轮」启动情况</b>（横截面），不是历史案例库回溯；若把已投产的历史项目也录入跟踪表（节点日填过去的日期），会一并纳入统计，样本越多、中位数越稳。数据源：腾讯日线（不复权），仅作规律参考，不构成投资建议。</p>
                 </template>
               </section>
 
@@ -6344,14 +6346,14 @@
     </transition>
   </div>
 
-  <script src="js/auth.js?v=20261124d"></script>
-  <script src="js/auth-sync.js?v=20261124d"></script>
+  <script src="js/auth.js?v=20261124e"></script>
+  <script src="js/auth-sync.js?v=20261124e"></script>
   <!-- 边缘加速默认站点（batch37 治本：Cloudflare Worker 代理东财/腾讯，缓解 JSONP 限流误报）。
        若你所在地区 workers.dev 访问慢，可在「设置 → 行情加速地址」清空即恢复纯直连。 -->
   <script>window.__SNT_ACCEL__ = 'https://sichina.dpdns.org';</script>
   <!-- 扫码支付二维码渲染库（第三方 qrcodejs，本地托管避免外链失效）。renderQr 会先检测全局 QRCode 是否存在。 -->
-  <script src="assets/qrcode.min.js?v=20261124d"></script>
-  <script src="js/auth-boot.js?v=20261124d"></script>
+  <script src="assets/qrcode.min.js?v=20261124e"></script>
+  <script src="js/auth-boot.js?v=20261124e"></script>
   <!-- store / stock-api / hot-topics / app 由 auth-boot.js 在登录通过后动态装载，
        未登录时它们不会被下载，业务数据也不会进入内存 -->
 </body>

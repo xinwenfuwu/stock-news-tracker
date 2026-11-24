@@ -4772,6 +4772,7 @@ body.guest-mode #app { display: none; }
 .ind-pr-hot { color: var(--up); }
 .ind-pr-up { color: var(--up); }
 .ind-pr-dn { color: var(--down); }
+.ind-pr-range { white-space: nowrap; font-weight: 600; }
 .ind-table tbody td.ind-pr-proj, .ind-pr-proj { max-width: 220px; }
 
 .ind-pr-st { display: inline-block; font-size: 11px; font-weight: 700; border-radius: 5px; padding: 2px 6px; white-space: nowrap; }

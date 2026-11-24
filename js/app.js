@@ -7238,7 +7238,7 @@ const app = createApp({
     /* 20261111i：红框（火热话题标题栏）里的「今天/昨天/前天」独立记录自己的高亮状态，
      * 不再借用每日快讯面板的 briefWinDay；同时把红框内时间框作为该组按钮的直接作用目标。 */
     const htWinDay = ref(0);
-    // 20261124d：「上/下」盘中时段快捷口径（与「今天/昨天/前天」互斥）：''=无  'am'=上午9:25-11:30  'pm'=下午11:30-15:00
+    // 20261124e：「上/下」盘中时段快捷口径（与「今天/昨天/前天」互斥）：''=无  'am'=上午9:25-11:30  'pm'=下午11:30-15:00
     const briefSession = ref('');
     const htSession = ref('');
     const dayPresetFlash = ref(false);   // 点击后红框内时间框短暂高亮，直观看到「已应用到本栏时间框」
@@ -7326,7 +7326,7 @@ const app = createApp({
       };
     }
     /**
-     * 20261124d：盘中时段窗口 —— 「上」= 当天交易日 09:25-11:30，「下」= 当天交易日 11:30-15:00。
+     * 20261124e：盘中时段窗口 —— 「上」= 当天交易日 09:25-11:30，「下」= 当天交易日 11:30-15:00。
      * 当天交易日按 A股开市安排（休市日向前取最近交易日）。
      * 「上次」对比周期 = 前一交易日同一时段，便于快讯右栏做同时段同比。
      */
@@ -7371,7 +7371,7 @@ const app = createApp({
       }
       return true;
     }
-    /** 20261124d：把「上/下」盘中时段写入对应侧时间框（左右独立） */
+    /** 20261124e：把「上/下」盘中时段写入对应侧时间框（左右独立） */
     function applySessionValues(part, side) {
       const HT = ht_();
       const w = intradaySessionWindow(part);
@@ -7424,10 +7424,10 @@ const app = createApp({
     function setHtWinDay(k) { applyDayPreset(k, 'hot'); }
     /** 每日快讯面板 / 新闻追踪页顶部的「今天 / 昨天 / 前天」→ 只驱动右栏时间框 */
     function setBriefWinDay(k) { applyDayPreset(k, 'brief'); }
-    /** 20261124d：「上 / 下」盘中时段 → 只驱动本侧时间框 */
+    /** 20261124e：「上 / 下」盘中时段 → 只驱动本侧时间框 */
     function setHtSession(part) { applySession(part, 'hot'); }
     function setBriefSession(part) { applySession(part, 'brief'); }
-    /** 手动修改时间框：只取消本侧快捷按钮高亮（左右独立，20261124d 含时段按钮） */
+    /** 手动修改时间框：只取消本侧快捷按钮高亮（左右独立，20261124e 含时段按钮） */
     function onBriefWinManualEdit() { briefWinDay.value = -1; briefSession.value = ''; }
     function onHtWinManualEdit() { htWinDay.value = -1; htSession.value = ''; }
     /** 时间栏文案：'2026年9月16日 15:00 - 2026年9月17日 15:00' */
@@ -11336,7 +11336,7 @@ const app = createApp({
     // ===== 20261110c：新闻范围（近 N 日）——两个面板各自独立设置 =====
     // 位置：影响力事件 / 未来事件 两个面板标题行「🔄 刷新数据」左侧各有一个选择框，各管各的，互不同步。
     // 语义：'' / null = 不选（影响力事件仍按默认 10 交易日窗口，突发/人物不限范围）；
-    //       20261124d：选了 N 日 = 只统计「近 N 个收盘日窗口」内的条目。
+    //       20261124e：选了 N 日 = 只统计「近 N 个收盘日窗口」内的条目。
     //       一个交易日 = 上次收盘 15:00 → 本次收盘 15:00；15:00 以后为第二天（换日）。
     //       近 N 交易日窗口 = [本次收盘往前 N 个交易日 15:00, 现在]（详见 rangeWindow）。
     //       例：现在 11/24(二)14:41 选 1 → [11/23(一)15:00, 现在]；选 2 → [11/20(五)15:00, 现在]。
@@ -11437,7 +11437,7 @@ const app = createApp({
       }
       return _isoOf(d);
     }
-    /** 20261124d：统一「近 N 交易日」窗口 = 上次收盘(15:00) ~ 本次收盘(15:00)。
+    /** 20261124e：统一「近 N 交易日」窗口 = 上次收盘(15:00) ~ 本次收盘(15:00)。
      *  用户定义：一个交易日 = 上次收盘至今天收盘期间的新闻；收盘 15:00 以后为第二天。
      *  口径与全站 HotTopics.defaultWindowEnd/Start 完全一致（15:00 换日、跳周末）：
      *    本次收盘 = 未到今天 15:00 → 今天 15:00；已过 → 下一交易日 15:00；
@@ -11920,7 +11920,7 @@ const app = createApp({
       const d = new Date(); d.setHours(12, 0, 0, 0); d.setDate(d.getDate() - Number(daysAgo || 0));
       return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
     }
-    /** 20261124d：是否落在「近 N 交易日（上次收盘 ~ 本次收盘）」窗口内。
+    /** 20261124e：是否落在「近 N 交易日（上次收盘 ~ 本次收盘）」窗口内。
      *  与右栏统一口径：日期 ∈ [上次收盘日, 本次收盘日]，15:00 换日。 */
     function inflInWindow(e) {
       const w = rangeWindow(inflDays());
@@ -16241,7 +16241,9 @@ const app = createApp({
       const out = {
         ok: false, status: 'nodata', startDate: '', leadDays: null, leadBars: null,
         lowDate: '', lowClose: null, peakClose: null, gainPct: null,
-        idxGainPct: null, alphaPct: null, note: ''
+        idxGainPct: null, alphaPct: null, note: '',
+        // 20261124e：本阶段涨跌幅（未启动=下跌波段跌幅；已启动=低点至今涨幅）
+        stageChgPct: null, stageFrom: '', stageTo: ''
       };
       if (!Array.isArray(bars) || bars.length < 60) { out.note = '日K不足 60 根'; return out; }
       // 观测终点：节点日（含）之前最后一个交易日；节点在未来时即最新交易日
@@ -16256,6 +16258,10 @@ const app = createApp({
       for (let i = from; i <= cut; i++) if (bars[i].close < bars[lowIdx].close) lowIdx = i;
       out.lowDate = bars[lowIdx].date;
       out.lowClose = bars[lowIdx].close;
+      // 20261124e：下跌波段的起点高点 = 窗口内 (from ~ lowIdx) 的最高收盘，用于未启动时的跌幅
+      let dropIdx = from;
+      for (let i = from; i <= lowIdx; i++) if (bars[i].close > bars[dropIdx].close) dropIdx = i;
+      const dropHigh = bars[dropIdx].close;
       // ② 启动确认日 S（L 之后首个满足 ≥2 条条件者）
       let start = -1;
       for (let i = lowIdx + 1; i <= cut; i++) {
@@ -16275,9 +16281,17 @@ const app = createApp({
       out.gainPct = bars[lowIdx].close > 0 ? (bars[peakIdx].close / bars[lowIdx].close - 1) * 100 : null;
       if (start < 0 || out.gainPct == null || out.gainPct < IND_PR_MIN_GAIN * 100) {
         out.status = 'cold';
+        // 20261124e：未启动 → 本阶段涨跌幅 = 下跌波段（高点 → 低点）跌幅，负数用绿色
+        out.stageChgPct = dropHigh > 0 ? (out.lowClose / dropHigh - 1) * 100 : null;
+        out.stageFrom = bars[dropIdx].date;
+        out.stageTo = out.lowDate;
         out.note = start < 0 ? '窗口内未出现启动信号' : ('最大波段仅 ' + out.gainPct.toFixed(1) + '%，不足 8%');
         return out;
       }
+      // 20261124e：已启动 → 本阶段涨跌幅 = 低点 → 窗口末根收盘的涨幅，正数用红色
+      out.stageChgPct = out.lowClose > 0 ? (bars[cut].close / out.lowClose - 1) * 100 : null;
+      out.stageFrom = out.lowDate;
+      out.stageTo = bars[cut].date;
       // ④ 提前天数 = 节点日 − 启动日
       out.ok = true;
       out.status = 'live';
@@ -16371,8 +16385,13 @@ const app = createApp({
         indPrInds.value = Object.keys(g).map(k => ({
           name: k, n: g[k].leads.length,
           med: indPrPct(g[k].leads, 0.5),
+          // 20261124e：产业内 P25/P75，用于回推「预测启动区间」（提前天数越多→启动越早）
+          p25: indPrPct(g[k].leads, 0.25),
+          p75: indPrPct(g[k].leads, 0.75),
           gainMed: indPrPct(g[k].gains, 0.5)
         })).filter(x => x.n).sort((a, b) => b.n - a.n || (a.med - b.med));
+        // 20261124e：区间依赖上面算出的 stats/inds，回测完成后一次性预计算到每行
+        rows.forEach(r => { r.win = indPrWindow(r); });
         indPrDoneAt.value = new Date().toLocaleTimeString('zh-CN', { hour12: false });
       } catch (e) {
         indPrErr.value = '计算失败：' + (e && e.message ? e.message : e);
@@ -16406,6 +16425,36 @@ const app = createApp({
         startDate: startDate,
         left: Math.round((t - indTodayUTC()) / 86400000),
         sample: (g && g.n >= 3) ? g.n : (s.hit || 0)
+      };
+    }
+
+    /** 20261124e：预测启动区间 —— 用同产业（样本 <3 时用全样本）启动提前天数的 P25~P75 回推。
+     *  提前天数越大 → 启动越早，故区间 = [节点日 − P75, 节点日 − P25]。
+     *  判据：今天是否落在该区间内 → 红色(ind-pr-up)；否则绿色(ind-pr-dn)。 */
+    function indPrWindow(row) {
+      if (!row || !row.next) return null;
+      const s = indPrStats.value;
+      if (!s || s.p25 == null || s.p75 == null) return null;
+      const g = indPrInds.value.find(x => x.name === (row.ind || '其他'));
+      const useG = !!(g && g.n >= 3 && g.p25 != null && g.p75 != null);
+      const p25 = useG ? g.p25 : s.p25;
+      const p75 = useG ? g.p75 : s.p75;
+      const dD = indParse(row.next);
+      if (dD == null || p25 == null || p75 == null) return null;
+      const fmt = (ms) => {
+        const dt = new Date(ms);
+        return dt.getUTCFullYear() + '-' + String(dt.getUTCMonth() + 1).padStart(2, '0') + '-' + String(dt.getUTCDate()).padStart(2, '0');
+      };
+      const early = Math.max(p25, p75), late = Math.min(p25, p75);
+      const startISO = fmt(dD - early * 86400000);
+      const endISO = fmt(dD - late * 86400000);
+      const todayISO = fmt(indTodayUTC());
+      return {
+        startISO: startISO, endISO: endISO,
+        inWindow: todayISO >= startISO && todayISO <= endISO,
+        p25: Math.round(p25), p75: Math.round(p75),
+        sample: useG ? g.n : (s.hit || 0),
+        todayISO: todayISO
       };
     }
 
@@ -18222,7 +18271,7 @@ const app = createApp({
       // 20261111i：红框（火热话题）独立入口 + 高亮 + 时间框反馈动画
       briefWinDay, setBriefWinDay, onBriefWinManualEdit,
       htWinDay, setHtWinDay, onHtWinManualEdit, dayPresetFlash,
-      // 20261124d：「上/下」盘中时段快捷窗口（左右独立）
+      // 20261124e：「上/下」盘中时段快捷窗口（左右独立）
       briefSession, htSession, setBriefSession, setHtSession,
       // batch73：「上次」对比周期（「昨」排名窗口）状态
       briefPrevWinStart, briefPrevWinEnd, lastBriefLoading, loadLastBriefStats,
@@ -18280,7 +18329,7 @@ const app = createApp({
       indIsProdNode, indWarnLevel, indWarnText, indWarnBoards, indWarn100Count,
       // 20261120k：投产前股价启动天数量化回测
       indPrOpen, indPrBusy, indPrErr, indPrRows, indPrStats, indPrInds, indPrDoneAt, indPrOnlyHit,
-      indPrRun, indPrToggle, indPrForecast, indPrStatus, indPrAnalyze,
+      indPrRun, indPrToggle, indPrForecast, indPrWindow, indPrStatus, indPrAnalyze,
       indDockBar, indDockInnerW, onIndDockScroll, onIndTableScroll, indRecalcDock,
       indForm, openIndForm, closeIndForm, saveIndRow, delIndRow, resetIndSeed, indExportCsv,
       indSearching, indSearchErr, indSearchResults, indSearchPicked, indSearchQuery,
