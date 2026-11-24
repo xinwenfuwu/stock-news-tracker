@@ -11398,8 +11398,8 @@ const app = createApp({
       if (!raw) return true;
       const t = new Date(String(raw).replace(' ', 'T')).getTime();
       if (isNaN(t)) return true;
-      const now = Date.now();
-      return t >= rangeStartMs(days) && t <= now;
+      const w = rangeWindow(days);
+      return t >= w.startMs && t <= w.endMs;
     }
     /** 选择框显示文案：n 为空 = 不选（默认） */
     function rangeLabel(n) {
@@ -11961,12 +11961,27 @@ const app = createApp({
       const d = new Date(); d.setHours(12, 0, 0, 0); d.setDate(d.getDate() - Number(daysAgo || 0));
       return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
     }
-    /** 20261125b：是否落在「近 N 交易日（上次收盘 ~ 本次收盘）」窗口内。
-     *  与右栏统一口径：日期 ∈ [上次收盘日, 本次收盘日]，15:00 换日。 */
+    /** 20261125e：事件时间戳（精确到分钟）。仅有日期时按窗口边界归一：
+     *  起始日=窗口起点(15:00)、结束日=窗口终点(15:00)、中间日=12:00，避免边界日混入窗口外信息。 */
+    function inflStampOf(e, w) {
+      const raw = String((e && (e.datetime || e.reportTime || e._timeKey || e.time || e.date)) || '');
+      const m = /^(\d{4})-(\d{2})-(\d{2})(?:[ T](\d{1,2}):(\d{2}))?/.exec(raw);
+      if (!m) return null;
+      const iso = m[1] + '-' + m[2] + '-' + m[3];
+      if (m[4] == null) {
+        if (w && iso === w.startISO) return w.startMs;
+        if (w && iso === w.endISO) return w.endMs;
+        const t = new Date(iso + 'T12:00:00').getTime();
+        return isNaN(t) ? null : t;
+      }
+      const t = new Date(iso + 'T' + String(m[4]).padStart(2, '0') + ':' + m[5] + ':00').getTime();
+      return isNaN(t) ? null : t;
+    }
+    /** 20261125e：是否落在「近 N 交易日（上次收盘 15:00 ~ 本次收盘 15:00）」窗口内，精确到分钟。 */
     function inflInWindow(e) {
       const w = rangeWindow(inflDays());
-      const date = (e && e.date) || '';
-      return date >= w.startISO && date <= w.endISO;
+      const t = inflStampOf(e, w);
+      return t != null && t >= w.startMs && t <= w.endMs;
     }
     const inflWindowDays = computed(() => inflDays());
     const inflWindowLabel = computed(() => rangeStartISO(inflDays()) + ' 15:00 ~ ' + rangeEndISO(inflDays()) + ' 15:00（收盘窗口）');
@@ -12234,17 +12249,42 @@ const app = createApp({
       // 纯「XX股/概念 + 涨跌%」的短播报（多为盘中快讯，无事件主体动作）→ 噪声
       return true;
     }
+    // 20261125e：「刷新数据」必须纳入窗口内**所有重大新闻**（含晚间发布会），
+    // 不能只靠 2-gram 聚类（≥2 条措辞近似报道）——「华为发布会」这类同一主题、
+    // 各平台措辞不同的单点大事件会被漏掉，进而让合肥模式缺少真实利好概念。
+    const INFL_MAJOR_SIGNAL_RE = /发布|推出|上市|开售|首发|售价|定价|首创|全新|新一代|突破|中标|签约|签订|战略合作|获批|核准|批复|量产|投产|扩产|涨价|提价|订单|预增|扭亏|增持|回购|降准|降息|印发|出台|全面实施|试点|扩围|补贴|减税|反制|制裁|管制|调查|立案|处罚|停产|召回|破产|收购|并购|重组|创新高|新纪录|大会|峰会|发布会|搭载|官宣/;
+    // 主题键：同一主体在短时间内多条不同角度报道 → 合并为一个「大事件」。
+    // 规则顺序 = 特异性优先，避免「华为算力概念异动」把整个算力板块并进华为。
+    const INFL_TOPIC_RULES = [
+      [/华为|鸿蒙|Mate\s?X|余承东|昇腾/, '华为'],
+      [/小米|雷军|SU7|YU7/, '小米'],
+      [/苹果|Apple|iPhone|iOS/, '苹果'],
+      [/特斯拉|Tesla|马斯克/, '特斯拉'],
+      [/英伟达|NVIDIA|Blackwell/, '英伟达'],
+      [/OpenAI|ChatGPT|GPT-|Sora/, 'OpenAI'],
+      [/国务院|发改委|财政部|工信部|商务部|中国人民银行|央行|证监会|金融监管总局/, '中国政策'],
+      [/美联储|FOMC|鲍威尔/, '美联储']
+    ];
+    function inflTopicKey(text) {
+      const t = String(text || '');
+      for (const [re, key] of INFL_TOPIC_RULES) if (re.test(t)) return key;
+      return '';
+    }
+    function inflHasMajorSignal(text) { return INFL_MAJOR_SIGNAL_RE.test(String(text || '')); }
     let _inflAutoCache = { key: null, list: [] };
-    /** 对近 N 交易日窗口内的全网新闻做语义聚类，生成自动新鲜事件（首报锚定）。 */
-    function buildAutoInflEvents() {
+    /** 对指定（或当前）交易日窗口内的全网新闻做语义聚类 + 主题聚合，生成新鲜事件。
+     *  20261125e：winOverride 供合肥模式传入自己的目标日窗口，与面板同源但不受面板选择影响。 */
+    function buildAutoInflEvents(winOverride) {
       if (!_inflNewsAllLoaded || !_inflNewsFlat.length) return [];
-      const key = inflDays();
+      const w = winOverride || rangeWindow(inflDays());
+      const key = winOverride ? ('w:' + w.startMs + '-' + w.endMs) : inflDays();
       if (_inflAutoCache.key === key) return _inflAutoCache.list;
-      const startISO = rangeStartISO(key);
-      // 20261120c：先剔除纯行情播报（股指/概念涨跌/涨停连板），只让「具体大事件」进入聚类
-      const news = _inflNewsFlat.filter(it =>
-        String(it.time).slice(0, 10) >= startISO && !inflIsQuoteNoise(it.text)
-      );  // 已按 time 升序
+      // 20261120c：先剔除纯行情播报（股指/概念涨跌/涨停连板），只让「具体大事件」进入聚类；
+      // 20261125e：窗口改为分钟级 [15:00,15:00]，不再只看日期，杜绝边界日早盘新闻混入。
+      const news = _inflNewsFlat.filter(it => {
+        const t = new Date(String(it.time || '').replace(' ', 'T')).getTime();
+        return !isNaN(t) && t >= w.startMs && t <= w.endMs && !inflIsQuoteNoise(it.text);
+      });  // 已按 time 升序
       const clusters = [];
       const inverted = new Map();     // 2-gram → 簇下标列表（倒排索引，避免两两比对）
       const AUTO_THRESHOLD = 0.35;
@@ -12279,8 +12319,8 @@ const app = createApp({
           });
         }
       }
-      // ≥2 条报道才算「事件」；按首报时间升序输出
-      const out = clusters
+      // ① 语义簇事件：≥2 条措辞近似报道，按首报时间升序输出
+      const base = clusters
         .filter(c => c.count >= 2 && c.repText.length >= 8)
         .map((c, i) => {
           const rep = c.firstTime;
@@ -12300,8 +12340,71 @@ const app = createApp({
             auto: true,
             autoReports: c.count
           };
-        })
-        .sort((a, b) => String(a._timeKey).localeCompare(String(b._timeKey)));
+        });
+      // ② 20261125e 主题聚合：同一主体（华为/小米/政策…）多条不同角度报道合并成一个大事件；
+      //    单点但含重大信号（发布会/突破/政策落地…）也保留。解决「措辞不同 → 语义簇漏掉」的问题。
+      const topicMap = new Map();
+      for (const it of news) {
+        const k = inflTopicKey(it.text);
+        if (!k) continue;
+        const g = topicMap.get(k) || { key: k, items: [] };
+        g.items.push(it);
+        topicMap.set(k, g);
+      }
+      const topicEvents = [];
+      for (const g of topicMap.values()) {
+        const items = g.items.slice().sort((a, b) => String(a.time).localeCompare(String(b.time)));
+        const hasMajor = items.some(it => inflHasMajorSignal(it.text));
+        if (items.length < 2 && !hasMajor) continue;
+        let rep = items[0];
+        for (const it of items) if (String(it.text || '').length > String(rep.text || '').length) rep = it;
+        const text = String(rep.text || '');
+        // 与语义簇重复时「合并增强」而不是丢弃——簇代表文本常常就是该主题最重要的一条，
+        // 直接丢弃会让华为发布会这类事件从列表消失。跨主题（苹果 vs 华为）不得因通用词误判同义。
+        let merged = false;
+        for (const e of base) {
+          const sim = semSimilarity(e.title, text);
+          const sameTopic = !!(e.topic && e.topic === g.key);
+          if (!((sameTopic && sim >= 0.5) || sim >= 0.8)) continue;
+          const extra = [];
+          for (const it of items) {
+            const t2 = String(it.text || '');
+            if (t2 && t2 !== text && extra.indexOf(t2) < 0) extra.push(t2.slice(0, 46));
+            if (extra.length >= 5) break;
+          }
+          if (extra.length) e.summary = (e.summary ? e.summary + '；' : '') + extra.join('；');
+          e.major = true;
+          e.topic = g.key;
+          e.autoReports = Math.max(Number(e.autoReports) || 0, items.length);
+          merged = true;
+          break;
+        }
+        if (merged) continue;
+        const firstTime = items[0].time;
+        const region = inflAutoRegionOf(text);
+        const srcs = [];
+        for (const it of items) { if (it.src && srcs.indexOf(String(it.src)) < 0) srcs.push(String(it.src)); }
+        topicEvents.push({
+          id: 'topic-' + g.key + '-' + String(firstTime).replace(/[^0-9]/g, ''),
+          region,
+          concept: inflAutoConceptOf(text, region),
+          title: text.slice(0, 60),
+          date: String(firstTime).slice(0, 10),
+          source: srcs.slice(0, 3).join('·') || '全网聚合',
+          summary: items.length > 1
+            ? items.slice(0, 4).map(x => String(x.text || '').slice(0, 46)).join('；')
+            : (text.length > 120 ? text.slice(0, 117) + '…' : text),
+          relatedStocks: [],
+          reportTime: firstTime,
+          dateSource: 'report',
+          _timeKey: firstTime,
+          auto: true,
+          major: true,
+          topic: g.key,
+          autoReports: items.length
+        });
+      }
+      const out = base.concat(topicEvents).sort((a, b) => String(a._timeKey).localeCompare(String(b._timeKey)));
       _inflAutoCache = { key, list: out };
       return out;
     }
@@ -12530,7 +12633,14 @@ const app = createApp({
       const autoAll = buildAutoInflEvents().filter(e => inflInWindow(e));
       const autoForReg = autoAll
         .filter(e => e.region === reg && !seedFiltered.some(s => semSimilarity(s.title || s.originTitle || s.title, e.title) >= 0.5))
-        .sort((a, b) => (Number(b.autoReports) || 0) - (Number(a.autoReports) || 0))
+        .sort((a, b) => {
+          // 20261125e：重大主题事件（晚间发布会/政策落地）必须留在列表里，
+          // 先按「报道数 + 重大信号加权」避免被普通簇挤掉，再按时间新→旧。
+          const sa = (Number(a.autoReports) || 0) + (a.major ? 3 : 0);
+          const sb = (Number(b.autoReports) || 0) + (b.major ? 3 : 0);
+          if (sb !== sa) return sb - sa;
+          return String(b._timeKey || '').localeCompare(String(a._timeKey || ''));
+        })
         .slice(0, AUTO_MAX);
       const filtered = [...seedFiltered, ...autoForReg]
         .map(e => inflWithBullBear(withCnImp(resolveInfluence(e))));
@@ -12888,6 +12998,25 @@ const app = createApp({
           out[reg] = pool.slice(0, 10);
         });
       } catch (err) { /* 事件库异常不阻断报告 */ }
+      // 20261125e：把「刷新数据」同一套真实新鲜事件（含晚间发布会/政策落地）并入 6 子版块，
+      // 不再只喂重锚后的精选底库；按目标日窗口精确到分钟过滤，回测前天同样不穿越。
+      try {
+        await inflEnsureNews();
+        const fresh = buildAutoInflEvents(w).filter(e => hfeiInStatWindow(e, w));
+        ['cn', 'us', 'world'].forEach(reg => {
+          const room = Math.max(0, 10 - out[reg].length);
+          if (!room) return;
+          const seen = {};
+          out[reg].forEach(e => { const k = hfeiEventKey(e.title); if (k) seen[k] = 1; });
+          fresh
+            .filter(e => e.region === reg && !seen[hfeiEventKey(e.title)])
+            .map(e => inflWithBullBear(withCnImp(resolveFutureImpact(e))))
+            .filter(e => hfeiInStatWindow(e, w))
+            .sort((a, b) => (Number(b.cnImp && b.cnImp.score) || 0) - (Number(a.cnImp && a.cnImp.score) || 0))
+            .slice(0, room)
+            .forEach(e => out[reg].push(e));
+        });
+      } catch (err) { /* 新鲜事件不可用时不阻断底库报告 */ }
       const b = await hfeiFetchJson('data/hot-topics/breaking-events.json');
       out.breaking = topBy((b && b.length) ? b : BREAKING_EVENTS_SEED, 'news');
       const p = await hfeiFetchJson('data/hot-topics/celebrity-news.json');
