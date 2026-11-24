@@ -12784,68 +12784,138 @@ const app = createApp({
       const m = /^(\d{4}-\d{2}-\d{2})/.exec(String((e && (e.datetime || e.time || e.date)) || ''));
       return m ? m[1] : '';
     }
+    /** 20261125c：把当前输入框解析成完整统计窗口（精确到分钟） */
+    function hfeiWindowFromInputs() {
+      const HT = ht_();
+      const s = (HT && HT.fromLocalInputValue) ? HT.fromLocalInputValue(hfeiWinStart.value) : null;
+      const e = (HT && HT.fromLocalInputValue) ? HT.fromLocalInputValue(hfeiWinEnd.value) : null;
+      if (!s || !e || isNaN(s.getTime()) || isNaN(e.getTime()) || s.getTime() >= e.getTime()) return null;
+      return { startMs: s.getTime(), endMs: e.getTime(), startISO: hfeiDateISO(s), endISO: hfeiDateISO(e) };
+    }
+    /** 20261125c：事件时间戳。仅有日期时按窗口边界归一（起始日=15:00，结束日=9:25），避免边界日混入窗口外信息。 */
+    function hfeiEvtStampOf(e, w) {
+      const raw = String((e && (e.datetime || e.time || e.date || e.reportTime || e._timeKey)) || '');
+      const m = /^(\d{4})-(\d{2})-(\d{2})(?:[ T](\d{1,2}):(\d{2}))?/.exec(raw);
+      if (!m) return null;
+      const iso = m[1] + '-' + m[2] + '-' + m[3];
+      if (m[4] == null) {
+        if (w && iso === w.startISO) return w.startMs;
+        if (w && iso === w.endISO) return w.endMs;
+        const t = new Date(iso + 'T12:00:00').getTime();
+        return isNaN(t) ? null : t;
+      }
+      const t = new Date(iso + 'T' + String(m[4]).padStart(2, '0') + ':' + m[5] + ':00').getTime();
+      return isNaN(t) ? null : t;
+    }
+    /** 20261125c：普通新闻必须落在统计窗口内（含边界）；无时间信息一律不采用，杜绝回测穿越。 */
+    function hfeiInStatWindow(e, w) {
+      const t = hfeiEvtStampOf(e, w);
+      return t != null && w && t >= w.startMs && t <= w.endMs;
+    }
+    /** 20261125c：日期加减（本地零点，避免时区偏移） */
+    function hfeiAddDaysISO(iso, days) {
+      const d = new Date(String(iso || '') + 'T00:00:00');
+      if (isNaN(d.getTime())) return String(iso || '');
+      d.setDate(d.getDate() + Number(days || 0));
+      return hfeiDateISO(d);
+    }
+    /** 20261125c：仅「未来·未来」子版块可超窗口——事件在目标日仍在执行/尚未发生，且不晚于目标日+horizon。 */
+    function hfeiFutureRelevant(e, targetISO, horizon) {
+      const s = String((e && (e.date || e.datetime || e.time)) || '').slice(0, 10);
+      const en = String((e && (e.endDate || e.date || e.datetime || e.time)) || '').slice(0, 10);
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(s) || !/^\d{4}-\d{2}-\d{2}$/.test(en)) return false;
+      const last = hfeiAddDaysISO(targetISO, horizon);
+      return en >= targetISO && s <= last;
+    }
+    /** 标题归一（用于校验 AI topEvents 必须来自实际喂给它的事件） */
+    function hfeiEventKey(t) {
+      return String(t || '').replace(/[\s，。！？、：；（）()\[\]{}“”"—_\/·,.!?:;-]/g, '').slice(0, 48);
+    }
+    /** 20261125c：影响力精选库按「本次目标日统计窗口」重锚，不再跟随系统今天；顺序仍按原日期从新到旧。 */
+    function hfeiTargetAnchoredSeed(w) {
+      const byReg = {};
+      INFLUENCE_EVENTS_SEED.forEach(e => { (byReg[e.region] = byReg[e.region] || []).push(e); });
+      const out = [];
+      Object.keys(byReg).forEach(reg => {
+        const list = byReg[reg].slice().sort((a, b) => String(b.date).localeCompare(String(a.date)));
+        const span = Math.max(1, list.length - 1);
+        list.forEach((e, i) => {
+          const ratio = (span - i) / span;
+          const t = w.startMs + ratio * (w.endMs - w.startMs);
+          const d = new Date(t);
+          const hh = String(d.getHours()).padStart(2, '0');
+          const mm = String(d.getMinutes()).padStart(2, '0');
+          const dt = hfeiDateISO(d) + ' ' + hh + ':' + mm;
+          out.push({ ...e, originDate: e.date, date: hfeiDateISO(d), time: dt, datetime: dt, dateSource: 'hfei-window' });
+        });
+      });
+      return out;
+    }
     /**
      * 汇总 6 个子版块的事件（每块按「对中影响度」降序取前 10 条）
-     *  - 影响力事件：本地精选库按系统窗口重锚后的全量，按 region 分组（不依赖当前选中区域）
-     *  - 未来事件：远端快照优先（突发 / 人物 / 未来），失败回退内嵌底库
+     * 20261125c 时间硬约束：
+     *  - 影响力中国/美国/全世界、未来·突发、未来·人物：必须落在目标日统计窗口内；
+     *  - 仅「未来·未来」允许超出窗口（目标日起 horizon 日内、仍在执行/尚未发生），用于预防止损；
+     *  - 回测前天/昨天时按「该目标交易日」重算窗口，绝不引入窗口之后的行情与新闻。
      */
-    async function hfeiCollectEvents() {
+    async function hfeiCollectEvents(targetDate) {
       const out = { cn: [], us: [], world: [], breaking: [], future: [], people: [] };
-      const HT = ht_();
-      const sD = (HT && HT.fromLocalInputValue) ? HT.fromLocalInputValue(hfeiWinStart.value) : null;
-      const startISO = sD ? hfeiDateISO(sD) : '';
-      /** YYYY-MM-DD 往前推 n 天（补足事件时用） */
-      const daysBefore = (iso, n) => {
-        const d = new Date(iso + 'T12:00:00');
-        if (isNaN(d.getTime())) return iso;
-        d.setDate(d.getDate() - n);
-        return hfeiDateISO(d);
-      };
-      const topBy = (arr) => arr
+      const w = hfeiWindowFromInputs();
+      if (!w) return out;
+      const horizon = Math.max(7, Math.min(30, Number(futureRangeDays.value) || 15));
+      const topBy = (arr, mode) => (arr || [])
+        .filter(e => (mode === 'future') ? hfeiFutureRelevant(e, targetDate, horizon) : hfeiInStatWindow(e, w))
         .map(e => withCnImp(resolveFutureImpact(e)))
         .sort((a, b) => (Number(b.cnImp && b.cnImp.score) || 0) - (Number(a.cnImp && a.cnImp.score) || 0))
         .slice(0, 10);
       try {
-        const anchored = inflAnchoredSeed();
+        const anchored = hfeiTargetAnchoredSeed(w);
         ['cn', 'us', 'world'].forEach(reg => {
           const pool = anchored
             .filter(e => e.region === reg)
             .map(e => inflWithBullBear(withCnImp(resolveInfluence(e))))
+            .filter(e => hfeiInStatWindow(e, w))
             .sort((a, b) => (Number(b.cnImp && b.cnImp.score) || 0) - (Number(a.cnImp && a.cnImp.score) || 0));
-          // 时间段内事件太少时（盘前窗口通常只覆盖收盘后到此刻），前溯 5 个自然日补足，
-          // 保证 6 个子版块都有足够素材供模型研判；报告 meta 会注明事件条数。
-          let list = startISO ? pool.filter(e => hfeiEvtDateOf(e) >= startISO) : pool;
-          if (list.length < 3 && startISO) {
-            const relax = daysBefore(startISO, 5);
-            list = pool.filter(e => hfeiEvtDateOf(e) >= relax);
-          }
-          out[reg] = list.slice(0, 10);
+          out[reg] = pool.slice(0, 10);
         });
       } catch (err) { /* 事件库异常不阻断报告 */ }
       const b = await hfeiFetchJson('data/hot-topics/breaking-events.json');
-      out.breaking = topBy((b && b.length) ? b : BREAKING_EVENTS_SEED);
+      out.breaking = topBy((b && b.length) ? b : BREAKING_EVENTS_SEED, 'news');
       const p = await hfeiFetchJson('data/hot-topics/celebrity-news.json');
-      out.people = topBy((p && p.length) ? p : CELEBRITY_EVENTS_SEED);
+      out.people = topBy((p && p.length) ? p : CELEBRITY_EVENTS_SEED, 'news');
       const u = await hfeiFetchJson('data/hot-topics/upcoming-events.json');
       const upSrc = (u && u.length) ? u : UPCOMING_EVENTS;
-      const upLive = upSrc.filter(isUpcoming);
-      out.future = topBy(upLive.length ? upLive : upSrc);
-      // 本次实际喂给模型的所有事件日期（去重、升序）：用于校验模型给的「新闻日期」是否真实存在
-      const ds = {};
+      // 目标日口径：只保留目标日仍在执行或尚未发生、且落在目标日+horizon 内的日程事件。
+      const upLive = upSrc.filter(e => hfeiFutureRelevant(e, targetDate, horizon));
+      out.future = topBy(upLive.length ? upLive : upSrc, 'future');
+      // 本次实际喂给模型的所有事件日期（去重、升序）与标题索引：用于校验模型没有引用窗口外/未提供的事件。
+      const ds = {}, titleDate = {};
       ['cn', 'us', 'world', 'breaking', 'future', 'people'].forEach(k => {
-        (out[k] || []).forEach(e => { const d = hfeiEvtDateOf(e); if (d) ds[d] = 1; });
+        (out[k] || []).forEach(e => {
+          const t = hfeiEvtStampOf(e, w);
+          const d = hfeiEvtDateOf(e) || (t == null ? '' : hfeiDateISO(new Date(t)));
+          if (d) ds[d] = 1;
+          const key = hfeiEventKey(e && e.title);
+          if (key && d && !titleDate[key]) titleDate[key] = d;
+        });
       });
       out.dates = Object.keys(ds).sort();
+      out.titleDate = titleDate;
+      out.horizon = horizon;
+      out.window = { startISO: w.startISO, endISO: w.endISO, startMs: w.startMs, endMs: w.endMs };
       return out;
     }
-    /** 最近 3 个交易日大盘情绪：上证 / 创业板指 日K 涨跌幅 + 量能环比 + 涨跌家数（best-effort） */
-    async function hfeiMarketMood() {
-      const mood = { rows: [], cybRows: [], breadth: null, text: '', ok: false };
+    /** 截至目标交易日「前一交易日收盘」的最近 3 个交易日大盘情绪；回测绝不读取目标日及其后行情 */
+    async function hfeiMarketMood(targetDate) {
+      const mood = { rows: [], cybRows: [], breadth: null, text: '', ok: false, cutoff: targetDate || '' };
+      const cutoff = targetDate || hfeiTodayISO();
       const series = async (code, name) => {
         let bars = [];
-        try { bars = await StockAPI.getKline(code, '', '', 12); } catch (e) { bars = []; }
+        try { bars = await StockAPI.getKline(code, '', '', 16); } catch (e) { bars = []; }
         if (!bars || bars.length < 2) return null;
-        const tail = bars.slice(-4);            // 多取一根用于算第一天量能环比
+        // 20261125c：历史回测只保留目标日之前的K线，杜绝未来行情泄漏。
+        const past = bars.filter(b => !b.date || b.date < cutoff);
+        const tail = past.slice(-4);            // 多取一根用于算第一天量能环比
         const rows = [];
         for (let i = 1; i < tail.length; i++) {
           const b = tail[i], pv = tail[i - 1];
@@ -12862,8 +12932,9 @@ const app = createApp({
       };
       const pair = await Promise.all([series('sh000001', '上证指数'), series('sz399006', '创业板指')]);
       const sh = pair[0], cyb = pair[1];
+      // 涨跌家数是实时快照：只有目标日 >= 今天才可能是当时可知的数据；回测一律留空，不编造。
       try {
-        if (typeof StockAPI._eastGet === 'function') {
+        if (cutoff >= hfeiTodayISO() && typeof StockAPI._eastGet === 'function') {
           const j = await StockAPI._eastGet('https://push2.eastmoney.com/api/qt/stock/get?secid=1.000001&fields=f43,f104,f105,f106');
           const d = j && j.data;
           if (d && (d.f104 != null || d.f105 != null)) mood.breadth = { up: d.f104, down: d.f105, flat: d.f106 };
@@ -12871,7 +12942,7 @@ const app = createApp({
       } catch (e) { /* 接口不可用则略过，不编造数字 */ }
       const lines = [];
       if (sh && sh.rows.length) {
-        lines.push('上证指数：' + sh.rows.map(r => r.date + ' ' + r.close.toFixed(2) + '点 ' + hfeiFmtPct(r.chg)
+        lines.push('上证指数（截至 ' + cutoff + ' 前一交易日）：' + sh.rows.map(r => r.date + ' ' + r.close.toFixed(2) + '点 ' + hfeiFmtPct(r.chg)
           + (r.volChg == null ? '' : '（量' + (r.volChg >= 0 ? '增' : '缩') + Math.abs(r.volChg).toFixed(0) + '%）')).join('；'));
       }
       if (cyb && cyb.rows.length) {
@@ -12881,7 +12952,7 @@ const app = createApp({
       mood.rows = (sh && sh.rows) || [];
       mood.cybRows = (cyb && cyb.rows) || [];
       mood.ok = !!(sh || cyb);
-      mood.text = lines.length ? lines.join('\n') : '（行情接口暂不可用：本次未取得最近 3 个交易日大盘数据）';
+      mood.text = lines.length ? lines.join('\n') : '（行情接口暂不可用：本次未取得目标日前的 3 个交易日大盘数据）';
       return mood;
     }
     /** 单条事件的提示词行（压缩到 1 行，控制 token） */
@@ -12990,7 +13061,7 @@ const app = createApp({
       const okDates = c.dates || [];              // 本次事件清单里出现过的日期
       const dateSet = {};
       okDates.forEach(d => { if (d) dateSet[d] = 1; });
-      const fallbackDate = c.fallbackDate || okDates[okDates.length - 1] || hfeiTodayISO();
+      const fallbackDate = c.fallbackDate || okDates[okDates.length - 1] || '';
       const allowed = (Array.isArray(c.concepts) ? c.concepts : []).filter(Boolean).slice(0, 3);
       const perConcept = {};                      // 每概念计数，保证结构稳定
       allowed.forEach(k => { perConcept[k] = 0; });
@@ -13025,9 +13096,8 @@ const app = createApp({
         const nd = String((p && (p.newsDate || p.date)) || '');
         const nm = /^(\d{4})-(\d{2})-(\d{2})/.exec(nd);
         if (nm) item.newsDate = nm[1] + '-' + nm[2] + '-' + nm[3];
-        if (!item.newsDate || (!dateSet[item.newsDate] && item.newsDate > hfeiTodayISO())) {
-          item.newsDate = fallbackDate;              // 模型给了不存在的日期 → 回落到主导事件日期
-        }
+        // 20261125c：newsDate 必须来自本次实际喂给模型的事件日期，否则回落到主导事件日/目标日。
+        if (!item.newsDate || !dateSet[item.newsDate]) item.newsDate = fallbackDate;
         if (!/^\d{6}$/.test(item.code) && item.name) {
           try {
             const r = await StockAPI.searchStocks(item.name);
@@ -13055,22 +13125,20 @@ const app = createApp({
         if (!silent) { showToast('请先在「偏好设置 → AI 解读」配置 AI 接口', 'info'); showPrefs.value = true; }
         return;
       }
-      const HT = ht_();
-      const sD = (HT && HT.fromLocalInputValue) ? HT.fromLocalInputValue(hfeiWinStart.value) : null;
-      const eD = (HT && HT.fromLocalInputValue) ? HT.fromLocalInputValue(hfeiWinEnd.value) : null;
-      if (!sD || !eD || sD.getTime() >= eD.getTime()) {
+      const win = hfeiWindowFromInputs();
+      if (!win) {
         hfeiError.value = '时间段无效：开始时间需早于结束时间';
         if (!silent) showToast('时间段无效：开始时间需早于结束时间', 'error');
         return;
       }
       hfeiLoading.value = true;
       hfeiError.value = '';
-      hfeiStep.value = '① 汇总 6 个子版块的事件…';
+      hfeiStep.value = '① 汇总 6 个子版块的事件（严格按目标日统计窗口）…';
       try {
         const targetDate = hfeiTargetTradingDay();
-        const ev = await hfeiCollectEvents();
-        hfeiStep.value = '② 读取最近 3 个交易日的大盘情绪…';
-        const mood = await hfeiMarketMood();
+        const ev = await hfeiCollectEvents(targetDate);
+        hfeiStep.value = '② 读取目标日前最近 3 个交易日的大盘情绪…';
+        const mood = await hfeiMarketMood(targetDate);
         hfeiStep.value = '③ 大模型研判中（通常 30~90 秒）…';
         const model = D.settings.aiModel || 'AI';
         const blocks = [
@@ -13085,11 +13153,15 @@ const app = createApp({
         const evText = blocks.map(function (pair) {
           const list = pair[1];
           const wv = Number(stratW[hfeiBlockKeyOf(pair[0])] || 1).toFixed(2);
-          return '【' + pair[0] + '｜权重' + wv + '】共 ' + list.length + ' 条\n'
+          const scope = pair[0] === '未来·未来' ? '｜仅此块可超窗口（目标日起 ' + (ev.horizon || 15) + ' 日内）' : '｜严格窗口内';
+          return '【' + pair[0] + '｜权重' + wv + scope + '】共 ' + list.length + ' 条\n'
             + (list.length ? list.map(e => hfeiEventLine(pair[0], e)).join('\n') : '（该时间段内暂无）');
         }).join('\n\n');
         const sys = '你是 A 股盘前策略分析师，擅长把全球新闻事件映射到 A 股板块与个股。'
           + '你只能基于用户给出的事件清单与大盘数据推理：不得编造清单里没有的消息，不得虚构股票代码，不确定的宁可不写。'
+          + '【数据时间硬约束】影响力·中国/美国/全世界、未来·突发、未来·人物的每条新闻都必须落在【统计时间段】内；'
+          + '只有「未来·未来」允许引用超出统计窗口、但在目标日起 ' + (ev.horizon || 15) + ' 日内仍在执行或尚未发生的事件（用于预防止损）。'
+          + '不得引用上面清单以外的任何事件/日期，大盘数据也只截至目标交易日前一交易日收盘。'
           + '输出必须是严格的 JSON 对象（不要 markdown 代码块、不要任何多余文字），结构如下：\n'
           + '{"mood":{"label":"强势/偏强/中性/偏弱/弱势","score":0-100,"comment":"对最近3个交易日大盘情绪的2-3句研判"},'
           + '"dominant":{"source":"影响力·中国/影响力·美国/影响力·全世界/未来·突发/未来·未来/未来·人物","why":"为什么它是本次定价的主导，60字内","weight":1-5},'
@@ -13116,10 +13188,10 @@ const app = createApp({
           + 'actionConcepts 必须正好 3 个 A 股概念板块名（字符串数组），是当前事件下最值得操作的方向，3 个不得重复，须能从上面事件与 bullSectors 逻辑中推出。';
         const user = '【目标交易日】' + targetDate + '（即将开盘的交易日）\n'
           + '【统计时间段】' + (hfeiWinText.value || (hfeiWinStart.value + ' ~ ' + hfeiWinEnd.value))
-          + '（盘前口径：上一交易日 15:00 收盘 → 目标交易日 9:25 开盘，仅据此区间信息判断）\n'
+          + '（盘前口径：上一交易日 15:00 收盘 → 目标交易日 9:25 开盘；普通新闻严格仅据此区间，未来日程例外）\n'
           + hfeiStrategyPrompt() + '\n\n'
-          + '【最近 3 个交易日大盘情绪】\n' + mood.text + '\n\n'
-          + '【6 个子版块事件（时间段内，按「对中国影响度」降序，最多每块 10 条）】\n' + evText + '\n\n'
+          + '【最近 3 个交易日大盘情绪（截至 ' + targetDate + ' 前一交易日收盘，未使用目标日及之后的行情）】\n' + mood.text + '\n\n'
+          + '【6 个子版块事件（普通事件严格在统计窗口内；仅「未来·未来」可超窗口，按对中影响度降序，最多每块 10 条）】\n' + evText + '\n\n'
           + '请综合上面的事件与大盘情绪，先判定主导子版块，再给出对 ' + targetDate + ' 开盘的板块预测，严格按要求输出 JSON。';
         const res = await callOpenAICompat(
           [{ role: 'system', content: sys }, { role: 'user', content: user }],
@@ -13149,10 +13221,28 @@ const app = createApp({
           }
           return out;
         })();
+        // 20261125c：AI 的 topEvents 只能来自本次实际喂给它的事件（标题归一匹配，或日期在事件日期清单内）。
+        const allowedDates = {};
+        (ev.dates || []).forEach(d => { if (d) allowedDates[d] = 1; });
+        const titleDate = ev.titleDate || {};
+        const topEvents = arrOf(j.topEvents).slice(0, 8).map(x => {
+          const dm = /^(\d{4}-\d{2}-\d{2})/.exec(String((x && (x.newsDate || x.date)) || ''));
+          const key = hfeiEventKey(x && x.title);
+          const matched = titleDate[key] || '';
+          const date = (dm ? dm[1] : '') || matched;
+          return {
+            source: String((x && x.source) || ''),
+            title: String((x && x.title) || ''),
+            score: clamp100(x && x.score),
+            dir: (x && x.dir === 'bear') ? 'bear' : 'bull',
+            why: String((x && x.why) || ''),
+            date: date
+          };
+        }).filter(x => x.title && ((x.date && allowedDates[x.date]) || titleDate[hfeiEventKey(x.title)]));
         const picks = await hfeiVerifyPicks(arrOf(j.picks), {
           dates: ev.dates || [],
           concepts: actConcepts,
-          fallbackDate: (ev.dates && ev.dates.length ? ev.dates[ev.dates.length - 1] : '') || hfeiTodayISO()
+          fallbackDate: (ev.dates && ev.dates.length ? ev.dates[ev.dates.length - 1] : '') || targetDate
         });
         const domTag = String((j.dominant && j.dominant.source) || '');
         const rec = {
@@ -13163,6 +13253,7 @@ const app = createApp({
           windowStart: hfeiWinStart.value,
           windowEnd: hfeiWinEnd.value,
           windowText: hfeiWinText.value,
+          windowRule: '普通新闻严格落在统计窗口内；仅「未来·未来」允许目标日起 ' + (ev.horizon || 15) + ' 日内事件（预防止损）；大盘数据截至目标日前一交易日',
           model: model,
           strategyVersion: hfeiStrategy().version,
           market: { text: mood.text, rows: mood.rows, cybRows: mood.cybRows, breadth: mood.breadth },
@@ -13182,14 +13273,7 @@ const app = createApp({
               weight: Math.max(1, Math.min(5, Math.round(Number(j.dominant && j.dominant.weight) || 3))),
               key: hfeiBlockKeyOf(domTag)
             },
-            topEvents: arrOf(j.topEvents).slice(0, 8).map(x => ({
-              source: String((x && x.source) || ''),
-              title: String((x && x.title) || ''),
-              score: clamp100(x && x.score),
-              dir: (x && x.dir === 'bear') ? 'bear' : 'bull',
-              why: String((x && x.why) || ''),
-              date: (function () { const m = /^(\d{4}-\d{2}-\d{2})/.exec(String((x && (x.newsDate || x.date)) || '')); return m ? m[1] : ''; })()
-            })).filter(x => x.title),
+            topEvents: topEvents,
             bullSectors: section(j.bullSectors, 8),
             bearSectors: section(j.bearSectors, 8),
             // 20261123a：主导事件预计影响 + 建议操作的三个概念板块（旧报告无此字段时不影响渲染）
@@ -13201,7 +13285,8 @@ const app = createApp({
                 const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(String(v || ''));
                 return m ? m[1] + '-' + m[2] + '-' + m[3] : '';
               };
-              const from = normDate(im.from) || targetDate;
+              const fromRaw = normDate(im.from);
+              const from = (fromRaw && (allowedDates[fromRaw] || fromRaw === targetDate)) ? fromRaw : targetDate;
               let to = normDate(im.to);
               if (!to) {
                 const d = new Date(from + 'T00:00:00');
