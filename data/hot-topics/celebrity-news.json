@@ -1,20 +1,20 @@
 {
-  "generatedAt": "2026-11-24 10:53",
+  "generatedAt": "2026-11-24 22:45",
   "generatedBy": "GitHub Actions · 多源实时聚合",
-  "sourceCount": 5,
-  "autoCount": 4,
+  "sourceCount": 3,
+  "autoCount": 5,
   "events": [
     {
-      "id": "ap11xu0qd",
-      "title": "黄仁勋重返英伟达提振AI股，韩国股市大幅反弹",
+      "id": "aplzmie",
+      "title": "不只是CEO复职 韩国券商：黄仁勋回归有望恢复AI市场信心",
       "tag": "人物/黄仁勋",
-      "region": "美国",
-      "concept": "aiCapex",
-      "time": "2026-11-24 10:18",
-      "datetime": "2026-11-24 10:18",
+      "region": "全球",
+      "concept": "ai",
+      "time": "2026-11-24 22:06",
+      "datetime": "2026-11-24 22:06",
       "source": "环球市场播报",
-      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-24/doc-inizuxvn0185199.shtml",
-      "summary": "周二，受华尔街科技股大涨带动，韩国股市从近期10个月低点反弹，此前黄仁勋重返英伟达CEO职位，引发了遭重挫的人工智能股的解脱性反弹。",
+      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-24/doc-inizvzia8945906.shtml",
+      "summary": "随着英伟达首席执行官（CEO）黄仁勋重返管理岗位等消息推动韩国股市大幅反弹，韩国证券业界认为，这可能成为人工智能（AI）投资生态系统恢复市场信心的契机。",
       "relatedStocks": [
         "英伟达",
         "微软",
@@ -36,21 +36,21 @@
       "bearIndustries": [
         "传统IT服务"
       ],
-      "heat": 42,
+      "heat": 55,
       "momentum": 31,
       "_auto": true
     },
     {
-      "id": "ap1t2lbq6",
-      "title": "11月24日外盘头条：特朗普介入推动 黄仁勋重掌英伟达 公司市值增加9500亿美元 AI相关股票普涨",
+      "id": "ap9tzz1d",
+      "title": "黄仁勋回归缓解韩国HBM需求担忧 业内警示降低单一客户依赖",
       "tag": "人物/黄仁勋",
       "region": "美国",
       "concept": "aiCapex",
-      "time": "2026-11-24 05:38",
-      "datetime": "2026-11-24 05:38",
+      "time": "2026-11-24 22:36",
+      "datetime": "2026-11-24 22:36",
       "source": "环球市场播报",
-      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-24/doc-inizupfs0261380.shtml",
-      "summary": "全球财经媒体昨夜今晨共同关注的头条新闻主要有： 1、原油：油价下跌 供应趋于充裕且伊朗局势暂缓 2、黄仁勋复职带动AI相关股票普涨 英伟达市值数小时增逾1万亿美元 3...",
+      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-24/doc-inizwfqx2055436.shtml",
+      "summary": "黄仁勋在辞职仅11天后复任英伟达首席执行官，此举缓解了市场对三星电子、SK海力士与这家美国芯片巨头的高带宽存储器（HBM）合作，以及韩国由AI带动的存储景气周期能否延续...",
       "relatedStocks": [
         "英伟达",
         "微软",
@@ -72,54 +72,21 @@
       "bearIndustries": [
         "传统IT服务"
       ],
-      "heat": 83,
-      "momentum": 18,
-      "_auto": true
-    },
-    {
-      "id": "ap1rbfnh5",
-      "title": "特朗普举办加密货币晚宴，其迷因币价格跌至1美元以下",
-      "tag": "人物/特朗普",
-      "region": "美国",
-      "concept": "usFinance",
-      "time": "2026-11-24 00:04",
-      "datetime": "2026-11-24 00:04",
-      "source": "环球市场播报",
-      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-24/doc-inizuarw0396815.shtml",
-      "summary": "核心要点周日，特朗普为其迷因币的大额持有者举办晚宴。该代币曾在 2025 年 1 月冲高至 75 美元以上，如今交易价格已经跌破 1 美元。",
-      "relatedStocks": [
-        "美股科技",
-        "黄金"
-      ],
-      "bullConcepts": [
-        "黄金",
-        "防御板块"
-      ],
-      "bearConcepts": [
-        "高估值成长股"
-      ],
-      "bullIndustries": [
-        "银行",
-        "黄金"
-      ],
-      "bearIndustries": [
-        "高杠杆地产"
-      ],
       "heat": 24,
-      "momentum": 18,
+      "momentum": 36,
       "_auto": true
     },
     {
-      "id": "ap8tqn46",
-      "title": "马斯克在黄仁勋复职后发声：逆境中的朋友才是真朋友",
+      "id": "apcy4lhr",
+      "title": "马斯克：模型竞争不过，不如卖算力",
       "tag": "人物/马斯克",
       "region": "全球",
       "concept": "ai",
-      "time": "2026-11-24 08:12",
-      "datetime": "2026-11-24 08:12",
+      "time": "2026-11-24 22:10",
+      "datetime": "2026-11-24 22:10",
       "source": "环球市场播报",
-      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-24/doc-inizutpn7880566.shtml",
-      "summary": "当地时间周一，在英伟达董事会一致决定让黄仁勋重返首席执行官（CEO）岗位后，特斯拉与SpaceX首席执行官埃隆·马斯克再次发声，力挺他的好友黄仁勋。",
+      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-24/doc-inizvzia8947758.shtml",
+      "summary": "马斯克旗下的SpaceX正在将数据中心算力出租给包括Anthropic在内的竞争对手。这使其自身的人工智能业务发展变得更加困难。",
       "relatedStocks": [
         "英伟达",
         "微软",
@@ -141,7 +108,79 @@
       "bearIndustries": [
         "传统IT服务"
       ],
-      "heat": 46,
+      "heat": 24,
+      "momentum": 26,
+      "_auto": true
+    },
+    {
+      "id": "aplpvuv6",
+      "title": "共和党参议员麦考密克：特朗普干预英伟达创造危险先例",
+      "tag": "人物/特朗普",
+      "region": "美国",
+      "concept": "aiCapex",
+      "time": "2026-11-24 21:41",
+      "datetime": "2026-11-24 21:41",
+      "source": "环球市场播报",
+      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-24/doc-inizvzia8931125.shtml",
+      "summary": "共和党参议员戴夫·麦考密克（Dave McCormick）警告称，美国总统唐纳德·特朗普干预英伟达公司董事会、推动黄仁勋恢复首席执行官职务的行为，可能开创一个“危险先例”。",
+      "relatedStocks": [
+        "英伟达",
+        "微软",
+        "台积电"
+      ],
+      "bullConcepts": [
+        "AI算力",
+        "半导体",
+        "国产替代"
+      ],
+      "bearConcepts": [
+        "传统软件"
+      ],
+      "bullIndustries": [
+        "半导体",
+        "AI应用",
+        "算力基础设施"
+      ],
+      "bearIndustries": [
+        "传统IT服务"
+      ],
+      "heat": 24,
+      "momentum": 26,
+      "_auto": true
+    },
+    {
+      "id": "ap12e82om",
+      "title": "美国检方：OpenAI工程师存有数十份会议录音",
+      "tag": "人物/奥尔特曼",
+      "region": "美国",
+      "concept": "aiCapex",
+      "time": "2026-11-24 15:42",
+      "datetime": "2026-11-24 15:42",
+      "source": "环球市场播报",
+      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-24/doc-inizvkmk9060135.shtml",
+      "summary": "美国检察官称，这名被指控在OpenAI办公场所私装窃听设备的工程师，录下了该公司与外国政府的会谈内容，还拍摄了保密文件。",
+      "relatedStocks": [
+        "英伟达",
+        "微软",
+        "台积电"
+      ],
+      "bullConcepts": [
+        "AI算力",
+        "半导体",
+        "国产替代"
+      ],
+      "bearConcepts": [
+        "传统软件"
+      ],
+      "bullIndustries": [
+        "半导体",
+        "AI应用",
+        "算力基础设施"
+      ],
+      "bearIndustries": [
+        "传统IT服务"
+      ],
+      "heat": 24,
       "momentum": 18,
       "_auto": true
     },

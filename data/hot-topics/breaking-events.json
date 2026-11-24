@@ -1,20 +1,20 @@
 {
-  "generatedAt": "2026-11-24 10:53",
+  "generatedAt": "2026-11-24 22:45",
   "generatedBy": "GitHub Actions · 多源实时聚合",
-  "sourceCount": 5,
+  "sourceCount": 3,
   "autoCount": 18,
   "events": [
     {
-      "id": "ab11xu0qd",
-      "title": "黄仁勋重返英伟达提振AI股，韩国股市大幅反弹",
+      "id": "ablzmie",
+      "title": "不只是CEO复职 韩国券商：黄仁勋回归有望恢复AI市场信心",
       "tag": "科技/AI",
-      "region": "美国",
-      "concept": "aiCapex",
-      "time": "2026-11-24 10:18",
-      "datetime": "2026-11-24 10:18",
+      "region": "全球",
+      "concept": "ai",
+      "time": "2026-11-24 22:06",
+      "datetime": "2026-11-24 22:06",
       "source": "环球市场播报",
-      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-24/doc-inizuxvn0185199.shtml",
-      "summary": "周二，受华尔街科技股大涨带动，韩国股市从近期10个月低点反弹，此前黄仁勋重返英伟达CEO职位，引发了遭重挫的人工智能股的解脱性反弹。",
+      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-24/doc-inizvzia8945906.shtml",
+      "summary": "随着英伟达首席执行官（CEO）黄仁勋重返管理岗位等消息推动韩国股市大幅反弹，韩国证券业界认为，这可能成为人工智能（AI）投资生态系统恢复市场信心的契机。",
       "relatedStocks": [
         "英伟达",
         "微软",
@@ -36,90 +36,21 @@
       "bearIndustries": [
         "传统IT服务"
       ],
-      "heat": 42,
+      "heat": 55,
       "momentum": 31,
       "_auto": true
     },
     {
-      "id": "ab1c8c6hz",
-      "title": "《上海市浦东新区促进离岸金融业务发展若干规定（草案）》公开征求意见。其中提到，支持依托数字人民币国际运营中心，在安全可控前提下建设和运营数字人民币跨境、离岸和区块链基础设施，稳妥…",
-      "tag": "数字货币",
-      "region": "中国",
-      "concept": "dataEl",
-      "time": "2026-11-24 10:17",
-      "datetime": "2026-11-24 10:17",
-      "source": "华尔街见闻",
-      "url": "https://wallstreetcn.com/livenews/3204644",
-      "summary": "《上海市浦东新区促进离岸金融业务发展若干规定（草案）》公开征求意见。其中提到，支持依托数字人民币国际运营中心，在安全可控前提下建设和运营数字人民币跨境、离岸和区块链基础设施，稳妥推进与境外金融基础设施的互联互通。支持数字人民币在离岸业务中的应用和场景拓展，提升离岸业务支付清算效率。（界面）",
-      "relatedStocks": [
-        "Coinbase",
-        "MicroStrategy"
-      ],
-      "bullConcepts": [
-        "区块链",
-        "稳定币"
-      ],
-      "bearConcepts": [
-        "高杠杆投机"
-      ],
-      "bullIndustries": [
-        "金融科技",
-        "区块链"
-      ],
-      "bearIndustries": [
-        "传统支付"
-      ],
-      "heat": 24,
-      "momentum": 26,
-      "_auto": true
-    },
-    {
-      "id": "abirx2zw",
-      "title": "联想集团盘中涨超11% 大摩强调联想业绩超预期",
-      "tag": "科技/AI",
-      "region": "全球",
-      "concept": "ai",
-      "time": "2026-11-24 10:01",
-      "datetime": "2026-11-24 10:01",
-      "source": "新浪港股",
-      "url": "https://finance.sina.com.cn/stock/hkstock/marketalerts/2026-11-24/doc-inizuxve5160275.shtml",
-      "summary": "联想集团（00992）盘中涨超11%。截至发稿，股价上涨7.05%，现报18.83港元，成交额16.219亿港元。 英伟达宣布黄仁勋恢复担任总裁、首席执行官及董事会成员。",
-      "relatedStocks": [
-        "英伟达",
-        "微软",
-        "台积电"
-      ],
-      "bullConcepts": [
-        "AI算力",
-        "半导体",
-        "国产替代"
-      ],
-      "bearConcepts": [
-        "传统软件"
-      ],
-      "bullIndustries": [
-        "半导体",
-        "AI应用",
-        "算力基础设施"
-      ],
-      "bearIndustries": [
-        "传统IT服务"
-      ],
-      "heat": 38,
-      "momentum": 26,
-      "_auto": true
-    },
-    {
-      "id": "ab1t2lbq6",
-      "title": "11月24日外盘头条：特朗普介入推动 黄仁勋重掌英伟达 公司市值增加9500亿美元 AI相关股票普涨",
+      "id": "ab1fivajq",
+      "title": "AI领域最有影响力的CEO回来了 但市场这份信心能维持多久？",
       "tag": "科技/AI",
       "region": "美国",
       "concept": "aiCapex",
-      "time": "2026-11-24 05:38",
-      "datetime": "2026-11-24 05:38",
+      "time": "2026-11-24 22:24",
+      "datetime": "2026-11-24 22:24",
       "source": "环球市场播报",
-      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-24/doc-inizupfs0261380.shtml",
-      "summary": "全球财经媒体昨夜今晨共同关注的头条新闻主要有： 1、原油：油价下跌 供应趋于充裕且伊朗局势暂缓 2、黄仁勋复职带动AI相关股票普涨 英伟达市值数小时增逾1万亿美元 3...",
+      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-24/doc-inizvzhz2179720.shtml",
+      "summary": "黄仁勋出人意料重返英伟达，给近几周遭受剧烈震荡的 AI 产业重燃希望。 在黄仁勋离任的 11 天里，英伟达市值蒸发超 1 万亿美元；以科技股为主的纳斯达克综合指数逼近调整关...",
       "relatedStocks": [
         "英伟达",
         "微软",
@@ -141,21 +72,21 @@
       "bearIndustries": [
         "传统IT服务"
       ],
-      "heat": 83,
-      "momentum": 18,
+      "heat": 33,
+      "momentum": 41,
       "_auto": true
     },
     {
-      "id": "abdo9tz3",
-      "title": "特朗普披露黄仁勋复职内幕：股价大跌后说服董事会更容易",
+      "id": "ab9tzz1d",
+      "title": "黄仁勋回归缓解韩国HBM需求担忧 业内警示降低单一客户依赖",
       "tag": "科技/AI",
       "region": "美国",
       "concept": "aiCapex",
-      "time": "2026-11-24 10:50",
-      "datetime": "2026-11-24 10:50",
-      "source": "新浪7×24",
-      "url": "https://finance.sina.cn/7x24/2026-11-24/detail-inizuxvn0207694.d.html",
-      "summary": "【特朗普披露黄仁勋复职内幕：股价大跌后说服董事会更容易】特朗普说，自己确实说服了董事会，而且昨天说服他们，比一个半星期前容易得多。此前董事会成员看到英伟达经营状况良好，可能认为接手公司是一件很有吸引力的事情。但当公司股价开始下跌40%甚至50%时，他们就会发现，这份工作好像也没那么好干了。所以，昨天再去说服他们，事情就容易多了。此前他主要是通过代表与董事会沟通，并没有像昨天那…",
+      "time": "2026-11-24 22:36",
+      "datetime": "2026-11-24 22:36",
+      "source": "环球市场播报",
+      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-24/doc-inizwfqx2055436.shtml",
+      "summary": "黄仁勋在辞职仅11天后复任英伟达首席执行官，此举缓解了市场对三星电子、SK海力士与这家美国芯片巨头的高带宽存储器（HBM）合作，以及韩国由AI带动的存储景气周期能否延续...",
       "relatedStocks": [
         "英伟达",
         "微软",
@@ -182,16 +113,124 @@
       "_auto": true
     },
     {
-      "id": "abkrrkd6",
-      "title": "陕西省委原常委、西安市委原书记方红卫被提起公诉",
+      "id": "ab5je5hx",
+      "title": "开盘：三大股指齐跌，英伟达股价回落，回吐周一部分涨幅",
+      "tag": "科技/AI",
+      "region": "美国",
+      "concept": "aiCapex",
+      "time": "2026-11-24 22:31",
+      "datetime": "2026-11-24 22:31",
+      "source": "环球市场播报",
+      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-24/doc-inizwfqv9860942.shtml",
+      "summary": "受英伟达股价回落拖累，美股三大股指周二下行，回吐前一交易日因黄仁勋复职带动的大幅涨幅。 道指跌0.55%，标普500指数跌1.10%，纳指跌1.35%。",
+      "relatedStocks": [
+        "英伟达",
+        "微软",
+        "台积电"
+      ],
+      "bullConcepts": [
+        "AI算力",
+        "半导体",
+        "国产替代"
+      ],
+      "bearConcepts": [
+        "传统软件"
+      ],
+      "bullIndustries": [
+        "半导体",
+        "AI应用",
+        "算力基础设施"
+      ],
+      "bearIndustries": [
+        "传统IT服务"
+      ],
+      "heat": 24,
+      "momentum": 36,
+      "_auto": true
+    },
+    {
+      "id": "ab1hl6otq",
+      "title": "AI市场剧烈震荡，考验沃什的加息策略",
+      "tag": "科技/AI",
+      "region": "美国",
+      "concept": "aiCapex",
+      "time": "2026-11-24 22:16",
+      "datetime": "2026-11-24 22:16",
+      "source": "环球市场播报",
+      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-24/doc-inizvzia8951424.shtml",
+      "summary": "作者：詹妮弗・舍恩伯格 上周股市大跌之时，华尔街一度押注美联储会放缓加息步伐。而周一受英伟达黄仁勋复职消息带动，市场大幅反弹...",
+      "relatedStocks": [
+        "英伟达",
+        "微软",
+        "台积电"
+      ],
+      "bullConcepts": [
+        "AI算力",
+        "半导体",
+        "国产替代"
+      ],
+      "bearConcepts": [
+        "传统软件"
+      ],
+      "bullIndustries": [
+        "半导体",
+        "AI应用",
+        "算力基础设施"
+      ],
+      "bearIndustries": [
+        "传统IT服务"
+      ],
+      "heat": 24,
+      "momentum": 36,
+      "_auto": true
+    },
+    {
+      "id": "abro07yc",
+      "title": "散户投资者抄底英伟达获利",
+      "tag": "科技/AI",
+      "region": "美国",
+      "concept": "aiCapex",
+      "time": "2026-11-24 22:14",
+      "datetime": "2026-11-24 22:14",
+      "source": "环球市场播报",
+      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-24/doc-inizvzhx9981210.shtml",
+      "summary": "黄仁勋的回归是在硅谷精英群体中一个派系的推动下实现的，但散户投资者也纷纷入场，并从中获得了回报。 零售券商Robinhood的一名发言人表示，11月12日黄仁勋辞职当天...",
+      "relatedStocks": [
+        "英伟达",
+        "微软",
+        "台积电"
+      ],
+      "bullConcepts": [
+        "AI算力",
+        "半导体",
+        "国产替代"
+      ],
+      "bearConcepts": [
+        "传统软件"
+      ],
+      "bullIndustries": [
+        "半导体",
+        "AI应用",
+        "算力基础设施"
+      ],
+      "bearIndustries": [
+        "传统IT服务"
+      ],
+      "heat": 24,
+      "momentum": 26,
+      "_auto": true
+    },
+    {
+      "id": "ab1b7qeth",
+      "title": "川大智胜债务风险升级！借款逾期超1.9亿元，占净资产超两成，日违约金达9.62万元",
       "tag": "宏观/综合",
-      "region": "中国",
-      "concept": "broker",
-      "time": "2026-11-24 10:01",
-      "datetime": "2026-11-24 10:01",
-      "source": "财联社",
-      "url": "https://www.cls.cn/detail/2542569",
-      "summary": "【陕西省委原常委、西安市委原书记方红卫被提起公诉】财联社11月24日电，记者今天（24日）从最高人民检察院获悉，陕西省委原常委、西安市委原书记方红卫涉嫌受贿一案，由国家监察委员会调查终结，移送检察机关审查起诉。最高人民检察院依法以涉嫌受贿罪对方红卫作出逮捕决定，并指定由甘肃省兰州市人民检察院审查起诉。近日，兰州市人民检察院已向兰州市中级人民法院提起公诉。 检察机关在审查起诉阶…",
+      "region": "全球",
+      "concept": "macro",
+      "time": "2026-11-24 16:15",
+      "datetime": "2026-11-24 16:15",
+      "source": "市场资讯",
+      "url": "https://finance.sina.com.cn/stock/s/2026-11-24/doc-inizvqtm4816397.shtml",
+      "summary": "来源：金融投资报 11月24日，川大智胜（002253）披露公告，因部分关联借款出现逾期触发违约条款，债权人四川振兴产业技术研究院有限公司（以下简称“产研院”）宣布剩余全部...",
       "relatedStocks": [
         "宽基指数"
       ],
@@ -207,413 +246,51 @@
       "bearIndustries": [
         "顺周期"
       ],
-      "heat": 24,
-      "momentum": 26,
-      "_auto": true
-    },
-    {
-      "id": "abpl1p1s",
-      "title": "胡塞武装称荷台达通信设施遭袭致15死21伤",
-      "tag": "贸易/供应链",
-      "region": "全球",
-      "concept": "trade",
-      "time": "2026-11-24 10:31",
-      "datetime": "2026-11-24 10:31",
-      "source": "财联社",
-      "url": "https://www.cls.cn/detail/2542596",
-      "summary": "【胡塞武装称荷台达通信设施遭袭致15死21伤】财联社11月24日电，也门胡塞武装卫生部门发言人表示，沙特主导的联军对也门荷台达市一处通信设施发动的空袭已造成15人死亡、21人受伤。目前伤亡人数已基本确定。当地时间23日，也门胡塞武装称，也门西部红海港口城市荷台达一处在建通信设施当天凌晨遭沙特战机空袭。",
-      "relatedStocks": [
-        "跨境电商",
-        "航运"
-      ],
-      "bullConcepts": [
-        "内需",
-        "国产替代"
-      ],
-      "bearConcepts": [
-        "出口链"
-      ],
-      "bullIndustries": [
-        "跨境电商",
-        "内需消费"
-      ],
-      "bearIndustries": [
-        "出口制造",
-        "航运"
-      ],
-      "heat": 24,
-      "momentum": 36,
-      "_auto": true
-    },
-    {
-      "id": "ab5stbru",
-      "title": "俄罗斯军方袭击了乌克兰苏梅州的无人机控制站和星链终端。",
-      "tag": "地缘/政治",
-      "region": "全球",
-      "concept": "macro",
-      "time": "2026-11-24 10:09",
-      "datetime": "2026-11-24 10:09",
-      "source": "新浪7×24",
-      "url": "https://finance.sina.cn/7x24/2026-11-24/detail-inizuxvk7848489.d.html",
-      "summary": "俄罗斯军方袭击了乌克兰苏梅州的无人机控制站和星链终端。",
-      "relatedStocks": [
-        "军工",
-        "黄金"
-      ],
-      "bullConcepts": [
-        "军工",
-        "避险资产"
-      ],
-      "bearConcepts": [
-        "风险资产"
-      ],
-      "bullIndustries": [
-        "军工",
-        "黄金"
-      ],
-      "bearIndustries": [
-        "航空",
-        "旅游"
-      ],
-      "heat": 24,
-      "momentum": 26,
-      "_auto": true
-    },
-    {
-      "id": "ab1y1dnl",
-      "title": "11月24日美股收盘：道指飙升1400点 纳指涨6% 黄仁勋重掌英伟达 英伟达涨超31%",
-      "tag": "科技/AI",
-      "region": "美国",
-      "concept": "aiCapex",
-      "time": "2026-11-24 05:18",
-      "datetime": "2026-11-24 05:18",
-      "source": "环球市场播报",
-      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-24/doc-inizupfs0253751.shtml",
-      "summary": "周一，美国股市大幅上涨，此前英伟达重新任命黄仁勋为首席执行官，重振了人工智能交易，并推动主要股指走高。上周五，美国三大主要股指收盘时均处于回调区间。",
-      "relatedStocks": [
-        "英伟达",
-        "微软",
-        "台积电"
-      ],
-      "bullConcepts": [
-        "AI算力",
-        "半导体",
-        "国产替代"
-      ],
-      "bearConcepts": [
-        "传统软件"
-      ],
-      "bullIndustries": [
-        "半导体",
-        "AI应用",
-        "算力基础设施"
-      ],
-      "bearIndustries": [
-        "传统IT服务"
-      ],
-      "heat": 60,
-      "momentum": 18,
-      "_auto": true
-    },
-    {
-      "id": "abziei1b",
-      "title": "当被问及美国司法部是否已结束对黄仁勋的调查时，司法部长Todd Blanche对福克斯新闻表示：“这个问题的前提是存在一项已启动的调查，但这件事从未被公开讨论过。”谈及黄仁勋重返…",
-      "tag": "科技/AI",
-      "region": "美国",
-      "concept": "aiCapex",
-      "time": "2026-11-24 09:19",
-      "datetime": "2026-11-24 09:19",
-      "source": "华尔街见闻",
-      "url": "https://wallstreetcn.com/livenews/3204613",
-      "summary": "当被问及美国司法部是否已结束对黄仁勋的调查时，司法部长Todd Blanche对福克斯新闻表示：“这个问题的前提是存在一项已启动的调查，但这件事从未被公开讨论过。”谈及黄仁勋重返英伟达时，Blanche称“总统特朗普花了很多时间与政府中的多位高层沟通，其中也包括我。这并非单方面做出的决定。”",
-      "relatedStocks": [
-        "英伟达",
-        "微软",
-        "台积电"
-      ],
-      "bullConcepts": [
-        "AI算力",
-        "半导体",
-        "国产替代"
-      ],
-      "bearConcepts": [
-        "传统软件"
-      ],
-      "bullIndustries": [
-        "半导体",
-        "AI应用",
-        "算力基础设施"
-      ],
-      "bearIndustries": [
-        "传统IT服务"
-      ],
-      "heat": 33,
-      "momentum": 26,
-      "_auto": true
-    },
-    {
-      "id": "ab5mrcvj",
-      "title": "英伟达董事会恢复黄仁勋首席执行官职务后，该公司股价飙升。寻求提供英伟达单日表现两倍反向回报的GraniteShares 2x Short NVDA Daily ETF（代码NVD…",
-      "tag": "科技/AI",
-      "region": "美国",
-      "concept": "aiCapex",
-      "time": "2026-11-24 09:34",
-      "datetime": "2026-11-24 09:34",
-      "source": "华尔街见闻",
-      "url": "https://wallstreetcn.com/livenews/3204627",
-      "summary": "英伟达董事会恢复黄仁勋首席执行官职务后，该公司股价飙升。寻求提供英伟达单日表现两倍反向回报的GraniteShares 2x Short NVDA Daily ETF（代码NVD）暴跌63%。此前受益于英伟达遭遇抛售，截至上周五这只规模约1亿美元的基金今年累计上涨46%。欧洲市场的损失更为惨重，寻求提供英伟达单日表现三倍反向回报的GraniteShares 3x Short …",
-      "relatedStocks": [
-        "英伟达",
-        "微软",
-        "台积电"
-      ],
-      "bullConcepts": [
-        "AI算力",
-        "半导体",
-        "国产替代"
-      ],
-      "bearConcepts": [
-        "传统软件"
-      ],
-      "bullIndustries": [
-        "半导体",
-        "AI应用",
-        "算力基础设施"
-      ],
-      "bearIndustries": [
-        "传统IT服务"
-      ],
-      "heat": 29,
-      "momentum": 26,
-      "_auto": true
-    },
-    {
-      "id": "ab1qwfssj",
-      "title": "黄仁勋回归英伟达 背后都有谁在“推波助澜”？",
-      "tag": "科技/AI",
-      "region": "全球",
-      "concept": "ai",
-      "time": "2026-11-24 08:49",
-      "datetime": "2026-11-24 08:49",
-      "source": "环球市场播报",
-      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-24/doc-inizutpn7909948.shtml",
-      "summary": "美东时间周一清晨，黄仁勋走进英伟达位于圣克拉拉的总部，两侧廊道上站满员工，爆发出热烈掌声。一名员工上前紧紧拥抱他，黄仁勋情绪明显动容。",
-      "relatedStocks": [
-        "英伟达",
-        "微软",
-        "台积电"
-      ],
-      "bullConcepts": [
-        "AI算力",
-        "半导体",
-        "国产替代"
-      ],
-      "bearConcepts": [
-        "传统软件"
-      ],
-      "bullIndustries": [
-        "半导体",
-        "AI应用",
-        "算力基础设施"
-      ],
-      "bearIndustries": [
-        "传统IT服务"
-      ],
-      "heat": 73,
-      "momentum": 18,
-      "_auto": true
-    },
-    {
-      "id": "ablc9j3u",
-      "title": "黄仁勋回归英伟达，美股一举收复上周逾半跌幅",
-      "tag": "科技/AI",
-      "region": "美国",
-      "concept": "aiCapex",
-      "time": "2026-11-24 08:39",
-      "datetime": "2026-11-24 08:39",
-      "source": "环球市场播报",
-      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-24/doc-inizutpn7903135.shtml",
-      "summary": "周一，在黄仁勋出人意料地回归并重掌英伟达CEO一职后，华尔街迎来了一场强劲的反弹。美国股市收复了上周惨重跌幅的一半以上；上周的表现堪称2008年金融危机以来最糟糕的时...",
-      "relatedStocks": [
-        "英伟达",
-        "微软",
-        "台积电"
-      ],
-      "bullConcepts": [
-        "AI算力",
-        "半导体",
-        "国产替代"
-      ],
-      "bearConcepts": [
-        "传统软件"
-      ],
-      "bullIndustries": [
-        "半导体",
-        "AI应用",
-        "算力基础设施"
-      ],
-      "bearIndustries": [
-        "传统IT服务"
-      ],
-      "heat": 51,
-      "momentum": 18,
-      "_auto": true
-    },
-    {
-      "id": "ab1dodc0o",
-      "title": "媒体：英伟达杠杆做空ETF刚刚爆仓",
-      "tag": "科技/AI",
-      "region": "全球",
-      "concept": "ai",
-      "time": "2026-11-24 09:05",
-      "datetime": "2026-11-24 09:05",
-      "source": "环球市场播报",
-      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-24/doc-inizuxvn0119206.shtml",
-      "summary": "据报道，黄仁勋回归英伟达之际，媒体指出两只3倍反向杠杆交易所交易产品（严格来说不属于传统ETF），目标是追踪英伟达每日涨跌幅的负三倍收益。",
-      "relatedStocks": [
-        "英伟达",
-        "微软",
-        "台积电"
-      ],
-      "bullConcepts": [
-        "AI算力",
-        "半导体",
-        "国产替代"
-      ],
-      "bearConcepts": [
-        "传统软件"
-      ],
-      "bullIndustries": [
-        "半导体",
-        "AI应用",
-        "算力基础设施"
-      ],
-      "bearIndustries": [
-        "传统IT服务"
-      ],
-      "heat": 42,
-      "momentum": 26,
-      "_auto": true
-    },
-    {
-      "id": "ab8go5bt",
-      "title": "美国股市：美股上演惊人反弹 黄仁勋回归点燃科技股涨势",
-      "tag": "科技/AI",
-      "region": "美国",
-      "concept": "aiCapex",
-      "time": "2026-11-24 06:12",
-      "datetime": "2026-11-24 06:12",
-      "source": "环球市场播报",
-      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-24/doc-inizupfn2004725.shtml",
-      "summary": "美国股市周一上演惊人反弹，从上周科技股领跌的惨烈抛售中强势回升。黄仁勋意外重返英伟达掌舵，推动华尔街创下2025年4月以来最佳单日表现。",
-      "relatedStocks": [
-        "英伟达",
-        "微软",
-        "台积电"
-      ],
-      "bullConcepts": [
-        "AI算力",
-        "半导体",
-        "国产替代"
-      ],
-      "bearConcepts": [
-        "传统软件"
-      ],
-      "bullIndustries": [
-        "半导体",
-        "AI应用",
-        "算力基础设施"
-      ],
-      "bearIndustries": [
-        "传统IT服务"
-      ],
       "heat": 38,
       "momentum": 18,
       "_auto": true
     },
     {
-      "id": "ab1lrp133",
-      "title": "黄仁勋复职后韩股大涨，一度触发SideCar机制暂停程序化买盘",
-      "tag": "科技/AI",
-      "region": "美国",
-      "concept": "aiCapex",
-      "time": "2026-11-24 08:28",
-      "datetime": "2026-11-24 08:28",
-      "source": "环球市场播报",
-      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-24/doc-inizutph5196370.shtml",
-      "summary": "韩国股市周二大幅高开，受隔夜华尔街涨势带动，黄仁勋重返英伟达担任CEO的消息重新点燃了市场对人工智能（AI）板块的乐观情绪。",
-      "relatedStocks": [
-        "英伟达",
-        "微软",
-        "台积电"
-      ],
-      "bullConcepts": [
-        "AI算力",
-        "半导体",
-        "国产替代"
-      ],
-      "bearConcepts": [
-        "传统软件"
-      ],
-      "bullIndustries": [
-        "半导体",
-        "AI应用",
-        "算力基础设施"
-      ],
-      "bearIndustries": [
-        "传统IT服务"
-      ],
-      "heat": 29,
-      "momentum": 18,
-      "_auto": true
-    },
-    {
-      "id": "ab18p790o",
-      "title": "韩国Kospi指数一度飙涨6.3% 英伟达股价上涨带动芯片股",
-      "tag": "科技/AI",
+      "id": "abuo9ylc",
+      "title": "韩股收盘：KOSPI暴涨6.32%收复5000点大关 盘中触发买方熔断 三星、海力士领衔权重股全线飙升",
+      "tag": "宏观/综合",
       "region": "全球",
-      "concept": "ai",
-      "time": "2026-11-24 08:25",
-      "datetime": "2026-11-24 08:25",
+      "concept": "macro",
+      "time": "2026-11-24 15:01",
+      "datetime": "2026-11-24 15:01",
       "source": "环球市场播报",
-      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-24/doc-inizutpq0221827.shtml",
-      "summary": "韩国Kospi指数一度大涨6.3%，创近一个月最大涨幅；黄仁勋重返英伟达掌舵后，芯片股大幅上涨。SK海力士股价一度飙涨12%，创下8月以来最大涨幅；数据显示...",
+      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-24/doc-inizvkmi2234770.shtml",
+      "summary": "11月24日（周二），韩国股市迎来报复性强劲反弹。韩国综合股价指数（KOSPI）收盘大涨297.49点，涨幅达6.32%，报5006.03点，不仅一举收复5000点重要心理关口...",
       "relatedStocks": [
-        "英伟达",
-        "微软",
-        "台积电"
+        "宽基指数"
       ],
       "bullConcepts": [
-        "AI算力",
-        "半导体",
-        "国产替代"
+        "防御板块"
       ],
       "bearConcepts": [
-        "传统软件"
+        "周期股"
       ],
       "bullIndustries": [
-        "半导体",
-        "AI应用",
-        "算力基础设施"
+        "公用事业"
       ],
       "bearIndustries": [
-        "传统IT服务"
+        "顺周期"
       ],
       "heat": 33,
       "momentum": 18,
       "_auto": true
     },
     {
-      "id": "abbf2wwo",
-      "title": "观点综述：美股回调带来绝佳买入时机 富国将美国大盘股上调至最看好",
+      "id": "ab16rp53e",
+      "title": "报道：美国国债清算新规将推高交易成本，德国商业银行考虑缩减美债交易业务",
       "tag": "金融/宏观",
       "region": "美国",
       "concept": "usFinance",
-      "time": "2026-11-24 06:10",
-      "datetime": "2026-11-24 06:10",
+      "time": "2026-11-24 16:27",
+      "datetime": "2026-11-24 16:27",
       "source": "环球市场播报",
-      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-24/doc-inizupfn2003961.shtml",
-      "summary": "摩根士丹利策略师认为美股回调带来绝佳的买入时机。富国将美国大盘股上调至“最看好”评级，认为上周暴跌提供加仓机会。汇丰策略师在近期股市抛售后仍然看多风险资产。",
+      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-24/doc-inizvqte0039717.shtml",
+      "summary": "11月24日，消息人士透露，随着美国国债及回购交易集中清算新规即将生效，德国商业银行（Commerzbank）正评估缩减美国国债交易业务的可能性...",
       "relatedStocks": [
         "美股科技",
         "黄金"
@@ -631,6 +308,318 @@
       ],
       "bearIndustries": [
         "高杠杆地产"
+      ],
+      "heat": 29,
+      "momentum": 18,
+      "_auto": true
+    },
+    {
+      "id": "ab179tvi8",
+      "title": "高盛：黄仁勋回归尚不足以推动芯片股基本面反转，警惕空头回补驱动的短期反弹",
+      "tag": "科技/AI",
+      "region": "全球",
+      "concept": "ai",
+      "time": "2026-11-24 20:22",
+      "datetime": "2026-11-24 20:22",
+      "source": "环球市场播报",
+      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-24/doc-inizvzhz2103932.shtml",
+      "summary": "11月24日，高盛科技、媒体及电信（TMT）专业销售交易团队在最新报告中指出，黄仁勋重返英伟达消除了近期半导体行业最紧迫的管理层不确定性...",
+      "relatedStocks": [
+        "英伟达",
+        "微软",
+        "台积电"
+      ],
+      "bullConcepts": [
+        "AI算力",
+        "半导体",
+        "国产替代"
+      ],
+      "bearConcepts": [
+        "传统软件"
+      ],
+      "bullIndustries": [
+        "半导体",
+        "AI应用",
+        "算力基础设施"
+      ],
+      "bearIndustries": [
+        "传统IT服务"
+      ],
+      "heat": 29,
+      "momentum": 18,
+      "_auto": true
+    },
+    {
+      "id": "ab1lgfh6p",
+      "title": "高盛上调ITM Power评级至中性，称股价半年暴跌61%后风险回报趋于平衡",
+      "tag": "宏观/综合",
+      "region": "欧洲",
+      "concept": "macro",
+      "time": "2026-11-24 20:18",
+      "datetime": "2026-11-24 20:18",
+      "source": "环球市场播报",
+      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-24/doc-inizvzhx9921265.shtml",
+      "summary": "11月24日，高盛将英国电解槽制造商ITM Power的股票评级由“卖出”上调至“中性”，并将12个月目标价由70便士上调至73便士，较当前股价61便士存在约19.7%的上涨空间。",
+      "relatedStocks": [
+        "宽基指数"
+      ],
+      "bullConcepts": [
+        "防御板块"
+      ],
+      "bearConcepts": [
+        "周期股"
+      ],
+      "bullIndustries": [
+        "公用事业"
+      ],
+      "bearIndustries": [
+        "顺周期"
+      ],
+      "heat": 24,
+      "momentum": 18,
+      "_auto": true
+    },
+    {
+      "id": "ab18w6r7v",
+      "title": "黄仁勋回归引燃AI交易 韩股涨超6%收复5000点大关",
+      "tag": "科技/AI",
+      "region": "美国",
+      "concept": "aiCapex",
+      "time": "2026-11-24 17:51",
+      "datetime": "2026-11-24 17:51",
+      "source": "环球市场播报",
+      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-24/doc-inizvqtf2268975.shtml",
+      "summary": "受黄仁勋重返英伟达掌舵带来的全球乐观情绪提振，芯片股大涨，韩国股市周二反弹超6%，结束连续两日的暴跌行情，韩元兑美元同步走高。",
+      "relatedStocks": [
+        "英伟达",
+        "微软",
+        "台积电"
+      ],
+      "bullConcepts": [
+        "AI算力",
+        "半导体",
+        "国产替代"
+      ],
+      "bearConcepts": [
+        "传统软件"
+      ],
+      "bullIndustries": [
+        "半导体",
+        "AI应用",
+        "算力基础设施"
+      ],
+      "bearIndustries": [
+        "传统IT服务"
+      ],
+      "heat": 33,
+      "momentum": 18,
+      "_auto": true
+    },
+    {
+      "id": "ab1xkj8nc",
+      "title": "分析师：黄仁勋“大到无法被解雇”，英伟达治理存在问题",
+      "tag": "科技/AI",
+      "region": "全球",
+      "concept": "ai",
+      "time": "2026-11-24 14:53",
+      "datetime": "2026-11-24 14:53",
+      "source": "环球市场播报",
+      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-24/doc-inizvkmk9005124.shtml",
+      "summary": "黄仁勋重返英伟达首席执行官岗位，或许缓解了市场对这家芯片制造商领导层的担忧，但也使该公司的治理结构及其对创始人的依赖重新受到审视。",
+      "relatedStocks": [
+        "英伟达",
+        "微软",
+        "台积电"
+      ],
+      "bullConcepts": [
+        "AI算力",
+        "半导体",
+        "国产替代"
+      ],
+      "bearConcepts": [
+        "传统软件"
+      ],
+      "bullIndustries": [
+        "半导体",
+        "AI应用",
+        "算力基础设施"
+      ],
+      "bearIndustries": [
+        "传统IT服务"
+      ],
+      "heat": 33,
+      "momentum": 18,
+      "_auto": true
+    },
+    {
+      "id": "ab1sbc5hn",
+      "title": "黄仁勋身家暴涨360亿美元，英伟达暴涨令空头账面浮亏120亿美元",
+      "tag": "科技/AI",
+      "region": "美国",
+      "concept": "aiCapex",
+      "time": "2026-11-24 15:49",
+      "datetime": "2026-11-24 15:49",
+      "source": "环球市场播报",
+      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-24/doc-inizvqte0007631.shtml",
+      "summary": "英伟达董事会恢复黄仁勋CEO职务后，周一黄仁勋的净资产暴增超360亿美元。这场戏剧性反转推动芯片巨头股价飙升，也让做空英伟达的投资者遭遇多年来最惨重的单日亏损。",
+      "relatedStocks": [
+        "英伟达",
+        "微软",
+        "台积电"
+      ],
+      "bullConcepts": [
+        "AI算力",
+        "半导体",
+        "国产替代"
+      ],
+      "bearConcepts": [
+        "传统软件"
+      ],
+      "bullIndustries": [
+        "半导体",
+        "AI应用",
+        "算力基础设施"
+      ],
+      "bearIndustries": [
+        "传统IT服务"
+      ],
+      "heat": 33,
+      "momentum": 18,
+      "_auto": true
+    },
+    {
+      "id": "ab1vsv0se",
+      "title": "黄仁勋重返英伟达CEO职位后台积电单日市值暴增1580亿美元",
+      "tag": "科技/AI",
+      "region": "美国",
+      "concept": "aiCapex",
+      "time": "2026-11-24 15:28",
+      "datetime": "2026-11-24 15:28",
+      "source": "环球市场播报",
+      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-24/doc-inizvkmi2269113.shtml",
+      "summary": "英伟达董事会周一投票决定恢复黄仁勋的首席执行官职务，结束了此前重创人工智能（AI）供应链的领导层危机。受此消息提振，亚洲股市周二普遍上涨。",
+      "relatedStocks": [
+        "英伟达",
+        "微软",
+        "台积电"
+      ],
+      "bullConcepts": [
+        "AI算力",
+        "半导体",
+        "国产替代"
+      ],
+      "bearConcepts": [
+        "传统软件"
+      ],
+      "bullIndustries": [
+        "半导体",
+        "AI应用",
+        "算力基础设施"
+      ],
+      "bearIndustries": [
+        "传统IT服务"
+      ],
+      "heat": 33,
+      "momentum": 18,
+      "_auto": true
+    },
+    {
+      "id": "ab1do352w",
+      "title": "今日比特币：徘徊于6万美元附近，美股反弹未能扭转加密货币资金流出趋势",
+      "tag": "科技/AI",
+      "region": "美国",
+      "concept": "aiCapex",
+      "time": "2026-11-24 15:26",
+      "datetime": "2026-11-24 15:26",
+      "source": "环球市场播报",
+      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-24/doc-inizvkmi2266845.shtml",
+      "summary": "11月24日，尽管黄仁勋重返英伟达推动美股大幅反弹，加密货币市场表现仍然疲软。美联储进一步加息的预期、美国加密货币监管政策的不确定性...",
+      "relatedStocks": [
+        "英伟达",
+        "微软",
+        "台积电"
+      ],
+      "bullConcepts": [
+        "AI算力",
+        "半导体",
+        "国产替代"
+      ],
+      "bearConcepts": [
+        "传统软件"
+      ],
+      "bullIndustries": [
+        "半导体",
+        "AI应用",
+        "算力基础设施"
+      ],
+      "bearIndustries": [
+        "传统IT服务"
+      ],
+      "heat": 24,
+      "momentum": 18,
+      "_auto": true
+    },
+    {
+      "id": "ab1n3cufh",
+      "title": "最大科技多头正在领取他的奖励：黄仁勋回归或促使特朗普一天挣1500万美元",
+      "tag": "科技/AI",
+      "region": "美国",
+      "concept": "aiCapex",
+      "time": "2026-11-24 15:11",
+      "datetime": "2026-11-24 15:11",
+      "source": "环球市场播报",
+      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-24/doc-inizvkmk9024873.shtml",
+      "summary": "根据美国总统特朗普向美国政府道德办公室（OGE）提交的财务披露文件测算，截至9月30日，特朗普可能持有3.2万至37万股英伟达股票。",
+      "relatedStocks": [
+        "英伟达",
+        "微软",
+        "台积电"
+      ],
+      "bullConcepts": [
+        "AI算力",
+        "半导体",
+        "国产替代"
+      ],
+      "bearConcepts": [
+        "传统软件"
+      ],
+      "bullIndustries": [
+        "半导体",
+        "AI应用",
+        "算力基础设施"
+      ],
+      "bearIndustries": [
+        "传统IT服务"
+      ],
+      "heat": 24,
+      "momentum": 18,
+      "_auto": true
+    },
+    {
+      "id": "abgk8kzp",
+      "title": "黄仁勋：谢谢大家再给我一次机会 这是我上班的第一天",
+      "tag": "宏观/综合",
+      "region": "美国",
+      "concept": "usMacro",
+      "time": "2026-11-24 14:23",
+      "datetime": "2026-11-24 14:23",
+      "source": "环球市场播报",
+      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-24/doc-inizvkmk8984229.shtml",
+      "summary": "一名熟悉内情的人士表示，特朗普和副总统万斯都听取过有关此事涉及国家安全部分的简报，没有看到任何证据显示黄仁勋做了违法的事，或危及国家安全。",
+      "relatedStocks": [
+        "宽基指数"
+      ],
+      "bullConcepts": [
+        "防御板块"
+      ],
+      "bearConcepts": [
+        "周期股"
+      ],
+      "bullIndustries": [
+        "公用事业"
+      ],
+      "bearIndustries": [
+        "顺周期"
       ],
       "heat": 29,
       "momentum": 18,
