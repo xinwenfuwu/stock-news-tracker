@@ -1,20 +1,20 @@
 {
-  "generatedAt": "2026-11-25 19:08",
+  "generatedAt": "2026-11-26 05:33",
   "generatedBy": "GitHub Actions · 多源实时聚合",
-  "sourceCount": 3,
-  "autoCount": 17,
+  "sourceCount": 4,
+  "autoCount": 18,
   "events": [
     {
-      "id": "ab1nky8tx",
-      "title": "乌克兰国防部称，乌方袭击了俄罗斯下诺夫哥罗德地区的萨瓦斯莱卡军用机场。",
+      "id": "ab1su99ph",
+      "title": "当地时间25日22时46分许，乌克兰首都基辅响起强烈爆炸声。基辅市市长克利奇科在社交媒体发文称，基辅市正遭受弹道导弹袭击，提醒民众做好防护。乌克兰空军在社交媒体发文提醒，疑似俄军…",
       "tag": "地缘/政治",
       "region": "全球",
       "concept": "macro",
-      "time": "2026-11-25 18:56",
-      "datetime": "2026-11-25 18:56",
+      "time": "2026-11-26 05:11",
+      "datetime": "2026-11-26 05:11",
       "source": "新浪7×24",
-      "url": "https://finance.sina.cn/7x24/2026-11-25/detail-inizxxyc1838011.d.html",
-      "summary": "乌克兰国防部称，乌方袭击了俄罗斯下诺夫哥罗德地区的萨瓦斯莱卡军用机场。",
+      "url": "https://finance.sina.cn/7x24/2026-11-26/detail-inizyzms8267453.d.html",
+      "summary": "当地时间25日22时46分许，乌克兰首都基辅响起强烈爆炸声。基辅市市长克利奇科在社交媒体发文称，基辅市正遭受弹道导弹袭击，提醒民众做好防护。乌克兰空军在社交媒体发文提醒，疑似俄军弹道导弹来袭。（新华社）",
       "relatedStocks": [
         "军工",
         "黄金"
@@ -34,21 +34,21 @@
         "航空",
         "旅游"
       ],
-      "heat": 24,
-      "momentum": 36,
+      "heat": 47,
+      "momentum": 56,
       "_auto": true
     },
     {
-      "id": "ab1prhdx8",
-      "title": "乌克兰军方称，其袭击了俄罗斯萨马拉州的两家炼油厂。",
+      "id": "abxyfnuj",
+      "title": "当地时间25日深夜，沙特首都利雅得传出爆炸声。稍早前，利雅得居民收到经由手机程序发布的防空警报。（央视新闻）",
       "tag": "地缘/政治",
       "region": "全球",
       "concept": "macro",
-      "time": "2026-11-25 18:47",
-      "datetime": "2026-11-25 18:47",
+      "time": "2026-11-26 05:08",
+      "datetime": "2026-11-26 05:08",
       "source": "新浪7×24",
-      "url": "https://finance.sina.cn/7x24/2026-11-25/detail-inizxxyc1831406.d.html",
-      "summary": "乌克兰军方称，其袭击了俄罗斯萨马拉州的两家炼油厂。",
+      "url": "https://finance.sina.cn/7x24/2026-11-26/detail-inizyzms8264930.d.html",
+      "summary": "当地时间25日深夜，沙特首都利雅得传出爆炸声。稍早前，利雅得居民收到经由手机程序发布的防空警报。（央视新闻）",
       "relatedStocks": [
         "军工",
         "黄金"
@@ -68,21 +68,21 @@
         "航空",
         "旅游"
       ],
-      "heat": 24,
-      "momentum": 36,
+      "heat": 33,
+      "momentum": 41,
       "_auto": true
     },
     {
-      "id": "abtwh2v2",
-      "title": "特朗普将出席台积电亚利桑那新半导体项目奠基仪式",
+      "id": "ab1fmubxc",
+      "title": "11月26日美股收盘：10月通胀仍未放缓 道指周三反弹收高 抹去1100点跌幅 标普纳指跌幅收窄至不足1%",
       "tag": "科技/AI",
       "region": "美国",
       "concept": "aiCapex",
-      "time": "2026-11-25 19:05",
-      "datetime": "2026-11-25 19:05",
-      "source": "新浪7×24",
-      "url": "https://finance.sina.cn/7x24/2026-11-25/detail-inizyeha8489925.d.html",
-      "summary": "【特朗普将出席台积电亚利桑那新半导体项目奠基仪式】美国总统特朗普下周将主持亚利桑那州一项大型半导体制造新项目的奠基仪式。此前他推动英伟达董事会恢复黄仁勋的首席执行官职务，此举进一步加深了他对芯片行业的介入。一名在消息正式公布前要求匿名的白宫官员称，特朗普计划出席12月4日台积电凤凰城工厂扩建项目的奠基仪式。黄仁勋定于奠基仪式前一天赴美国参议院作证，目前尚不清楚他是否会与特朗普…",
+      "time": "2026-11-26 05:15",
+      "datetime": "2026-11-26 05:15",
+      "source": "环球市场播报",
+      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-26/doc-inizyzmp9128647.shtml",
+      "summary": "道指周三抹去了1100点的暴跌，上涨166点，涨幅0.3%。华尔街试图从人工智能相关股票领跌的大幅下跌中恢复。 纳斯达克综合指数下跌0.6%，标普500指数下跌0.3%。",
       "relatedStocks": [
         "英伟达",
         "微软",
@@ -109,16 +109,117 @@
       "_auto": true
     },
     {
-      "id": "abqec74e",
-      "title": "Anthropic破发“过河拆桥” OpenAI上市门槛抬升",
-      "tag": "科技/AI",
-      "region": "全球",
-      "concept": "ai",
-      "time": "2026-11-25 15:09",
-      "datetime": "2026-11-25 15:09",
+      "id": "ab14b71ss",
+      "title": "原油：油价上涨 中东袭击加剧供应不确定性",
+      "tag": "金融/宏观",
+      "region": "美国",
+      "concept": "usFinance",
+      "time": "2026-11-26 05:02",
+      "datetime": "2026-11-26 05:02",
       "source": "环球市场播报",
-      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-25/doc-inizxtsf1787216.shtml",
-      "summary": "人总有运气用尽的时候。随着股价跌破发行价，Anthropic及其承销投行刚刚体会到这一点。但本次事件最大的受害者，或许是它的头号竞争对手OpenAI。",
+      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-26/doc-inizyzmp9120570.shtml",
+      "summary": "油价在清淡交投中上涨，中东地区袭击加剧，令该地区近几个月逐步恢复的原油运输前景蒙上阴影。 布伦特收于每桶95美元下方，触及逾一周高点。",
+      "relatedStocks": [
+        "美股科技",
+        "黄金"
+      ],
+      "bullConcepts": [
+        "黄金",
+        "防御板块"
+      ],
+      "bearConcepts": [
+        "高估值成长股"
+      ],
+      "bullIndustries": [
+        "银行",
+        "黄金"
+      ],
+      "bearIndustries": [
+        "高杠杆地产"
+      ],
+      "heat": 24,
+      "momentum": 26,
+      "_auto": true
+    },
+    {
+      "id": "ab1gk54ch",
+      "title": "当地时间25日晚，也门胡塞武装发表声明称，该组织对沙特吉达港和吉赞港发动了两次军事行动，以作为对沙特主导的多国联军袭击也门荷台达港的回应。声明称，第一轮行动针对吉达港；第二轮行动…",
+      "tag": "地缘/政治",
+      "region": "全球",
+      "concept": "macro",
+      "time": "2026-11-26 04:31",
+      "datetime": "2026-11-26 04:31",
+      "source": "新浪7×24",
+      "url": "https://finance.sina.com.cn/7x24/",
+      "summary": "当地时间25日晚，也门胡塞武装发表声明称，该组织对沙特吉达港和吉赞港发动了两次军事行动，以作为对沙特主导的多国联军袭击也门荷台达港的回应。声明称，第一轮行动针对吉达港；第二轮行动针对吉赞港。两次行动均对目标地点造成损坏。声明未提及行动的具体时间。声明还称，胡塞武装将立即对任何针对荷台达港的袭击直接作出回应。（央视新闻）",
+      "relatedStocks": [
+        "军工",
+        "黄金"
+      ],
+      "bullConcepts": [
+        "军工",
+        "避险资产"
+      ],
+      "bearConcepts": [
+        "风险资产"
+      ],
+      "bullIndustries": [
+        "军工",
+        "黄金"
+      ],
+      "bearIndustries": [
+        "航空",
+        "旅游"
+      ],
+      "heat": 47,
+      "momentum": 26,
+      "_auto": true
+    },
+    {
+      "id": "ab12ddom8",
+      "title": "特朗普女婿库什纳谈乌克兰战争：如果没有欧洲以及乌克兰的同意，我们不会作出任何决定。",
+      "tag": "地缘/政治",
+      "region": "美国",
+      "concept": "defense",
+      "time": "2026-11-26 04:20",
+      "datetime": "2026-11-26 04:20",
+      "source": "新浪7×24",
+      "url": "https://finance.sina.cn/7x24/2026-11-26/detail-inizyzms8247210.d.html",
+      "summary": "特朗普女婿库什纳谈乌克兰战争：如果没有欧洲以及乌克兰的同意，我们不会作出任何决定。",
+      "relatedStocks": [
+        "军工",
+        "黄金"
+      ],
+      "bullConcepts": [
+        "军工",
+        "避险资产"
+      ],
+      "bearConcepts": [
+        "风险资产"
+      ],
+      "bullIndustries": [
+        "军工",
+        "黄金"
+      ],
+      "bearIndustries": [
+        "航空",
+        "旅游"
+      ],
+      "heat": 38,
+      "momentum": 26,
+      "_auto": true
+    },
+    {
+      "id": "ab1f8en16",
+      "title": "纳斯达克100指数进入“先卖再说”模式 AI和加息之忧刺激抛售",
+      "tag": "科技/AI",
+      "region": "美国",
+      "concept": "aiCapex",
+      "time": "2026-11-25 23:57",
+      "datetime": "2026-11-25 23:57",
+      "source": "环球市场播报",
+      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-25/doc-inizyqvv1622639.shtml",
+      "summary": "纳斯达克100指数连续第二天暴跌并短暂进入熊市，投资者对人工智能过度投资的担忧加剧，重创了美国大型科技公司的股价。",
       "relatedStocks": [
         "英伟达",
         "微软",
@@ -140,21 +241,87 @@
       "bearIndustries": [
         "传统IT服务"
       ],
-      "heat": 60,
+      "heat": 38,
       "momentum": 18,
       "_auto": true
     },
     {
-      "id": "abl3n3u3",
-      "title": "情绪转向！刚刚，“双焦”期价大涨！煤炭概念股沸腾：退市边缘股“两连板”！",
+      "id": "ab18fmv5k",
+      "title": "Nutanix股价暴跌18%，首席执行官宣布计划卸任",
+      "tag": "宏观/综合",
+      "region": "全球",
+      "concept": "macro",
+      "time": "2026-11-26 00:29",
+      "datetime": "2026-11-26 00:29",
+      "source": "环球市场播报",
+      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-26/doc-inizyqvw8413863.shtml",
+      "summary": "这家云平台企业宣布，任职已满六年的首席执行官拉吉夫・拉马斯瓦米（Rajiv Ramaswami）即将离职。消息公布后，Nutanix（NTNX）周三早盘股价大跌 18%。",
+      "relatedStocks": [
+        "宽基指数"
+      ],
+      "bullConcepts": [
+        "防御板块"
+      ],
+      "bearConcepts": [
+        "周期股"
+      ],
+      "bullIndustries": [
+        "公用事业"
+      ],
+      "bearIndustries": [
+        "顺周期"
+      ],
+      "heat": 33,
+      "momentum": 18,
+      "_auto": true
+    },
+    {
+      "id": "abszwd3g",
+      "title": "投资者撤离AI交易赛道，英伟达、AMD和美光股价大跌",
+      "tag": "科技/AI",
+      "region": "全球",
+      "concept": "ai",
+      "time": "2026-11-25 22:22",
+      "datetime": "2026-11-25 22:22",
+      "source": "环球市场播报",
+      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-25/doc-inizykpx1709093.shtml",
+      "summary": "芯片股持续暴跌，英伟达周三盘前再度下挫 5%，前一交易日该股已经下跌 6%。 同行 AMD 与博通延续前一日跌势，继续走低。 今年曾经火爆的 AI 概念股行情持续下挫...",
+      "relatedStocks": [
+        "英伟达",
+        "微软",
+        "台积电"
+      ],
+      "bullConcepts": [
+        "AI算力",
+        "半导体",
+        "国产替代"
+      ],
+      "bearConcepts": [
+        "传统软件"
+      ],
+      "bullIndustries": [
+        "半导体",
+        "AI应用",
+        "算力基础设施"
+      ],
+      "bearIndustries": [
+        "传统IT服务"
+      ],
+      "heat": 29,
+      "momentum": 18,
+      "_auto": true
+    },
+    {
+      "id": "ab1ob003o",
+      "title": "挪威大西洋航空警示燃油成本飙升致使公司财务“处境危急”，股价暴跌77%",
       "tag": "能源/资源",
       "region": "全球",
       "concept": "energy",
-      "time": "2026-11-25 11:24",
-      "datetime": "2026-11-25 11:24",
-      "source": "市场资讯",
-      "url": "https://finance.sina.com.cn/money/future/fmnews/2026-11-25/doc-inizxiai9602659.shtml",
-      "summary": "来源：期货日报 今日，焦煤、焦炭期价大涨，延续反弹态势。 股市方面，煤炭概念股普涨，其中，*ST瑞茂“两连板”，赤天化开盘直线涨停，但随后“炸板”。",
+      "time": "2026-11-25 19:45",
+      "datetime": "2026-11-25 19:45",
+      "source": "环球市场播报",
+      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-25/doc-inizyeha8515190.shtml",
+      "summary": "核心要点这家廉价航空公司于周三表示，公司正面临 “严峻的财务状况”。自伊朗战争爆发以来，航空煤油价格暴涨，该航空公司承受巨大经营压力。",
       "relatedStocks": [
         "中国石油",
         "紫金矿业"
@@ -174,7 +341,41 @@
         "航空运输",
         "化工"
       ],
-      "heat": 24,
+      "heat": 33,
+      "momentum": 18,
+      "_auto": true
+    },
+    {
+      "id": "abjljfkf",
+      "title": "廉价航空公司Norse Atlantic股价暴跌77%",
+      "tag": "地缘/政治",
+      "region": "全球",
+      "concept": "macro",
+      "time": "2026-11-25 19:21",
+      "datetime": "2026-11-25 19:21",
+      "source": "环球市场播报",
+      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-25/doc-inizyeha8500780.shtml",
+      "summary": "挪威低成本航空公司Norse Atlantic周三股价暴跌。该公司披露，随着伊朗战争期间燃油成本飙升，廉价航空公司在冬季运营面临巨大压力，其自身正处于“危急的财务状况”。",
+      "relatedStocks": [
+        "军工",
+        "黄金"
+      ],
+      "bullConcepts": [
+        "军工",
+        "避险资产"
+      ],
+      "bearConcepts": [
+        "风险资产"
+      ],
+      "bullIndustries": [
+        "军工",
+        "黄金"
+      ],
+      "bearIndustries": [
+        "航空",
+        "旅游"
+      ],
+      "heat": 33,
       "momentum": 18,
       "_auto": true
     },
@@ -245,16 +446,52 @@
       "_auto": true
     },
     {
-      "id": "abn5y8nf",
-      "title": "能特科技（002102）索赔案已提交法院立案，农尚环境（300536）索赔案已有胜诉还可起诉",
+      "id": "abi9srlm",
+      "title": "存管理和治理之忧 标普预告可能下调英伟达的信评一档",
+      "tag": "科技/AI",
+      "region": "全球",
+      "concept": "ai",
+      "time": "2026-11-26 02:53",
+      "datetime": "2026-11-26 02:53",
+      "source": "环球市场播报",
+      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-26/doc-inizyvct1568694.shtml",
+      "summary": "标普全球评级正考虑下调英伟达信用评级一档，称首席执行官黄仁勋突然离职后又回归引发了对该公司管理和治理的关切。 这家评级机构周三表示...",
+      "relatedStocks": [
+        "英伟达",
+        "微软",
+        "台积电"
+      ],
+      "bullConcepts": [
+        "AI算力",
+        "半导体",
+        "国产替代"
+      ],
+      "bearConcepts": [
+        "传统软件"
+      ],
+      "bullIndustries": [
+        "半导体",
+        "AI应用",
+        "算力基础设施"
+      ],
+      "bearIndustries": [
+        "传统IT服务"
+      ],
+      "heat": 24,
+      "momentum": 18,
+      "_auto": true
+    },
+    {
+      "id": "ab1g0cnke",
+      "title": "特朗普插手黄仁勋风波，再度激起选民对科技巨头政治权力过大的不满",
       "tag": "宏观/综合",
-      "region": "中国",
-      "concept": "broker",
-      "time": "2026-11-25 15:28",
-      "datetime": "2026-11-25 15:28",
-      "source": "市场资讯",
-      "url": "https://finance.sina.com.cn/stock/gmwq/rightscase/2026-11-25/doc-inizxtsm4281192.shtml",
-      "summary": "上海久诚律师事务所股票索赔律师许峰律师代理的能特科技（002102）涉嫌虚假陈述投资者索赔案已向法院提交立案，目前正在等待法院的下一步安排。（许峰律师专栏）",
+      "region": "美国",
+      "concept": "usMacro",
+      "time": "2026-11-25 20:05",
+      "datetime": "2026-11-25 20:05",
+      "source": "环球市场播报",
+      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-25/doc-inizyefx9419590.shtml",
+      "summary": "核心要点今年选民公开批评科技行业在华盛顿权势过大，且科技巨头与总统关系密切，选民的愤怒情绪，一定程度上推动国会控制权发生更迭。",
       "relatedStocks": [
         "宽基指数"
       ],
@@ -269,6 +506,42 @@
       ],
       "bearIndustries": [
         "顺周期"
+      ],
+      "heat": 24,
+      "momentum": 18,
+      "_auto": true
+    },
+    {
+      "id": "ab94lihz",
+      "title": "英伟达股价反弹掩盖大型科技企业开支承压，人工智能领域债务风险加剧",
+      "tag": "科技/AI",
+      "region": "全球",
+      "concept": "ai",
+      "time": "2026-11-25 19:50",
+      "datetime": "2026-11-25 19:50",
+      "source": "环球市场播报",
+      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-25/doc-inizyeha8517610.shtml",
+      "summary": "核心要点黄仁勋复职带动周一科技股走高，但市场依旧担忧人工智能建设的高昂成本。债券投资者一方面要应对海量 AI 相关债券发行，另一方面企业自由现金流走弱...",
+      "relatedStocks": [
+        "英伟达",
+        "微软",
+        "台积电"
+      ],
+      "bullConcepts": [
+        "AI算力",
+        "半导体",
+        "国产替代"
+      ],
+      "bearConcepts": [
+        "传统软件"
+      ],
+      "bullIndustries": [
+        "半导体",
+        "AI应用",
+        "算力基础设施"
+      ],
+      "bearIndustries": [
+        "传统IT服务"
       ],
       "heat": 24,
       "momentum": 18,
@@ -305,16 +578,16 @@
       "_auto": true
     },
     {
-      "id": "ab1q0dijc",
-      "title": "“互联网泡沫+次贷危机”！AI若暴雷 美国经济真伤不起？",
+      "id": "ab14ccw8h",
+      "title": "CoreWeave和英伟达信用风险指标创新高",
       "tag": "科技/AI",
       "region": "美国",
       "concept": "aiCapex",
-      "time": "2026-11-25 15:17",
-      "datetime": "2026-11-25 15:17",
-      "source": "市场资讯",
-      "url": "https://finance.sina.com.cn/money/future/fmnews/2026-11-25/doc-inizxtsc9494835.shtml",
-      "summary": "来源：财联社 财联社11月25日讯（编辑 潇湘）当白宫破天荒地干预一家企业董事会决策，当黄仁勋一人的去留撬动起美股数万亿美元市值的沉浮，可以说...",
+      "time": "2026-11-26 04:01",
+      "datetime": "2026-11-26 04:01",
+      "source": "财联社",
+      "url": "https://www.cls.cn/detail/2544719",
+      "summary": "【CoreWeave和英伟达信用风险指标创新高】财联社11月26日电，CoreWeave和英伟达信用风险指标周三再创历史新高，衡量市场担忧程度的指标也再次升至3月份以来未见的水平，华尔街对科技行业为AI融资而创纪录举债的担忧日益加剧。根据ICE Data Services数据，为CoreWeave债务提供五年期违约保护的成本一度上升2.09个百分点，创下有史以来最大升幅，达到…",
       "relatedStocks": [
         "英伟达",
         "微软",
@@ -336,237 +609,8 @@
       "bearIndustries": [
         "传统IT服务"
       ],
-      "heat": 24,
-      "momentum": 18,
-      "_auto": true
-    },
-    {
-      "id": "ab1wjzxrn",
-      "title": "供应增加对冲霍尔木兹袭击升级风险 油价下跌",
-      "tag": "金融/宏观",
-      "region": "美国",
-      "concept": "usFinance",
-      "time": "2026-11-25 17:15",
-      "datetime": "2026-11-25 17:15",
-      "source": "环球市场播报",
-      "url": "https://finance.sina.com.cn/world/2026-11-25/doc-inizxxxz9449921.shtml",
-      "summary": "原油价格走低，供应增长信号盖过霍尔木兹海峡船舶袭击升级以及区域其他能源设施遇袭的影响。 布伦特原油在前一交易日上涨2.3%后，跌破90美元/桶；西德克萨斯中质原油维持在...",
-      "relatedStocks": [
-        "美股科技",
-        "黄金"
-      ],
-      "bullConcepts": [
-        "黄金",
-        "防御板块"
-      ],
-      "bearConcepts": [
-        "高估值成长股"
-      ],
-      "bullIndustries": [
-        "银行",
-        "黄金"
-      ],
-      "bearIndustries": [
-        "高杠杆地产"
-      ],
-      "heat": 24,
+      "heat": 29,
       "momentum": 26,
-      "_auto": true
-    },
-    {
-      "id": "ab10o9np4",
-      "title": "退市卓朗时效只剩三个月 此前已有股民获赔1.4亿",
-      "tag": "宏观/综合",
-      "region": "中国",
-      "concept": "broker",
-      "time": "2026-11-25 15:30",
-      "datetime": "2026-11-25 15:30",
-      "source": "市场资讯",
-      "url": "https://finance.sina.com.cn/stock/gmwq/rightscase/2026-11-25/doc-inizxtsm4282114.shtml",
-      "summary": "近日，投资者诉天津卓朗信息科技股份有限公司（原简称：卓朗科技、退市卓朗，原证券代码：600225）证券虚假陈案持续推进。",
-      "relatedStocks": [
-        "宽基指数"
-      ],
-      "bullConcepts": [
-        "防御板块"
-      ],
-      "bearConcepts": [
-        "周期股"
-      ],
-      "bullIndustries": [
-        "公用事业"
-      ],
-      "bearIndustries": [
-        "顺周期"
-      ],
-      "heat": 24,
-      "momentum": 18,
-      "_auto": true
-    },
-    {
-      "id": "abyep9k8",
-      "title": "黄仁勋现在的处境或许更加艰难",
-      "tag": "科技/AI",
-      "region": "全球",
-      "concept": "ai",
-      "time": "2026-11-25 17:28",
-      "datetime": "2026-11-25 17:28",
-      "source": "环球市场播报",
-      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-25/doc-inizxxyc1773206.shtml",
-      "summary": "作者：刘菲比、里奥・施瓦茨 早在两周前黄仁勋风波不断、被迫离职之前，他就已经要面对 AI 芯片设计领域日趋激烈的竞争，同时外界不断质疑他向新兴云厂商这类客户提供巨额...",
-      "relatedStocks": [
-        "英伟达",
-        "微软",
-        "台积电"
-      ],
-      "bullConcepts": [
-        "AI算力",
-        "半导体",
-        "国产替代"
-      ],
-      "bearConcepts": [
-        "传统软件"
-      ],
-      "bullIndustries": [
-        "半导体",
-        "AI应用",
-        "算力基础设施"
-      ],
-      "bearIndustries": [
-        "传统IT服务"
-      ],
-      "heat": 24,
-      "momentum": 26,
-      "_auto": true
-    },
-    {
-      "id": "ab1dijwwi",
-      "title": "人工智能股票的巨大隐忧：芯片产能过剩",
-      "tag": "科技/AI",
-      "region": "全球",
-      "concept": "ai",
-      "time": "2026-11-25 17:12",
-      "datetime": "2026-11-25 17:12",
-      "source": "环球市场播报",
-      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-25/doc-inizxxyi4226548.shtml",
-      "summary": "要说当下谁最需要心理疏导，那或许就得是科技行业的投资者们了。说实话，近期股市的表现有点喜怒无常。举个例子，周二，因黄仁勋复职催生的股价上涨行情出现反转...",
-      "relatedStocks": [
-        "英伟达",
-        "微软",
-        "台积电"
-      ],
-      "bullConcepts": [
-        "AI算力",
-        "半导体",
-        "国产替代"
-      ],
-      "bearConcepts": [
-        "传统软件"
-      ],
-      "bullIndustries": [
-        "半导体",
-        "AI应用",
-        "算力基础设施"
-      ],
-      "bearIndustries": [
-        "传统IT服务"
-      ],
-      "heat": 24,
-      "momentum": 26,
-      "_auto": true
-    },
-    {
-      "id": "ab14tet9t",
-      "title": "燃油价格飙升，易捷航空利润暴跌96%",
-      "tag": "能源/资源",
-      "region": "全球",
-      "concept": "energy",
-      "time": "2026-11-25 15:51",
-      "datetime": "2026-11-25 15:51",
-      "source": "环球市场播报",
-      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-25/doc-inizxtsh8606038.shtml",
-      "summary": "易捷航空（easyJet）利润暴跌96%，原因是燃油价格飙升和消费者需求下降。这是该航空公司在明年春季被阿波罗全球管理公司（Apollo）收购并私有化之前发布的最后一份年度财报...",
-      "relatedStocks": [
-        "中国石油",
-        "紫金矿业"
-      ],
-      "bullConcepts": [
-        "油气",
-        "贵金属"
-      ],
-      "bearConcepts": [
-        "高耗能制造"
-      ],
-      "bullIndustries": [
-        "石油开采",
-        "贵金属"
-      ],
-      "bearIndustries": [
-        "航空运输",
-        "化工"
-      ],
-      "heat": 24,
-      "momentum": 18,
-      "_auto": true
-    },
-    {
-      "id": "abp2a42t",
-      "title": "0.99元的田野股份，面值退市之外还有索赔这条路",
-      "tag": "宏观/综合",
-      "region": "全球",
-      "concept": "macro",
-      "time": "2026-11-25 15:41",
-      "datetime": "2026-11-25 15:41",
-      "source": "市场资讯",
-      "url": "https://finance.sina.com.cn/stock/gmwq/rightscase/2026-11-25/doc-inizxtsc9511153.shtml",
-      "summary": "11月24日晚，*ST田野（920023）披露《关于公司股票存在可能因股价低于面值被终止上市的风险提示公告》。 当日收盘价0.99元，低于1元面值...",
-      "relatedStocks": [
-        "宽基指数"
-      ],
-      "bullConcepts": [
-        "防御板块"
-      ],
-      "bearConcepts": [
-        "周期股"
-      ],
-      "bullIndustries": [
-        "公用事业"
-      ],
-      "bearIndustries": [
-        "顺周期"
-      ],
-      "heat": 24,
-      "momentum": 18,
-      "_auto": true
-    },
-    {
-      "id": "ab1dg6zxp",
-      "title": "ST东尼明日摘帽，索赔登记继续",
-      "tag": "宏观/综合",
-      "region": "中国",
-      "concept": "broker",
-      "time": "2026-11-25 15:41",
-      "datetime": "2026-11-25 15:41",
-      "source": "市场资讯",
-      "url": "https://finance.sina.com.cn/stock/gmwq/rightscase/2026-11-25/doc-inizxtsc9509844.shtml",
-      "summary": "2026年11月24日晚间，ST东尼（603595）发布公告称，公司股票将于11月25日停牌一天，自11月26日起复牌并撤销其他风险警示，A股简称由“ST东尼”变更为“东尼电子”。",
-      "relatedStocks": [
-        "宽基指数"
-      ],
-      "bullConcepts": [
-        "防御板块"
-      ],
-      "bearConcepts": [
-        "周期股"
-      ],
-      "bullIndustries": [
-        "公用事业"
-      ],
-      "bearIndustries": [
-        "顺周期"
-      ],
-      "heat": 24,
-      "momentum": 18,
       "_auto": true
     },
     {

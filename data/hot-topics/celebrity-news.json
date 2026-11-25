@@ -1,20 +1,112 @@
 {
-  "generatedAt": "2026-11-25 19:08",
+  "generatedAt": "2026-11-26 05:33",
   "generatedBy": "GitHub Actions · 多源实时聚合",
-  "sourceCount": 3,
-  "autoCount": 6,
+  "sourceCount": 4,
+  "autoCount": 8,
   "events": [
     {
-      "id": "aptwh2v2",
-      "title": "特朗普将出席台积电亚利桑那新半导体项目奠基仪式",
+      "id": "apiaom7d",
+      "title": "马斯克旗下脑机接口公司Neuralink已获得FDA批准推出Link，这是美国首个植入式脑机接口的关键性试验。",
+      "tag": "人物/马斯克",
+      "region": "美国",
+      "concept": "medicare",
+      "time": "2026-11-26 04:57",
+      "datetime": "2026-11-26 04:57",
+      "source": "财联社",
+      "url": "https://www.cls.cn/detail/2544727",
+      "summary": "马斯克旗下脑机接口公司Neuralink已获得FDA批准推出Link，这是美国首个植入式脑机接口的关键性试验。",
+      "relatedStocks": [
+        "创新药",
+        "医药"
+      ],
+      "bullConcepts": [
+        "创新药"
+      ],
+      "bearConcepts": [
+        "仿制药"
+      ],
+      "bullIndustries": [
+        "创新药",
+        "医疗器械"
+      ],
+      "bearIndustries": [
+        "仿制药"
+      ],
+      "heat": 29,
+      "momentum": 31,
+      "_auto": true
+    },
+    {
+      "id": "ap3kplkm",
+      "title": "特朗普女婿库什纳宣布俄罗斯与乌克兰将开展大规模战俘交换，交换将于年底前实施。",
       "tag": "人物/特朗普",
       "region": "美国",
-      "concept": "aiCapex",
-      "time": "2026-11-25 19:05",
-      "datetime": "2026-11-25 19:05",
+      "concept": "usMacro",
+      "time": "2026-11-26 04:53",
+      "datetime": "2026-11-26 04:53",
       "source": "新浪7×24",
-      "url": "https://finance.sina.cn/7x24/2026-11-25/detail-inizyeha8489925.d.html",
-      "summary": "【特朗普将出席台积电亚利桑那新半导体项目奠基仪式】美国总统特朗普下周将主持亚利桑那州一项大型半导体制造新项目的奠基仪式。此前他推动英伟达董事会恢复黄仁勋的首席执行官职务，此举进一步加深了他对芯片行业的介入。一名在消息正式公布前要求匿名的白宫官员称，特朗普计划出席12月4日台积电凤凰城工厂扩建项目的奠基仪式。黄仁勋定于奠基仪式前一天赴美国参议院作证，目前尚不清楚他是否会与特朗普…",
+      "url": "https://finance.sina.cn/7x24/2026-11-26/detail-inizyzmv3898248.d.html",
+      "summary": "特朗普女婿库什纳宣布俄罗斯与乌克兰将开展大规模战俘交换，交换将于年底前实施。",
+      "relatedStocks": [
+        "宽基指数"
+      ],
+      "bullConcepts": [
+        "防御板块"
+      ],
+      "bearConcepts": [
+        "周期股"
+      ],
+      "bullIndustries": [
+        "公用事业"
+      ],
+      "bearIndustries": [
+        "顺周期"
+      ],
+      "heat": 38,
+      "momentum": 26,
+      "_auto": true
+    },
+    {
+      "id": "ap1gz0a6p",
+      "title": "特朗普女婿库什纳谈以色列：我认为以色列真正应该关注的是，他们需要摆脱持续的战时思维，我认为他们需要聚焦经济外交。我们需要开始弄清楚与以色列成为伙伴能带来什么好处。",
+      "tag": "人物/特朗普",
+      "region": "美国",
+      "concept": "usMacro",
+      "time": "2026-11-26 04:26",
+      "datetime": "2026-11-26 04:26",
+      "source": "新浪7×24",
+      "url": "https://finance.sina.cn/7x24/2026-11-26/detail-inizyzmp9110952.d.html",
+      "summary": "特朗普女婿库什纳谈以色列：我认为以色列真正应该关注的是，他们需要摆脱持续的战时思维，我认为他们需要聚焦经济外交。我们需要开始弄清楚与以色列成为伙伴能带来什么好处。",
+      "relatedStocks": [
+        "宽基指数"
+      ],
+      "bullConcepts": [
+        "防御板块"
+      ],
+      "bearConcepts": [
+        "周期股"
+      ],
+      "bullIndustries": [
+        "公用事业"
+      ],
+      "bearIndustries": [
+        "顺周期"
+      ],
+      "heat": 38,
+      "momentum": 26,
+      "_auto": true
+    },
+    {
+      "id": "aputy25x",
+      "title": "OpenAI CEO表示目前正在与一小部分客户测试私有推理（Private Inference），称这是最新推出的OpenAI Private Intelligence产品的一部…",
+      "tag": "人物/奥尔特曼",
+      "region": "全球",
+      "concept": "ai",
+      "time": "2026-11-26 01:14",
+      "datetime": "2026-11-26 01:14",
+      "source": "财联社",
+      "url": "https://www.cls.cn/detail/2544691",
+      "summary": "OpenAI CEO表示目前正在与一小部分客户测试私有推理（Private Inference），称这是最新推出的OpenAI Private Intelligence产品的一部分。",
       "relatedStocks": [
         "英伟达",
         "微软",
@@ -36,8 +128,8 @@
       "bearIndustries": [
         "传统IT服务"
       ],
-      "heat": 24,
-      "momentum": 36,
+      "heat": 33,
+      "momentum": 18,
       "_auto": true
     },
     {
@@ -77,50 +169,46 @@
       "_auto": true
     },
     {
-      "id": "ap19y0hhq",
-      "title": "媒体：特朗普团队搁置对俄商业交易方案，俄乌谈判重心重回领土与安全",
-      "tag": "人物/特朗普",
+      "id": "ap1g0cnke",
+      "title": "特朗普插手黄仁勋风波，再度激起选民对科技巨头政治权力过大的不满",
+      "tag": "人物/黄仁勋",
       "region": "美国",
-      "concept": "defense",
-      "time": "2026-11-25 13:09",
-      "datetime": "2026-11-25 13:09",
+      "concept": "usMacro",
+      "time": "2026-11-25 20:05",
+      "datetime": "2026-11-25 20:05",
       "source": "环球市场播报",
-      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-25/doc-inizxpkp4316181.shtml",
-      "summary": "据英国《金融时报》报道，美国总统特朗普的女婿贾里德·库什纳与特使史蒂夫·威特科夫已告知欧洲官员，美俄企业合作（商业交易）已不再是美国游说俄罗斯结束俄乌冲突的核心方...",
+      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-25/doc-inizyefx9419590.shtml",
+      "summary": "核心要点今年选民公开批评科技行业在华盛顿权势过大，且科技巨头与总统关系密切，选民的愤怒情绪，一定程度上推动国会控制权发生更迭。",
       "relatedStocks": [
-        "军工",
-        "黄金"
+        "宽基指数"
       ],
       "bullConcepts": [
-        "军工",
-        "避险资产"
+        "防御板块"
       ],
       "bearConcepts": [
-        "风险资产"
+        "周期股"
       ],
       "bullIndustries": [
-        "军工",
-        "黄金"
+        "公用事业"
       ],
       "bearIndustries": [
-        "航空",
-        "旅游"
+        "顺周期"
       ],
       "heat": 24,
       "momentum": 18,
       "_auto": true
     },
     {
-      "id": "ap1gokgrz",
-      "title": "马斯克计划颠覆美国无线通信行业",
-      "tag": "人物/马斯克",
-      "region": "美国",
-      "concept": "usMacro",
-      "time": "2026-11-25 17:49",
-      "datetime": "2026-11-25 17:49",
-      "source": "环球市场播报",
-      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-25/doc-inizxxye8565545.shtml",
-      "summary": "埃隆·马斯克旗下的SpaceX已经彻底改变了太空互联网行业。如今，他又将目光投向另一个由传统巨头长期主导的行业，计划建设地面无线通信网络，与威瑞森通信公...",
+      "id": "ap1mlc70t",
+      "title": "普京：俄哈本币结算比例达96%",
+      "tag": "人物/普京",
+      "region": "全球",
+      "concept": "macro",
+      "time": "2026-11-26 03:54",
+      "datetime": "2026-11-26 03:54",
+      "source": "财联社",
+      "url": "https://www.cls.cn/detail/2544718",
+      "summary": "财联社11月26日电，当地时间11月25日晚，俄罗斯总统普京在克里姆林宫与哈萨克斯坦总统托卡耶夫举行会谈。谈到两国经济关系发展时，普京表示，俄哈相互结算中本币使用规模已超过90%达到96%。",
       "relatedStocks": [
         "宽基指数"
       ],
@@ -141,52 +229,16 @@
       "_auto": true
     },
     {
-      "id": "apyep9k8",
-      "title": "黄仁勋现在的处境或许更加艰难",
-      "tag": "人物/黄仁勋",
-      "region": "全球",
-      "concept": "ai",
-      "time": "2026-11-25 17:28",
-      "datetime": "2026-11-25 17:28",
-      "source": "环球市场播报",
-      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-25/doc-inizxxyc1773206.shtml",
-      "summary": "作者：刘菲比、里奥・施瓦茨 早在两周前黄仁勋风波不断、被迫离职之前，他就已经要面对 AI 芯片设计领域日趋激烈的竞争，同时外界不断质疑他向新兴云厂商这类客户提供巨额...",
-      "relatedStocks": [
-        "英伟达",
-        "微软",
-        "台积电"
-      ],
-      "bullConcepts": [
-        "AI算力",
-        "半导体",
-        "国产替代"
-      ],
-      "bearConcepts": [
-        "传统软件"
-      ],
-      "bullIndustries": [
-        "半导体",
-        "AI应用",
-        "算力基础设施"
-      ],
-      "bearIndustries": [
-        "传统IT服务"
-      ],
-      "heat": 24,
-      "momentum": 26,
-      "_auto": true
-    },
-    {
-      "id": "apvyoqt7",
-      "title": "马斯克确认将向符合条件的美国家庭免费提供星链硬件",
+      "id": "ap1gokgrz",
+      "title": "马斯克计划颠覆美国无线通信行业",
       "tag": "人物/马斯克",
       "region": "美国",
       "concept": "usMacro",
-      "time": "2026-11-25 14:10",
-      "datetime": "2026-11-25 14:10",
+      "time": "2026-11-25 17:49",
+      "datetime": "2026-11-25 17:49",
       "source": "环球市场播报",
-      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-25/doc-inizxpkk8644411.shtml",
-      "summary": "SpaceX首席执行官埃隆·马斯克确认了一项新安排：该公司将向美国服务不足社区中符合条件的家庭免费提供“星链”（Starlink）硬件，并在此过程中放弃约7...",
+      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-25/doc-inizxxye8565545.shtml",
+      "summary": "埃隆·马斯克旗下的SpaceX已经彻底改变了太空互联网行业。如今，他又将目光投向另一个由传统巨头长期主导的行业，计划建设地面无线通信网络，与威瑞森通信公...",
       "relatedStocks": [
         "宽基指数"
       ],
@@ -507,33 +559,6 @@
       "bearIndustries": [],
       "heat": 68,
       "momentum": 50
-    },
-    {
-      "id": "p11",
-      "title": "库克：苹果 Apple Intelligence 明年覆盖全系设备",
-      "tag": "科技/消费电子",
-      "region": "美国",
-      "concept": "aiCapex",
-      "time": "2026-11-05",
-      "datetime": "2026-11-05 09:00",
-      "source": "苹果/彭博",
-      "summary": "蒂姆·库克在投资者日上表示，Apple Intelligence 将于明年覆盖 iPhone、iPad 与 Mac 全系设备，并深度整合 Siri；市场关注其对换机周期的拉动。",
-      "relatedStocks": [
-        "苹果",
-        "消费电子"
-      ],
-      "bullConcepts": [
-        "AI终端",
-        "消费电子"
-      ],
-      "bearConcepts": [],
-      "bullIndustries": [
-        "消费电子",
-        "AI终端"
-      ],
-      "bearIndustries": [],
-      "heat": 60,
-      "momentum": 38
     },
     {
       "id": "p12",
