@@ -1,158 +1,20 @@
 {
-  "generatedAt": "2026-11-25 08:34",
+  "generatedAt": "2026-11-25 19:08",
   "generatedBy": "GitHub Actions · 多源实时聚合",
-  "sourceCount": 4,
-  "autoCount": 18,
+  "sourceCount": 3,
+  "autoCount": 17,
   "events": [
     {
-      "id": "abs5lybl",
-      "title": "周二，英伟达CEO黄仁勋在复职后首次召开的公司全员大会上向员工公开道歉，承认违反公司行为准则，并透露自己每天接受一个半小时治疗。消息人士表示，他告诉员工，英伟达已打造出一支团队，…",
-      "tag": "科技/AI",
-      "region": "全球",
-      "concept": "ai",
-      "time": "2026-11-25 07:57",
-      "datetime": "2026-11-25 07:57",
-      "source": "新浪7×24",
-      "url": "https://finance.sina.cn/7x24/2026-11-25/detail-inizxauq8581729.d.html",
-      "summary": "周二，英伟达CEO黄仁勋在复职后首次召开的公司全员大会上向员工公开道歉，承认违反公司行为准则，并透露自己每天接受一个半小时治疗。消息人士表示，他告诉员工，英伟达已打造出一支团队，不需要像普通机构那样制定接班人计划，因为公司运营着一种独特的商业模式：英伟达有多个能干的领导者，分别领导着组织的不同部分。黄仁勋承诺，今后会更加愿意听取反馈，自己第二次担任CEO“会做得更好”。",
-      "relatedStocks": [
-        "英伟达",
-        "微软",
-        "台积电"
-      ],
-      "bullConcepts": [
-        "AI算力",
-        "半导体",
-        "国产替代"
-      ],
-      "bearConcepts": [
-        "传统软件"
-      ],
-      "bullIndustries": [
-        "半导体",
-        "AI应用",
-        "算力基础设施"
-      ],
-      "bearIndustries": [
-        "传统IT服务"
-      ],
-      "heat": 69,
-      "momentum": 31,
-      "_auto": true
-    },
-    {
-      "id": "abfz75u5",
-      "title": "韩国交易所对KOSPI指数启动熔断机制，程序化交易暂停5分钟。",
-      "tag": "宏观/综合",
+      "id": "ab1nky8tx",
+      "title": "乌克兰国防部称，乌方袭击了俄罗斯下诺夫哥罗德地区的萨瓦斯莱卡军用机场。",
+      "tag": "地缘/政治",
       "region": "全球",
       "concept": "macro",
-      "time": "2026-11-25 08:09",
-      "datetime": "2026-11-25 08:09",
+      "time": "2026-11-25 18:56",
+      "datetime": "2026-11-25 18:56",
       "source": "新浪7×24",
-      "url": "https://finance.sina.cn/7x24/2026-11-25/detail-inizxaup1814967.d.html",
-      "summary": "韩国交易所对KOSPI指数启动熔断机制，程序化交易暂停5分钟。",
-      "relatedStocks": [
-        "宽基指数"
-      ],
-      "bullConcepts": [
-        "防御板块"
-      ],
-      "bearConcepts": [
-        "周期股"
-      ],
-      "bullIndustries": [
-        "公用事业"
-      ],
-      "bearIndustries": [
-        "顺周期"
-      ],
-      "heat": 65,
-      "momentum": 81,
-      "_auto": true
-    },
-    {
-      "id": "ab181yjsx",
-      "title": "11月25日收盘：美股涨跌不一 芯片板块重挫 英伟达跌近6% Anthropic跌破IPO发行价",
-      "tag": "科技/AI",
-      "region": "美国",
-      "concept": "aiCapex",
-      "time": "2026-11-25 05:32",
-      "datetime": "2026-11-25 05:32",
-      "source": "环球市场播报",
-      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-25/doc-inizwwnr1839951.shtml",
-      "summary": "美股三大指数收盘涨跌不一，市场在经历前一日的剧烈逼空反弹后迅速进入结构性分化阶段。随着黄仁勋重返首席执行官岗位，投资者正在重新评估英伟达及人工智能交易的下一步走...",
-      "relatedStocks": [
-        "英伟达",
-        "微软",
-        "台积电"
-      ],
-      "bullConcepts": [
-        "AI算力",
-        "半导体",
-        "国产替代"
-      ],
-      "bearConcepts": [
-        "传统软件"
-      ],
-      "bullIndustries": [
-        "半导体",
-        "AI应用",
-        "算力基础设施"
-      ],
-      "bearIndustries": [
-        "传统IT服务"
-      ],
-      "heat": 87,
-      "momentum": 18,
-      "_auto": true
-    },
-    {
-      "id": "abv0ya7q",
-      "title": "国泰海通：黄仁勋官复职有望推动全球AI算力产业链风险偏好修复",
-      "tag": "科技/AI",
-      "region": "中国",
-      "concept": "llm",
-      "time": "2026-11-25 07:43",
-      "datetime": "2026-11-25 07:43",
-      "source": "新浪7×24",
-      "url": "https://finance.sina.cn/7x24/2026-11-25/detail-inizxaum9560977.d.html",
-      "summary": "【国泰海通：黄仁勋官复职有望推动全球AI算力产业链风险偏好修复】国泰海通发布研报称，黄仁勋复职主要缓解全球AI产业链短期不确定性，此次复职有望缓解市场对公司战略连续性及供应链执行能力的担忧，推动全球AI算力产业链风险偏好修复。国内算力基础设施自主可控仍具备中长期战略价值，有望持续推动国产AI芯片、服务器、存储及基础软件生态建设。同时，随着国产算力供给能力提升、大模型性能持续优…",
-      "relatedStocks": [
-        "英伟达",
-        "微软",
-        "台积电"
-      ],
-      "bullConcepts": [
-        "AI算力",
-        "半导体",
-        "国产替代"
-      ],
-      "bearConcepts": [
-        "传统软件"
-      ],
-      "bullIndustries": [
-        "半导体",
-        "AI应用",
-        "算力基础设施"
-      ],
-      "bearIndustries": [
-        "传统IT服务"
-      ],
-      "heat": 55,
-      "momentum": 36,
-      "_auto": true
-    },
-    {
-      "id": "abvl8uiu",
-      "title": "特朗普政府已暂停与厄瓜多尔的联合军事行动。",
-      "tag": "地缘/政治",
-      "region": "美国",
-      "concept": "defense",
-      "time": "2026-11-25 08:33",
-      "datetime": "2026-11-25 08:33",
-      "source": "新浪7×24",
-      "url": "https://finance.sina.cn/7x24/2026-11-25/detail-inizxaut4375717.d.html",
-      "summary": "特朗普政府已暂停与厄瓜多尔的联合军事行动。",
+      "url": "https://finance.sina.cn/7x24/2026-11-25/detail-inizxxyc1838011.d.html",
+      "summary": "乌克兰国防部称，乌方袭击了俄罗斯下诺夫哥罗德地区的萨瓦斯莱卡军用机场。",
       "relatedStocks": [
         "军工",
         "黄金"
@@ -177,49 +39,50 @@
       "_auto": true
     },
     {
-      "id": "ab78ysf2",
-      "title": "富士康印度子公司遭供应商起诉追讨逾1500万美元欠款",
-      "tag": "金融/宏观",
-      "region": "美国",
-      "concept": "usFinance",
-      "time": "2026-11-25 08:26",
-      "datetime": "2026-11-25 08:26",
-      "source": "环球市场播报",
-      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-25/doc-inizxaup1831821.shtml",
-      "summary": "据知情人士透露，富士康科技集团印度子公司拖欠约六家供应商款项，其中一家甚至已提起破产程序诉讼，追讨1500万美元欠款。BCD Emprasa...",
+      "id": "ab1prhdx8",
+      "title": "乌克兰军方称，其袭击了俄罗斯萨马拉州的两家炼油厂。",
+      "tag": "地缘/政治",
+      "region": "全球",
+      "concept": "macro",
+      "time": "2026-11-25 18:47",
+      "datetime": "2026-11-25 18:47",
+      "source": "新浪7×24",
+      "url": "https://finance.sina.cn/7x24/2026-11-25/detail-inizxxyc1831406.d.html",
+      "summary": "乌克兰军方称，其袭击了俄罗斯萨马拉州的两家炼油厂。",
       "relatedStocks": [
-        "美股科技",
+        "军工",
         "黄金"
       ],
       "bullConcepts": [
-        "黄金",
-        "防御板块"
+        "军工",
+        "避险资产"
       ],
       "bearConcepts": [
-        "高估值成长股"
+        "风险资产"
       ],
       "bullIndustries": [
-        "银行",
+        "军工",
         "黄金"
       ],
       "bearIndustries": [
-        "高杠杆地产"
+        "航空",
+        "旅游"
       ],
       "heat": 24,
       "momentum": 36,
       "_auto": true
     },
     {
-      "id": "ab1m7sr8",
-      "title": "特朗普称赦免黄仁勋“一直是选项”",
+      "id": "abtwh2v2",
+      "title": "特朗普将出席台积电亚利桑那新半导体项目奠基仪式",
       "tag": "科技/AI",
       "region": "美国",
       "concept": "aiCapex",
-      "time": "2026-11-25 08:25",
-      "datetime": "2026-11-25 08:25",
-      "source": "环球市场播报",
-      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-25/doc-inizxaup1830214.shtml",
-      "summary": "据媒体报道，美国总统唐纳德·特朗普表示，赦免黄仁勋“一直是一个选项”，但随即补充说，他认为没有必要采取如此非同寻常的行动。黄仁勋已经重新担任英伟达首席执行官...",
+      "time": "2026-11-25 19:05",
+      "datetime": "2026-11-25 19:05",
+      "source": "新浪7×24",
+      "url": "https://finance.sina.cn/7x24/2026-11-25/detail-inizyeha8489925.d.html",
+      "summary": "【特朗普将出席台积电亚利桑那新半导体项目奠基仪式】美国总统特朗普下周将主持亚利桑那州一项大型半导体制造新项目的奠基仪式。此前他推动英伟达董事会恢复黄仁勋的首席执行官职务，此举进一步加深了他对芯片行业的介入。一名在消息正式公布前要求匿名的白宫官员称，特朗普计划出席12月4日台积电凤凰城工厂扩建项目的奠基仪式。黄仁勋定于奠基仪式前一天赴美国参议院作证，目前尚不清楚他是否会与特朗普…",
       "relatedStocks": [
         "英伟达",
         "微软",
@@ -246,52 +109,16 @@
       "_auto": true
     },
     {
-      "id": "ab4fch1e",
-      "title": "11月25日外盘头条：黄仁勋致歉并称英伟达不需要接班人计划 LME收紧持仓规则 美国消费者信心升至近两年最高",
-      "tag": "科技/AI",
-      "region": "美国",
-      "concept": "aiCapex",
-      "time": "2026-11-25 06:05",
-      "datetime": "2026-11-25 06:05",
-      "source": "环球市场播报",
-      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-25/doc-inizwwnr1857747.shtml",
-      "summary": "全球财经媒体昨夜今晨共同关注的头条新闻主要有： 1、应对铝市大规模逼空 伦敦金属交易所收紧对重仓者的约束 2、伊拉克据悉不认可OPEC+产能评估 产量目标谈判或添变数 3...",
-      "relatedStocks": [
-        "英伟达",
-        "微软",
-        "台积电"
-      ],
-      "bullConcepts": [
-        "AI算力",
-        "半导体",
-        "国产替代"
-      ],
-      "bearConcepts": [
-        "传统软件"
-      ],
-      "bullIndustries": [
-        "半导体",
-        "AI应用",
-        "算力基础设施"
-      ],
-      "bearIndustries": [
-        "传统IT服务"
-      ],
-      "heat": 47,
-      "momentum": 18,
-      "_auto": true
-    },
-    {
-      "id": "ablzmie",
-      "title": "不只是CEO复职 韩国券商：黄仁勋回归有望恢复AI市场信心",
+      "id": "abqec74e",
+      "title": "Anthropic破发“过河拆桥” OpenAI上市门槛抬升",
       "tag": "科技/AI",
       "region": "全球",
       "concept": "ai",
-      "time": "2026-11-24 22:06",
-      "datetime": "2026-11-24 22:06",
+      "time": "2026-11-25 15:09",
+      "datetime": "2026-11-25 15:09",
       "source": "环球市场播报",
-      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-24/doc-inizvzia8945906.shtml",
-      "summary": "随着英伟达首席执行官（CEO）黄仁勋重返管理岗位等消息推动韩国股市大幅反弹，韩国证券业界认为，这可能成为人工智能（AI）投资生态系统恢复市场信心的契机。",
+      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-25/doc-inizxtsf1787216.shtml",
+      "summary": "人总有运气用尽的时候。随着股价跌破发行价，Anthropic及其承销投行刚刚体会到这一点。但本次事件最大的受害者，或许是它的头号竞争对手OpenAI。",
       "relatedStocks": [
         "英伟达",
         "微软",
@@ -318,88 +145,16 @@
       "_auto": true
     },
     {
-      "id": "ab1quneki",
-      "title": "霍尔木兹海峡突发！伊朗：将收紧封锁！昨夜今晨，科技股、“算力金属”暴跌！油价大涨",
-      "tag": "科技/AI",
-      "region": "美国",
-      "concept": "aiCapex",
-      "time": "2026-11-25 07:24",
-      "datetime": "2026-11-25 07:24",
-      "source": "市场资讯",
-      "url": "https://finance.sina.com.cn/money/future/fmnews/2026-11-25/doc-inizwwnp9686626.shtml",
-      "summary": "来源：期货日报 早上好，先来关注下国际市场。 24日晚，美股三大指数集体低开，科技股大幅下跌。截至收盘，道琼斯指数涨0.85%，标普500指数跌0.50%，纳斯达克综合指数跌1...",
-      "relatedStocks": [
-        "英伟达",
-        "微软",
-        "台积电"
-      ],
-      "bullConcepts": [
-        "AI算力",
-        "半导体",
-        "国产替代"
-      ],
-      "bearConcepts": [
-        "传统软件"
-      ],
-      "bullIndustries": [
-        "半导体",
-        "AI应用",
-        "算力基础设施"
-      ],
-      "bearIndustries": [
-        "传统IT服务"
-      ],
-      "heat": 29,
-      "momentum": 26,
-      "_auto": true
-    },
-    {
-      "id": "ab1fivajq",
-      "title": "AI领域最有影响力的CEO回来了 但市场这份信心能维持多久？",
-      "tag": "科技/AI",
-      "region": "美国",
-      "concept": "aiCapex",
-      "time": "2026-11-24 22:24",
-      "datetime": "2026-11-24 22:24",
-      "source": "环球市场播报",
-      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-24/doc-inizvzhz2179720.shtml",
-      "summary": "黄仁勋出人意料重返英伟达，给近几周遭受剧烈震荡的 AI 产业重燃希望。 在黄仁勋离任的 11 天里，英伟达市值蒸发超 1 万亿美元；以科技股为主的纳斯达克综合指数逼近调整关...",
-      "relatedStocks": [
-        "英伟达",
-        "微软",
-        "台积电"
-      ],
-      "bullConcepts": [
-        "AI算力",
-        "半导体",
-        "国产替代"
-      ],
-      "bearConcepts": [
-        "传统软件"
-      ],
-      "bullIndustries": [
-        "半导体",
-        "AI应用",
-        "算力基础设施"
-      ],
-      "bearIndustries": [
-        "传统IT服务"
-      ],
-      "heat": 38,
-      "momentum": 18,
-      "_auto": true
-    },
-    {
-      "id": "ab1hw9c4h",
-      "title": "大宗商品综述：油价上涨 铜价走低 金价下挫",
+      "id": "abl3n3u3",
+      "title": "情绪转向！刚刚，“双焦”期价大涨！煤炭概念股沸腾：退市边缘股“两连板”！",
       "tag": "能源/资源",
       "region": "全球",
       "concept": "energy",
-      "time": "2026-11-25 06:49",
-      "datetime": "2026-11-25 06:49",
-      "source": "环球市场播报",
-      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-25/doc-inizwwnr1886953.shtml",
-      "summary": "油价在清淡交投中走高，有关更多油轮遇袭的报道盖过了为解决美伊战争所作的最新外交努力。铜价跌至去年12月以来的最低水平，科技巨头遭抛售拖累市场和大宗商品...",
+      "time": "2026-11-25 11:24",
+      "datetime": "2026-11-25 11:24",
+      "source": "市场资讯",
+      "url": "https://finance.sina.com.cn/money/future/fmnews/2026-11-25/doc-inizxiai9602659.shtml",
+      "summary": "来源：期货日报 今日，焦煤、焦炭期价大涨，延续反弹态势。 股市方面，煤炭概念股普涨，其中，*ST瑞茂“两连板”，赤天化开盘直线涨停，但随后“炸板”。",
       "relatedStocks": [
         "中国石油",
         "紫金矿业"
@@ -419,21 +174,87 @@
         "航空运输",
         "化工"
       ],
-      "heat": 42,
-      "momentum": 26,
+      "heat": 24,
+      "momentum": 18,
       "_auto": true
     },
     {
-      "id": "ab1lgfh6p",
-      "title": "高盛上调ITM Power评级至中性，称股价半年暴跌61%后风险回报趋于平衡",
-      "tag": "宏观/综合",
-      "region": "欧洲",
-      "concept": "macro",
-      "time": "2026-11-24 20:18",
-      "datetime": "2026-11-24 20:18",
+      "id": "abh0w1iv",
+      "title": "郭明錤：黄仁勋回归消除短期不确定性 出口、融资、算力瓶颈仍存",
+      "tag": "科技/AI",
+      "region": "全球",
+      "concept": "ai",
+      "time": "2026-11-25 17:05",
+      "datetime": "2026-11-25 17:05",
       "source": "环球市场播报",
-      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-24/doc-inizvzhx9921265.shtml",
-      "summary": "11月24日，高盛将英国电解槽制造商ITM Power的股票评级由“卖出”上调至“中性”，并将12个月目标价由70便士上调至73便士，较当前股价61便士存在约19.7%的上涨空间。",
+      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-25/doc-inizxxxz9440277.shtml",
+      "summary": "知名分析师郭明錤发文分析黄仁勋回归英伟达，他表示，黄仁勋复职短期风险消解，但出口、融资的不确定性仍存，算力瓶颈仍是现实约束。",
+      "relatedStocks": [
+        "英伟达",
+        "微软",
+        "台积电"
+      ],
+      "bullConcepts": [
+        "AI算力",
+        "半导体",
+        "国产替代"
+      ],
+      "bearConcepts": [
+        "传统软件"
+      ],
+      "bullIndustries": [
+        "半导体",
+        "AI应用",
+        "算力基础设施"
+      ],
+      "bearIndustries": [
+        "传统IT服务"
+      ],
+      "heat": 24,
+      "momentum": 18,
+      "_auto": true
+    },
+    {
+      "id": "abvbboww",
+      "title": "*ST元成索赔时效剩两个月 受损股民仍可起诉",
+      "tag": "宏观/综合",
+      "region": "全球",
+      "concept": "macro",
+      "time": "2026-11-25 15:30",
+      "datetime": "2026-11-25 15:30",
+      "source": "市场资讯",
+      "url": "https://finance.sina.com.cn/stock/gmwq/rightscase/2026-11-25/doc-inizxtsm4282317.shtml",
+      "summary": "近日，投资者诉元成环境股份有限公司（代码：400284 、603388， 简称：*ST元成、元成环境、R元成1）证券虚假陈述案持续推进。",
+      "relatedStocks": [
+        "宽基指数"
+      ],
+      "bullConcepts": [
+        "防御板块"
+      ],
+      "bearConcepts": [
+        "周期股"
+      ],
+      "bullIndustries": [
+        "公用事业"
+      ],
+      "bearIndustries": [
+        "顺周期"
+      ],
+      "heat": 33,
+      "momentum": 18,
+      "_auto": true
+    },
+    {
+      "id": "abn5y8nf",
+      "title": "能特科技（002102）索赔案已提交法院立案，农尚环境（300536）索赔案已有胜诉还可起诉",
+      "tag": "宏观/综合",
+      "region": "中国",
+      "concept": "broker",
+      "time": "2026-11-25 15:28",
+      "datetime": "2026-11-25 15:28",
+      "source": "市场资讯",
+      "url": "https://finance.sina.com.cn/stock/gmwq/rightscase/2026-11-25/doc-inizxtsm4281192.shtml",
+      "summary": "上海久诚律师事务所股票索赔律师许峰律师代理的能特科技（002102）涉嫌虚假陈述投资者索赔案已向法院提交立案，目前正在等待法院的下一步安排。（许峰律师专栏）",
       "relatedStocks": [
         "宽基指数"
       ],
@@ -454,16 +275,217 @@
       "_auto": true
     },
     {
-      "id": "ab1w9fqwf",
-      "title": "普京：必将回应乌对俄燃料能源设施的袭击",
+      "id": "ab1idrapi",
+      "title": "东尼电子明日摘帽，虚假记载的索赔账并未一笔勾销",
+      "tag": "宏观/综合",
+      "region": "中国",
+      "concept": "broker",
+      "time": "2026-11-25 15:41",
+      "datetime": "2026-11-25 15:41",
+      "source": "市场资讯",
+      "url": "https://finance.sina.com.cn/stock/gmwq/rightscase/2026-11-25/doc-inizxtsm4290598.shtml",
+      "summary": "11月24日晚，东尼电子（603595）披露，其股票将于11月25日停牌一天，11月26日起复牌并撤销其他风险警示，A股简称由“ST东尼”变更为“东尼电子”，日涨跌幅限制恢复至10%。",
+      "relatedStocks": [
+        "宽基指数"
+      ],
+      "bullConcepts": [
+        "防御板块"
+      ],
+      "bearConcepts": [
+        "周期股"
+      ],
+      "bullIndustries": [
+        "公用事业"
+      ],
+      "bearIndustries": [
+        "顺周期"
+      ],
+      "heat": 24,
+      "momentum": 18,
+      "_auto": true
+    },
+    {
+      "id": "ab1q0dijc",
+      "title": "“互联网泡沫+次贷危机”！AI若暴雷 美国经济真伤不起？",
+      "tag": "科技/AI",
+      "region": "美国",
+      "concept": "aiCapex",
+      "time": "2026-11-25 15:17",
+      "datetime": "2026-11-25 15:17",
+      "source": "市场资讯",
+      "url": "https://finance.sina.com.cn/money/future/fmnews/2026-11-25/doc-inizxtsc9494835.shtml",
+      "summary": "来源：财联社 财联社11月25日讯（编辑 潇湘）当白宫破天荒地干预一家企业董事会决策，当黄仁勋一人的去留撬动起美股数万亿美元市值的沉浮，可以说...",
+      "relatedStocks": [
+        "英伟达",
+        "微软",
+        "台积电"
+      ],
+      "bullConcepts": [
+        "AI算力",
+        "半导体",
+        "国产替代"
+      ],
+      "bearConcepts": [
+        "传统软件"
+      ],
+      "bullIndustries": [
+        "半导体",
+        "AI应用",
+        "算力基础设施"
+      ],
+      "bearIndustries": [
+        "传统IT服务"
+      ],
+      "heat": 24,
+      "momentum": 18,
+      "_auto": true
+    },
+    {
+      "id": "ab1wjzxrn",
+      "title": "供应增加对冲霍尔木兹袭击升级风险 油价下跌",
+      "tag": "金融/宏观",
+      "region": "美国",
+      "concept": "usFinance",
+      "time": "2026-11-25 17:15",
+      "datetime": "2026-11-25 17:15",
+      "source": "环球市场播报",
+      "url": "https://finance.sina.com.cn/world/2026-11-25/doc-inizxxxz9449921.shtml",
+      "summary": "原油价格走低，供应增长信号盖过霍尔木兹海峡船舶袭击升级以及区域其他能源设施遇袭的影响。 布伦特原油在前一交易日上涨2.3%后，跌破90美元/桶；西德克萨斯中质原油维持在...",
+      "relatedStocks": [
+        "美股科技",
+        "黄金"
+      ],
+      "bullConcepts": [
+        "黄金",
+        "防御板块"
+      ],
+      "bearConcepts": [
+        "高估值成长股"
+      ],
+      "bullIndustries": [
+        "银行",
+        "黄金"
+      ],
+      "bearIndustries": [
+        "高杠杆地产"
+      ],
+      "heat": 24,
+      "momentum": 26,
+      "_auto": true
+    },
+    {
+      "id": "ab10o9np4",
+      "title": "退市卓朗时效只剩三个月 此前已有股民获赔1.4亿",
+      "tag": "宏观/综合",
+      "region": "中国",
+      "concept": "broker",
+      "time": "2026-11-25 15:30",
+      "datetime": "2026-11-25 15:30",
+      "source": "市场资讯",
+      "url": "https://finance.sina.com.cn/stock/gmwq/rightscase/2026-11-25/doc-inizxtsm4282114.shtml",
+      "summary": "近日，投资者诉天津卓朗信息科技股份有限公司（原简称：卓朗科技、退市卓朗，原证券代码：600225）证券虚假陈案持续推进。",
+      "relatedStocks": [
+        "宽基指数"
+      ],
+      "bullConcepts": [
+        "防御板块"
+      ],
+      "bearConcepts": [
+        "周期股"
+      ],
+      "bullIndustries": [
+        "公用事业"
+      ],
+      "bearIndustries": [
+        "顺周期"
+      ],
+      "heat": 24,
+      "momentum": 18,
+      "_auto": true
+    },
+    {
+      "id": "abyep9k8",
+      "title": "黄仁勋现在的处境或许更加艰难",
+      "tag": "科技/AI",
+      "region": "全球",
+      "concept": "ai",
+      "time": "2026-11-25 17:28",
+      "datetime": "2026-11-25 17:28",
+      "source": "环球市场播报",
+      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-25/doc-inizxxyc1773206.shtml",
+      "summary": "作者：刘菲比、里奥・施瓦茨 早在两周前黄仁勋风波不断、被迫离职之前，他就已经要面对 AI 芯片设计领域日趋激烈的竞争，同时外界不断质疑他向新兴云厂商这类客户提供巨额...",
+      "relatedStocks": [
+        "英伟达",
+        "微软",
+        "台积电"
+      ],
+      "bullConcepts": [
+        "AI算力",
+        "半导体",
+        "国产替代"
+      ],
+      "bearConcepts": [
+        "传统软件"
+      ],
+      "bullIndustries": [
+        "半导体",
+        "AI应用",
+        "算力基础设施"
+      ],
+      "bearIndustries": [
+        "传统IT服务"
+      ],
+      "heat": 24,
+      "momentum": 26,
+      "_auto": true
+    },
+    {
+      "id": "ab1dijwwi",
+      "title": "人工智能股票的巨大隐忧：芯片产能过剩",
+      "tag": "科技/AI",
+      "region": "全球",
+      "concept": "ai",
+      "time": "2026-11-25 17:12",
+      "datetime": "2026-11-25 17:12",
+      "source": "环球市场播报",
+      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-25/doc-inizxxyi4226548.shtml",
+      "summary": "要说当下谁最需要心理疏导，那或许就得是科技行业的投资者们了。说实话，近期股市的表现有点喜怒无常。举个例子，周二，因黄仁勋复职催生的股价上涨行情出现反转...",
+      "relatedStocks": [
+        "英伟达",
+        "微软",
+        "台积电"
+      ],
+      "bullConcepts": [
+        "AI算力",
+        "半导体",
+        "国产替代"
+      ],
+      "bearConcepts": [
+        "传统软件"
+      ],
+      "bullIndustries": [
+        "半导体",
+        "AI应用",
+        "算力基础设施"
+      ],
+      "bearIndustries": [
+        "传统IT服务"
+      ],
+      "heat": 24,
+      "momentum": 26,
+      "_auto": true
+    },
+    {
+      "id": "ab14tet9t",
+      "title": "燃油价格飙升，易捷航空利润暴跌96%",
       "tag": "能源/资源",
       "region": "全球",
       "concept": "energy",
-      "time": "2026-11-25 06:27",
-      "datetime": "2026-11-25 06:27",
-      "source": "新华社",
-      "url": "https://finance.sina.com.cn/money/bond/2026-11-25/doc-inizwwnp9657006.shtml",
-      "summary": "转自：新华社 新华财经莫斯科11月25日电（记者黄河）俄罗斯总统普京24日表示，乌克兰武装部队持续袭击俄燃料与能源基础设施，俄方必将予以回应。",
+      "time": "2026-11-25 15:51",
+      "datetime": "2026-11-25 15:51",
+      "source": "环球市场播报",
+      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-25/doc-inizxtsh8606038.shtml",
+      "summary": "易捷航空（easyJet）利润暴跌96%，原因是燃油价格飙升和消费者需求下降。这是该航空公司在明年春季被阿波罗全球管理公司（Apollo）收购并私有化之前发布的最后一份年度财报...",
       "relatedStocks": [
         "中国石油",
         "紫金矿业"
@@ -483,148 +505,67 @@
         "航空运输",
         "化工"
       ],
-      "heat": 55,
+      "heat": 24,
       "momentum": 18,
       "_auto": true
     },
     {
-      "id": "abuvvsp4",
-      "title": "原油：油价上涨 油轮遇袭盖过美伊外交努力",
-      "tag": "金融/宏观",
-      "region": "美国",
-      "concept": "usFinance",
-      "time": "2026-11-25 04:39",
-      "datetime": "2026-11-25 04:39",
-      "source": "环球市场播报",
-      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-25/doc-inizwset1948081.shtml",
-      "summary": "油价在清淡交投中走高，有关更多油轮遇袭的报道盖过了为解决美伊战争所作的最新外交努力。 WTI上涨2.4%，收于每桶82美元左右，部分收复前一交易日的跌幅。",
+      "id": "abp2a42t",
+      "title": "0.99元的田野股份，面值退市之外还有索赔这条路",
+      "tag": "宏观/综合",
+      "region": "全球",
+      "concept": "macro",
+      "time": "2026-11-25 15:41",
+      "datetime": "2026-11-25 15:41",
+      "source": "市场资讯",
+      "url": "https://finance.sina.com.cn/stock/gmwq/rightscase/2026-11-25/doc-inizxtsc9511153.shtml",
+      "summary": "11月24日晚，*ST田野（920023）披露《关于公司股票存在可能因股价低于面值被终止上市的风险提示公告》。 当日收盘价0.99元，低于1元面值...",
       "relatedStocks": [
-        "美股科技",
-        "黄金"
+        "宽基指数"
       ],
       "bullConcepts": [
-        "黄金",
         "防御板块"
       ],
       "bearConcepts": [
-        "高估值成长股"
+        "周期股"
       ],
       "bullIndustries": [
-        "银行",
-        "黄金"
+        "公用事业"
       ],
       "bearIndustries": [
-        "高杠杆地产"
-      ],
-      "heat": 33,
-      "momentum": 18,
-      "_auto": true
-    },
-    {
-      "id": "ab1ng0apb",
-      "title": "史蒂夫・艾斯曼：AI 交易充满不确定性，正在降低风险敞口",
-      "tag": "科技/AI",
-      "region": "全球",
-      "concept": "ai",
-      "time": "2026-11-25 00:12",
-      "datetime": "2026-11-25 00:12",
-      "source": "环球市场播报",
-      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-25/doc-inizwfqy8875915.shtml",
-      "summary": "本周，前首席执行官黄仁勋出人意料回归英伟达，AI 板块随之冒出重重变数，就连部分顶尖投资者也对资金布局感到犹豫。 知名空头投资人史蒂夫・艾斯曼表示...",
-      "relatedStocks": [
-        "英伟达",
-        "微软",
-        "台积电"
-      ],
-      "bullConcepts": [
-        "AI算力",
-        "半导体",
-        "国产替代"
-      ],
-      "bearConcepts": [
-        "传统软件"
-      ],
-      "bullIndustries": [
-        "半导体",
-        "AI应用",
-        "算力基础设施"
-      ],
-      "bearIndustries": [
-        "传统IT服务"
+        "顺周期"
       ],
       "heat": 24,
       "momentum": 18,
       "_auto": true
     },
     {
-      "id": "ab9tzz1d",
-      "title": "黄仁勋回归缓解韩国HBM需求担忧 业内警示降低单一客户依赖",
-      "tag": "科技/AI",
-      "region": "美国",
-      "concept": "aiCapex",
-      "time": "2026-11-24 22:36",
-      "datetime": "2026-11-24 22:36",
-      "source": "环球市场播报",
-      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-24/doc-inizwfqx2055436.shtml",
-      "summary": "黄仁勋在辞职仅11天后复任英伟达首席执行官，此举缓解了市场对三星电子、SK海力士与这家美国芯片巨头的高带宽存储器（HBM）合作，以及韩国由AI带动的存储景气周期能否延续...",
+      "id": "ab1dg6zxp",
+      "title": "ST东尼明日摘帽，索赔登记继续",
+      "tag": "宏观/综合",
+      "region": "中国",
+      "concept": "broker",
+      "time": "2026-11-25 15:41",
+      "datetime": "2026-11-25 15:41",
+      "source": "市场资讯",
+      "url": "https://finance.sina.com.cn/stock/gmwq/rightscase/2026-11-25/doc-inizxtsc9509844.shtml",
+      "summary": "2026年11月24日晚间，ST东尼（603595）发布公告称，公司股票将于11月25日停牌一天，自11月26日起复牌并撤销其他风险警示，A股简称由“ST东尼”变更为“东尼电子”。",
       "relatedStocks": [
-        "英伟达",
-        "微软",
-        "台积电"
+        "宽基指数"
       ],
       "bullConcepts": [
-        "AI算力",
-        "半导体",
-        "国产替代"
+        "防御板块"
       ],
       "bearConcepts": [
-        "传统软件"
+        "周期股"
       ],
       "bullIndustries": [
-        "半导体",
-        "AI应用",
-        "算力基础设施"
+        "公用事业"
       ],
       "bearIndustries": [
-        "传统IT服务"
+        "顺周期"
       ],
       "heat": 24,
-      "momentum": 18,
-      "_auto": true
-    },
-    {
-      "id": "ab4d7i8k",
-      "title": "比特币下跌，11月现货ETF资金流出规模增至创纪录的47.1亿美元",
-      "tag": "科技/AI",
-      "region": "美国",
-      "concept": "aiCapex",
-      "time": "2026-11-24 21:37",
-      "datetime": "2026-11-24 21:37",
-      "source": "环球市场播报",
-      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-24/doc-inizvzhz2152041.shtml",
-      "summary": "比特币（BTC）回落至6万美元。此前，随着黄仁勋于周一重返英伟达首席执行官岗位，比特币一度反弹至6.4万美元上方。 股市同样显现下跌迹象。",
-      "relatedStocks": [
-        "英伟达",
-        "微软",
-        "台积电"
-      ],
-      "bullConcepts": [
-        "AI算力",
-        "半导体",
-        "国产替代"
-      ],
-      "bearConcepts": [
-        "传统软件"
-      ],
-      "bullIndustries": [
-        "半导体",
-        "AI应用",
-        "算力基础设施"
-      ],
-      "bearIndustries": [
-        "传统IT服务"
-      ],
-      "heat": 29,
       "momentum": 18,
       "_auto": true
     },
@@ -938,6 +879,35 @@
       ],
       "heat": 82,
       "momentum": 80
+    },
+    {
+      "id": "b10",
+      "title": "Anthropic 拟11月16日当周登陆纳斯达克IPO",
+      "tag": "企业活动/AI",
+      "region": "美国",
+      "concept": "aiCapex",
+      "time": "2026-11-16（预计）",
+      "datetime": "2026-11-08 09:00",
+      "source": "路透/SEC S-1",
+      "summary": "Anthropic已公开递交S-1，潜在买家讨论1.2万亿至1.3万亿美元估值区间；三季度营收约169.6亿美元、环比增45%，但算力支出承诺已近8954亿美元。IPO为美股AI链重要风向标。",
+      "relatedStocks": [
+        "AI",
+        "美股"
+      ],
+      "bullConcepts": [
+        "AI算力",
+        "云计算",
+        "AI应用"
+      ],
+      "bearConcepts": [],
+      "bullIndustries": [
+        "AI",
+        "云计算",
+        "算力"
+      ],
+      "bearIndustries": [],
+      "heat": 75,
+      "momentum": 58
     },
     {
       "id": "b11",

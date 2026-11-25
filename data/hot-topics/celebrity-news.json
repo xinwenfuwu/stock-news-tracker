@@ -1,20 +1,20 @@
 {
-  "generatedAt": "2026-11-25 08:34",
+  "generatedAt": "2026-11-25 19:08",
   "generatedBy": "GitHub Actions · 多源实时聚合",
-  "sourceCount": 4,
-  "autoCount": 8,
+  "sourceCount": 3,
+  "autoCount": 6,
   "events": [
     {
-      "id": "aps5lybl",
-      "title": "周二，英伟达CEO黄仁勋在复职后首次召开的公司全员大会上向员工公开道歉，承认违反公司行为准则，并透露自己每天接受一个半小时治疗。消息人士表示，他告诉员工，英伟达已打造出一支团队，…",
-      "tag": "人物/黄仁勋",
-      "region": "全球",
-      "concept": "ai",
-      "time": "2026-11-25 07:57",
-      "datetime": "2026-11-25 07:57",
+      "id": "aptwh2v2",
+      "title": "特朗普将出席台积电亚利桑那新半导体项目奠基仪式",
+      "tag": "人物/特朗普",
+      "region": "美国",
+      "concept": "aiCapex",
+      "time": "2026-11-25 19:05",
+      "datetime": "2026-11-25 19:05",
       "source": "新浪7×24",
-      "url": "https://finance.sina.cn/7x24/2026-11-25/detail-inizxauq8581729.d.html",
-      "summary": "周二，英伟达CEO黄仁勋在复职后首次召开的公司全员大会上向员工公开道歉，承认违反公司行为准则，并透露自己每天接受一个半小时治疗。消息人士表示，他告诉员工，英伟达已打造出一支团队，不需要像普通机构那样制定接班人计划，因为公司运营着一种独特的商业模式：英伟达有多个能干的领导者，分别领导着组织的不同部分。黄仁勋承诺，今后会更加愿意听取反馈，自己第二次担任CEO“会做得更好”。",
+      "url": "https://finance.sina.cn/7x24/2026-11-25/detail-inizyeha8489925.d.html",
+      "summary": "【特朗普将出席台积电亚利桑那新半导体项目奠基仪式】美国总统特朗普下周将主持亚利桑那州一项大型半导体制造新项目的奠基仪式。此前他推动英伟达董事会恢复黄仁勋的首席执行官职务，此举进一步加深了他对芯片行业的介入。一名在消息正式公布前要求匿名的白宫官员称，特朗普计划出席12月4日台积电凤凰城工厂扩建项目的奠基仪式。黄仁勋定于奠基仪式前一天赴美国参议院作证，目前尚不清楚他是否会与特朗普…",
       "relatedStocks": [
         "英伟达",
         "微软",
@@ -36,54 +36,57 @@
       "bearIndustries": [
         "传统IT服务"
       ],
-      "heat": 69,
-      "momentum": 31,
-      "_auto": true
-    },
-    {
-      "id": "ap29llwo",
-      "title": "中信证券：特斯拉FSD v15推动自动驾驶与机器人共享视觉底座，世界模型进一步向端侧实时推理延伸",
-      "tag": "人物/马斯克",
-      "region": "全球",
-      "concept": "green",
-      "time": "2026-11-25 08:07",
-      "datetime": "2026-11-25 08:07",
-      "source": "新浪7×24",
-      "url": "https://finance.sina.cn/7x24/2026-11-25/detail-inizxauq8588767.d.html",
-      "summary": "【中信证券：特斯拉FSD v15推动自动驾驶与机器人共享视觉底座，世界模型进一步向端侧实时推理延伸】中信证券研报表示，特斯拉FSD v15推动自动驾驶与机器人共享视觉底座，世界模型进一步向端侧实时推理延伸。根据公司官网，2026年11月21日，特斯拉开始向首批HW4车辆推送FSD v15.0.1，核心升级包括通用视觉编码器（UVE）与实时生成式驾驶画面Reality View…",
-      "relatedStocks": [
-        "特斯拉",
-        "比亚迪"
-      ],
-      "bullConcepts": [
-        "智能驾驶",
-        "动力电池"
-      ],
-      "bearConcepts": [
-        "传统车企"
-      ],
-      "bullIndustries": [
-        "智能驾驶",
-        "锂电池"
-      ],
-      "bearIndustries": [
-        "传统汽车制造"
-      ],
       "heat": 24,
       "momentum": 36,
       "_auto": true
     },
     {
-      "id": "ap1lce03w",
-      "title": "由加迪·艾森科特牵头的以色列四个政党联盟重要成员民主党24日晚在社交媒体发布声明称，已暂停同艾森科特领导的正直党进行组阁谈判。按照民主党的说法，由于正直党与看守政府总理内塔尼亚胡…",
-      "tag": "人物/内塔尼亚胡",
+      "id": "aph0w1iv",
+      "title": "郭明錤：黄仁勋回归消除短期不确定性 出口、融资、算力瓶颈仍存",
+      "tag": "人物/黄仁勋",
       "region": "全球",
-      "concept": "macro",
-      "time": "2026-11-25 08:06",
-      "datetime": "2026-11-25 08:06",
-      "source": "新浪7×24",
-      "url": "https://finance.sina.cn/7x24/2026-11-25/detail-inizxaum9572819.d.html",
-      "summary": "由加迪·艾森科特牵头的以色列四个政党联盟重要成员民主党24日晚在社交媒体发布声明称，已暂停同艾森科特领导的正直党进行组阁谈判。按照民主党的说法，由于正直党与看守政府总理内塔尼亚胡领导的利库德集团组阁谈判取得进展，而四党联盟组阁谈判陷入僵局等原因，民主党决定暂停与正直党的组阁谈判。以色列《国土报》当晚援引民主党内部人士的消息报道说，民主党与正直党关系破裂，在艾森科特寻求与利库德…",
+      "concept": "ai",
+      "time": "2026-11-25 17:05",
+      "datetime": "2026-11-25 17:05",
+      "source": "环球市场播报",
+      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-25/doc-inizxxxz9440277.shtml",
+      "summary": "知名分析师郭明錤发文分析黄仁勋回归英伟达，他表示，黄仁勋复职短期风险消解，但出口、融资的不确定性仍存，算力瓶颈仍是现实约束。",
+      "relatedStocks": [
+        "英伟达",
+        "微软",
+        "台积电"
+      ],
+      "bullConcepts": [
+        "AI算力",
+        "半导体",
+        "国产替代"
+      ],
+      "bearConcepts": [
+        "传统软件"
+      ],
+      "bullIndustries": [
+        "半导体",
+        "AI应用",
+        "算力基础设施"
+      ],
+      "bearIndustries": [
+        "传统IT服务"
+      ],
+      "heat": 24,
+      "momentum": 18,
+      "_auto": true
+    },
+    {
+      "id": "ap19y0hhq",
+      "title": "媒体：特朗普团队搁置对俄商业交易方案，俄乌谈判重心重回领土与安全",
+      "tag": "人物/特朗普",
+      "region": "美国",
+      "concept": "defense",
+      "time": "2026-11-25 13:09",
+      "datetime": "2026-11-25 13:09",
+      "source": "环球市场播报",
+      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-25/doc-inizxpkp4316181.shtml",
+      "summary": "据英国《金融时报》报道，美国总统特朗普的女婿贾里德·库什纳与特使史蒂夫·威特科夫已告知欧洲官员，美俄企业合作（商业交易）已不再是美国游说俄罗斯结束俄乌冲突的核心方...",
       "relatedStocks": [
         "军工",
         "黄金"
@@ -104,178 +107,102 @@
         "旅游"
       ],
       "heat": 24,
-      "momentum": 36,
+      "momentum": 18,
       "_auto": true
     },
     {
-      "id": "apv0ya7q",
-      "title": "国泰海通：黄仁勋官复职有望推动全球AI算力产业链风险偏好修复",
-      "tag": "人物/黄仁勋",
-      "region": "中国",
-      "concept": "llm",
-      "time": "2026-11-25 07:43",
-      "datetime": "2026-11-25 07:43",
-      "source": "新浪7×24",
-      "url": "https://finance.sina.cn/7x24/2026-11-25/detail-inizxaum9560977.d.html",
-      "summary": "【国泰海通：黄仁勋官复职有望推动全球AI算力产业链风险偏好修复】国泰海通发布研报称，黄仁勋复职主要缓解全球AI产业链短期不确定性，此次复职有望缓解市场对公司战略连续性及供应链执行能力的担忧，推动全球AI算力产业链风险偏好修复。国内算力基础设施自主可控仍具备中长期战略价值，有望持续推动国产AI芯片、服务器、存储及基础软件生态建设。同时，随着国产算力供给能力提升、大模型性能持续优…",
-      "relatedStocks": [
-        "英伟达",
-        "微软",
-        "台积电"
-      ],
-      "bullConcepts": [
-        "AI算力",
-        "半导体",
-        "国产替代"
-      ],
-      "bearConcepts": [
-        "传统软件"
-      ],
-      "bullIndustries": [
-        "半导体",
-        "AI应用",
-        "算力基础设施"
-      ],
-      "bearIndustries": [
-        "传统IT服务"
-      ],
-      "heat": 55,
-      "momentum": 36,
-      "_auto": true
-    },
-    {
-      "id": "apy1kz68",
-      "title": "马斯克透露培训秘诀，让星巴克咖啡师或超市理货员也能参与数据中心建设",
+      "id": "ap1gokgrz",
+      "title": "马斯克计划颠覆美国无线通信行业",
       "tag": "人物/马斯克",
-      "region": "全球",
-      "concept": "ai",
-      "time": "2026-11-25 08:33",
-      "datetime": "2026-11-25 08:33",
-      "source": "环球市场播报",
-      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-25/doc-inizxaum9595822.shtml",
-      "summary": "SpaceX首席执行官埃隆·马斯克近日表示，该公司可以培训那些曾从事咖啡师（如在星巴克工作）或负责货架补货（如在塔吉特百货工作）的人员...",
-      "relatedStocks": [
-        "英伟达",
-        "微软",
-        "台积电"
-      ],
-      "bullConcepts": [
-        "AI算力",
-        "半导体",
-        "国产替代"
-      ],
-      "bearConcepts": [
-        "传统软件"
-      ],
-      "bullIndustries": [
-        "半导体",
-        "AI应用",
-        "算力基础设施"
-      ],
-      "bearIndustries": [
-        "传统IT服务"
-      ],
-      "heat": 24,
-      "momentum": 36,
-      "_auto": true
-    },
-    {
-      "id": "ap9n19xz",
-      "title": "特朗普：将与埃尔-赛义德就医疗保健问题会面",
-      "tag": "人物/特朗普",
       "region": "美国",
-      "concept": "medicare",
-      "time": "2026-11-25 07:37",
-      "datetime": "2026-11-25 07:37",
+      "concept": "usMacro",
+      "time": "2026-11-25 17:49",
+      "datetime": "2026-11-25 17:49",
       "source": "环球市场播报",
-      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-25/doc-inizwwnp9689668.shtml",
-      "summary": "特朗普总统在接受媒体采访时表示，他将与当选参议员阿卜杜勒·埃尔-赛义德（Abdul El-Sayed）举行会晤，商讨推动“全民医保”计划。",
+      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-25/doc-inizxxye8565545.shtml",
+      "summary": "埃隆·马斯克旗下的SpaceX已经彻底改变了太空互联网行业。如今，他又将目光投向另一个由传统巨头长期主导的行业，计划建设地面无线通信网络，与威瑞森通信公...",
       "relatedStocks": [
-        "创新药",
-        "医药"
+        "宽基指数"
       ],
       "bullConcepts": [
-        "创新药"
+        "防御板块"
       ],
       "bearConcepts": [
-        "仿制药"
+        "周期股"
       ],
       "bullIndustries": [
-        "创新药",
-        "医疗器械"
+        "公用事业"
       ],
       "bearIndustries": [
-        "仿制药"
+        "顺周期"
       ],
       "heat": 24,
       "momentum": 26,
       "_auto": true
     },
     {
-      "id": "apvl8uiu",
-      "title": "特朗普政府已暂停与厄瓜多尔的联合军事行动。",
-      "tag": "人物/特朗普",
-      "region": "美国",
-      "concept": "defense",
-      "time": "2026-11-25 08:33",
-      "datetime": "2026-11-25 08:33",
-      "source": "新浪7×24",
-      "url": "https://finance.sina.cn/7x24/2026-11-25/detail-inizxaut4375717.d.html",
-      "summary": "特朗普政府已暂停与厄瓜多尔的联合军事行动。",
+      "id": "apyep9k8",
+      "title": "黄仁勋现在的处境或许更加艰难",
+      "tag": "人物/黄仁勋",
+      "region": "全球",
+      "concept": "ai",
+      "time": "2026-11-25 17:28",
+      "datetime": "2026-11-25 17:28",
+      "source": "环球市场播报",
+      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-25/doc-inizxxyc1773206.shtml",
+      "summary": "作者：刘菲比、里奥・施瓦茨 早在两周前黄仁勋风波不断、被迫离职之前，他就已经要面对 AI 芯片设计领域日趋激烈的竞争，同时外界不断质疑他向新兴云厂商这类客户提供巨额...",
       "relatedStocks": [
-        "军工",
-        "黄金"
+        "英伟达",
+        "微软",
+        "台积电"
       ],
       "bullConcepts": [
-        "军工",
-        "避险资产"
+        "AI算力",
+        "半导体",
+        "国产替代"
       ],
       "bearConcepts": [
-        "风险资产"
+        "传统软件"
       ],
       "bullIndustries": [
-        "军工",
-        "黄金"
+        "半导体",
+        "AI应用",
+        "算力基础设施"
       ],
       "bearIndustries": [
-        "航空",
-        "旅游"
+        "传统IT服务"
       ],
       "heat": 24,
-      "momentum": 36,
+      "momentum": 26,
       "_auto": true
     },
     {
-      "id": "ap1w9fqwf",
-      "title": "普京：必将回应乌对俄燃料能源设施的袭击",
-      "tag": "人物/普京",
-      "region": "全球",
-      "concept": "energy",
-      "time": "2026-11-25 06:27",
-      "datetime": "2026-11-25 06:27",
-      "source": "新华社",
-      "url": "https://finance.sina.com.cn/money/bond/2026-11-25/doc-inizwwnp9657006.shtml",
-      "summary": "转自：新华社 新华财经莫斯科11月25日电（记者黄河）俄罗斯总统普京24日表示，乌克兰武装部队持续袭击俄燃料与能源基础设施，俄方必将予以回应。",
+      "id": "apvyoqt7",
+      "title": "马斯克确认将向符合条件的美国家庭免费提供星链硬件",
+      "tag": "人物/马斯克",
+      "region": "美国",
+      "concept": "usMacro",
+      "time": "2026-11-25 14:10",
+      "datetime": "2026-11-25 14:10",
+      "source": "环球市场播报",
+      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-25/doc-inizxpkk8644411.shtml",
+      "summary": "SpaceX首席执行官埃隆·马斯克确认了一项新安排：该公司将向美国服务不足社区中符合条件的家庭免费提供“星链”（Starlink）硬件，并在此过程中放弃约7...",
       "relatedStocks": [
-        "中国石油",
-        "紫金矿业"
+        "宽基指数"
       ],
       "bullConcepts": [
-        "油气",
-        "贵金属"
+        "防御板块"
       ],
       "bearConcepts": [
-        "高耗能制造"
+        "周期股"
       ],
       "bullIndustries": [
-        "石油开采",
-        "贵金属"
+        "公用事业"
       ],
       "bearIndustries": [
-        "航空运输",
-        "化工"
+        "顺周期"
       ],
-      "heat": 55,
+      "heat": 24,
       "momentum": 18,
       "_auto": true
     },
