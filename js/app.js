@@ -12159,6 +12159,9 @@ const app = createApp({
     const INFL_WORLD_GOV_RE = /日本央行|欧洲央行|英国央行|韩国央行|印度央行|俄罗斯央行|澳洲联储|澳联储|加拿大央行|瑞士央行|新西兰联储|日本政府|日本财务省|欧洲议会|欧盟委员会|欧委会|欧洲理事会|德国政府|法国政府|英国政府|韩国政府|欧元区|欧盟/;
     // ② 外国（非中美）国家/地区词——兜底识别第三国新闻（无中美主体时归 world）
     const INFL_WORLD_COUNTRY_RE = /日本|欧洲|英国|韩国|朝鲜|印度|俄罗斯|乌克兰|德国|法国|意大利|西班牙|荷兰|瑞士|瑞典|挪威|加拿大|澳大利亚|澳洲|巴西|阿根廷|墨西哥|中东|以色列|伊朗|伊拉克|沙特|土耳其|埃及|南非|越南|泰国|新加坡|马来西亚|印尼|菲律宾|巴基斯坦|孟加拉|尼日利亚|哈萨克斯坦|白俄罗斯|波兰|捷克|匈牙利|希腊|葡萄牙|奥地利|比利时|丹麦|芬兰|爱尔兰|新西兰/;
+    // 20261125f：外国国名 + 央行/政府/财政部等机构搭配（如「澳大利亚央行一位高级官员」）
+    //   不能因为含裸「央行/财政部」就被判成中国主体，必须先归 world（美国主体由 INFL_US_STRONG_RE 单独处理）。
+    const INFL_FOREIGN_GOV_PHRASE_RE = /(?:日本|欧洲|英国|韩国|朝鲜|印度|俄罗斯|乌克兰|德国|法国|意大利|西班牙|荷兰|瑞士|瑞典|挪威|加拿大|澳大利亚|澳洲|巴西|阿根廷|墨西哥|以色列|伊朗|伊拉克|沙特|土耳其|埃及|南非|越南|泰国|新加坡|马来西亚|印尼|菲律宾|巴基斯坦|孟加拉|尼日利亚|哈萨克斯坦|白俄罗斯|波兰|捷克|匈牙利|希腊|葡萄牙|奥地利|比利时|丹麦|芬兰|爱尔兰|新西兰)(?:央行|联储|储备银行|政府|财政部|商务部|议会|法院|总统|首相|高级官员|官员|大臣)/;
     // ③ 中国政府部门/机构作为动作主体的严格信号（不含泛化「中国/国家/国内」）——
     //   只有政府部门直接出手（发改委印发/央行降准/证监会新规）才能压过外国词判 cn；
     //   「中国与日本会谈」「日本加息A股承压」这类被动提及不算中国主体，仍归 world。
@@ -12183,7 +12186,7 @@ const app = createApp({
       const t = String(text || '');
       // ① 外国政府/央行主体（日本央行/欧洲央行/欧盟…）或非美外资企业（SK海力士/三星/台积电…）→ world
       //    核心修复：这些主体即使带「加息/降息/央行/A股」等词也绝不进 cn/us。
-      if (INFL_WORLD_GOV_RE.test(t) || INFL_WORLD_SUBJECT_RE.test(t)) return 'world';
+      if (INFL_WORLD_GOV_RE.test(t) || INFL_WORLD_SUBJECT_RE.test(t) || INFL_FOREIGN_GOV_PHRASE_RE.test(t)) return 'world';
       const cnGov = INFL_CN_GOV_RE.test(t);          // 中国政府部门作为动作主体（严格）
       const cn = INFL_AUTO_REGION_HINTS.cn.test(t); // 中国关键词（含裸「央行」）
       const us = INFL_US_STRONG_RE.test(t);          // 美国信号（含美企：英伟达/苹果/特斯拉…）
@@ -13302,7 +13305,7 @@ const app = createApp({
           + '不得引用上面清单以外的任何事件/日期，大盘数据也只截至目标交易日前一交易日收盘。'
           + '输出必须是严格的 JSON 对象（不要 markdown 代码块、不要任何多余文字），结构如下：\n'
           + '{"mood":{"label":"强势/偏强/中性/偏弱/弱势","score":0-100,"comment":"对最近3个交易日大盘情绪的2-3句研判"},'
-          + '"dominant":{"source":"影响力·中国/影响力·美国/影响力·全世界/未来·突发/未来·未来/未来·人物","why":"为什么它是本次定价的主导，60字内","weight":1-5},'
+          + '"dominant":{"source":"主导市场总情绪的新闻事件（从事件清单里选那一条具体事件，写事件简称，15字内）","block":"该事件所属子版块（影响力·中国/影响力·美国/影响力·全世界/未来·突发/未来·未来/未来·人物）","why":"为什么这条事件主导市场总情绪、并决定次日A股定价，60字内","weight":1-5},'
           + '"topEvents":[{"source":"6个子版块之一","title":"事件标题","score":0-100,"dir":"bull或bear","why":"对中国行业/概念的具体影响，40字内"}],'
           + '"bullSectors":[{"name":"板块名","level":1-5,"why":"利好逻辑，30字内"}],'
           + '"bearSectors":[{"name":"板块名","level":1-5,"why":"利空逻辑，30字内"}],'
@@ -13311,10 +13314,10 @@ const app = createApp({
           + '"actionConcepts":["概念板块1","概念板块2","概念板块3"],'
           + '"summary":"对即将开盘交易日的整体研判，150-250字","risk":"风险提示，60字内"}\n'
           + '硬性要求：'
-          + '① 先做「主导判定」：在 6 个子版块里选出对次日 A 股定价影响最大的那一个写进 dominant.source，'
+          + '① 先判定「主导市场总情绪的新闻事件」：从事件清单里选出最能改变次日 A 股整体风险偏好/资金定价的那一条具体新闻，把事件简称写进 dominant.source，其所属子版块写进 dominant.block；不得只写「影响力·中国」这类版块名，也不得编造清单外的事件；'
           + '判断依据是「哪条线索会真正改变资金对板块的定价」——政策/产业订单/龙头业绩改变基本面 > 海外情绪扰动 > 日程预期；'
           + '有历史迭代经验的，经验条款优先于你的直觉；'
-          + '② topEvents 3-6 条，其中至少 2 条必须来自 dominant.source，且必须覆盖「对中国影响最大」的事件（对中分越高越优先），dir 为该事件主导方向；'
+          + '② topEvents 3-6 条，其中至少 2 条必须与 dominant.source 是同一事件或同一条主线，且必须覆盖「对中国影响最大」的事件（对中分越高越优先），dir 为该事件主导方向；'
           + '③ bullSectors 3-6 个、bearSectors 2-5 个，用 A 股常用板块名（如 半导体设备、光模块、稀土永磁、光伏、军工、券商、创新药、白酒、电力、机器人、算力租赁、消费电子）；'
           + '④ picks 必须正好 9 只、且全部 side=bull（聚焦利好上涨方向，不再给利空回避标的）：严格按 actionConcepts 的 3 个核心概念分组，每个概念恰好 3 只该概念内最核心的股票，concept 字段原样填对应概念名，core 填 1-5 的核心度（该概念内最核心的给 5，依次 4、3）；'
           + '「最核心」判定标准（务必据此筛选，这是命中率的关键）：a.概念纯度——主营业务真实属于该概念且有营收/产品/订单支撑，坚决排除仅蹭概念、名称联想、互动平台随口宣称的公司；b.龙头地位——该概念内市值/市占率/技术/客户处于前列，是资金公认的辨识度标的（行业龙头、细分冠军、机构重仓优先），排除边缘跟风股；c.事件直接性——直接受益于 dominant 主导事件（供货关系、在手订单、产能投放、政策直接点名），优于仅靠情绪间接受益；d.弹性与流动性——成交活跃、股性未被充分透支、流通市值适中，排除超大市值钝化权重（如茅台、比亚迪、中信证券、民生银行这类难以快速大涨的巨无霸）与主业和概念明显不符者；'
@@ -13330,7 +13333,7 @@ const app = createApp({
           + hfeiStrategyPrompt() + '\n\n'
           + '【最近 3 个交易日大盘情绪（截至 ' + targetDate + ' 前一交易日收盘，未使用目标日及之后的行情）】\n' + mood.text + '\n\n'
           + '【6 个子版块事件（普通事件严格在统计窗口内；仅「未来·未来」可超窗口，按对中影响度降序，最多每块 10 条）】\n' + evText + '\n\n'
-          + '请综合上面的事件与大盘情绪，先判定主导子版块，再给出对 ' + targetDate + ' 开盘的板块预测，严格按要求输出 JSON。';
+          + '请综合上面的事件与大盘情绪，先判定「主导市场总情绪的新闻事件」，再给出对 ' + targetDate + ' 开盘的板块预测，严格按要求输出 JSON。';
         const res = await callOpenAICompat(
           [{ role: 'system', content: sys }, { role: 'user', content: user }],
           { maxTokens: 4000, timeoutMs: 180000 }
@@ -13383,6 +13386,12 @@ const app = createApp({
           fallbackDate: (ev.dates && ev.dates.length ? ev.dates[ev.dates.length - 1] : '') || targetDate
         });
         const domTag = String((j.dominant && j.dominant.source) || '');
+        // 20261125f：dominant.source 现在是「新闻事件简称」，权重键取模型给的所属子版块，
+        //   缺失时回退到事件简称/首条 topEvents 的版块，避免权重匹配失效。
+        const domBlock = String((j.dominant && j.dominant.block) || domTag
+          || ((topEvents[0] && topEvents[0].source) || ''));
+        const domKey = hfeiBlockKeyOf(domBlock) || hfeiBlockKeyOf(domTag)
+          || hfeiBlockKeyOf((topEvents[0] && topEvents[0].source) || '');
         const rec = {
           id: 'hf_' + Date.now(),
           targetDate: targetDate,
@@ -13409,7 +13418,8 @@ const app = createApp({
               source: domTag,
               why: String((j.dominant && j.dominant.why) || ''),
               weight: Math.max(1, Math.min(5, Math.round(Number(j.dominant && j.dominant.weight) || 3))),
-              key: hfeiBlockKeyOf(domTag)
+              key: domKey,
+              block: domBlock
             },
             topEvents: topEvents,
             bullSectors: section(j.bullSectors, 8),
@@ -13709,7 +13719,7 @@ const app = createApp({
         + '输出严格 JSON：{"verdict":"一句话结论（30字内）","right":"判对的地方，60字内","wrong":"判错的地方与原因，90字内",'
         + '"lessons":["改进条款1","改进条款2","改进条款3"]}  不要 markdown、不要多余文字。';
       const user = '【目标交易日】' + rv.date
-        + '\n【当日预测】主导子版块：' + ((rec.ai && rec.ai.dominant && rec.ai.dominant.source) || '未标注')
+        + '\n【当日预测】主导市场总情绪的新闻事件：' + ((rec.ai && rec.ai.dominant && rec.ai.dominant.source) || '未标注')
         + '；利好板块 ' + (rec.ai && rec.ai.bullSectors || []).map(s => s.name).join('/')
         + '；利空板块 ' + (rec.ai && rec.ai.bearSectors || []).map(s => s.name).join('/')
         + '\n【预测摘要】' + String((rec.ai && rec.ai.summary) || '').slice(0, 300)
@@ -13804,7 +13814,8 @@ const app = createApp({
         revs.slice(-30).forEach(r => {
           const rec = hfeiReportOf(r.date);
           const dom = rec && rec.ai && rec.ai.dominant && rec.ai.dominant.source;
-          const key = hfeiBlockKeyOf(dom);
+          const domMeta = rec && rec.ai && rec.ai.dominant;
+          const key = (domMeta && domMeta.key) || hfeiBlockKeyOf((domMeta && domMeta.block) || dom);
           if (!key) return;
           agg[key].n += 1; agg[key].sum += (r.stats.overallRate || 0) / 100;
         });
@@ -14159,13 +14170,13 @@ const app = createApp({
       logic.correction = hfeiBuildFullCorrection(data, j);
       return logic;
     }
-    /** 「📊 今日收盘复盘」主流程：取真实涨跌 → 大模型反推 → 按日存档 */
+    /** 「📊 目标日复盘」主流程：取选定目标日真实涨跌 → 大模型反推 → 按日存档 */
     async function hfeiRunTodayReview() {
       if (hfeiTodayReviewing.value) return;
       hfeiTodayReviewing.value = true;
       const dateISO = hfeiReviewDay();
       try {
-        hfeiTodayStep.value = '① 取今日全市场板块与个股涨跌榜…';
+        hfeiTodayStep.value = '① 取目标日全市场板块与个股涨跌榜…';
         const boards = await hfeiMarketBoards();
         const stocks = await hfeiMarketStocks(8);
         if (!boards.concept.length && !boards.industry.length && !stocks.up.length && !stocks.down.length) {
@@ -14210,7 +14221,7 @@ const app = createApp({
         hfeiTodayReview.value = data;
         hfeiIterSettings().lastRunDate = dateISO;
         hfeiIterSettingsSync();
-        showToast('今日收盘复盘完成：已反推正确逻辑（' + dateISO + '）', 'success');
+        showToast('目标日复盘完成：已反推正确逻辑（' + dateISO + '）', 'success');
       } catch (e) {
         showToast('复盘失败：' + ((e && e.message) ? e.message : e), 'error');
       } finally {
@@ -14267,7 +14278,7 @@ const app = createApp({
     async function hfeiGenerateIterTable() {
       if (hfeiIteratingTable.value) return;
       const rv = hfeiTodayReview.value;
-      if (!rv || !rv.logic) { showToast('请先做「今日收盘复盘」并拿到反推逻辑', 'info'); return; }
+      if (!rv || !rv.logic) { showToast('请先做「目标日复盘」并拿到反推逻辑', 'info'); return; }
       if (!aiConfigured.value) { showToast('请先在「偏好设置 → AI 解读」配置大模型接口', 'info'); showPrefs.value = true; return; }
       hfeiIteratingTable.value = true;
       const dateISO = rv.date;
