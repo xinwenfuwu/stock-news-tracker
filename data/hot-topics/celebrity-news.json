@@ -1,50 +1,20 @@
 {
-  "generatedAt": "2026-11-26 12:06",
+  "generatedAt": "2026-11-27 00:45",
   "generatedBy": "GitHub Actions · 多源实时聚合",
-  "sourceCount": 4,
-  "autoCount": 5,
+  "sourceCount": 2,
+  "autoCount": 2,
   "events": [
     {
-      "id": "apj44sjc",
-      "title": "马斯克：美国每个孩子都将获得两股SpaceX股票，一股来自公司，一股来自我个人。",
-      "tag": "人物/马斯克",
-      "region": "美国",
-      "concept": "usMacro",
-      "time": "2026-11-26 11:43",
-      "datetime": "2026-11-26 11:43",
-      "source": "新浪7×24",
-      "url": "https://finance.sina.cn/7x24/2026-11-26/detail-inizzsip3772600.d.html",
-      "summary": "马斯克：美国每个孩子都将获得两股SpaceX股票，一股来自公司，一股来自我个人。",
-      "relatedStocks": [
-        "宽基指数"
-      ],
-      "bullConcepts": [
-        "防御板块"
-      ],
-      "bearConcepts": [
-        "周期股"
-      ],
-      "bullIndustries": [
-        "公用事业"
-      ],
-      "bearIndustries": [
-        "顺周期"
-      ],
-      "heat": 33,
-      "momentum": 36,
-      "_auto": true
-    },
-    {
-      "id": "ap1aha8iz",
-      "title": "特朗普与吕特讨论了俄罗斯避免采取扩大战争行动的问题。",
+      "id": "ap1a6986g",
+      "title": "特朗普指责政府蓄意低报经济增长 要求展开调查",
       "tag": "人物/特朗普",
       "region": "美国",
       "concept": "defense",
-      "time": "2026-11-26 11:24",
-      "datetime": "2026-11-26 11:24",
-      "source": "新浪7×24",
-      "url": "https://finance.sina.cn/7x24/2026-11-26/detail-inizzsii1403230.d.html",
-      "summary": "特朗普与吕特讨论了俄罗斯避免采取扩大战争行动的问题。",
+      "time": "2026-11-26 23:56",
+      "datetime": "2026-11-26 23:56",
+      "source": "财联社",
+      "url": "https://www.cls.cn/detail/2545933",
+      "summary": "【特朗普指责政府蓄意低报经济增长 要求展开调查】财联社11月26日电，特朗普指责自己的政府“蓄意”低报美国经济增长，他抓住一次例行数据修正，以此作为其提出选举干预指控的依据，但并未提供任何证据。特朗普周四在社交媒体发帖指出，GDP数据显示美国经济第三季度按年率计算增长4.3%，高于此前公布的3.4%估计值，并称这是一个“重大差异”。特朗普还表示，“我要求立即对此展开调查。这不…",
       "relatedStocks": [
         "军工",
         "黄金"
@@ -64,113 +34,42 @@
         "航空",
         "旅游"
       ],
-      "heat": 29,
-      "momentum": 31,
+      "heat": 24,
+      "momentum": 26,
       "_auto": true
     },
     {
-      "id": "apjwd64t",
-      "title": "在黄仁勋复职前夕卖出英伟达看跌期权，“大空头”伯里称股价200美元时将再次做空",
-      "tag": "人物/黄仁勋",
+      "id": "ap1vf8e53",
+      "title": "特朗普表示，乌克兰与俄罗斯达成协议的可能性很大。希望看到俄罗斯总统普京撤回其在欧洲各地的一切军事行动。",
+      "tag": "人物/特朗普",
       "region": "美国",
-      "concept": "aiCapex",
-      "time": "2026-11-26 07:18",
-      "datetime": "2026-11-26 07:18",
-      "source": "环球市场播报",
-      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-26/doc-inizzftt3835897.shtml",
-      "summary": "尽管黄仁勋已重返英伟达领导岗位，但这并未改变大空头迈克尔·伯里（Michael Burry）对该股的看空立场。 在人工智能（AI）相关投资热潮高涨之际...",
+      "concept": "defense",
+      "time": "2026-11-26 22:55",
+      "datetime": "2026-11-26 22:55",
+      "source": "财联社",
+      "url": "https://www.cls.cn/detail/2545911",
+      "summary": "特朗普表示，乌克兰与俄罗斯达成协议的可能性很大。希望看到俄罗斯总统普京撤回其在欧洲各地的一切军事行动。",
       "relatedStocks": [
-        "英伟达",
-        "微软",
-        "台积电"
-      ],
-      "bullConcepts": [
-        "AI算力",
-        "半导体",
-        "国产替代"
-      ],
-      "bearConcepts": [
-        "传统软件"
-      ],
-      "bullIndustries": [
-        "半导体",
-        "AI应用",
-        "算力基础设施"
-      ],
-      "bearIndustries": [
-        "传统IT服务"
-      ],
-      "heat": 29,
-      "momentum": 18,
-      "_auto": true
-    },
-    {
-      "id": "ap1xqqz6d",
-      "title": "穆迪：英伟达CEO复职降低了近期风险",
-      "tag": "人物/黄仁勋",
-      "region": "全球",
-      "concept": "ai",
-      "time": "2026-11-26 06:39",
-      "datetime": "2026-11-26 06:39",
-      "source": "环球市场播报",
-      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-26/doc-inizzftt3816138.shtml",
-      "summary": "穆迪维持英伟达Aa1高级无担保评级不变，评级展望仍为稳定。 穆迪表示，黄仁勋回归公司后，英伟达在公司治理和监管方面的不确定性依然存在，监管和政府审查力度依然较高...",
-      "relatedStocks": [
-        "英伟达",
-        "微软",
-        "台积电"
-      ],
-      "bullConcepts": [
-        "AI算力",
-        "半导体",
-        "国产替代"
-      ],
-      "bearConcepts": [
-        "传统软件"
-      ],
-      "bullIndustries": [
-        "半导体",
-        "AI应用",
-        "算力基础设施"
-      ],
-      "bearIndustries": [
-        "传统IT服务"
-      ],
-      "heat": 33,
-      "momentum": 18,
-      "_auto": true
-    },
-    {
-      "id": "apfx0ax8",
-      "title": "马斯克和SpaceX将向“特朗普账户”捐赠约178亿美元",
-      "tag": "人物/马斯克",
-      "region": "美国",
-      "concept": "usFinance",
-      "time": "2026-11-26 08:01",
-      "datetime": "2026-11-26 08:01",
-      "source": "环球市场播报",
-      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-26/doc-inizzftp1468740.shtml",
-      "summary": "SpaceX周三成为最新一家宣布将向“特朗普账户”捐赠的公司，捐赠方式是将其股票纳入数千万美国年轻人的投资组合。这家航空航天公司承诺...",
-      "relatedStocks": [
-        "美股科技",
+        "军工",
         "黄金"
       ],
       "bullConcepts": [
-        "黄金",
-        "防御板块"
+        "军工",
+        "避险资产"
       ],
       "bearConcepts": [
-        "高估值成长股"
+        "风险资产"
       ],
       "bullIndustries": [
-        "银行",
+        "军工",
         "黄金"
       ],
       "bearIndustries": [
-        "高杠杆地产"
+        "航空",
+        "旅游"
       ],
-      "heat": 33,
-      "momentum": 18,
+      "heat": 24,
+      "momentum": 26,
       "_auto": true
     },
     {
