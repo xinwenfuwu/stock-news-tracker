@@ -13192,65 +13192,145 @@ const app = createApp({
       rec.picksAt = Date.now();
       return okAny;
     }
+    /** ===== 20261126a：概念 → 真实成分股 → 当日涨幅最优标的 =====
+     *  用户口径：后面的股票必须是前面概念里性价比最好的股票，不能跨概念塞无关行业股。
+     *  只用公开板块成分股接口，取不到就留空，绝不编造。 */
+    const _hfeiConceptPoolCache = {};
+    function hfeiRankConceptStocks(list, n) {
+      const take = n || 3;
+      return (Array.isArray(list) ? list : [])
+        .filter(s => s && /^\d{6}$/.test(String(s.code || '')) && !/ST|退市|\*/.test(String(s.name || ''))
+          && s.chg != null && !isNaN(Number(s.chg)))
+        .map(s => ({ code: String(s.code), name: String(s.name || ''), chg: Number(s.chg),
+                     price: (s.price == null || isNaN(Number(s.price))) ? null : Number(s.price) }))
+        .slice().sort((a, b) => (b.chg - a.chg) || ((a.price == null ? 1e9 : a.price) - (b.price == null ? 1e9 : b.price)))
+        .slice(0, take);
+    }
+    function hfeiConceptScore(a, b) {
+      const na = String(a || '').replace(/[\s（）()·、/]/g, ''), nb = String(b || '').replace(/[\s（）()·、/]/g, '');
+      if (!na || !nb) return 0;
+      if (na === nb) return 100;
+      if (na.indexOf(nb) >= 0 || nb.indexOf(na) >= 0) return 70;
+      return 0;
+    }
+    async function hfeiConceptCandidates(concept) {
+      const key = String(concept || '').trim();
+      if (!key) return { name: '', bk: '', list: [] };
+      const cached = _hfeiConceptPoolCache[key];
+      if (cached && (Date.now() - cached.at) < 10 * 60 * 1000) return cached;
+      let cands = [];
+      try { cands = await StockAPI.searchSectors(key) || []; } catch (e) { cands = []; }
+      const rank = (s) => (String(s.name || '') === key ? 0 : 1) * 10 + (s.type === '概念' ? 0 : 1);
+      cands = cands.slice().sort((a, b) => rank(a) - rank(b));
+      let out = { name: '', bk: '', list: [], at: Date.now() };
+      for (const c of cands.slice(0, 3)) {
+        try {
+          const ss = await StockAPI.getSectorStocks(c.bk, c.name) || [];
+          const list = ss.map(s => ({
+            code: String(s.code || '').replace(/^(sh|sz|bj)/i, '').replace(/\D/g, '').slice(0, 6),
+            name: String(s.name || ''),
+            chg: (s.changePercent == null || isNaN(Number(s.changePercent))) ? null : Number(Number(s.changePercent).toFixed(2)),
+            price: (s.price == null || isNaN(Number(s.price))) ? null : Number(s.price)
+          })).filter(s => /^\d{6}$/.test(s.code) && s.name);
+          if (list.length) { out = { name: c.name, bk: c.bk, list: list, at: Date.now() }; break; }
+        } catch (e) { /* 换下一个候选板块 */ }
+      }
+      _hfeiConceptPoolCache[key] = out;
+      return out;
+    }
     /**
-     * 20261123b：校验大模型给的 9 只核心标的（3 核心概念 × 每概念 3 只，全部利好）。
-     * 代码格式 + 名称反查补全（不编造代码）+ 新闻日期 + 概念归属/核心度。
-     * 确定性约束：概念必须落在 actionConcepts 内，每概念最多 3 只，总数最多 9 只。
+     * 20261123b / 20261126a：校验大模型给的 9 只核心标的（3 核心概念 × 每概念 3 只）。
+     * 代码格式 + 新闻日期 + 概念归属；20261126a 起增加**真实成分股校验与概念内优选**：
+     * 每只股票必须出现在对应概念的成分股里，且优先取当日涨幅最高、价格适中的 3 只；
+     * AI 给出的跨概念幻觉股（如「新能源车」里塞银行股）会被确定性替换。
      */
     async function hfeiVerifyPicks(list, ctx) {
       const c = ctx || {};
-      const okDates = c.dates || [];              // 本次事件清单里出现过的日期
+      const okDates = c.dates || [];
       const dateSet = {};
       okDates.forEach(d => { if (d) dateSet[d] = 1; });
       const fallbackDate = c.fallbackDate || okDates[okDates.length - 1] || '';
       const allowed = (Array.isArray(c.concepts) ? c.concepts : []).filter(Boolean).slice(0, 3);
-      const perConcept = {};                      // 每概念计数，保证结构稳定
-      allowed.forEach(k => { perConcept[k] = 0; });
-      const pickConcept = function (raw) {
-        const s = String((raw && raw.name) || (typeof raw === 'string' ? raw : '') || '').trim();
-        if (s && allowed.indexOf(s) >= 0 && perConcept[s] < 3) return s;
-        // 模型给的概念不在 3 个核心概念内（或该组已满）→ 分到当前最空的一组
-        if (allowed.length) {
-          let best = allowed[0];
-          for (const k of allowed) { if (perConcept[k] < perConcept[best]) best = k; }
-          return best;
-        }
-        return s;
-      };
-      const out = [];
+      // 20261126a：先取 3 个概念的真实成分股池（并行），用于校验/替换模型给的股票。
+      const pools = {};
+      if (allowed.length) {
+        const arr = await Promise.all(allowed.map(k => hfeiConceptCandidates(k)));
+        allowed.forEach((k, i) => { pools[k] = arr[i]; });
+      }
+      const byConcept = {};
+      allowed.forEach(k => { byConcept[k] = []; });
       for (const p of (list || []).slice(0, 15)) {
-        if (out.length >= 9) break;
-        const item = {
-          code: String((p && p.code) || '').replace(/\D/g, '').slice(0, 6),
-          name: String((p && p.name) || ''),
-          sector: String((p && p.sector) || ''),
-          concept: pickConcept(p && p.concept),
-          core: Math.max(1, Math.min(5, Math.round(Number(p && p.core) || 3))),
-          side: 'bull',                            // 20261123b：只聚焦利好上涨方向
-          reason: String((p && p.reason) || ''),
-          newsDate: '',
-          quote: null,
-          live: null
-        };
-        // 仅在有核心概念列表时按概念限额；无概念列表（模型漏给）时不截，最多 9 只
-        if (allowed.length && perConcept[item.concept] >= 3) continue;   // 每个核心概念最多 3 只
+        const raw = String((p && p.concept) || '').trim();
+        let k = allowed.indexOf(raw) >= 0 ? raw : '';
+        if (!k && allowed.length) {
+          let best = -1, score = 0;
+          allowed.forEach((a, i) => { const sc = hfeiConceptScore(raw, a); if (sc > score) { score = sc; best = i; } });
+          if (best >= 0) k = allowed[best];
+        }
+        if (!k) k = raw || (allowed[0] || '');
+        if (!byConcept[k]) byConcept[k] = [];
+        if (byConcept[k].length < 3) byConcept[k].push(p);
+      }
+      const normDate = function (p) {
         const nd = String((p && (p.newsDate || p.date)) || '');
         const nm = /^(\d{4})-(\d{2})-(\d{2})/.exec(nd);
-        if (nm) item.newsDate = nm[1] + '-' + nm[2] + '-' + nm[3];
-        // 20261125c：newsDate 必须来自本次实际喂给模型的事件日期，否则回落到主导事件日/目标日。
-        if (!item.newsDate || !dateSet[item.newsDate]) item.newsDate = fallbackDate;
-        if (!/^\d{6}$/.test(item.code) && item.name) {
-          try {
-            const r = await StockAPI.searchStocks(item.name);
-            if (r && r.length) {
-              item.code = String(r[0].code || '').replace(/\D/g, '').slice(0, 6);
-              if (!item.name) item.name = r[0].name || '';
-            }
-          } catch (e) { /* 保持原样 */ }
+        return (nm && dateSet[nm[1] + '-' + nm[2] + '-' + nm[3]]) ? (nm[1] + '-' + nm[2] + '-' + nm[3]) : fallbackDate;
+      };
+      const out = [];
+      const used = {};
+      for (const k of allowed) {
+        const pool = pools[k] || { name: '', bk: '', list: [] };
+        const top = hfeiRankConceptStocks(pool.list, 6);   // 概念内当日涨幅前 6 名（含备选）
+        const chosen = [];
+        for (const p of (byConcept[k] || [])) {
+          let item = {
+            code: String((p && p.code) || '').replace(/\D/g, '').slice(0, 6),
+            name: String((p && p.name) || ''),
+            sector: String((p && p.sector) || ''),
+            concept: k,
+            core: Math.max(1, Math.min(5, Math.round(Number(p && p.core) || 3))),
+            side: 'bull',
+            reason: String((p && p.reason) || ''),
+            newsDate: normDate(p), quote: null, live: null, verified: false
+          };
+          if (!/^\d{6}$/.test(item.code) && item.name) {
+            try {
+              const r = await StockAPI.searchStocks(item.name);
+              if (r && r.length) item.code = String(r[0].code || '').replace(/\D/g, '').slice(0, 6);
+            } catch (e) { /* 保持原样 */ }
+          }
+          if (!item.name && /^\d{6}$/.test(item.code)) item.name = item.code;
+          const idx = top.findIndex(x => x.code === item.code || (item.name && x.name === item.name));
+          if (idx >= 0) {
+            item.code = top[idx].code; item.name = top[idx].name;
+            item.sector = pool.name || k;
+            item.core = Math.max(2, 5 - Math.floor(idx / 2));
+            item.rankInConcept = idx + 1;
+            item.verified = true;
+            item.quote = { price: top[idx].price, changePercent: top[idx].chg };
+            if (!item.reason) item.reason = k + '概念内当日涨幅第' + (idx + 1) + '名，性价比最优';
+          } else if (top.length) {
+            continue;   // 跨概念幻觉股（如新能源车里塞银行股）：直接丢弃，用成分股前排补
+          }
+          if (used[item.code]) continue;
+          used[item.code] = 1;
+          chosen.push(item);
         }
-        if (!item.name && /^\d{6}$/.test(item.code)) item.name = item.code;
-        perConcept[item.concept] = (perConcept[item.concept] || 0) + 1;
-        out.push(item);
+        // 概念内前 3 名兜底/补足：保证每概念恰好 3 只且都是该概念当日最强
+        for (let i = 0; i < top.length && chosen.length < 3; i++) {
+          const s = top[i];
+          if (used[s.code]) continue;
+          used[s.code] = 1;
+          chosen.push({
+            code: s.code, name: s.name, sector: pool.name || k, concept: k,
+            core: Math.max(2, 5 - chosen.length), side: 'bull',
+            reason: k + '成分股当日涨幅第' + (i + 1) + '名，性价比最优',
+            newsDate: fallbackDate,
+            quote: { price: s.price, changePercent: s.chg },
+            live: null, verified: true, rankInConcept: i + 1
+          });
+        }
+        out.push(...chosen.slice(0, 3));
       }
       return out.slice(0, 9);
     }
@@ -13319,8 +13399,9 @@ const app = createApp({
           + '有历史迭代经验的，经验条款优先于你的直觉；'
           + '② topEvents 3-6 条，其中至少 2 条必须与 dominant.source 是同一事件或同一条主线，且必须覆盖「对中国影响最大」的事件（对中分越高越优先），dir 为该事件主导方向；'
           + '③ bullSectors 3-6 个、bearSectors 2-5 个，用 A 股常用板块名（如 半导体设备、光模块、稀土永磁、光伏、军工、券商、创新药、白酒、电力、机器人、算力租赁、消费电子）；'
-          + '④ picks 必须正好 9 只、且全部 side=bull（聚焦利好上涨方向，不再给利空回避标的）：严格按 actionConcepts 的 3 个核心概念分组，每个概念恰好 3 只该概念内最核心的股票，concept 字段原样填对应概念名，core 填 1-5 的核心度（该概念内最核心的给 5，依次 4、3）；'
-          + '「最核心」判定标准（务必据此筛选，这是命中率的关键）：a.概念纯度——主营业务真实属于该概念且有营收/产品/订单支撑，坚决排除仅蹭概念、名称联想、互动平台随口宣称的公司；b.龙头地位——该概念内市值/市占率/技术/客户处于前列，是资金公认的辨识度标的（行业龙头、细分冠军、机构重仓优先），排除边缘跟风股；c.事件直接性——直接受益于 dominant 主导事件（供货关系、在手订单、产能投放、政策直接点名），优于仅靠情绪间接受益；d.弹性与流动性——成交活跃、股性未被充分透支、流通市值适中，排除超大市值钝化权重（如茅台、比亚迪、中信证券、民生银行这类难以快速大涨的巨无霸）与主业和概念明显不符者；'
+          + '④ picks 必须正好 9 只、且全部 side=bull（聚焦利好上涨方向）：严格按 actionConcepts 的 3 个核心概念分组，每个概念恰好 3 只**该概念真实成分股中当日涨幅最高、性价比最好**的股票；concept 字段原样填对应概念名，core 填 1-5 的核心度；'
+          + '🔴 硬性反幻觉：股票必须真实属于它标注的概念（如「新能源车」只能选新能源车成分股，绝不能塞银行/地产/券商股）；系统会自动用概念成分股榜校验并替换不匹配的标的；'
+          + '「最核心」判定标准（务必据此筛选，这是命中率的关键）：a.概念纯度——主营业务真实属于该概念且有营收/产品/订单支撑，坚决排除仅蹭概念、名称联想、互动平台随口宣称的公司；b.龙头地位——该概念内市值/市占率/技术/客户处于前列，是资金公认的辨识度标的（行业龙头、细分冠军、机构重仓优先），排除边缘跟风股；c.事件直接性——直接受益于 dominant 主导事件（供货关系、在手订单、产能投放、政策直接点名），优于仅靠情绪间接受益；d.弹性与流动性——成交活跃、股性未被充分透支、流通市值适中，排除超大市值钝化权重（如茅台、中信证券、民生银行这类难以快速大涨的巨无霸）与主业和概念明显不符者；'
           + 'reason 必须写清「它在该概念里最核心的具体依据」（订单/份额/技术/供货/产能），不得写泛泛的行业受益套话；'
           + '⑤ code 必须是真实的 6 位 A 股代码（沪市 60/68 开头、深市 00/30 开头、北交所 8 开头），名称与代码必须对应，写不准就换一只；'
           + 'newsDate 必须取自上面事件清单里出现过的日期，不许自己编日期；'
@@ -13639,6 +13720,22 @@ const app = createApp({
       return '';
     }
     /** 纯数值复盘（不依赖大模型）：板块方向命中 + 标的股当日涨跌命中 */
+    /** 20261126a：某概念在指定交易日的成分股前三名（真实成分股 + 目标日真实涨跌，不编数字） */
+    async function hfeiConceptReviewStocks(concept, dateISO, n) {
+      const pool = await hfeiConceptCandidates(concept);
+      const top = hfeiRankConceptStocks(pool.list, n || 3);
+      const todayISO = hfeiTodayISO();
+      const rows = await Promise.all(top.map(async (s, i) => {
+        const fc = hfeiFCode(s.code);
+        const dayChg = await hfeiDayChgOf(fc, dateISO, { price: s.price, changePercent: s.chg }, todayISO);
+        return {
+          code: s.code, name: s.name, side: 'bull', rank: i + 1,
+          chg: (dayChg == null || isNaN(Number(dayChg))) ? null : Number(Number(dayChg).toFixed(2)),
+          sincePct: null
+        };
+      }));
+      return rows;
+    }
     async function hfeiBuildReview(rec) {
       const target = rec.targetDate;
       const snap = await hfeiBoardSnapshot();
@@ -13663,7 +13760,24 @@ const app = createApp({
         }
         return out;
       };
-      rv.bull = await rowsOf(rec.ai && rec.ai.bullSectors, 'bull');
+      // 20261126a：利好表改为「实际概念」——目标日真正涨幅前 5 的概念，
+      // 每行并入该概念真实成分股中当日最强的 3 只（替换原「标的股 · 当日实际」独立表）。
+      const actualTop = (snap.list || []).filter(b => b.type === '概念' && b.chg != null)
+        .slice().sort((a, b) => b.chg - a.chg).slice(0, 5);
+      const predBull = (rec.ai && rec.ai.bullSectors) || [];
+      rv.bull = await Promise.all(actualTop.map(async b => {
+        const chgRaw = await hfeiBoardChgOn(b, target);
+        const chg = (chgRaw == null || isNaN(chgRaw)) ? null : Number(chgRaw.toFixed(2));
+        let matched = null;
+        for (const s of predBull) { if (hfeiMatchBoard(s.name, [b])) { matched = s; break; } }
+        return {
+          name: String(b.name || ''), level: matched ? (matched.level || 3) : '—',
+          why: matched ? String(matched.why || '') : '',
+          board: matched ? String(matched.name || '') : '', bk: String(b.bk || ''), chg: chg,
+          hit: (chg == null) ? null : (matched ? chg > 0 : null),
+          stocks: await hfeiConceptReviewStocks(b.name, target, 3)
+        };
+      }));
       rv.bear = await rowsOf(rec.ai && rec.ai.bearSectors, 'bear');
       // 标的股：用目标交易日的实际涨跌
       try { await hfeiRefreshPicks(rec); } catch (e) { /* 行情缺失不影响复盘骨架 */ }
@@ -14293,7 +14407,8 @@ const app = createApp({
         const sUpNames = (rv.stocks.up || []).slice(0, 8).map(s => s.name + '(' + s.code + ') ' + ((s.chg >= 0 ? '+' : '') + s.chg + '%') + (s.sector ? '[' + s.sector + ']' : '')).join('、');
         const sys = '你是 A 股选股专家。基于「今日收盘反推出的正确逻辑」与「今日真实领涨概念/个股」，'
           + '为下一个交易日重组一张「对应标的股表」：3 个最值得操作的核心概念，每个概念选 3 只最核心、最可能继续领涨的 A 股。'
-          + '核心股判定：概念纯度高（主营真实属于该概念）、龙头地位、今日有资金异动（涨幅榜或领涨板块成分）、弹性适中（排除超大市值钝化股）。'
+          + '核心股判定：必须是该概念的真实成分股，且是其中当日涨幅最高、性价比最好的 3 只（概念纯度高、龙头地位、有资金异动、弹性适中）；'
+          + '严禁把银行/地产等无关行业股票塞进其它概念，系统会自动按概念成分股榜校验并替换。'
           + '严禁编造代码；不确定就换一只。输出严格 JSON：'
           + '{"actionConcepts":["概念1","概念2","概念3"],'
           + '"bearConcepts":["利空概念1","利空概念2","利空概念3"],'
