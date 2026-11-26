@@ -1,112 +1,120 @@
 {
-  "generatedAt": "2026-11-26 05:33",
+  "generatedAt": "2026-11-26 12:06",
   "generatedBy": "GitHub Actions · 多源实时聚合",
   "sourceCount": 4,
-  "autoCount": 8,
+  "autoCount": 5,
   "events": [
     {
-      "id": "apiaom7d",
-      "title": "马斯克旗下脑机接口公司Neuralink已获得FDA批准推出Link，这是美国首个植入式脑机接口的关键性试验。",
+      "id": "apj44sjc",
+      "title": "马斯克：美国每个孩子都将获得两股SpaceX股票，一股来自公司，一股来自我个人。",
       "tag": "人物/马斯克",
       "region": "美国",
-      "concept": "medicare",
-      "time": "2026-11-26 04:57",
-      "datetime": "2026-11-26 04:57",
-      "source": "财联社",
-      "url": "https://www.cls.cn/detail/2544727",
-      "summary": "马斯克旗下脑机接口公司Neuralink已获得FDA批准推出Link，这是美国首个植入式脑机接口的关键性试验。",
+      "concept": "usMacro",
+      "time": "2026-11-26 11:43",
+      "datetime": "2026-11-26 11:43",
+      "source": "新浪7×24",
+      "url": "https://finance.sina.cn/7x24/2026-11-26/detail-inizzsip3772600.d.html",
+      "summary": "马斯克：美国每个孩子都将获得两股SpaceX股票，一股来自公司，一股来自我个人。",
       "relatedStocks": [
-        "创新药",
-        "医药"
+        "宽基指数"
       ],
       "bullConcepts": [
-        "创新药"
+        "防御板块"
       ],
       "bearConcepts": [
-        "仿制药"
+        "周期股"
       ],
       "bullIndustries": [
-        "创新药",
-        "医疗器械"
+        "公用事业"
       ],
       "bearIndustries": [
-        "仿制药"
+        "顺周期"
+      ],
+      "heat": 33,
+      "momentum": 36,
+      "_auto": true
+    },
+    {
+      "id": "ap1aha8iz",
+      "title": "特朗普与吕特讨论了俄罗斯避免采取扩大战争行动的问题。",
+      "tag": "人物/特朗普",
+      "region": "美国",
+      "concept": "defense",
+      "time": "2026-11-26 11:24",
+      "datetime": "2026-11-26 11:24",
+      "source": "新浪7×24",
+      "url": "https://finance.sina.cn/7x24/2026-11-26/detail-inizzsii1403230.d.html",
+      "summary": "特朗普与吕特讨论了俄罗斯避免采取扩大战争行动的问题。",
+      "relatedStocks": [
+        "军工",
+        "黄金"
+      ],
+      "bullConcepts": [
+        "军工",
+        "避险资产"
+      ],
+      "bearConcepts": [
+        "风险资产"
+      ],
+      "bullIndustries": [
+        "军工",
+        "黄金"
+      ],
+      "bearIndustries": [
+        "航空",
+        "旅游"
       ],
       "heat": 29,
       "momentum": 31,
       "_auto": true
     },
     {
-      "id": "ap3kplkm",
-      "title": "特朗普女婿库什纳宣布俄罗斯与乌克兰将开展大规模战俘交换，交换将于年底前实施。",
-      "tag": "人物/特朗普",
+      "id": "apjwd64t",
+      "title": "在黄仁勋复职前夕卖出英伟达看跌期权，“大空头”伯里称股价200美元时将再次做空",
+      "tag": "人物/黄仁勋",
       "region": "美国",
-      "concept": "usMacro",
-      "time": "2026-11-26 04:53",
-      "datetime": "2026-11-26 04:53",
-      "source": "新浪7×24",
-      "url": "https://finance.sina.cn/7x24/2026-11-26/detail-inizyzmv3898248.d.html",
-      "summary": "特朗普女婿库什纳宣布俄罗斯与乌克兰将开展大规模战俘交换，交换将于年底前实施。",
+      "concept": "aiCapex",
+      "time": "2026-11-26 07:18",
+      "datetime": "2026-11-26 07:18",
+      "source": "环球市场播报",
+      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-26/doc-inizzftt3835897.shtml",
+      "summary": "尽管黄仁勋已重返英伟达领导岗位，但这并未改变大空头迈克尔·伯里（Michael Burry）对该股的看空立场。 在人工智能（AI）相关投资热潮高涨之际...",
       "relatedStocks": [
-        "宽基指数"
+        "英伟达",
+        "微软",
+        "台积电"
       ],
       "bullConcepts": [
-        "防御板块"
+        "AI算力",
+        "半导体",
+        "国产替代"
       ],
       "bearConcepts": [
-        "周期股"
+        "传统软件"
       ],
       "bullIndustries": [
-        "公用事业"
+        "半导体",
+        "AI应用",
+        "算力基础设施"
       ],
       "bearIndustries": [
-        "顺周期"
+        "传统IT服务"
       ],
-      "heat": 38,
-      "momentum": 26,
+      "heat": 29,
+      "momentum": 18,
       "_auto": true
     },
     {
-      "id": "ap1gz0a6p",
-      "title": "特朗普女婿库什纳谈以色列：我认为以色列真正应该关注的是，他们需要摆脱持续的战时思维，我认为他们需要聚焦经济外交。我们需要开始弄清楚与以色列成为伙伴能带来什么好处。",
-      "tag": "人物/特朗普",
-      "region": "美国",
-      "concept": "usMacro",
-      "time": "2026-11-26 04:26",
-      "datetime": "2026-11-26 04:26",
-      "source": "新浪7×24",
-      "url": "https://finance.sina.cn/7x24/2026-11-26/detail-inizyzmp9110952.d.html",
-      "summary": "特朗普女婿库什纳谈以色列：我认为以色列真正应该关注的是，他们需要摆脱持续的战时思维，我认为他们需要聚焦经济外交。我们需要开始弄清楚与以色列成为伙伴能带来什么好处。",
-      "relatedStocks": [
-        "宽基指数"
-      ],
-      "bullConcepts": [
-        "防御板块"
-      ],
-      "bearConcepts": [
-        "周期股"
-      ],
-      "bullIndustries": [
-        "公用事业"
-      ],
-      "bearIndustries": [
-        "顺周期"
-      ],
-      "heat": 38,
-      "momentum": 26,
-      "_auto": true
-    },
-    {
-      "id": "aputy25x",
-      "title": "OpenAI CEO表示目前正在与一小部分客户测试私有推理（Private Inference），称这是最新推出的OpenAI Private Intelligence产品的一部…",
-      "tag": "人物/奥尔特曼",
+      "id": "ap1xqqz6d",
+      "title": "穆迪：英伟达CEO复职降低了近期风险",
+      "tag": "人物/黄仁勋",
       "region": "全球",
       "concept": "ai",
-      "time": "2026-11-26 01:14",
-      "datetime": "2026-11-26 01:14",
-      "source": "财联社",
-      "url": "https://www.cls.cn/detail/2544691",
-      "summary": "OpenAI CEO表示目前正在与一小部分客户测试私有推理（Private Inference），称这是最新推出的OpenAI Private Intelligence产品的一部分。",
+      "time": "2026-11-26 06:39",
+      "datetime": "2026-11-26 06:39",
+      "source": "环球市场播报",
+      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-26/doc-inizzftt3816138.shtml",
+      "summary": "穆迪维持英伟达Aa1高级无担保评级不变，评级展望仍为稳定。 穆迪表示，黄仁勋回归公司后，英伟达在公司治理和监管方面的不确定性依然存在，监管和政府审查力度依然较高...",
       "relatedStocks": [
         "英伟达",
         "微软",
@@ -133,128 +141,35 @@
       "_auto": true
     },
     {
-      "id": "aph0w1iv",
-      "title": "郭明錤：黄仁勋回归消除短期不确定性 出口、融资、算力瓶颈仍存",
-      "tag": "人物/黄仁勋",
-      "region": "全球",
-      "concept": "ai",
-      "time": "2026-11-25 17:05",
-      "datetime": "2026-11-25 17:05",
-      "source": "环球市场播报",
-      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-25/doc-inizxxxz9440277.shtml",
-      "summary": "知名分析师郭明錤发文分析黄仁勋回归英伟达，他表示，黄仁勋复职短期风险消解，但出口、融资的不确定性仍存，算力瓶颈仍是现实约束。",
-      "relatedStocks": [
-        "英伟达",
-        "微软",
-        "台积电"
-      ],
-      "bullConcepts": [
-        "AI算力",
-        "半导体",
-        "国产替代"
-      ],
-      "bearConcepts": [
-        "传统软件"
-      ],
-      "bullIndustries": [
-        "半导体",
-        "AI应用",
-        "算力基础设施"
-      ],
-      "bearIndustries": [
-        "传统IT服务"
-      ],
-      "heat": 24,
-      "momentum": 18,
-      "_auto": true
-    },
-    {
-      "id": "ap1g0cnke",
-      "title": "特朗普插手黄仁勋风波，再度激起选民对科技巨头政治权力过大的不满",
-      "tag": "人物/黄仁勋",
-      "region": "美国",
-      "concept": "usMacro",
-      "time": "2026-11-25 20:05",
-      "datetime": "2026-11-25 20:05",
-      "source": "环球市场播报",
-      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-25/doc-inizyefx9419590.shtml",
-      "summary": "核心要点今年选民公开批评科技行业在华盛顿权势过大，且科技巨头与总统关系密切，选民的愤怒情绪，一定程度上推动国会控制权发生更迭。",
-      "relatedStocks": [
-        "宽基指数"
-      ],
-      "bullConcepts": [
-        "防御板块"
-      ],
-      "bearConcepts": [
-        "周期股"
-      ],
-      "bullIndustries": [
-        "公用事业"
-      ],
-      "bearIndustries": [
-        "顺周期"
-      ],
-      "heat": 24,
-      "momentum": 18,
-      "_auto": true
-    },
-    {
-      "id": "ap1mlc70t",
-      "title": "普京：俄哈本币结算比例达96%",
-      "tag": "人物/普京",
-      "region": "全球",
-      "concept": "macro",
-      "time": "2026-11-26 03:54",
-      "datetime": "2026-11-26 03:54",
-      "source": "财联社",
-      "url": "https://www.cls.cn/detail/2544718",
-      "summary": "财联社11月26日电，当地时间11月25日晚，俄罗斯总统普京在克里姆林宫与哈萨克斯坦总统托卡耶夫举行会谈。谈到两国经济关系发展时，普京表示，俄哈相互结算中本币使用规模已超过90%达到96%。",
-      "relatedStocks": [
-        "宽基指数"
-      ],
-      "bullConcepts": [
-        "防御板块"
-      ],
-      "bearConcepts": [
-        "周期股"
-      ],
-      "bullIndustries": [
-        "公用事业"
-      ],
-      "bearIndustries": [
-        "顺周期"
-      ],
-      "heat": 24,
-      "momentum": 26,
-      "_auto": true
-    },
-    {
-      "id": "ap1gokgrz",
-      "title": "马斯克计划颠覆美国无线通信行业",
+      "id": "apfx0ax8",
+      "title": "马斯克和SpaceX将向“特朗普账户”捐赠约178亿美元",
       "tag": "人物/马斯克",
       "region": "美国",
-      "concept": "usMacro",
-      "time": "2026-11-25 17:49",
-      "datetime": "2026-11-25 17:49",
+      "concept": "usFinance",
+      "time": "2026-11-26 08:01",
+      "datetime": "2026-11-26 08:01",
       "source": "环球市场播报",
-      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-25/doc-inizxxye8565545.shtml",
-      "summary": "埃隆·马斯克旗下的SpaceX已经彻底改变了太空互联网行业。如今，他又将目光投向另一个由传统巨头长期主导的行业，计划建设地面无线通信网络，与威瑞森通信公...",
+      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-26/doc-inizzftp1468740.shtml",
+      "summary": "SpaceX周三成为最新一家宣布将向“特朗普账户”捐赠的公司，捐赠方式是将其股票纳入数千万美国年轻人的投资组合。这家航空航天公司承诺...",
       "relatedStocks": [
-        "宽基指数"
+        "美股科技",
+        "黄金"
       ],
       "bullConcepts": [
+        "黄金",
         "防御板块"
       ],
       "bearConcepts": [
-        "周期股"
+        "高估值成长股"
       ],
       "bullIndustries": [
-        "公用事业"
+        "银行",
+        "黄金"
       ],
       "bearIndustries": [
-        "顺周期"
+        "高杠杆地产"
       ],
-      "heat": 24,
+      "heat": 33,
       "momentum": 18,
       "_auto": true
     },
@@ -559,6 +474,33 @@
       "bearIndustries": [],
       "heat": 68,
       "momentum": 50
+    },
+    {
+      "id": "p11",
+      "title": "库克：苹果 Apple Intelligence 明年覆盖全系设备",
+      "tag": "科技/消费电子",
+      "region": "美国",
+      "concept": "aiCapex",
+      "time": "2026-11-05",
+      "datetime": "2026-11-05 09:00",
+      "source": "苹果/彭博",
+      "summary": "蒂姆·库克在投资者日上表示，Apple Intelligence 将于明年覆盖 iPhone、iPad 与 Mac 全系设备，并深度整合 Siri；市场关注其对换机周期的拉动。",
+      "relatedStocks": [
+        "苹果",
+        "消费电子"
+      ],
+      "bullConcepts": [
+        "AI终端",
+        "消费电子"
+      ],
+      "bearConcepts": [],
+      "bullIndustries": [
+        "消费电子",
+        "AI终端"
+      ],
+      "bearIndustries": [],
+      "heat": 60,
+      "momentum": 38
     },
     {
       "id": "p12",
