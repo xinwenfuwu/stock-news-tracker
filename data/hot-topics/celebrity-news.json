@@ -1,20 +1,20 @@
 {
-  "generatedAt": "2026-11-27 09:40",
+  "generatedAt": "2026-11-27 18:46",
   "generatedBy": "GitHub Actions · 多源实时聚合",
-  "sourceCount": 2,
-  "autoCount": 1,
+  "sourceCount": 4,
+  "autoCount": 4,
   "events": [
     {
-      "id": "apbo3oad",
-      "title": "剑指马斯克旗下星链！欧洲最大卫星工厂正式启用，分析师看好当前完全复用星舰经济性逐步体现，太空算力基建经济性初现；《广东省算力发展“十五五”规划》发布，要求做强广深构筑算力创新策源地",
-      "tag": "人物/马斯克",
-      "region": "欧洲",
-      "concept": "ai",
-      "time": "2026-11-27 08:16",
-      "datetime": "2026-11-27 08:16",
-      "source": "财联社",
-      "url": "https://www.cls.cn/detail/2545955",
-      "summary": "①剑指马斯克旗下星链！欧洲最大卫星工厂正式启用，分析师看好当前完全复用星舰经济性逐步体现，太空算力基建经济性初现，这家公司产品可接入SpaceX星链在内的低轨卫星网络； ②《广东省算力发展“十五五”规划》要求做强广深构筑算力创新策源地，分析师看好国产算力自主可控迎来中长期投资机遇，这家公司携手华为共同参与多个省市智算中心规划建设项目； ③伦锌涨3.54%，托克集团旗下Nyrs…",
+      "id": "apzhievw",
+      "title": "1、美国总统特朗普26日在佛罗里达州海湖庄园回答媒体提问时说，尚未在伊朗镐山发现任何实质性活动。 2、特朗普在海湖庄园对记者表示，自从黄仁勋复职英伟达之后，他还没有和黄仁勋交谈，…",
+      "tag": "人物/黄仁勋",
+      "region": "美国",
+      "concept": "aiCapex",
+      "time": "2026-11-27 18:27",
+      "datetime": "2026-11-27 18:27",
+      "source": "新浪7×24",
+      "url": "https://finance.sina.cn/7x24/2026-11-27/detail-inkaencz1111968.d.html",
+      "summary": "1、美国总统特朗普26日在佛罗里达州海湖庄园回答媒体提问时说，尚未在伊朗镐山发现任何实质性活动。 2、特朗普在海湖庄园对记者表示，自从黄仁勋复职英伟达之后，他还没有和黄仁勋交谈，但“大概率”会找时间沟通。特朗普谈及推动黄仁勋复职一事时称：“我认为我为美国、甚至全世界做了一件大好事。”我认为黄仁勋完全没问题。 3、特朗普26日在社交媒体发文说，他日前在与俄罗斯总统普京的会谈中敦…",
       "relatedStocks": [
         "英伟达",
         "微软",
@@ -37,7 +37,107 @@
         "传统IT服务"
       ],
       "heat": 24,
+      "momentum": 36,
+      "_auto": true
+    },
+    {
+      "id": "aprjw58o",
+      "title": "特朗普：支持伊拉克总理阿里·扎伊迪在伊拉克全境维护国家权威的努力，制止伊拉克石油走私。支持伊拉克总理阿里·扎伊迪将所有武器置于国家专属控制之下的努力。",
+      "tag": "人物/特朗普",
+      "region": "美国",
+      "concept": "usMacro",
+      "time": "2026-11-27 18:25",
+      "datetime": "2026-11-27 18:25",
+      "source": "新浪7×24",
+      "url": "https://finance.sina.cn/7x24/2026-11-27/detail-inkaencz1110504.d.html",
+      "summary": "特朗普：支持伊拉克总理阿里·扎伊迪在伊拉克全境维护国家权威的努力，制止伊拉克石油走私。支持伊拉克总理阿里·扎伊迪将所有武器置于国家专属控制之下的努力。",
+      "relatedStocks": [
+        "宽基指数"
+      ],
+      "bullConcepts": [
+        "防御板块"
+      ],
+      "bearConcepts": [
+        "周期股"
+      ],
+      "bullIndustries": [
+        "公用事业"
+      ],
+      "bearIndustries": [
+        "顺周期"
+      ],
+      "heat": 24,
+      "momentum": 36,
+      "_auto": true
+    },
+    {
+      "id": "ap19ul25f",
+      "title": "特朗普称普京想来G20就可以来：“我希望他到场”",
+      "tag": "人物/特朗普",
+      "region": "美国",
+      "concept": "defense",
+      "time": "2026-11-27 17:47",
+      "datetime": "2026-11-27 17:47",
+      "source": "环球市场播报",
+      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-27/doc-inkaenef3200334.shtml",
+      "summary": "特朗普总统周四对记者表示，他不确定俄罗斯总统普京是否会出席下月在佛罗里达州举办的G20峰会；但如果由他说了算，只要普京愿意来，就可以参会。",
+      "relatedStocks": [
+        "军工",
+        "黄金"
+      ],
+      "bullConcepts": [
+        "军工",
+        "避险资产"
+      ],
+      "bearConcepts": [
+        "风险资产"
+      ],
+      "bullIndustries": [
+        "军工",
+        "黄金"
+      ],
+      "bearIndustries": [
+        "航空",
+        "旅游"
+      ],
+      "heat": 24,
       "momentum": 26,
+      "_auto": true
+    },
+    {
+      "id": "ap5p9c1y",
+      "title": "马斯克称FSDV15让特斯拉汽车拥有“超人视觉”",
+      "tag": "人物/马斯克",
+      "region": "全球",
+      "concept": "ai",
+      "time": "2026-11-27 14:16",
+      "datetime": "2026-11-27 14:16",
+      "source": "环球市场播报",
+      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-27/doc-inkaefwi3171349.shtml",
+      "summary": "马斯克对特斯拉FSD技术的最新版本（ V15）给予了高度评价；该版本能够整合车辆各摄像头采集的信息，通过人工智能实时生成一种“虚拟视角”——仿佛有一个摄像头悬浮在车辆上方...",
+      "relatedStocks": [
+        "英伟达",
+        "微软",
+        "台积电"
+      ],
+      "bullConcepts": [
+        "AI算力",
+        "半导体",
+        "国产替代"
+      ],
+      "bearConcepts": [
+        "传统软件"
+      ],
+      "bullIndustries": [
+        "半导体",
+        "AI应用",
+        "算力基础设施"
+      ],
+      "bearIndustries": [
+        "传统IT服务"
+      ],
+      "heat": 24,
+      "momentum": 18,
       "_auto": true
     },
     {
