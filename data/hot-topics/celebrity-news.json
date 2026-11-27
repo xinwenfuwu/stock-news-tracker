@@ -1,20 +1,20 @@
 {
-  "generatedAt": "2026-11-27 18:46",
+  "generatedAt": "2026-11-28 05:02",
   "generatedBy": "GitHub Actions · 多源实时聚合",
   "sourceCount": 4,
   "autoCount": 4,
   "events": [
     {
-      "id": "apzhievw",
-      "title": "1、美国总统特朗普26日在佛罗里达州海湖庄园回答媒体提问时说，尚未在伊朗镐山发现任何实质性活动。 2、特朗普在海湖庄园对记者表示，自从黄仁勋复职英伟达之后，他还没有和黄仁勋交谈，…",
-      "tag": "人物/黄仁勋",
-      "region": "美国",
-      "concept": "aiCapex",
-      "time": "2026-11-27 18:27",
-      "datetime": "2026-11-27 18:27",
-      "source": "新浪7×24",
-      "url": "https://finance.sina.cn/7x24/2026-11-27/detail-inkaencz1111968.d.html",
-      "summary": "1、美国总统特朗普26日在佛罗里达州海湖庄园回答媒体提问时说，尚未在伊朗镐山发现任何实质性活动。 2、特朗普在海湖庄园对记者表示，自从黄仁勋复职英伟达之后，他还没有和黄仁勋交谈，但“大概率”会找时间沟通。特朗普谈及推动黄仁勋复职一事时称：“我认为我为美国、甚至全世界做了一件大好事。”我认为黄仁勋完全没问题。 3、特朗普26日在社交媒体发文说，他日前在与俄罗斯总统普京的会谈中敦…",
+      "id": "ap1vormy7",
+      "title": "11月28日外盘头条： 特朗普希望普京参加G20 OpenAI反诉苹果窃取商业机密 欧洲央行管委Dolenc暗示仍需加息",
+      "tag": "人物/特朗普",
+      "region": "中国",
+      "concept": "llm",
+      "time": "2026-11-28 04:45",
+      "datetime": "2026-11-28 04:45",
+      "source": "环球市场播报",
+      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-28/doc-inkafprq7554426.shtml",
+      "summary": "全球财经媒体昨夜今晨共同关注的头条新闻主要有： 1、特朗普称普京想来G20就可以来：“我希望他到场” 2、伊拉克石油部长称正与OPEC磋商 争取提高石油产量上限 3...",
       "relatedStocks": [
         "英伟达",
         "微软",
@@ -36,21 +36,21 @@
       "bearIndustries": [
         "传统IT服务"
       ],
-      "heat": 24,
-      "momentum": 36,
+      "heat": 100,
+      "momentum": 56,
       "_auto": true
     },
     {
-      "id": "aprjw58o",
-      "title": "特朗普：支持伊拉克总理阿里·扎伊迪在伊拉克全境维护国家权威的努力，制止伊拉克石油走私。支持伊拉克总理阿里·扎伊迪将所有武器置于国家专属控制之下的努力。",
-      "tag": "人物/特朗普",
-      "region": "美国",
-      "concept": "usMacro",
-      "time": "2026-11-27 18:25",
-      "datetime": "2026-11-27 18:25",
+      "id": "appc1sz8",
+      "title": "俄罗斯总统普京：我们将继续加强俄罗斯在世界海洋中的地位。",
+      "tag": "人物/普京",
+      "region": "全球",
+      "concept": "macro",
+      "time": "2026-11-28 04:23",
+      "datetime": "2026-11-28 04:23",
       "source": "新浪7×24",
-      "url": "https://finance.sina.cn/7x24/2026-11-27/detail-inkaencz1110504.d.html",
-      "summary": "特朗普：支持伊拉克总理阿里·扎伊迪在伊拉克全境维护国家权威的努力，制止伊拉克石油走私。支持伊拉克总理阿里·扎伊迪将所有武器置于国家专属控制之下的努力。",
+      "url": "https://finance.sina.cn/7x24/2026-11-28/detail-inkafprq7543232.d.html",
+      "summary": "俄罗斯总统普京：我们将继续加强俄罗斯在世界海洋中的地位。",
       "relatedStocks": [
         "宽基指数"
       ],
@@ -67,7 +67,43 @@
         "顺周期"
       ],
       "heat": 24,
-      "momentum": 36,
+      "momentum": 26,
+      "_auto": true
+    },
+    {
+      "id": "ap1gcj2oh",
+      "title": "美国联邦通信委员会（FCC）委员布伦丹·卡尔表示，希望SpaceX全速推进太空数据中心建设。",
+      "tag": "人物/马斯克",
+      "region": "美国",
+      "concept": "aiCapex",
+      "time": "2026-11-27 23:18",
+      "datetime": "2026-11-27 23:18",
+      "source": "财联社",
+      "url": "https://www.cls.cn/detail/2547075",
+      "summary": "美国联邦通信委员会（FCC）委员布伦丹·卡尔表示，希望SpaceX全速推进太空数据中心建设。",
+      "relatedStocks": [
+        "英伟达",
+        "微软",
+        "台积电"
+      ],
+      "bullConcepts": [
+        "AI算力",
+        "半导体",
+        "国产替代"
+      ],
+      "bearConcepts": [
+        "传统软件"
+      ],
+      "bullIndustries": [
+        "半导体",
+        "AI应用",
+        "算力基础设施"
+      ],
+      "bearIndustries": [
+        "传统IT服务"
+      ],
+      "heat": 51,
+      "momentum": 18,
       "_auto": true
     },
     {
@@ -100,43 +136,7 @@
         "航空",
         "旅游"
       ],
-      "heat": 24,
-      "momentum": 26,
-      "_auto": true
-    },
-    {
-      "id": "ap5p9c1y",
-      "title": "马斯克称FSDV15让特斯拉汽车拥有“超人视觉”",
-      "tag": "人物/马斯克",
-      "region": "全球",
-      "concept": "ai",
-      "time": "2026-11-27 14:16",
-      "datetime": "2026-11-27 14:16",
-      "source": "环球市场播报",
-      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-27/doc-inkaefwi3171349.shtml",
-      "summary": "马斯克对特斯拉FSD技术的最新版本（ V15）给予了高度评价；该版本能够整合车辆各摄像头采集的信息，通过人工智能实时生成一种“虚拟视角”——仿佛有一个摄像头悬浮在车辆上方...",
-      "relatedStocks": [
-        "英伟达",
-        "微软",
-        "台积电"
-      ],
-      "bullConcepts": [
-        "AI算力",
-        "半导体",
-        "国产替代"
-      ],
-      "bearConcepts": [
-        "传统软件"
-      ],
-      "bullIndustries": [
-        "半导体",
-        "AI应用",
-        "算力基础设施"
-      ],
-      "bearIndustries": [
-        "传统IT服务"
-      ],
-      "heat": 24,
+      "heat": 46,
       "momentum": 18,
       "_auto": true
     },
