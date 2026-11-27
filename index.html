@@ -10,12 +10,12 @@
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
   <title>股市信息分析系统</title>
-  <link rel="stylesheet" href="css/style.css?v=20261126b">
+  <link rel="stylesheet" href="css/style.css?v=20261127a">
   <!-- Vue 3 全局构建版（v3.4.21 · 自托管）
        原先走 unpkg.com CDN：国内网络对 unpkg 的连通性不稳定，一旦该请求长时间挂起，
        <head> 里的阻塞脚本会让整页停在白屏、后续 auth-boot.js 根本不会执行。
        改为同源托管后，启动链路不再依赖任何第三方 CDN。 -->
-  <script src="js/vue.global.prod.js?v=20261126b"></script>
+  <script src="js/vue.global.prod.js?v=20261127a"></script>
 </head>
 <body class="auth-locked">
   <!-- ===== 登录关卡：登录通过前业务脚本不会被加载 ===== -->
@@ -101,7 +101,7 @@
         <input class="auth-input" type="text" id="auth-renew-user" placeholder="用户名（你注册时用的）" maxlength="20" autocomplete="off">
         <div class="auth-renew-plans" id="auth-renew-plans"></div>
         <div class="auth-renew-qr" id="auth-renew-qr">
-          <div class="auth-renew-qrbox"><img id="auth-renew-wx" src="assets/wechat-pay-qr.jpg?v=20261126b" alt="微信支付收款码"><span>微信支付（扫码支付）</span></div>
+          <div class="auth-renew-qrbox"><img id="auth-renew-wx" src="assets/wechat-pay-qr.jpg?v=20261127a" alt="微信支付收款码"><span>微信支付（扫码支付）</span></div>
           <div class="muted small" style="margin-top:6px;color:#c2410c;font-weight:600">支付时请添加会员备注，付款成功截图保存</div>
         </div>
         <input class="auth-input" type="text" id="auth-renew-amount" inputmode="decimal" placeholder="支付金额（必填，如 1000）" autocomplete="off">
@@ -348,7 +348,7 @@
             </button>
             <button class="sw-btn sw-btn-ghost" :disabled="briefLoading" @click="resetBriefWin"
                     title="恢复默认：上次闭市 → 本次闭市（同步恢复「上次」对比周期为默认）">重置</button>
-            <!-- 20261126b：快捷窗口只作用于本栏（不影响火热话题）；隔夜窗口按A股开市安排（前一交易日15:00→当日9:25）；只填日期不刷新 -->
+            <!-- 20261127a：快捷窗口只作用于本栏（不影响火热话题）；隔夜窗口按A股开市安排（前一交易日15:00→当日9:25）；只填日期不刷新 -->
             <span class="sw-sep">｜</span>
             <button class="sw-btn sw-btn-day" :class="{active: briefWinDay===0}" :disabled="briefLoading" @click="setBriefWinDay(0)"
                     title="填入「今天」隔夜窗口（前一交易日15:00→当日9:25）；只作用于本栏，不影响火热话题；只填日期不刷新">今天</button>
@@ -820,7 +820,7 @@
               <span class="hfei-dom-why">{{ hfeiReport.ai.dominant.why }}</span>
             </div>
 
-            <!-- 20261126b：主导事件预计影响天数/日期区间 + 建议操作的三个概念板块 -->
+            <!-- 20261127a：主导事件预计影响天数/日期区间 + 建议操作的三个概念板块 -->
             <div class="hfei-impact" v-if="hfeiReport.ai.impact || (hfeiReport.ai.actionConcepts && hfeiReport.ai.actionConcepts.length)">
               <div class="hfei-impact-row" v-if="hfeiReport.ai.impact">
                 <span class="hfei-impact-tag">预计影响天数</span>
@@ -1093,7 +1093,7 @@
               </div>
             </div>
 
-            <!-- 20261126b：目标日复盘（选定目标交易日后的复盘动作）→ 反推正确逻辑（独立于报告目标日） -->
+            <!-- 20261127a：目标日复盘（选定目标交易日后的复盘动作）→ 反推正确逻辑（独立于报告目标日） -->
             <div class="hfei-sec hfei-today-rv">
               <div class="hfei-sec-head">
                 <span class="hfei-sec-no">⑨</span>
@@ -1128,7 +1128,7 @@
                   <div class="muted small">本次复盘取到了真实涨跌榜，但未调用大模型（未配置或调用失败）：核对下方榜单后可点「♻️ 一键完整迭代」重试反推。</div>
                 </div>
 
-                <!-- 20261126b：完整迭代逻辑思维链（真实涨跌→反推→修正→迭代表→命中验证） -->
+                <!-- 20261127a：完整迭代逻辑思维链（真实涨跌→反推→修正→迭代表→命中验证） -->
                 <div class="hfei-chain" v-if="hfeiIterChain">
                   <div class="hfei-chain-head">🧠 完整迭代逻辑思维链 <span class="muted small">（{{ hfeiIterChain.date }} · 从今日真实结果反推并修正预测模型）</span></div>
                   <div class="hfei-chain-flow">
@@ -1187,7 +1187,7 @@
                   </div>
                 </div>
 
-                <!-- 20261126b：完整修正逻辑（用户框架逐条写出 + 本地多因子量化评分） -->
+                <!-- 20261127a：完整修正逻辑（用户框架逐条写出 + 本地多因子量化评分） -->
                 <div class="hfei-full-logic" v-if="hfeiIterChain &amp;&amp; hfeiIterChain.correction">
                   <div class="hfei-full-logic-head">🧾 完整修正逻辑（逐条写出依据，可审阅 / 可回灌）</div>
                   <div class="hfei-full-logic-grid">
@@ -1310,7 +1310,7 @@
               </template>
             </div>
 
-            <!-- ⑩ 20261126b：迭代后的新此表（复盘反推逻辑修正后重新生成，不覆盖原报告） -->
+            <!-- ⑩ 20261127a：迭代后的新此表（复盘反推逻辑修正后重新生成，不覆盖原报告） -->
             <div class="hfei-sec hfei-iter-picks">
               <div class="hfei-sec-head">
                 <span class="hfei-sec-no">⑩</span>
@@ -1629,7 +1629,7 @@
                   <div class="qr-row">
                     <div class="qr-box">
                       <div class="qr-cap">推荐使用微信支付</div>
-                      <img src="assets/wechat-pay-qr.jpg?v=20261126b" alt="微信支付收款码" class="qr-pay-img">
+                      <img src="assets/wechat-pay-qr.jpg?v=20261127a" alt="微信支付收款码" class="qr-pay-img">
                       <div class="qr-cap" style="margin-top:6px;color:#c2410c;font-weight:600">支付时请添加会员备注，付款成功截图保存</div>
                       <div class="qr-cap muted small">火柴盒网络服务</div>
                     </div>
@@ -1878,7 +1878,7 @@
             <div class="panel-head">
               <h3 class="panel-title" style="margin:0">🔥 火热话题</h3>
               <div class="ht-head-right">
-                <!-- 20261126b：红框按钮只作用于左栏时间框（每日话题/统计分析），不影响右栏每日快讯；隔夜窗口按A股开市安排（前一交易日15:00→当日9:25）；只填日期不刷新 -->
+                <!-- 20261127a：红框按钮只作用于左栏时间框（每日话题/统计分析），不影响右栏每日快讯；隔夜窗口按A股开市安排（前一交易日15:00→当日9:25）；只填日期不刷新 -->
                 <div class="ht-day-btns" id="ht-day-btns">
                   <button class="sw-btn sw-btn-day" :class="{active: htWinDay===0}" :disabled="hotTopicsLoading || analysisLoading" @click="setHtWinDay(0)"
                           title="把本栏「新闻统计开始时间」填成「今天」隔夜窗口（前一交易日15:00→当日9:25）；只作用于本栏，不影响每日快讯；只填日期不刷新">今天</button>
@@ -2235,7 +2235,7 @@
               </button>
               <button class="sw-btn sw-btn-ghost" :disabled="briefLoading" @click="resetBriefWin"
                       title="恢复默认：昨天 15:00 → 现在">重置</button>
-              <!-- 20261126b：今天 / 昨天 / 前天 快捷窗口（只作用于本栏，与火热话题互不影响） -->
+              <!-- 20261127a：今天 / 昨天 / 前天 快捷窗口（只作用于本栏，与火热话题互不影响） -->
               <span class="sw-sep">｜</span>
               <button class="sw-btn sw-btn-day" :class="{active: briefWinDay===0}" :disabled="briefLoading" @click="setBriefWinDay(0)"
                       title="填入「今天」隔夜窗口（前一交易日15:00→当日9:25）；只作用于本栏，不影响火热话题；只填日期不刷新">今天</button>
@@ -4011,7 +4011,7 @@
                     📅 数据整理时间：<b>{{ inflDate || '—' }}</b>　·　统计窗口 <b>近 {{ inflWindowDays }} 交易日（收盘窗口：{{ inflWindowLabel }}）</b>　·　当前区域 <b>{{ regionLabel(inflRegion) }}</b> 共 <b>{{ inflEvents.length }}</b> 条事件<br/>
                     🔎 <b>新闻范围：</b>{{ inflRangeLabel }}<template v-if="inflRangeDays">（本面板只统计最近 {{ inflRangeDays }} 个交易日（15:00 收盘窗口）内的新闻/事件；右侧「未来事件」的选择框独立设置）</template><template v-else>（未选择 = 按上方默认窗口统计；可在面板右上角「刷新数据」左侧选择「近 N 交易日」）</template><br/>
                     🕐 <b>时间口径（20261119a）：</b>新闻范围为<b>最近一个月内新鲜发生</b>的全网新闻。每条事件的时间<b>严格以该新闻首次报道时间为准</b>——按<b>语义相同（含义相同，非字面百分比相同）即为同一新闻</b>的口径，扫描最近一个月 11 平台新闻，取该新闻在<b>不同平台 / 不同时间报道中最早的一条</b>作为锚定时间；未匹配到更早报道时用事件 seed 原始首报日期。<b>很多年前的同类旧闻不参与锚定</b>，超出一个月的旧事件直接排除；<b>绝不使用重锚日期</b>。窗口筛选（近 N 交易日）与「按时间排序」均以此首报时间为准：如 11-01 首次出现的新闻，在「近 1 交易日」窗口下会被正确排除。卡片显示「🕐 全网首报」或「（首次出现）」。<br/>
-                    🧭 <b>交易日口径（20261126b）：</b>一个交易日 = <b>上一交易日 15:00 收盘 → 本交易日 15:00 收盘</b>，15:00 之后算新的一天（周末跳过）。"近 1 交易日"即 11/24 15:00 → 11/25 15:00，"近 2 交易日"从 11/23 15:00 起算。<b>刷新数据会把窗口内中国发生的全部大新闻都纳入</b>——包括晚间发布会（如华为 Mate X8 售价 / 鸿蒙设备破亿）这类措辞各异的单点重大事件，按主体主题聚合成一条，不再因语义簇门槛漏掉；这些真实新鲜事件会同步喂给合肥模式，作为盘前利好概念的精准依据。<br/>
+                    🧭 <b>交易日口径（20261127a）：</b>一个交易日 = <b>上一交易日 15:00 收盘 → 本交易日 15:00 收盘</b>，15:00 之后算新的一天（周末跳过）。"近 1 交易日"即 11/24 15:00 → 11/25 15:00，"近 2 交易日"从 11/23 15:00 起算。<b>刷新数据会把窗口内中国发生的全部大新闻都纳入</b>——包括晚间发布会（如华为 Mate X8 售价 / 鸿蒙设备破亿）这类措辞各异的单点重大事件，按主体主题聚合成一条，不再因语义簇门槛漏掉；这些真实新鲜事件会同步喂给合肥模式，作为盘前利好概念的精准依据。<br/>
                     <b>双指标（同时存在）：</b>「<b>影响人数</b>」= 该事件影响到<b>生产 + 生活</b>的全部相关人数（从业者 / 上下游、使用该产品服务的消费者与用户、泛受影响公众，<b>并包含股民</b>）；「<b>影响股民数</b>」= 其中<b>投资该事件所涉概念相关股票</b>的股民人数，是影响人数的子集。<br/>
                     <b>计算公式（20261112a 修正）：</b><b>A = max(该概念「影响范围」人群基数 × 触达率 r, 影响股民数 S)</b>，max 保证 S ⊆ A；股民占比 = S / A。<b>🇨🇳 中国 / 🇺🇸 美国 / 🌍 全世界只是分类</b>，只决定事件归到哪个页签、配色与文案，<b>不参与影响人数计算</b>——同一条事件放到哪个页签，影响人数完全相同。<br/>
                     <b>影响范围由「概念性质」决定：</b>全球传导型（美债 / 通胀 / 降息预期 / 芯片出口 / 原油 / 中概股 / 跨境电商 / 短剧出海等）按<b>全球 82 亿</b>人口基数估算；境内民生型（医保 / 房贷 / 零售 / 短剧监管 / 电力等）按该概念真实覆盖的<b>境内人群</b>估算。r 为该范围内的生产生活触达率，已分别按全球 / 境内口径标定。<br/>
@@ -4118,12 +4118,12 @@
                 <button class="infl-tab" :class="{active: futureRegion==='people'}" @click="setFutureRegion('people')">👤 人物</button>
               </div>
 
-              <!-- 20261126b：突发/未来语义说明 -->
+              <!-- 20261127a：突发/未来语义说明 -->
               <p class="muted small" v-if="futureRegion==='breaking'" style="margin:6px 0 8px">
-                ⚡ <b>突发口径（20261126b）：</b>只收<b>已发生、正在发生、还没完结、未来还会生变且走势突变性大</b>的全球大事件。标「🔄 进行中·会生变 / ⚡ 走势突变 / ⏳ 后续待发生」的事件<b>不受「近 N 交易日」首报窗口限制</b>（事态每天都在产生新进展、仍影响后市）；单点快讯仍按窗口过滤。
+                ⚡ <b>突发口径（20261127a）：</b>只收<b>已发生、正在发生、还没完结、未来还会生变且走势突变性大</b>的全球大事件。标「🔄 进行中·会生变 / ⚡ 走势突变 / ⏳ 后续待发生」的事件<b>不受「近 N 交易日」首报窗口限制</b>（事态每天都在产生新进展、仍影响后市）；单点快讯仍按窗口过滤。
               </p>
               <p class="muted small" v-if="futureRegion==='future'" style="margin:6px 0 8px">
-                🛡 <b>预防止损口径（20261126b）：</b>「未来」只跟踪<b>尚未发生、即将发生</b>的大事件（会议 / 峰会 / 数据发布 / 政策落地 / 财报等），用于<b>提前预防风险与设定止损位</b>。已结束事件自动剔除；卡片按距今天数倒计时，越临近越需关注。
+                🛡 <b>预防止损口径（20261127a）：</b>「未来」只跟踪<b>尚未发生、即将发生</b>的大事件（会议 / 峰会 / 数据发布 / 政策落地 / 财报等），用于<b>提前预防风险与设定止损位</b>。已结束事件自动剔除；卡片按距今天数倒计时，越临近越需关注。
               </p>
               <!-- 20261119a：人物首报口径说明 -->
               <p class="muted small" v-if="futureRegion==='people'" style="margin:6px 0 8px">
@@ -6631,14 +6631,14 @@
     </transition>
   </div>
 
-  <script src="js/auth.js?v=20261126b"></script>
-  <script src="js/auth-sync.js?v=20261126b"></script>
+  <script src="js/auth.js?v=20261127a"></script>
+  <script src="js/auth-sync.js?v=20261127a"></script>
   <!-- 边缘加速默认站点（batch37 治本：Cloudflare Worker 代理东财/腾讯，缓解 JSONP 限流误报）。
        若你所在地区 workers.dev 访问慢，可在「设置 → 行情加速地址」清空即恢复纯直连。 -->
   <script>window.__SNT_ACCEL__ = 'https://sichina.dpdns.org';</script>
   <!-- 扫码支付二维码渲染库（第三方 qrcodejs，本地托管避免外链失效）。renderQr 会先检测全局 QRCode 是否存在。 -->
-  <script src="assets/qrcode.min.js?v=20261126b"></script>
-  <script src="js/auth-boot.js?v=20261126b"></script>
+  <script src="assets/qrcode.min.js?v=20261127a"></script>
+  <script src="js/auth-boot.js?v=20261127a"></script>
   <!-- store / stock-api / hot-topics / app 由 auth-boot.js 在登录通过后动态装载，
        未登录时它们不会被下载，业务数据也不会进入内存 -->
 </body>
