@@ -1,20 +1,20 @@
 {
-  "generatedAt": "2026-11-27 00:45",
+  "generatedAt": "2026-11-27 09:40",
   "generatedBy": "GitHub Actions · 多源实时聚合",
   "sourceCount": 2,
-  "autoCount": 8,
+  "autoCount": 1,
   "events": [
     {
-      "id": "ab1vf8e53",
-      "title": "特朗普表示，乌克兰与俄罗斯达成协议的可能性很大。希望看到俄罗斯总统普京撤回其在欧洲各地的一切军事行动。",
+      "id": "ab15hwu79",
+      "title": "以军称打击黎巴嫩南部真主党武装火箭弹发射装置",
       "tag": "地缘/政治",
-      "region": "美国",
-      "concept": "defense",
-      "time": "2026-11-26 22:55",
-      "datetime": "2026-11-26 22:55",
+      "region": "全球",
+      "concept": "macro",
+      "time": "2026-11-27 08:53",
+      "datetime": "2026-11-27 08:53",
       "source": "财联社",
-      "url": "https://www.cls.cn/detail/2545911",
-      "summary": "特朗普表示，乌克兰与俄罗斯达成协议的可能性很大。希望看到俄罗斯总统普京撤回其在欧洲各地的一切军事行动。",
+      "url": "https://www.cls.cn/detail/2546065",
+      "summary": "【以军称打击黎巴嫩南部真主党武装火箭弹发射装置】财联社11月27日电，以色列国防军26日晚发表声明称，以军当天对黎巴嫩南部黎真主党武装的火箭弹及发射装置发动打击。以军说，此次打击目标是黎南部艾因·提纳地区真主党拉德万部队一处训练营地内的数十枚火箭弹及发射装置。真主党武装人员计划使用这些火箭弹袭击以色列，以军通过空中打击“消除威胁”。以军还说，将继续采取行动“消除威胁”，同时将…",
       "relatedStocks": [
         "军工",
         "黄金"
@@ -36,239 +36,6 @@
       ],
       "heat": 24,
       "momentum": 26,
-      "_auto": true
-    },
-    {
-      "id": "ab1ru8x68",
-      "title": "哈马斯谴责以方持续违反停火协议 正与巴各派别磋商应对措施",
-      "tag": "地缘/政治",
-      "region": "美国",
-      "concept": "defense",
-      "time": "2026-11-26 22:51",
-      "datetime": "2026-11-26 22:51",
-      "source": "财联社",
-      "url": "https://www.cls.cn/detail/2545910",
-      "summary": "【哈马斯谴责以方持续违反停火协议 正与巴各派别磋商应对措施】财联社11月26日电，巴勒斯坦伊斯兰抵抗运动（哈马斯）政治局领导人哈亚发表声明，谴责以色列方面持续违反加沙停火协议并针对巴勒斯坦民众发动军事袭击。哈亚在声明中表示，在现有加沙停火协议框架下，巴方绝不接受“杀戮与封锁”并存的局面。他同时批评美国支持设立的所谓加沙“和平委员会”及相关协议担保方对以方行为保持沉默，称这种态…",
-      "relatedStocks": [
-        "军工",
-        "黄金"
-      ],
-      "bullConcepts": [
-        "军工",
-        "避险资产"
-      ],
-      "bearConcepts": [
-        "风险资产"
-      ],
-      "bullIndustries": [
-        "军工",
-        "黄金"
-      ],
-      "bearIndustries": [
-        "航空",
-        "旅游"
-      ],
-      "heat": 24,
-      "momentum": 26,
-      "_auto": true
-    },
-    {
-      "id": "abf3kbjp",
-      "title": "以防长：若哈马斯不解除武装 将驱离100万加沙居民",
-      "tag": "地缘/政治",
-      "region": "全球",
-      "concept": "macro",
-      "time": "2026-11-26 22:31",
-      "datetime": "2026-11-26 22:31",
-      "source": "财联社",
-      "url": "https://www.cls.cn/detail/2545902",
-      "summary": "【以防长：若哈马斯不解除武装 将驱离100万加沙居民】财联社11月26日电，以色列国防部长卡茨26日在社交媒体发表声明称，如果哈马斯不解除武装，以色列国防军将继续发动军事行动，并驱离100万加沙地带居民。卡茨称，加沙地带70%的区域“已被摧毁”并由以军控制。对于哈马斯控制的剩余30%地区，要么哈马斯“自愿解除武装”，加沙地带实现非军事化；要么以军将继续军事行动，彻底瓦解哈马斯…",
-      "relatedStocks": [
-        "军工",
-        "黄金"
-      ],
-      "bullConcepts": [
-        "军工",
-        "避险资产"
-      ],
-      "bearConcepts": [
-        "风险资产"
-      ],
-      "bullIndustries": [
-        "军工",
-        "黄金"
-      ],
-      "bearIndustries": [
-        "航空",
-        "旅游"
-      ],
-      "heat": 24,
-      "momentum": 18,
-      "_auto": true
-    },
-    {
-      "id": "ab126xvy7",
-      "title": "据报道，国际清算银行总经理德科斯将出任下一任欧洲央行行长。",
-      "tag": "金融/宏观",
-      "region": "中国",
-      "concept": "bank",
-      "time": "2026-11-26 21:30",
-      "datetime": "2026-11-26 21:30",
-      "source": "财联社",
-      "url": "https://www.cls.cn/detail/2545875",
-      "summary": "据报道，国际清算银行总经理德科斯将出任下一任欧洲央行行长。",
-      "relatedStocks": [
-        "美股科技",
-        "黄金"
-      ],
-      "bullConcepts": [
-        "黄金",
-        "防御板块"
-      ],
-      "bearConcepts": [
-        "高估值成长股"
-      ],
-      "bullIndustries": [
-        "银行",
-        "黄金"
-      ],
-      "bearIndustries": [
-        "高杠杆地产"
-      ],
-      "heat": 29,
-      "momentum": 18,
-      "_auto": true
-    },
-    {
-      "id": "ab11mb7w9",
-      "title": "沙特牵头的联军表示，胡塞武装袭击了吉赞炼油厂。",
-      "tag": "地缘/政治",
-      "region": "全球",
-      "concept": "macro",
-      "time": "2026-11-26 22:48",
-      "datetime": "2026-11-26 22:48",
-      "source": "财联社",
-      "url": "https://www.cls.cn/detail/2545909",
-      "summary": "沙特牵头的联军表示，胡塞武装袭击了吉赞炼油厂。",
-      "relatedStocks": [
-        "军工",
-        "黄金"
-      ],
-      "bullConcepts": [
-        "军工",
-        "避险资产"
-      ],
-      "bearConcepts": [
-        "风险资产"
-      ],
-      "bullIndustries": [
-        "军工",
-        "黄金"
-      ],
-      "bearIndustries": [
-        "航空",
-        "旅游"
-      ],
-      "heat": 24,
-      "momentum": 26,
-      "_auto": true
-    },
-    {
-      "id": "ab19kcqwd",
-      "title": "位于俄罗斯克拉斯诺达尔边疆区的斯拉维扬斯克-ECO炼油厂在遭到无人机袭击后发生火灾。",
-      "tag": "地缘/政治",
-      "region": "全球",
-      "concept": "macro",
-      "time": "2026-11-26 22:00",
-      "datetime": "2026-11-26 22:00",
-      "source": "财联社",
-      "url": "https://www.cls.cn/detail/2545887",
-      "summary": "位于俄罗斯克拉斯诺达尔边疆区的斯拉维扬斯克-ECO炼油厂在遭到无人机袭击后发生火灾。",
-      "relatedStocks": [
-        "军工",
-        "黄金"
-      ],
-      "bullConcepts": [
-        "军工",
-        "避险资产"
-      ],
-      "bearConcepts": [
-        "风险资产"
-      ],
-      "bullIndustries": [
-        "军工",
-        "黄金"
-      ],
-      "bearIndustries": [
-        "航空",
-        "旅游"
-      ],
-      "heat": 24,
-      "momentum": 18,
-      "_auto": true
-    },
-    {
-      "id": "ab10asbfg",
-      "title": "两名意大利公民在伊朗无人机袭击科威特事件中身亡",
-      "tag": "地缘/政治",
-      "region": "欧洲",
-      "concept": "macro",
-      "time": "2026-11-26 22:41",
-      "datetime": "2026-11-26 22:41",
-      "source": "财联社",
-      "url": "https://www.cls.cn/detail/2545906",
-      "summary": "【两名意大利公民在伊朗无人机袭击科威特事件中身亡】财联社11月26日电，科威特军方发言人26日证实，两名意大利公民在当天伊朗无人机袭击科威特事件中受伤，后不治身亡。",
-      "relatedStocks": [
-        "军工",
-        "黄金"
-      ],
-      "bullConcepts": [
-        "军工",
-        "避险资产"
-      ],
-      "bearConcepts": [
-        "风险资产"
-      ],
-      "bullIndustries": [
-        "军工",
-        "黄金"
-      ],
-      "bearIndustries": [
-        "航空",
-        "旅游"
-      ],
-      "heat": 24,
-      "momentum": 18,
-      "_auto": true
-    },
-    {
-      "id": "aba1qhqb",
-      "title": "土耳其调查前银监机构负责人",
-      "tag": "宏观/综合",
-      "region": "中国",
-      "concept": "broker",
-      "time": "2026-11-26 21:58",
-      "datetime": "2026-11-26 21:58",
-      "source": "财联社",
-      "url": "https://www.cls.cn/detail/2545886",
-      "summary": "财联社11月26日电，据土耳其媒体11月26日报道，土耳其财政部长迈赫迈特·希姆谢克已授权调查前银行监管机构负责人沙哈普·卡夫奇奥卢。调查涉及利用投资基金不当获利的丑闻，卡夫奇奥卢被指认涉嫌贿赂、滥用职权等不法行为。这一丑闻9月被曝光后持续发酵，涉及数百名嫌疑人，其中包括数名在任及前任高官。",
-      "relatedStocks": [
-        "宽基指数"
-      ],
-      "bullConcepts": [
-        "防御板块"
-      ],
-      "bearConcepts": [
-        "周期股"
-      ],
-      "bullIndustries": [
-        "公用事业"
-      ],
-      "bearIndustries": [
-        "顺周期"
-      ],
-      "heat": 24,
-      "momentum": 18,
       "_auto": true
     },
     {
