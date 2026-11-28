@@ -994,6 +994,9 @@ body {
 .infl-cnimp.bull b { color: #dc2626; }
 .infl-cnimp.bear { color: #15803d; background: #f0fdf4; border-color: #bbf7d0; }
 .infl-cnimp.bear b { color: #16a34a; }
+/* 20261128d：影响天数 chip——新闻在所属子版块范围内的预计影响交易日数 */
+.infl-impact-days { padding: 1px 8px; border-radius: 999px; font-size: 12px; font-weight: 700; color: #c2410c; background: #fff7ed; border: 1px solid #fed7aa; white-space: nowrap; }
+.infl-impact-days b { color: #ea580c; }
 .infl-surge.surge-hot { color: #b91c1c; background: #fef2f2; border-color: #fecaca; }
 .infl-surge.surge-warm { color: #c2410c; background: #fff7ed; border-color: #fed7aa; }
 .infl-surge.surge-normal { color: #1d4ed8; background: #eff6ff; border-color: #dbeafe; }

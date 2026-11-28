@@ -11829,6 +11829,20 @@ const app = createApp({
     const CN_INDUSTRY_WORDS = ['国产替代','信创','稀土','军工','电网','储能','光伏','锂电','新能源','医保','房贷','白酒','消费','跨境电商','人民币','基建','钢铁','煤炭','电力','环保','绿电','芯片','半导体','算力','数据中心','数字经济','低空经济','机器人','汽车','新能源车','地产','银行','保险','农业','大飞机','北斗','5G','6G','短剧','游戏','影视','旅游','免税','一带一路','中欧班列','出口','关税','能源安全','粮食安全','科技自主','碳交易','环保工程','电力运营','电力设备','智能驾驶','AI应用','先进封装','高股息','医药','医疗','人工智能','量子','核电','风电','氢能','消费电子','食品饮料','化工','机械','传媒','教育'];
     const CN_STOCK_WORDS = ['A股','沪深','上证','深证','创业板','科创板','北交所','港股','中概股','H股','涨停','跌停','成交额','北向资金','两融','融资融券','IPO','新股','券商','基金','险资','股民','市值','指数','大盘','上证指数','深证成指','创业板指','恒生指数','定增','减持','增持','回购','分红','财报','业绩','龙头股','概念股','股价'];
     const CN_IMPACT_WORDS = CN_INDUSTRY_WORDS.concat(CN_STOCK_WORDS);
+    // 20261128d：三个子版块的重要程度口径——
+    //   中国新闻：只统计中国境内新闻，重要程度 = 中国境内范围的影响程度（中国产业 + A股等中国市场词）；
+    //   美国新闻 / 世界新闻：只统计世界境内新闻，重要程度 = 世界境内范围的影响程度（全球产业 + 全球市场词）。
+    const WORLD_INDUSTRY_WORDS = ['全球','世界','美国','美联储','美元','美股','欧洲','欧盟','欧元','日本','韩国','印度','中东','原油','黄金','大宗商品','海运','贸易','关税','供应链','气候','联合国','G20','WTO','IMF','AI','人工智能','芯片','半导体','算力','新能源','电动车','光伏','储能','军工','医药','通胀','降息','加息','汇率','科技','互联网','云计算','量子','航天'];
+    const WORLD_MARKET_WORDS = ['全球市场','世界市场','美股','欧股','日经','纳斯达克','标普','道指','美元指数','美债','国债收益率','原油期货','黄金期货','汇率','降息预期','加息预期','资金流向','风险资产','大宗商品','指数','股市','股价','财报','业绩'];
+    function inflImportanceScopeOf(e) {
+      const r = String((e && (e._ir || e.region)) || '');
+      return r === 'cn' ? 'cn' : 'world';
+    }
+    function _impWordSets(scope) {
+      return scope === 'cn'
+        ? { ind: CN_INDUSTRY_WORDS, mkt: CN_STOCK_WORDS, iBit: 1, mBit: 2 }
+        : { ind: WORLD_INDUSTRY_WORDS, mkt: WORLD_MARKET_WORDS, iBit: 4, mBit: 8 };
+    }
     /** 统计文本命中的不同词个数（同词只计一次，封顶 cap） */
     function _cnCountHits(text, words, cap) {
       const s = String(text || '');
@@ -11853,7 +11867,10 @@ const app = createApp({
         const txt = String((_inflNewsFlat[i] && _inflNewsFlat[i].text) || '');
         texts.push(txt);
         if (!txt) { flags.push(0); continue; }
-        const f = (_cnCountHits(txt, CN_INDUSTRY_WORDS, 1) ? 1 : 0) | (_cnCountHits(txt, CN_STOCK_WORDS, 1) ? 2 : 0);
+        const f = (_cnCountHits(txt, CN_INDUSTRY_WORDS, 1) ? 1 : 0)
+          | (_cnCountHits(txt, CN_STOCK_WORDS, 1) ? 2 : 0)
+          | (_cnCountHits(txt, WORLD_INDUSTRY_WORDS, 1) ? 4 : 0)
+          | (_cnCountHits(txt, WORLD_MARKET_WORDS, 1) ? 8 : 0);
         flags.push(f);
         const toks = semTokensMemo(txt);
         toks.forEach(g => {
@@ -11865,16 +11882,18 @@ const app = createApp({
       _cnImpPoolCache = { ver, len, texts, flags, inverted };
       return _cnImpPoolCache;
     }
-    /** 新闻池中同题报道及其对中国产业 / 股市的命中情况；新闻池未加载时回退到自动事件报道数 */
-    function _cnPoolCorroboration(e) {
+    /** 新闻池中同题报道及其在所属子版块范围内（中国境内 / 世界境内）的命中情况；
+     *  新闻池未加载时回退到自动事件报道数。 */
+    function _cnPoolCorroboration(e, scope) {
       const out = { related: 0, industry: 0, market: 0 };
       const ev = e || {};
+      const sets = _impWordSets(scope);
       if (!_inflNewsFlat.length) {
         const n = Math.min(10, Number(ev.autoReports) || 0);
         out.related = n;
         const txt = [ev.title, ev.summary, ev.conceptName].filter(Boolean).join(' ');
-        out.industry = n && _cnCountHits(txt, CN_INDUSTRY_WORDS, 1) ? n : 0;
-        out.market = n && _cnCountHits(txt, CN_STOCK_WORDS, 1) ? n : 0;
+        out.industry = n && _cnCountHits(txt, sets.ind, 1) ? n : 0;
+        out.market = n && _cnCountHits(txt, sets.mkt, 1) ? n : 0;
         return out;
       }
       const pool = _cnImpEnsurePool();
@@ -11891,29 +11910,31 @@ const app = createApp({
         if (!B.size) return;
         if (shared / Math.min(A.size, B.size) < 0.18) return;  // 语义包含度阈值，同义不同措辞亦可命中
         out.related++;
-        if (pool.flags[i] & 1) out.industry++;
-        if (pool.flags[i] & 2) out.market++;
+        if (pool.flags[i] & sets.iBit) out.industry++;
+        if (pool.flags[i] & sets.mBit) out.market++;
       });
       return out;
     }
     function computeChinaImpact(e) {
       const ev = e || {};
+      const scope = inflImportanceScopeOf(ev);          // cn=中国境内；us/world=世界境内
+      const sets = _impWordSets(scope);
       const tagBull = [].concat(ev.bullConcepts || [], ev.bullIndustries || []);
       const tagBear = [].concat(ev.bearConcepts || [], ev.bearIndustries || []);
       const stocks = Array.isArray(ev.relatedStocks) ? ev.relatedStocks : [];
       const text = [ev.title, ev.summary, ev.conceptName].concat(tagBull, tagBear, stocks).filter(Boolean).join(' ');
-      const industryHits = _cnCountHits(text, CN_INDUSTRY_WORDS, 4);
-      const marketWordHits = _cnCountHits(text, CN_STOCK_WORDS, 3);
+      const industryHits = _cnCountHits(text, sets.ind, 4);
+      const marketWordHits = _cnCountHits(text, sets.mkt, 3);
       const stockHits = Math.min(2, Math.ceil(stocks.length / 2));
       // 1 亿人 / 1 亿股民 → 满强度
       const peopleInt = Math.min(1, Math.log10(Math.max(1, Number(ev.affectedPeople) || 1)) / 8);
       const investInt = Math.min(1, Math.log10(Math.max(1, Number(ev.affected) || 1)) / 8);
-      const corr = _cnPoolCorroboration(ev);
+      const corr = _cnPoolCorroboration(ev, scope);
       const sIndustry = Math.min(24, industryHits * 6);
       const sMarket = Math.min(14, marketWordHits * 4 + stockHits * 2 + Math.round(investInt * 4));
       const sPeople = Math.round(peopleInt * 14);
       const sPool = Math.min(20, corr.related * 2 + corr.industry * 2 + corr.market * 2);
-      const sRegion = ((ev._ir || ev.region) === 'cn') ? 8 : 0;
+      const sRegion = scope === 'cn' ? 8 : 0;
       const score = Math.max(5, Math.min(100, Math.round(20 + sIndustry + sMarket + sPeople + sPool + sRegion)));
       let dir;
       const cb = _cnHitCount(tagBull), cx = _cnHitCount(tagBear);
@@ -11928,11 +11949,43 @@ const app = createApp({
       }
       return { score, dir, detail: {
         industry: sIndustry, market: sMarket, people: sPeople,
-        pool: sPool, region: sRegion, reports: corr.related
+        pool: sPool, region: sRegion, reports: corr.related,
+        scope, scopeLabel: scope === 'cn' ? '中国境内' : '世界境内'
       } };
     }
     /** 在 resolve 之后给事件挂上 cnImp（重要程度 + 方向），供排序与卡片展示 */
     function withCnImp(e) { e.cnImp = computeChinaImpact(e); return e; }
+
+    /** 20261128d：影响天数 = 此条新闻在所属子版块范围内的预计影响交易日数（1~30）。
+     *  优先用事件自带的结构化字段 / 起止交易日；否则按重要程度 + 受众广度 + 事件性质 + 新闻池报道广度估算。 */
+    function computeImpactDays(e) {
+      const ev = e || {};
+      const explicit = Number((ev.impact && ev.impact.days) || ev.impactDays || ev.durationDays || 0);
+      if (explicit > 0) return Math.max(1, Math.min(30, Math.round(explicit)));
+      const s = String((ev.impact && ev.impact.from) || ev.startDate || ev.date || '');
+      const t = String((ev.impact && ev.impact.to) || ev.endDate || '');
+      if (/^\d{4}-\d{2}-\d{2}/.test(s) && /^\d{4}-\d{2}-\d{2}/.test(t) && t >= s) {
+        let n = 0, guard = 0;
+        const cur = new Date(s.slice(0, 10) + 'T12:00:00');
+        const end = new Date(t.slice(0, 10) + 'T12:00:00');
+        while (cur <= end && guard++ < 90) {
+          if (isTradingDayCN(cur)) n++;
+          cur.setDate(cur.getDate() + 1);
+        }
+        if (n > 0) return Math.max(1, Math.min(30, n));
+      }
+      const imp = Number((ev.cnImp && ev.cnImp.score) || 0);
+      let days = 1;
+      if (imp >= 70) days += 2; else if (imp >= 50) days += 1;
+      const ppl = Number(ev.affectedPeople) || 0;
+      if (ppl >= 1e8) days += 2; else if (ppl >= 1e7) days += 1;
+      const text = [ev.title, ev.summary, ev.conceptName].filter(Boolean).join(' ');
+      if (/政策|规划|部署|国常会|国务院|监管|法案|条例|协议|落地|实施|改革|中长期/.test(text)) days += 2;
+      else if (/突破|发布会|涨价|涨停|大涨|下跌|财报|会议|会谈/.test(text)) days += 1;
+      const rep = Number((ev.cnImp && ev.cnImp.detail && ev.cnImp.detail.reports) || ev.autoReports || 0);
+      if (rep >= 4) days += 1;
+      return Math.max(1, Math.min(15, Math.round(days)));
+    }
 
     // ===== 20261119a：语义首报锚定引擎（影响力事件 / 未来事件 两个板块共用） =====
     // 用户口径：搜索范围=最近一个月发生的全网新闻；「文字不是百分比相同但含义相同」=同一新闻；
@@ -12011,6 +12064,7 @@ const app = createApp({
       const k = inflSortBy.value;
       if (k === 'time') return '时间';
       if (k === 'cnimp') return '重要程度';
+      if (k === 'impactDays') return '影响天数';
       return k === 'people' ? '影响人数' : '影响股民数';
     }
     function sortInfluence(list) {
@@ -12020,6 +12074,7 @@ const app = createApp({
         return [...(list || [])].sort((a, b) => String(b._timeKey || b.date).localeCompare(String(a._timeKey || a.date)));
       }
       if (by === 'cnimp') return [...(list || [])].sort((a, b) => (Number(b.cnImp && b.cnImp.score) || 0) - (Number(a.cnImp && a.cnImp.score) || 0));
+      if (by === 'impactDays') return [...(list || [])].sort((a, b) => (Number(b.impactDays) || 0) - (Number(a.impactDays) || 0));
       const key = by === 'people' ? 'affectedPeople' : 'affected';
       return [...(list || [])].sort((a, b) => (Number(b[key]) || 0) - (Number(a[key]) || 0));
     }
@@ -12789,7 +12844,11 @@ const app = createApp({
         })
         .slice(0, AUTO_MAX);
       const filtered = [...seedFiltered, ...autoForReg]
-        .map(e => inflWithBullBear(withCnImp(resolveInfluence(e))));
+        .map(e => {
+          const x = inflWithBullBear(withCnImp(resolveInfluence(e)));
+          x.impactDays = computeImpactDays(x);   // 20261128d：影响天数（按所属子版块范围估算）
+          return x;
+        });
       inflEvents.value = sortInfluence(filtered);
       const _repN = filtered.filter(e => e.dateSource === 'report').length;
       const _autoN = autoForReg.length;
@@ -12807,6 +12866,7 @@ const app = createApp({
     function setInflSort(k) {
       if (k === 'time') inflSortBy.value = 'time';
       else if (k === 'cnimp') inflSortBy.value = 'cnimp';
+      else if (k === 'impactDays') inflSortBy.value = 'impactDays';
       else inflSortBy.value = (k === 'people') ? 'people' : 'investors';
       if (D && D.inflSortBy !== undefined) D.inflSortBy = inflSortBy.value;
       loadInfluence();
@@ -19520,7 +19580,7 @@ const app = createApp({
       hotRankTab, setHotRankTab,
       inflRegion, inflEvents, inflLoading, inflError, inflDate, inflSortBy, setInflRegion, setInflSort, sortLabel, refreshInfluence, regionLabel, fmtAffected, impactScopeLabel,
       // 20261128b/c：地域判定与「重要程度」计算纯函数，暴露供验证/排查（只读、无副作用）
-      inflAutoRegionOf, inflStrictRegionOf, computeChinaImpact,
+      inflAutoRegionOf, inflStrictRegionOf, computeChinaImpact, computeImpactDays, inflImportanceScopeOf,
       // 20261109i：影响力事件只统计距今 10 日内（含今天），窗口标签用于面板展示
       INFL_WINDOW_DAYS, inflWindowLabel, inflWindowDays,
       // 20261110c：新闻范围（近 N 日）——两个面板各自独立，互不影响
