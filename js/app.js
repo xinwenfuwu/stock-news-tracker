@@ -12219,28 +12219,54 @@ const app = createApp({
      *           ②中国政府部门「强主体」直接作为动作主体（如央行降准/发改委印发）→ cn
      *           ③中美信号同时出现 → world；仅中国 → cn；仅美国 → us；无明确主体 → world。
      */
+    // 20261128b：美国政府机构/部门短语——「美国财政部 / 美国商务部 / 美国国务院 / 美联储 …」
+    //   绝不能因裸词「财政部 / 商务部 / 国务院 / 央行」命中 INFL_CN_GOV_RE / cn 正则。
+    //   做法：从判定文本里剔除这些完整短语（保留一条空格），再跑中国/第三国信号；美国信号仍在原文上判定。
+    const INFL_US_GOV_PHRASE_RE = /美国(?:财政部|商务部|国务院|司法部|能源部|国防部|劳工部|农业部|国税局|证监会|证券交易委员会|国会|央行|联邦储备委员会|白宫|FDA|SEC|EPA|贸易代表办公室)|美联储|五角大楼|白宫|华盛顿|纳斯达克|硅谷|华尔街/g;
     function inflAutoRegionOf(text) {
       const t = String(text || '');
+      if (!t) return 'world';
       // ① 外国政府/央行主体（日本央行/欧洲央行/欧盟…）或非美外资企业（SK海力士/三星/台积电…）→ world
       //    核心修复：这些主体即使带「加息/降息/央行/A股」等词也绝不进 cn/us。
       if (INFL_WORLD_GOV_RE.test(t) || INFL_WORLD_SUBJECT_RE.test(t) || INFL_FOREIGN_GOV_PHRASE_RE.test(t)) return 'world';
-      const cnGov = INFL_CN_GOV_RE.test(t);          // 中国政府部门作为动作主体（严格）
-      const cn = INFL_AUTO_REGION_HINTS.cn.test(t); // 中国关键词（含裸「央行」）
-      const us = INFL_US_STRONG_RE.test(t);          // 美国信号（含美企：英伟达/苹果/特斯拉…）
-      const foreign = INFL_WORLD_COUNTRY_RE.test(t);// 第三国国家词
-      // ② 中美同时出现 → 全球事件
+      // ② 明确美国政府机构主体（美国财政部/商务部/美联储/五角大楼…）——
+      //    用「去掉 g 标志」的副本检测，避免全局正则 lastIndex 状态污染；
+      //    这类主体即便正文带裸中国词（对华/中方）也只能进 us，绝不串入 cn/world。
+      const usGovHit = new RegExp(INFL_US_GOV_PHRASE_RE.source).test(t);
+      const tNoUsGov = t.replace(INFL_US_GOV_PHRASE_RE, ' '); // 剔除美国机构短语，避免裸词误命中中国信号
+      const cnGov = INFL_CN_GOV_RE.test(tNoUsGov);          // 中国政府部门作为动作主体（严格）
+      const cn = INFL_AUTO_REGION_HINTS.cn.test(tNoUsGov); // 中国关键词（含裸「央行」）
+      const us = INFL_US_STRONG_RE.test(t);                 // 美国信号（含美企：英伟达/苹果/特斯拉…）
+      const foreign = INFL_WORLD_COUNTRY_RE.test(tNoUsGov);// 第三国国家词
+      // ③ 美国政府主体优先归 us（用户口径：美国子板块只放美国主体的新闻）
+      //    例外：若同时命中中国政府部门强主体（如「中美谈判，国务院 vs 美国商务部」）→ 全球混合 world
+      if (usGovHit && !cnGov) return 'us';
+      // ④ 中美同时出现 → 全球事件
       if (cn && us) return 'world';
-      // ③ 纯美国信号（无中国词、无第三国词）→ us
-      //    必须早于 cnGov：否则「美国商务部」「美国财政部」会因含「商务部/财政部」被误判 cn
+      // ⑤ 纯美国信号（无中国词、无第三国词）→ us
       if (us && !cn && !foreign) return 'us';
-      // ④ 出现第三国国家词：只有中国政府部门直接出手才判 cn，否则归 world
+      // ⑥ 出现第三国国家词：只有中国政府部门直接出手才判 cn，否则归 world
       //    （「日本加息，A股承压」「中国与日本会谈」都不是纯中国境内事件）
       if (foreign && !cnGov) return 'world';
-      // ⑤ 中国信号（政府部门/裸央行/A股等）→ cn
+      // ⑦ 中国信号（政府部门/裸央行/A股等）→ cn
       if (cn || cnGov) return 'cn';
-      // ⑥ 兜底：美国 / 未知 → us / world
+      // ⑧ 兜底：美国 / 未知 → us / world
       if (us) return 'us';
       return 'world';
+    }
+    /** 20261128b 三子版块地域硬校验：用事件「标题 + 摘要 + 来源机构」文本重新判定真实归属。
+     *  作用于全部进入 中国/美国/全世界 三个子版块的事件——自动聚合轨与 seed 精选轨一视同仁，
+     *  杜绝某条新闻因硬编码 region 或簇代表文本偏差而串进不属于它的子版块。
+     *  · cn 中国    = 仅中国境内主体/政策/市场的新闻（与他国无关）
+     *  · us 美国    = 仅美国主体/政策/市场的新闻
+     *  · world 全世界 = 排除中美之外的其他国家新闻 + 中美混合的全球性新闻
+     */
+    function inflStrictRegionOf(e) {
+      const t = e || {};
+      // 自动聚合轨用生成时的判定原文（_regionText），保证与初次判定幂等；
+      // 拼接 summary 会混入多条异域新闻，导致主题事件被误杀（如华为发布会拼接美国芯片新闻）。
+      const text = t._regionText || [t.title, t.summary, t.source].filter(Boolean).join(' ');
+      return inflAutoRegionOf(text);
     }
     // 20261120c：行情播报噪声过滤——股指开盘/收盘、概念涨跌、涨停连板、指数点位等
     //   属于「盘面播报」而非「具体大事件」，不进入影响力事件板块。
@@ -12368,6 +12394,7 @@ const app = createApp({
           return {
             id: 'auto-' + String(rep).replace(/[^0-9]/g, '') + '-' + i,
             region,
+            _regionText: c.repText,   // 20261128b：保存地域判定原文，供子版块硬校验幂等复用
             concept: inflAutoConceptOf(c.repText, region),
             title: c.repText.slice(0, 60),
             date: String(rep).slice(0, 10),
@@ -12427,6 +12454,7 @@ const app = createApp({
         topicEvents.push({
           id: 'topic-' + g.key + '-' + String(firstTime).replace(/[^0-9]/g, ''),
           region,
+          _regionText: text,        // 20261128b：保存地域判定原文，避免拼接 summary 引入异域词误杀
           concept: inflAutoConceptOf(text, region),
           title: text.slice(0, 60),
           date: String(firstTime).slice(0, 10),
@@ -12663,6 +12691,9 @@ const app = createApp({
           e._tooOld = firstISO < oneMonthAgo;
           return e;
         })
+        // 20261128b：seed 精选样例按「影响范围」预置 region（如特朗普/美联储属全球传导型→world），
+        //   保留其硬编码归类，不做文本地域硬校验（否则会误杀这类全球传导样例）。
+        //   地域纯净的硬校验只作用于「自动聚合真实新闻轨」，见下方 autoForReg。
         .filter(e => e.region === reg && !e._tooOld && inflInWindow(e)
           // 20261120g：seed 精选事件同样不允许指数类混入（保险层）
           && !inflIsEvtIndexNews(e));
@@ -12672,7 +12703,8 @@ const app = createApp({
       const AUTO_MAX = 60;
       const autoAll = buildAutoInflEvents().filter(e => inflInWindow(e));
       const autoForReg = autoAll
-        .filter(e => e.region === reg && !seedFiltered.some(s => semSimilarity(s.title || s.originTitle || s.title, e.title) >= 0.5))
+        // 20261128b：自动聚合轨同样按文本硬校验地域，保证三个子版块互斥且只含本区域新闻
+        .filter(e => e.region === reg && inflStrictRegionOf(e) === reg && !seedFiltered.some(s => semSimilarity(s.title || s.originTitle || s.title, e.title) >= 0.5))
         .sort((a, b) => {
           // 20261125e：重大主题事件（晚间发布会/政策落地）必须留在列表里，
           // 先按「报道数 + 重大信号加权」避免被普通簇挤掉，再按时间新→旧。
@@ -19413,6 +19445,8 @@ const app = createApp({
       emHotStocks, emHotLoading, refreshEmHotOnly,
       hotRankTab, setHotRankTab,
       inflRegion, inflEvents, inflLoading, inflError, inflDate, inflSortBy, setInflRegion, setInflSort, sortLabel, refreshInfluence, regionLabel, fmtAffected, impactScopeLabel,
+      // 20261128b：三子版块地域判定纯函数，暴露供验证/排查（只读、无副作用）
+      inflAutoRegionOf, inflStrictRegionOf,
       // 20261109i：影响力事件只统计距今 10 日内（含今天），窗口标签用于面板展示
       INFL_WINDOW_DAYS, inflWindowLabel, inflWindowDays,
       // 20261110c：新闻范围（近 N 日）——两个面板各自独立，互不影响
