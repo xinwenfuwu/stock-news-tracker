@@ -1,117 +1,20 @@
 {
-  "generatedAt": "2026-11-28 11:51",
+  "generatedAt": "2026-11-28 20:53",
   "generatedBy": "GitHub Actions · 多源实时聚合",
-  "sourceCount": 4,
-  "autoCount": 18,
+  "sourceCount": 2,
+  "autoCount": 2,
   "events": [
     {
-      "id": "abhp398t",
-      "title": "外媒：欧联杯现场，法国队与保加利亚队球迷发生冲突致多人受伤，两国总统发声",
-      "tag": "地缘/政治",
-      "region": "欧洲",
-      "concept": "macro",
-      "time": "2026-11-28 11:18",
-      "datetime": "2026-11-28 11:18",
-      "source": "新浪7×24",
-      "url": "https://finance.sina.cn/7x24/2026-11-28/detail-inkaheph7392904.d.html",
-      "summary": "【外媒：欧联杯现场，法国队与保加利亚队球迷发生冲突致多人受伤，两国总统发声】综合法新社、英国《卫报》等媒体27日报道，在法国马赛队对阵保加利亚索非亚列夫斯基队的欧足联欧洲联赛（欧联杯）比赛看台上，两队球迷发生冲突，造成多人受伤。法国总统马克龙、保加利亚总统约托娃随后分别就此次暴力事件发声。报道称，约托娃就上述事件在社交平台上发帖称，马赛出现的画面“令人震惊”，袭击保加利亚球迷…",
-      "relatedStocks": [
-        "军工",
-        "黄金"
-      ],
-      "bullConcepts": [
-        "军工",
-        "避险资产"
-      ],
-      "bearConcepts": [
-        "风险资产"
-      ],
-      "bullIndustries": [
-        "军工",
-        "黄金"
-      ],
-      "bearIndustries": [
-        "航空",
-        "旅游"
-      ],
-      "heat": 29,
-      "momentum": 26,
-      "_auto": true
-    },
-    {
-      "id": "abr7u4ct",
-      "title": "华润置地总裁徐荣近期被带走 履新不到两年即辞任",
-      "tag": "宏观/综合",
-      "region": "全球",
-      "concept": "macro",
-      "time": "2026-11-28 11:50",
-      "datetime": "2026-11-28 11:50",
-      "source": "新浪7×24",
-      "url": "https://finance.sina.cn/7x24/2026-11-28/detail-inkahepf0640542.d.html",
-      "summary": "【华润置地总裁徐荣近期被带走 履新不到两年即辞任】华润置地有限公司于11月25日晚间披露，该公司执行董事、总裁徐荣因个人事务安排辞去职务。徐荣此时辞职略显仓促。财新从多个信源处获悉，徐荣已被有关部门带走调查。一名知情人士透露，早在9月，有关部门就曾约谈了徐荣。 （财新网）",
-      "relatedStocks": [
-        "宽基指数"
-      ],
-      "bullConcepts": [
-        "防御板块"
-      ],
-      "bearConcepts": [
-        "周期股"
-      ],
-      "bullIndustries": [
-        "公用事业"
-      ],
-      "bearIndustries": [
-        "顺周期"
-      ],
-      "heat": 24,
-      "momentum": 36,
-      "_auto": true
-    },
-    {
-      "id": "abfqj7w",
-      "title": "伊朗袭击造成美驻巴林海军基地损失预计超4亿美元",
-      "tag": "金融/宏观",
-      "region": "美国",
-      "concept": "usFinance",
-      "time": "2026-11-28 11:25",
-      "datetime": "2026-11-28 11:25",
-      "source": "环球市场播报",
-      "url": "https://finance.sina.com.cn/world/2026-11-28/doc-inkahepm2683229.shtml",
-      "summary": "据报道，伊朗导弹与无人机袭击造成美国驻巴林海军基地损失预计超4亿美元，基地前景不明，五角大楼正考虑将波斯湾地区的美军转移至以色列和约旦。",
-      "relatedStocks": [
-        "美股科技",
-        "黄金"
-      ],
-      "bullConcepts": [
-        "黄金",
-        "防御板块"
-      ],
-      "bearConcepts": [
-        "高估值成长股"
-      ],
-      "bullIndustries": [
-        "银行",
-        "黄金"
-      ],
-      "bearIndustries": [
-        "高杠杆地产"
-      ],
-      "heat": 24,
-      "momentum": 36,
-      "_auto": true
-    },
-    {
-      "id": "ab14tk3qh",
-      "title": "据美国哥伦比亚广播公司报道，一辆汽车27日下午冲入美国洛杉矶地区西好莱坞一座加油站，引发剧烈爆炸和大火，造成多人受伤、至少3辆汽车被烧毁。 报道称，加油站的油泵已被关闭。事故原因…",
+      "id": "ab1u36ctu",
+      "title": "伊朗海军司令：伊军事行动最终目标是将美国逐出西亚",
       "tag": "地缘/政治",
       "region": "美国",
       "concept": "defense",
-      "time": "2026-11-28 09:09",
-      "datetime": "2026-11-28 09:09",
-      "source": "新浪7×24",
-      "url": "https://finance.sina.cn/7x24/2026-11-28/detail-inkafyfp2740808.d.html",
-      "summary": "据美国哥伦比亚广播公司报道，一辆汽车27日下午冲入美国洛杉矶地区西好莱坞一座加油站，引发剧烈爆炸和大火，造成多人受伤、至少3辆汽车被烧毁。 报道称，加油站的油泵已被关闭。事故原因和伤亡人数正在调查中。（新华社）",
+      "time": "2026-11-28 18:23",
+      "datetime": "2026-11-28 18:23",
+      "source": "财联社",
+      "url": "https://www.cls.cn/detail/2547259",
+      "summary": "【伊朗海军司令：伊军事行动最终目标是将美国逐出西亚】财联社11月28日电，据伊朗塔斯尼姆通讯社28日报道，伊朗海军司令伊拉尼日前表示，伊朗“不久后”将开展多项军事行动，“最终目标”是将美国逐出整个西亚地区。伊拉尼27日接受伊朗媒体采访时说，伊朗最高领袖穆杰塔巴已向伊朗武装力量下达指示，取消军事行动的地理范围限制。伊朗武装力量已接到相关任务指令，将于不久后执行。随着地理范围限制…",
       "relatedStocks": [
         "军工",
         "黄金"
@@ -136,440 +39,34 @@
       "_auto": true
     },
     {
-      "id": "ab42jypm",
-      "title": "大宗商品综述：油价震荡 中东袭击事件增多 铜和金均随科技股升",
-      "tag": "能源/资源",
+      "id": "ab1sy50ml",
+      "title": "阿富汗库纳尔省爆炸事件已致7死97伤",
+      "tag": "地缘/政治",
       "region": "全球",
-      "concept": "energy",
-      "time": "2026-11-28 06:26",
-      "datetime": "2026-11-28 06:26",
-      "source": "环球市场播报",
-      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-28/doc-inkaftxr2790176.shtml",
-      "summary": "原油走势震荡，交投清淡，中东能源基础设施和油轮遇袭事件增多，加剧市场对供应的担忧。伦铜创4月份以来最大涨幅，延续了本周早些时候自11个月低点反弹的走势...",
-      "relatedStocks": [
-        "中国石油",
-        "紫金矿业"
-      ],
-      "bullConcepts": [
-        "油气",
-        "贵金属"
-      ],
-      "bearConcepts": [
-        "高耗能制造"
-      ],
-      "bullIndustries": [
-        "石油开采",
-        "贵金属"
-      ],
-      "bearIndustries": [
-        "航空运输",
-        "化工"
-      ],
-      "heat": 33,
-      "momentum": 18,
-      "_auto": true
-    },
-    {
-      "id": "abpr92im",
-      "title": "11月28日美股成交额前20：Anthropic收涨10.98% 创下11月19日开始交易以来的最高收盘价",
-      "tag": "科技/AI",
-      "region": "美国",
-      "concept": "aiCapex",
-      "time": "2026-11-28 03:52",
-      "datetime": "2026-11-28 03:52",
-      "source": "环球市场播报",
-      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-28/doc-inkafiis7655547.shtml",
-      "summary": "周二美股成交额第2名英伟达收涨0.80%，成交269.76亿美元。 美国总统特朗普谈及推动黄仁勋复职一事时称：“我认为我为美国、甚至全世界做了一件大好事。",
-      "relatedStocks": [
-        "英伟达",
-        "微软",
-        "台积电"
-      ],
-      "bullConcepts": [
-        "AI算力",
-        "半导体",
-        "国产替代"
-      ],
-      "bearConcepts": [
-        "传统软件"
-      ],
-      "bullIndustries": [
-        "半导体",
-        "AI应用",
-        "算力基础设施"
-      ],
-      "bearIndustries": [
-        "传统IT服务"
-      ],
-      "heat": 33,
-      "momentum": 18,
-      "_auto": true
-    },
-    {
-      "id": "ab1i9n257",
-      "title": "印尼警方逮捕三名涉嫌操纵股价人员，涉案获利高达10万亿印尼盾，MSCI市场降级风险持续",
-      "tag": "能源/资源",
-      "region": "全球",
-      "concept": "energy",
-      "time": "2026-11-27 16:14",
-      "datetime": "2026-11-27 16:14",
-      "source": "环球市场播报",
-      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-27/doc-inkaefwk5593152.shtml",
-      "summary": "11月27日，印度尼西亚警方宣布逮捕三名涉嫌操纵煤炭及能源企业Dian Swastatika Sentosa（DSSA）股票交易的人员。警方称，涉案人员通过境内外证券账户人为制造交易量...",
-      "relatedStocks": [
-        "中国石油",
-        "紫金矿业"
-      ],
-      "bullConcepts": [
-        "油气",
-        "贵金属"
-      ],
-      "bearConcepts": [
-        "高耗能制造"
-      ],
-      "bullIndustries": [
-        "石油开采",
-        "贵金属"
-      ],
-      "bearIndustries": [
-        "航空运输",
-        "化工"
-      ],
-      "heat": 24,
-      "momentum": 18,
-      "_auto": true
-    },
-    {
-      "id": "ab14o29p5",
-      "title": "欧洲央行管委武伊契奇表示，若无意外，12月加息押注很可能是对的。",
-      "tag": "金融/宏观",
-      "region": "中国",
-      "concept": "bank",
-      "time": "2026-11-28 07:02",
-      "datetime": "2026-11-28 07:02",
+      "concept": "macro",
+      "time": "2026-11-28 17:21",
+      "datetime": "2026-11-28 17:21",
       "source": "财联社",
-      "url": "https://www.cls.cn/detail/2547142",
-      "summary": "欧洲央行管委武伊契奇表示，若无意外，12月加息押注很可能是对的。",
+      "url": "https://www.cls.cn/detail/2547247",
+      "summary": "财联社11月28日电，阿富汗库纳尔省省立医院方面28日证实，该省首府阿萨达巴德市当天发生的爆炸事件已造成7人死亡、97人受伤。",
       "relatedStocks": [
-        "美股科技",
+        "军工",
         "黄金"
       ],
       "bullConcepts": [
-        "黄金",
-        "防御板块"
+        "军工",
+        "避险资产"
       ],
       "bearConcepts": [
-        "高估值成长股"
+        "风险资产"
       ],
       "bullIndustries": [
-        "银行",
+        "军工",
         "黄金"
       ],
       "bearIndustries": [
-        "高杠杆地产"
-      ],
-      "heat": 33,
-      "momentum": 18,
-      "_auto": true
-    },
-    {
-      "id": "ab2ntyw3",
-      "title": "美国空军核心云平台Cloud One遭黑客入侵，内部人士警告“事态极其严重”",
-      "tag": "宏观/综合",
-      "region": "美国",
-      "concept": "usMacro",
-      "time": "2026-11-28 02:17",
-      "datetime": "2026-11-28 02:17",
-      "source": "市场资讯",
-      "url": "https://finance.sina.com.cn/roll/2026-11-28/doc-inkafiiw5276198.shtml",
-      "summary": "美国军方最大云平台之一首次被公开披露遭突破，事件发生在平台升级期间，目前尚不清楚攻击者的身份，也无法确认其是否实际获取了数据。",
-      "relatedStocks": [
-        "宽基指数"
-      ],
-      "bullConcepts": [
-        "防御板块"
-      ],
-      "bearConcepts": [
-        "周期股"
-      ],
-      "bullIndustries": [
-        "公用事业"
-      ],
-      "bearIndustries": [
-        "顺周期"
-      ],
-      "heat": 24,
-      "momentum": 18,
-      "_auto": true
-    },
-    {
-      "id": "ab132kh7o",
-      "title": "电科数字索赔持续推进 多批股民已提交起诉",
-      "tag": "宏观/综合",
-      "region": "全球",
-      "concept": "macro",
-      "time": "2026-11-27 17:59",
-      "datetime": "2026-11-27 17:59",
-      "source": "市场资讯",
-      "url": "https://finance.sina.com.cn/stock/gmwq/rightscase/2026-11-27/doc-inkaenef3207459.shtml",
-      "summary": "近日，投资者诉中电科数字技术股份有限公司（简称电科数字，代码：600850）证券虚假陈述案持续推进。 曾代理投资者告赢150余家上市公司并获赔的浙江裕丰律师事务所厉健律师...",
-      "relatedStocks": [
-        "宽基指数"
-      ],
-      "bullConcepts": [
-        "防御板块"
-      ],
-      "bearConcepts": [
-        "周期股"
-      ],
-      "bullIndustries": [
-        "公用事业"
-      ],
-      "bearIndustries": [
-        "顺周期"
-      ],
-      "heat": 38,
-      "momentum": 18,
-      "_auto": true
-    },
-    {
-      "id": "ab11sfz1p",
-      "title": "下周摘牌，科创板首例市值退市！四种财务造假手法曝光",
-      "tag": "宏观/综合",
-      "region": "全球",
-      "concept": "macro",
-      "time": "2026-11-27 22:01",
-      "datetime": "2026-11-27 22:01",
-      "source": "上海证券报",
-      "url": "https://finance.sina.com.cn/stock/s/2026-11-27/doc-inkaewtw7754131.shtml",
-      "summary": "11月27日晚间，*ST卓然（688121）公告称，公司收到上交所终止上市决定，因股票连续20个交易日每日收盘市值均低于3亿元，触发科创板股票上市规则规定的终止上市情形。",
-      "relatedStocks": [
-        "宽基指数"
-      ],
-      "bullConcepts": [
-        "防御板块"
-      ],
-      "bearConcepts": [
-        "周期股"
-      ],
-      "bullIndustries": [
-        "公用事业"
-      ],
-      "bearIndustries": [
-        "顺周期"
-      ],
-      "heat": 51,
-      "momentum": 18,
-      "_auto": true
-    },
-    {
-      "id": "ab1ozvyww",
-      "title": "科创板首个市值退市股，下周摘牌，股价从48元跌到4毛",
-      "tag": "宏观/综合",
-      "region": "全球",
-      "concept": "macro",
-      "time": "2026-11-27 21:18",
-      "datetime": "2026-11-27 21:18",
-      "source": "21世纪经济报道",
-      "url": "https://finance.sina.com.cn/stock/s/2026-11-27/doc-inkaewtw7729696.shtml",
-      "summary": "21财经雷达数据显示，11月27日，*ST卓然（688121.SH）公告称，公司收到上交所终止上市决定，因股票连续20个交易日每日收盘市值均低于3亿元...",
-      "relatedStocks": [
-        "宽基指数"
-      ],
-      "bullConcepts": [
-        "防御板块"
-      ],
-      "bearConcepts": [
-        "周期股"
-      ],
-      "bullIndustries": [
-        "公用事业"
-      ],
-      "bearIndustries": [
-        "顺周期"
-      ],
-      "heat": 51,
-      "momentum": 18,
-      "_auto": true
-    },
-    {
-      "id": "ab1gad0um",
-      "title": "原油：布伦特震荡 市场聚焦中东能源设施和油轮遇袭事件增多",
-      "tag": "金融/宏观",
-      "region": "美国",
-      "concept": "usFinance",
-      "time": "2026-11-28 06:01",
-      "datetime": "2026-11-28 06:01",
-      "source": "环球市场播报",
-      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-28/doc-inkafprp0817109.shtml",
-      "summary": "原油走势震荡，交投清淡，中东能源基础设施和油轮遇袭事件增多，加剧市场对供应的担忧。 全球基准布伦特下跌约1%，结算价接近每桶95美元，但本周仍录得上涨。",
-      "relatedStocks": [
-        "美股科技",
-        "黄金"
-      ],
-      "bullConcepts": [
-        "黄金",
-        "防御板块"
-      ],
-      "bearConcepts": [
-        "高估值成长股"
-      ],
-      "bullIndustries": [
-        "银行",
-        "黄金"
-      ],
-      "bearIndustries": [
-        "高杠杆地产"
-      ],
-      "heat": 24,
-      "momentum": 18,
-      "_auto": true
-    },
-    {
-      "id": "ab1fnq6op",
-      "title": "ST联光索赔持续推进 后续股民仍可起诉",
-      "tag": "宏观/综合",
-      "region": "全球",
-      "concept": "macro",
-      "time": "2026-11-27 17:59",
-      "datetime": "2026-11-27 17:59",
-      "source": "市场资讯",
-      "url": "https://finance.sina.com.cn/stock/gmwq/rightscase/2026-11-27/doc-inkaenef3207850.shtml",
-      "summary": "近日，投资者诉江西联创光电科技股份有限公司（简称：联创光电、ST联光，代码：600363）证券虚假陈述案持续推进。 原告代理人之一、浙江裕丰律师事务所厉健律师表示...",
-      "relatedStocks": [
-        "宽基指数"
-      ],
-      "bullConcepts": [
-        "防御板块"
-      ],
-      "bearConcepts": [
-        "周期股"
-      ],
-      "bullIndustries": [
-        "公用事业"
-      ],
-      "bearIndustries": [
-        "顺周期"
-      ],
-      "heat": 29,
-      "momentum": 18,
-      "_auto": true
-    },
-    {
-      "id": "ab1c49k7b",
-      "title": "*ST瑞茂逼近面值退市，索赔登记启动",
-      "tag": "宏观/综合",
-      "region": "全球",
-      "concept": "macro",
-      "time": "2026-11-27 18:13",
-      "datetime": "2026-11-27 18:13",
-      "source": "市场资讯",
-      "url": "https://finance.sina.com.cn/stock/gmwq/rightscase/2026-11-27/doc-inkaeneh5548080.shtml",
-      "summary": "2026年11月26日，沪市主板公司*ST瑞茂（600180）收盘报0.67元，当日振幅巨大，以跌停价0.55元开盘、涨停价0.67元收盘，但收盘价已连续11个交易日低于1元。",
-      "relatedStocks": [
-        "宽基指数"
-      ],
-      "bullConcepts": [
-        "防御板块"
-      ],
-      "bearConcepts": [
-        "周期股"
-      ],
-      "bullIndustries": [
-        "公用事业"
-      ],
-      "bearIndustries": [
-        "顺周期"
-      ],
-      "heat": 29,
-      "momentum": 18,
-      "_auto": true
-    },
-    {
-      "id": "ab1i9t2fg",
-      "title": "0.67元的ST瑞茂，退市倒计时里还有一笔索赔",
-      "tag": "宏观/综合",
-      "region": "全球",
-      "concept": "macro",
-      "time": "2026-11-27 18:13",
-      "datetime": "2026-11-27 18:13",
-      "source": "市场资讯",
-      "url": "https://finance.sina.com.cn/stock/gmwq/rightscase/2026-11-27/doc-inkaenea7879259.shtml",
-      "summary": "11月26日，*ST瑞茂（600180）以0.55元的跌停价开盘，最终收在0.67元的涨停价上，走出一个地天板。热闹归热闹，收盘价已经连续11个交易日低于1元；当晚公司第三次发布面值退...",
-      "relatedStocks": [
-        "宽基指数"
-      ],
-      "bullConcepts": [
-        "防御板块"
-      ],
-      "bearConcepts": [
-        "周期股"
-      ],
-      "bullIndustries": [
-        "公用事业"
-      ],
-      "bearIndustries": [
-        "顺周期"
-      ],
-      "heat": 24,
-      "momentum": 18,
-      "_auto": true
-    },
-    {
-      "id": "abs4fr68",
-      "title": "摘星不摘帽，沐邦投资者的索赔才刚进入实质阶段",
-      "tag": "宏观/综合",
-      "region": "全球",
-      "concept": "macro",
-      "time": "2026-11-27 18:13",
-      "datetime": "2026-11-27 18:13",
-      "source": "市场资讯",
-      "url": "https://finance.sina.com.cn/stock/gmwq/rightscase/2026-11-27/doc-inkaenef3216659.shtml",
-      "summary": "11月26日晚，*ST沐邦（603398）公告，上交所已同意撤销对公司股票实施的退市风险警示、继续实施其他风险警示，股票于11月27日停牌一天，11月30日起简称变更为ST沐邦。",
-      "relatedStocks": [
-        "宽基指数"
-      ],
-      "bullConcepts": [
-        "防御板块"
-      ],
-      "bearConcepts": [
-        "周期股"
-      ],
-      "bullIndustries": [
-        "公用事业"
-      ],
-      "bearIndustries": [
-        "顺周期"
-      ],
-      "heat": 24,
-      "momentum": 18,
-      "_auto": true
-    },
-    {
-      "id": "ab1cvxcyu",
-      "title": "摘牌八个月后首笔赔偿到账，奥维通信索赔仍在继续",
-      "tag": "宏观/综合",
-      "region": "全球",
-      "concept": "macro",
-      "time": "2026-11-27 18:08",
-      "datetime": "2026-11-27 18:08",
-      "source": "市场资讯",
-      "url": "https://finance.sina.com.cn/stock/gmwq/rightscase/2026-11-27/doc-inkaeneh5543476.shtml",
-      "summary": "11月以来，奥维通信（002231）索赔案陆续传出进展：前期起诉的部分投资者已收到赔偿款，沈阳市中级人民法院一审判决认定，公司2025年1月的业绩预告对营业收入作出重大不实...",
-      "relatedStocks": [
-        "宽基指数"
-      ],
-      "bullConcepts": [
-        "防御板块"
-      ],
-      "bearConcepts": [
-        "周期股"
-      ],
-      "bullIndustries": [
-        "公用事业"
-      ],
-      "bearIndustries": [
-        "顺周期"
+        "航空",
+        "旅游"
       ],
       "heat": 24,
       "momentum": 18,
@@ -885,6 +382,35 @@
       ],
       "heat": 82,
       "momentum": 80
+    },
+    {
+      "id": "b10",
+      "title": "Anthropic 拟11月16日当周登陆纳斯达克IPO",
+      "tag": "企业活动/AI",
+      "region": "美国",
+      "concept": "aiCapex",
+      "time": "2026-11-16（预计）",
+      "datetime": "2026-11-08 09:00",
+      "source": "路透/SEC S-1",
+      "summary": "Anthropic已公开递交S-1，潜在买家讨论1.2万亿至1.3万亿美元估值区间；三季度营收约169.6亿美元、环比增45%，但算力支出承诺已近8954亿美元。IPO为美股AI链重要风向标。",
+      "relatedStocks": [
+        "AI",
+        "美股"
+      ],
+      "bullConcepts": [
+        "AI算力",
+        "云计算",
+        "AI应用"
+      ],
+      "bearConcepts": [],
+      "bullIndustries": [
+        "AI",
+        "云计算",
+        "算力"
+      ],
+      "bearIndustries": [],
+      "heat": 75,
+      "momentum": 58
     },
     {
       "id": "b11",
