@@ -11988,7 +11988,7 @@ const app = createApp({
 
     // ===== 20261117n：影响力事件时间口径改为「全网最早报道时间」=====
     // 需求：影响力事件下的时间逻辑，以全网最早的报道时间为准进行逻辑筛选。
-    // 实现：加载当前筛选窗口内的全网新闻快照（11 平台、每条带精确 time），用事件的
+    // 实现：加载当前筛选窗口内的全网新闻集合（11 平台快照 + 同花顺实时快讯 + 今日头条新闻，每条带精确 time），用事件的
     //       相关股票 / 标题关键词匹配报道，取最早一条的 time 作为该事件的时间；
     //       命中 → date = 报道日期、reportTime = 完整时间、dateSource='report'；
     //       未命中 → 回退到重锚日期、dateSource='fallback'（精选事件不因快照缺口消失）。
@@ -12029,9 +12029,15 @@ const app = createApp({
       _inflNewsPromise = (async () => {
       _inflNewsLoading = true;
       try {
-        // 只加载最近一个月（30 天自然日）的快照，越界即旧闻，不参与锚定
+        // 只加载最近一个月（30 天自然日）的新闻，越界即旧闻，不参与锚定。
+        // 20261128a：新闻集合在 11 平台每日快照之外，补充两类可筛选来源——
+        //   ① 同花顺 7×24 实时快讯（StockAPI.fetchThsLiveBriefs，滚动缓冲约 2~3 周；更早日期仍由每日快照覆盖）；
+        //   ② 今日头条新闻（briefs-今日头条-日期.json，按来源拆分的完整头条新闻集合）。
+        // 用途与原有快照完全一致：语义首报锚定 + 自动新鲜事件聚类 + 近 N 交易日窗口筛选。
         const dates = inflDateRangeISO(dateOffsetISO(30), todayISO()).reverse();
         const todayKey = todayISO();
+        const fromMs = new Date(String(dateOffsetISO(30)) + 'T00:00:00').getTime();
+        const toMs = Date.now();
         const flat = [];
         // 20261120h：性能优化（口径不变）——
         //   ① 30 个快照请求一次并发（HTTP/2 多路复用；旧实现 15 个一批串行两轮，多等一个 RTT）；
@@ -12039,13 +12045,24 @@ const app = createApp({
         //      max-age=600 + ETag，10 分钟内零请求、过期后 304 协商）。历史文件由抓取脚本
         //      「只写当天、永不回写」（fetch-hot-topics.mjs main() 仅 isToday 才落盘），缓存安全；
         //      只有当天文件继续 no-store 强制拉新。重复刷新下载量从 ~4.7MB 降到当天 ~150KB。
-        const snaps = await Promise.all(dates.map(async d => {
+        const dailyPromise = Promise.all(dates.map(async d => {
           try {
             const r = await fetch('./data/hot-topics/' + d + '.json',
               { cache: d === todayKey ? 'no-store' : 'default' });
             return r.ok ? await r.json() : null;
           } catch (e) { return null; }
         }));
+        const toutiaoPromise = Promise.all(dates.map(async d => {
+          try {
+            const r = await fetch('./data/hot-topics/briefs-' + encodeURIComponent('今日头条') + '-' + d + '.json',
+              { cache: d === todayKey ? 'no-store' : 'default' });
+            return r.ok ? await r.json() : null;
+          } catch (e) { return null; }
+        }));
+        const thsPromise = (typeof StockAPI !== 'undefined' && StockAPI && StockAPI.fetchThsLiveBriefs)
+          ? StockAPI.fetchThsLiveBriefs({ maxPages: 12, untilTime: fromMs, endTime: toMs }).catch(() => [])
+          : Promise.resolve([]);
+        const [snaps, toutiaoSnaps, thsLive] = await Promise.all([dailyPromise, toutiaoPromise, thsPromise]);
         snaps.forEach(s => {
           if (!s || !s.sources) return;
           // 20261119b：带上来源平台名（src.name），供自动聚合事件展示「来源」用
@@ -12056,8 +12073,28 @@ const app = createApp({
             });
           });
         });
-        flat.sort((a, b) => String(a.time).localeCompare(String(b.time)));  // 升序：最早在前
-        _inflNewsFlat = flat;
+        // 今日头条：按来源拆分的完整新闻集合（每日快照只保留 TopN，这里补齐全量）
+        toutiaoSnaps.forEach(j => {
+          const srcName = String((j && j.sourceName) || '今日头条');
+          ((j && j.items) || []).forEach(it => {
+            if (it && it.text && it.time) flat.push({ text: String(it.text), time: String(it.time), src: srcName });
+          });
+        });
+        // 同花顺快讯：实时滚动缓冲补充最新快讯（失败不影响原快照口径）
+        (thsLive || []).forEach(it => {
+          if (it && it.text && it.time) flat.push({ text: String(it.text), time: String(it.time), src: '同花顺快讯' });
+        });
+        // 新增来源可能与快照重复；按「正文 + 分钟级时间」去重，保留最早报道，不改变首报口径
+        const seenNews = new Set();
+        const uniqFlat = [];
+        for (const it of flat) {
+          const key = String(it.text || '').replace(/\s+/g, '').slice(0, 180) + '|' + String(it.time || '').slice(0, 16);
+          if (!key || seenNews.has(key)) continue;
+          seenNews.add(key);
+          uniqFlat.push(it);
+        }
+        uniqFlat.sort((a, b) => String(a.time).localeCompare(String(b.time)));  // 升序：最早在前
+        _inflNewsFlat = uniqFlat;
         _inflNewsAllLoaded = true;
         _inflSeedRepVer++;                       // 20261120h：新闻重建 → seed 首报缓存全部失效
         _inflSeedRepCache.clear();
