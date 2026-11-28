@@ -994,9 +994,13 @@ body {
 .infl-cnimp.bull b { color: #dc2626; }
 .infl-cnimp.bear { color: #15803d; background: #f0fdf4; border-color: #bbf7d0; }
 .infl-cnimp.bear b { color: #16a34a; }
-/* 20261128d：影响天数 chip——新闻在所属子版块范围内的预计影响交易日数 */
+/* 20261128e：影响天数 chip——量化多因子预测的利好概念预计上涨交易日数 */
 .infl-impact-days { padding: 1px 8px; border-radius: 999px; font-size: 12px; font-weight: 700; color: #c2410c; background: #fff7ed; border: 1px solid #fed7aa; white-space: nowrap; }
 .infl-impact-days b { color: #ea580c; }
+.infl-days-level { display: inline-block; margin-left: 5px; padding: 0 5px; border-radius: 4px; font-size: 10px; line-height: 16px; vertical-align: 1px; background: #ffedd5; color: #9a3412; border: 1px solid #fed7aa; }
+.infl-days-level.lv-S { color: #fff; background: #dc2626; border-color: #b91c1c; }
+.infl-days-level.lv-A { color: #fff; background: #ea580c; border-color: #c2410c; }
+.infl-days-level.lv-B { color: #fff; background: #d97706; border-color: #b45309; }
 .infl-surge.surge-hot { color: #b91c1c; background: #fef2f2; border-color: #fecaca; }
 .infl-surge.surge-warm { color: #c2410c; background: #fff7ed; border-color: #fed7aa; }
 .infl-surge.surge-normal { color: #1d4ed8; background: #eff6ff; border-color: #dbeafe; }

@@ -11956,36 +11956,103 @@ const app = createApp({
     /** 在 resolve 之后给事件挂上 cnImp（重要程度 + 方向），供排序与卡片展示 */
     function withCnImp(e) { e.cnImp = computeChinaImpact(e); return e; }
 
-    /** 20261128d：影响天数 = 此条新闻在所属子版块范围内的预计影响交易日数（1~30）。
-     *  优先用事件自带的结构化字段 / 起止交易日；否则按重要程度 + 受众广度 + 事件性质 + 新闻池报道广度估算。 */
-    function computeImpactDays(e) {
-      const ev = e || {};
-      const explicit = Number((ev.impact && ev.impact.days) || ev.impactDays || ev.durationDays || 0);
-      if (explicit > 0) return Math.max(1, Math.min(30, Math.round(explicit)));
-      const s = String((ev.impact && ev.impact.from) || ev.startDate || ev.date || '');
-      const t = String((ev.impact && ev.impact.to) || ev.endDate || '');
-      if (/^\d{4}-\d{2}-\d{2}/.test(s) && /^\d{4}-\d{2}-\d{2}/.test(t) && t >= s) {
-        let n = 0, guard = 0;
-        const cur = new Date(s.slice(0, 10) + 'T12:00:00');
-        const end = new Date(t.slice(0, 10) + 'T12:00:00');
-        while (cur <= end && guard++ < 90) {
-          if (isTradingDayCN(cur)) n++;
-          cur.setDate(cur.getDate() + 1);
-        }
-        if (n > 0) return Math.max(1, Math.min(30, n));
+    /** 20261128e：影响天数 = DeepSeek 式量化多因子预测的「该新闻驱动的相关概念预计上涨交易日数」。
+     *  量化假设（事件 alpha 衰减模型）：题材持续天数 = 催化层级 × 叙事想象空间 × 板块接力容量 × 市场热度
+     *    × 事件新鲜度（半衰期），再按「预期 vs 兑现」做反转校准，最后非线性映射到交易日。
+     *  六因子各 0~100、加权得综合分 S(0~100)，S 非线性映射 1~10 交易日（A股题材炒作多数 1~5 日，强政策主题可达 8~10）。
+     *  全部分项写入 detail，供卡片 title 悬停查看——量化模型必须可解释、可复现、无未来函数。
+     *  因子权重：催化层级 .26 / 叙事想象 .26 / 板块容量 .16 / 市场热度 .16 / 事件新鲜度 .16；确定性为乘性校准 .85~1.15。 */
+    const IMPACT_GENERIC_CONCEPT = new Set(['券商','资本市场','防御板块','大盘','权重','蓝筹','指数','A股','市场','金融','地产','消费','医药','商业航天']);
+    /** 首报距今的交易日数（跳周末）；用于新鲜度半衰期，避免用自然日夸大旧题材的剩余空间 */
+    function _impactTradingAge(fromISO) {
+      const s = String(fromISO || '').slice(0, 10);
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(s)) return 99;
+      const today = todayISO();
+      if (s >= today) return 0;
+      const d = new Date(s + 'T12:00:00');
+      let n = 0, guard = 0;
+      while (_isoOf(d) < today && guard++ < 62) {
+        d.setDate(d.getDate() + 1);
+        if (d.getDay() !== 0 && d.getDay() !== 6) n++;
       }
-      const imp = Number((ev.cnImp && ev.cnImp.score) || 0);
-      let days = 1;
-      if (imp >= 70) days += 2; else if (imp >= 50) days += 1;
-      const ppl = Number(ev.affectedPeople) || 0;
-      if (ppl >= 1e8) days += 2; else if (ppl >= 1e7) days += 1;
-      const text = [ev.title, ev.summary, ev.conceptName].filter(Boolean).join(' ');
-      if (/政策|规划|部署|国常会|国务院|监管|法案|条例|协议|落地|实施|改革|中长期/.test(text)) days += 2;
-      else if (/突破|发布会|涨价|涨停|大涨|下跌|财报|会议|会谈/.test(text)) days += 1;
-      const rep = Number((ev.cnImp && ev.cnImp.detail && ev.cnImp.detail.reports) || ev.autoReports || 0);
-      if (rep >= 4) days += 1;
-      return Math.max(1, Math.min(15, Math.round(days)));
+      return n;
     }
+    function _impactCatalyst(t) {
+      if (/国常会|国务院常务|中央经济工作会议|政治局|五年规划|全会|习近平|李强/.test(t)) return { v: 95, k: '国家最高层决策' };
+      if (/国务院|中共中央|发改委|工信部|财政部|央行|人民银行|证监会|国资委|科技部|商务部|部委/.test(t)) return { v: 78, k: '中央部委政策' };
+      if (/规划|方案|政策|改革|试点|部署|条例|法案|中长期|指导意见/.test(t)) return { v: 66, k: '产业政策' };
+      if (/突破|首次|量产|中标|订单|签约|投产|上线/.test(t)) return { v: 58, k: '产业事件' };
+      if (/涨价|提价|供需|缺货|减产|价格/.test(t)) return { v: 52, k: '供需变化' };
+      if (/财报|业绩|会议|会谈|发布会|公告/.test(t)) return { v: 38, k: '公司/一般事件' };
+      return { v: 30, k: '一般新闻' };
+    }
+    function _impactNarrative(t) {
+      if (/国产替代|自主可控|卡脖子|中美|出口管制|断供|实体清单|制裁|国产化|信创/.test(t)) return { v: 95, k: '国产替代/中美博弈叙事' };
+      if (/人工智能|AI|算力|机器人|低空经济|商业航天|可控核聚变|量子|新质生产力|大模型|自动驾驶|脑机/.test(t)) return { v: 85, k: '前沿科技叙事' };
+      if (/首次|全球首|突破|从0到1|颠覆|新赛道|原创|首创/.test(t)) return { v: 78, k: '突破性叙事' };
+      if (/半导体|芯片|新能源|储能|光伏|锂电|创新药|军工|大飞机|北斗/.test(t)) return { v: 72, k: '国家战略产业叙事' };
+      if (/并购重组|央企|国企改革|整合|重组/.test(t)) return { v: 66, k: '国企改革叙事' };
+      if (/涨价|提价|订单|中标|业绩|财报|营收|净利/.test(t)) return { v: 50, k: '业绩驱动' };
+      return { v: 40, k: '一般叙事' };
+    }
+    function _impactBreadth(ev) {
+      const cs = (ev.bullConcepts || []).filter(x => !IMPACT_GENERIC_CONCEPT.has(String(x))).length;
+      const is = (ev.bullIndustries || []).length;
+      const ss = (ev.relatedStocks || []).length;
+      const v = Math.max(15, Math.min(100, cs * 13 + is * 9 + ss * 5));
+      return { v, k: '利好概念' + cs + '·行业' + is + '·个股' + ss };
+    }
+    function _impactHeat(ev) {
+      const rep = Number((ev.cnImp && ev.cnImp.detail && ev.cnImp.detail.reports) || ev.autoReports || 0);
+      let v = rep >= 6 ? 95 : rep >= 4 ? 82 : rep >= 2 ? 66 : rep >= 1 ? 52 : 36;
+      const share = parseFloat(String(ev.investorShare || '')) || 0;
+      if (share >= 40) v += 8; else if (share >= 20) v += 4;
+      const ppl = Number(ev.affectedPeople) || 0;
+      if (ppl >= 1e8) v += 6; else if (ppl >= 1e7) v += 3;
+      if (rep >= 8) v -= 12;   // 量化反转：报道过热往往接近情绪顶，剩余上涨空间打折
+      return { v: Math.max(20, Math.min(100, v)), k: '同题报道' + rep + '条·股民占比' + share + '%' };
+    }
+    function _impactFresh(ev) {
+      const iso = ev.reportTime || ev._timeKey || ev.date || ev.datetime || ev.time;
+      const age = _impactTradingAge(iso);
+      const v = age <= 0 ? 100 : age === 1 ? 90 : age === 2 ? 76 : age === 3 ? 62 : age === 4 ? 48 : 32;
+      return { v, k: '首报距今' + age + '交易日' };
+    }
+    function _impactCertainty(t) {
+      if (/拟|计划|目标|预期|预计|有望|力争|传闻|消息/.test(t)) return { m: 1.10, k: '预期驱动·想象空间大' };
+      if (/兑现|已实现|完成/.test(t)) return { m: 0.90, k: '利好兑现·易出尽' };
+      return { m: 1.00, k: '中性' };
+    }
+    function computeImpactDaysDetailed(e) {
+      const ev = e || {};
+      const t = [ev.title, ev.originTitle, ev.summary, ev.conceptName]
+        .concat(ev.bullConcepts || [], ev.bullIndustries || []).filter(Boolean).join(' ');
+      const dir = (ev.cnImp && ev.cnImp.dir) || 'bull';
+      const catalyst = _impactCatalyst(t);
+      const narrative = _impactNarrative(t);
+      const breadth = _impactBreadth(ev);
+      const heat = _impactHeat(ev);
+      const freshness = _impactFresh(ev);
+      const certainty = _impactCertainty(t);
+      const s0 = catalyst.v * 0.26 + narrative.v * 0.26 + breadth.v * 0.16 + heat.v * 0.16 + freshness.v * 0.16;
+      const score = Math.max(0, Math.min(100, Math.round(s0 * certainty.m)));
+      let days = score >= 88 ? 10 : score >= 80 ? 9 : score >= 72 ? 8 : score >= 64 ? 7
+        : score >= 56 ? 6 : score >= 48 ? 5 : score >= 42 ? 4 : score >= 38 ? 3 : score >= 24 ? 2 : 1;
+      // 结构化预计天数仅在文本因子整体失信号时兜底（正常一律由量化模型决定）
+      const explicit = Number((ev.impact && ev.impact.days) || ev.impactDays || ev.durationDays || 0);
+      if (explicit > 0 && catalyst.v <= 30 && narrative.v <= 40 && breadth.v <= 20) {
+        days = Math.max(1, Math.min(15, Math.round(explicit)));
+      }
+      const level = score >= 80 ? 'S' : score >= 64 ? 'A' : score >= 48 ? 'B' : 'C';
+      const why = catalyst.k + ' + ' + narrative.k + ' + ' + breadth.k + '；' + freshness.k + '；' + certainty.k;
+      return {
+        days, score, level, dir,
+        dirWord: dir === 'bear' ? '利空概念预计发酵' : '利好概念预计上涨',
+        why: why,
+        f: { catalyst: catalyst.v, narrative: narrative.v, breadth: breadth.v, heat: heat.v, freshness: freshness.v, certainty: certainty.m }
+      };
+    }
+    function computeImpactDays(e) { return computeImpactDaysDetailed(e).days; }
 
     // ===== 20261119a：语义首报锚定引擎（影响力事件 / 未来事件 两个板块共用） =====
     // 用户口径：搜索范围=最近一个月发生的全网新闻；「文字不是百分比相同但含义相同」=同一新闻；
@@ -12846,7 +12913,9 @@ const app = createApp({
       const filtered = [...seedFiltered, ...autoForReg]
         .map(e => {
           const x = inflWithBullBear(withCnImp(resolveInfluence(e)));
-          x.impactDays = computeImpactDays(x);   // 20261128d：影响天数（按所属子版块范围估算）
+          const _id = computeImpactDaysDetailed(x);   // 20261128e：量化多因子预测利好概念上涨交易日
+          x.impactDays = _id.days;
+          x.impactDaysInfo = _id;
           return x;
         });
       inflEvents.value = sortInfluence(filtered);
@@ -19580,7 +19649,7 @@ const app = createApp({
       hotRankTab, setHotRankTab,
       inflRegion, inflEvents, inflLoading, inflError, inflDate, inflSortBy, setInflRegion, setInflSort, sortLabel, refreshInfluence, regionLabel, fmtAffected, impactScopeLabel,
       // 20261128b/c：地域判定与「重要程度」计算纯函数，暴露供验证/排查（只读、无副作用）
-      inflAutoRegionOf, inflStrictRegionOf, computeChinaImpact, computeImpactDays, inflImportanceScopeOf,
+      inflAutoRegionOf, inflStrictRegionOf, computeChinaImpact, computeImpactDays, computeImpactDaysDetailed, inflImportanceScopeOf,
       // 20261109i：影响力事件只统计距今 10 日内（含今天），窗口标签用于面板展示
       INFL_WINDOW_DAYS, inflWindowLabel, inflWindowDays,
       // 20261110c：新闻范围（近 N 日）——两个面板各自独立，互不影响

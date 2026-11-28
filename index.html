@@ -10,12 +10,12 @@
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
   <title>股市信息分析系统</title>
-  <link rel="stylesheet" href="css/style.css?v=20261128d">
+  <link rel="stylesheet" href="css/style.css?v=20261128e">
   <!-- Vue 3 全局构建版（v3.4.21 · 自托管）
        原先走 unpkg.com CDN：国内网络对 unpkg 的连通性不稳定，一旦该请求长时间挂起，
        <head> 里的阻塞脚本会让整页停在白屏、后续 auth-boot.js 根本不会执行。
        改为同源托管后，启动链路不再依赖任何第三方 CDN。 -->
-  <script src="js/vue.global.prod.js?v=20261128d"></script>
+  <script src="js/vue.global.prod.js?v=20261128e"></script>
 </head>
 <body class="auth-locked">
   <!-- ===== 登录关卡：登录通过前业务脚本不会被加载 ===== -->
@@ -101,7 +101,7 @@
         <input class="auth-input" type="text" id="auth-renew-user" placeholder="用户名（你注册时用的）" maxlength="20" autocomplete="off">
         <div class="auth-renew-plans" id="auth-renew-plans"></div>
         <div class="auth-renew-qr" id="auth-renew-qr">
-          <div class="auth-renew-qrbox"><img id="auth-renew-wx" src="assets/wechat-pay-qr.jpg?v=20261128d" alt="微信支付收款码"><span>微信支付（扫码支付）</span></div>
+          <div class="auth-renew-qrbox"><img id="auth-renew-wx" src="assets/wechat-pay-qr.jpg?v=20261128e" alt="微信支付收款码"><span>微信支付（扫码支付）</span></div>
           <div class="muted small" style="margin-top:6px;color:#c2410c;font-weight:600">支付时请添加会员备注，付款成功截图保存</div>
         </div>
         <input class="auth-input" type="text" id="auth-renew-amount" inputmode="decimal" placeholder="支付金额（必填，如 1000）" autocomplete="off">
@@ -1629,7 +1629,7 @@
                   <div class="qr-row">
                     <div class="qr-box">
                       <div class="qr-cap">推荐使用微信支付</div>
-                      <img src="assets/wechat-pay-qr.jpg?v=20261128d" alt="微信支付收款码" class="qr-pay-img">
+                      <img src="assets/wechat-pay-qr.jpg?v=20261128e" alt="微信支付收款码" class="qr-pay-img">
                       <div class="qr-cap" style="margin-top:6px;color:#c2410c;font-weight:600">支付时请添加会员备注，付款成功截图保存</div>
                       <div class="qr-cap muted small">火柴盒网络服务</div>
                     </div>
@@ -3993,7 +3993,7 @@
                 <button class="infl-sort-btn" :class="{active: inflSortBy==='people'}" @click="setInflSort('people')">按影响人数</button>
                 <button class="infl-sort-btn" :class="{active: inflSortBy==='time'}" @click="setInflSort('time')">按时间</button>
                 <button class="infl-sort-btn" :class="{active: inflSortBy==='cnimp'}" @click="setInflSort('cnimp')" title="重要程度：中国新闻按中国境内范围、美国新闻与世界新闻按世界境内范围，按新闻池中的新闻计算影响程度（满分100），利好影响得分红色、利空影响得分绿色">按重要程度</button>
-                <button class="infl-sort-btn" :class="{active: inflSortBy==='impactDays'}" @click="setInflSort('impactDays')" title="影响天数：此条新闻在所属子版块范围内的预计影响交易日数（从大到小）">按影响天数</button>
+                <button class="infl-sort-btn" :class="{active: inflSortBy==='impactDays'}" @click="setInflSort('impactDays')" title="影响天数：量化多因子预测的「利好概念预计上涨交易日数」，从大到小；悬停数值可查看六因子明细">按影响天数</button>
                 <span class="muted small infl-sort-hint">当前：{{ sortLabel() }}<template v-if="inflSortBy!=='time'"> 从大到小</template><template v-else> 新→旧</template></span>
               </div>
 
@@ -4015,8 +4015,8 @@
                     🧭 <b>交易日口径（20261128b）：</b>一个交易日 = <b>上一交易日 15:00 收盘 → 本交易日 15:00 收盘</b>，15:00 之后算新的一天（周末跳过）。"近 1 交易日"即 11/24 15:00 → 11/25 15:00，"近 2 交易日"从 11/23 15:00 起算。<b>刷新数据会把窗口内中国发生的全部大新闻都纳入</b>——包括晚间发布会（如华为 Mate X8 售价 / 鸿蒙设备破亿）这类措辞各异的单点重大事件，按主体主题聚合成一条，不再因语义簇门槛漏掉；这些真实新鲜事件会同步喂给合肥模式，作为盘前利好概念的精准依据。<br/>
                     🗺️ <b>三子版块地域归属（20261128b 严格互斥）：</b>每条新闻<b>只进入唯一一个</b>子版块，按<b>新闻主体的所属国家 / 地区</b>判定，绝不串版块——<b>🇨🇳 中国新闻</b>只收<b>中国境内</b>主体 / 政策 / 市场的新闻（如国务院部署、央行降准、A股政策、国内企业动作），<b>其他国家的新闻不计入</b>；<b>🇺🇸 美国新闻</b>只收<b>美国境内</b>主体的新闻（如美联储、白宫、美国财政部、美股与美企动作），<b>其他国家的新闻不计入</b>；<b>🌍 世界新闻</b>只收<b>中美之外其他国家</b>（日本 / 欧洲 / 韩国 / 中东等）及<b>中美混合的全球性</b>新闻。判定对每条进入列表的真实新闻按「标题 + 摘要 + 来源」文本复核，主体为美国政府机构的（如美国财政部 / 商务部 / 美联储）即便带裸「财政部 / 央行」等词也只归美国板块，不串入中国；主体为日本央行 / 欧洲央行 / SK海力士 / 台积电等境外主体的只归全世界，不串入中美。<br/>
                     <b>双指标（同时存在）：</b>「<b>影响人数</b>」= 该事件影响到<b>生产 + 生活</b>的全部相关人数（从业者 / 上下游、使用该产品服务的消费者与用户、泛受影响公众，<b>并包含股民</b>）；「<b>影响股民数</b>」= 其中<b>投资该事件所涉概念相关股票</b>的股民人数，是影响人数的子集。<br/>
-                    ⭐ <b>重要程度（20261128d，满分 100）：</b>按<b>新闻池中的新闻</b>在<b>本子版块范围内</b>的影响程度计算——<b>🇨🇳 中国新闻</b>的新闻池只含<b>中国境内</b>新闻，重要程度 = <b>中国境内范围</b>的影响程度（中国产业 + A股等中国市场）；<b>🇺🇸 美国新闻</b>的新闻池只含<b>美国境内</b>新闻，重要程度 = <b>世界境内范围</b>的影响程度（全球产业 + 全球市场）；<b>🌍 世界新闻</b>的新闻池是<b>世界境内</b>新闻，重要程度 = <b>世界境内范围</b>的影响程度。分值 = 基础分 20 + 产业命中（≤24）+ 市场命中 / 相关股票 / 股民强度（≤14）+ 影响人数强度（≤14）+ 新闻池同题报道佐证（≤20）+ 中国事件加权（8，仅中国新闻）。行为分值<b>红色代表利好影响、绿色代表利空影响</b>；可按「按重要程度」排序。<br/>
-                    ⏳ <b>影响天数（20261128d）：</b>此条新闻在<b>所属子版块范围内</b>的预计影响交易日数（1~30）；优先取事件自带的预计影响天数或起止交易日，否则按重要程度、影响人数、事件性质（政策 / 落地类更长）与新闻池同题报道广度估算，可按「按影响天数」排序。<br/>
+                    ⭐ <b>重要程度（20261128e，满分 100）：</b>按<b>新闻池中的新闻</b>在<b>本子版块范围内</b>的影响程度计算——<b>🇨🇳 中国新闻</b>的新闻池只含<b>中国境内</b>新闻，重要程度 = <b>中国境内范围</b>的影响程度（中国产业 + A股等中国市场）；<b>🇺🇸 美国新闻</b>的新闻池只含<b>美国境内</b>新闻，重要程度 = <b>世界境内范围</b>的影响程度（全球产业 + 全球市场）；<b>🌍 世界新闻</b>的新闻池是<b>世界境内</b>新闻，重要程度 = <b>世界境内范围</b>的影响程度。分值 = 基础分 20 + 产业命中（≤24）+ 市场命中 / 相关股票 / 股民强度（≤14）+ 影响人数强度（≤14）+ 新闻池同题报道佐证（≤20）+ 中国事件加权（8，仅中国新闻）。行为分值<b>红色代表利好影响、绿色代表利空影响</b>；可按「按重要程度」排序。<br/>
+                    ⏳ <b>影响天数（20261128e，量化多因子）：</b>预测此条新闻的<b>利好概念预计上涨交易日数</b>（1~10）。按<b>DeepSeek 式量化多因子</b>打分：催化层级(26%) + 叙事想象空间(26%，国产替代/中美博弈/前沿科技更长) + 板块接力容量(16%) + 市场热度(16%) + 事件新鲜度半衰期(16%)，再按「预期 vs 兑现」乘性校准，综合分非线性映射为交易日；<b>数值悬停可查看六因子明细与预测理由</b>。越强、越新、想象空间越大 → 预计上涨天数越长；报道过热或利好兑现则打折。按「按影响天数」降序排列。<br/>
                     <b>计算公式（20261112a 修正）：</b><b>A = max(该概念「影响范围」人群基数 × 触达率 r, 影响股民数 S)</b>，max 保证 S ⊆ A；股民占比 = S / A。<b>🇨🇳 中国新闻 / 🇺🇸 美国新闻 / 🌍 世界新闻只是分类</b>，只决定事件归到哪个页签、配色与文案，<b>不参与影响人数计算</b>——同一条事件放到哪个页签，影响人数完全相同。<br/>
                     <b>影响范围由「概念性质」决定：</b>全球传导型（美债 / 通胀 / 降息预期 / 芯片出口 / 原油 / 中概股 / 跨境电商 / 短剧出海等）按<b>全球 82 亿</b>人口基数估算；境内民生型（医保 / 房贷 / 零售 / 短剧监管 / 电力等）按该概念真实覆盖的<b>境内人群</b>估算。r 为该范围内的生产生活触达率，已分别按全球 / 境内口径标定。<br/>
                     <b>例：</b>「美国通胀反弹，降息预期落空」属全球传导型 → r = 0.44 → <b>影响人数 36.08 亿</b>（不再是旧版按美国人口算出的 2.72 亿），投资利率敏感股的股民 <b>8000 万</b>（占 2.2%）；🇨🇳「AI 短剧审核监管」属境内民生型 → r = 0.70 → <b>影响人数 9.87 亿</b>，股民仅 3500 万（占 3.5%）。数值为本地整理估算样例，可在数据源处调整。
@@ -4036,10 +4036,10 @@
                       <span class="infl-concept" v-if="e.conceptName">涉及概念：{{ e.conceptName }}</span>
                       <span class="infl-affected infl-people">影响人数 <b>{{ fmtAffected(e.affectedPeople) }}</b>人</span>
                       <span class="infl-affected">影响股民数 <b>{{ fmtAffected(e.affected) }}</b>人<span class="infl-share" v-if="e.investorShare">（占 {{ e.investorShare }}%）</span></span>
-                      <!-- 20261128d：重要程度（满分100）= 新闻池在本子版块范围内的影响程度；利好红 / 利空绿 -->
+                      <!-- 20261128e：重要程度（满分100）= 新闻池在本子版块范围内的影响程度；利好红 / 利空绿 -->
                       <span class="infl-cnimp" :class="(e.cnImp && e.cnImp.dir==='bear') ? 'bear' : 'bull'"
                             :title="'重要程度（' + ((e.cnImp && e.cnImp.detail && e.cnImp.detail.scopeLabel) || '中国境内') + '范围）：新闻池中的新闻在本子版块范围内的影响程度（满分100）· 产业 ' + ((e.cnImp && e.cnImp.detail && e.cnImp.detail.industry) || 0) + ' · 市场 ' + ((e.cnImp && e.cnImp.detail && e.cnImp.detail.market) || 0) + ' · 新闻池同题 ' + ((e.cnImp && e.cnImp.detail && e.cnImp.detail.reports) || 0) + ' 条 · ' + ((e.cnImp && e.cnImp.dir==='bear') ? '利空影响（得分绿色）' : '利好影响（得分红色）')">重要程度 <b>{{ e.cnImp ? e.cnImp.score : '—' }}</b></span>
-                      <span class="infl-impact-days" :title="'影响天数：此条新闻在所属子版块范围内的预计影响交易日数（1~30）'">⏳ 影响天数 <b>{{ e.impactDays != null ? e.impactDays : '—' }}</b> 交易日</span>
+                      <span class="infl-impact-days" :title="e.impactDaysInfo ? ('量化预测｜' + e.impactDaysInfo.dirWord + ' ' + e.impactDays + ' 交易日（' + e.impactDaysInfo.level + '级 · 综合 ' + e.impactDaysInfo.score + '/100）\n' + e.impactDaysInfo.why + '\n因子分：催化 ' + e.impactDaysInfo.f.catalyst + ' · 叙事 ' + e.impactDaysInfo.f.narrative + ' · 容量 ' + e.impactDaysInfo.f.breadth + ' · 热度 ' + e.impactDaysInfo.f.heat + ' · 新鲜度 ' + e.impactDaysInfo.f.freshness + ' · 确定性×' + e.impactDaysInfo.f.certainty) : '影响天数：量化多因子预测的利好概念预计上涨交易日数'">⏳ 影响天数 <b>{{ e.impactDays != null ? e.impactDays : '—' }}</b> 交易日<span v-if="e.impactDaysInfo" class="infl-days-level" :class="'lv-' + e.impactDaysInfo.level">{{ e.impactDaysInfo.level }}</span></span>
                       <span v-if="e.reportTime && e.dateSource === 'report'" class="infl-report-time" :title="'最近一个月内语义首报时间：' + e.reportTime + '（按含义相同即为同一新闻的口径，在最近一个月「11 平台快照 + 同花顺快讯 + 今日头条新闻」中匹配到的最早一条，作为该新闻首次出现时间，用于本面板窗口筛选与时间排序）'">· 🕐 全网首报 {{ e.reportTime }}</span>
                       <span v-else-if="e.date" class="infl-report-fallback" :title="'最近一个月内语义未匹配到更早报道，使用事件真实首次出现日期（seed 原始日期），用于窗口筛选与时间排序'">· {{ e.date }}（首次出现）</span>
                       <span v-if="e.source">· {{ e.source }}</span>
@@ -6632,14 +6632,14 @@
     </transition>
   </div>
 
-  <script src="js/auth.js?v=20261128d"></script>
-  <script src="js/auth-sync.js?v=20261128d"></script>
+  <script src="js/auth.js?v=20261128e"></script>
+  <script src="js/auth-sync.js?v=20261128e"></script>
   <!-- 边缘加速默认站点（batch37 治本：Cloudflare Worker 代理东财/腾讯，缓解 JSONP 限流误报）。
        若你所在地区 workers.dev 访问慢，可在「设置 → 行情加速地址」清空即恢复纯直连。 -->
   <script>window.__SNT_ACCEL__ = 'https://sichina.dpdns.org';</script>
   <!-- 扫码支付二维码渲染库（第三方 qrcodejs，本地托管避免外链失效）。renderQr 会先检测全局 QRCode 是否存在。 -->
-  <script src="assets/qrcode.min.js?v=20261128d"></script>
-  <script src="js/auth-boot.js?v=20261128d"></script>
+  <script src="assets/qrcode.min.js?v=20261128e"></script>
+  <script src="js/auth-boot.js?v=20261128e"></script>
   <!-- store / stock-api / hot-topics / app 由 auth-boot.js 在登录通过后动态装载，
        未登录时它们不会被下载，业务数据也不会进入内存 -->
 </body>
