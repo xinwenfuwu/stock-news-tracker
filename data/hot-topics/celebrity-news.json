@@ -1,9 +1,78 @@
 {
-  "generatedAt": "2026-11-28 05:02",
+  "generatedAt": "2026-11-28 11:51",
   "generatedBy": "GitHub Actions · 多源实时聚合",
   "sourceCount": 4,
-  "autoCount": 4,
+  "autoCount": 6,
   "events": [
+    {
+      "id": "ap1eboubx",
+      "title": "特朗普又连发深圳APEC照片：一周过去了，他还沉浸其中",
+      "tag": "人物/特朗普",
+      "region": "美国",
+      "concept": "usFinance",
+      "time": "2026-11-28 11:37",
+      "datetime": "2026-11-28 11:37",
+      "source": "新浪7×24",
+      "url": "https://finance.sina.cn/7x24/2026-11-28/detail-inkahepf0630902.d.html",
+      "summary": "【特朗普又连发深圳APEC照片：一周过去了，他还沉浸其中】当地时间11月27日，美国总统特朗普在社交平台连发数张深圳APEC会议的照片，包括其乘坐的专机、深圳的接机和欢迎仪式现场、中俄美元首会晤、晚宴现场等。其中一张照片上，“APEC中国年 深圳进行时”的中文字样格外引人注目。（澎湃新闻）",
+      "relatedStocks": [
+        "美股科技",
+        "黄金"
+      ],
+      "bullConcepts": [
+        "黄金",
+        "防御板块"
+      ],
+      "bearConcepts": [
+        "高估值成长股"
+      ],
+      "bullIndustries": [
+        "银行",
+        "黄金"
+      ],
+      "bearIndustries": [
+        "高杠杆地产"
+      ],
+      "heat": 24,
+      "momentum": 36,
+      "_auto": true
+    },
+    {
+      "id": "apf4c9wf",
+      "title": "11月28日隔夜要闻：道指创下2022年以来最佳单周表现 铜和金均随科技股升 OpenAI反诉苹果",
+      "tag": "人物/奥尔特曼",
+      "region": "美国",
+      "concept": "aiCapex",
+      "time": "2026-11-28 06:02",
+      "datetime": "2026-11-28 06:02",
+      "source": "环球市场播报",
+      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-28/doc-inkafprp0817526.shtml",
+      "summary": "市场 11月28日美股收盘：道指大涨近600点，创下2022年以来最佳单周表现 11月28日美股成交额前20：Anthropic收涨10.98% 创下11月19日开始交易以来的最高收盘价...",
+      "relatedStocks": [
+        "英伟达",
+        "微软",
+        "台积电"
+      ],
+      "bullConcepts": [
+        "AI算力",
+        "半导体",
+        "国产替代"
+      ],
+      "bearConcepts": [
+        "传统软件"
+      ],
+      "bullIndustries": [
+        "半导体",
+        "AI应用",
+        "算力基础设施"
+      ],
+      "bearIndustries": [
+        "传统IT服务"
+      ],
+      "heat": 56,
+      "momentum": 18,
+      "_auto": true
+    },
     {
       "id": "ap1vormy7",
       "title": "11月28日外盘头条： 特朗普希望普京参加G20 OpenAI反诉苹果窃取商业机密 欧洲央行管委Dolenc暗示仍需加息",
@@ -36,21 +105,51 @@
       "bearIndustries": [
         "传统IT服务"
       ],
-      "heat": 100,
-      "momentum": 56,
+      "heat": 51,
+      "momentum": 18,
       "_auto": true
     },
     {
-      "id": "appc1sz8",
-      "title": "俄罗斯总统普京：我们将继续加强俄罗斯在世界海洋中的地位。",
-      "tag": "人物/普京",
+      "id": "ap11cyce1",
+      "title": "改口了？外媒：泽连斯基承认，乌在利比亚有关行动未事先与欧洲伙伴协调",
+      "tag": "人物/泽连斯基",
+      "region": "欧洲",
+      "concept": "macro",
+      "time": "2026-11-28 10:07",
+      "datetime": "2026-11-28 10:07",
+      "source": "新浪7×24",
+      "url": "https://finance.sina.cn/7x24/2026-11-28/detail-inkafyfk7479213.d.html",
+      "summary": "【改口了？外媒：泽连斯基承认，乌在利比亚有关行动未事先与欧洲伙伴协调】据乌克兰《基辅独立报》、俄罗斯塔斯社等多家外媒报道，乌克兰总统泽连斯基当地时间27日承认，乌方近日在利比亚采取有关行动时，未事先与有关盟友协调。泽连斯基在社交平台X上发文称，他当天与意大利总理梅洛尼通话，并讨论了一些当前正在处理的问题，相互理解很重要。“我确认，最近在利比亚的行动是在没有事先与我们的欧洲伙伴…",
+      "relatedStocks": [
+        "宽基指数"
+      ],
+      "bullConcepts": [
+        "防御板块"
+      ],
+      "bearConcepts": [
+        "周期股"
+      ],
+      "bullIndustries": [
+        "公用事业"
+      ],
+      "bearIndustries": [
+        "顺周期"
+      ],
+      "heat": 29,
+      "momentum": 26,
+      "_auto": true
+    },
+    {
+      "id": "aph4puj0",
+      "title": "马斯克：Grok Bot目标是让你搭建出一整套完整的公司体系",
+      "tag": "人物/马斯克",
       "region": "全球",
       "concept": "macro",
-      "time": "2026-11-28 04:23",
-      "datetime": "2026-11-28 04:23",
+      "time": "2026-11-28 10:21",
+      "datetime": "2026-11-28 10:21",
       "source": "新浪7×24",
-      "url": "https://finance.sina.cn/7x24/2026-11-28/detail-inkafprq7543232.d.html",
-      "summary": "俄罗斯总统普京：我们将继续加强俄罗斯在世界海洋中的地位。",
+      "url": "https://finance.sina.cn/7x24/2026-11-28/detail-inkafyfi0712885.d.html",
+      "summary": "【马斯克：Grok Bot目标是让你搭建出一整套完整的公司体系】埃隆·马斯克：使用Grok Bot时，关键是打造具备专属职能的 Bot，就像现实中的企业一样。你可以设置一个管理 Bot来监督、协调其余 Bot的工作。和人类员工同理，如果让单个 Bot承担过多繁杂任务，它就会顾此失彼。Grok Bot的目标，是让你搭建出一整套完整的公司体系。",
       "relatedStocks": [
         "宽基指数"
       ],
@@ -71,52 +170,16 @@
       "_auto": true
     },
     {
-      "id": "ap1gcj2oh",
-      "title": "美国联邦通信委员会（FCC）委员布伦丹·卡尔表示，希望SpaceX全速推进太空数据中心建设。",
-      "tag": "人物/马斯克",
-      "region": "美国",
-      "concept": "aiCapex",
-      "time": "2026-11-27 23:18",
-      "datetime": "2026-11-27 23:18",
+      "id": "ap6j6znf",
+      "title": "普京：俄新型核潜艇“彼尔姆”号将加入太平洋舰队",
+      "tag": "人物/普京",
+      "region": "全球",
+      "concept": "macro",
+      "time": "2026-11-28 07:14",
+      "datetime": "2026-11-28 07:14",
       "source": "财联社",
-      "url": "https://www.cls.cn/detail/2547075",
-      "summary": "美国联邦通信委员会（FCC）委员布伦丹·卡尔表示，希望SpaceX全速推进太空数据中心建设。",
-      "relatedStocks": [
-        "英伟达",
-        "微软",
-        "台积电"
-      ],
-      "bullConcepts": [
-        "AI算力",
-        "半导体",
-        "国产替代"
-      ],
-      "bearConcepts": [
-        "传统软件"
-      ],
-      "bullIndustries": [
-        "半导体",
-        "AI应用",
-        "算力基础设施"
-      ],
-      "bearIndustries": [
-        "传统IT服务"
-      ],
-      "heat": 51,
-      "momentum": 18,
-      "_auto": true
-    },
-    {
-      "id": "ap19ul25f",
-      "title": "特朗普称普京想来G20就可以来：“我希望他到场”",
-      "tag": "人物/特朗普",
-      "region": "美国",
-      "concept": "defense",
-      "time": "2026-11-27 17:47",
-      "datetime": "2026-11-27 17:47",
-      "source": "环球市场播报",
-      "url": "https://finance.sina.com.cn/stock/usstock/c/2026-11-27/doc-inkaenef3200334.shtml",
-      "summary": "特朗普总统周四对记者表示，他不确定俄罗斯总统普京是否会出席下月在佛罗里达州举办的G20峰会；但如果由他说了算，只要普京愿意来，就可以参会。",
+      "url": "https://www.cls.cn/detail/2547144",
+      "summary": "【普京：俄新型核潜艇“彼尔姆”号将加入太平洋舰队】财联社11月28日电，俄罗斯总统普京当地时间11月27日在北德文斯克北方机械制造厂出席“彼尔姆”号核潜艇入列仪式。“彼尔姆”号是俄罗斯“亚森-M”型第四代多用途核潜艇，也是首艘正式配备“锆石”高超音速巡航导弹的核潜艇。普京在仪式上表示，“彼尔姆”号是过去六年来俄罗斯海军接收的第五艘“亚森-M”型核潜艇。俄罗斯是世界上少数有能力…",
       "relatedStocks": [
         "军工",
         "黄金"
@@ -136,7 +199,7 @@
         "航空",
         "旅游"
       ],
-      "heat": 46,
+      "heat": 24,
       "momentum": 18,
       "_auto": true
     },
