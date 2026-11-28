@@ -10,12 +10,12 @@
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
   <title>股市信息分析系统</title>
-  <link rel="stylesheet" href="css/style.css?v=20261128b">
+  <link rel="stylesheet" href="css/style.css?v=20261128c">
   <!-- Vue 3 全局构建版（v3.4.21 · 自托管）
        原先走 unpkg.com CDN：国内网络对 unpkg 的连通性不稳定，一旦该请求长时间挂起，
        <head> 里的阻塞脚本会让整页停在白屏、后续 auth-boot.js 根本不会执行。
        改为同源托管后，启动链路不再依赖任何第三方 CDN。 -->
-  <script src="js/vue.global.prod.js?v=20261128b"></script>
+  <script src="js/vue.global.prod.js?v=20261128c"></script>
 </head>
 <body class="auth-locked">
   <!-- ===== 登录关卡：登录通过前业务脚本不会被加载 ===== -->
@@ -101,7 +101,7 @@
         <input class="auth-input" type="text" id="auth-renew-user" placeholder="用户名（你注册时用的）" maxlength="20" autocomplete="off">
         <div class="auth-renew-plans" id="auth-renew-plans"></div>
         <div class="auth-renew-qr" id="auth-renew-qr">
-          <div class="auth-renew-qrbox"><img id="auth-renew-wx" src="assets/wechat-pay-qr.jpg?v=20261128b" alt="微信支付收款码"><span>微信支付（扫码支付）</span></div>
+          <div class="auth-renew-qrbox"><img id="auth-renew-wx" src="assets/wechat-pay-qr.jpg?v=20261128c" alt="微信支付收款码"><span>微信支付（扫码支付）</span></div>
           <div class="muted small" style="margin-top:6px;color:#c2410c;font-weight:600">支付时请添加会员备注，付款成功截图保存</div>
         </div>
         <input class="auth-input" type="text" id="auth-renew-amount" inputmode="decimal" placeholder="支付金额（必填，如 1000）" autocomplete="off">
@@ -1629,7 +1629,7 @@
                   <div class="qr-row">
                     <div class="qr-box">
                       <div class="qr-cap">推荐使用微信支付</div>
-                      <img src="assets/wechat-pay-qr.jpg?v=20261128b" alt="微信支付收款码" class="qr-pay-img">
+                      <img src="assets/wechat-pay-qr.jpg?v=20261128c" alt="微信支付收款码" class="qr-pay-img">
                       <div class="qr-cap" style="margin-top:6px;color:#c2410c;font-weight:600">支付时请添加会员备注，付款成功截图保存</div>
                       <div class="qr-cap muted small">火柴盒网络服务</div>
                     </div>
@@ -3992,15 +3992,15 @@
                 <button class="infl-sort-btn" :class="{active: inflSortBy==='investors'}" @click="setInflSort('investors')">按影响股民数</button>
                 <button class="infl-sort-btn" :class="{active: inflSortBy==='people'}" @click="setInflSort('people')">按影响人数</button>
                 <button class="infl-sort-btn" :class="{active: inflSortBy==='time'}" @click="setInflSort('time')">按时间</button>
-                <button class="infl-sort-btn" :class="{active: inflSortBy==='cnimp'}" @click="setInflSort('cnimp')" title="对中影响度：事件对中国行业与概念的影响程度（满分100），利好影响得分红色、利空影响得分绿色">按对中</button>
+                <button class="infl-sort-btn" :class="{active: inflSortBy==='cnimp'}" @click="setInflSort('cnimp')" title="重要程度：按新闻池中的新闻对中国产业 + 中国股市的影响程度计算（满分100），利好影响得分红色、利空影响得分绿色">按重要程度</button>
                 <span class="muted small infl-sort-hint">当前：{{ sortLabel() }}<template v-if="inflSortBy!=='time'"> 从大到小</template><template v-else> 新→旧</template></span>
               </div>
 
               <!-- 三个子版块：中国 / 美国 / 全世界，点击切换 -->
               <div class="infl-tabs infl-region-tabs">
-                <button class="infl-tab" :class="{active: inflRegion==='cn'}" @click="setInflRegion('cn')" title="仅显示中国境内的新闻：主体/政策/市场须在中国境内，其他国家的新闻不计入（仅统计窗口内）">🇨🇳 中国</button>
-                <button class="infl-tab" :class="{active: inflRegion==='us'}" @click="setInflRegion('us')" title="仅显示美国境内的新闻：主体/政策/市场须在美国境内，其他国家的新闻不计入（仅统计窗口内）">🇺🇸 美国</button>
-                <button class="infl-tab" :class="{active: inflRegion==='world'}" @click="setInflRegion('world')" title="仅显示中国、美国之外其他国家及全球性的新闻；中美主体的新闻不计入（仅统计窗口内）">🌍 全世界</button>
+                <button class="infl-tab" :class="{active: inflRegion==='cn'}" @click="setInflRegion('cn')" title="仅显示中国境内的新闻：主体/政策/市场须在中国境内，其他国家的新闻不计入（仅统计窗口内）">🇨🇳 中国新闻</button>
+                <button class="infl-tab" :class="{active: inflRegion==='us'}" @click="setInflRegion('us')" title="仅显示美国境内的新闻：主体/政策/市场须在美国境内，其他国家的新闻不计入（仅统计窗口内）">🇺🇸 美国新闻</button>
+                <button class="infl-tab" :class="{active: inflRegion==='world'}" @click="setInflRegion('world')" title="仅显示中国、美国之外其他国家及全球性的新闻；中美主体的新闻不计入（仅统计窗口内）">🌍 世界新闻</button>
               </div>
 
               <!-- 20261108b：口径说明左侧的一键隐藏按钮，点击后整段说明隐藏不显示；按钮切换为「显示说明」可恢复 -->
@@ -4012,9 +4012,10 @@
                     🔎 <b>新闻范围：</b>{{ inflRangeLabel }}<template v-if="inflRangeDays">（本面板只统计最近 {{ inflRangeDays }} 个交易日（15:00 收盘窗口）内的新闻/事件；右侧「未来事件」的选择框独立设置）</template><template v-else>（未选择 = 按上方默认窗口统计；可在面板右上角「刷新数据」左侧选择「近 N 交易日」）</template><br/>
                     🕐 <b>时间口径（20261119a）：</b>新闻范围为<b>最近一个月内新鲜发生</b>的全网新闻。每条事件的时间<b>严格以该新闻首次报道时间为准</b>——按<b>语义相同（含义相同，非字面百分比相同）即为同一新闻</b>的口径，扫描最近一个月 <b>11 平台快照 + 同花顺快讯 + 今日头条新闻</b>，取该新闻在<b>不同平台 / 不同时间报道中最早的一条</b>作为锚定时间；未匹配到更早报道时用事件 seed 原始首报日期。<b>很多年前的同类旧闻不参与锚定</b>，超出一个月的旧事件直接排除；<b>绝不使用重锚日期</b>。窗口筛选（近 N 交易日）与「按时间排序」均以此首报时间为准：如 11-01 首次出现的新闻，在「近 1 交易日」窗口下会被正确排除。卡片显示「🕐 全网首报」或「（首次出现）」。<br/>
                     🧭 <b>交易日口径（20261128b）：</b>一个交易日 = <b>上一交易日 15:00 收盘 → 本交易日 15:00 收盘</b>，15:00 之后算新的一天（周末跳过）。"近 1 交易日"即 11/24 15:00 → 11/25 15:00，"近 2 交易日"从 11/23 15:00 起算。<b>刷新数据会把窗口内中国发生的全部大新闻都纳入</b>——包括晚间发布会（如华为 Mate X8 售价 / 鸿蒙设备破亿）这类措辞各异的单点重大事件，按主体主题聚合成一条，不再因语义簇门槛漏掉；这些真实新鲜事件会同步喂给合肥模式，作为盘前利好概念的精准依据。<br/>
-                    🗺️ <b>三子版块地域归属（20261128b 严格互斥）：</b>每条新闻<b>只进入唯一一个</b>子版块，按<b>新闻主体的所属国家 / 地区</b>判定，绝不串版块——<b>🇨🇳 中国</b>只收<b>中国境内</b>主体 / 政策 / 市场的新闻（如国务院部署、央行降准、A股政策、国内企业动作），<b>其他国家的新闻不计入</b>；<b>🇺🇸 美国</b>只收<b>美国境内</b>主体的新闻（如美联储、白宫、美国财政部、美股与美企动作），<b>其他国家的新闻不计入</b>；<b>🌍 全世界</b>只收<b>中美之外其他国家</b>（日本 / 欧洲 / 韩国 / 中东等）及<b>中美混合的全球性</b>新闻。判定对每条进入列表的真实新闻按「标题 + 摘要 + 来源」文本复核，主体为美国政府机构的（如美国财政部 / 商务部 / 美联储）即便带裸「财政部 / 央行」等词也只归美国板块，不串入中国；主体为日本央行 / 欧洲央行 / SK海力士 / 台积电等境外主体的只归全世界，不串入中美。<br/>
+                    🗺️ <b>三子版块地域归属（20261128b 严格互斥）：</b>每条新闻<b>只进入唯一一个</b>子版块，按<b>新闻主体的所属国家 / 地区</b>判定，绝不串版块——<b>🇨🇳 中国新闻</b>只收<b>中国境内</b>主体 / 政策 / 市场的新闻（如国务院部署、央行降准、A股政策、国内企业动作），<b>其他国家的新闻不计入</b>；<b>🇺🇸 美国新闻</b>只收<b>美国境内</b>主体的新闻（如美联储、白宫、美国财政部、美股与美企动作），<b>其他国家的新闻不计入</b>；<b>🌍 世界新闻</b>只收<b>中美之外其他国家</b>（日本 / 欧洲 / 韩国 / 中东等）及<b>中美混合的全球性</b>新闻。判定对每条进入列表的真实新闻按「标题 + 摘要 + 来源」文本复核，主体为美国政府机构的（如美国财政部 / 商务部 / 美联储）即便带裸「财政部 / 央行」等词也只归美国板块，不串入中国；主体为日本央行 / 欧洲央行 / SK海力士 / 台积电等境外主体的只归全世界，不串入中美。<br/>
                     <b>双指标（同时存在）：</b>「<b>影响人数</b>」= 该事件影响到<b>生产 + 生活</b>的全部相关人数（从业者 / 上下游、使用该产品服务的消费者与用户、泛受影响公众，<b>并包含股民</b>）；「<b>影响股民数</b>」= 其中<b>投资该事件所涉概念相关股票</b>的股民人数，是影响人数的子集。<br/>
-                    <b>计算公式（20261112a 修正）：</b><b>A = max(该概念「影响范围」人群基数 × 触达率 r, 影响股民数 S)</b>，max 保证 S ⊆ A；股民占比 = S / A。<b>🇨🇳 中国 / 🇺🇸 美国 / 🌍 全世界只是分类</b>，只决定事件归到哪个页签、配色与文案，<b>不参与影响人数计算</b>——同一条事件放到哪个页签，影响人数完全相同。<br/>
+                    ⭐ <b>重要程度（20261128c，满分 100）：</b>按<b>新闻池中的新闻</b>对<b>中国产业</b>与<b>中国股市</b>的影响程度计算 = 基础分 20 + 中国产业命中（≤24）+ 中国股市命中 / 相关股票 / 股民强度（≤14）+ 影响人数强度（≤14）+ 新闻池同题报道及产业 / 股市命中（≤20）+ 中国事件加权（8）。行为分值<b>红色代表利好影响、绿色代表利空影响</b>；可按「按重要程度」排序。<br/>
+                    <b>计算公式（20261112a 修正）：</b><b>A = max(该概念「影响范围」人群基数 × 触达率 r, 影响股民数 S)</b>，max 保证 S ⊆ A；股民占比 = S / A。<b>🇨🇳 中国新闻 / 🇺🇸 美国新闻 / 🌍 世界新闻只是分类</b>，只决定事件归到哪个页签、配色与文案，<b>不参与影响人数计算</b>——同一条事件放到哪个页签，影响人数完全相同。<br/>
                     <b>影响范围由「概念性质」决定：</b>全球传导型（美债 / 通胀 / 降息预期 / 芯片出口 / 原油 / 中概股 / 跨境电商 / 短剧出海等）按<b>全球 82 亿</b>人口基数估算；境内民生型（医保 / 房贷 / 零售 / 短剧监管 / 电力等）按该概念真实覆盖的<b>境内人群</b>估算。r 为该范围内的生产生活触达率，已分别按全球 / 境内口径标定。<br/>
                     <b>例：</b>「美国通胀反弹，降息预期落空」属全球传导型 → r = 0.44 → <b>影响人数 36.08 亿</b>（不再是旧版按美国人口算出的 2.72 亿），投资利率敏感股的股民 <b>8000 万</b>（占 2.2%）；🇨🇳「AI 短剧审核监管」属境内民生型 → r = 0.70 → <b>影响人数 9.87 亿</b>，股民仅 3500 万（占 3.5%）。数值为本地整理估算样例，可在数据源处调整。
                   </p>
@@ -4037,9 +4038,9 @@
                       </span>
                       <span class="infl-affected infl-people">影响人数 <b>{{ fmtAffected(e.affectedPeople) }}</b>人</span>
                       <span class="infl-affected">影响股民数 <b>{{ fmtAffected(e.affected) }}</b>人<span class="infl-share" v-if="e.investorShare">（占 {{ e.investorShare }}%）</span></span>
-                      <!-- 20261117a：对中影响度（满分100）——利好影响得分红色 / 利空影响得分绿色 -->
+                      <!-- 20261128c：重要程度（满分100）= 新闻池对中国产业 + 中国股市的影响程度；利好红 / 利空绿 -->
                       <span class="infl-cnimp" :class="(e.cnImp && e.cnImp.dir==='bear') ? 'bear' : 'bull'"
-                            :title="'对中：该事件对中国行业与概念的影响程度（满分100）· ' + ((e.cnImp && e.cnImp.dir==='bear') ? '利空影响（得分绿色）' : '利好影响（得分红色）')">对中 <b>{{ e.cnImp ? e.cnImp.score : '—' }}</b></span>
+                            :title="'重要程度：新闻池中的新闻对中国产业 + 中国股市的影响程度（满分100）· 产业 ' + ((e.cnImp && e.cnImp.detail && e.cnImp.detail.industry) || 0) + ' · 股市 ' + ((e.cnImp && e.cnImp.detail && e.cnImp.detail.market) || 0) + ' · 新闻池同题 ' + ((e.cnImp && e.cnImp.detail && e.cnImp.detail.reports) || 0) + ' 条 · ' + ((e.cnImp && e.cnImp.dir==='bear') ? '利空影响（得分绿色）' : '利好影响（得分红色）')">重要程度 <b>{{ e.cnImp ? e.cnImp.score : '—' }}</b></span>
                       <span v-if="e.reportTime && e.dateSource === 'report'" class="infl-report-time" :title="'最近一个月内语义首报时间：' + e.reportTime + '（按含义相同即为同一新闻的口径，在最近一个月「11 平台快照 + 同花顺快讯 + 今日头条新闻」中匹配到的最早一条，作为该新闻首次出现时间，用于本面板窗口筛选与时间排序）'">· 🕐 全网首报 {{ e.reportTime }}</span>
                       <span v-else-if="e.date" class="infl-report-fallback" :title="'最近一个月内语义未匹配到更早报道，使用事件真实首次出现日期（seed 原始日期），用于窗口筛选与时间排序'">· {{ e.date }}（首次出现）</span>
                       <span v-if="e.source">· {{ e.source }}</span>
@@ -6632,14 +6633,14 @@
     </transition>
   </div>
 
-  <script src="js/auth.js?v=20261128b"></script>
-  <script src="js/auth-sync.js?v=20261128b"></script>
+  <script src="js/auth.js?v=20261128c"></script>
+  <script src="js/auth-sync.js?v=20261128c"></script>
   <!-- 边缘加速默认站点（batch37 治本：Cloudflare Worker 代理东财/腾讯，缓解 JSONP 限流误报）。
        若你所在地区 workers.dev 访问慢，可在「设置 → 行情加速地址」清空即恢复纯直连。 -->
   <script>window.__SNT_ACCEL__ = 'https://sichina.dpdns.org';</script>
   <!-- 扫码支付二维码渲染库（第三方 qrcodejs，本地托管避免外链失效）。renderQr 会先检测全局 QRCode 是否存在。 -->
-  <script src="assets/qrcode.min.js?v=20261128b"></script>
-  <script src="js/auth-boot.js?v=20261128b"></script>
+  <script src="assets/qrcode.min.js?v=20261128c"></script>
+  <script src="js/auth-boot.js?v=20261128c"></script>
   <!-- store / stock-api / hot-topics / app 由 auth-boot.js 在登录通过后动态装载，
        未登录时它们不会被下载，业务数据也不会进入内存 -->
 </body>

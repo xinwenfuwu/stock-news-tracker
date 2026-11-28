@@ -11813,37 +11813,108 @@ const app = createApp({
       if (D) D.inflInfoHidden = inflInfoHidden.value;
     }
     function regionLabel(r) { return r === 'cn' ? '中国' : r === 'us' ? '美国' : '全世界'; }
-    // ===== 20261117a：「对中」影响度（新增排序指标）=====
-    // 字段含义：该新闻事件对中国行业与概念的影响程度，满分 100。
+    // ===== 20261117a / 20261128c：「重要程度」影响度（排序指标 cnimp）=====
+    // 字段含义：新闻池中的新闻对「中国产业 + 中国股市」的影响程度，满分 100。
+    // 影响力事件面板显示名由「对中」改为「重要程度」；字段键 cnimp 与合肥模式提示沿用旧名，不改数据契约。
     // 得分配色：利好影响 → 红色；利空影响 → 绿色（中国股市惯例：涨红跌绿）。
-    // 可解释的构成口径：
-    //   ① 中国相关命中：事件自带的多空行业/概念标签、涉及概念名、相关股票、标题+摘要
-    //      命中「中国行业/概念词表」的个数（每个 +8 分，封顶 34）；
-    //   ② 强度：影响人数（affectedPeople）对数缩放，1 亿人 → 满强度 28 分；
-    //   ③ 中国区域加权：事件属 🇨🇳 中国子版块 +16 分；
-    //   ④ 基础分 22。合计封顶 100（22+34+28+16）、保底 5。
+    // 可解释的构成口径（合计封顶 100、保底 5）：
+    //   ① 基础分 20；
+    //   ② 中国产业影响：事件文本（标题/摘要/概念/多空标签/相关股票）命中的中国产业词，每个 +6，封顶 24；
+    //   ③ 中国股市影响：A股/沪深/涨停/北向资金/IPO 等市场词 + 相关股票数 + 影响股民数强度，封顶 14；
+    //   ④ 受众广度：影响人数对数缩放，1 亿人 → 满强度 14 分；
+    //   ⑤ 新闻池佐证：新闻池中与事件语义相同、且命中中国产业/股市关键词的报道条数，封顶 20；
+    //   ⑥ 中国区域加权：事件属 🇨🇳 中国子版块 +8。
     // 方向判定：优先看「命中中国词表的多空标签」谁主导；无标签时看全部多空标签；
     //   再无标签回退 HotTopics.newsSentimentOf 文本情绪（与子概念多空着色同一套口径）。
-    const CN_IMPACT_WORDS = ['国产替代','信创','稀土','军工','电网','储能','光伏','锂电','新能源','医保','房贷','白酒','消费','跨境电商','中概','A股','沪深','人民币','基建','钢铁','煤炭','电力','环保','绿电','芯片','半导体','算力','数据中心','数字经济','低空经济','机器人','汽车','新能源车','地产','银行','保险','券商','农业','大飞机','北斗','5G','6G','短剧','游戏','影视','旅游','免税','一带一路','中欧班列','出口','关税','台积电','比亚迪','宁德时代','腾讯','阿里','百度','京东','华为','中远海控','顺丰','隆基','阳光电源','恒瑞','药明康德','中国海油','山东黄金','中粮','先正达','奇安信','中国卫通','分众传媒','携程','贵州茅台','招商银行','中芯国际','北方华创','北方稀土','赣锋锂业','上证','深证','北交所','港股','能源安全','粮食安全','科技自主','碳交易','环保工程','电力运营','电力设备','智能驾驶','AI应用','先进封装','高股息'];
+    const CN_INDUSTRY_WORDS = ['国产替代','信创','稀土','军工','电网','储能','光伏','锂电','新能源','医保','房贷','白酒','消费','跨境电商','人民币','基建','钢铁','煤炭','电力','环保','绿电','芯片','半导体','算力','数据中心','数字经济','低空经济','机器人','汽车','新能源车','地产','银行','保险','农业','大飞机','北斗','5G','6G','短剧','游戏','影视','旅游','免税','一带一路','中欧班列','出口','关税','能源安全','粮食安全','科技自主','碳交易','环保工程','电力运营','电力设备','智能驾驶','AI应用','先进封装','高股息','医药','医疗','人工智能','量子','核电','风电','氢能','消费电子','食品饮料','化工','机械','传媒','教育'];
+    const CN_STOCK_WORDS = ['A股','沪深','上证','深证','创业板','科创板','北交所','港股','中概股','H股','涨停','跌停','成交额','北向资金','两融','融资融券','IPO','新股','券商','基金','险资','股民','市值','指数','大盘','上证指数','深证成指','创业板指','恒生指数','定增','减持','增持','回购','分红','财报','业绩','龙头股','概念股','股价'];
+    const CN_IMPACT_WORDS = CN_INDUSTRY_WORDS.concat(CN_STOCK_WORDS);
+    /** 统计文本命中的不同词个数（同词只计一次，封顶 cap） */
+    function _cnCountHits(text, words, cap) {
+      const s = String(text || '');
+      let n = 0;
+      for (const w of words) if (s.indexOf(w) >= 0 && ++n >= cap) break;
+      return n;
+    }
     function _cnHitCount(list) {
       let n = 0;
       (list || []).forEach(t => { const s = String(t); if (CN_IMPACT_WORDS.some(w => s.indexOf(w) >= 0)) n++; });
       return n;
     }
-    function _cnTextHits(e) {
-      const text = String(e.title || '') + String(e.summary || '');
-      let n = 0;
-      CN_IMPACT_WORDS.forEach(w => { if (text.indexOf(w) >= 0) n++; });
-      return Math.min(4, n);
+    // 新闻池佐证索引：按全网新闻版本号 + 条数缓存一次，避免每条事件重复遍历上万条新闻。
+    // 倒排索引只收长度 <=600 的 2-gram，避免「中国/市场」等泛词把候选集撑爆。
+    let _cnImpPoolCache = { ver: -1, len: -1, texts: [], flags: [], inverted: new Map() };
+    function _cnImpEnsurePool() {
+      const ver = Number(_inflSeedRepVer) || 0;
+      const len = _inflNewsFlat.length;
+      if (_cnImpPoolCache.ver === ver && _cnImpPoolCache.len === len) return _cnImpPoolCache;
+      const texts = [], flags = [], inverted = new Map();
+      for (let i = 0; i < len; i++) {
+        const txt = String((_inflNewsFlat[i] && _inflNewsFlat[i].text) || '');
+        texts.push(txt);
+        if (!txt) { flags.push(0); continue; }
+        const f = (_cnCountHits(txt, CN_INDUSTRY_WORDS, 1) ? 1 : 0) | (_cnCountHits(txt, CN_STOCK_WORDS, 1) ? 2 : 0);
+        flags.push(f);
+        const toks = semTokensMemo(txt);
+        toks.forEach(g => {
+          let arr = inverted.get(g);
+          if (!arr) { arr = []; inverted.set(g, arr); }
+          if (arr.length < 600) arr.push(i);
+        });
+      }
+      _cnImpPoolCache = { ver, len, texts, flags, inverted };
+      return _cnImpPoolCache;
+    }
+    /** 新闻池中同题报道及其对中国产业 / 股市的命中情况；新闻池未加载时回退到自动事件报道数 */
+    function _cnPoolCorroboration(e) {
+      const out = { related: 0, industry: 0, market: 0 };
+      const ev = e || {};
+      if (!_inflNewsFlat.length) {
+        const n = Math.min(10, Number(ev.autoReports) || 0);
+        out.related = n;
+        const txt = [ev.title, ev.summary, ev.conceptName].filter(Boolean).join(' ');
+        out.industry = n && _cnCountHits(txt, CN_INDUSTRY_WORDS, 1) ? n : 0;
+        out.market = n && _cnCountHits(txt, CN_STOCK_WORDS, 1) ? n : 0;
+        return out;
+      }
+      const pool = _cnImpEnsurePool();
+      const A = semTokensMemo(String(ev.title || ev.originTitle || '') + ' ' + String(ev.conceptName || ''));
+      if (!A.size) return out;
+      const cand = new Map();
+      A.forEach(g => {
+        const arr = pool.inverted.get(g);
+        if (arr) arr.forEach(i => cand.set(i, (cand.get(i) || 0) + 1));
+      });
+      cand.forEach((shared, i) => {
+        if (out.related >= 10 || shared < 2) return;
+        const B = semTokensMemo(pool.texts[i]);
+        if (!B.size) return;
+        if (shared / Math.min(A.size, B.size) < 0.18) return;  // 语义包含度阈值，同义不同措辞亦可命中
+        out.related++;
+        if (pool.flags[i] & 1) out.industry++;
+        if (pool.flags[i] & 2) out.market++;
+      });
+      return out;
     }
     function computeChinaImpact(e) {
-      const tagBull = [].concat(e.bullConcepts || [], e.bullIndustries || []);
-      const tagBear = [].concat(e.bearConcepts || [], e.bearIndustries || []);
-      const hits = _cnHitCount(tagBull) + _cnHitCount(tagBear) + _cnHitCount(e.relatedStocks) + _cnTextHits(e)
-        + ((e.conceptName && CN_IMPACT_WORDS.some(w => String(e.conceptName).indexOf(w) >= 0)) ? 1 : 0);
-      const intensity = Math.min(1, Math.log10(Math.max(1, Number(e.affectedPeople) || 1)) / 8);   // 1 亿人 → 1
-      const regBonus = ((e._ir || e.region) === 'cn') ? 16 : 0;
-      const score = Math.max(5, Math.min(100, Math.round(22 + Math.min(34, hits * 8) + intensity * 28 + regBonus)));
+      const ev = e || {};
+      const tagBull = [].concat(ev.bullConcepts || [], ev.bullIndustries || []);
+      const tagBear = [].concat(ev.bearConcepts || [], ev.bearIndustries || []);
+      const stocks = Array.isArray(ev.relatedStocks) ? ev.relatedStocks : [];
+      const text = [ev.title, ev.summary, ev.conceptName].concat(tagBull, tagBear, stocks).filter(Boolean).join(' ');
+      const industryHits = _cnCountHits(text, CN_INDUSTRY_WORDS, 4);
+      const marketWordHits = _cnCountHits(text, CN_STOCK_WORDS, 3);
+      const stockHits = Math.min(2, Math.ceil(stocks.length / 2));
+      // 1 亿人 / 1 亿股民 → 满强度
+      const peopleInt = Math.min(1, Math.log10(Math.max(1, Number(ev.affectedPeople) || 1)) / 8);
+      const investInt = Math.min(1, Math.log10(Math.max(1, Number(ev.affected) || 1)) / 8);
+      const corr = _cnPoolCorroboration(ev);
+      const sIndustry = Math.min(24, industryHits * 6);
+      const sMarket = Math.min(14, marketWordHits * 4 + stockHits * 2 + Math.round(investInt * 4));
+      const sPeople = Math.round(peopleInt * 14);
+      const sPool = Math.min(20, corr.related * 2 + corr.industry * 2 + corr.market * 2);
+      const sRegion = ((ev._ir || ev.region) === 'cn') ? 8 : 0;
+      const score = Math.max(5, Math.min(100, Math.round(20 + sIndustry + sMarket + sPeople + sPool + sRegion)));
       let dir;
       const cb = _cnHitCount(tagBull), cx = _cnHitCount(tagBear);
       if (cb || cx) dir = (cb >= cx) ? 'bull' : 'bear';
@@ -11851,13 +11922,16 @@ const app = createApp({
       else {
         try {
           const s = (typeof HotTopics !== 'undefined' && HotTopics.newsSentimentOf)
-            ? HotTopics.newsSentimentOf(String(e.conceptName || ''), String(e.title || '') + ' ' + String(e.summary || '')) : null;
+            ? HotTopics.newsSentimentOf(String(ev.conceptName || ''), String(ev.title || '') + ' ' + String(ev.summary || '')) : null;
           dir = (s === 'bear') ? 'bear' : 'bull';
         } catch (err) { dir = 'bull'; }
       }
-      return { score, dir };
+      return { score, dir, detail: {
+        industry: sIndustry, market: sMarket, people: sPeople,
+        pool: sPool, region: sRegion, reports: corr.related
+      } };
     }
-    /** 在 resolve 之后给事件挂上 cnImp（对中影响度 + 方向），供排序与卡片展示 */
+    /** 在 resolve 之后给事件挂上 cnImp（重要程度 + 方向），供排序与卡片展示 */
     function withCnImp(e) { e.cnImp = computeChinaImpact(e); return e; }
 
     // ===== 20261119a：语义首报锚定引擎（影响力事件 / 未来事件 两个板块共用） =====
@@ -11936,7 +12010,7 @@ const app = createApp({
     function sortLabel() {
       const k = inflSortBy.value;
       if (k === 'time') return '时间';
-      if (k === 'cnimp') return '对中影响度';
+      if (k === 'cnimp') return '重要程度';
       return k === 'people' ? '影响人数' : '影响股民数';
     }
     function sortInfluence(list) {
@@ -19445,8 +19519,8 @@ const app = createApp({
       emHotStocks, emHotLoading, refreshEmHotOnly,
       hotRankTab, setHotRankTab,
       inflRegion, inflEvents, inflLoading, inflError, inflDate, inflSortBy, setInflRegion, setInflSort, sortLabel, refreshInfluence, regionLabel, fmtAffected, impactScopeLabel,
-      // 20261128b：三子版块地域判定纯函数，暴露供验证/排查（只读、无副作用）
-      inflAutoRegionOf, inflStrictRegionOf,
+      // 20261128b/c：地域判定与「重要程度」计算纯函数，暴露供验证/排查（只读、无副作用）
+      inflAutoRegionOf, inflStrictRegionOf, computeChinaImpact,
       // 20261109i：影响力事件只统计距今 10 日内（含今天），窗口标签用于面板展示
       INFL_WINDOW_DAYS, inflWindowLabel, inflWindowDays,
       // 20261110c：新闻范围（近 N 日）——两个面板各自独立，互不影响
